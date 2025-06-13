@@ -29,7 +29,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     parent_clause0 : [@TraitClause0]: Sized<Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self_Output>
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output, Self_Output>[Self]
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>[Self]
 }
 
 // Full name: core::ops::function::FnMut
@@ -39,7 +39,7 @@ pub trait FnMut<Self, Args, Self_Clause0_Output>
     parent_clause0 : [@TraitClause0]: FnOnce<Self, Args, Self_Clause0_Output>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output, Self_Clause0_Output>[Self]
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>[Self]
 }
 
 // Full name: core::ops::function::Fn
@@ -49,7 +49,7 @@ pub trait Fn<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause0 : [@TraitClause0]: FnMut<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output, Self_Clause0_Clause0_Output>[Self]
+    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>[Self]
 }
 
 // Full name: core::option::Option
@@ -62,7 +62,7 @@ where
   Some(T),
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause0_Clause0_Output, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause0_Clause0_Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause0_Clause0_Output
 where
     [@TraitClause0]: Fn<Self, Args, Clause0_Clause0_Clause0_Output>,
 
@@ -93,7 +93,7 @@ where
         },
         Option::Some => {
             storage_live(x@3)
-            x@3 := move ((x@1 as variant @1).0)
+            x@3 := move ((x@1 as variant Option::Some).0)
             storage_live(@4)
             storage_live(@5)
             @5 := &f@2
@@ -141,7 +141,7 @@ where
         },
         Option::Some => {
             storage_live(x@3)
-            x@3 := &(*(x@1) as variant @1).0
+            x@3 := &(*(x@1) as variant Option::Some).0
             storage_live(@4)
             storage_live(@5)
             @5 := copy (f@2)
@@ -924,7 +924,7 @@ fn test_fnmut_with_ref()
     return
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Clause0_Clause0_Output, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Clause0_Clause0_Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Clause0_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Clause0_Clause0_Output
 where
     [@TraitClause0]: FnMut<Self, Args, Clause0_Clause0_Output>,
 
@@ -1084,7 +1084,7 @@ impl<'_0, '_1> FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::clo
     fn call_mut<'_0> = {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_0_0>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output, Self_Output>(@1: Self, @2: Args) -> Clause0_Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output>(@1: Self, @2: Args) -> Clause0_Output
 where
     [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
 

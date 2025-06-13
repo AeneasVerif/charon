@@ -161,17 +161,12 @@ impl ItemTransCtx<'_, '_> {
                 overrides_default,
                 ..
             } => {
-                let impl_id = self.register_trait_impl_id(span, impl_id);
-                let impl_ref = TraitImplRef {
+                let impl_ref = self.translate_trait_impl_ref(
+                    span,
                     impl_id,
-                    generics: Box::new(self.translate_generic_args(
-                        span,
-                        impl_generics,
-                        impl_required_impl_exprs,
-                        None,
-                        GenericsSource::item(impl_id),
-                    )?),
-                };
+                    impl_generics,
+                    impl_required_impl_exprs,
+                )?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // Ensure we translate the corresponding decl signature.
@@ -699,22 +694,8 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Retrieve the information about the implemented trait.
-        let implemented_trait_id = &trait_pred.trait_ref.def_id;
-        let trait_id = self.register_trait_decl_id(span, implemented_trait_id);
-        let implemented_trait = {
-            let implemented_trait = &trait_pred.trait_ref;
-            let generics = self.translate_generic_args(
-                span,
-                &implemented_trait.generic_args,
-                &[],
-                None,
-                GenericsSource::item(trait_id),
-            )?;
-            TraitDeclRef {
-                trait_id,
-                generics: Box::new(generics),
-            }
-        };
+        let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
+        let trait_id = implemented_trait.trait_id;
         // A `TraitRef` that points to this impl with the correct generics.
         let self_predicate = TraitRef {
             kind: TraitRefKind::TraitImpl(

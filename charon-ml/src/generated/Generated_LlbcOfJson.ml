@@ -5,6 +5,15 @@ open GAstOfJson
 
 let rec ___ = ()
 
+and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("span", span); ("statements", statements) ] ->
+        let* span = span_of_json ctx span in
+        let* statements = list_of_json statement_of_json ctx statements in
+        Ok ({ span; statements } : block)
+    | _ -> Error "")
+
 and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
     (raw_statement, string) result =
   combine_error_msgs js __FUNCTION__
@@ -78,15 +87,6 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
           list_of_json string_of_json ctx comments_before
         in
         Ok ({ span; content; comments_before } : statement)
-    | _ -> Error "")
-
-and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("span", span); ("statements", statements) ] ->
-        let* span = span_of_json ctx span in
-        let* statements = list_of_json statement_of_json ctx statements in
-        Ok ({ span; statements } : block)
     | _ -> Error "")
 
 and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =

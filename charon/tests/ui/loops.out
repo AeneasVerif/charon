@@ -1279,7 +1279,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
                 },
                 Option::Some => {
                     storage_live(i@14)
-                    i@14 := copy ((@11 as variant @1).0)
+                    i@14 := copy ((@11 as variant Option::Some).0)
                     storage_live(@15)
                     @15 := copy (i@14)
                     s@4 := copy (s@4) + copy (@15)
@@ -1608,9 +1608,9 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
         match *(ls@1) {
             List::Cons => {
                 storage_live(y@3)
-                y@3 := &mut (*(ls@1) as variant @0).0
+                y@3 := &mut (*(ls@1) as variant List::Cons).0
                 storage_live(tl@4)
-                tl@4 := &mut (*(ls@1) as variant @0).1
+                tl@4 := &mut (*(ls@1) as variant List::Cons).1
                 storage_live(@5)
                 storage_live(@6)
                 @6 := copy (*(y@3))
@@ -1673,9 +1673,9 @@ where
         match *(ls@1) {
             List::Cons => {
                 storage_live(x@4)
-                x@4 := &mut (*(ls@1) as variant @0).0
+                x@4 := &mut (*(ls@1) as variant List::Cons).0
                 storage_live(tl@5)
-                tl@5 := &mut (*(ls@1) as variant @0).1
+                tl@5 := &mut (*(ls@1) as variant List::Cons).1
                 storage_live(@6)
                 storage_live(@7)
                 @7 := copy (i@2)

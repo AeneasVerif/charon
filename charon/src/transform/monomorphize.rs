@@ -176,13 +176,6 @@ impl VisitAst for UsageVisitor<'_> {
 struct SubstVisitor<'a> {
     data: &'a PassData,
 }
-impl GenericArgs {
-    fn remove_non_lifetime_args(&mut self) {
-        self.types = Default::default();
-        self.const_generics = Default::default();
-        self.trait_refs = Default::default();
-    }
-}
 impl SubstVisitor<'_> {
     fn subst_use<T, F>(&mut self, id: &mut T, gargs: &mut GenericArgs, of: F)
     where
@@ -190,13 +183,15 @@ impl SubstVisitor<'_> {
         F: Fn(&AnyTransId) -> Option<&T>,
     {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
+        // Erase regions.
+        gargs.regions.iter_mut().for_each(|r| *r = Region::Erased);
         let key = ((*id).into(), gargs.clone());
         let subst = self.data.items.get(&key);
         if let Some(OptionHint::Some(any_id)) = subst
             && let Some(subst_id) = of(any_id)
         {
             *id = *subst_id;
-            gargs.remove_non_lifetime_args();
+            *gargs = GenericArgs::empty(GenericsSource::Builtin);
         } else {
             warn!("Substitution missing for {:?} / {:?}", id, gargs);
         }
@@ -345,40 +340,6 @@ fn subst_uses<T: AstVisitable + Debug>(data: &PassData, item: &mut T) {
 //     PathElem::Ident(gargs.to_string(), Disambiguator::ZERO)
 // }
 
-impl GenericArgs {
-    fn is_empty_ignoring_regions(&self) -> bool {
-        let GenericArgs {
-            types,
-            const_generics,
-            trait_refs,
-            regions: _,
-            target: _,
-        } = self;
-        let len = types.elem_count() + const_generics.elem_count() + trait_refs.elem_count();
-        len == 0
-    }
-}
-
-// impl GenericParams {
-//     fn is_empty_ignoring_regions(&self) -> bool {
-//         let GenericParams {
-//             regions: _,
-//             types,
-//             const_generics,
-//             trait_clauses,
-//             regions_outlive: _,
-//             types_outlive,
-//             trait_type_constraints,
-//         } = self;
-//         let len = types.elem_count()
-//             + const_generics.elem_count()
-//             + trait_clauses.elem_count()
-//             + trait_type_constraints.elem_count()
-//             + types_outlive.len();
-//         len == 0
-//     }
-// }
-
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
@@ -452,7 +413,7 @@ impl TransformPass for Transform {
                 }
 
                 // a. Monomorphize the items if they're polymorphic, add them to the worklist
-                let new_mono = if gargs.is_empty_ignoring_regions() {
+                let new_mono = if gargs.is_empty() {
                     *id
                 } else {
                     match id {

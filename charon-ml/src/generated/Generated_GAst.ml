@@ -25,24 +25,49 @@ type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
-(** A variable *)
-type local = {
-  index : local_id;  (** Unique index identifying the variable *)
-  name : string option;
-      (** Variable name - may be [None] if the variable was introduced by Rust
-          through desugaring. *)
-  var_ty : ty;  (** The variable type *)
+(** Check the value of an operand and abort if the value is not expected. This
+    is introduced to avoid a lot of small branches.
+
+    We translate MIR asserts (introduced for out-of-bounds accesses or divisions
+    by zero for instance) to this. We then eliminate them in
+    [crate::transform::remove_dynamic_checks], because they're implicit in the
+    semantics of our array accesses etc. Finally we introduce new asserts in
+    [crate::transform::reconstruct_asserts]. *)
+type assertion = {
+  cond : operand;
+  expected : bool;
+      (** The value that the operand should evaluate to for the assert to
+          succeed. *)
+  on_failure : abort_kind;  (** What kind of abort happens on assert failure. *)
 }
 
-(** The local variables of a body. *)
-and locals = {
-  arg_count : int;
-      (** The number of local variables used for the input arguments. *)
-  locals : local list;
-      (** The local variables. We always have, in the following order:
-          - the local used for the return value (index 0)
-          - the [arg_count] input arguments
-          - the remaining locals, used for the intermediate computations *)
+and call = { func : fn_operand; args : operand list; dest : place }
+
+(** Additional information for closures. *)
+and closure_info = {
+  kind : closure_kind;
+  signature : (ty list * ty) region_binder;
+      (** The signature of the function that this closure represents. *)
+}
+
+and closure_kind = Fn | FnMut | FnOnce
+and copy_non_overlapping = { src : operand; dst : operand; count : operand }
+
+(** A function operand is used in function calls. It either designates a
+    top-level function, or a place in case we are using function pointers stored
+    in local variables. *)
+and fn_operand =
+  | FnOpRegular of fn_ptr
+      (** Regular case: call to a top-level function, trait method, etc. *)
+  | FnOpMove of place
+      (** Use of a function pointer stored in a local variable *)
+
+(** A function signature. *)
+and fun_sig = {
+  is_unsafe : bool;  (** Is the function unsafe or not *)
+  generics : generic_params;
+  inputs : ty list;
+  output : ty;
 }
 
 (** Item kind: whether this function/const is part of a trait declaration, trait
@@ -93,49 +118,24 @@ and item_kind =
             implementation for this function/const and this item is a copy of
             the default item. *)
 
-(** A function operand is used in function calls. It either designates a
-    top-level function, or a place in case we are using function pointers stored
-    in local variables. *)
-and fn_operand =
-  | FnOpRegular of fn_ptr
-      (** Regular case: call to a top-level function, trait method, etc. *)
-  | FnOpMove of place
-      (** Use of a function pointer stored in a local variable *)
-
-and call = { func : fn_operand; args : operand list; dest : place }
-and copy_non_overlapping = { src : operand; dst : operand; count : operand }
-
-(** Check the value of an operand and abort if the value is not expected. This
-    is introduced to avoid a lot of small branches.
-
-    We translate MIR asserts (introduced for out-of-bounds accesses or divisions
-    by zero for instance) to this. We then eliminate them in
-    [crate::transform::remove_dynamic_checks], because they're implicit in the
-    semantics of our array accesses etc. Finally we introduce new asserts in
-    [crate::transform::reconstruct_asserts]. *)
-and assertion = {
-  cond : operand;
-  expected : bool;
-      (** The value that the operand should evaluate to for the assert to
-          succeed. *)
-  on_failure : abort_kind;  (** What kind of abort happens on assert failure. *)
+(** A variable *)
+and local = {
+  index : local_id;  (** Unique index identifying the variable *)
+  name : string option;
+      (** Variable name - may be [None] if the variable was introduced by Rust
+          through desugaring. *)
+  var_ty : ty;  (** The variable type *)
 }
 
-and closure_kind = Fn | FnMut | FnOnce
-
-(** Additional information for closures. *)
-and closure_info = {
-  kind : closure_kind;
-  signature : (ty list * ty) region_binder;
-      (** The signature of the function that this closure represents. *)
-}
-
-(** A function signature. *)
-and fun_sig = {
-  is_unsafe : bool;  (** Is the function unsafe or not *)
-  generics : generic_params;
-  inputs : ty list;
-  output : ty;
+(** The local variables of a body. *)
+and locals = {
+  arg_count : int;
+      (** The number of local variables used for the input arguments. *)
+  locals : local list;
+      (** The local variables. We always have, in the following order:
+          - the local used for the return value (index 0)
+          - the [arg_count] input arguments
+          - the remaining locals, used for the intermediate computations *)
 }
 [@@deriving
   show,
@@ -158,19 +158,8 @@ and fun_sig = {
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-type global_kind =
-  | Static  (** A static. *)
-  | NamedConst
-      (** A const with a name (either top-level or an associated const in a
-          trait). *)
-  | AnonConst
-      (** A const without a name:
-          - An inline const expression ([const { 1 + 1 }]);
-          - A const expression in a type ([[u8; sizeof::<T>()]]);
-          - A promoted constant, automatically lifted from a body ([&0]). *)
-
 (** A global variable definition (constant or static). *)
-and global_decl = {
+type global_decl = {
   def_id : global_decl_id;
   item_meta : item_meta;  (** The meta data associated with the declaration. *)
   generics : generic_params;
@@ -183,6 +172,17 @@ and global_decl = {
       (** The initializer function used to compute the initial value for this
           constant/static. It uses the same generic parameters as the global. *)
 }
+
+and global_kind =
+  | Static  (** A static. *)
+  | NamedConst
+      (** A const with a name (either top-level or an associated const in a
+          trait). *)
+  | AnonConst
+      (** A const without a name:
+          - An inline const expression ([const { 1 + 1 }]);
+          - A const expression in a type ([[u8; sizeof::<T>()]]);
+          - A promoted constant, automatically lifted from a body ([&0]). *)
 [@@deriving
   show,
   eq,
@@ -335,15 +335,7 @@ type trait_impl = {
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-(** An expression body. TODO: arg_count should be stored in GFunDecl below. But
-    then, the print is obfuscated and Aeneas may need some refactoring. *)
-type 'a0 gexpr_body = {
-  span : span;
-  locals : locals;  (** The local variables. *)
-  body : 'a0;
-}
-
-and cli_options = {
+type cli_options = {
   ullbc : bool;
       (** Extract the unstructured LLBC (i.e., don't reconstruct the
           control-flow) *)
@@ -428,6 +420,33 @@ and cli_options = {
           presets. *)
 }
 
+(** A (group of) top-level declaration(s), properly reordered. *)
+and declaration_group =
+  | TypeGroup of type_decl_id g_declaration_group
+      (** A type declaration group *)
+  | FunGroup of fun_decl_id g_declaration_group
+      (** A function declaration group *)
+  | GlobalGroup of global_decl_id g_declaration_group
+      (** A global declaration group *)
+  | TraitDeclGroup of trait_decl_id g_declaration_group
+  | TraitImplGroup of trait_impl_id g_declaration_group
+  | MixedGroup of any_decl_id g_declaration_group
+      (** Anything that doesn't fit into these categories. *)
+
+(** A (group of) top-level declaration(s), properly reordered. "G" stands for
+    "generic" *)
+and 'a0 g_declaration_group =
+  | NonRecGroup of 'a0  (** A non-recursive declaration *)
+  | RecGroup of 'a0 list  (** A (group of mutually) recursive declaration(s) *)
+
+(** An expression body. TODO: arg_count should be stored in GFunDecl below. But
+    then, the print is obfuscated and Aeneas may need some refactoring. *)
+and 'a0 gexpr_body = {
+  span : span;
+  locals : locals;  (** The local variables. *)
+  body : 'a0;
+}
+
 (** The MIR stage to use. This is only relevant for the current crate: for
     dependencies, only mir optimized is available (or mir elaborated for
     consts). *)
@@ -453,23 +472,4 @@ and preset =
   | Aeneas
   | Eurydice
   | Tests
-
-(** A (group of) top-level declaration(s), properly reordered. *)
-and declaration_group =
-  | TypeGroup of type_decl_id g_declaration_group
-      (** A type declaration group *)
-  | FunGroup of fun_decl_id g_declaration_group
-      (** A function declaration group *)
-  | GlobalGroup of global_decl_id g_declaration_group
-      (** A global declaration group *)
-  | TraitDeclGroup of trait_decl_id g_declaration_group
-  | TraitImplGroup of trait_impl_id g_declaration_group
-  | MixedGroup of any_decl_id g_declaration_group
-      (** Anything that doesn't fit into these categories. *)
-
-(** A (group of) top-level declaration(s), properly reordered. "G" stands for
-    "generic" *)
-and 'a0 g_declaration_group =
-  | NonRecGroup of 'a0  (** A non-recursive declaration *)
-  | RecGroup of 'a0 list  (** A (group of mutually) recursive declaration(s) *)
 [@@deriving show]

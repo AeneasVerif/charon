@@ -57,6 +57,7 @@ static HELP_STRING: &str = unindent!(
 
     Other comments can be used to control the behavior of charon:
     - `//@ charon-args=<charon cli options>`
+    - `//@ charon-arg=<single charon cli option>`
     - `//@ rustc-args=<rustc cli options>`
     - `//@ no-check-output`: don't store the output in a file; useful if the output is unstable or
          differs between debug and release mode.
@@ -98,6 +99,8 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             comments
                 .charon_opts
                 .extend(charon_opts.split_whitespace().map(|s| s.to_string()));
+        } else if let Some(charon_opt) = line.strip_prefix("charon-arg=") {
+            comments.charon_opts.push(charon_opt.to_string());
         } else if let Some(rustc_opts) = line.strip_prefix("rustc-args=") {
             comments
                 .rustc_opts

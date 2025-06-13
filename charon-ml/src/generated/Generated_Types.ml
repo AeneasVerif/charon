@@ -44,19 +44,22 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord, eq]
 
-type fun_decl_id = (FunDeclId.id[@visitors.opaque])
-and type_decl_id = (TypeDeclId.id[@visitors.opaque])
-and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
-and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
-and trait_impl_id = (TraitImplId.id[@visitors.opaque])
-
 (** The id of a translated item. *)
-and any_decl_id =
+type any_decl_id =
   | IdType of type_decl_id
   | IdFun of fun_decl_id
   | IdGlobal of global_decl_id
   | IdTraitDecl of trait_decl_id
   | IdTraitImpl of trait_impl_id
+
+(** Const Generic Values. Either a primitive value, or a variable corresponding
+    to a primitve value *)
+and const_generic =
+  | CgGlobal of global_decl_id  (** A global constant *)
+  | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
+  | CgValue of literal  (** A concrete value *)
+
+and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
@@ -105,16 +108,14 @@ and 'a0 de_bruijn_var =
           explained above, This is not used in charon internals, only as a
           micro-pass before exporting the crate data. *)
 
-and type_var_id = (TypeVarId.id[@visitors.opaque])
-and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
+and fun_decl_id = (FunDeclId.id[@visitors.opaque])
+and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
 and trait_clause_id = (TraitClauseId.id[@visitors.opaque])
+and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
+and trait_impl_id = (TraitImplId.id[@visitors.opaque])
+and type_decl_id = (TypeDeclId.id[@visitors.opaque])
 
-(** Const Generic Values. Either a primitive value, or a variable corresponding
-    to a primitve value *)
-and const_generic =
-  | CgGlobal of global_decl_id  (** A global constant *)
-  | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
-  | CgValue of literal  (** A concrete value *)
+and type_var_id = (TypeVarId.id[@visitors.opaque])
 [@@deriving
   show,
   eq,
@@ -189,11 +190,46 @@ class virtual ['self] map_ty_base_base =
         { index; name }
   end
 
+(** Builtin types identifiers.
+
+    WARNING: for now, all the built-in types are covariant in the generic
+    parameters (if there are). Adding types which don't satisfy this will
+    require to update the code abstracting the signatures (to properly take into
+    account the lifetime constraints).
+
+    TODO: update to not hardcode the types (except [Box] maybe) and be more
+    modular. TODO: move to builtins.rs? *)
+type builtin_ty =
+  | TBox  (** Boxes are de facto a primitive type. *)
+  | TArray  (** Primitive type *)
+  | TSlice  (** Primitive type *)
+  | TStr  (** Primitive type *)
+
+(** A predicate of the form [exists<T> where T: Trait].
+
+    TODO: store something useful here *)
+and existential_predicate = unit
+
 (** Reference to a function declaration. *)
-type fun_decl_ref = {
+and fun_decl_ref = {
   fun_id : fun_decl_id;
   fun_generics : generic_args;  (** Generic arguments passed to the function. *)
 }
+
+(** A set of generic arguments. *)
+and generic_args = {
+  regions : region list;
+  types : ty list;
+  const_generics : const_generic list;
+  trait_refs : trait_ref list;
+}
+
+(** Each [GenericArgs] is meant for a corresponding [GenericParams]; this
+    describes which one. *)
+and generics_source =
+  | GSItem of any_decl_id  (** A top-level item. *)
+  | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
+  | GSBuiltin  (** A builtin item like [Box]. *)
 
 (** Reference to a global declaration. *)
 and global_decl_ref = {
@@ -201,17 +237,56 @@ and global_decl_ref = {
   global_generics : generic_args;
 }
 
-and trait_item_name = string
-and region_id = (RegionId.id[@visitors.opaque])
-
-(** A region variable in a signature or binder. *)
-and region_var = (region_id, string option) indexed_var
+and ref_kind = RMut | RShared
 
 and region =
   | RVar of region_id de_bruijn_var
       (** Region variable. See [DeBruijnVar] for details. *)
   | RStatic  (** Static region *)
   | RErased  (** Erased region *)
+
+(** A value of type [T] bound by regions. We should use [binder] instead but
+    this causes name clash issues in the derived ocaml visitors. TODO: merge
+    with [binder] *)
+and 'a0 region_binder = {
+  binder_regions : region_var list;
+  binder_value : 'a0;
+      (** Named this way to highlight accesses to the inner value that might be
+          handling parameters incorrectly. Prefer using helper methods. *)
+}
+
+and region_id = (RegionId.id[@visitors.opaque])
+
+(** A region variable in a signature or binder. *)
+and region_var = (region_id, string option) indexed_var
+
+(** A predicate of the form [Type: Trait<Args>].
+
+    About the generics, if we write:
+    {@rust[
+      impl Foo<bool> for String { ... }
+    ]}
+
+    The substitution is: [[String, bool]]. *)
+and trait_decl_ref = {
+  trait_decl_id : trait_decl_id;
+  decl_generics : generic_args;
+}
+
+(** A reference to a tait impl, using the provided arguments. *)
+and trait_impl_ref = {
+  trait_impl_id : trait_impl_id;
+  impl_generics : generic_args;
+}
+
+and trait_item_name = string
+
+(** A reference to a trait *)
+and trait_ref = {
+  trait_id : trait_instance_id;
+  trait_decl_ref : trait_decl_ref region_binder;
+      (** Not necessary, but useful *)
+}
 
 (** Identifier of a trait instance. This is derived from the trait resolution.
 
@@ -283,82 +358,6 @@ and trait_instance_id =
       (** The automatically-generated implementation for [dyn Trait]. *)
   | UnknownTrait of string  (** For error reporting. *)
 
-(** A reference to a trait *)
-and trait_ref = {
-  trait_id : trait_instance_id;
-  trait_decl_ref : trait_decl_ref region_binder;
-      (** Not necessary, but useful *)
-}
-
-(** A predicate of the form [Type: Trait<Args>].
-
-    About the generics, if we write:
-    {@rust[
-      impl Foo<bool> for String { ... }
-    ]}
-
-    The substitution is: [[String, bool]]. *)
-and trait_decl_ref = {
-  trait_decl_id : trait_decl_id;
-  decl_generics : generic_args;
-}
-
-(** A reference to a tait impl, using the provided arguments. *)
-and trait_impl_ref = {
-  trait_impl_id : trait_impl_id;
-  impl_generics : generic_args;
-}
-
-(** Each [GenericArgs] is meant for a corresponding [GenericParams]; this
-    describes which one. *)
-and generics_source =
-  | GSItem of any_decl_id  (** A top-level item. *)
-  | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
-  | GSBuiltin  (** A builtin item like [Box]. *)
-
-(** A set of generic arguments. *)
-and generic_args = {
-  regions : region list;
-  types : ty list;
-  const_generics : const_generic list;
-  trait_refs : trait_ref list;
-}
-
-(** A value of type [T] bound by regions. We should use [binder] instead but
-    this causes name clash issues in the derived ocaml visitors. TODO: merge
-    with [binder] *)
-and 'a0 region_binder = {
-  binder_regions : region_var list;
-  binder_value : 'a0;
-      (** Named this way to highlight accesses to the inner value that might be
-          handling parameters incorrectly. Prefer using helper methods. *)
-}
-
-(** A predicate of the form [exists<T> where T: Trait].
-
-    TODO: store something useful here *)
-and existential_predicate = unit
-
-and ref_kind = RMut | RShared
-
-(** Type identifier.
-
-    Allows us to factorize the code for built-in types, adts and tuples *)
-and type_id =
-  | TAdtId of type_decl_id
-      (** A "regular" ADT type.
-
-          Includes transparent ADTs and opaque ADTs (local ADTs marked as
-          opaque, and external ADTs). *)
-  | TTuple
-  | TBuiltin of builtin_ty
-      (** Built-in type. Either a primitive type like array or slice, or a
-          non-primitive type coming from a standard library and that we handle
-          like a primitive type. Types falling into this category include: Box,
-          Vec, Cell... The Array and Slice types were initially modelled as
-          primitive in the [Ty] type. We decided to move them to built-in types
-          as it allows for more uniform treatment throughout the codebase. *)
-
 and ty =
   | TAdt of type_id * generic_args
       (** An ADT. Note that here ADTs are very general. They can be:
@@ -415,20 +414,23 @@ and ty =
           of generics. *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
-(** Builtin types identifiers.
+(** Type identifier.
 
-    WARNING: for now, all the built-in types are covariant in the generic
-    parameters (if there are). Adding types which don't satisfy this will
-    require to update the code abstracting the signatures (to properly take into
-    account the lifetime constraints).
+    Allows us to factorize the code for built-in types, adts and tuples *)
+and type_id =
+  | TAdtId of type_decl_id
+      (** A "regular" ADT type.
 
-    TODO: update to not hardcode the types (except [Box] maybe) and be more
-    modular. TODO: move to builtins.rs? *)
-and builtin_ty =
-  | TBox  (** Boxes are de facto a primitive type. *)
-  | TArray  (** Primitive type *)
-  | TSlice  (** Primitive type *)
-  | TStr  (** Primitive type *)
+          Includes transparent ADTs and opaque ADTs (local ADTs marked as
+          opaque, and external ADTs). *)
+  | TTuple
+  | TBuiltin of builtin_ty
+      (** Built-in type. Either a primitive type like array or slice, or a
+          non-primitive type coming from a standard library and that we handle
+          like a primitive type. Types falling into this category include: Box,
+          Vec, Cell... The Array and Slice types were initially modelled as
+          primitive in the [Ty] type. We decided to move them to built-in types
+          as it allows for more uniform treatment throughout the codebase. *)
 [@@deriving
   show,
   eq,
@@ -476,30 +478,74 @@ type abort_kind =
       (** Unwind had to stop for Abi reasons or because cleanup code panicked
           again. *)
 
-(** Meta information about an item (function, trait decl, trait impl, type decl,
-    global). *)
-and item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** [true] if the type decl is a local type decl, [false] if it comes from
-          an external crate. *)
-  lang_item : string option;
-      (** If the item is built-in, record its internal builtin identifier. *)
+(** A value of type [T] bound by generic parameters. Used in any context where
+    we're adding generic parameters that aren't on the top-level item, e.g.
+    [for<'a>] clauses (uses [RegionBinder] for now), trait methods, GATs (TODO).
+*)
+and 'a0 binder = {
+  binder_params : generic_params;
+  binder_value : 'a0;
+      (** Named this way to highlight accesses to the inner value that might be
+          handling parameters incorrectly. Prefer using helper methods. *)
+}
+
+and binder_kind =
+  | BKTraitMethod of trait_decl_id * trait_item_name
+      (** The parameters of a trait method. Used in the [methods] lists in trait
+          decls and trait impls. *)
+  | BKInherentImplBlock
+      (** The parameters bound in a non-trait [impl] block. Used in the [Name]s
+          of inherent methods. *)
+  | BKOther  (** Some other use of a binder outside the main Charon ast. *)
+
+(** A const generic variable in a signature or binder. *)
+and const_generic_var = {
+  index : const_generic_var_id;
+      (** Index identifying the variable among other variables bound at the same
+          level. *)
+  name : string;  (** Const generic name *)
+  ty : literal_type;  (** Type of the const generic *)
 }
 
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
-(** See the comments for [Name] *)
-and path_elem =
-  | PeIdent of string * disambiguator
-  | PeImpl of impl_elem * disambiguator
-  | PeMonomorphized of generic_args
-      (** This item was obtained by monomorphizing its parent with the given
-          args. *)
+(** Layout of the discriminant with its offset and representation type.
+
+    Does not include information about the value range. *)
+and discriminant_layout =
+  | Direct of int * integer_type
+      (** Fields:
+          - [offset]: The offset of the discriminant in bytes.
+          - [repr]: The representation type of the discriminant. *)
+  | Niche
+
+and field = {
+  span : span;
+  attr_info : attr_info;
+  field_name : string option;
+  field_ty : ty;
+}
+
+and field_id = (FieldId.id[@visitors.opaque])
+
+(** Generic parameters for a declaration. We group the generics which come from
+    the Rust compiler substitutions (the regions, types and const generics) as
+    well as the trait clauses. The reason is that we consider that those are
+    parameters that need to be filled. We group in a different place the
+    predicates which are not trait clauses, because those enforce constraints
+    but do not need to be filled with witnesses/instances. *)
+and generic_params = {
+  regions : region_var list;
+  types : type_var list;
+  const_generics : const_generic_var list;
+  trait_clauses : trait_clause list;
+  regions_outlive : (region, region) outlives_pred region_binder list;
+      (** The first region in the pair outlives the second region *)
+  types_outlive : (ty, region) outlives_pred region_binder list;
+      (** The type outlives the region *)
+  trait_type_constraints : trait_type_constraint region_binder list;
+      (** Constraints over trait associated types *)
+}
 
 (** There are two kinds of [impl] blocks:
     {ul
@@ -517,6 +563,42 @@ and path_elem =
      }
     } *)
 and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
+
+(** Meta information about an item (function, trait decl, trait impl, type decl,
+    global). *)
+and item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** [true] if the type decl is a local type decl, [false] if it comes from
+          an external crate. *)
+  lang_item : string option;
+      (** If the item is built-in, record its internal builtin identifier. *)
+}
+
+(** Simplified type layout information.
+
+    Does not include information about niches. If the type does not have a fully
+    known layout (e.g. it is ?Sized) some of the layout parts are not available.
+*)
+and layout = {
+  size : int option;  (** The size of the type in bytes. *)
+  align : int option;  (** The alignment, in bytes. *)
+  discriminant_layout : discriminant_layout option;
+      (** The discriminant's layout, if any. Only relevant for types with
+          multiple variants. *)
+  uninhabited : bool;
+      (** Whether the type is uninhabited, i.e. has any valid value at all. Note
+          that uninhabited types can have arbitrary layouts: [(u32, !)] has
+          space for the [u32] and [enum E2 { A, B(!), C(i32, !) }] may have
+          space for a discriminant. *)
+  variant_layouts : variant_layout list;
+      (** Map from [VariantId] to the corresponding field layouts. Structs are
+          modeled as having exactly one variant, unions as having no variant. *)
+}
 
 (** An item name/path
 
@@ -557,17 +639,28 @@ and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 *)
 and name = (path_elem list[@visitors.opaque])
 
-(** A type variable in a signature or binder. *)
-and type_var = (type_var_id, string) indexed_var
+(** .0 outlives .1 *)
+and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
-(** A const generic variable in a signature or binder. *)
-and const_generic_var = {
-  index : const_generic_var_id;
-      (** Index identifying the variable among other variables bound at the same
-          level. *)
-  name : string;  (** Const generic name *)
-  ty : literal_type;  (** Type of the const generic *)
-}
+(** See the comments for [Name] *)
+and path_elem =
+  | PeIdent of string * disambiguator
+  | PeImpl of impl_elem * disambiguator
+  | PeMonomorphized of generic_args
+      (** This item was obtained by monomorphizing its parent with the given
+          args. *)
+
+(** The metadata stored in a pointer. That's the information stored in pointers
+    alongside their address. It's empty for [Sized] types, and interesting for
+    unsized aka dynamically-sized types. *)
+and ptr_metadata =
+  | NoMetadata  (** Types that need no metadata, namely [T: Sized] types. *)
+  | Length
+      (** Metadata for [[T]], [str], and user-defined types that directly or
+          indirectly contain one of these two. *)
+  | VTable of v_table
+      (** Metadata for [dyn Trait] and user-defined types that directly or
+          indirectly contain a [dyn Trait]. *)
 
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form
@@ -579,9 +672,6 @@ and trait_clause = {
   span : span option;
   trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
-
-(** .0 outlives .1 *)
-and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
 (** A constraint over a trait associated type.
 
@@ -595,99 +685,6 @@ and trait_type_constraint = {
   type_name : trait_item_name;
   ty : ty;
 }
-
-and binder_kind =
-  | BKTraitMethod of trait_decl_id * trait_item_name
-      (** The parameters of a trait method. Used in the [methods] lists in trait
-          decls and trait impls. *)
-  | BKInherentImplBlock
-      (** The parameters bound in a non-trait [impl] block. Used in the [Name]s
-          of inherent methods. *)
-  | BKOther  (** Some other use of a binder outside the main Charon ast. *)
-
-(** A value of type [T] bound by generic parameters. Used in any context where
-    we're adding generic parameters that aren't on the top-level item, e.g.
-    [for<'a>] clauses (uses [RegionBinder] for now), trait methods, GATs (TODO).
-*)
-and 'a0 binder = {
-  binder_params : generic_params;
-  binder_value : 'a0;
-      (** Named this way to highlight accesses to the inner value that might be
-          handling parameters incorrectly. Prefer using helper methods. *)
-}
-
-(** Generic parameters for a declaration. We group the generics which come from
-    the Rust compiler substitutions (the regions, types and const generics) as
-    well as the trait clauses. The reason is that we consider that those are
-    parameters that need to be filled. We group in a different place the
-    predicates which are not trait clauses, because those enforce constraints
-    but do not need to be filled with witnesses/instances. *)
-and generic_params = {
-  regions : region_var list;
-  types : type_var list;
-  const_generics : const_generic_var list;
-  trait_clauses : trait_clause list;
-  regions_outlive : (region, region) outlives_pred region_binder list;
-      (** The first region in the pair outlives the second region *)
-  types_outlive : (ty, region) outlives_pred region_binder list;
-      (** The type outlives the region *)
-  trait_type_constraints : trait_type_constraint region_binder list;
-      (** Constraints over trait associated types *)
-}
-
-(** Simplified layout of a single variant.
-
-    Maps fields to their offset within the layout. *)
-and variant_layout = {
-  field_offsets : int list;  (** The offset of each field. *)
-}
-
-(** Layout of the discriminant with its offset and representation type.
-
-    Does not include information about the value range. *)
-and discriminant_layout =
-  | Direct of int * integer_type
-      (** Fields:
-          - [offset]: The offset of the discriminant in bytes.
-          - [repr]: The representation type of the discriminant. *)
-  | Niche
-
-(** Simplified type layout information.
-
-    Does not include information about niches. If the type does not have a fully
-    known layout (e.g. it is ?Sized) some of the layout parts are not available.
-*)
-and layout = {
-  size : int option;  (** The size of the type in bytes. *)
-  align : int option;  (** The alignment, in bytes. *)
-  discriminant_layout : discriminant_layout option;
-      (** The discriminant's layout, if any. Only relevant for types with
-          multiple variants. *)
-  uninhabited : bool;
-      (** Whether the type is uninhabited, i.e. has any valid value at all. Note
-          that uninhabited types can have arbitrary layouts: [(u32, !)] has
-          space for the [u32] and [enum E2 { A, B(!), C(i32, !) }] may have
-          space for a discriminant. *)
-  variant_layouts : variant_layout list;
-      (** Map from [VariantId] to the corresponding field layouts. Structs are
-          modeled as having exactly one variant, unions as having no variant. *)
-}
-
-(** A placeholder for the vtable of a trait object. To be implemented in the
-    future when [dyn Trait] is fully supported. *)
-and v_table = unit
-
-(** The metadata stored in a pointer. That's the information stored in pointers
-    alongside their address. It's empty for [Sized] types, and interesting for
-    unsized aka dynamically-sized types. *)
-and ptr_metadata =
-  | NoMetadata  (** Types that need no metadata, namely [T: Sized] types. *)
-  | Length
-      (** Metadata for [[T]], [str], and user-defined types that directly or
-          indirectly contain one of these two. *)
-  | VTable of v_table
-      (** Metadata for [dyn Trait] and user-defined types that directly or
-          indirectly contain a [dyn Trait]. *)
 
 (** A type declaration.
 
@@ -721,9 +718,6 @@ and type_decl = {
           more details. *)
 }
 
-and variant_id = (VariantId.id[@visitors.opaque])
-and field_id = (FieldId.id[@visitors.opaque])
-
 and type_decl_kind =
   | Struct of field list
   | Enum of variant list
@@ -739,6 +733,13 @@ and type_decl_kind =
       (** Used if an error happened during the extraction, and we don't panic on
           error. *)
 
+(** A type variable in a signature or binder. *)
+and type_var = (type_var_id, string) indexed_var
+
+(** A placeholder for the vtable of a trait object. To be implemented in the
+    future when [dyn Trait] is fully supported. *)
+and v_table = unit
+
 and variant = {
   span : span;
   attr_info : attr_info;
@@ -750,11 +751,13 @@ and variant = {
           one controlled by [repr]). *)
 }
 
-and field = {
-  span : span;
-  attr_info : attr_info;
-  field_name : string option;
-  field_ty : ty;
+and variant_id = (VariantId.id[@visitors.opaque])
+
+(** Simplified layout of a single variant.
+
+    Maps fields to their offset within the layout. *)
+and variant_layout = {
+  field_offsets : int list;  (** The offset of each field. *)
 }
 [@@deriving
   show,

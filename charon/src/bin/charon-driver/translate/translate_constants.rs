@@ -120,18 +120,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     generics,
                     trait_refs
                 );
-                let global_id = self.register_global_decl_id(span, id);
-                let generics = self.translate_generic_args(
-                    span,
-                    generics,
-                    trait_refs,
-                    None,
-                    GenericsSource::item(global_id),
-                )?;
-                RawConstantExpr::Global(GlobalDeclRef {
-                    id: global_id,
-                    generics: Box::new(generics),
-                })
+                let global_ref = self.translate_global_decl_ref(span, id, generics, trait_refs)?;
+                RawConstantExpr::Global(global_ref)
             }
             ConstantExprKind::Borrow(v)
                 if let ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
@@ -166,7 +156,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 generics_impls: trait_refs,
                 method_impl: trait_info,
             } => {
-                let fn_ptr = self.translate_fn_ptr(span, fn_id, substs, trait_refs, trait_info)?;
+                let fn_ptr = self
+                    .translate_fn_ptr(span, fn_id, substs, trait_refs, trait_info)?
+                    .erase();
                 RawConstantExpr::FnPtr(fn_ptr)
             }
             ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),

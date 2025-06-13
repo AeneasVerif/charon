@@ -648,26 +648,7 @@ impl<'a> ComputeItemModifications<'a> {
             }
             modifications
         } else {
-            let mut modifications = self.compute_non_trait_modifications(item.generic_params());
-            // FIXME(#618): Trait method declarations have an implicit `Self` clause. We process it
-            // like a real clause.
-            if let AnyTransItem::Fun(FunDecl {
-                kind: ItemKind::TraitDecl { trait_ref, .. },
-                ..
-            })
-            | AnyTransItem::Global(GlobalDecl {
-                kind: ItemKind::TraitDecl { trait_ref, .. },
-                ..
-            }) = item
-            {
-                let trait_id = trait_ref.trait_id;
-                if self.ctx.translated.trait_decls.get(trait_id).is_some() {
-                    for path in self.compute_extra_params_for_trait(trait_id) {
-                        modifications.replace_path(path.clone());
-                    }
-                }
-            }
-            modifications
+            self.compute_non_trait_modifications(item.generic_params())
         }
     }
 
@@ -1021,27 +1002,7 @@ impl UpdateItemBody<'_> {
         for path in modifications.required_extra_params() {
             let mut path = path.clone();
             let base_tref = match path.tref.base {
-                BaseClause::SelfClause => {
-                    match &self_path {
-                        Some(self_path) => self_path,
-                        None => {
-                            // For traits we provide a `self_path`. The only other items that can
-                            // have `Self` modifications are method/assoc global declarations.
-                            // These are only referred to from a `TraitDecl`, so we know that their
-                            // `Self` actually refers to the current `Self`.
-                            match &args.target {
-                                GenericsSource::Item(AnyTransId::Fun(_))
-                                | GenericsSource::Item(AnyTransId::Global(_)) => {
-                                    &TraitRefKind::SelfId
-                                }
-                                target => unreachable!(
-                                    "Found unexpected target with a `Self` \
-                                    clause modification: {target:?}"
-                                ),
-                            }
-                        }
-                    }
-                }
+                BaseClause::SelfClause => self_path.as_ref().unwrap(),
                 BaseClause::Local(var) => {
                     let clause_id = var
                         .bound_at_depth(DeBruijnId::zero())
@@ -1053,7 +1014,6 @@ impl UpdateItemBody<'_> {
             let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
                 ty.clone()
             } else {
-                let mut path = path;
                 if let Some(tref) = base_tref.to_path() {
                     path = path.on_tref(&tref);
                 }
@@ -1062,7 +1022,7 @@ impl UpdateItemBody<'_> {
                 register_error!(
                     self.ctx,
                     self.span,
-                    "Could not compute the value of {path} needed to update \
+                    "Could not compute the value of {path} ({self_path:?}) needed to update \
                     generics {args:?} for item {item_name}.\
                     \nConstraints in scope:\n{}",
                     self.type_replacements
@@ -1209,10 +1169,11 @@ impl VisitAstMut for UpdateItemBody<'_> {
     fn enter_item_kind(&mut self, kind: &mut ItemKind) {
         match kind {
             ItemKind::TopLevel | ItemKind::Closure { .. } => {}
-            // Inside method declarations, we have access to the implicit `Self` clause.
-            ItemKind::TraitDecl { trait_ref, .. } => {
-                self.process_trait_decl_ref(trait_ref, TraitRefKind::SelfId)
-            }
+            // Inside method declarations, the implicit `Self` clause is the first clause.
+            ItemKind::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
+                trait_ref,
+                TraitRefKind::Clause(DeBruijnVar::new_at_zero(TraitClauseId::ZERO)),
+            ),
             ItemKind::TraitImpl {
                 impl_ref,
                 trait_ref,

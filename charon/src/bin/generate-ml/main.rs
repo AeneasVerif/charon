@@ -874,7 +874,19 @@ impl GenerateCodeFor {
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
         for (i, (kind, names)) in self.markers.iter().enumerate() {
-            let tys = names.iter().copied().sorted().map(|id| &ctx.crate_data[id]);
+            let tys = names
+                .iter()
+                .map(|&id| &ctx.crate_data[id])
+                .sorted_by_key(|tdecl| {
+                    tdecl
+                        .item_meta
+                        .name
+                        .name
+                        .last()
+                        .unwrap()
+                        .as_ident()
+                        .unwrap()
+                });
             let generated = match kind {
                 GenerationKind::OfJson => {
                     let fns = tys
@@ -971,11 +983,16 @@ fn main() -> Result<()> {
     if !reuse_llbc {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;
-        cmd.arg("--cargo-arg=--lib");
+        cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--ullbc");
+        cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
+        cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
+        cmd.arg("--exclude=charon_lib::common::hash_consing::HashConsed");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
+        cmd.arg("--");
+        cmd.arg("--lib");
         let output = cmd.output()?;
 
         if !output.status.success() {

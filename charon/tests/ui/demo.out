@@ -188,9 +188,9 @@ where
         },
     }
     storage_live(x@3)
-    x@3 := &(*(l@1) as variant @0).0
+    x@3 := &(*(l@1) as variant CList::CCons).0
     storage_live(tl@4)
-    tl@4 := &(*(l@1) as variant @0).1
+    tl@4 := &(*(l@1) as variant CList::CCons).1
     storage_live(@5)
     storage_live(@6)
     @6 := copy (i@2)
@@ -258,9 +258,9 @@ where
         },
     }
     storage_live(x@5)
-    x@5 := &mut (*(l@1) as variant @0).0
+    x@5 := &mut (*(l@1) as variant CList::CCons).0
     storage_live(tl@6)
-    tl@6 := &mut (*(l@1) as variant @0).1
+    tl@6 := &mut (*(l@1) as variant CList::CCons).1
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
@@ -333,9 +333,9 @@ where
         match *(l@1) {
             CList::CCons => {
                 storage_live(x@4)
-                x@4 := &mut (*(l@1) as variant @0).0
+                x@4 := &mut (*(l@1) as variant CList::CCons).0
                 storage_live(tl@5)
-                tl@5 := &mut (*(l@1) as variant @0).1
+                tl@5 := &mut (*(l@1) as variant CList::CCons).1
                 storage_live(@6)
                 storage_live(@7)
                 storage_live(@8)
@@ -435,7 +435,7 @@ where
     match *(l@1) {
         CList::CCons => {
             storage_live(tl@4)
-            tl@4 := &mut (*(l@1) as variant @0).1
+            tl@4 := &mut (*(l@1) as variant CList::CCons).1
             storage_live(@5)
             storage_live(@6)
             @6 := &two-phase-mut *(*(tl@4))

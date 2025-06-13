@@ -3,7 +3,14 @@ include BigInt
 
 include Uchar
 
-type integer_type =
+type float_type = F16 | F32 | F64 | F128
+
+(** This is simlar to the Scalar value above. However, instead of storing the
+    float value itself, we store its String representation. This allows to
+    derive the Eq and Ord traits, which are not implemented for floats *)
+and float_value = { float_value : string; float_ty : float_type }
+
+and integer_type =
   | Isize
   | I8
   | I16
@@ -17,15 +24,6 @@ type integer_type =
   | U64
   | U128
 
-and float_type = F16 | F32 | F64 | F128
-
-(** Types of primitive values. Either an integer, bool, char *)
-and literal_type =
-  | TInteger of integer_type
-  | TFloat of float_type
-  | TBool
-  | TChar
-
 (** A primitive value.
 
     Those are for instance used for the constant operands
@@ -38,6 +36,13 @@ and literal =
   | VByteStr of int list
   | VStr of string
 
+(** Types of primitive values. Either an integer, bool, char *)
+and literal_type =
+  | TInteger of integer_type
+  | TFloat of float_type
+  | TBool
+  | TChar
+
 (** A scalar value. *)
 and scalar_value = {
   (* Note that we use unbounded integers everywhere.
@@ -46,11 +51,6 @@ and scalar_value = {
   value : big_int;
   int_ty : integer_type;
 }
-
-(** This is simlar to the Scalar value above. However, instead of storing the
-    float value itself, we store its String representation. This allows to
-    derive the Eq and Ord traits, which are not implemented for floats *)
-and float_value = { float_value : string; float_ty : float_type }
 [@@deriving
   show,
   eq,

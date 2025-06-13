@@ -26,8 +26,8 @@ where
     parent_clause0 : [@TraitClause0]: Copy<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
     parent_clause2 : [@TraitClause2]: Clone<Self_Item>
-    fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item, Self_Item>[Self]
-    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item, Self_Item>[Self, @TraitClause0_0]
+    fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item>[Self]
+    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_0]
 }
 
 // Full name: core::option::Option
@@ -159,7 +159,7 @@ where
 }
 
 // Full name: test_crate::Foo::use_item_provided
-fn use_item_provided<'a, Self, Clause0_Item, Clause1_Item, Self_Item>(@1: Clause0_Item) -> Clause0_Item
+fn use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(@1: Clause0_Item) -> Clause0_Item
 where
     [@TraitClause0]: test_crate::Foo<'a, Self, Clause0_Item>,
     [@TraitClause1]: test_crate::Foo<'a, Clause0_Item, Clause1_Item>,
@@ -336,7 +336,7 @@ pub trait ToOwned<Self, Self_Owned>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self_Owned>
     parent_clause1 : [@TraitClause1]: Borrow<Self_Owned, Self>
-    fn to_owned<'_0> = to_owned<'_0_0, Self, Self_Owned, Self_Owned>[Self]
+    fn to_owned<'_0> = to_owned<'_0_0, Self, Self_Owned>[Self]
 }
 
 // Full name: test_crate::cow::Cow
@@ -371,13 +371,13 @@ where
     parent_clause2 = Sized<&'_ ((Option<T>[@TraitClause0], &'_ (())))>
 }
 
-fn test_crate::Foo::use_item_required<'a, Self, Clause0_Item, Self_Item>(@1: Clause0_Item) -> Clause0_Item
+fn test_crate::Foo::use_item_required<'a, Self, Clause0_Item>(@1: Clause0_Item) -> Clause0_Item
 where
     [@TraitClause0]: test_crate::Foo<'a, Self, Clause0_Item>,
 
 // Full name: alloc::borrow::ToOwned::to_owned
 #[lang_item("to_owned_method")]
-pub fn to_owned<'_0, Self, Clause0_Owned, Self_Owned>(@1: &'_0 (Self)) -> Clause0_Owned
+pub fn to_owned<'_0, Self, Clause0_Owned>(@1: &'_0 (Self)) -> Clause0_Owned
 where
     [@TraitClause0]: ToOwned<Self, Clause0_Owned>,
 

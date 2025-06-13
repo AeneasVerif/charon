@@ -435,12 +435,13 @@ impl TranslateOptions {
                 opacities.push((pat.to_string(), Invisible));
             }
 
-            // We always hide this trait.
-            opacities.push((format!("core::alloc::Allocator"), Invisible));
-            opacities.push((
-                format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
-                Invisible,
-            ));
+            if !options.raw_boxes {
+                opacities.push((format!("core::alloc::Allocator"), Invisible));
+                opacities.push((
+                    format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
+                    Invisible,
+                ));
+            }
 
             opacities
                 .into_iter()

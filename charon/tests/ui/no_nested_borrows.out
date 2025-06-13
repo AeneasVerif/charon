@@ -437,9 +437,9 @@ where
         },
     }
     storage_live(hd@2)
-    hd@2 := move ((l@1 as variant @0).0)
+    hd@2 := move ((l@1 as variant List::Cons).0)
     storage_live(tl@3)
-    tl@3 := move ((l@1 as variant @0).1)
+    tl@3 := move ((l@1 as variant List::Cons).1)
     storage_live(@4)
     @4 := move (hd@2)
     storage_live(@5)
