@@ -335,11 +335,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         &mut self,
         def_id: &hax::DefId,
     ) -> Result<TraitItemName, Error> {
-        // Translate the name
-        let name = self.def_id_to_name(def_id)?;
-        let (name, id) = name.name.last().unwrap().as_ident().unwrap();
-        assert!(id.is_zero());
-        Ok(TraitItemName(name.to_string()))
+        let def = self.hax_def(def_id)?;
+        let assoc = match def.kind() {
+            hax::FullDefKind::AssocTy {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocConst {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocFn {
+                associated_item, ..
+            } => associated_item,
+            _ => panic!("Unexpected def for associated item: {def:?}"),
+        };
+        Ok(TraitItemName(assoc.name.clone()))
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {

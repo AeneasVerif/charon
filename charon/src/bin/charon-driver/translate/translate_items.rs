@@ -179,10 +179,11 @@ impl ItemTransCtx<'_, '_> {
                     // consistently; to do once we have clearer `Self` clause handling.
                     let _ = self.register_fun_decl_id(span, implemented_trait_item);
                 }
+                let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitImpl {
                     impl_ref,
                     trait_ref,
-                    item_name: TraitItemName(assoc.name.clone()),
+                    item_name,
                     reuses_default: !overrides_default,
                 }
             }
@@ -197,7 +198,7 @@ impl ItemTransCtx<'_, '_> {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
                 let trait_ref = self.translate_trait_ref(span, trait_ref)?;
-                let item_name = TraitItemName(assoc.name.clone());
+                let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitDecl {
                     trait_ref,
                     item_name,
@@ -455,10 +456,10 @@ impl ItemTransCtx<'_, '_> {
         let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
             .iter()
             .map(|(item, def)| {
-                let name = TraitItemName(item.name.clone());
-                (name, item, def.clone())
+                let name = self.t_ctx.translate_trait_item_name(def.def_id())?;
+                Ok((name, item, def.clone()))
             })
-            .collect_vec();
+            .try_collect()?;
 
         // Translate the associated items
         // We do something subtle here: TODO: explain
@@ -752,7 +753,9 @@ impl ItemTransCtx<'_, '_> {
 
         for impl_item in impl_items {
             use hax::ImplAssocItemValue::*;
-            let name = TraitItemName(impl_item.name.clone());
+            let name = self
+                .t_ctx
+                .translate_trait_item_name(impl_item.decl_def.def_id())?;
             let item_def = impl_item.def(); // The impl item or the corresponding trait default.
             let item_span = self.def_span(&item_def.def_id);
             let item_def_id = &item_def.def_id;

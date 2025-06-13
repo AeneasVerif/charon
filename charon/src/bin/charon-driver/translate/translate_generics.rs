@@ -456,7 +456,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Also add the predicates on associated types.
                 // FIXME(gat): don't skip GATs.
                 // FIXME: don't mix up implied and required predicates.
-                for (item, item_def) in items {
+                for (_item, item_def) in items {
                     if let hax::FullDefKind::AssocTy {
                         param_env,
                         implied_predicates,
@@ -464,7 +464,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } = &item_def.kind
                         && param_env.generics.params.is_empty()
                     {
-                        let name = TraitItemName(item.name.clone());
+                        let name = self.t_ctx.translate_trait_item_name(item_def.def_id())?;
                         self.register_predicates(
                             &implied_predicates,
                             PredicateOrigin::TraitItem(name.clone()),
