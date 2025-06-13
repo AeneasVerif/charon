@@ -617,18 +617,18 @@ fn source_text() -> anyhow::Result<()> {
         .all_items()
         .map(|i| i.item_meta().source_text.as_ref().unwrap())
         .collect_vec();
-    assert_eq!(sources[0], "fn foo() {\n            panic!()\n        }");
+    assert_eq!(sources[0], "struct Foo { x: usize }");
     assert_eq!(
         sources[1],
-        "fn baz( x : usize )  ->() { \n            let _ = x;\n                }"
-    );
-    assert_eq!(sources[2], "fn quux () {}");
-    assert_eq!(sources[3], "struct Foo { x: usize }");
-    assert_eq!(
-        sources[4],
         "trait Trait {\n            fn method() {}\n        }"
     );
-    assert_eq!(sources[5], "impl Trait for () {}");
+    assert_eq!(sources[2], "impl Trait for () {}");
+    assert_eq!(sources[3], "fn foo() {\n            panic!()\n        }");
+    assert_eq!(
+        sources[4],
+        "fn baz( x : usize )  ->() { \n            let _ = x;\n                }"
+    );
+    assert_eq!(sources[5], "fn quux () {}");
     Ok(())
 }
 

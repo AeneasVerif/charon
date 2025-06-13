@@ -87,7 +87,6 @@ and gtranslated_crate_of_json
         [
           ("crate_name", name);
           ("options", options);
-          ("all_ids", _);
           ("item_names", _);
           ("short_names", _);
           ("files", files);

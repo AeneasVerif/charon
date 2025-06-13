@@ -1,8 +1,42 @@
 # Final LLBC before serialization:
 
+// Full name: core::ops::index::Index
+#[lang_item("index")]
+pub trait Index<Self, Idx>
+{
+    type Output
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+}
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+
+// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}#15::index
+pub fn {impl Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (@TraitClause2::Output)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Index<Slice<T>, I>,
+
+// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}#15
+impl<T, I, const N : usize> Index<I> for Array<T, const N : usize>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Index<Slice<T>, I>,
+{
+    type Output = @TraitClause2::Output
+    fn index<'_0> = {impl Index<I> for Array<T, const N : usize>}#15::index<'_0_0, T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+}
+
+fn core::slice::index::slice_end_index_len_fail::do_panic::runtime(@1: usize, @2: usize) -> !
+
+fn core::slice::index::slice_index_order_fail::do_panic::runtime(@1: usize, @2: usize) -> !
+
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: Index<Self, Idx>,
 
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
@@ -14,24 +48,6 @@ where
   end: Idx,
 }
 
-// Full name: core::ops::index::Index
-#[lang_item("index")]
-pub trait Index<Self, Idx>
-{
-    type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-}
-
-// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}#15::index
-pub fn {impl Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (@TraitClause2::Output)
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Index<Slice<T>, I>,
-
-// Full name: core::slice::index::private_slice_index::Sealed
-pub trait Sealed<Self>
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -41,6 +57,31 @@ where
   None,
   Some(T),
 }
+
+fn core::slice::index::slice_end_index_len_fail::do_panic(@1: usize, @2: usize) -> !
+{
+    let @0: !; // return
+    let index@1: usize; // arg #1
+    let len@2: usize; // arg #2
+
+    @0 := core::slice::index::slice_end_index_len_fail::do_panic::runtime(move (index@1), move (len@2))
+}
+
+fn core::slice::index::slice_index_order_fail::do_panic(@1: usize, @2: usize) -> !
+{
+    let @0: !; // return
+    let index@1: usize; // arg #1
+    let end@2: usize; // arg #2
+
+    @0 := core::slice::index::slice_index_order_fail::do_panic::runtime(move (index@1), move (end@2))
+}
+
+// Full name: core::panicking::panic_nounwind
+#[lang_item("panic_nounwind")]
+pub fn panic_nounwind(@1: &'static (Str)) -> !
+
+// Full name: core::slice::index::private_slice_index::Sealed
+pub trait Sealed<Self>
 
 // Full name: core::slice::index::SliceIndex
 #[lang_item("SliceIndex")]
@@ -86,8 +127,60 @@ where
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
+// Full name: core::slice::index::slice_end_index_len_fail
+fn slice_end_index_len_fail(@1: usize, @2: usize) -> !
+{
+    let @0: !; // return
+    let index@1: usize; // arg #1
+    let len@2: usize; // arg #2
+    let @3: usize; // anonymous local
+    let @4: usize; // anonymous local
+
+    storage_live(@3)
+    @3 := copy (index@1)
+    storage_live(@4)
+    @4 := copy (len@2)
+    @0 := core::slice::index::slice_end_index_len_fail::do_panic(move (@3), move (@4))
+}
+
+// Full name: core::slice::index::slice_index_order_fail
+fn slice_index_order_fail(@1: usize, @2: usize) -> !
+{
+    let @0: !; // return
+    let index@1: usize; // arg #1
+    let end@2: usize; // arg #2
+    let @3: usize; // anonymous local
+    let @4: usize; // anonymous local
+
+    storage_live(@3)
+    @3 := copy (index@1)
+    storage_live(@4)
+    @4 := copy (end@2)
+    @0 := core::slice::index::slice_index_order_fail::do_panic(move (@3), move (@4))
+}
+
 // Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[Sized<usize>]}#1
 impl Sealed for Range<usize>[Sized<usize>] {}
+
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[Sized<&'_0 mut (@TraitClause0::Output)>]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (@TraitClause0::Output)
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get
 pub fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[Sized<&'_0 (Slice<T>)>]
@@ -258,10 +351,6 @@ where
     storage_dead(@7)
     return
 }
-
-// Full name: core::panicking::panic_nounwind
-#[lang_item("panic_nounwind")]
-pub fn panic_nounwind(@1: &'static (Str)) -> !
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked::precondition_check
 fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
@@ -439,60 +528,6 @@ where
     @0 := @PtrFromPartsMut<'_, Slice<T>>(copy (@11), copy (new_len@8))
     storage_dead(@11)
     return
-}
-
-fn core::slice::index::slice_end_index_len_fail::do_panic::runtime(@1: usize, @2: usize) -> !
-
-fn core::slice::index::slice_end_index_len_fail::do_panic(@1: usize, @2: usize) -> !
-{
-    let @0: !; // return
-    let index@1: usize; // arg #1
-    let len@2: usize; // arg #2
-
-    @0 := core::slice::index::slice_end_index_len_fail::do_panic::runtime(move (index@1), move (len@2))
-}
-
-// Full name: core::slice::index::slice_end_index_len_fail
-fn slice_end_index_len_fail(@1: usize, @2: usize) -> !
-{
-    let @0: !; // return
-    let index@1: usize; // arg #1
-    let len@2: usize; // arg #2
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
-
-    storage_live(@3)
-    @3 := copy (index@1)
-    storage_live(@4)
-    @4 := copy (len@2)
-    @0 := core::slice::index::slice_end_index_len_fail::do_panic(move (@3), move (@4))
-}
-
-fn core::slice::index::slice_index_order_fail::do_panic::runtime(@1: usize, @2: usize) -> !
-
-fn core::slice::index::slice_index_order_fail::do_panic(@1: usize, @2: usize) -> !
-{
-    let @0: !; // return
-    let index@1: usize; // arg #1
-    let end@2: usize; // arg #2
-
-    @0 := core::slice::index::slice_index_order_fail::do_panic::runtime(move (index@1), move (end@2))
-}
-
-// Full name: core::slice::index::slice_index_order_fail
-fn slice_index_order_fail(@1: usize, @2: usize) -> !
-{
-    let @0: !; // return
-    let index@1: usize; // arg #1
-    let end@2: usize; // arg #2
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
-
-    storage_live(@3)
-    @3 := copy (index@1)
-    storage_live(@4)
-    @4 := copy (end@2)
-    @0 := core::slice::index::slice_index_order_fail::do_panic(move (@3), move (@4))
 }
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index
@@ -725,41 +760,6 @@ fn main()
     @0 := ()
     return
 }
-
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
-where
-    [@TraitClause0]: Index<Self, Idx>,
-
-// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}#15
-impl<T, I, const N : usize> Index<I> for Array<T, const N : usize>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Index<Slice<T>, I>,
-{
-    type Output = @TraitClause2::Output
-    fn index<'_0> = {impl Index<I> for Array<T, const N : usize>}#15::index<'_0_0, T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
-
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[Sized<&'_0 mut (@TraitClause0::Output)>]
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-
-pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (@TraitClause0::Output)
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
 
 
 

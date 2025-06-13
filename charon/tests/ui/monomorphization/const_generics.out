@@ -1,7 +1,23 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 struct test_crate::Foo::<bool> {
   value: bool,
+}
+
+struct test_crate::Foo::<i32> {
+  value: i32,
+}
+
+fn test_crate::FooInt() -> test_crate::Foo::<i32>
+{
+    let @0: test_crate::Foo::<i32>; // return
+
+    @0 := test_crate::Foo::<i32> { value: const (0 : i32) }
+    return
 }
 
 fn test_crate::FooBool() -> test_crate::Foo::<bool>
@@ -32,22 +48,6 @@ fn main()
     @0 := ()
     storage_dead(_b@1)
     @0 := ()
-    return
-}
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-struct test_crate::Foo::<i32> {
-  value: i32,
-}
-
-fn test_crate::FooInt() -> test_crate::Foo::<i32>
-{
-    let @0: test_crate::Foo::<i32>; // return
-
-    @0 := test_crate::Foo::<i32> { value: const (0 : i32) }
     return
 }
 

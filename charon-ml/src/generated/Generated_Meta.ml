@@ -117,6 +117,7 @@ and file_name =
 
 and file = {
   name : file_name;  (** The path to the file. *)
+  crate_name : string;  (** Name of the crate this file comes from. *)
   contents : string option;
       (** The contents of the source file, as seen by rustc at the time of
           translation. Some files don't have contents. *)

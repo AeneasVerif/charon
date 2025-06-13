@@ -253,6 +253,8 @@ pub enum FileName {
 pub struct File {
     /// The path to the file.
     pub name: FileName,
+    /// Name of the crate this file comes from.
+    pub crate_name: String,
     /// The contents of the source file, as seen by rustc at the time of translation.
     /// Some files don't have contents.
     pub contents: Option<String>,

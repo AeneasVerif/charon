@@ -1,5 +1,11 @@
 # Final LLBC before serialization:
 
+// Full name: core::fmt::Formatter
+#[lang_item("Formatter")]
+pub opaque type Formatter<'a>
+where
+    'a : 'a,
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -15,8 +21,26 @@ where
   Err(E),
 }
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Debug
+#[lang_item("Debug")]
+pub trait Debug<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+}
+
 // Full name: core::array::TryFromSliceError
 pub opaque type TryFromSliceError
+
+// Full name: core::array::{impl Debug for TryFromSliceError}#26::fmt
+pub fn {impl Debug for TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (TryFromSliceError), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: core::array::{impl Debug for TryFromSliceError}#26
+impl Debug for TryFromSliceError {
+    fn fmt<'_0, '_1, '_2> = {impl Debug for TryFromSliceError}#26::fmt<'_0_0, '_0_1, '_0_2>
+}
 
 // Full name: core::convert::TryFrom
 #[lang_item("TryFrom")]
@@ -28,13 +52,6 @@ pub trait TryFrom<Self, T>
     type Error
     fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
 }
-
-// Full name: core::convert::{impl TryInto<U> for T}#6::try_into
-pub fn {impl TryInto<U> for T}#6::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: TryFrom<U, T>,
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -70,6 +87,11 @@ where
     fn try_from = {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, T, const N : usize>[@TraitClause0, @TraitClause1]
 }
 
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
 // Full name: core::clone::impls::{impl Clone for u8}#6::clone
 pub fn {impl Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
@@ -79,25 +101,54 @@ impl Clone for u8 {
     fn clone<'_0> = {impl Clone for u8}#6::clone<'_0_0>
 }
 
+// Full name: core::convert::TryInto
+#[lang_item("TryInto")]
+pub trait TryInto<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
+    type Error
+    fn try_into = core::convert::TryInto::try_into<Self, T>[Self]
+}
+
+pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> Result<T, @TraitClause0::Error>[@TraitClause0::parent_clause1, @TraitClause0::parent_clause2]
+where
+    [@TraitClause0]: TryInto<Self, T>,
+
+#[lang_item("try_from_fn")]
+pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause0::parent_clause0, @TraitClause0::parent_clause2]
+where
+    [@TraitClause0]: TryFrom<Self, T>,
+
+// Full name: core::convert::{impl TryInto<U> for T}#6::try_into
+pub fn {impl TryInto<U> for T}#6::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: TryFrom<U, T>,
+
+// Full name: core::convert::{impl TryInto<U> for T}#6
+impl<T, U> TryInto<U> for T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: TryFrom<U, T>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    parent_clause2 = @TraitClause2::parent_clause2
+    type Error = @TraitClause2::Error
+    fn try_into = {impl TryInto<U> for T}#6::try_into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+}
+
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Debug<Self>,
+
 // Full name: core::marker::{impl Copy for u8}#38
 impl Copy for u8 {
     parent_clause0 = {impl Clone for u8}#6
-}
-
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
@@ -106,14 +157,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
     [@TraitClause2]: Debug<E>,
-
-// Full name: core::array::{impl Debug for TryFromSliceError}#26::fmt
-pub fn {impl Debug for TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (TryFromSliceError), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-
-// Full name: core::array::{impl Debug for TryFromSliceError}#26
-impl Debug for TryFromSliceError {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for TryFromSliceError}#26::fmt<'_0_0, '_0_1, '_0_2>
-}
 
 // Full name: test_crate::trait_error
 pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
@@ -137,49 +180,6 @@ pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
     @0 := ()
     return
 }
-
-// Full name: core::convert::TryInto
-#[lang_item("TryInto")]
-pub trait TryInto<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
-    type Error
-    fn try_into = core::convert::TryInto::try_into<Self, T>[Self]
-}
-
-pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> Result<T, @TraitClause0::Error>[@TraitClause0::parent_clause1, @TraitClause0::parent_clause2]
-where
-    [@TraitClause0]: TryInto<Self, T>,
-
-// Full name: core::convert::{impl TryInto<U> for T}#6
-impl<T, U> TryInto<U> for T
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: TryFrom<U, T>,
-{
-    parent_clause0 = @TraitClause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause2::parent_clause2
-    type Error = @TraitClause2::Error
-    fn try_into = {impl TryInto<U> for T}#6::try_into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
-
-#[lang_item("try_from_fn")]
-pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause0::parent_clause0, @TraitClause0::parent_clause2]
-where
-    [@TraitClause0]: TryFrom<Self, T>,
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: Debug<Self>,
 
 
 

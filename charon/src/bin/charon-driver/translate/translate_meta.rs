@@ -17,8 +17,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             Some(id) => *id,
             None => {
                 let source_file = self.tcx.sess.source_map().lookup_source_file(span.lo());
+                let crate_name = self.tcx.crate_name(source_file.cnum).to_string();
                 let file = File {
                     name: filename.clone(),
+                    crate_name,
                     contents: source_file.src.as_deref().cloned(),
                 };
                 let id = self.translated.files.push(file);

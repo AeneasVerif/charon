@@ -1,5 +1,77 @@
 # Final LLBC before serialization:
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Formatter
+#[lang_item("Formatter")]
+pub opaque type Formatter<'a>
+where
+    'a : 'a,
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::fmt::Display
+#[lang_item("Display")]
+pub trait Display<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+}
+
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Display<Self>,
+
+// Full name: core::fmt::{impl Display for Str}#19::fmt
+pub fn {impl Display for Str}#19::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: core::fmt::{impl Display for Str}#19
+impl Display for Str {
+    fn fmt<'_0, '_1, '_2> = {impl Display for Str}#19::fmt<'_0_0, '_0_1, '_0_2>
+}
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: alloc::string::ToString
+#[lang_item("ToString")]
+pub trait ToString<Self>
+{
+    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
+}
+
+#[lang_item("to_string_method")]
+pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> String
+where
+    [@TraitClause0]: ToString<Self>,
+
+// Full name: alloc::string::{impl ToString for T}#34::to_string
+pub fn {impl ToString for T}#34::to_string<'_0, T>(@1: &'_0 (T)) -> String
+where
+    [@TraitClause0]: Display<T>,
+
+// Full name: alloc::string::{impl ToString for T}#34
+impl<T> ToString for T
+where
+    [@TraitClause0]: Display<T>,
+{
+    fn to_string<'_0> = {impl ToString for T}#34::to_string<'_0_0, T>[@TraitClause0]
+}
+
 fn test_crate::FOO() -> &'static (Str)
 {
     let @0: &'_ (Str); // return
@@ -34,54 +106,6 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
 
 static test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
 
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
-
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::Display
-#[lang_item("Display")]
-pub trait Display<Self>
-{
-    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-}
-
-// Full name: alloc::string::{impl ToString for T}#34::to_string
-pub fn {impl ToString for T}#34::to_string<'_0, T>(@1: &'_0 (T)) -> String
-where
-    [@TraitClause0]: Display<T>,
-
-// Full name: core::fmt::{impl Display for Str}#19::fmt
-pub fn {impl Display for Str}#19::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-
-// Full name: core::fmt::{impl Display for Str}#19
-impl Display for Str {
-    fn fmt<'_0, '_1, '_2> = {impl Display for Str}#19::fmt<'_0_0, '_0_1, '_0_2>
-}
-
 // Full name: test_crate::main
 fn main()
 {
@@ -104,30 +128,6 @@ fn main()
     @0 := ()
     return
 }
-
-// Full name: alloc::string::ToString
-#[lang_item("ToString")]
-pub trait ToString<Self>
-{
-    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
-}
-
-#[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> String
-where
-    [@TraitClause0]: ToString<Self>,
-
-// Full name: alloc::string::{impl ToString for T}#34
-impl<T> ToString for T
-where
-    [@TraitClause0]: Display<T>,
-{
-    fn to_string<'_0> = {impl ToString for T}#34::to_string<'_0_0, T>[@TraitClause0]
-}
-
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: Display<Self>,
 
 
 

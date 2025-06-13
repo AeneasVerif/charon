@@ -5,7 +5,6 @@ use crate::pretty::FmtWithCtx;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
-use indexmap::IndexSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 use serde_map_to_array::HashMapToArray;
@@ -110,9 +109,6 @@ pub struct TranslatedCrate {
     #[drive(skip)]
     pub options: crate::options::CliOpts,
 
-    /// All the item ids, in the order in which we encountered them
-    #[drive(skip)]
-    pub all_ids: IndexSet<AnyTransId>,
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
     /// Invariant: after translation, any existing `AnyTransId` must have an associated name, even
@@ -175,22 +171,35 @@ impl TranslatedCrate {
         }
     }
 
-    pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
-        self.all_items_with_ids().map(|(_, item)| item)
+    pub fn all_ids(&self) -> impl Iterator<Item = AnyTransId> + use<> {
+        self.type_decls
+            .all_indices()
+            .map(AnyTransId::Type)
+            .chain(self.trait_decls.all_indices().map(AnyTransId::TraitDecl))
+            .chain(self.trait_impls.all_indices().map(AnyTransId::TraitImpl))
+            .chain(self.global_decls.all_indices().map(AnyTransId::Global))
+            .chain(self.fun_decls.all_indices().map(AnyTransId::Fun))
     }
-    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (AnyTransId, AnyTransItem<'_>)> {
-        self.all_ids
+    pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
+        self.type_decls
             .iter()
-            .flat_map(|id| Some((*id, self.get_item(*id)?)))
+            .map(AnyTransItem::Type)
+            .chain(self.trait_decls.iter().map(AnyTransItem::TraitDecl))
+            .chain(self.trait_impls.iter().map(AnyTransItem::TraitImpl))
+            .chain(self.global_decls.iter().map(AnyTransItem::Global))
+            .chain(self.fun_decls.iter().map(AnyTransItem::Fun))
     }
     pub fn all_items_mut(&mut self) -> impl Iterator<Item = AnyTransItemMut<'_>> {
         self.type_decls
             .iter_mut()
             .map(AnyTransItemMut::Type)
+            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
+            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
             .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
             .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
-            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
-            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
+    }
+    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (AnyTransId, AnyTransItem<'_>)> {
+        self.all_items().map(|item| (item.id(), item))
     }
 }
 

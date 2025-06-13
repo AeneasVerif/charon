@@ -4,6 +4,9 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: test_crate::opaque::Product
+pub trait Product<Self>
+
 // Full name: test_crate::opaque::Iterator
 pub trait Iterator<Self>
 
@@ -19,9 +22,6 @@ where
     @0 := ()
     return
 }
-
-// Full name: test_crate::opaque::Product
-pub trait Product<Self>
 
 
 

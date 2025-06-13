@@ -19,6 +19,14 @@ fn Some<T>(@1: T) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: alloc::string::{String}::new
+#[lang_item("string_new")]
+pub fn new() -> String
+
 fn test_crate::F() -> fn(u8) -> Option<u8>[Sized<u8>]
 {
     let @0: fn(u8) -> Option<u8>[Sized<u8>]; // return
@@ -29,22 +37,9 @@ fn test_crate::F() -> fn(u8) -> Option<u8>[Sized<u8>]
 
 static test_crate::F: fn(u8) -> Option<u8>[Sized<u8>] = test_crate::F()
 
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
-
 struct test_crate::Foo {
   u32,
   String,
-}
-
-// Full name: test_crate::Bar
-enum Bar<'a, T>
-where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
-{
-  Variant(&'a (T)),
 }
 
 fn test_crate::Foo(@1: u32, @2: String) -> test_crate::Foo
@@ -57,9 +52,14 @@ fn test_crate::Foo(@1: u32, @2: String) -> test_crate::Foo
     return
 }
 
-// Full name: alloc::string::{String}::new
-#[lang_item("string_new")]
-pub fn new() -> String
+// Full name: test_crate::Bar
+enum Bar<'a, T>
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+{
+  Variant(&'a (T)),
+}
 
 // Full name: test_crate::Bar::Variant
 fn Variant<'a, T>(@1: &'a (T)) -> Bar<'a, T>[@TraitClause0]

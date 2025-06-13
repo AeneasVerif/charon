@@ -4,8 +4,38 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::num::niche_types::UsizeNoHighBit
+pub opaque type UsizeNoHighBit
+
+pub fn core::num::{usize}#11::MAX() -> usize
+
+pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub opaque type NonNull<T>
+
+// Full name: core::ptr::unique::Unique
+#[lang_item("ptr_unique")]
+pub opaque type Unique<T>
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
 // Full name: alloc::raw_vec::RawVec
 opaque type RawVec<T, A>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::raw_vec::RawVecInner
+opaque type RawVecInner<A>
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one
+fn grow_one<'_0, T, A>(@1: &'_0 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -20,36 +50,6 @@ where
   buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
 }
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
-// Full name: alloc::raw_vec::RawVecInner
-opaque type RawVecInner<A>
-where
-    [@TraitClause0]: Sized<A>,
-
-// Full name: core::num::niche_types::UsizeNoHighBit
-pub opaque type UsizeNoHighBit
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
-
-pub fn core::num::{usize}#11::MAX() -> usize
-
-pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
-
-// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one
-fn grow_one<'_0, T, A>(@1: &'_0 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]))
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
-pub opaque type Unique<T>
 
 // Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push
 pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)

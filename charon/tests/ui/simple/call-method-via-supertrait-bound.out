@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 // Full name: test_crate::OtherTrait
 trait OtherTrait<Self>
 
@@ -15,9 +19,9 @@ trait HasMethod<Self>
     fn method<'_0> = test_crate::HasMethod::method<'_0_0, Self>[Self]
 }
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
+fn test_crate::HasMethod::method<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: HasMethod<Self>,
 
 // Full name: test_crate::{impl HasMethod for T}::method
 fn {impl HasMethod for T}::method<'_0, T>(@1: &'_0 (T))
@@ -64,10 +68,6 @@ where
     @0 := ()
     return
 }
-
-fn test_crate::HasMethod::method<'_0, Self>(@1: &'_0 (Self))
-where
-    [@TraitClause0]: HasMethod<Self>,
 
 
 

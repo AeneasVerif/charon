@@ -1,21 +1,8 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::Ops
-trait Ops<Self, const K : usize>
-{
-    fn of_usize = of_usize<Self, const K : usize>[Self]
-}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
-
-// Full name: test_crate::test::closure
-struct closure<T, const K : usize>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Ops<T, const K : usize>,
-{}
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -50,10 +37,31 @@ where
     [@TraitClause2]: FnMut<F, (usize)>,
     @TraitClause2::parent_clause0::Output = T,
 
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
+// Full name: test_crate::Ops
+trait Ops<Self, const K : usize>
+{
+    fn of_usize = of_usize<Self, const K : usize>[Self]
+}
+
 // Full name: test_crate::Ops::of_usize
 fn of_usize<Self, const K : usize>(@1: usize) -> Self
 where
     [@TraitClause0]: Ops<Self, const K : usize>,
+
+// Full name: test_crate::test::closure
+struct closure<T, const K : usize>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Ops<T, const K : usize>,
+{}
 
 // Full name: test_crate::test::{impl FnMut<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut
 fn {impl FnMut<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(@1: &'_0 mut (closure<T, const K : usize>[@TraitClause0, @TraitClause1]), @2: (usize)) -> T
@@ -134,14 +142,6 @@ where
     storage_dead(@1)
     return
 }
-
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
-where
-    [@TraitClause0]: FnMut<Self, Args>,
-
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 

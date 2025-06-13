@@ -1,50 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::cmp::Ordering
-#[lang_item("Ordering")]
-pub enum Ordering {
-  Less,
-  Equal,
-  Greater,
-}
-
-// Full name: core::cmp::impls::{impl Ord for i32}#77::cmp
-pub fn {impl Ord for i32}#77::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Ordering
-
-// Full name: test_crate::main
-fn main()
-{
-    let @0: (); // return
-    let x@1: i32; // local
-    let y@2: i32; // local
-    let @3: Ordering; // anonymous local
-    let @4: &'_ (i32); // anonymous local
-    let @5: &'_ (i32); // anonymous local
-    let @6: &'_ (i32); // anonymous local
-
-    storage_live(x@1)
-    x@1 := const (11 : i32)
-    storage_live(y@2)
-    y@2 := const (22 : i32)
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &x@1
-    storage_live(@5)
-    storage_live(@6)
-    @6 := &y@2
-    @5 := &*(@6)
-    @3 := {impl Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
-    storage_dead(@5)
-    storage_dead(@4)
-    storage_dead(@6)
-    storage_dead(@3)
-    @0 := ()
-    storage_dead(y@2)
-    storage_dead(x@1)
-    @0 := ()
-    return
-}
-
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
@@ -52,11 +7,24 @@ pub trait PartialEq<Self, Rhs>
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+}
+
+// Full name: core::cmp::Ordering
+#[lang_item("Ordering")]
+pub enum Ordering {
+  Less,
+  Equal,
+  Greater,
 }
 
 // Full name: core::marker::Sized
@@ -94,6 +62,11 @@ pub trait Ord<Self>
 pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
+
+#[lang_item("cmp_partialord_cmp")]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30::eq
 pub fn {impl PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
@@ -137,6 +110,9 @@ impl PartialOrd<i32> for i32 {
     fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
 }
 
+// Full name: core::cmp::impls::{impl Ord for i32}#77::cmp
+pub fn {impl Ord for i32}#77::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Ordering
+
 // Full name: core::cmp::impls::{impl Ord for i32}#77
 impl Ord for i32 {
     parent_clause0 = {impl Eq for i32}#49
@@ -144,15 +120,39 @@ impl Ord for i32 {
     fn cmp<'_0, '_1> = {impl Ord for i32}#77::cmp<'_0_0, '_0_1>
 }
 
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let x@1: i32; // local
+    let y@2: i32; // local
+    let @3: Ordering; // anonymous local
+    let @4: &'_ (i32); // anonymous local
+    let @5: &'_ (i32); // anonymous local
+    let @6: &'_ (i32); // anonymous local
 
-#[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
-where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
+    storage_live(x@1)
+    x@1 := const (11 : i32)
+    storage_live(y@2)
+    y@2 := const (22 : i32)
+    storage_live(@3)
+    storage_live(@4)
+    @4 := &x@1
+    storage_live(@5)
+    storage_live(@6)
+    @6 := &y@2
+    @5 := &*(@6)
+    @3 := {impl Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@6)
+    storage_dead(@3)
+    @0 := ()
+    storage_dead(y@2)
+    storage_dead(x@1)
+    @0 := ()
+    return
+}
 
 
 

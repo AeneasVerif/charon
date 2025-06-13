@@ -1,13 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::panic1
-fn panic1()
-{
-    let @0: (); // return
-
-    panic(core::panicking::panic_explicit)
-}
-
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
@@ -16,6 +8,24 @@ where
 
 // Full name: core::fmt::{Arguments<'a>}#4::new_const
 pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub opaque type Argument<'a>
+
+// Full name: core::fmt::{Arguments<'a>}#4::new_v1
+pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
+
+// Full name: core::fmt::rt::{Argument<'_0>}#1::none
+pub fn none<'_0>() -> Array<Argument<'_0>, 0 : usize>
+
+// Full name: test_crate::panic1
+fn panic1()
+{
+    let @0: (); // return
+
+    panic(core::panicking::panic_explicit)
+}
 
 // Full name: test_crate::panic2
 fn panic2()
@@ -37,16 +47,6 @@ fn panic2()
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
-// Full name: core::fmt::rt::{Argument<'_0>}#1::none
-pub fn none<'_0>() -> Array<Argument<'_0>, 0 : usize>
-
-// Full name: core::fmt::{Arguments<'a>}#4::new_v1
-pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
 // Full name: test_crate::panic3
 fn panic3()
