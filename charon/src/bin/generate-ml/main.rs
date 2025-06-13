@@ -983,7 +983,7 @@ fn main() -> Result<()> {
     if !reuse_llbc {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;
-        cmd.arg("--cargo-arg=--lib");
+        cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
@@ -991,6 +991,8 @@ fn main() -> Result<()> {
         cmd.arg("--exclude=charon_lib::common::hash_consing::HashConsed");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
+        cmd.arg("--");
+        cmd.arg("--lib");
         let output = cmd.output()?;
 
         if !output.status.success() {
