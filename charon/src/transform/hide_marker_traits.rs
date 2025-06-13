@@ -74,6 +74,8 @@ impl TransformPass for Transform {
                 "core::marker::Unpin",
                 "core::alloc::Allocator",
             ]
+        } else if ctx.options.raw_boxes {
+            &[]
         } else {
             &["core::alloc::Allocator"]
         };
