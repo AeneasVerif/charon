@@ -874,7 +874,19 @@ impl GenerateCodeFor {
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
         for (i, (kind, names)) in self.markers.iter().enumerate() {
-            let tys = names.iter().copied().sorted().map(|id| &ctx.crate_data[id]);
+            let tys = names
+                .iter()
+                .map(|&id| &ctx.crate_data[id])
+                .sorted_by_key(|tdecl| {
+                    tdecl
+                        .item_meta
+                        .name
+                        .name
+                        .last()
+                        .unwrap()
+                        .as_ident()
+                        .unwrap()
+                });
             let generated = match kind {
                 GenerationKind::OfJson => {
                     let fns = tys

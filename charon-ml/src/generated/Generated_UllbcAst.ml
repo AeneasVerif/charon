@@ -69,7 +69,8 @@ and switch =
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-type blocks = block list
+type block = { statements : statement list; terminator : terminator }
+and blocks = block list
 
 (** A raw terminator: a terminator without meta data. *)
 and raw_terminator =
@@ -94,8 +95,6 @@ and terminator = {
   content : raw_terminator;
   comments_before : string list;  (** Comments that precede this terminator. *)
 }
-
-and block = { statements : statement list; terminator : terminator }
 [@@deriving
   show,
   eq,

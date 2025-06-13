@@ -4,8 +4,10 @@ open Values
 open Expressions
 open Meta
 
+type block = { span : span; statements : statement list }
+
 (** A raw statement: a statement without meta data. *)
-type raw_statement =
+and raw_statement =
   | Assign of place * rvalue
       (** Assigns an [Rvalue] to a [Place]. e.g. [let y = x;] could become
           [y := move x] which is represented as
@@ -52,8 +54,6 @@ and statement = {
   content : raw_statement;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
-
-and block = { span : span; statements : statement list }
 
 and switch =
   | If of operand * block * block

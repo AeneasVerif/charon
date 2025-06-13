@@ -14,129 +14,44 @@ module LocalId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
-type place = { kind : place_kind; ty : ty }
+(** An aggregated ADT.
 
-and place_kind =
-  | PlaceLocal of local_id
-  | PlaceProjection of place * projection_elem
+    Note that ADTs are desaggregated at some point in MIR. For instance, if we
+    have in Rust:
+    {@rust[
+      ignore
+      let ls = Cons(hd, tl);
+    ]}
 
-(** Note that we don't have the equivalent of "downcasts". Downcasts are
-    actually necessary, for instance when initializing enumeration values: the
-    value is initially [Bottom], and we need a way of knowing the variant. For
-    example: [((_0 as Right).0: T2) = move _1;] In MIR, downcasts always happen
-    before field projections: in our internal language, we thus merge downcasts
-    and field projections. *)
-and projection_elem =
-  | Deref
-      (** Dereference a shared/mutable reference, a box, or a raw pointer. *)
-  | Field of field_proj_kind * field_id
-      (** Projection from ADTs (variants, structures). We allow projections to
-          be used as left-values and right-values. We should never have
-          projections to fields of symbolic variants (they should have been
-          expanded before through a match). *)
-  | ProjIndex of operand * bool
-      (** MIR imposes that the argument to an index projection be a local
-          variable, meaning that even constant indices into arrays are let-bound
-          as separate variables. We **eliminate** this variant in a micro-pass
-          for LLBC.
+    In MIR we have (yes, the discriminant update happens *at the end* for some
+    reason):
+    {@rust[
+      (ls as Cons).0 = move hd;
+      (ls as Cons).1 = move tl;
+      discriminant(ls) = 0; // assuming [Cons] is the variant of index 0
+    ]}
 
-          Fields:
-          - [offset]
-          - [from_end] *)
-  | Subslice of operand * operand * bool
-      (** Take a subslice of a slice or array. If [from_end] is [true] this is
-          [slice[from..slice.len() - to]], otherwise this is [slice[from..to]].
-          We **eliminate** this variant in a micro-pass for LLBC.
-
-          Fields:
-          - [from]
-          - [to]
-          - [from_end] *)
-
-and field_proj_kind =
-  | ProjAdt of type_decl_id * variant_id option
-  | ProjTuple of int
-      (** If we project from a tuple, the projection kind gives the arity of the
-          tuple. *)
-
-and borrow_kind =
-  | BShared
-  | BMut
-  | BTwoPhaseMut
-      (** See
-          <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.TwoPhaseBorrow>
-          and
-          <https://rustc-dev-guide.rust-lang.org/borrow_check/two_phase_borrows.html>
-      *)
-  | BShallow
-      (** Those are typically introduced when using guards in matches, to make
-          sure guards don't change the variant of an enum value while me match
-          over it.
-
-          See
-          <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.FakeBorrowKind.html#variant.Shallow>.
-      *)
-  | BUniqueImmutable
-      (** Data must be immutable but not aliasable. In other words you can't
-          mutate the data but you can mutate *through it*, e.g. if it points to
-          a [&mut T]. This is only used in closure captures, e.g.
-          {@rust[
-            let mut z = 3;
-            let x: &mut isize = &mut z;
-            let y = || *x += 5;
-          ]}
-          Here the captured variable can't be [&mut &mut x] since the [x]
-          binding is not mutable, yet we must be able to mutate what it points
-          to.
-
-          See
-          <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
-      *)
-
-(** Unary operation *)
-and unop =
-  | Not
-  | Neg
-      (** This can overflow. In practice, rust introduces an assert before (in
-          debug mode) to check that it is not equal to the minimum integer value
-          (for the proper type). *)
-  | PtrMetadata
-      (** Retreive the metadata part of a fat pointer. For slices, this
-          retreives their length. *)
-  | Cast of cast_kind
-      (** Casts are rvalues in MIR, but we treat them as unops. *)
-  | ArrayToSlice of ref_kind * ty * const_generic
-      (** Coercion from array (i.e., [T; N]) to slice.
-
-          **Remark:** We introduce this unop when translating from MIR, **then
-          transform** it to a function call in a micro pass. The type and the
-          scalar value are not *necessary* as we can retrieve them from the
-          context, but storing them here is very useful. The [RefKind] argument
-          states whethere we operate on a mutable or a shared borrow to an
-          array. *)
-
-(** Nullary operation *)
-and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
-
-(** For all the variants: the first type gives the source type, the second one
-    gives the destination type. *)
-and cast_kind =
-  | CastScalar of literal_type * literal_type
-      (** Conversion between types in [{Integer, Bool}] Remark: for now we don't
-          support conversions with Char. *)
-  | CastRawPtr of ty * ty
-  | CastFnPtr of ty * ty
-  | CastUnsize of ty * ty
-      (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
-          This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
-          coercions, behind a pointer (reference, [Box], or other type that
-          implements [CoerceUnsized]).
-
-          The special case of [&[T; N]] -> [&[T]] coercion is caught by
-          [UnOp::ArrayToSlice]. *)
-  | CastTransmute of ty * ty
-      (** Reinterprets the bits of a value of one type as another type, i.e.
-          exactly what [[std::mem::transmute]] does. *)
+    Rem.: in the Aeneas semantics, both cases are handled (in case of
+    desaggregated initialization, [ls] is initialized to [⊥], then this [⊥] is
+    expanded to [Cons (⊥, ⊥)] upon the first assignment, at which point we can
+    initialize the field 0, etc.). *)
+type aggregate_kind =
+  | AggregatedAdt of
+      type_id * variant_id option * field_id option * generic_args
+      (** A struct, enum or union aggregate. The [VariantId], if present,
+          indicates this is an enum and the aggregate uses that variant. The
+          [FieldId], if present, indicates this is a union and the aggregate
+          writes into that field. Otherwise this is a struct. *)
+  | AggregatedArray of ty * const_generic
+      (** We don't put this with the ADT cas because this is the only built-in
+          type with aggregates, and it is a primitive type. In particular, it
+          makes sense to treat it differently because it has a variable number
+          of fields. *)
+  | AggregatedRawPtr of ty * ref_kind
+      (** Construct a raw pointer from a pointer value, and its metadata (can be
+          unit, if building a thin pointer). The type is the type of the
+          pointee. We lower this to a builtin function call for LLBC in
+          [crate::transform::ops_to_function_calls]. *)
 
 (** Binary operations. *)
 and binop =
@@ -181,20 +96,39 @@ and binop =
       (** [BinOp(Cmp, a, b)] returns [-1u8] if [a < b], [0u8] if [a == b], and
           [1u8] if [a > b]. *)
 
-and operand =
-  | Copy of place
-  | Move of place
-  | Constant of constant_expr
-      (** Constant value (including constant and static variables) *)
+and borrow_kind =
+  | BShared
+  | BMut
+  | BTwoPhaseMut
+      (** See
+          <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.TwoPhaseBorrow>
+          and
+          <https://rustc-dev-guide.rust-lang.org/borrow_check/two_phase_borrows.html>
+      *)
+  | BShallow
+      (** Those are typically introduced when using guards in matches, to make
+          sure guards don't change the variant of an enum value while me match
+          over it.
 
-(** A function identifier. See [crate::ullbc_ast::Terminator] *)
-and fun_id =
-  | FRegular of fun_decl_id
-      (** A "regular" function (function local to the crate, external function
-          not treated as a primitive one). *)
-  | FBuiltin of builtin_fun_id
-      (** A primitive function, coming from a standard library (for instance:
-          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
+          See
+          <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.FakeBorrowKind.html#variant.Shallow>.
+      *)
+  | BUniqueImmutable
+      (** Data must be immutable but not aliasable. In other words you can't
+          mutate the data but you can mutate *through it*, e.g. if it points to
+          a [&mut T]. This is only used in closure captures, e.g.
+          {@rust[
+            let mut z = 3;
+            let x: &mut isize = &mut z;
+            let y = || *x += 5;
+          ]}
+          Here the captured variable can't be [&mut &mut x] since the [x]
+          binding is not mutable, yet we must be able to mutate what it points
+          to.
+
+          See
+          <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
+      *)
 
 (** An built-in function identifier, identifying a function coming from a
     standard library. *)
@@ -240,6 +174,45 @@ and builtin_index_op = {
           element. *)
 }
 
+(** For all the variants: the first type gives the source type, the second one
+    gives the destination type. *)
+and cast_kind =
+  | CastScalar of literal_type * literal_type
+      (** Conversion between types in [{Integer, Bool}] Remark: for now we don't
+          support conversions with Char. *)
+  | CastRawPtr of ty * ty
+  | CastFnPtr of ty * ty
+  | CastUnsize of ty * ty
+      (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
+          This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
+          coercions, behind a pointer (reference, [Box], or other type that
+          implements [CoerceUnsized]).
+
+          The special case of [&[T; N]] -> [&[T]] coercion is caught by
+          [UnOp::ArrayToSlice]. *)
+  | CastTransmute of ty * ty
+      (** Reinterprets the bits of a value of one type as another type, i.e.
+          exactly what [[std::mem::transmute]] does. *)
+
+and constant_expr = { value : raw_constant_expr; ty : ty }
+
+and field_proj_kind =
+  | ProjAdt of type_decl_id * variant_id option
+  | ProjTuple of int
+      (** If we project from a tuple, the projection kind gives the arity of the
+          tuple. *)
+
+and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
+
+(** A function identifier. See [crate::ullbc_ast::Terminator] *)
+and fun_id =
+  | FRegular of fun_decl_id
+      (** A "regular" function (function local to the crate, external function
+          not treated as a primitive one). *)
+  | FBuiltin of builtin_fun_id
+      (** A primitive function, coming from a standard library (for instance:
+          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
+
 and fun_id_or_trait_method_ref =
   | FunId of fun_id
   | TraitMethod of trait_ref * trait_item_name * fun_decl_id
@@ -247,7 +220,55 @@ and fun_id_or_trait_method_ref =
           The fun decl id is not really necessary - we put it here for
           convenience purposes. *)
 
-and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
+and local_id = (LocalId.id[@visitors.opaque])
+
+(** Nullary operation *)
+and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
+
+and operand =
+  | Copy of place
+  | Move of place
+  | Constant of constant_expr
+      (** Constant value (including constant and static variables) *)
+
+and place = { kind : place_kind; ty : ty }
+
+and place_kind =
+  | PlaceLocal of local_id
+  | PlaceProjection of place * projection_elem
+
+(** Note that we don't have the equivalent of "downcasts". Downcasts are
+    actually necessary, for instance when initializing enumeration values: the
+    value is initially [Bottom], and we need a way of knowing the variant. For
+    example: [((_0 as Right).0: T2) = move _1;] In MIR, downcasts always happen
+    before field projections: in our internal language, we thus merge downcasts
+    and field projections. *)
+and projection_elem =
+  | Deref
+      (** Dereference a shared/mutable reference, a box, or a raw pointer. *)
+  | Field of field_proj_kind * field_id
+      (** Projection from ADTs (variants, structures). We allow projections to
+          be used as left-values and right-values. We should never have
+          projections to fields of symbolic variants (they should have been
+          expanded before through a match). *)
+  | ProjIndex of operand * bool
+      (** MIR imposes that the argument to an index projection be a local
+          variable, meaning that even constant indices into arrays are let-bound
+          as separate variables. We **eliminate** this variant in a micro-pass
+          for LLBC.
+
+          Fields:
+          - [offset]
+          - [from_end] *)
+  | Subslice of operand * operand * bool
+      (** Take a subslice of a slice or array. If [from_end] is [true] this is
+          [slice[from..slice.len() - to]], otherwise this is [slice[from..to]].
+          We **eliminate** this variant in a micro-pass for LLBC.
+
+          Fields:
+          - [from]
+          - [to]
+          - [from_end] *)
 
 (** A constant expression.
 
@@ -299,8 +320,6 @@ and raw_constant_expr =
   | COpaque of string
       (** A constant expression that Charon still doesn't handle, along with the
           reason why. *)
-
-and constant_expr = { value : raw_constant_expr; ty : ty }
 
 (** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
     We can also factor out the unops, binops with the function calls. TODO: move
@@ -385,46 +404,27 @@ and rvalue =
           [Box::new()] in some cases. We reconstruct the original [Box::new()]
           call, but sometimes may fail to do so, leaking the expression. *)
 
-(** An aggregated ADT.
+(** Unary operation *)
+and unop =
+  | Not
+  | Neg
+      (** This can overflow. In practice, rust introduces an assert before (in
+          debug mode) to check that it is not equal to the minimum integer value
+          (for the proper type). *)
+  | PtrMetadata
+      (** Retreive the metadata part of a fat pointer. For slices, this
+          retreives their length. *)
+  | Cast of cast_kind
+      (** Casts are rvalues in MIR, but we treat them as unops. *)
+  | ArrayToSlice of ref_kind * ty * const_generic
+      (** Coercion from array (i.e., [T; N]) to slice.
 
-    Note that ADTs are desaggregated at some point in MIR. For instance, if we
-    have in Rust:
-    {@rust[
-      ignore
-      let ls = Cons(hd, tl);
-    ]}
-
-    In MIR we have (yes, the discriminant update happens *at the end* for some
-    reason):
-    {@rust[
-      (ls as Cons).0 = move hd;
-      (ls as Cons).1 = move tl;
-      discriminant(ls) = 0; // assuming [Cons] is the variant of index 0
-    ]}
-
-    Rem.: in the Aeneas semantics, both cases are handled (in case of
-    desaggregated initialization, [ls] is initialized to [⊥], then this [⊥] is
-    expanded to [Cons (⊥, ⊥)] upon the first assignment, at which point we can
-    initialize the field 0, etc.). *)
-and aggregate_kind =
-  | AggregatedAdt of
-      type_id * variant_id option * field_id option * generic_args
-      (** A struct, enum or union aggregate. The [VariantId], if present,
-          indicates this is an enum and the aggregate uses that variant. The
-          [FieldId], if present, indicates this is a union and the aggregate
-          writes into that field. Otherwise this is a struct. *)
-  | AggregatedArray of ty * const_generic
-      (** We don't put this with the ADT cas because this is the only built-in
-          type with aggregates, and it is a primitive type. In particular, it
-          makes sense to treat it differently because it has a variable number
-          of fields. *)
-  | AggregatedRawPtr of ty * ref_kind
-      (** Construct a raw pointer from a pointer value, and its metadata (can be
-          unit, if building a thin pointer). The type is the type of the
-          pointee. We lower this to a builtin function call for LLBC in
-          [crate::transform::ops_to_function_calls]. *)
-
-and local_id = (LocalId.id[@visitors.opaque])
+          **Remark:** We introduce this unop when translating from MIR, **then
+          transform** it to a function call in a micro pass. The type and the
+          scalar value are not *necessary* as we can retrieve them from the
+          context, but storing them here is very useful. The [RefKind] argument
+          states whethere we operate on a mutable or a shared borrow to an
+          array. *)
 [@@deriving
   show,
   eq,
