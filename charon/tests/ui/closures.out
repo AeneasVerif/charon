@@ -211,7 +211,7 @@ pub fn test_map_option1(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (incr_u32))
+    @0 := map_option<u32, incr_u32>[Sized<u32>, Sized<incr_u32>, Fn<incr_u32, (u32), u32>](move (@2), const (incr_u32))
     storage_dead(@2)
     return
 }
@@ -437,7 +437,7 @@ pub fn test_map_option_id1(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (id<u32>[Sized<u32>]))
+    @0 := map_option<u32, id<u32>[Sized<u32>]>[Sized<u32>, Sized<id<u32>[Sized<u32>]>, Fn<id<u32>[Sized<u32>], (u32), u32>](move (@2), const (id<u32>[Sized<u32>]))
     storage_dead(@2)
     return
 }
@@ -447,9 +447,9 @@ pub fn test_map_option_id2(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32
 {
     let @0: Option<u32>[Sized<u32>]; // return
     let x@1: Option<u32>[Sized<u32>]; // arg #1
-    let f@2: fn(u32) -> u32; // local
+    let f@2: id<u32>[Sized<u32>]; // local
     let @3: Option<u32>[Sized<u32>]; // anonymous local
-    let @4: fn(u32) -> u32; // anonymous local
+    let @4: id<u32>[Sized<u32>]; // anonymous local
 
     storage_live(f@2)
     f@2 := const (id<u32>[Sized<u32>])
@@ -457,7 +457,7 @@ pub fn test_map_option_id2(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (f@2)
-    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@3), move (@4))
+    @0 := map_option<u32, id<u32>[Sized<u32>]>[Sized<u32>, Sized<id<u32>[Sized<u32>]>, Fn<id<u32>[Sized<u32>], (u32), u32>](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
@@ -492,7 +492,7 @@ pub fn test_id_clone(@1: u32) -> u32
     let @4: u32; // anonymous local
 
     storage_live(f@2)
-    f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(const (id_clone<u32>[Sized<u32>, {impl Clone for u32}]))
+    f@2 := cast<id_clone<u32>[Sized<u32>, {impl Clone for u32}], fn(u32) -> u32>(const (id_clone<u32>[Sized<u32>, {impl Clone for u32}]))
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -517,7 +517,7 @@ where
     let @4: T; // anonymous local
 
     storage_live(f@2)
-    f@2 := cast<fn(T) -> T, fn(T) -> T>(const (id_clone<T>[@TraitClause0, @TraitClause1]))
+    f@2 := cast<id_clone<T>[@TraitClause0, @TraitClause1], fn(T) -> T>(const (id_clone<T>[@TraitClause0, @TraitClause1]))
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -539,7 +539,7 @@ pub fn test_map_option_id_clone(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Size
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (id_clone<u32>[Sized<u32>, {impl Clone for u32}]))
+    @0 := map_option<u32, id_clone<u32>[Sized<u32>, {impl Clone for u32}]>[Sized<u32>, Sized<id_clone<u32>[Sized<u32>, {impl Clone for u32}]>, Fn<id_clone<u32>[Sized<u32>, {impl Clone for u32}], (u32), u32>](move (@2), const (id_clone<u32>[Sized<u32>, {impl Clone for u32}]))
     storage_dead(@2)
     return
 }

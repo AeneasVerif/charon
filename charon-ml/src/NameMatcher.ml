@@ -998,6 +998,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       EArrow (inputs, output)
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
+  | TFnDef _ -> raise (Failure "Unimplemented: FnDef")
   | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")
   | TNever -> raise (Failure "Unimplemented: Never")
   | TError _ -> EVar None

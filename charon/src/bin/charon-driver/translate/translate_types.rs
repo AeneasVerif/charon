@@ -238,7 +238,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 trace!("PlaceHolder");
                 raise_error!(self, span, "Unsupported type: placeholder")
             }
-            hax::TyKind::Arrow(sig) | hax::TyKind::FnDef { fn_sig: sig, .. } => {
+
+            hax::TyKind::Arrow(sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
                 let sig = self.translate_region_binder(span, sig, |ctx, sig| {
@@ -252,10 +253,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })?;
                 TyKind::Arrow(sig)
             }
+            hax::TyKind::FnDef { item, .. } => {
+                let fnref: RegionBinder<MaybeBuiltinFunDeclRef> =
+                    self.translate_fun_decl_ref(span, item)?;
+                let fnref = fnref.map(|fref| FunDeclRef {
+                    id: *fref
+                        .id
+                        .as_regular()
+                        .expect("can't reference builtin function as a function pointer"),
+                    generics: fref.generics,
+                });
+                TyKind::FnDef(fnref)
+            }
             hax::TyKind::Closure(args) => {
                 let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
+
             hax::TyKind::Error => {
                 trace!("Error");
                 raise_error!(self, span, "Type checking error")
