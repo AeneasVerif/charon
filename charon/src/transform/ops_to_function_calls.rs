@@ -19,11 +19,10 @@ fn transform_st(s: &mut Statement) {
             };
             let func = FunIdOrTraitMethodRef::mk_builtin(id);
             let generics = GenericArgs::new(
-                vec![Region::Erased].into(),
-                vec![ty.clone()].into(),
-                vec![cg.clone()].into(),
-                vec![].into(),
-                GenericsSource::Builtin,
+                [Region::Erased].into(),
+                [ty.clone()].into(),
+                [cg.clone()].into(),
+                [].into(),
             );
             let func = FnOperand::Regular(FnPtr {
                 func: Box::new(func),
@@ -42,11 +41,10 @@ fn transform_st(s: &mut Statement) {
             let id = BuiltinFunId::ArrayRepeat;
             let func = FunIdOrTraitMethodRef::mk_builtin(id);
             let generics = GenericArgs::new(
-                vec![Region::Erased].into(),
-                vec![ty.clone()].into(),
-                vec![cg.clone()].into(),
-                vec![].into(),
-                GenericsSource::Builtin,
+                [Region::Erased].into(),
+                [ty.clone()].into(),
+                [cg.clone()].into(),
+                [].into(),
             );
             let func = FnOperand::Regular(FnPtr {
                 func: Box::new(func),
@@ -63,11 +61,10 @@ fn transform_st(s: &mut Statement) {
             let id = BuiltinFunId::PtrFromParts(is_mut.clone());
             let func = FunIdOrTraitMethodRef::mk_builtin(id);
             let generics = GenericArgs::new(
-                vec![Region::Erased].into(),
-                vec![ty.clone()].into(),
-                vec![].into(),
-                vec![].into(),
-                GenericsSource::Builtin,
+                [Region::Erased].into(),
+                [ty.clone()].into(),
+                [].into(),
+                [].into(),
             );
 
             let func = FnOperand::Regular(FnPtr {

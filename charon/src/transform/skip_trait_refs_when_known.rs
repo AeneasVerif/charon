@@ -10,10 +10,10 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
     let FunIdOrTraitMethodRef::Trait(trait_ref, name, _) = fn_ptr.func.as_ref() else {
         return;
     };
-    let TraitRefKind::TraitImpl(impl_id, impl_generics) = &trait_ref.kind else {
+    let TraitRefKind::TraitImpl(impl_ref) = &trait_ref.kind else {
         return;
     };
-    let Some(trait_impl) = &ctx.translated.trait_impls.get(*impl_id) else {
+    let Some(trait_impl) = &ctx.translated.trait_impls.get(impl_ref.id) else {
         return;
     };
     // Find the function declaration corresponding to this impl.
@@ -40,7 +40,7 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
         bound_fn.clone(),
     );
     // Substitute the appropriate generics into the function call.
-    let fn_ref = fn_ref.apply(impl_generics).apply(method_generics);
+    let fn_ref = fn_ref.apply(&impl_ref.generics).apply(method_generics);
     fn_ptr.generics = fn_ref.generics;
     fn_ptr.func = Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(fn_ref.id)));
 }

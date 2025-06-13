@@ -212,8 +212,8 @@ and existential_predicate = unit
 
 (** Reference to a function declaration. *)
 and fun_decl_ref = {
-  fun_id : fun_decl_id;
-  fun_generics : generic_args;  (** Generic arguments passed to the function. *)
+  id : fun_decl_id;
+  generics : generic_args;  (** Generic arguments passed to the function. *)
 }
 
 (** A set of generic arguments. *)
@@ -224,18 +224,8 @@ and generic_args = {
   trait_refs : trait_ref list;
 }
 
-(** Each [GenericArgs] is meant for a corresponding [GenericParams]; this
-    describes which one. *)
-and generics_source =
-  | GSItem of any_decl_id  (** A top-level item. *)
-  | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
-  | GSBuiltin  (** A builtin item like [Box]. *)
-
 (** Reference to a global declaration. *)
-and global_decl_ref = {
-  global_id : global_decl_id;
-  global_generics : generic_args;
-}
+and global_decl_ref = { id : global_decl_id; generics : generic_args }
 
 and ref_kind = RMut | RShared
 
@@ -268,16 +258,10 @@ and region_var = (region_id, string option) indexed_var
     ]}
 
     The substitution is: [[String, bool]]. *)
-and trait_decl_ref = {
-  trait_decl_id : trait_decl_id;
-  decl_generics : generic_args;
-}
+and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 
 (** A reference to a tait impl, using the provided arguments. *)
-and trait_impl_ref = {
-  trait_impl_id : trait_impl_id;
-  impl_generics : generic_args;
-}
+and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
 and trait_item_name = string
 
@@ -295,7 +279,7 @@ and trait_ref = {
     *trait instance*, which is why the [[TraitRefKind::Clause]] variant may seem
     redundant with some of the other variants. *)
 and trait_instance_id =
-  | TraitImpl of trait_impl_id * generic_args
+  | TraitImpl of trait_impl_ref
       (** A specific top-level implementation item. *)
   | Clause of trait_clause_id de_bruijn_var
       (** One of the local clauses.
@@ -359,7 +343,7 @@ and trait_instance_id =
   | UnknownTrait of string  (** For error reporting. *)
 
 and ty =
-  | TAdt of type_id * generic_args
+  | TAdt of type_decl_ref
       (** An ADT. Note that here ADTs are very general. They can be:
           - user-defined ADTs
           - tuples (including [unit], which is a 0-tuple)
@@ -413,6 +397,9 @@ and ty =
           limited generics: it only supports lifetime generics, not other kinds
           of generics. *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
+
+(** Reference to a type declaration or builtin type. *)
+and type_decl_ref = { id : type_id; generics : generic_args }
 
 (** Type identifier.
 

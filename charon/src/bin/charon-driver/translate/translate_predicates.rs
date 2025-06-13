@@ -201,7 +201,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, impl_def_id, generics, impl_exprs)?;
                 TraitRef {
-                    kind: TraitRefKind::TraitImpl(impl_ref.impl_id, impl_ref.generics),
+                    kind: TraitRefKind::TraitImpl(impl_ref),
                     trait_decl_ref,
                 }
             }
@@ -329,22 +329,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 closure_kind,
                             )
                         })?;
-                    let TraitImplRef { impl_id, generics } = binder.erase();
-                    TraitRefKind::TraitImpl(impl_id, generics)
+                    TraitRefKind::TraitImpl(binder.erase())
                 } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
                     let impl_id = self.register_trait_impl_id(span, trait_def_id);
-                    let mut generics = trait_decl_ref
-                        .clone()
-                        .erase()
-                        .generics
-                        .with_target(GenericsSource::item(impl_id));
+                    let mut generics = trait_decl_ref.clone().erase().generics;
                     assert!(
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
                     );
                     generics.trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                    TraitRefKind::TraitImpl(impl_id, Box::new(generics))
+                    TraitRefKind::TraitImpl(TraitImplRef {
+                        id: impl_id,
+                        generics,
+                    })
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types

@@ -181,6 +181,16 @@ and type_decl_id_to_string env def_id =
   | None -> type_decl_id_to_pretty_string def_id
   | Some def -> name_to_string env def.item_meta.name
 
+and type_decl_ref_to_string (env : 'a fmt_env) (tref : type_decl_ref) : string =
+  match tref.id with
+  | TTuple ->
+      let params, trait_refs = generic_args_to_strings env tref.generics in
+      "(" ^ String.concat ", " params ^ ")"
+  | id ->
+      let id = type_id_to_string env id in
+      let generics = generic_args_to_string env tref.generics in
+      id ^ generics
+
 and fun_decl_id_to_string (env : 'a fmt_env) (id : FunDeclId.id) : string =
   match FunDeclId.Map.find_opt id env.crate.fun_decls with
   | None -> fun_decl_id_to_pretty_string id
@@ -193,8 +203,8 @@ and global_decl_id_to_string env def_id =
 
 and global_decl_ref_to_string (env : 'a fmt_env) (gr : global_decl_ref) : string
     =
-  let global_id = global_decl_id_to_string env gr.global_id in
-  let generics = generic_args_to_string env gr.global_generics in
+  let global_id = global_decl_id_to_string env gr.id in
+  let generics = generic_args_to_string env gr.generics in
   global_id ^ generics
 
 and trait_decl_id_to_string env id =
@@ -207,6 +217,12 @@ and trait_impl_id_to_string env id =
   | None -> trait_impl_id_to_pretty_string id
   | Some def -> name_to_string env def.item_meta.name
 
+and trait_impl_ref_to_string (env : 'a fmt_env) (iref : trait_impl_ref) : string
+    =
+  let impl = trait_impl_id_to_string env iref.id in
+  let generics = generic_args_to_string env iref.generics in
+  impl ^ generics
+
 and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
   match cg with
   | CgGlobal id -> global_decl_id_to_string env id
@@ -215,14 +231,7 @@ and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with
-  | TAdt (id, generics) ->
-      let is_tuple =
-        match id with
-        | TTuple -> true
-        | _ -> false
-      in
-      let params = params_to_string env is_tuple generics in
-      type_id_to_string env id ^ params
+  | TAdt tref -> type_decl_ref_to_string env tref
   | TVar tv -> type_db_var_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
@@ -248,19 +257,6 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       inputs ^ ty_to_string env output
   | TDynTrait _ -> "dyn (TODO)"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"
-
-and params_to_string (env : 'a fmt_env) (is_tuple : bool)
-    (generics : generic_args) : string =
-  if is_tuple then
-    (* Remark: there shouldn't be any trait ref, but we still print them
-       because if there are we *want* to see them (for debugging purposes) *)
-    let params, trait_refs = generic_args_to_strings env generics in
-    let params = "(" ^ String.concat ", " params ^ ")" in
-    let trait_refs =
-      if trait_refs = [] then "" else "[" ^ String.concat ", " trait_refs ^ "]"
-    in
-    params ^ trait_refs
-  else generic_args_to_string env generics
 
 (** Return two lists:
     - one for the regions, types, const generics
@@ -290,18 +286,15 @@ and trait_ref_to_string (env : 'a fmt_env) (tr : trait_ref) : string =
   trait_instance_id_to_string env tr.trait_id
 
 and trait_decl_ref_to_string (env : 'a fmt_env) (tr : trait_decl_ref) : string =
-  let trait_id = trait_decl_id_to_string env tr.trait_decl_id in
-  let generics = generic_args_to_string env tr.decl_generics in
+  let trait_id = trait_decl_id_to_string env tr.id in
+  let generics = generic_args_to_string env tr.generics in
   trait_id ^ generics
 
 and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
     string =
   match id with
   | Self -> "Self"
-  | TraitImpl (id, generics) ->
-      let impl = trait_impl_id_to_string env id in
-      let generics = generic_args_to_string env generics in
-      impl ^ generics
+  | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
   | BuiltinOrAuto (trait, _, _) ->
       region_binder_to_string trait_decl_ref_to_string env trait
   | Clause id -> trait_db_var_to_string env id
@@ -328,10 +321,10 @@ and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
           let env = fmt_env_update_generics_and_preds env impl.generics in
           (* Put the first type argument aside (it gives the type for which we
              implement the trait) *)
-          let { trait_decl_id; decl_generics } = impl.impl_trait in
-          let ty, types = Collections.List.pop decl_generics.types in
-          let decl_generics = { decl_generics with types } in
-          let tr = { trait_decl_id; decl_generics } in
+          let { id; generics } : trait_decl_ref = impl.impl_trait in
+          let ty, types = Collections.List.pop generics.types in
+          let generics = { generics with types } in
+          let tr : trait_decl_ref = { id; generics } in
           let ty = ty_to_string env ty in
           let tr = trait_decl_ref_to_string env tr in
           tr ^ " for " ^ ty

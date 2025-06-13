@@ -217,44 +217,15 @@ impl BodyTransCtx<'_, '_, '_> {
                 // to disambiguate
                 let subplace = self.translate_place(span, hax_subplace)?;
                 let place = match kind {
-                    hax::ProjectionElem::Deref => {
-                        // We use the type to disambiguate
-                        match subplace.ty().kind() {
-                            TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {}
-                            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                                assert!(generics.regions.is_empty());
-                                assert!(generics.types.elem_count() == 1);
-                                assert!(generics.const_generics.is_empty());
-                            }
-                            TyKind::Adt(TypeId::Adt(_), generics) => {
-                                let hax_id = match hax_subplace.ty.kind() {
-                                    hax::TyKind::Adt { def_id, .. } => def_id,
-                                    _ => unreachable!(),
-                                };
-                                assert!(
-                                    self.get_lang_item(rustc_hir::LangItem::OwnedBox) == *hax_id
-                                );
-                                assert!(generics.regions.is_empty());
-                                assert!(generics.types.elem_count() == 2); // Box<T, A>
-                                assert!(generics.const_generics.is_empty());
-                            }
-                            _ => {
-                                unreachable!(
-                                    "\n- place.kind: {:?}\n- subplace.ty(): {:?}",
-                                    kind,
-                                    subplace.ty()
-                                )
-                            }
-                        }
-                        subplace.project(ProjectionElem::Deref, ty)
-                    }
+                    hax::ProjectionElem::Deref => subplace.project(ProjectionElem::Deref, ty),
                     hax::ProjectionElem::Field(field_kind) => {
                         use hax::ProjectionElemFieldKind::*;
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let (_, generics) = subplace.ty().kind().as_adt().unwrap();
+                                let tref = subplace.ty().kind().as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
-                                let proj_kind = FieldProjKind::Tuple(generics.types.elem_count());
+                                let proj_kind =
+                                    FieldProjKind::Tuple(tref.generics.types.elem_count());
                                 ProjectionElem::Field(proj_kind, field_id)
                             }
                             Adt {
@@ -264,47 +235,44 @@ impl BodyTransCtx<'_, '_, '_> {
                             } => {
                                 let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(translate_variant_id);
-                                match subplace.ty().kind() {
-                                    TyKind::Adt(TypeId::Adt(type_id), ..) => {
-                                        let proj_kind = FieldProjKind::Adt(*type_id, variant_id);
+                                let tref = subplace.ty().kind().as_adt().unwrap();
+                                let generics = &tref.generics;
+                                match tref.id {
+                                    TypeId::Adt(type_id) => {
+                                        let proj_kind = FieldProjKind::Adt(type_id, variant_id);
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    TyKind::Adt(TypeId::Tuple, generics) => {
+                                    TypeId::Tuple => {
                                         assert!(generics.regions.is_empty());
                                         assert!(variant.is_none());
                                         assert!(generics.const_generics.is_empty());
                                         let proj_kind =
                                             FieldProjKind::Tuple(generics.types.elem_count());
-
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
+                                    TypeId::Builtin(BuiltinTy::Box) => {
                                         // Some more sanity checks
                                         assert!(generics.regions.is_empty());
                                         assert!(generics.types.elem_count() == 1);
                                         assert!(generics.const_generics.is_empty());
                                         assert!(variant_id.is_none());
                                         assert!(field_id == FieldId::ZERO);
-
                                         ProjectionElem::Deref
                                     }
-                                    _ => {
-                                        raise_error!(self, span, "Unexpected field projection");
-                                    }
+                                    _ => raise_error!(self, span, "Unexpected field projection"),
                                 }
                             }
                             ClosureState(index) => {
                                 let field_id = translate_field_id(*index);
-                                let TyKind::Adt(TypeId::Adt(adt_id), _) = subplace.ty.kind() else {
-                                    unreachable!(
-                                        "Subplace of ClosureState must be a closure, got {:?}",
-                                        subplace.ty
-                                    )
-                                };
-                                ProjectionElem::Field(
-                                    FieldProjKind::Adt(adt_id.clone(), None),
-                                    field_id,
-                                )
+                                let type_id = *subplace
+                                    .ty
+                                    .kind()
+                                    .as_adt()
+                                    .expect("ClosureState projection should apply to an Adt type")
+                                    .id
+                                    .as_adt()
+                                    .unwrap();
+                                ProjectionElem::Field(FieldProjKind::Adt(type_id, None), field_id)
                             }
                         };
                         subplace.project(proj_elem, ty)
@@ -448,17 +416,12 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::Rvalue::Len(place) => {
                 let place = self.translate_place(span, place)?;
                 let ty = place.ty().clone();
-                let cg = match ty.kind() {
-                    TyKind::Adt(
-                        TypeId::Builtin(aty @ (BuiltinTy::Array | BuiltinTy::Slice)),
-                        generics,
-                    ) => {
-                        if aty.is_array() {
-                            Some(generics.const_generics[0].clone())
-                        } else {
-                            None
-                        }
+                let tref = ty.as_adt().unwrap();
+                let cg = match tref.id {
+                    TypeId::Builtin(BuiltinTy::Array) => {
+                        Some(tref.generics.const_generics[0].clone())
                     }
+                    TypeId::Builtin(BuiltinTy::Slice) => None,
                     _ => unreachable!(),
                 };
                 Ok(Rvalue::Len(place, ty, cg))
@@ -508,32 +471,26 @@ impl BodyTransCtx<'_, '_, '_> {
                     )),
                     hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize, ..) => {
                         let unop = if let (
-                            TyKind::Ref(
-                                _,
-                                deref!(TyKind::Adt(TypeId::Builtin(BuiltinTy::Array), generics)),
-                                kind1,
-                            ),
-                            TyKind::Ref(
-                                _,
-                                deref!(TyKind::Adt(TypeId::Builtin(BuiltinTy::Slice), generics1)),
-                                kind2,
-                            ),
+                            TyKind::Ref(_, deref!(TyKind::Adt(tref1)), kind1),
+                            TyKind::Ref(_, deref!(TyKind::Adt(tref2)), kind2),
                         ) = (src_ty.kind(), tgt_ty.kind())
+                            && matches!(tref1.id, TypeId::Builtin(BuiltinTy::Array))
+                            && matches!(tref2.id, TypeId::Builtin(BuiltinTy::Slice))
                         {
                             // In MIR terminology, we go from &[T; l] to &[T] which means we
                             // effectively "unsize" the type, as `l` no longer appears in the
                             // destination type. At runtime, the converse happens: the length
                             // materializes into the fat pointer.
                             assert!(
-                                generics.types.elem_count() == 1
-                                    && generics.const_generics.elem_count() == 1
+                                tref1.generics.types.elem_count() == 1
+                                    && tref1.generics.const_generics.elem_count() == 1
                             );
-                            assert!(generics.types[0] == generics1.types[0]);
+                            assert!(tref1.generics.types[0] == tref2.generics.types[0]);
                             assert!(kind1 == kind2);
                             UnOp::ArrayToSlice(
                                 *kind1,
-                                generics.types[0].clone(),
-                                generics.const_generics[0].clone(),
+                                tref1.generics.types[0].clone(),
+                                tref1.generics.const_generics[0].clone(),
                             )
                         } else {
                             UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone()))
@@ -580,7 +537,9 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             hax::Rvalue::Discriminant(place) => {
                 let place = self.translate_place(span, place)?;
-                if let TyKind::Adt(TypeId::Adt(adt_id), _) = *place.ty().kind() {
+                if let TyKind::Adt(tref) = place.ty().kind()
+                    && let TypeId::Adt(adt_id) = tref.id
+                {
                     Ok(Rvalue::Discriminant(place, adt_id))
                 } else {
                     raise_error!(
@@ -623,15 +582,13 @@ impl BodyTransCtx<'_, '_, '_> {
                             operands_t,
                         ))
                     }
-                    hax::AggregateKind::Tuple => Ok(Rvalue::Aggregate(
-                        AggregateKind::Adt(
-                            TypeId::Tuple,
-                            None,
-                            None,
-                            Box::new(GenericArgs::empty(GenericsSource::Builtin)),
-                        ),
-                        operands_t,
-                    )),
+                    hax::AggregateKind::Tuple => {
+                        let tref = TypeDeclRef::new(TypeId::Tuple, GenericArgs::empty());
+                        Ok(Rvalue::Aggregate(
+                            AggregateKind::Adt(tref, None, None),
+                            operands_t,
+                        ))
+                    }
                     hax::AggregateKind::Adt(
                         adt_id,
                         variant_idx,
@@ -655,8 +612,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
                         };
 
-                        let akind =
-                            AggregateKind::Adt(tref.id, variant_id, field_id, tref.generics);
+                        let akind = AggregateKind::Adt(tref, variant_id, field_id);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, closure_args) => {
@@ -667,7 +623,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         );
 
                         let tref = self.translate_closure_type_ref(span, def_id, closure_args)?;
-                        let akind = AggregateKind::Adt(tref.id, None, None, tref.generics);
+                        let akind = AggregateKind::Adt(tref, None, None);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::RawPtr(ty, is_mut) => {

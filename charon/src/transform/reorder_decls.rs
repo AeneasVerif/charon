@@ -224,10 +224,8 @@ impl Deps {
 
     fn set_impl_or_trait_id(&mut self, kind: &ItemKind) {
         match kind {
-            ItemKind::TraitDecl { trait_ref, .. } => {
-                self.parent_trait_decl = Some(trait_ref.trait_id)
-            }
-            ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.impl_id),
+            ItemKind::TraitDecl { trait_ref, .. } => self.parent_trait_decl = Some(trait_ref.id),
+            ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.id),
             _ => {}
         }
     }
@@ -362,7 +360,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
                 if let ItemKind::TraitDecl { trait_ref, .. } = &d.kind {
-                    graph.insert_edge(trait_ref.trait_id.into());
+                    graph.insert_edge(trait_ref.id.into());
                 }
             }
             AnyTransItem::TraitDecl(d) => {

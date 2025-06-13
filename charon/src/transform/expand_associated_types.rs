@@ -82,7 +82,7 @@ use macros::EnumAsGetters;
 
 use crate::{ast::*, formatter::IntoFormatter, ids::Vector, pretty::FmtWithCtx, register_error};
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{ctx::TransformPass, utils::GenericsSource, TransformCtx};
 
 /// Represent some `TraitRef`s as paths for easier manipulation.
 use trait_ref_path::*;
@@ -221,11 +221,11 @@ mod trait_ref_path {
                     path.parent_path.push(*id);
                     Some(path)
                 }
-                TraitRefKind::ItemClause(_, _, _, _) => unreachable!(),
-                TraitRefKind::TraitImpl(_, _)
+                TraitRefKind::ItemClause(..) => unreachable!(),
+                TraitRefKind::TraitImpl(..)
                 | TraitRefKind::BuiltinOrAuto { .. }
-                | TraitRefKind::Dyn(_)
-                | TraitRefKind::Unknown(_) => None,
+                | TraitRefKind::Dyn(..)
+                | TraitRefKind::Unknown(..) => None,
             }
         }
     }
@@ -776,7 +776,7 @@ impl<'a> ComputeItemModifications<'a> {
         clause: &TraitClause,
         clause_to_path: fn(TraitClauseId) -> TraitRefPath,
     ) -> impl Iterator<Item = AssocTypePath> + use<'b> {
-        let trait_id = clause.trait_.skip_binder.trait_id;
+        let trait_id = clause.trait_.skip_binder.id;
         let clause_path = clause_to_path(clause.clause_id);
         self.compute_extra_params_for_trait(trait_id)
             .map(move |path| path.on_tref(&clause_path))
@@ -788,8 +788,8 @@ impl<'a> ComputeItemModifications<'a> {
         &'b mut self,
         pred: &'b TraitDeclRef,
     ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'b> {
-        let _ = self.compute_extra_params_for_trait(pred.trait_id);
-        self.trait_modifications[pred.trait_id]
+        let _ = self.compute_extra_params_for_trait(pred.id);
+        self.trait_modifications[pred.id]
             .as_processed()
             .into_iter()
             .flat_map(|mods| mods.type_constraints.iter_self_paths_subst(&pred.generics))
@@ -848,9 +848,9 @@ impl<'a> ComputeItemModifications<'a> {
             | TraitRefKind::ItemClause(..)
             | TraitRefKind::SelfId
             | TraitRefKind::Unknown(_) => {}
-            TraitRefKind::TraitImpl(clause_impl_id, generics) => {
-                if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(*clause_impl_id) {
-                    out.extend(set_for_clause.iter_self_paths_subst(generics));
+            TraitRefKind::TraitImpl(impl_ref) => {
+                if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(impl_ref.id) {
+                    out.extend(set_for_clause.iter_self_paths_subst(&impl_ref.generics));
                 }
             }
             TraitRefKind::BuiltinOrAuto {
@@ -944,17 +944,17 @@ impl UpdateItemBody<'_> {
     fn lookup_path_on_trait_ref(&self, path: &AssocTypePath, tref: &TraitRefKind) -> Option<Ty> {
         assert!(path.tref.base.is_self_clause());
         match tref {
-            TraitRefKind::TraitImpl(impl_id, generics) => {
+            TraitRefKind::TraitImpl(impl_ref) => {
                 // The type constraints of trait impls already contain all relevant type
                 // equalities.
                 let (_, ty) = self
                     .item_modifications
-                    .get(&GenericsSource::item(*impl_id))?
+                    .get(&GenericsSource::item(impl_ref.id))?
                     .type_constraints
                     .find(path)?;
                 Some(
-                    ItemBinder::new(*impl_id, ty.clone())
-                        .substitute(ItemBinder::new(CurrentItem, generics))
+                    ItemBinder::new(impl_ref.id, ty.clone())
+                        .substitute(ItemBinder::new(CurrentItem, &impl_ref.generics))
                         .under_current_binder(),
                 )
             }
@@ -995,8 +995,13 @@ impl UpdateItemBody<'_> {
         }
     }
 
-    fn update_generics(&mut self, args: &mut GenericArgs, self_path: Option<TraitRefKind>) {
-        let Some(modifications) = self.item_modifications.get(&args.target) else {
+    fn update_generics(
+        &mut self,
+        args: &mut GenericArgs,
+        target: GenericsSource,
+        self_path: Option<TraitRefKind>,
+    ) {
+        let Some(modifications) = self.item_modifications.get(&target) else {
             return;
         };
         for path in modifications.required_extra_params() {
@@ -1018,7 +1023,7 @@ impl UpdateItemBody<'_> {
                     path = path.on_tref(&tref);
                 }
                 let fmt_ctx = &self.ctx.into_fmt();
-                let item_name = args.target.item_name(&self.ctx.translated, fmt_ctx);
+                let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
                 register_error!(
                     self.ctx,
                     self.span,
@@ -1036,6 +1041,9 @@ impl UpdateItemBody<'_> {
             args.types.push(ty);
         }
     }
+    fn update_item_generics(&mut self, id: impl Into<AnyTransId>, args: &mut GenericArgs) {
+        self.update_generics(args, GenericsSource::item(id), None);
+    }
 
     /// A `TraitDeclRef` must always be paired with a path in order to get access to the
     /// appropriate associated types. We therefore ignore the trait args in `enter_generic_args`,
@@ -1045,7 +1053,8 @@ impl UpdateItemBody<'_> {
     /// `TraitImpl`.
     fn process_trait_decl_ref(&mut self, tref: &mut TraitDeclRef, self_path: TraitRefKind) {
         trace!("{tref:?}");
-        self.update_generics(&mut tref.generics, Some(self_path));
+        let target = GenericsSource::item(tref.id);
+        self.update_generics(&mut tref.generics, target, Some(self_path));
     }
 
     /// See `process_trait_decl_ref`.
@@ -1063,6 +1072,7 @@ impl UpdateItemBody<'_> {
 }
 
 impl VisitAstMut for UpdateItemBody<'_> {
+    // Track binding levels.
     fn visit_binder<T: AstVisitable>(
         &mut self,
         binder: &mut Binder<T>,
@@ -1076,10 +1086,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         // Clauses may provide more type constraints.
         for clause in &generics.trait_clauses {
             if let Some(pred) = clause.trait_.skip_binder.clone().move_from_under_binder() {
-                if let Some(tmods) = self
-                    .item_modifications
-                    .get(&GenericsSource::item(pred.trait_id))
-                {
+                if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(pred.id)) {
                     for (path, ty) in tmods.type_constraints.iter_self_paths_subst(&pred.generics) {
                         let path = path.on_local_clause(clause.clause_id);
                         type_constraints.insert_path(&path, ty);
@@ -1089,7 +1096,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         }
         let mut modifications = ItemModifications::from_constraint_set(type_constraints, true);
         for clause in &generics.trait_clauses {
-            let trait_id = clause.trait_.skip_binder.trait_id;
+            let trait_id = clause.trait_.skip_binder.id;
             if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
                 for path in tmods.required_extra_params() {
                     let path = path.on_local_clause(clause.clause_id);
@@ -1109,7 +1116,6 @@ impl VisitAstMut for UpdateItemBody<'_> {
         });
         self.under_binder(replacements, |this| this.visit_inner(binder))
     }
-
     fn visit_region_binder<T: AstVisitable>(
         &mut self,
         binder: &mut RegionBinder<T>,
@@ -1117,38 +1123,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
         self.under_binder(Default::default(), |this| this.visit_inner(binder))
     }
 
-    fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
-        self.process_trait_decl_ref(&mut timpl.impl_trait, TraitRefKind::SelfId);
-    }
-
-    fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
-        for (clause_id, clause) in tdecl.parent_clauses.iter_mut_indexed() {
-            let self_path =
-                TraitRefKind::ParentClause(Box::new(TraitRefKind::SelfId), tdecl.def_id, clause_id);
-            self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
-        }
-    }
-
-    fn enter_generic_params(&mut self, params: &mut GenericParams) {
-        for (clause_id, clause) in params.trait_clauses.iter_mut_indexed() {
-            let self_path = TraitRefKind::Clause(DeBruijnVar::new_at_zero(clause_id));
-            self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
-        }
-    }
-
-    fn enter_generic_args(&mut self, args: &mut GenericArgs) {
-        if !matches!(args.target, GenericsSource::Item(AnyTransId::TraitDecl(..))) {
-            // To update `GenericArgs` that apply to traits we need to know the `TraitRef` they
-            // apply to. Hence we skip them here and we have to manually catch all these cases with
-            // `process_trait_decl_ref`.
-            self.update_generics(args, None);
-        }
-    }
-
+    // Process trait refs
     fn enter_trait_ref(&mut self, tref: &mut TraitRef) {
         self.process_poly_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
     }
-
     fn enter_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
         // There are some stray `TraitDeclRef`s that we have to update.
         // TODO: we should make `TraitRefKind` recursively contain full `TraitRef`s so we have the
@@ -1165,7 +1143,22 @@ impl VisitAstMut for UpdateItemBody<'_> {
             _ => {}
         }
     }
-
+    fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
+        self.process_trait_decl_ref(&mut timpl.impl_trait, TraitRefKind::SelfId);
+    }
+    fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
+        for (clause_id, clause) in tdecl.parent_clauses.iter_mut_indexed() {
+            let self_path =
+                TraitRefKind::ParentClause(Box::new(TraitRefKind::SelfId), tdecl.def_id, clause_id);
+            self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
+        }
+    }
+    fn enter_generic_params(&mut self, params: &mut GenericParams) {
+        for (clause_id, clause) in params.trait_clauses.iter_mut_indexed() {
+            let self_path = TraitRefKind::Clause(DeBruijnVar::new_at_zero(clause_id));
+            self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
+        }
+    }
     fn enter_item_kind(&mut self, kind: &mut ItemKind) {
         match kind {
             ItemKind::TopLevel | ItemKind::Closure { .. } => {}
@@ -1178,13 +1171,45 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 impl_ref,
                 trait_ref,
                 ..
-            } => self.process_trait_decl_ref(
-                trait_ref,
-                TraitRefKind::TraitImpl(impl_ref.impl_id, impl_ref.generics.clone()),
-            ),
+            } => self.process_trait_decl_ref(trait_ref, TraitRefKind::TraitImpl(impl_ref.clone())),
         }
     }
 
+    // Update item generics.
+    fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
+        match x.id {
+            TypeId::Adt(id) => self.update_item_generics(id, &mut x.generics),
+            TypeId::Tuple => {}
+            TypeId::Builtin(_) => {}
+        }
+    }
+    fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {
+        self.update_item_generics(x.id, &mut x.generics);
+    }
+    fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
+        match x.func.as_ref() {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
+                self.update_item_generics(*id, &mut x.generics)
+            }
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
+            FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
+                let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
+                self.update_generics(
+                    &mut x.generics,
+                    GenericsSource::Method(trait_id, method_name.clone()),
+                    None,
+                );
+            }
+        }
+    }
+    fn enter_global_decl_ref(&mut self, x: &mut GlobalDeclRef) {
+        self.update_item_generics(x.id, &mut x.generics);
+    }
+    fn enter_trait_impl_ref(&mut self, x: &mut TraitImplRef) {
+        self.update_item_generics(x.id, &mut x.generics);
+    }
+
+    // Normalize associated types.
     fn enter_ty_kind(&mut self, kind: &mut TyKind) {
         if let TyKind::TraitType(tref, name) = kind {
             let path = TraitRefPath::self_ref().with_assoc_type(name.clone());
@@ -1196,17 +1221,15 @@ impl VisitAstMut for UpdateItemBody<'_> {
         }
     }
 
+    // Track span for more precise error messages.
     fn visit_ullbc_statement(&mut self, st: &mut ullbc_ast::Statement) -> ControlFlow<Self::Break> {
-        // Track span for more precise error messages.
         let old_span = self.span;
         self.span = st.span;
         self.visit_inner(st)?;
         self.span = old_span;
         Continue(())
     }
-
     fn visit_llbc_statement(&mut self, st: &mut llbc_ast::Statement) -> ControlFlow<Self::Break> {
-        // Track span for more precise error messages.
         let old_span = self.span;
         self.span = st.span;
         self.visit_inner(st)?;
@@ -1258,10 +1281,8 @@ impl TransformPass for Transform {
                 let self_tref = TraitRef {
                     kind: TraitRefKind::SelfId,
                     trait_decl_ref: RegionBinder::empty(TraitDeclRef {
-                        trait_id: tr.def_id,
-                        generics: Box::new(
-                            tr.generics.identity_args(GenericsSource::item(tr.def_id)),
-                        ),
+                        id: tr.def_id,
+                        generics: Box::new(tr.generics.identity_args()),
                     }),
                 };
                 modifications.compute_replacements(|path| {
@@ -1293,7 +1314,7 @@ impl TransformPass for Transform {
 
             // Adjust impl associated types.
             if let AnyTransItemMut::TraitImpl(timpl) = &mut item {
-                let trait_id = timpl.impl_trait.trait_id;
+                let trait_id = timpl.impl_trait.id;
                 if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
                     if decl_modifs.add_type_params {
                         timpl.types.clear();

@@ -12,7 +12,7 @@ impl TransformPass for Transform {
             let Some(timpl) = ctx.translated.trait_impls.get_mut(impl_id) else {
                 continue;
             };
-            let Some(tdecl) = ctx.translated.trait_decls.get(timpl.impl_trait.trait_id) else {
+            let Some(tdecl) = ctx.translated.trait_decls.get(timpl.impl_trait.id) else {
                 continue;
             };
             if tdecl.methods.len() == timpl.methods.len() {
@@ -21,18 +21,11 @@ impl TransformPass for Transform {
 
             // A `TraitRef` that points to this impl with the correct generics.
             let self_impl_ref = TraitImplRef {
-                impl_id: timpl.def_id,
-                generics: Box::new(
-                    timpl
-                        .generics
-                        .identity_args(GenericsSource::item(timpl.def_id)),
-                ),
+                id: timpl.def_id,
+                generics: Box::new(timpl.generics.identity_args()),
             };
             let self_predicate = TraitRef {
-                kind: TraitRefKind::TraitImpl(
-                    self_impl_ref.impl_id,
-                    self_impl_ref.generics.clone(),
-                ),
+                kind: TraitRefKind::TraitImpl(self_impl_ref.clone()),
                 trait_decl_ref: RegionBinder::empty(timpl.impl_trait.clone()),
             };
             // Map of methods we already have in the impl.
@@ -75,19 +68,9 @@ impl TransformPass for Transform {
                         generics: Box::new(
                             timpl
                                 .generics
-                                .identity_args_at_depth(
-                                    GenericsSource::item(timpl.def_id),
-                                    DeBruijnId::one(),
-                                )
+                                .identity_args_at_depth(DeBruijnId::one())
                                 .concat(
-                                    GenericsSource::item(new_fun_id),
-                                    &bound_fn.params.identity_args_at_depth(
-                                        GenericsSource::Method(
-                                            timpl.impl_trait.trait_id.into(),
-                                            name.clone(),
-                                        ),
-                                        DeBruijnId::zero(),
-                                    ),
+                                    &bound_fn.params.identity_args_at_depth(DeBruijnId::zero()),
                                 ),
                         ),
                     },

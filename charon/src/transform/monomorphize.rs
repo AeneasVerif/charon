@@ -57,13 +57,13 @@ impl TranslatedCrate {
         kind: &TraitRefKind,
     ) -> Option<(&TraitImpl, GenericArgs)> {
         match kind {
-            TraitRefKind::TraitImpl(impl_id, gargs) => {
-                let trait_impl = self.trait_impls.get(*impl_id).unwrap();
-                Some((trait_impl, (**gargs).clone()))
+            TraitRefKind::TraitImpl(impl_ref) => {
+                let trait_impl = self.trait_impls.get(impl_ref.id)?;
+                Some((trait_impl, impl_ref.generics.as_ref().clone()))
             }
             TraitRefKind::ParentClause(p, _, clause) => {
                 let (trait_impl, _) = self.find_trait_impl_and_gargs(p)?;
-                let t_ref = trait_impl.parent_trait_refs.get(*clause).unwrap();
+                let t_ref = trait_impl.parent_trait_refs.get(*clause)?;
                 self.find_trait_impl_and_gargs(&t_ref.kind)
             }
             _ => None,
@@ -89,8 +89,13 @@ impl UsageVisitor<'_> {
             .entry((*id, gargs.clone()))
             .or_insert(default);
     }
-    fn found_use_ty(&mut self, id: &TypeDeclId, gargs: &GenericArgs) {
-        self.found_use(&AnyTransId::Type(*id), gargs, OptionHint::None);
+    fn found_use_ty(&mut self, tref: &TypeDeclRef) {
+        match tref.id {
+            TypeId::Adt(id) => {
+                self.found_use(&AnyTransId::Type(id), &tref.generics, OptionHint::None)
+            }
+            _ => {}
+        }
     }
     fn found_use_fn(&mut self, id: &FunDeclId, gargs: &GenericArgs) {
         self.found_use(&AnyTransId::Fun(*id), gargs, OptionHint::None);
@@ -119,15 +124,15 @@ impl VisitAst for UsageVisitor<'_> {
 
     fn enter_aggregate_kind(&mut self, kind: &AggregateKind) {
         match kind {
-            AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),
+            AggregateKind::Adt(tref, _, _) => self.found_use_ty(tref),
             _ => {}
         }
     }
 
     fn enter_ty_kind(&mut self, kind: &TyKind) {
         match kind {
-            TyKind::Adt(TypeId::Adt(id), gargs) => {
-                self.found_use_ty(id, gargs);
+            TyKind::Adt(tref) => {
+                self.found_use_ty(tref);
             }
             _ => {}
         }
@@ -153,10 +158,10 @@ impl VisitAst for UsageVisitor<'_> {
                 // This is the actual function we need to call!
                 // Whereas id is the trait method reference(?)
                 let fn_ref = fn_ref.apply(&impl_gargs).apply(&fn_ptr.generics);
-                let gargs_key = fn_ptr.generics.clone().concat(
-                    GenericsSource::Builtin,
-                    &t_ref.trait_decl_ref.skip_binder.generics,
-                );
+                let gargs_key = fn_ptr
+                    .generics
+                    .clone()
+                    .concat(&t_ref.trait_decl_ref.skip_binder.generics);
                 self.found_use_fn_hinted(&id, &gargs_key, (fn_ref.id, fn_ref.generics))
             }
             // These can't be monomorphized, since they're builtins
@@ -191,13 +196,18 @@ impl SubstVisitor<'_> {
             && let Some(subst_id) = of(any_id)
         {
             *id = *subst_id;
-            *gargs = GenericArgs::empty(GenericsSource::Builtin);
+            *gargs = GenericArgs::empty();
         } else {
             warn!("Substitution missing for {:?} / {:?}", id, gargs);
         }
     }
-    fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
-        self.subst_use(id, gargs, AnyTransId::as_type);
+    fn subst_use_ty(&mut self, tref: &mut TypeDeclRef) {
+        match &mut tref.id {
+            TypeId::Adt(id) => {
+                self.subst_use(id, &mut tref.generics, AnyTransId::as_type);
+            }
+            _ => {}
+        }
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         self.subst_use(id, gargs, AnyTransId::as_fun);
@@ -210,7 +220,8 @@ impl SubstVisitor<'_> {
 impl VisitAstMut for SubstVisitor<'_> {
     fn exit_rvalue(&mut self, rval: &mut Rvalue) {
         if let Rvalue::Discriminant(place, id) = rval
-            && let Some((TypeId::Adt(new_enum_id), _)) = place.ty.as_adt()
+            && let Some(tref) = place.ty.as_adt()
+            && let TypeId::Adt(new_enum_id) = tref.id
         {
             // Small trick; the discriminant doesn't carry the information on the
             // generics of the enum, since it's irrelevant, but we need it to do
@@ -221,16 +232,14 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
-            AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.subst_use_ty(id, gargs),
+            AggregateKind::Adt(tref, _, _) => self.subst_use_ty(tref),
             _ => {}
         }
     }
 
     fn enter_ty_kind(&mut self, kind: &mut TyKind) {
         match kind {
-            TyKind::Adt(TypeId::Adt(id), gargs) => {
-                self.subst_use_ty(id, gargs);
-            }
+            TyKind::Adt(tref) => self.subst_use_ty(tref),
             _ => {}
         }
     }
@@ -241,10 +250,10 @@ impl VisitAstMut for SubstVisitor<'_> {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }
             FunIdOrTraitMethodRef::Trait(t_ref, _, fun_id) => {
-                let mut gargs_key = fn_ptr.generics.clone().concat(
-                    GenericsSource::Builtin,
-                    &t_ref.trait_decl_ref.skip_binder.generics,
-                );
+                let mut gargs_key = fn_ptr
+                    .generics
+                    .clone()
+                    .concat(&t_ref.trait_decl_ref.skip_binder.generics);
                 self.subst_use_fun(fun_id, &mut gargs_key);
                 fn_ptr.generics = Box::new(gargs_key);
             }
@@ -259,8 +268,8 @@ impl VisitAstMut for SubstVisitor<'_> {
             PlaceKind::Projection(inner, ProjectionElem::Field(FieldProjKind::Adt(id, _), _)) => {
                 // Trick, we don't know the generics but the projected place does, so
                 // we substitute it there, then update our current id.
-                let (inner_id, _) = inner.ty.as_adt().unwrap();
-                *id = *inner_id.as_adt().unwrap()
+                let tref = inner.ty.as_adt().unwrap();
+                *id = *tref.id.as_adt().unwrap()
             }
             _ => {}
         }
@@ -379,7 +388,7 @@ impl TransformPass for Transform {
         // Final list of monomorphized items: { (poly item, generic args) -> mono item }
         let mut data = PassData::new();
 
-        let empty_gargs = GenericArgs::empty(GenericsSource::Builtin);
+        let empty_gargs = GenericArgs::empty();
 
         // Find the roots of the mono item graph
         for (id, item) in ctx.translated.all_items_with_ids() {

@@ -1,8 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
-use crate::formatter::FmtCtx;
 use crate::ids::Vector;
-use crate::pretty::FmtWithCtx;
 use derive_generic_visitor::*;
 use std::collections::HashSet;
 use std::convert::Infallible;
@@ -95,12 +93,12 @@ impl GenericParams {
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
     /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
-    pub fn identity_args(&self, target: GenericsSource) -> GenericArgs {
-        self.identity_args_at_depth(target, DeBruijnId::zero())
+    pub fn identity_args(&self) -> GenericArgs {
+        self.identity_args_at_depth(DeBruijnId::zero())
     }
 
     /// Like `identity_args` but uses variables bound at the given depth.
-    pub fn identity_args_at_depth(&self, target: GenericsSource, depth: DeBruijnId) -> GenericArgs {
+    pub fn identity_args_at_depth(&self, depth: DeBruijnId) -> GenericArgs {
         GenericArgs {
             regions: self
                 .regions
@@ -114,7 +112,6 @@ impl GenericParams {
             trait_refs: self
                 .trait_clauses
                 .map_ref(|clause| clause.identity_tref_at_depth(depth)),
-            target,
         }
     }
 }
@@ -298,7 +295,7 @@ impl<T> RegionBinder<T> {
     {
         let args = GenericArgs {
             regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
-            ..GenericArgs::empty(GenericsSource::Other)
+            ..GenericArgs::empty()
         };
         self.skip_binder.substitute(&args)
     }
@@ -311,7 +308,6 @@ impl GenericArgs {
             types,
             const_generics,
             trait_refs,
-            target: _,
         } = self;
         regions.elem_count()
             + types.elem_count()
@@ -331,20 +327,19 @@ impl GenericArgs {
         !self.trait_refs.is_empty()
     }
 
-    pub fn empty(target: GenericsSource) -> Self {
+    pub fn empty() -> Self {
         GenericArgs {
             regions: Default::default(),
             types: Default::default(),
             const_generics: Default::default(),
             trait_refs: Default::default(),
-            target,
         }
     }
 
     pub fn new_for_builtin(types: Vector<TypeVarId, Ty>) -> Self {
         GenericArgs {
             types,
-            ..Self::empty(GenericsSource::Builtin)
+            ..Self::empty()
         }
     }
 
@@ -353,28 +348,20 @@ impl GenericArgs {
         types: Vector<TypeVarId, Ty>,
         const_generics: Vector<ConstGenericVarId, ConstGeneric>,
         trait_refs: Vector<TraitClauseId, TraitRef>,
-        target: GenericsSource,
     ) -> Self {
         Self {
             regions,
             types,
             const_generics,
             trait_refs,
-            target,
         }
     }
 
-    pub fn new_types(types: Vector<TypeVarId, Ty>, target: GenericsSource) -> Self {
+    pub fn new_types(types: Vector<TypeVarId, Ty>) -> Self {
         Self {
             types,
-            ..Self::empty(target)
+            ..Self::empty()
         }
-    }
-
-    /// Changes the target.
-    pub fn with_target(mut self, target: GenericsSource) -> Self {
-        self.target = target;
-        self
     }
 
     /// Check whether this matches the given `GenericParams`.
@@ -400,45 +387,18 @@ impl GenericArgs {
 
     /// Concatenate this set of arguments with another one. Use with care, you must manage the
     /// order of arguments correctly.
-    pub fn concat(mut self, target: GenericsSource, other: &Self) -> Self {
+    pub fn concat(mut self, other: &Self) -> Self {
         let Self {
             regions,
             types,
             const_generics,
             trait_refs,
-            target: _,
         } = other;
         self.regions.extend_from_slice(regions);
         self.types.extend_from_slice(types);
         self.const_generics.extend_from_slice(const_generics);
         self.trait_refs.extend_from_slice(trait_refs);
-        self.target = target;
         self
-    }
-}
-
-impl GenericsSource {
-    pub fn item<I: Into<AnyTransId>>(id: I) -> Self {
-        Self::Item(id.into())
-    }
-
-    /// Return a path that represents the target item.
-    pub fn item_name(&self, translated: &TranslatedCrate, fmt_ctx: &FmtCtx) -> String {
-        match self {
-            GenericsSource::Item(id) => translated
-                .item_name(*id)
-                .unwrap()
-                .to_string_with_ctx(fmt_ctx),
-            GenericsSource::Method(trait_id, method_name) => format!(
-                "{}::{method_name}",
-                translated
-                    .item_name(*trait_id)
-                    .unwrap()
-                    .to_string_with_ctx(fmt_ctx),
-            ),
-            GenericsSource::Builtin => format!("<built-in>"),
-            GenericsSource::Other => format!("<unknown>"),
-        }
     }
 }
 
@@ -538,16 +498,7 @@ where
         ItemId: Into<AnyTransId>,
         T: TyVisitable,
     {
-        args.map_bound(|args| {
-            assert_eq!(
-                args.target,
-                GenericsSource::item(self.item_id),
-                "These `GenericArgs` are meant for {:?} but were used on {:?}",
-                args.target,
-                self.item_id
-            );
-            self.val.substitute(args)
-        })
+        args.map_bound(|args| self.val.substitute(args))
     }
 }
 
@@ -562,35 +513,32 @@ impl<T> ItemBinder<CurrentItem, T> {
 }
 
 impl Ty {
-    /// Return true if it is actually unit (i.e.: 0-tuple)
-    pub fn is_unit(&self) -> bool {
-        match self.kind() {
-            TyKind::Adt(TypeId::Tuple, args) => {
-                assert!(args.regions.is_empty());
-                assert!(args.const_generics.is_empty());
-                args.types.is_empty()
-            }
-            _ => false,
-        }
-    }
-
     /// Return the unit type
     pub fn mk_unit() -> Ty {
         Self::mk_tuple(vec![])
     }
 
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
-        TyKind::Adt(
-            TypeId::Tuple,
-            GenericArgs::new(
-                Vector::new(),
-                tys.into(),
-                Vector::new(),
-                Vector::new(),
-                GenericsSource::Builtin,
-            ),
-        )
+        TyKind::Adt(TypeDeclRef {
+            id: TypeId::Tuple,
+            generics: Box::new(GenericArgs::new_for_builtin(tys.into())),
+        })
         .into_ty()
+    }
+
+    pub fn mk_slice(ty: Ty) -> Ty {
+        TyKind::Adt(TypeDeclRef {
+            id: TypeId::Builtin(BuiltinTy::Slice),
+            generics: Box::new(GenericArgs::new_for_builtin(vec![ty].into())),
+        })
+        .into_ty()
+    }
+    /// Return true if it is actually unit (i.e.: 0-tuple)
+    pub fn is_unit(&self) -> bool {
+        match self.as_tuple() {
+            Some(tys) => tys.is_empty(),
+            None => false,
+        }
     }
 
     /// Return true if this is a scalar type
@@ -618,23 +566,15 @@ impl Ty {
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.elem_count() == 1);
-                assert!(generics.const_generics.is_empty());
-                true
-            }
+            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => true,
             _ => false,
         }
     }
 
     pub fn as_box(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.elem_count() == 1);
-                assert!(generics.const_generics.is_empty());
-                Some(&generics.types[0])
+            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => {
+                Some(&ty_ref.generics.types[0])
             }
             _ => None,
         }
@@ -642,10 +582,10 @@ impl Ty {
 
     pub fn as_array_or_slice(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.elem_count() == 1);
-                Some(&generics.types[0])
+            TyKind::Adt(ty_ref)
+                if let TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice) = ty_ref.id =>
+            {
+                Some(&ty_ref.generics.types[0])
             }
             _ => None,
         }
@@ -653,20 +593,13 @@ impl Ty {
 
     pub fn as_tuple(&self) -> Option<&Vector<TypeVarId, Ty>> {
         match self.kind() {
-            TyKind::Adt(TypeId::Tuple, generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.const_generics.is_empty());
-                Some(&generics.types)
-            }
+            TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
             _ => None,
         }
     }
 
-    pub fn as_adt(&self) -> Option<(TypeId, &GenericArgs)> {
-        match self.kind() {
-            TyKind::Adt(id, generics) => Some((*id, generics)),
-            _ => None,
-        }
+    pub fn as_adt(&self) -> Option<&TypeDeclRef> {
+        self.kind().as_adt()
     }
 }
 
@@ -693,31 +626,11 @@ impl std::ops::Deref for Ty {
 /// For deref patterns.
 unsafe impl std::ops::DerefPure for Ty {}
 
-impl TypeId {
-    pub fn generics_target(&self) -> GenericsSource {
-        match *self {
-            TypeId::Adt(decl_id) => GenericsSource::item(decl_id),
-            TypeId::Tuple | TypeId::Builtin(..) => GenericsSource::Builtin,
-        }
-    }
-}
-
-impl FunId {
-    pub fn generics_target(&self) -> GenericsSource {
-        match *self {
-            FunId::Regular(fun_id) => GenericsSource::item(fun_id),
-            FunId::Builtin(..) => GenericsSource::Builtin,
-        }
-    }
-}
-
-impl FunIdOrTraitMethodRef {
-    pub fn generics_target(&self) -> GenericsSource {
-        match self {
-            FunIdOrTraitMethodRef::Fun(fun_id) => fun_id.generics_target(),
-            FunIdOrTraitMethodRef::Trait(trait_ref, name, _) => {
-                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.trait_id, name.clone())
-            }
+impl TypeDeclRef {
+    pub fn new(id: TypeId, generics: GenericArgs) -> Self {
+        Self {
+            id,
+            generics: Box::new(generics),
         }
     }
 }
@@ -867,7 +780,7 @@ impl VisitAstMut for SubstVisitor<'_> {
                     ce.value = match new_ce {
                         ConstGeneric::Global(id) => RawConstantExpr::Global(GlobalDeclRef {
                             id,
-                            generics: Box::new(GenericArgs::empty(GenericsSource::item(id))),
+                            generics: Box::new(GenericArgs::empty()),
                         }),
                         ConstGeneric::Var(var) => RawConstantExpr::Var(var),
                         ConstGeneric::Value(lit) => RawConstantExpr::Literal(lit),

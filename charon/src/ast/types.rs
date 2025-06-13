@@ -44,7 +44,7 @@ pub enum Region {
 #[charon::rename("TraitInstanceId")]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
-    TraitImpl(TraitImplId, BoxedArgs),
+    TraitImpl(TraitImplRef),
 
     /// One of the local clauses.
     ///
@@ -161,9 +161,7 @@ pub struct TraitRef {
 /// The substitution is: `[String, bool]`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitDeclRef {
-    #[charon::rename("trait_decl_id")]
-    pub trait_id: TraitDeclId,
-    #[charon::rename("decl_generics")]
+    pub id: TraitDeclId,
     pub generics: BoxedArgs,
 }
 
@@ -173,9 +171,7 @@ pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 /// A reference to a tait impl, using the provided arguments.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitImplRef {
-    #[charon::rename("trait_impl_id")]
-    pub impl_id: TraitImplId,
-    #[charon::rename("impl_generics")]
+    pub id: TraitImplId,
     pub generics: BoxedArgs,
 }
 
@@ -200,21 +196,6 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-/// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
-#[charon::variants_prefix("GS")]
-pub enum GenericsSource {
-    /// A top-level item.
-    Item(AnyTransId),
-    /// A trait method.
-    Method(TraitDeclId, TraitItemName),
-    /// A builtin item like `Box`.
-    Builtin,
-    /// Some other use of generics outside the main Charon ast.
-    #[charon::opaque]
-    Other,
-}
-
 /// A set of generic arguments.
 #[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericArgs {
@@ -223,10 +204,6 @@ pub struct GenericArgs {
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
-    #[charon::opaque]
-    #[drive(skip)]
-    /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this records which one.
-    pub target: GenericsSource,
 }
 
 pub type BoxedArgs = Box<GenericArgs>;
@@ -621,11 +598,9 @@ pub enum TypeId {
 }
 
 /// Reference to a type declaration or builtin type.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeDeclRef {
-    #[charon::rename("type_decl_id")]
     pub id: TypeId,
-    #[charon::rename("type_decl_generics")]
     pub generics: BoxedArgs,
 }
 
@@ -748,7 +723,7 @@ pub enum TyKind {
     ///
     /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
     /// types.
-    Adt(TypeId, GenericArgs),
+    Adt(TypeDeclRef),
     #[charon::rename("TVar")]
     TypeVar(TypeDbVar),
     Literal(LiteralTy),

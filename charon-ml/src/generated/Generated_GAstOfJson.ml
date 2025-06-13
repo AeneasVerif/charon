@@ -43,12 +43,11 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
     (aggregate_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", `List [ x_0; x_1; x_2; x_3 ]) ] ->
-        let* x_0 = type_id_of_json ctx x_0 in
+    | `Assoc [ ("Adt", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = type_decl_ref_of_json ctx x_0 in
         let* x_1 = option_of_json variant_id_of_json ctx x_1 in
         let* x_2 = option_of_json field_id_of_json ctx x_2 in
-        let* x_3 = box_of_json generic_args_of_json ctx x_3 in
-        Ok (AggregatedAdt (x_0, x_1, x_2, x_3))
+        Ok (AggregatedAdt (x_0, x_1, x_2))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = const_generic_of_json ctx x_1 in
@@ -683,9 +682,9 @@ and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* fun_id = fun_decl_id_of_json ctx id in
-        let* fun_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ fun_id; fun_generics } : fun_decl_ref)
+        let* id = fun_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_id_of_json (ctx : of_json_ctx) (js : json) : (fun_id, string) result =
@@ -775,7 +774,6 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("types", types);
           ("const_generics", const_generics);
           ("trait_refs", trait_refs);
-          ("target", _);
         ] ->
         let* regions =
           vector_of_json region_id_of_json region_of_json ctx regions
@@ -850,20 +848,6 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
             : generic_params)
     | _ -> Error "")
 
-and generics_source_of_json (ctx : of_json_ctx) (js : json) :
-    (generics_source, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Item", item) ] ->
-        let* item = any_decl_id_of_json ctx item in
-        Ok (GSItem item)
-    | `Assoc [ ("Method", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = trait_decl_id_of_json ctx x_0 in
-        let* x_1 = trait_item_name_of_json ctx x_1 in
-        Ok (GSMethod (x_0, x_1))
-    | `String "Builtin" -> Ok GSBuiltin
-    | _ -> Error "")
-
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :
     (global_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -902,9 +886,9 @@ and global_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* global_id = global_decl_id_of_json ctx id in
-        let* global_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ global_id; global_generics } : global_decl_ref)
+        let* id = global_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : global_decl_ref)
     | _ -> Error "")
 
 and global_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1536,10 +1520,10 @@ and trait_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (trait_decl_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
-        let* trait_decl_id = trait_decl_id_of_json ctx trait_id in
-        let* decl_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ trait_decl_id; decl_generics } : trait_decl_ref)
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = trait_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : trait_decl_ref)
     | _ -> Error "")
 
 and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
@@ -1607,10 +1591,10 @@ and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (trait_impl_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("impl_id", impl_id); ("generics", generics) ] ->
-        let* trait_impl_id = trait_impl_id_of_json ctx impl_id in
-        let* impl_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ trait_impl_id; impl_generics } : trait_impl_ref)
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = trait_impl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : trait_impl_ref)
     | _ -> Error "")
 
 and trait_item_name_of_json (ctx : of_json_ctx) (js : json) :
@@ -1636,10 +1620,9 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
     (trait_instance_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("TraitImpl", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = trait_impl_id_of_json ctx x_0 in
-        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
-        Ok (TraitImpl (x_0, x_1))
+    | `Assoc [ ("TraitImpl", trait_impl) ] ->
+        let* trait_impl = trait_impl_ref_of_json ctx trait_impl in
+        Ok (TraitImpl trait_impl)
     | `Assoc [ ("Clause", clause) ] ->
         let* clause =
           de_bruijn_var_of_json trait_clause_id_of_json ctx clause
@@ -1704,10 +1687,9 @@ and trait_type_constraint_id_of_json (ctx : of_json_ctx) (js : json) :
 and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = type_id_of_json ctx x_0 in
-        let* x_1 = generic_args_of_json ctx x_1 in
-        Ok (TAdt (x_0, x_1))
+    | `Assoc [ ("Adt", adt) ] ->
+        let* adt = type_decl_ref_of_json ctx adt in
+        Ok (TAdt adt)
     | `Assoc [ ("TypeVar", type_var) ] ->
         let* type_var =
           de_bruijn_var_of_json type_var_id_of_json ctx type_var
@@ -1802,6 +1784,16 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TDeclError error)
+    | _ -> Error "")
+
+and type_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (type_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = type_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : type_decl_ref)
     | _ -> Error "")
 
 and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =

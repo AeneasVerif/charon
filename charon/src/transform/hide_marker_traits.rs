@@ -19,7 +19,7 @@ impl VisitAstMut for RemoveMarkersVisitor {
         let trait_clauses = &mut args.trait_clauses;
         for i in trait_clauses.all_indices() {
             let clause = &trait_clauses[i];
-            if self.exclude.contains(&clause.trait_.skip_binder.trait_id) {
+            if self.exclude.contains(&clause.trait_.skip_binder.id) {
                 trait_clauses.remove(i);
             }
         }
@@ -28,10 +28,7 @@ impl VisitAstMut for RemoveMarkersVisitor {
         let trait_refs = &mut args.trait_refs;
         for i in trait_refs.all_indices() {
             let tref = &trait_refs[i];
-            if self
-                .exclude
-                .contains(&tref.trait_decl_ref.skip_binder.trait_id)
-            {
+            if self.exclude.contains(&tref.trait_decl_ref.skip_binder.id) {
                 trait_refs.remove(i);
             }
         }
@@ -40,7 +37,7 @@ impl VisitAstMut for RemoveMarkersVisitor {
         let trait_clauses = &mut tdecl.parent_clauses;
         for i in trait_clauses.all_indices() {
             let clause = &trait_clauses[i];
-            if self.exclude.contains(&clause.trait_.skip_binder.trait_id) {
+            if self.exclude.contains(&clause.trait_.skip_binder.id) {
                 trait_clauses.remove(i);
             }
         }
@@ -49,10 +46,7 @@ impl VisitAstMut for RemoveMarkersVisitor {
         let trait_refs = &mut timpl.parent_trait_refs;
         for i in trait_refs.all_indices() {
             let tref = &trait_refs[i];
-            if self
-                .exclude
-                .contains(&tref.trait_decl_ref.skip_binder.trait_id)
-            {
+            if self.exclude.contains(&tref.trait_decl_ref.skip_binder.id) {
                 trait_refs.remove(i);
             }
         }

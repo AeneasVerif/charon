@@ -39,6 +39,47 @@ impl VisitAst for UsesClauseVisitor {
     }
 }
 
+#[derive(Visitor)]
+struct RemoveSelfVisitor {
+    remove_in: HashSet<AnyTransId>,
+}
+
+impl RemoveSelfVisitor {
+    fn process_item(&self, id: impl Into<AnyTransId>, args: &mut GenericArgs) {
+        if self.remove_in.contains(&id.into()) {
+            args.trait_refs
+                .remove_and_shift_ids(TraitClauseId::from_raw(0));
+        }
+    }
+}
+impl VisitAstMut for RemoveSelfVisitor {
+    fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
+        match x.id {
+            TypeId::Adt(id) => self.process_item(id, &mut x.generics),
+            TypeId::Tuple => {}
+            TypeId::Builtin(_) => {}
+        }
+    }
+    fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {
+        self.process_item(x.id, &mut x.generics);
+    }
+    fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
+        match x.func.as_ref() {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
+                self.process_item(*id, &mut x.generics)
+            }
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
+            FunIdOrTraitMethodRef::Trait(..) => {}
+        }
+    }
+    fn enter_global_decl_ref(&mut self, x: &mut GlobalDeclRef) {
+        self.process_item(x.id, &mut x.generics);
+    }
+    fn enter_trait_impl_ref(&mut self, x: &mut TraitImplRef) {
+        self.process_item(x.id, &mut x.generics);
+    }
+}
+
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
@@ -88,12 +129,9 @@ impl TransformPass for Transform {
         }
 
         // Update any `GenericArgs` destined for the items we just changed.
-        ctx.translated.dyn_visit_mut(|args: &mut GenericArgs| {
-            if let GenericsSource::Item(target_id) = args.target
-                && doesnt_use_self.contains(&target_id)
-            {
-                args.trait_refs.remove_and_shift_ids(self_clause_id);
-            }
-        });
+        RemoveSelfVisitor {
+            remove_in: doesnt_use_self,
+        }
+        .visit_by_val_infallible(&mut ctx.translated);
     }
 }

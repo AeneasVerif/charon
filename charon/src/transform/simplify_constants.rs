@@ -94,9 +94,8 @@ fn transform_constant_expr(
 
             // Build an `Aggregate` rvalue.
             let rval = {
-                let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
-                let aggregate_kind =
-                    AggregateKind::Adt(*adt_kind, variant, None, Box::new(generics.clone()));
+                let tref = val.ty.kind().as_adt().unwrap();
+                let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
                 Rvalue::Aggregate(aggregate_kind, fields)
             };
             let var = new_var(rval, val.ty);
@@ -110,12 +109,12 @@ fn transform_constant_expr(
                 .collect_vec();
 
             let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));
-            let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
+            let tref = val.ty.kind().as_adt().unwrap();
             assert_matches!(
-                *adt_kind.as_builtin().unwrap(),
+                *tref.id.as_builtin().unwrap(),
                 BuiltinTy::Array | BuiltinTy::Slice
             );
-            let ty = generics.types[0].clone();
+            let ty = tref.generics.types[0].clone();
             let rval = Rvalue::Aggregate(AggregateKind::Array(ty, len), fields);
             let var = new_var(rval, val.ty);
 

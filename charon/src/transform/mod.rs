@@ -36,6 +36,7 @@ pub mod skip_trait_refs_when_known;
 pub mod ullbc_to_llbc;
 pub mod unbind_item_vars;
 pub mod update_block_indices;
+pub mod utils;
 
 pub use ctx::TransformCtx;
 use ctx::{LlbcPass, TransformPass, UllbcPass};

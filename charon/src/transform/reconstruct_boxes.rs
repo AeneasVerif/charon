@@ -93,8 +93,8 @@ impl UllbcPass for Transform {
                 && alloc_use == malloc_dest
                 && box_make.is_local()
                 && box_make.local_id() == *target_var
-                && let TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) =
-                    b.locals[*target_var].ty.kind()
+                && let TyKind::Adt(ty_ref) = b.locals[*target_var].ty.kind()
+                && let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id
                 && let Some((assign_idx_in_rest, val, span)) = rest.iter().enumerate().find_map(|(idx, st)| {
                     if let Statement {
                             content: RawStatement::Assign(box_deref, val),
@@ -113,7 +113,7 @@ impl UllbcPass for Transform {
                 at_5 = box_make.clone();
                 old_assign_idx = assign_idx_in_rest + 2; // +2 because rest skips the first two statements
                 value_to_write = val.clone();
-                box_generics = generics.clone();
+                box_generics = ty_ref.generics.clone();
                 second_block = *target_block_idx;
                 assign_span = *span;
                 unwind_target = *on_unwind;
@@ -160,7 +160,7 @@ impl UllbcPass for Transform {
                         func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Builtin(
                             BuiltinFunId::BoxNew,
                         ))),
-                        generics: Box::new(box_generics),
+                        generics: box_generics,
                     }),
                     args: vec![value_to_write],
                     dest: at_5,

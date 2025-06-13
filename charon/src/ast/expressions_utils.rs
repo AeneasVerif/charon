@@ -62,7 +62,9 @@ impl Place {
         use TyKind::*;
         let proj_ty = match self.ty.kind() {
             Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
-            Adt(TypeId::Builtin(BuiltinTy::Box), args) => args.types[0].clone(),
+            Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
+                tref.generics.types[0].clone()
+            }
             Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_) | Arrow(..)
             | Error(..) => panic!("internal type error"),
         };
@@ -86,10 +88,12 @@ impl Rvalue {
     pub fn unit_value() -> Self {
         Rvalue::Aggregate(
             AggregateKind::Adt(
-                TypeId::Tuple,
+                TypeDeclRef {
+                    id: TypeId::Tuple,
+                    generics: Box::new(GenericArgs::empty()),
+                },
                 None,
                 None,
-                Box::new(GenericArgs::empty(GenericsSource::Builtin)),
             ),
             Vec::new(),
         )
@@ -119,8 +123,8 @@ impl ProjectionElem {
                 use TyKind::*;
                 match ty.kind() {
                     Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
-                    Adt(TypeId::Builtin(BuiltinTy::Box), args) => {
-                        args.types.get(TypeVarId::new(0)).unwrap().clone()
+                    Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
+                        tref.generics.types[0].clone()
                     }
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
                     | Arrow(..) | Error(..) => {
@@ -136,8 +140,8 @@ impl ProjectionElem {
                     Adt(type_decl_id, variant_id) => {
                         // Can fail if the type declaration was not translated.
                         let type_decl = type_decls.get(*type_decl_id).ok_or(())?;
-                        let (type_id, generics) = ty.as_adt().ok_or(())?;
-                        assert!(TypeId::Adt(*type_decl_id) == type_id);
+                        let tref = ty.as_adt().ok_or(())?;
+                        assert!(TypeId::Adt(*type_decl_id) == tref.id);
                         use TypeDeclKind::*;
                         match &type_decl.kind {
                             Struct(fields) | Union(fields) => {
@@ -149,7 +153,7 @@ impl ProjectionElem {
                                     .ok_or(())?
                                     .ty
                                     .clone()
-                                    .substitute(generics)
+                                    .substitute(&tref.generics)
                             }
                             Enum(variants) => {
                                 let variant_id = variant_id.ok_or(())?;
@@ -160,7 +164,7 @@ impl ProjectionElem {
                                     .ok_or(())?
                                     .ty
                                     .clone()
-                                    .substitute(generics)
+                                    .substitute(&tref.generics)
                             }
                             Opaque | Alias(_) | Error(_) => return Err(()),
                         }

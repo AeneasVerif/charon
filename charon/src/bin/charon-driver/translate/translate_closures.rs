@@ -132,7 +132,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TraitImplRef, Error> {
         let impl_id = self.register_closure_trait_impl_id(span, def_id, target_kind);
         let adt_ref = self.translate_closure_type_ref(span, def_id, closure)?;
-        let mut args = adt_ref.generics.with_target(GenericsSource::item(impl_id));
+        let mut args = adt_ref.generics;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         if self.def_id == *def_id {
             args.regions.extend(
@@ -147,8 +147,8 @@ impl ItemTransCtx<'_, '_> {
         }
 
         Ok(TraitImplRef {
-            impl_id,
-            generics: Box::new(args),
+            id: impl_id,
+            generics: args,
         })
     }
 
@@ -174,11 +174,8 @@ impl ItemTransCtx<'_, '_> {
         let input_tuple = Ty::mk_tuple(inputs);
 
         Ok(TraitDeclRef {
-            trait_id,
-            generics: Box::new(GenericArgs::new_types(
-                [state_ty, input_tuple].into(),
-                GenericsSource::item(trait_id),
-            )),
+            id: trait_id,
+            generics: Box::new(GenericArgs::new_types([state_ty, input_tuple].into())),
         })
     }
 
@@ -188,8 +185,8 @@ impl ItemTransCtx<'_, '_> {
         def_id: &hax::DefId,
         args: &hax::ClosureArgs,
     ) -> Result<Ty, Error> {
-        let ty_ref = self.translate_closure_type_ref(span, def_id, args)?;
-        Ok(TyKind::Adt(ty_ref.id, *ty_ref.generics).into_ty())
+        let tref = self.translate_closure_type_ref(span, def_id, args)?;
+        Ok(TyKind::Adt(tref).into_ty())
     }
 
     pub fn translate_closure_adt(
@@ -419,13 +416,10 @@ impl ItemTransCtx<'_, '_> {
                 // TODO: can we ask hax for the trait ref?
                 let fn_op = FnOperand::Regular(FnPtr {
                     func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
-                    generics: Box::new(impl_ref.generics.concat(
-                        GenericsSource::item(fun_id),
-                        &GenericArgs {
-                            regions: vec![Region::Erased].into(),
-                            ..GenericArgs::empty(GenericsSource::item(fun_id))
-                        },
-                    )),
+                    generics: Box::new(impl_ref.generics.concat(&GenericArgs {
+                        regions: vec![Region::Erased].into(),
+                        ..GenericArgs::empty()
+                    })),
                 });
 
                 let mut locals = Locals {
@@ -559,7 +553,7 @@ impl ItemTransCtx<'_, '_> {
 
         let implemented_trait =
             self.translate_closure_trait_ref(span, def.def_id(), args, target_kind)?;
-        let fn_trait = implemented_trait.trait_id;
+        let fn_trait = implemented_trait.id;
 
         // The input tuple type and output type of the signature.
         let (inputs, output) = self.translate_closure_info(span, args)?.signature.erase();
@@ -568,11 +562,11 @@ impl ItemTransCtx<'_, '_> {
         let parent_trait_refs = {
             // Makes a built-in trait ref for `ty: trait`.
             let builtin_tref = |trait_id, ty| {
-                let generics = Box::new(GenericArgs::new_types(
-                    vec![ty].into(),
-                    GenericsSource::item(trait_id),
-                ));
-                let trait_decl_ref = TraitDeclRef { trait_id, generics };
+                let generics = Box::new(GenericArgs::new_types([ty].into()));
+                let trait_decl_ref = TraitDeclRef {
+                    id: trait_id,
+                    generics,
+                };
                 let trait_decl_ref = RegionBinder::empty(trait_decl_ref);
                 TraitRef {
                     kind: TraitRefKind::BuiltinOrAuto {
@@ -602,10 +596,7 @@ impl ItemTransCtx<'_, '_> {
                     let parent_predicate =
                         self.translate_closure_trait_ref(span, def.def_id(), args, parent_kind)?;
                     let parent_trait_ref = TraitRef {
-                        kind: TraitRefKind::TraitImpl(
-                            parent_impl_ref.impl_id,
-                            parent_impl_ref.generics,
-                        ),
+                        kind: TraitRefKind::TraitImpl(parent_impl_ref),
                         trait_decl_ref: RegionBinder::empty(parent_predicate),
                     };
                     [
@@ -639,14 +630,8 @@ impl ItemTransCtx<'_, '_> {
             let generics = self
                 .outermost_binder()
                 .params
-                .identity_args_at_depth(GenericsSource::item(def_id), DeBruijnId::one())
-                .concat(
-                    GenericsSource::item(call_fn_id),
-                    &method_params.identity_args_at_depth(
-                        GenericsSource::Method(fn_trait, call_fn_name.clone()),
-                        DeBruijnId::zero(),
-                    ),
-                );
+                .identity_args_at_depth(DeBruijnId::one())
+                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
             Binder::new(
                 BinderKind::TraitMethod(fn_trait, call_fn_name.clone()),
                 method_params,
