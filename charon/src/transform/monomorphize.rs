@@ -158,10 +158,10 @@ impl VisitAst for UsageVisitor<'_> {
                 // This is the actual function we need to call!
                 // Whereas id is the trait method reference(?)
                 let fn_ref = fn_ref.apply(&impl_gargs).apply(&fn_ptr.generics);
-                let gargs_key = fn_ptr.generics.clone().concat(
-                    GenericsSource::Builtin,
-                    &t_ref.trait_decl_ref.skip_binder.generics,
-                );
+                let gargs_key = fn_ptr
+                    .generics
+                    .clone()
+                    .concat(&t_ref.trait_decl_ref.skip_binder.generics);
                 self.found_use_fn_hinted(&id, &gargs_key, (fn_ref.id, fn_ref.generics))
             }
             // These can't be monomorphized, since they're builtins
@@ -196,7 +196,7 @@ impl SubstVisitor<'_> {
             && let Some(subst_id) = of(any_id)
         {
             *id = *subst_id;
-            *gargs = GenericArgs::empty(GenericsSource::Builtin);
+            *gargs = GenericArgs::empty();
         } else {
             warn!("Substitution missing for {:?} / {:?}", id, gargs);
         }
@@ -250,10 +250,10 @@ impl VisitAstMut for SubstVisitor<'_> {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }
             FunIdOrTraitMethodRef::Trait(t_ref, _, fun_id) => {
-                let mut gargs_key = fn_ptr.generics.clone().concat(
-                    GenericsSource::Builtin,
-                    &t_ref.trait_decl_ref.skip_binder.generics,
-                );
+                let mut gargs_key = fn_ptr
+                    .generics
+                    .clone()
+                    .concat(&t_ref.trait_decl_ref.skip_binder.generics);
                 self.subst_use_fun(fun_id, &mut gargs_key);
                 fn_ptr.generics = Box::new(gargs_key);
             }
@@ -388,7 +388,7 @@ impl TransformPass for Transform {
         // Final list of monomorphized items: { (poly item, generic args) -> mono item }
         let mut data = PassData::new();
 
-        let empty_gargs = GenericArgs::empty(GenericsSource::Builtin);
+        let empty_gargs = GenericArgs::empty();
 
         // Find the roots of the mono item graph
         for (id, item) in ctx.translated.all_items_with_ids() {

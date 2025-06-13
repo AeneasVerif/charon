@@ -147,10 +147,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
             hax::TyKind::Str => {
-                let tref = TypeDeclRef::new(
-                    TypeId::Builtin(BuiltinTy::Str),
-                    GenericArgs::empty(GenericsSource::Builtin),
-                );
+                let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Str), GenericArgs::empty());
                 TyKind::Adt(tref)
             }
             hax::TyKind::Array(ty, const_param) => {
@@ -158,13 +155,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let ty = self.translate_ty(span, ty)?;
                 let tref = TypeDeclRef::new(
                     TypeId::Builtin(BuiltinTy::Array),
-                    GenericArgs::new(
-                        Vector::new(),
-                        [ty].into(),
-                        [c].into(),
-                        Vector::new(),
-                        GenericsSource::Builtin,
-                    ),
+                    GenericArgs::new(Vector::new(), [ty].into(), [c].into(), Vector::new()),
                 );
                 TyKind::Adt(tref)
             }
@@ -292,7 +283,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
-        target: GenericsSource,
     ) -> Result<GenericArgs, Error> {
         use hax::GenericArg::*;
         trace!("{:?}", substs);
@@ -320,7 +310,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             types,
             const_generics,
             trait_refs,
-            target,
         })
     }
 
@@ -331,18 +320,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
         late_bound: Option<hax::Binder<()>>,
-        target: GenericsSource,
     ) -> Result<RegionBinder<GenericArgs>, Error> {
         let late_bound = late_bound.unwrap_or(hax::Binder {
             value: (),
             bound_vars: vec![],
         });
-        let generics = self.translate_generic_args(span, substs, trait_refs, target.clone())?;
+        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         self.translate_region_binder(span, &late_bound, |ctx, _| {
-            Ok(generics.move_under_binder().concat(
-                target.clone(),
-                &ctx.innermost_binder().params.identity_args(target),
-            ))
+            Ok(generics
+                .move_under_binder()
+                .concat(&ctx.innermost_binder().params.identity_args()))
         })
     }
 

@@ -90,7 +90,7 @@ impl Rvalue {
             AggregateKind::Adt(
                 TypeDeclRef {
                     id: TypeId::Tuple,
-                    generics: Box::new(GenericArgs::empty(GenericsSource::Builtin)),
+                    generics: Box::new(GenericArgs::empty()),
                 },
                 None,
                 None,

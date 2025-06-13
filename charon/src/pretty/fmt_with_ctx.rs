@@ -5,6 +5,7 @@ use crate::{
     gast,
     llbc_ast::{self as llbc, *},
     reorder_decls::*,
+    transform::utils::GenericsSource,
     ullbc_ast::{self as ullbc, *},
 };
 use either::Either;

@@ -583,10 +583,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         ))
                     }
                     hax::AggregateKind::Tuple => {
-                        let tref = TypeDeclRef::new(
-                            TypeId::Tuple,
-                            GenericArgs::empty(GenericsSource::Builtin),
-                        );
+                        let tref = TypeDeclRef::new(TypeId::Tuple, GenericArgs::empty());
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Adt(tref, None, None),
                             operands_t,

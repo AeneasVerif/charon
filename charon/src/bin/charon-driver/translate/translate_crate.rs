@@ -348,8 +348,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_refs: &[hax::ImplExpr],
     ) -> Result<TypeDeclRef, Error> {
         let id = self.translate_type_id(span, def_id)?;
-        let generics =
-            self.translate_generic_args(span, substs, trait_refs, id.generics_target())?;
+        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         Ok(TypeDeclRef {
             id,
             generics: Box::new(generics),
@@ -399,13 +398,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             _ => None,
         };
-        let bound_generics = self.translate_generic_args_with_late_bound(
-            span,
-            substs,
-            trait_refs,
-            late_bound,
-            fun_id.generics_target(),
-        )?;
+        let bound_generics =
+            self.translate_generic_args_with_late_bound(span, substs, trait_refs, late_bound)?;
         Ok(bound_generics.map(|generics| MaybeBuiltinFunDeclRef {
             id: fun_id,
             generics: Box::new(generics),
@@ -430,13 +424,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             _ => None,
         };
-        let bound_generics = self.translate_generic_args_with_late_bound(
-            span,
-            substs,
-            trait_refs,
-            late_bound,
-            GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.trait_id, name.clone()),
-        )?;
+        let bound_generics =
+            self.translate_generic_args_with_late_bound(span, substs, trait_refs, late_bound)?;
         Ok(bound_generics.map(|generics| TraitMethodRef {
             trait_ref: trait_ref.move_under_binder(),
             name,
@@ -458,8 +447,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_refs: &[hax::ImplExpr],
     ) -> Result<GlobalDeclRef, Error> {
         let id = self.register_global_decl_id(span, def_id);
-        let generics =
-            self.translate_generic_args(span, substs, trait_refs, GenericsSource::item(id))?;
+        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         Ok(GlobalDeclRef {
             id,
             generics: Box::new(generics),
@@ -479,8 +467,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_refs: &[hax::ImplExpr],
     ) -> Result<TraitDeclRef, Error> {
         let id = self.register_trait_decl_id(span, def_id);
-        let generics =
-            self.translate_generic_args(span, substs, trait_refs, GenericsSource::item(id))?;
+        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         Ok(TraitDeclRef {
             trait_id: id,
             generics: Box::new(generics),
@@ -500,8 +487,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_refs: &[hax::ImplExpr],
     ) -> Result<TraitImplRef, Error> {
         let id = self.register_trait_impl_id(span, def_id);
-        let generics =
-            self.translate_generic_args(span, substs, trait_refs, GenericsSource::item(id))?;
+        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         Ok(TraitImplRef {
             id,
             generics: Box::new(generics),

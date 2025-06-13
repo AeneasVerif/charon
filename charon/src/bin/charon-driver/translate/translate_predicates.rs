@@ -333,11 +333,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
                     let impl_id = self.register_trait_impl_id(span, trait_def_id);
-                    let mut generics = trait_decl_ref
-                        .clone()
-                        .erase()
-                        .generics
-                        .with_target(GenericsSource::item(impl_id));
+                    let mut generics = trait_decl_ref.clone().erase().generics;
                     assert!(
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
@@ -345,7 +341,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     generics.trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     TraitRefKind::TraitImpl(TraitImplRef {
                         id: impl_id,
-                        generics: Box::new(generics),
+                        generics,
                     })
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;

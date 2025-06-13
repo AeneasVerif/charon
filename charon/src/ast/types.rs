@@ -200,21 +200,6 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-/// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, EnumIsA, Deserialize, Drive, DriveMut)]
-#[charon::variants_prefix("GS")]
-pub enum GenericsSource {
-    /// A top-level item.
-    Item(AnyTransId),
-    /// A trait method.
-    Method(TraitDeclId, TraitItemName),
-    /// A builtin item like `Box`.
-    Builtin,
-    /// Some other use of generics outside the main Charon ast.
-    #[charon::opaque]
-    Other,
-}
-
 /// A set of generic arguments.
 #[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericArgs {
@@ -223,10 +208,6 @@ pub struct GenericArgs {
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
-    #[charon::opaque]
-    #[drive(skip)]
-    /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this records which one.
-    pub target: GenericsSource,
 }
 
 pub type BoxedArgs = Box<GenericArgs>;

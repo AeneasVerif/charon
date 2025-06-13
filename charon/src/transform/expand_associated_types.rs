@@ -82,7 +82,7 @@ use macros::EnumAsGetters;
 
 use crate::{ast::*, formatter::IntoFormatter, ids::Vector, pretty::FmtWithCtx, register_error};
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{ctx::TransformPass, utils::GenericsSource, TransformCtx};
 
 /// Represent some `TraitRef`s as paths for easier manipulation.
 use trait_ref_path::*;
@@ -1285,9 +1285,7 @@ impl TransformPass for Transform {
                     kind: TraitRefKind::SelfId,
                     trait_decl_ref: RegionBinder::empty(TraitDeclRef {
                         trait_id: tr.def_id,
-                        generics: Box::new(
-                            tr.generics.identity_args(GenericsSource::item(tr.def_id)),
-                        ),
+                        generics: Box::new(tr.generics.identity_args()),
                     }),
                 };
                 modifications.compute_replacements(|path| {

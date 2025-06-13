@@ -224,13 +224,6 @@ and generic_args = {
   trait_refs : trait_ref list;
 }
 
-(** Each [GenericArgs] is meant for a corresponding [GenericParams]; this
-    describes which one. *)
-and generics_source =
-  | GSItem of any_decl_id  (** A top-level item. *)
-  | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
-  | GSBuiltin  (** A builtin item like [Box]. *)
-
 (** Reference to a global declaration. *)
 and global_decl_ref = {
   global_id : global_decl_id;

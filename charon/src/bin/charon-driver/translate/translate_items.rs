@@ -493,22 +493,20 @@ impl ItemTransCtx<'_, '_> {
                             };
 
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
-                            let mut fun_generics =
-                                bt_ctx.outermost_binder().params.identity_args_at_depth(
-                                    GenericsSource::item(def_id),
-                                    DeBruijnId::one(),
-                                );
+                            let mut fun_generics = bt_ctx
+                                .outermost_binder()
+                                .params
+                                .identity_args_at_depth(DeBruijnId::one());
                             // Add the necessary explicit `Self` clause at the start.
                             fun_generics.trait_refs.insert_and_shift_ids(
                                 0.into(),
                                 self_trait_ref.clone().move_under_binder(),
                             );
                             fun_generics = fun_generics.concat(
-                                GenericsSource::item(fun_id),
-                                &bt_ctx.innermost_binder().params.identity_args_at_depth(
-                                    GenericsSource::Method(def_id.into(), item_name.clone()),
-                                    DeBruijnId::zero(),
-                                ),
+                                &bt_ctx
+                                    .innermost_binder()
+                                    .params
+                                    .identity_args_at_depth(DeBruijnId::zero()),
                             );
                             Ok(FunDeclRef {
                                 id: fun_id,
@@ -524,9 +522,7 @@ impl ItemTransCtx<'_, '_> {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
                         let id = self.register_global_decl_id(item_span, item_def_id);
-                        let generics_target = GenericsSource::item(id);
-                        let mut generics =
-                            self.the_only_binder().params.identity_args(generics_target);
+                        let mut generics = self.the_only_binder().params.identity_args();
                         generics.trait_refs.push(self_trait_ref.clone());
                         let gref = GlobalDeclRef {
                             id,
@@ -605,10 +601,7 @@ impl ItemTransCtx<'_, '_> {
             let clauses = mem::take(&mut self.parent_trait_clauses);
             self.innermost_generics_mut().trait_clauses = clauses;
             let trait_id = self.register_trait_decl_id(span, def.def_id());
-            let mut generics = self
-                .the_only_binder()
-                .params
-                .identity_args(GenericsSource::item(trait_id));
+            let mut generics = self.the_only_binder().params.identity_args();
             // Do the inverse operation: the trait considers the clauses as implied.
             let parent_trait_refs = mem::take(&mut generics.trait_refs);
             let implemented_trait = TraitDeclRef {
@@ -700,11 +693,7 @@ impl ItemTransCtx<'_, '_> {
         let self_predicate = TraitRef {
             kind: TraitRefKind::TraitImpl(TraitImplRef {
                 id: def_id,
-                generics: Box::new(
-                    self.the_only_binder()
-                        .params
-                        .identity_args(GenericsSource::item(def_id)),
-                ),
+                generics: Box::new(self.the_only_binder().params.identity_args()),
             }),
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
@@ -772,22 +761,12 @@ impl ItemTransCtx<'_, '_> {
                                     let fun_generics = bt_ctx
                                         .outermost_binder()
                                         .params
-                                        .identity_args_at_depth(
-                                            GenericsSource::item(def_id),
-                                            DeBruijnId::one(),
-                                        )
+                                        .identity_args_at_depth(DeBruijnId::one())
                                         .concat(
-                                            GenericsSource::item(fun_id),
                                             &bt_ctx
                                                 .innermost_binder()
                                                 .params
-                                                .identity_args_at_depth(
-                                                    GenericsSource::Method(
-                                                        trait_id.into(),
-                                                        name.clone(),
-                                                    ),
-                                                    DeBruijnId::zero(),
-                                                ),
+                                                .identity_args_at_depth(DeBruijnId::zero()),
                                         );
                                     Ok(FunDeclRef {
                                         id: fun_id,
@@ -805,18 +784,12 @@ impl ItemTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_global_decl_id(item_span, item_def_id);
-                    let generics_target = GenericsSource::item(id);
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
-                        Provided { .. } => {
-                            self.the_only_binder().params.identity_args(generics_target)
-                        }
+                        Provided { .. } => self.the_only_binder().params.identity_args(),
                         _ => {
-                            let mut generics = implemented_trait
-                                .generics
-                                .clone()
-                                .with_target(generics_target);
+                            let mut generics = implemented_trait.generics.as_ref().clone();
                             generics.trait_refs.push(self_predicate.clone());
                             generics
                         }

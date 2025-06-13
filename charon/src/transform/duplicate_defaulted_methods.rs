@@ -22,11 +22,7 @@ impl TransformPass for Transform {
             // A `TraitRef` that points to this impl with the correct generics.
             let self_impl_ref = TraitImplRef {
                 id: timpl.def_id,
-                generics: Box::new(
-                    timpl
-                        .generics
-                        .identity_args(GenericsSource::item(timpl.def_id)),
-                ),
+                generics: Box::new(timpl.generics.identity_args()),
             };
             let self_predicate = TraitRef {
                 kind: TraitRefKind::TraitImpl(self_impl_ref.clone()),
@@ -72,19 +68,9 @@ impl TransformPass for Transform {
                         generics: Box::new(
                             timpl
                                 .generics
-                                .identity_args_at_depth(
-                                    GenericsSource::item(timpl.def_id),
-                                    DeBruijnId::one(),
-                                )
+                                .identity_args_at_depth(DeBruijnId::one())
                                 .concat(
-                                    GenericsSource::item(new_fun_id),
-                                    &bound_fn.params.identity_args_at_depth(
-                                        GenericsSource::Method(
-                                            timpl.impl_trait.trait_id.into(),
-                                            name.clone(),
-                                        ),
-                                        DeBruijnId::zero(),
-                                    ),
+                                    &bound_fn.params.identity_args_at_depth(DeBruijnId::zero()),
                                 ),
                         ),
                     },

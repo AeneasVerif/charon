@@ -9,6 +9,7 @@ use crate::{
     errors::Level,
     formatter::{AstFormatter, FmtCtx, IntoFormatter},
     pretty::FmtWithCtx,
+    transform::utils::GenericsSource,
 };
 
 use super::{ctx::TransformPass, TransformCtx};
