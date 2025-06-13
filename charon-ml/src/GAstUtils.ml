@@ -1,11 +1,10 @@
 open Types
 open GAst
 
-(** Small utility: list the transitive parents of a region var group.
-    We don't do that in an efficient manner, but it doesn't matter.
+(** Small utility: list the transitive parents of a region var group. We don't
+    do that in an efficient manner, but it doesn't matter.
 
-    This list *doesn't* include the current region.
- *)
+    This list *doesn't* include the current region. *)
 let rec list_ancestor_region_groups (regions_hierarchy : region_var_groups)
     (gid : RegionGroupId.id) : RegionGroupId.Set.t =
   let rg = RegionGroupId.nth regions_hierarchy gid in
@@ -22,7 +21,8 @@ let rec list_ancestor_region_groups (regions_hierarchy : region_var_groups)
   in
   parents
 
-(** Small utility: same as {!list_ancestor_region_groups}, but returns an ordered list.  *)
+(** Small utility: same as {!list_ancestor_region_groups}, but returns an
+    ordered list. *)
 let list_ordered_ancestor_region_groups (regions_hierarchy : region_var_groups)
     (gid : RegionGroupId.id) : RegionGroupId.id list =
   let pset = list_ancestor_region_groups regions_hierarchy gid in
@@ -133,8 +133,7 @@ let split_declarations (decls : declaration_group list) :
   split decls
 
 (** Split a module's declarations into three maps from type/fun/global ids to
-    declaration groups.
- *)
+    declaration groups. *)
 let split_declarations_to_group_maps (decls : declaration_group list) :
     type_declaration_group TypeDeclId.Map.t
     * fun_declaration_group FunDeclId.Map.t
@@ -228,32 +227,32 @@ class ['self] filter_decl_id =
             (fun id -> IdTraitImpl id)
             (self#visit_trait_impl_id env id)
 
-    method visit_type_declaration_group env (g : type_declaration_group)
-        : type_declaration_group option =
+    method visit_type_declaration_group env (g : type_declaration_group) :
+        type_declaration_group option =
       g_declaration_group_filter_map (self#visit_type_decl_id env) g
 
-    method visit_fun_declaration_group env (g : fun_declaration_group)
-        : fun_declaration_group option =
+    method visit_fun_declaration_group env (g : fun_declaration_group) :
+        fun_declaration_group option =
       g_declaration_group_filter_map (self#visit_fun_decl_id env) g
 
-    method visit_global_declaration_group env (g : global_declaration_group)
-        : global_declaration_group option =
+    method visit_global_declaration_group env (g : global_declaration_group) :
+        global_declaration_group option =
       g_declaration_group_filter_map (self#visit_global_decl_id env) g
 
-    method visit_trait_declaration_group env (g : trait_declaration_group)
-        : trait_declaration_group option =
+    method visit_trait_declaration_group env (g : trait_declaration_group) :
+        trait_declaration_group option =
       g_declaration_group_filter_map (self#visit_trait_decl_id env) g
 
-    method visit_trait_impl_group env (g : trait_impl_group)
-        : trait_impl_group option =
+    method visit_trait_impl_group env (g : trait_impl_group) :
+        trait_impl_group option =
       g_declaration_group_filter_map (self#visit_trait_impl_id env) g
 
-    method visit_mixed_declaration_group env (g : mixed_declaration_group)
-        : mixed_declaration_group option =
+    method visit_mixed_declaration_group env (g : mixed_declaration_group) :
+        mixed_declaration_group option =
       g_declaration_group_filter_map (self#visit_any_decl_id env) g
 
-    method visit_declaration_group env (g : declaration_group)
-        : declaration_group option =
+    method visit_declaration_group env (g : declaration_group) :
+        declaration_group option =
       match g with
       | TypeGroup g ->
           Option.map
@@ -280,7 +279,7 @@ class ['self] filter_decl_id =
             (fun g -> MixedGroup g)
             (self#visit_mixed_declaration_group env g)
 
-    method visit_declaration_groups env (gl : declaration_group list)
-        : declaration_group list =
+    method visit_declaration_groups env (gl : declaration_group list) :
+        declaration_group list =
       List.filter_map (self#visit_declaration_group env) gl
   end

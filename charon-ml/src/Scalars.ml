@@ -29,9 +29,7 @@ let u128_max = Z.of_string "340282366920938463463374607431768211455"
     when:
     - deserializing
     - using the interpreter in *concrete* mode and evaluating operations like
-      addition, negation, etc.
-    It is thus ok to not use the precise bounds.
- *)
+      addition, negation, etc. It is thus ok to not use the precise bounds. *)
 
 let isize_min = i64_min
 let isize_max = i64_max
@@ -72,7 +70,8 @@ let scalar_max (int_ty : integer_type) : big_int =
 let check_int_in_range (int_ty : integer_type) (i : big_int) : bool =
   Z.leq (scalar_min int_ty) i && Z.leq i (scalar_max int_ty)
 
-(** Check that a scalar value is correct (the integer value it contains is in range) *)
+(** Check that a scalar value is correct (the integer value it contains is in
+    range) *)
 let check_scalar_value_in_range (v : scalar_value) : bool =
   check_int_in_range v.int_ty v.value
 

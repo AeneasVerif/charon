@@ -1,7 +1,6 @@
 (** Functions to load ULLBC ASTs from json.
 
-    See the comments for {!GAstOfJson}
- *)
+    See the comments for {!GAstOfJson} *)
 
 open OfJsonBasic
 open Types

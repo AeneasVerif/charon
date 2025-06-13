@@ -17,8 +17,7 @@ type 'fun_body fmt_env = {
   crate : 'fun_body gcrate;
   generics : generic_params list;
       (** We have a stack of generic parameters, because we can dive into
-          binders (for instance because of the arrow type).
-      *)
+          binders (for instance because of the arrow type). *)
   locals : (local_id * string option) list;
       (** The local variables don't need to be ordered (same as the generics) *)
 }

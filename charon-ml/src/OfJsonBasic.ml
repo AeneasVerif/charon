@@ -1,6 +1,4 @@
-(** This module defines various basic utilities for json deserialization.
-
- *)
+(** This module defines various basic utilities for json deserialization. *)
 
 open Yojson.Basic
 

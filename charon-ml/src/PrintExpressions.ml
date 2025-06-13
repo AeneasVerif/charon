@@ -25,11 +25,11 @@ let local_id_to_string (env : 'a fmt_env) (id : LocalId.id) : string =
       | Some name -> name ^ "^" ^ LocalId.to_string id)
 
 let (var_id_to_pretty_string
-    [@ocaml.alert deprecated "use [local_id_to_pretty_string] instead"]) =
+     [@ocaml.alert deprecated "use [local_id_to_pretty_string] instead"]) =
   local_id_to_pretty_string
 
 let (var_id_to_string
-    [@ocaml.alert deprecated "use [local_id_to_string] instead"]) =
+     [@ocaml.alert deprecated "use [local_id_to_string] instead"]) =
   local_id_to_string
 
 let (var_to_string [@ocaml.alert deprecated "use [local_to_string] instead"]) =

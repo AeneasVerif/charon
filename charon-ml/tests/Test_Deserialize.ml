@@ -4,15 +4,13 @@ module EL = Easy_logging.Logging
 
 let log = main_log
 
-(** [dir_is_empty dir] is true, if [dir] contains no files except
- * "." and ".."
- *)
+(** [dir_is_empty dir] is true, if [dir] contains no files except * "." and ".."
+*)
 let dir_is_empty dir = Array.length (Sys.readdir dir) = 0
 
-(** [dir_contents] returns the paths of all regular files that are
- * contained in [dir]. Each file is a path starting with [dir].
- * From https://gist.github.com/lindig/be55f453026c65e761f4e7012f8ab9b5
- *)
+(** [dir_contents] returns the paths of all regular files that are * contained
+    in [dir]. Each file is a path starting with [dir]. * From
+    https://gist.github.com/lindig/be55f453026c65e761f4e7012f8ab9b5 *)
 let dir_contents dir =
   let rec loop result = function
     | f :: fs when Sys.is_directory f ->

@@ -1,6 +1,5 @@
 (** This file implements various substitution utilities to instantiate types,
-    function bodies, etc.
- *)
+    function bodies, etc. *)
 
 open Types
 open TypesUtils
@@ -20,8 +19,8 @@ let ( let* ) o f =
 type subst = {
   r_subst : RegionId.id de_bruijn_var -> region;
       (** Remark: this might be called with bound regions with a negative
-          DeBruijn index. A negative DeBruijn index means that the region
-          is locally bound. *)
+          DeBruijn index. A negative DeBruijn index means that the region is
+          locally bound. *)
   ty_subst : TypeVarId.id de_bruijn_var -> ty;
   cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
@@ -95,7 +94,8 @@ let subst_free_vars (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
-(** Substitute the variables bound by the currently innermost (level 0) binder. *)
+(** Substitute the variables bound by the currently innermost (level 0) binder.
+*)
 let subst_at_binder_zero (subst : single_binder_subst) : subst =
   let subst_if_zero subst nosubst = function
     | Bound (0, id) -> subst id
@@ -109,7 +109,8 @@ let subst_at_binder_zero (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
-(** Substitute the variables bound by the current (level 0) binder, and shift variables to remove the current binder level. *)
+(** Substitute the variables bound by the current (level 0) binder, and shift
+    variables to remove the current binder level. *)
 let subst_remove_binder_zero (subst : single_binder_subst) : subst =
   let subst_remove_zero subst nosubst = function
     | Bound (0, id) -> subst id
@@ -188,8 +189,7 @@ let st_substitute_visitor =
 
 (** Substitute types variables and regions in a type.
 
-    **IMPORTANT**: this doesn't normalize the types.
- *)
+    **IMPORTANT**: this doesn't normalize the types. *)
 let ty_substitute (subst : subst) (ty : ty) : ty =
   st_substitute_visitor#visit_ty subst ty
 
@@ -213,8 +213,8 @@ let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
 
 (** Substitute the predicates (clauses, outlives predicates, etc) inside these
     generic params. This leaves the list of parameters (regions, types and
-    const_generics) untouched.
-    **IMPORTANT**: this doesn't normalize the types. *)
+    const_generics) untouched. **IMPORTANT**: this doesn't normalize the types.
+*)
 let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     =
   let visitor = st_substitute_visitor in
@@ -275,8 +275,8 @@ let erase_regions_substitute_types (subst : subst) (ty : ty) : ty =
   let subst = { subst with r_subst = (fun _ -> RErased) } in
   ty_substitute subst ty
 
-(** Move the value out of the binder by shifting relevant binding levels.
-    Errors if a variable bound in this binder is found. *)
+(** Move the value out of the binder by shifting relevant binding levels. Errors
+    if a variable bound in this binder is found. *)
 let extract_from_binder (substituer : subst -> 'a -> 'a)
     (bound_val : 'a region_binder) : 'a =
   let subst = subst_remove_binder_zero error_sb_subst in
@@ -304,8 +304,9 @@ let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
     TypeVarId.id -> ty =
   make_type_subst (List.map (fun (x : type_var) -> x.index) vars) tys
 
-(** Create a const generic substitution from a list of const generic variable ids and a list of
-    const generics (with which to substitute the const generic variable ids) *)
+(** Create a const generic substitution from a list of const generic variable
+    ids and a list of const generics (with which to substitute the const generic
+    variable ids) *)
 let make_const_generic_subst (var_ids : ConstGenericVarId.id list)
     (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
   let map = ConstGenericVarId.Map.of_list (List.combine var_ids cgs) in
@@ -352,12 +353,11 @@ let make_subst_from_generics_erase_regions (params : generic_params)
   let subst = make_subst_from_generics params generics in
   { subst with r_subst = (fun _ -> RErased) }
 
-(** Instantiate the type variables in an ADT definition, and return, for
-    every variant, the list of the types of its fields.
+(** Instantiate the type variables in an ADT definition, and return, for every
+    variant, the list of the types of its fields.
 
     **IMPORTANT**: this function doesn't normalize the types, you may want to
-    use the [AssociatedTypes] equivalent instead.
-*)
+    use the [AssociatedTypes] equivalent instead. *)
 let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     (generics : generic_args) : (VariantId.id option * ty list) list =
   let subst = make_subst_from_generics def.generics generics in
@@ -377,12 +377,11 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
       (id, List.map (fun f -> ty_substitute subst f.field_ty) fields))
     variants_fields
 
-(** Instantiate the type variables in an ADT definition, and return the list
-    of types of the fields for the chosen variant.
+(** Instantiate the type variables in an ADT definition, and return the list of
+    types of the fields for the chosen variant.
 
     **IMPORTANT**: this function doesn't normalize the types, you may want to
-    use the [AssociatedTypes] equivalent instead.
-*)
+    use the [AssociatedTypes] equivalent instead. *)
 let type_decl_get_instantiated_field_types (def : type_decl)
     (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
   (* For now, check that there are no clauses - otherwise we might need
@@ -417,8 +416,8 @@ let call_substitute (subst : subst) (call : call) : call =
 let block_substitute (subst : subst) (blk : block) : block =
   st_substitute_visitor#visit_block subst blk
 
-(** Apply a type substitution to a function body. Return the local variables
-    and the body. *)
+(** Apply a type substitution to a function body. Return the local variables and
+    the body. *)
 let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
     local list * block =
   let locals =
@@ -471,8 +470,8 @@ let apply_args_to_item_binder (tr_self : trait_instance_id)
   substitutor (subst_free_vars subst) binder.item_binder_value
 
 (** Merge two levels of binders into a single one that binds the concatenated
-      params. Useful for consumers that don't want to have to handle method
-      binders. *)
+    params. Useful for consumers that don't want to have to handle method
+    binders. *)
 let fuse_binders (substitutor : subst -> 'a -> 'a)
     (binder : 'a binder item_binder) : 'a item_binder =
   let outer_params = binder.item_binder_params in
@@ -569,7 +568,8 @@ let instantiate_trait_method (trait_ref : trait_ref) =
   let trait_self = trait_ref.trait_id in
   instantiate_method trait_self trait_generics
 
-(** Like lookup_trait_decl_method, but also correctly substitutes the generics. *)
+(** Like lookup_trait_decl_method, but also correctly substitutes the generics.
+*)
 let lookup_and_subst_trait_decl_method (tdecl : trait_decl)
     (name : trait_item_name) (trait_ref : trait_ref)
     (method_generics : generic_args) : fun_decl_ref option =
@@ -577,7 +577,8 @@ let lookup_and_subst_trait_decl_method (tdecl : trait_decl)
     (instantiate_trait_method trait_ref method_generics)
     (lookup_trait_decl_method tdecl name)
 
-(** Like lookup_trait_impl_method, but also correctly substitutes the generics. *)
+(** Like lookup_trait_impl_method, but also correctly substitutes the generics.
+*)
 let lookup_and_subst_trait_impl_method (timpl : trait_impl)
     (name : trait_item_name) (impl_generics : generic_args)
     (method_generics : generic_args) : fun_decl_ref option =
