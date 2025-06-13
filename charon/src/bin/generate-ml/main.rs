@@ -986,6 +986,9 @@ fn main() -> Result<()> {
         cmd.arg("--cargo-arg=--lib");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--ullbc");
+        cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
+        cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
+        cmd.arg("--exclude=charon_lib::common::hash_consing::HashConsed");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
         let output = cmd.output()?;
