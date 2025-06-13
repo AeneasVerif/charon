@@ -17,31 +17,31 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::impls::{impl Clone for u32}#8::clone
-pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-// Full name: core::clone::impls::{impl Clone for u32}#8
+// Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
-    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
 }
 
-// Full name: core::clone::impls::{impl Clone for i32}#14::clone
-pub fn {impl Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 
-// Full name: core::clone::impls::{impl Clone for i32}#14
+// Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
     parent_clause0 = Sized<i32>
-    fn clone<'_0> = {impl Clone for i32}#14::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
 }
 
-// Full name: core::clone::impls::{impl Clone for usize}#5::clone
-pub fn {impl Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
 
-// Full name: core::clone::impls::{impl Clone for usize}#5
+// Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
     parent_clause0 = Sized<usize>
-    fn clone<'_0> = {impl Clone for usize}#5::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
 }
 
 // Full name: core::cmp::PartialEq
@@ -108,55 +108,55 @@ pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), 
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}#24::eq
-pub fn {impl PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
+pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}#24
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl PartialEq<u32> for u32 {
-    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}#24::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30::eq
-pub fn {impl PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
+pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
-    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}#21::eq
-pub fn {impl PartialEq<usize> for usize}#21::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
+pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}#21
+// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
 impl PartialEq<usize> for usize {
-    fn eq<'_0, '_1> = {impl PartialEq<usize> for usize}#21::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<usize> for usize}::eq<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}#64::partial_cmp
-pub fn {impl PartialOrd<u32> for u32}#64::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> Option<Ordering>[Sized<Ordering>]
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
+pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> Option<Ordering>[Sized<Ordering>]
 
-// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}#64
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
 impl PartialOrd<u32> for u32 {
-    parent_clause0 = {impl PartialEq<u32> for u32}#24
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<u32> for u32}#64::partial_cmp<'_0_0, '_0_1>
+    parent_clause0 = {impl PartialEq<u32> for u32}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}#76::partial_cmp
-pub fn {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
+pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
 
-// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}#76
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
 impl PartialOrd<i32> for i32 {
-    parent_clause0 = {impl PartialEq<i32> for i32}#30
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
+    parent_clause0 = {impl PartialEq<i32> for i32}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}#58::partial_cmp
-pub fn {impl PartialOrd<usize> for usize}#58::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> Option<Ordering>[Sized<Ordering>]
+// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
+pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> Option<Ordering>[Sized<Ordering>]
 
-// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}#58
+// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
 impl PartialOrd<usize> for usize {
-    parent_clause0 = {impl PartialEq<usize> for usize}#21
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<usize> for usize}#58::partial_cmp<'_0_0, '_0_1>
+    parent_clause0 = {impl PartialEq<usize> for usize}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_0, '_0_1>
 }
 
 // Full name: core::default::Default
@@ -203,61 +203,61 @@ pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> O
 where
     [@TraitClause0]: Step<Self>,
 
-// Full name: core::iter::range::{impl Step for usize}#43::steps_between
-pub fn {impl Step for usize}#43::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> (usize, Option<usize>[Sized<usize>])
+// Full name: core::iter::range::{impl Step for usize}::steps_between
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> (usize, Option<usize>[Sized<usize>])
 
-// Full name: core::iter::range::{impl Step for usize}#43::forward_checked
-pub fn {impl Step for usize}#43::forward_checked(@1: usize, @2: usize) -> Option<usize>[Sized<usize>]
+// Full name: core::iter::range::{impl Step for usize}::forward_checked
+pub fn {impl Step for usize}::forward_checked(@1: usize, @2: usize) -> Option<usize>[Sized<usize>]
 
-// Full name: core::iter::range::{impl Step for usize}#43::backward_checked
-pub fn {impl Step for usize}#43::backward_checked(@1: usize, @2: usize) -> Option<usize>[Sized<usize>]
+// Full name: core::iter::range::{impl Step for usize}::backward_checked
+pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[Sized<usize>]
 
-// Full name: core::iter::range::{impl Step for usize}#43
+// Full name: core::iter::range::{impl Step for usize}
 impl Step for usize {
     parent_clause0 = Sized<usize>
-    parent_clause1 = {impl Clone for usize}#5
-    parent_clause2 = {impl PartialOrd<usize> for usize}#58
-    fn steps_between<'_0, '_1> = {impl Step for usize}#43::steps_between<'_0_0, '_0_1>
-    fn forward_checked = {impl Step for usize}#43::forward_checked
-    fn backward_checked = {impl Step for usize}#43::backward_checked
+    parent_clause1 = {impl Clone for usize}
+    parent_clause2 = {impl PartialOrd<usize> for usize}
+    fn steps_between<'_0, '_1> = {impl Step for usize}::steps_between<'_0_0, '_0_1>
+    fn forward_checked = {impl Step for usize}::forward_checked
+    fn backward_checked = {impl Step for usize}::backward_checked
 }
 
-// Full name: core::iter::range::{impl Step for u32}#39::steps_between
-pub fn {impl Step for u32}#39::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> (usize, Option<usize>[Sized<usize>])
+// Full name: core::iter::range::{impl Step for u32}::steps_between
+pub fn {impl Step for u32}::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> (usize, Option<usize>[Sized<usize>])
 
-// Full name: core::iter::range::{impl Step for u32}#39::forward_checked
-pub fn {impl Step for u32}#39::forward_checked(@1: u32, @2: usize) -> Option<u32>[Sized<u32>]
+// Full name: core::iter::range::{impl Step for u32}::forward_checked
+pub fn {impl Step for u32}::forward_checked(@1: u32, @2: usize) -> Option<u32>[Sized<u32>]
 
-// Full name: core::iter::range::{impl Step for u32}#39::backward_checked
-pub fn {impl Step for u32}#39::backward_checked(@1: u32, @2: usize) -> Option<u32>[Sized<u32>]
+// Full name: core::iter::range::{impl Step for u32}::backward_checked
+pub fn {impl Step for u32}::backward_checked(@1: u32, @2: usize) -> Option<u32>[Sized<u32>]
 
-// Full name: core::iter::range::{impl Step for u32}#39
+// Full name: core::iter::range::{impl Step for u32}
 impl Step for u32 {
     parent_clause0 = Sized<u32>
-    parent_clause1 = {impl Clone for u32}#8
-    parent_clause2 = {impl PartialOrd<u32> for u32}#64
-    fn steps_between<'_0, '_1> = {impl Step for u32}#39::steps_between<'_0_0, '_0_1>
-    fn forward_checked = {impl Step for u32}#39::forward_checked
-    fn backward_checked = {impl Step for u32}#39::backward_checked
+    parent_clause1 = {impl Clone for u32}
+    parent_clause2 = {impl PartialOrd<u32> for u32}
+    fn steps_between<'_0, '_1> = {impl Step for u32}::steps_between<'_0_0, '_0_1>
+    fn forward_checked = {impl Step for u32}::forward_checked
+    fn backward_checked = {impl Step for u32}::backward_checked
 }
 
-// Full name: core::iter::range::{impl Step for i32}#40::steps_between
-pub fn {impl Step for i32}#40::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> (usize, Option<usize>[Sized<usize>])
+// Full name: core::iter::range::{impl Step for i32}::steps_between
+pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> (usize, Option<usize>[Sized<usize>])
 
-// Full name: core::iter::range::{impl Step for i32}#40::forward_checked
-pub fn {impl Step for i32}#40::forward_checked(@1: i32, @2: usize) -> Option<i32>[Sized<i32>]
+// Full name: core::iter::range::{impl Step for i32}::forward_checked
+pub fn {impl Step for i32}::forward_checked(@1: i32, @2: usize) -> Option<i32>[Sized<i32>]
 
-// Full name: core::iter::range::{impl Step for i32}#40::backward_checked
-pub fn {impl Step for i32}#40::backward_checked(@1: i32, @2: usize) -> Option<i32>[Sized<i32>]
+// Full name: core::iter::range::{impl Step for i32}::backward_checked
+pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[Sized<i32>]
 
-// Full name: core::iter::range::{impl Step for i32}#40
+// Full name: core::iter::range::{impl Step for i32}
 impl Step for i32 {
     parent_clause0 = Sized<i32>
-    parent_clause1 = {impl Clone for i32}#14
-    parent_clause2 = {impl PartialOrd<i32> for i32}#76
-    fn steps_between<'_0, '_1> = {impl Step for i32}#40::steps_between<'_0_0, '_0_1>
-    fn forward_checked = {impl Step for i32}#40::forward_checked
-    fn backward_checked = {impl Step for i32}#40::backward_checked
+    parent_clause1 = {impl Clone for i32}
+    parent_clause2 = {impl PartialOrd<i32> for i32}
+    fn steps_between<'_0, '_1> = {impl Step for i32}::steps_between<'_0_0, '_0_1>
+    fn forward_checked = {impl Step for i32}::forward_checked
+    fn backward_checked = {impl Step for i32}::backward_checked
 }
 
 // Full name: core::iter::traits::iterator::Iterator
@@ -279,13 +279,13 @@ where
   end: Idx,
 }
 
-// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}#6::next
-pub fn {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_0, A>(@1: &'_0 mut (Range<A>[@TraitClause0])) -> Option<A>[@TraitClause0]
+// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
+pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut (Range<A>[@TraitClause0])) -> Option<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
 
-// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}#6
+// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
 impl<A> Iterator for Range<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
@@ -293,7 +293,7 @@ where
 {
     parent_clause0 = @TraitClause0
     type Item = A
-    fn next<'_0> = {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_0_0, A>[@TraitClause0, @TraitClause1]
+    fn next<'_0> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_0, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -594,49 +594,49 @@ pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2::get
-pub fn {impl SliceIndex<Slice<T>> for usize}#2::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> Option<&'_0 (T)>[Sized<&'_0 (T)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get
+pub fn {impl SliceIndex<Slice<T>> for usize}::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> Option<&'_0 (T)>[Sized<&'_0 (T)>]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2::get_mut
-pub fn {impl SliceIndex<Slice<T>> for usize}#2::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (T)>[Sized<&'_0 mut (T)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_mut
+pub fn {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (T)>[Sized<&'_0 mut (T)>]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2::get_unchecked
-pub unsafe fn {impl SliceIndex<Slice<T>> for usize}#2::get_unchecked<T>(@1: usize, @2: *const Slice<T>) -> *const T
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_unchecked
+pub unsafe fn {impl SliceIndex<Slice<T>> for usize}::get_unchecked<T>(@1: usize, @2: *const Slice<T>) -> *const T
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<Slice<T>> for usize}#2::get_unchecked_mut<T>(@1: usize, @2: *mut Slice<T>) -> *mut T
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>(@1: usize, @2: *mut Slice<T>) -> *mut T
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2::index
-pub fn {impl SliceIndex<Slice<T>> for usize}#2::index<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> &'_0 (T)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::index
+pub fn {impl SliceIndex<Slice<T>> for usize}::index<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> &'_0 (T)
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2::index_mut
-pub fn {impl SliceIndex<Slice<T>> for usize}#2::index_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (T)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::index_mut
+pub fn {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (T)
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}#2
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}
 impl<T> SliceIndex<Slice<T>> for usize
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {impl Sealed for usize}
     type Output = T
-    fn get<'_0> = {impl SliceIndex<Slice<T>> for usize}#2::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}#2::get_mut<'_0_0, T>[@TraitClause0]
-    fn get_unchecked = {impl SliceIndex<Slice<T>> for usize}#2::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}#2::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = {impl SliceIndex<Slice<T>> for usize}#2::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}#2::index_mut<'_0_0, T>[@TraitClause0]
+    fn get<'_0> = {impl SliceIndex<Slice<T>> for usize}::get<'_0_0, T>[@TraitClause0]
+    fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0_0, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<Slice<T>> for usize}::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_0, T>[@TraitClause0]
+    fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: alloc::alloc::Global
@@ -650,20 +650,20 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-pub fn alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
+pub fn alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::len<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index
-pub fn {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
+// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index
+pub fn {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 
-// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13
+// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}
 impl<T, I, A> Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: Sized<T>,
@@ -672,18 +672,18 @@ where
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
     type Output = @TraitClause3::Output
-    fn index<'_0> = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index<'_0> = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut
-pub fn {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0, T, I, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut
+pub fn {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#14
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}
 impl<T, I, A> IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: Sized<T>,
@@ -691,8 +691,8 @@ where
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    parent_clause0 = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 // Full name: test_crate::test_loop1
@@ -1645,7 +1645,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_live(@5)
     storage_live(@6)
     @6 := Range { start: const (0 : i32), end: const (128 : i32) }
-    @5 := {impl IntoIterator for I}::into_iter<Range<i32>[Sized<i32>]>[Sized<Range<i32>[Sized<i32>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<i32>[Sized<i32>, {impl Step for i32}#40]](move (@6))
+    @5 := {impl IntoIterator for I}::into_iter<Range<i32>[Sized<i32>]>[Sized<Range<i32>[Sized<i32>]>, {impl Iterator for Range<A>[@TraitClause0]}<i32>[Sized<i32>, {impl Step for i32}]](move (@6))
     storage_dead(@6)
     storage_live(iter@7)
     iter@7 := move (@5)
@@ -1656,7 +1656,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@11)
         @11 := &mut iter@7
         @10 := &two-phase-mut *(@11)
-        @9 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, i32>[Sized<i32>, {impl Step for i32}#40](move (@10))
+        @9 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[Sized<i32>, {impl Step for i32}](move (@10))
         storage_dead(@10)
         match @9 {
             Option::None => {
@@ -1685,7 +1685,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     @16 := copy (step_out@1)
     @15 := Range { start: const (0 : usize), end: move (@16) }
     storage_dead(@16)
-    @14 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<usize>[Sized<usize>, {impl Step for usize}#43]](move (@15))
+    @14 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}<usize>[Sized<usize>, {impl Step for usize}]](move (@15))
     storage_dead(@15)
     storage_live(iter@17)
     iter@17 := move (@14)
@@ -1696,7 +1696,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@21)
         @21 := &mut iter@17
         @20 := &two-phase-mut *(@21)
-        @19 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, usize>[Sized<usize>, {impl Step for usize}#43](move (@20))
+        @19 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@20))
         storage_dead(@20)
         match @19 {
             Option::None => {
@@ -1709,7 +1709,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                 @24 := copy (step_in@2)
                 @23 := Range { start: const (0 : usize), end: move (@24) }
                 storage_dead(@24)
-                @22 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<usize>[Sized<usize>, {impl Step for usize}#43]](move (@23))
+                @22 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}<usize>[Sized<usize>, {impl Step for usize}]](move (@23))
                 storage_dead(@23)
                 storage_live(iter@25)
                 iter@25 := move (@22)
@@ -1720,7 +1720,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                     storage_live(@29)
                     @29 := &mut iter@25
                     @28 := &two-phase-mut *(@29)
-                    @27 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, usize>[Sized<usize>, {impl Step for usize}#43](move (@28))
+                    @27 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@28))
                     storage_dead(@28)
                     match @27 {
                         Option::None => {
@@ -1805,7 +1805,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
         @8 := copy (n@2)
         @7 := Range { start: const (0 : u32), end: move (@8) }
         storage_dead(@8)
-        @6 := {impl IntoIterator for I}::into_iter<Range<u32>[Sized<u32>]>[Sized<Range<u32>[Sized<u32>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<u32>[Sized<u32>, {impl Step for u32}#39]](move (@7))
+        @6 := {impl IntoIterator for I}::into_iter<Range<u32>[Sized<u32>]>[Sized<Range<u32>[Sized<u32>]>, {impl Iterator for Range<A>[@TraitClause0]}<u32>[Sized<u32>, {impl Step for u32}]](move (@7))
         storage_dead(@7)
         storage_live(iter@9)
         iter@9 := move (@6)
@@ -1816,7 +1816,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             storage_live(@13)
             @13 := &mut iter@9
             @12 := &two-phase-mut *(@13)
-            @11 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, u32>[Sized<u32>, {impl Step for u32}#39](move (@12))
+            @11 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u32>[Sized<u32>, {impl Step for u32}](move (@12))
             storage_dead(@12)
             match @11 {
                 Option::None => {
@@ -2015,7 +2015,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
         storage_live(@5)
         storage_live(@6)
         @6 := &*(v@1)
-        @5 := alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
+        @5 := alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
@@ -2030,7 +2030,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
         @8 := &mut *(v@1)
         storage_live(@9)
         @9 := copy (i@2)
-        @7 := {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}#2<u32>[Sized<u32>]](move (@8), move (@9))
+        @7 := {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
         storage_dead(@9)
         storage_dead(@8)
         *(@7) := const (0 : u32)

@@ -331,19 +331,19 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[Sized<&'_ (T)>]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[Sized<&'_ (T)>]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}#182
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}
 impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = Sized<&'_ (T)>
     type Item = &'a (T)
-    fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next<'a, '_0_0, T>[@TraitClause0]
+    fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_0, T>[@TraitClause0]
 }
 
 // Full name: core::slice::{Slice<T>}::iter
@@ -383,7 +383,7 @@ fn main()
     @7 := iter<'_, i32>[Sized<i32>](move (@8))
     @6 := &two-phase-mut @7
     storage_dead(@8)
-    @5 := {impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[Sized<i32>](move (@6))
+    @5 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, i32>[Sized<i32>](move (@6))
     storage_dead(@6)
     storage_dead(@7)
     storage_dead(@5)

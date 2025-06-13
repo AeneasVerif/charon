@@ -48,15 +48,15 @@ where
     [@TraitClause0]: SizedTypeProperties<Self>,
  = core::mem::SizedTypeProperties::MAX_SLICE_LEN()
 
-// Full name: core::mem::{impl SizedTypeProperties for T}#6
+// Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> SizedTypeProperties for T
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = @TraitClause0
-    const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
-    const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
-    const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+    const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
 }
 
 // Full name: alloc::alloc::Global
@@ -74,7 +74,7 @@ opaque type RawVecInner<A>
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::raw_vec::{RawVecInner<A>[@TraitClause0]}#4::with_capacity_in
+// Full name: alloc::raw_vec::{RawVecInner<A>[@TraitClause0]}::with_capacity_in
 fn with_capacity_in<A>(@1: usize, @2: A, @3: Layout) -> RawVecInner<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
@@ -108,7 +108,7 @@ where
     storage_live(@2)
     storage_live(@3)
     @4 := Global {  }
-    @3 := with_capacity_in<Global>[Sized<Global>](move (capacity@1), move (@4), const ({impl SizedTypeProperties for T}#6<T>[@TraitClause0]::LAYOUT))
+    @3 := with_capacity_in<Global>[Sized<Global>](move (capacity@1), move (@4), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
     @5 := PhantomData {  }
     @2 := RawVec { 0: move (@3), 1: move (@5) }
     storage_dead(@3)

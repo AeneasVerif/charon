@@ -17,13 +17,13 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::impls::{impl Clone for i32}#14::clone
-pub fn {impl Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 
-// Full name: core::clone::impls::{impl Clone for i32}#14
+// Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
     parent_clause0 = Sized<i32>
-    fn clone<'_0> = {impl Clone for i32}#14::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
 }
 
 // Full name: alloc::alloc::Global
@@ -82,7 +82,7 @@ fn foo()
     _v@1 := into_vec<i32, Global>[Sized<i32>, Sized<Global>](move (@2))
     storage_dead(@2)
     storage_live(_v2@5)
-    _v2@5 := from_elem<i32>[Sized<i32>, {impl Clone for i32}#14](const (1 : i32), const (10 : usize))
+    _v2@5 := from_elem<i32>[Sized<i32>, {impl Clone for i32}](const (1 : i32), const (10 : usize))
     @0 := ()
     drop _v2@5
     storage_dead(_v2@5)

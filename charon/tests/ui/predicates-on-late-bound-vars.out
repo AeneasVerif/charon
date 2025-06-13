@@ -11,7 +11,7 @@ pub struct BorrowError {}
 #[lang_item("sized")]
 pub trait Sized<Self>
 
-// Full name: core::cell::{RefCell<T>}#22::new
+// Full name: core::cell::{RefCell<T>}::new
 pub fn new<T>(@1: T) -> RefCell<T>
 where
     [@TraitClause0]: Sized<T>,
@@ -33,7 +33,7 @@ pub opaque type Ref<'b, T>
 where
     T : 'b,
 
-// Full name: core::cell::{RefCell<T>}#23::try_borrow
+// Full name: core::cell::{RefCell<T>}::try_borrow
 pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
 
 // Full name: core::clone::Clone

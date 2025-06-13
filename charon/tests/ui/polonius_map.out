@@ -39,17 +39,17 @@ pub trait Eq<Self>
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}#24::eq
-pub fn {impl PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
+pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}#24
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl PartialEq<u32> for u32 {
-    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}#24::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl Eq for u32}#43
+// Full name: core::cmp::impls::{impl Eq for u32}
 impl Eq for u32 {
-    parent_clause0 = {impl PartialEq<u32> for u32}#24
+    parent_clause0 = {impl PartialEq<u32> for u32}
 }
 
 // Full name: core::marker::Sized
@@ -97,15 +97,15 @@ pub fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> @Tra
 where
     [@TraitClause0]: BuildHasher<Self>,
 
-// Full name: core::hash::impls::{impl Hash for u32}#11::hash
-pub fn {impl Hash for u32}#11::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
+// Full name: core::hash::impls::{impl Hash for u32}::hash
+pub fn {impl Hash for u32}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
     [@TraitClause0]: Sized<H>,
     [@TraitClause1]: Hasher<H>,
 
-// Full name: core::hash::impls::{impl Hash for u32}#11
+// Full name: core::hash::impls::{impl Hash for u32}
 impl Hash for u32 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = {impl Hash for u32}#11::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = {impl Hash for u32}::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::ops::index::Index
@@ -138,7 +138,7 @@ where
     [@TraitClause1]: Sized<V>,
     [@TraitClause2]: Sized<S>,
 
-// Full name: std::collections::hash::map::{HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get
+// Full name: std::collections::hash::map::{HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::get
 pub fn get<'_0, '_1, K, V, S, Q>(@1: &'_0 (HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_1 (Q)) -> Option<&'_0 (V)>[Sized<&'_0 (V)>]
 where
     [@TraitClause0]: Sized<K>,
@@ -151,7 +151,7 @@ where
     [@TraitClause7]: Hash<Q>,
     [@TraitClause8]: Eq<Q>,
 
-// Full name: std::collections::hash::map::{HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::insert
+// Full name: std::collections::hash::map::{HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::insert
 #[lang_item("hashmap_insert")]
 pub fn insert<'_0, K, V, S>(@1: &'_0 mut (HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: K, @3: V) -> Option<V>[@TraitClause1]
 where
@@ -162,8 +162,8 @@ where
     [@TraitClause4]: Hash<K>,
     [@TraitClause5]: BuildHasher<S>,
 
-// Full name: std::collections::hash::map::{impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index
-pub fn {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_0, '_1, K, Q, V, S>(@1: &'_1 (HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_0 (Q)) -> &'_1 (V)
+// Full name: std::collections::hash::map::{impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::index
+pub fn {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::index<'_0, '_1, K, Q, V, S>(@1: &'_1 (HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_0 (Q)) -> &'_1 (V)
 where
     [@TraitClause0]: Sized<K>,
     [@TraitClause1]: Sized<V>,
@@ -175,7 +175,7 @@ where
     [@TraitClause7]: Hash<Q>,
     [@TraitClause8]: BuildHasher<S>,
 
-// Full name: std::collections::hash::map::{impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8
+// Full name: std::collections::hash::map::{impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}
 impl<'_0, K, Q, V, S> Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]
 where
     [@TraitClause0]: Sized<K>,
@@ -189,7 +189,7 @@ where
     [@TraitClause8]: BuildHasher<S>,
 {
     type Output = V
-    fn index<'_0> = {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8]
+    fn index<'_0> = {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8]
 }
 
 // Full name: std::hash::random::RandomState
@@ -198,27 +198,27 @@ pub opaque type RandomState
 // Full name: std::hash::random::DefaultHasher
 pub opaque type DefaultHasher
 
-// Full name: std::hash::random::{impl Hasher for DefaultHasher}#4::finish
-pub fn {impl Hasher for DefaultHasher}#4::finish<'_0>(@1: &'_0 (DefaultHasher)) -> u64
+// Full name: std::hash::random::{impl Hasher for DefaultHasher}::finish
+pub fn {impl Hasher for DefaultHasher}::finish<'_0>(@1: &'_0 (DefaultHasher)) -> u64
 
-// Full name: std::hash::random::{impl Hasher for DefaultHasher}#4::write
-pub fn {impl Hasher for DefaultHasher}#4::write<'_0, '_1>(@1: &'_0 mut (DefaultHasher), @2: &'_1 (Slice<u8>))
+// Full name: std::hash::random::{impl Hasher for DefaultHasher}::write
+pub fn {impl Hasher for DefaultHasher}::write<'_0, '_1>(@1: &'_0 mut (DefaultHasher), @2: &'_1 (Slice<u8>))
 
-// Full name: std::hash::random::{impl Hasher for DefaultHasher}#4
+// Full name: std::hash::random::{impl Hasher for DefaultHasher}
 impl Hasher for DefaultHasher {
-    fn finish<'_0> = {impl Hasher for DefaultHasher}#4::finish<'_0_0>
-    fn write<'_0, '_1> = {impl Hasher for DefaultHasher}#4::write<'_0_0, '_0_1>
+    fn finish<'_0> = {impl Hasher for DefaultHasher}::finish<'_0_0>
+    fn write<'_0, '_1> = {impl Hasher for DefaultHasher}::write<'_0_0, '_0_1>
 }
 
-// Full name: std::hash::random::{impl BuildHasher for RandomState}#1::build_hasher
-pub fn {impl BuildHasher for RandomState}#1::build_hasher<'_0>(@1: &'_0 (RandomState)) -> DefaultHasher
+// Full name: std::hash::random::{impl BuildHasher for RandomState}::build_hasher
+pub fn {impl BuildHasher for RandomState}::build_hasher<'_0>(@1: &'_0 (RandomState)) -> DefaultHasher
 
-// Full name: std::hash::random::{impl BuildHasher for RandomState}#1
+// Full name: std::hash::random::{impl BuildHasher for RandomState}
 impl BuildHasher for RandomState {
     parent_clause0 = Sized<DefaultHasher>
-    parent_clause1 = {impl Hasher for DefaultHasher}#4
+    parent_clause1 = {impl Hasher for DefaultHasher}
     type Hasher = DefaultHasher
-    fn build_hasher<'_0> = {impl BuildHasher for RandomState}#1::build_hasher<'_0_0>
+    fn build_hasher<'_0> = {impl BuildHasher for RandomState}::build_hasher<'_0_0>
 }
 
 // Full name: test_crate::get_or_insert
@@ -259,7 +259,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
     @6 := const (22 : u32)
     @5 := &@6
     @4 := &*(@5)
-    @2 := get<'_, '_, u32, u32, RandomState, u32>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}#43, {impl Hash for u32}#11, {impl BuildHasher for RandomState}#1, {impl Borrow<T> for T}<u32>, {impl Hash for u32}#11, {impl Eq for u32}#43](move (@3), move (@4))
+    @2 := get<'_, '_, u32, u32, RandomState, u32>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {impl Borrow<T> for T}<u32>, {impl Hash for u32}, {impl Eq for u32}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     match @2 {
@@ -267,7 +267,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
             storage_live(@8)
             storage_live(@9)
             @9 := &two-phase-mut *(map@1)
-            @8 := insert<'_, u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}#43, {impl Hash for u32}#11, {impl BuildHasher for RandomState}#1](move (@9), const (22 : u32), const (33 : u32))
+            @8 := insert<'_, u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@9), const (22 : u32), const (33 : u32))
             storage_dead(@9)
             storage_dead(@8)
             storage_live(@10)
@@ -280,7 +280,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
             @15 := const (22 : u32)
             @14 := &@15
             @13 := &*(@14)
-            @11 := {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_, '_, u32, u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}#43, {impl Hash for u32}#11, {impl Borrow<T> for T}<u32>, {impl Eq for u32}#43, {impl Hash for u32}#11, {impl BuildHasher for RandomState}#1](move (@12), move (@13))
+            @11 := {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::index<'_, '_, u32, u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@12), move (@13))
             storage_dead(@13)
             storage_dead(@12)
             @10 := &*(@11)

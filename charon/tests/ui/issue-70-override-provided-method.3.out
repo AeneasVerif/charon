@@ -47,20 +47,20 @@ where
   Some(T),
 }
 
-// Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}#5::clone
-pub fn {impl Clone for Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> Option<T>[@TraitClause0]
+// Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}::clone
+pub fn {impl Clone for Option<T>[@TraitClause0]}::clone<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 
-// Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}#5
+// Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}
 impl<T> Clone for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
     parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    fn clone<'_0> = {impl Clone for Option<T>[@TraitClause0]}#5::clone<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn clone<'_0> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::GenericTrait
@@ -177,7 +177,7 @@ where
     [@TraitClause1]: Copy<T>,
 {
     parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}#5<T>[@TraitClause0, @TraitClause1::parent_clause0]
+    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause0]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
     fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, Option<T>[@TraitClause0]>> = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_0, @TraitClause0_1]
 }
@@ -190,8 +190,8 @@ where
   T,
 }
 
-// Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1::other_method
-fn {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1::other_method<T>()
+// Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method
+fn {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -203,7 +203,7 @@ where
     return
 }
 
-fn test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1::provided<T, U>(@1: Option<T>[@TraitClause0], @2: U)
+fn test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>(@1: Option<T>[@TraitClause0], @2: U)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -226,7 +226,7 @@ where
     if move (@3) {
         storage_dead(@5)
         storage_dead(@4)
-        @0 := {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1::other_method<T>[@TraitClause0, @TraitClause1]()
+        @0 := {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
     }
     else {
         storage_dead(@5)
@@ -240,16 +240,16 @@ where
     return
 }
 
-// Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1
+// Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}
 impl<T> GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
     parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}#5<T>[@TraitClause0, @TraitClause1::parent_clause0]
-    fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1::other_method<T>[@TraitClause0, @TraitClause1]
-    fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, Option<T>[@TraitClause0]>> = test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}#1::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_0, @TraitClause0_1]
+    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause0]
+    fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
+    fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, Option<T>[@TraitClause0]>> = test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_0, @TraitClause0_1]
 }
 
 

@@ -17,23 +17,23 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::impls::{impl Clone for u32}#8::clone
-pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-// Full name: core::clone::impls::{impl Clone for u32}#8
+// Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
-    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
 }
 
-// Full name: core::clone::impls::{impl Clone for &'_0 (T)}#3::clone
+// Full name: core::clone::impls::{impl Clone for &'_0 (T)}::clone
 #[lang_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
-// Full name: core::clone::impls::{impl Clone for &'_0 (T)}#3
+// Full name: core::clone::impls::{impl Clone for &'_0 (T)}
 impl<'_0, T> Clone for &'_0 (T) {
     parent_clause0 = Sized<&'_ (T)>
-    fn clone<'_0> = {impl Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
+    fn clone<'_0> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_0, T>
 }
 
 // Full name: core::marker::Tuple
@@ -90,7 +90,7 @@ pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
     parent_clause0 = Sized<u32>
-    parent_clause1 = {impl Clone for u32}#8
+    parent_clause1 = {impl Clone for u32}
     type Type = u32
     fn get_ty<'_0> = {impl Foo for ()}::get_ty<'_0_0>
 }
@@ -125,7 +125,7 @@ fn use_foo()
     @4 := {impl Foo for ()}::get_ty<'_>(move (@5))
     @3 := &*(@4)
     storage_dead(@5)
-    @2 := {impl Clone for u32}#8::clone<'_>(move (@3))
+    @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
     drop @2
     storage_dead(@4)
@@ -156,8 +156,8 @@ where
     return
 }
 
-// Full name: test_crate::{impl RPITIT for ()}#1::make_foo
-pub fn {impl RPITIT for ()}#1::make_foo()
+// Full name: test_crate::{impl RPITIT for ()}::make_foo
+pub fn {impl RPITIT for ()}::make_foo()
 {
     let @0: (); // return
 
@@ -166,12 +166,12 @@ pub fn {impl RPITIT for ()}#1::make_foo()
     return
 }
 
-// Full name: test_crate::{impl RPITIT for ()}#1
+// Full name: test_crate::{impl RPITIT for ()}
 impl RPITIT for () {
     parent_clause0 = Sized<()>
     parent_clause1 = {impl Foo for ()}
     type  = ()
-    fn make_foo = {impl RPITIT for ()}#1::make_foo
+    fn make_foo = {impl RPITIT for ()}::make_foo
 }
 
 // Full name: test_crate::use_tait
@@ -240,7 +240,7 @@ pub fn use_wrap()
 {
     let @0: (); // return
     let f@1: closure<u32>[Sized<u32>]; // local
-    let @2: WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}#3<'_, u32>]; // anonymous local
+    let @2: WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}<'_, u32>]; // anonymous local
     let @3: closure<u32>[Sized<u32>]; // anonymous local
     let @4: (&'_ (u32)); // anonymous local
     let @5: &'_ (u32); // anonymous local
@@ -260,7 +260,7 @@ pub fn use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := FnOnce<closure<u32>[Sized<u32>], (&'_ (u32))> where Output  = WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
+    @2 := FnOnce<closure<u32>[Sized<u32>], (&'_ (u32))> where Output  = WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}<'_, u32>]::call_once(move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)

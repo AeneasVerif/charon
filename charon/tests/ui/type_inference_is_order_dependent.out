@@ -17,13 +17,13 @@ pub fn core::default::Default::default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
 
-// Full name: core::default::{impl Default for bool}#1::default
-pub fn {impl Default for bool}#1::default() -> bool
+// Full name: core::default::{impl Default for bool}::default
+pub fn {impl Default for bool}::default() -> bool
 
-// Full name: core::default::{impl Default for bool}#1
+// Full name: core::default::{impl Default for bool}
 impl Default for bool {
     parent_clause0 = Sized<bool>
-    fn default = {impl Default for bool}#1::default
+    fn default = {impl Default for bool}::default
 }
 
 // Full name: core::fmt::Error
@@ -45,7 +45,7 @@ where
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
 
-// Full name: core::fmt::{Arguments<'a>}#4::new_v1
+// Full name: core::fmt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
 // Full name: core::result::Result
@@ -70,15 +70,15 @@ pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut 
 where
     [@TraitClause0]: Debug<Self>,
 
-// Full name: core::fmt::{impl Debug for bool}#16::fmt
-pub fn {impl Debug for bool}#16::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+// Full name: core::fmt::{impl Debug for bool}::fmt
+pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::{impl Debug for bool}#16
+// Full name: core::fmt::{impl Debug for bool}
 impl Debug for bool {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for bool}#16::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0, '_1, '_2> = {impl Debug for bool}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
-// Full name: core::fmt::rt::{Argument<'_0>}#1::new_debug
+// Full name: core::fmt::rt::{Argument<'_0>}::new_debug
 pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
@@ -190,7 +190,7 @@ where
     fn test = {impl Join<U> for T}::test<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
 }
 
-// Full name: test_crate::{impl Left<U> for T}#1
+// Full name: test_crate::{impl Left<U> for T}
 impl<T, U> Left<U> for T
 where
     [@TraitClause0]: Sized<T>,
@@ -201,7 +201,7 @@ where
     parent_clause0 = @TraitClause1
 }
 
-// Full name: test_crate::{impl Right<U> for T}#2
+// Full name: test_crate::{impl Right<U> for T}
 impl<T, U> Right<U> for T
 where
     [@TraitClause0]: Sized<T>,
@@ -223,7 +223,7 @@ where
 {
     let @0: (); // return
 
-    @0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, Sized<bool>, @TraitClause3, {impl Right<U> for T}#2<T, bool>[@TraitClause0, Sized<bool>, {impl Default for bool}#1, {impl Debug for bool}#16], {impl Default for bool}#1, {impl Debug for bool}#16]()
+    @0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, Sized<bool>, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, Sized<bool>, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
     @0 := ()
     return
 }

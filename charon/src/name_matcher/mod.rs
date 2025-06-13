@@ -182,11 +182,11 @@ impl PatElem {
                     pat_ident == ident || (pat_ident == "crate" && ident == &ctx.crate_name);
                 same_ident && PatTy::matches_generics(ctx, generics, args)
             }
-            (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(..), _)) => {
+            (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(..))) => {
                 // TODO
                 false
             }
-            (PatElem::Impl(pat), PathElem::Impl(ImplElem::Trait(impl_id), _)) => {
+            (PatElem::Impl(pat), PathElem::Impl(ImplElem::Trait(impl_id))) => {
                 let Some(timpl) = ctx.trait_impls.get(*impl_id) else {
                     return false;
                 };

@@ -23,7 +23,7 @@ where
   S,
 }
 
-// Full name: test_crate::{HashMap<S>[@TraitClause0]}#1::get
+// Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
 pub fn get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: Sized<S>,

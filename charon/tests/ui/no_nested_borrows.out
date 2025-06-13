@@ -34,32 +34,32 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref
+pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}
 impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
 {
     type Target = T
-    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0_0, T, A>[@TraitClause0]
+    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_0_0, T, A>[@TraitClause0]
 }
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut
-pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut
+pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}
 impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
 {
-    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24<T, A>[@TraitClause0]
-    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0_0, T, A>[@TraitClause0]
+    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}<T, A>[@TraitClause0]
+    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_0_0, T, A>[@TraitClause0]
 }
 
 // Full name: test_crate::Pair
@@ -387,13 +387,13 @@ pub fn test_box1()
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
-    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, Global>[Sized<Global>](move (@3))
+    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_, i32, Global>[Sized<Global>](move (@3))
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
-    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, Global>[Sized<Global>](move (@5))
+    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_, i32, Global>[Sized<Global>](move (@5))
     storage_dead(@5)
     storage_live(@6)
     storage_live(@7)

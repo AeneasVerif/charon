@@ -88,8 +88,8 @@ fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
 where
     [@TraitClause0]: MyCompare<Self, Other>,
 
-// Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}#1::compare
-fn {impl MyCompare<&'a (())> for &'a (())}#1::compare<'a>(@1: &'a (()), @2: &'a (())) -> bool
+// Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}::compare
+fn {impl MyCompare<&'a (())> for &'a (())}::compare<'a>(@1: &'a (()), @2: &'a (())) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (()); // arg #1
@@ -99,11 +99,11 @@ fn {impl MyCompare<&'a (())> for &'a (())}#1::compare<'a>(@1: &'a (()), @2: &'a 
     return
 }
 
-// Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}#1
+// Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}
 impl<'a> MyCompare<&'a (())> for &'a (()) {
     parent_clause0 = Sized<&'_ (())>
     parent_clause1 = Sized<&'_ (())>
-    fn compare = {impl MyCompare<&'a (())> for &'a (())}#1::compare<'a>
+    fn compare = {impl MyCompare<&'a (())> for &'a (())}::compare<'a>
 }
 
 // Full name: test_crate::main
@@ -152,7 +152,7 @@ fn main()
     @11 := ()
     @10 := &@11
     @9 := &*(@10)
-    @6 := {impl MyCompare<&'a (())> for &'a (())}#1::compare<'_>(move (@7), move (@9))
+    @6 := {impl MyCompare<&'a (())> for &'a (())}::compare<'_>(move (@7), move (@9))
     storage_dead(@9)
     storage_dead(@7)
     storage_dead(@11)
@@ -174,8 +174,8 @@ fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
 where
     [@TraitClause0]: Foo<Self>,
 
-// Full name: test_crate::{impl Foo for ()}#2::foo
-fn {impl Foo for ()}#2::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
+// Full name: test_crate::{impl Foo for ()}::foo
+fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
 {
     let @0: &'_ (()); // return
     let x@1: &'_ (()); // arg #1
@@ -185,9 +185,9 @@ fn {impl Foo for ()}#2::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
     return
 }
 
-// Full name: test_crate::{impl Foo for ()}#2
+// Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    fn foo<'a, 'b> = {impl Foo for ()}#2::foo<'a, 'b>
+    fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
 }
 
 // Full name: test_crate::call_foo
@@ -211,7 +211,7 @@ fn call_foo<'e>(@1: &'e (())) -> &'e (())
     @6 := ()
     @5 := &@6
     @4 := &*(@5)
-    @2 := {impl Foo for ()}#2::foo<'_, '_>(move (@3), move (@4))
+    @2 := {impl Foo for ()}::foo<'_, '_>(move (@3), move (@4))
     @0 := &*(@2)
     storage_dead(@4)
     storage_dead(@3)

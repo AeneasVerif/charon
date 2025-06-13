@@ -68,21 +68,21 @@ pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), 
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
-// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30::eq
-pub fn {impl PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
+pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
-    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl Eq for i32}#49
+// Full name: core::cmp::impls::{impl Eq for i32}
 impl Eq for i32 {
-    parent_clause0 = {impl PartialEq<i32> for i32}#30
+    parent_clause0 = {impl PartialEq<i32> for i32}
 }
 
-// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}#76::partial_cmp
-pub fn {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
+pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
 {
     let @0: Option<Ordering>[Sized<Ordering>]; // return
     let self@1: &'_ (i32); // arg #1
@@ -104,20 +104,20 @@ pub fn {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), 
     return
 }
 
-// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}#76
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
 impl PartialOrd<i32> for i32 {
-    parent_clause0 = {impl PartialEq<i32> for i32}#30
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
+    parent_clause0 = {impl PartialEq<i32> for i32}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl Ord for i32}#77::cmp
-pub fn {impl Ord for i32}#77::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Ordering
+// Full name: core::cmp::impls::{impl Ord for i32}::cmp
+pub fn {impl Ord for i32}::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Ordering
 
-// Full name: core::cmp::impls::{impl Ord for i32}#77
+// Full name: core::cmp::impls::{impl Ord for i32}
 impl Ord for i32 {
-    parent_clause0 = {impl Eq for i32}#49
-    parent_clause1 = {impl PartialOrd<i32> for i32}#76
-    fn cmp<'_0, '_1> = {impl Ord for i32}#77::cmp<'_0_0, '_0_1>
+    parent_clause0 = {impl Eq for i32}
+    parent_clause1 = {impl PartialOrd<i32> for i32}
+    fn cmp<'_0, '_1> = {impl Ord for i32}::cmp<'_0_0, '_0_1>
 }
 
 // Full name: test_crate::main
@@ -142,7 +142,7 @@ fn main()
     storage_live(@6)
     @6 := &y@2
     @5 := &*(@6)
-    @3 := {impl Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
+    @3 := {impl Ord for i32}::cmp<'_, '_>(move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@6)

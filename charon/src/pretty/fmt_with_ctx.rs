@@ -946,12 +946,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 }
                 Ok(())
             }
-            PathElem::Impl(impl_elem, d) => {
-                write!(f, "{}", impl_elem.with_ctx(ctx))?;
-                if !d.is_zero() {
-                    write!(f, "#{}", d)?;
-                }
-                Ok(())
+            PathElem::Impl(impl_elem) => {
+                write!(f, "{}", impl_elem.with_ctx(ctx))
             }
             PathElem::Monomorphized(args) => {
                 write!(f, "<{}>", args.fmt_explicits(ctx).format(", "))

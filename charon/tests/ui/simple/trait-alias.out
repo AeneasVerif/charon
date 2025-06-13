@@ -37,8 +37,8 @@ trait Trait<Self, T, Self_Item>
 // Full name: test_crate::Struct
 struct Struct {}
 
-// Full name: test_crate::{impl Clone for Struct}#1::clone
-pub fn {impl Clone for Struct}#1::clone<'_0>(@1: &'_0 (Struct)) -> Struct
+// Full name: test_crate::{impl Clone for Struct}::clone
+pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 (Struct)) -> Struct
 {
     let @0: Struct; // return
     let self@1: &'_ (Struct); // arg #1
@@ -47,10 +47,10 @@ pub fn {impl Clone for Struct}#1::clone<'_0>(@1: &'_0 (Struct)) -> Struct
     return
 }
 
-// Full name: test_crate::{impl Clone for Struct}#1
+// Full name: test_crate::{impl Clone for Struct}
 impl Clone for Struct {
     parent_clause0 = Sized<Struct>
-    fn clone<'_0> = {impl Clone for Struct}#1::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for Struct}::clone<'_0_0>
 }
 
 // Full name: test_crate::{impl Trait<T, u32> for Struct}
@@ -116,7 +116,7 @@ fn use_alias()
     storage_live(@1)
     storage_live(@2)
     @2 := Struct {  }
-    @1 := takes_alias<Struct>[Sized<Struct>, {impl Alias<U> for Self}<Struct, ()>[{impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}#1, Sized<()>]](move (@2))
+    @1 := takes_alias<Struct>[Sized<Struct>, {impl Alias<U> for Self}<Struct, ()>[{impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}, Sized<()>]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

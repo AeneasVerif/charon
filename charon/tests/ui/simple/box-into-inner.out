@@ -27,17 +27,17 @@ pub opaque type Unique<T>
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop
-pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}
 impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
 {
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0_0, T, A>[@TraitClause0]
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0_0, T, A>[@TraitClause0]
 }
 
 // Full name: alloc::string::String
@@ -89,7 +89,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[Sized<Global>])
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1
-    @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_, String, Global>[Sized<Global>](move (@3))
+    @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_, String, Global>[Sized<Global>](move (@3))
     @0 := ()
     return
 }

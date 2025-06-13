@@ -80,7 +80,7 @@ where
 // Full name: test_crate::T
 pub struct T {}
 
-pub fn test_crate::{T}#1::f<F>()
+pub fn test_crate::{T}::f<F>()
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: for<'_0> FnMut<F, (&'_0_0 (u32))>,

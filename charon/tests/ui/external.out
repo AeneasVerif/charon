@@ -23,13 +23,13 @@ pub trait Copy<Self>
     parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-// Full name: core::cell::{Cell<T>}#10::get
+// Full name: core::cell::{Cell<T>}::get
 pub fn get<'_0, T>(@1: &'_0 (Cell<T>)) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 
-// Full name: core::cell::{Cell<T>}#11::get_mut
+// Full name: core::cell::{Cell<T>}::get_mut
 pub fn get_mut<'_0, T>(@1: &'_0 mut (Cell<T>)) -> &'_0 mut (T)
 
 #[lang_item("clone_fn")]
@@ -37,18 +37,18 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::impls::{impl Clone for u32}#8::clone
-pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-// Full name: core::clone::impls::{impl Clone for u32}#8
+// Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
-    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
 }
 
-// Full name: core::marker::{impl Copy for u32}#40
+// Full name: core::marker::{impl Copy for u32}
 impl Copy for u32 {
-    parent_clause0 = {impl Clone for u32}#8
+    parent_clause0 = {impl Clone for u32}
 }
 
 #[lang_item("mem_swap")]
@@ -59,18 +59,18 @@ where
 // Full name: core::num::niche_types::NonZeroU32Inner
 pub opaque type NonZeroU32Inner
 
-// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}#92::clone
-pub fn {impl Clone for NonZeroU32Inner}#92::clone<'_0>(@1: &'_0 (NonZeroU32Inner)) -> NonZeroU32Inner
+// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}::clone
+pub fn {impl Clone for NonZeroU32Inner}::clone<'_0>(@1: &'_0 (NonZeroU32Inner)) -> NonZeroU32Inner
 
-// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}#92
+// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}
 impl Clone for NonZeroU32Inner {
     parent_clause0 = Sized<NonZeroU32Inner>
-    fn clone<'_0> = {impl Clone for NonZeroU32Inner}#92::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for NonZeroU32Inner}::clone<'_0_0>
 }
 
-// Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}#93
+// Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}
 impl Copy for NonZeroU32Inner {
-    parent_clause0 = {impl Clone for NonZeroU32Inner}#92
+    parent_clause0 = {impl Clone for NonZeroU32Inner}
 }
 
 // Full name: core::num::nonzero::private::Sealed
@@ -87,16 +87,16 @@ pub trait ZeroablePrimitive<Self>
     type NonZeroInner
 }
 
-// Full name: core::num::nonzero::{impl Sealed for u32}#20
+// Full name: core::num::nonzero::{impl Sealed for u32}
 impl Sealed for u32 {}
 
-// Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}#21
+// Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
 impl ZeroablePrimitive for u32 {
     parent_clause0 = Sized<u32>
-    parent_clause1 = {impl Copy for u32}#40
-    parent_clause2 = {impl Sealed for u32}#20
+    parent_clause1 = {impl Copy for u32}
+    parent_clause2 = {impl Sealed for u32}
     parent_clause3 = Sized<NonZeroU32Inner>
-    parent_clause4 = {impl Copy for NonZeroU32Inner}#93
+    parent_clause4 = {impl Copy for NonZeroU32Inner}
     type NonZeroInner = NonZeroU32Inner
 }
 
@@ -117,7 +117,7 @@ where
   Some(T),
 }
 
-pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<T>(@1: T) -> Option<NonZero<T>[@TraitClause0, @TraitClause1]>[Sized<NonZero<T>[@TraitClause0, @TraitClause1]>]
+pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<T>(@1: T) -> Option<NonZero<T>[@TraitClause0, @TraitClause1]>[Sized<NonZero<T>[@TraitClause0, @TraitClause1]>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ZeroablePrimitive<T>,
@@ -144,7 +144,7 @@ pub fn alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::new<T>() -> V
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push
+// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::push
 pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
 where
     [@TraitClause0]: Sized<T>,
@@ -172,19 +172,19 @@ where
 }
 
 // Full name: test_crate::test_new_non_zero_u32
-pub fn test_new_non_zero_u32(@1: u32) -> NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]
+pub fn test_new_non_zero_u32(@1: u32) -> NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]
 {
-    let @0: NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]; // return
+    let @0: NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]; // return
     let x@1: u32; // arg #1
-    let @2: Option<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>[Sized<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>]; // anonymous local
+    let @2: Option<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]>[Sized<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]>]; // anonymous local
     let @3: u32; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    @2 := core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21](move (@3))
+    @2 := core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}](move (@3))
     storage_dead(@3)
-    @0 := unwrap<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>[Sized<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>](move (@2))
+    @0 := unwrap<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]>[Sized<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]>](move (@2))
     storage_dead(@2)
     return
 }
@@ -221,7 +221,7 @@ pub fn use_get<'_0>(@1: &'_0 (Cell<u32>)) -> u32
 
     storage_live(@2)
     @2 := &*(rc@1)
-    @0 := get<'_, u32>[Sized<u32>, {impl Copy for u32}#40](move (@2))
+    @0 := get<'_, u32>[Sized<u32>, {impl Copy for u32}](move (@2))
     storage_dead(@2)
     return
 }

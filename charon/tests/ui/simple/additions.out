@@ -37,8 +37,8 @@ where
     return
 }
 
-// Full name: core::clone::impls::{impl Clone for u8}#6::clone
-pub fn {impl Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 {
     let @0: u8; // return
     let self@1: &'_ (u8); // arg #1
@@ -47,7 +47,7 @@ pub fn {impl Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
     return
 }
 
-pub fn core::clone::impls::{impl Clone for u8}#6::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
+pub fn core::clone::impls::{impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
 {
     let @0: (); // return
     let self@1: &'_ mut (u8); // arg #1
@@ -55,7 +55,7 @@ pub fn core::clone::impls::{impl Clone for u8}#6::clone_from<'_0, '_1>(@1: &'_0 
     let @3: u8; // anonymous local
 
     storage_live(@3)
-    @3 := {impl Clone for u8}#6::clone<'_>(move (source@2))
+    @3 := {impl Clone for u8}::clone<'_>(move (source@2))
     drop *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
@@ -63,11 +63,11 @@ pub fn core::clone::impls::{impl Clone for u8}#6::clone_from<'_0, '_1>(@1: &'_0 
     return
 }
 
-// Full name: core::clone::impls::{impl Clone for u8}#6
+// Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
     parent_clause0 = Sized<u8>
-    fn clone<'_0> = {impl Clone for u8}#6::clone<'_0_0>
-    fn clone_from<'_0, '_1> = core::clone::impls::{impl Clone for u8}#6::clone_from<'_0_0, '_0_1>
+    fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
+    fn clone_from<'_0, '_1> = core::clone::impls::{impl Clone for u8}::clone_from<'_0_0, '_0_1>
 }
 
 // Full name: core::marker::Copy
@@ -89,22 +89,22 @@ where
     undefined_behavior
 }
 
-// Full name: core::marker::{impl Copy for u8}#38
+// Full name: core::marker::{impl Copy for u8}
 impl Copy for u8 {
-    parent_clause0 = {impl Clone for u8}#6
+    parent_clause0 = {impl Clone for u8}
 }
 
-pub fn core::num::{u8}#6::saturating_add(@1: u8, @2: u8) -> u8
+pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
 {
     let @0: u8; // return
     let self@1: u8; // arg #1
     let rhs@2: u8; // arg #2
 
-    @0 := core::intrinsics::saturating_add<u8>[Sized<u8>, {impl Copy for u8}#38](move (self@1), move (rhs@2))
+    @0 := core::intrinsics::saturating_add<u8>[Sized<u8>, {impl Copy for u8}](move (self@1), move (rhs@2))
     return
 }
 
-// Full name: core::num::{u8}#6::wrapping_add
+// Full name: core::num::{u8}::wrapping_add
 pub fn wrapping_add(@1: u8, @2: u8) -> u8
 {
     let @0: u8; // return
@@ -115,7 +115,7 @@ pub fn wrapping_add(@1: u8, @2: u8) -> u8
     return
 }
 
-// Full name: core::num::{u8}#6::overflowing_add
+// Full name: core::num::{u8}::overflowing_add
 pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
 {
     let @0: (u8, bool); // return
@@ -152,7 +152,7 @@ fn main()
     storage_dead(@2)
     storage_live(@3)
     // This one is meant to be implemented by codegen backends, hence has no useful MIR.
-    @3 := core::num::{u8}#6::saturating_add(const (255 : u8), const (1 : u8))
+    @3 := core::num::{u8}::saturating_add(const (255 : u8), const (1 : u8))
     storage_dead(@3)
     @0 := ()
     // FIXME(#543): this causes a panic in hax

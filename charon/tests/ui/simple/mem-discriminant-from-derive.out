@@ -37,25 +37,25 @@ pub trait Eq<Self>
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<u8> for u8}#22::eq
-pub fn {impl PartialEq<u8> for u8}#22::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
+pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<u8> for u8}#22
+// Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
 impl PartialEq<u8> for u8 {
-    fn eq<'_0, '_1> = {impl PartialEq<u8> for u8}#22::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<u8> for u8}::eq<'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq
-pub fn {impl PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 (&'_1 (A)), @2: &'_3 (&'_0 (B))) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq
+pub fn {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 (&'_1 (A)), @2: &'_3 (&'_0 (B))) -> bool
 where
     [@TraitClause0]: PartialEq<A, B>,
 
-// Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}#9
+// Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}
 impl<'_0, '_1, A, B> PartialEq<&'_0 (B)> for &'_1 (A)
 where
     [@TraitClause0]: PartialEq<A, B>,
 {
-    fn eq<'_0, '_1> = {impl PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_0, '_1, '_0_0, '_0_1, A, B>[@TraitClause0]
+    fn eq<'_0, '_1> = {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_0_0, '_0_1, A, B>[@TraitClause0]
 }
 
 // Full name: core::fmt::Error
@@ -175,8 +175,8 @@ enum Enum {
 // Full name: test_crate::{impl StructuralPartialEq for Enum}
 impl StructuralPartialEq for Enum {}
 
-// Full name: test_crate::{impl PartialEq<Enum> for Enum}#1::eq
-pub fn {impl PartialEq<Enum> for Enum}#1::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (Enum)) -> bool
+// Full name: test_crate::{impl PartialEq<Enum> for Enum}::eq
+pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (Enum)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Enum); // arg #1
@@ -256,7 +256,7 @@ pub fn {impl PartialEq<Enum> for Enum}#1::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1
                         @15 := &__self_0@13
                         storage_live(@16)
                         @16 := &__arg1_0@14
-                        @0 := {impl PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_, '_, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}#22](move (@15), move (@16))
+                        @0 := {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_, '_, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}](move (@15), move (@16))
                         storage_dead(@16)
                         storage_dead(@15)
                         storage_dead(__arg1_0@14)
@@ -284,9 +284,9 @@ pub fn {impl PartialEq<Enum> for Enum}#1::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1
     return
 }
 
-// Full name: test_crate::{impl PartialEq<Enum> for Enum}#1
+// Full name: test_crate::{impl PartialEq<Enum> for Enum}
 impl PartialEq<Enum> for Enum {
-    fn eq<'_0, '_1> = {impl PartialEq<Enum> for Enum}#1::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<Enum> for Enum}::eq<'_0_0, '_0_1>
 }
 
 

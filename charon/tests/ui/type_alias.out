@@ -67,37 +67,37 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow
-pub fn {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
+// Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}::borrow
+pub fn {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}::borrow<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5
+// Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}
 impl<T, A> Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    fn borrow<'_0> = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn borrow<'_0> = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: alloc::slice::{impl ToOwned for Slice<T>}#9::to_owned
-pub fn {impl ToOwned for Slice<T>}#9::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
+// Full name: alloc::slice::{impl ToOwned for Slice<T>}::to_owned
+pub fn {impl ToOwned for Slice<T>}::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 
-// Full name: alloc::slice::{impl ToOwned for Slice<T>}#9
+// Full name: alloc::slice::{impl ToOwned for Slice<T>}
 impl<T> ToOwned for Slice<T>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
     parent_clause0 = Sized<Vec<T, Global>[@TraitClause0, Sized<Global>]>
-    parent_clause1 = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, Global>[@TraitClause0, Sized<Global>]
+    parent_clause1 = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, Sized<Global>]
     type Owned = Vec<T, Global>[@TraitClause0, Sized<Global>]
-    fn to_owned<'_0> = {impl ToOwned for Slice<T>}#9::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn to_owned<'_0> = {impl ToOwned for Slice<T>}::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::Generic2
@@ -107,7 +107,7 @@ where
     [@TraitClause1]: Clone<T>,
     T : 'a,
 {
-  Cow<'a, Slice<T>>[{impl ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
+  Cow<'a, Slice<T>>[{impl ToOwned for Slice<T>}<T>[@TraitClause0, @TraitClause1]],
 }
 
 
