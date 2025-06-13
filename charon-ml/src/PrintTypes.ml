@@ -182,15 +182,13 @@ and type_decl_id_to_string env def_id =
   | Some def -> name_to_string env def.item_meta.name
 
 and type_decl_ref_to_string (env : 'a fmt_env) (tref : type_decl_ref) : string =
-  match tref.type_decl_id with
+  match tref.id with
   | TTuple ->
-      let params, trait_refs =
-        generic_args_to_strings env tref.type_decl_generics
-      in
+      let params, trait_refs = generic_args_to_strings env tref.generics in
       "(" ^ String.concat ", " params ^ ")"
   | id ->
       let id = type_id_to_string env id in
-      let generics = generic_args_to_string env tref.type_decl_generics in
+      let generics = generic_args_to_string env tref.generics in
       id ^ generics
 
 and fun_decl_id_to_string (env : 'a fmt_env) (id : FunDeclId.id) : string =
@@ -205,8 +203,8 @@ and global_decl_id_to_string env def_id =
 
 and global_decl_ref_to_string (env : 'a fmt_env) (gr : global_decl_ref) : string
     =
-  let global_id = global_decl_id_to_string env gr.global_id in
-  let generics = generic_args_to_string env gr.global_generics in
+  let global_id = global_decl_id_to_string env gr.id in
+  let generics = generic_args_to_string env gr.generics in
   global_id ^ generics
 
 and trait_decl_id_to_string env id =
@@ -221,8 +219,8 @@ and trait_impl_id_to_string env id =
 
 and trait_impl_ref_to_string (env : 'a fmt_env) (iref : trait_impl_ref) : string
     =
-  let impl = trait_impl_id_to_string env iref.trait_impl_id in
-  let generics = generic_args_to_string env iref.impl_generics in
+  let impl = trait_impl_id_to_string env iref.id in
+  let generics = generic_args_to_string env iref.generics in
   impl ^ generics
 
 and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
@@ -288,8 +286,8 @@ and trait_ref_to_string (env : 'a fmt_env) (tr : trait_ref) : string =
   trait_instance_id_to_string env tr.trait_id
 
 and trait_decl_ref_to_string (env : 'a fmt_env) (tr : trait_decl_ref) : string =
-  let trait_id = trait_decl_id_to_string env tr.trait_decl_id in
-  let generics = generic_args_to_string env tr.decl_generics in
+  let trait_id = trait_decl_id_to_string env tr.id in
+  let generics = generic_args_to_string env tr.generics in
   trait_id ^ generics
 
 and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
@@ -323,10 +321,10 @@ and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
           let env = fmt_env_update_generics_and_preds env impl.generics in
           (* Put the first type argument aside (it gives the type for which we
              implement the trait) *)
-          let { trait_decl_id; decl_generics } = impl.impl_trait in
-          let ty, types = Collections.List.pop decl_generics.types in
-          let decl_generics = { decl_generics with types } in
-          let tr = { trait_decl_id; decl_generics } in
+          let { id; generics } : trait_decl_ref = impl.impl_trait in
+          let ty, types = Collections.List.pop generics.types in
+          let generics = { generics with types } in
+          let tr : trait_decl_ref = { id; generics } in
           let ty = ty_to_string env ty in
           let tr = trait_decl_ref_to_string env tr in
           tr ^ " for " ^ ty

@@ -682,9 +682,9 @@ and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* fun_id = fun_decl_id_of_json ctx id in
-        let* fun_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ fun_id; fun_generics } : fun_decl_ref)
+        let* id = fun_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_id_of_json (ctx : of_json_ctx) (js : json) : (fun_id, string) result =
@@ -886,9 +886,9 @@ and global_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* global_id = global_decl_id_of_json ctx id in
-        let* global_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ global_id; global_generics } : global_decl_ref)
+        let* id = global_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : global_decl_ref)
     | _ -> Error "")
 
 and global_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1520,10 +1520,10 @@ and trait_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (trait_decl_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
-        let* trait_decl_id = trait_decl_id_of_json ctx trait_id in
-        let* decl_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ trait_decl_id; decl_generics } : trait_decl_ref)
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = trait_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : trait_decl_ref)
     | _ -> Error "")
 
 and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
@@ -1592,9 +1592,9 @@ and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* trait_impl_id = trait_impl_id_of_json ctx id in
-        let* impl_generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ trait_impl_id; impl_generics } : trait_impl_ref)
+        let* id = trait_impl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : trait_impl_ref)
     | _ -> Error "")
 
 and trait_item_name_of_json (ctx : of_json_ctx) (js : json) :
@@ -1791,11 +1791,9 @@ and type_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* type_decl_id = type_id_of_json ctx id in
-        let* type_decl_generics =
-          box_of_json generic_args_of_json ctx generics
-        in
-        Ok ({ type_decl_id; type_decl_generics } : type_decl_ref)
+        let* id = type_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : type_decl_ref)
     | _ -> Error "")
 
 and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =

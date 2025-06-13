@@ -64,15 +64,15 @@ let ty_is_unit (ty : ty) : bool =
   match ty with
   | TAdt
       {
-        type_decl_id = TTuple;
-        type_decl_generics =
+        id = TTuple;
+        generics =
           { regions = []; types = []; const_generics = []; trait_refs = _ };
       } -> true
   | _ -> false
 
 let ty_as_opt_adt (ty : ty) : (type_id * generic_args) option =
   match ty with
-  | TAdt tref -> Some (tref.type_decl_id, tref.type_decl_generics)
+  | TAdt tref -> Some (tref.id, tref.generics)
   | _ -> None
 
 let ty_is_adt (ty : ty) : bool = Option.is_some (ty_as_opt_adt ty)
@@ -84,8 +84,7 @@ let ty_as_adt (ty : ty) : type_id * generic_args =
 
 let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
   match ty with
-  | TAdt { type_decl_id = TBuiltin id; type_decl_generics } ->
-      Some (id, type_decl_generics)
+  | TAdt { id = TBuiltin id; generics } -> Some (id, generics)
   | _ -> None
 
 let ty_is_builtin_adt (ty : ty) : bool =
@@ -141,13 +140,12 @@ let ty_as_ref (ty : ty) : region * ty * ref_kind =
 
 let ty_is_custom_adt (ty : ty) : bool =
   match ty with
-  | TAdt { type_decl_id = TAdtId _; _ } -> true
+  | TAdt { id = TAdtId _; _ } -> true
   | _ -> false
 
 let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   match ty with
-  | TAdt { type_decl_id = TAdtId id; type_decl_generics } ->
-      (id, type_decl_generics)
+  | TAdt { id = TAdtId id; generics } -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_literal (ty : ty) : literal_type =
@@ -168,7 +166,7 @@ let const_generic_as_literal (cg : const_generic) : Values.literal =
 let trait_instance_id_as_trait_impl (id : trait_instance_id) :
     trait_impl_id * generic_args =
   match id with
-  | TraitImpl impl_ref -> (impl_ref.trait_impl_id, impl_ref.impl_generics)
+  | TraitImpl impl_ref -> (impl_ref.id, impl_ref.generics)
   | _ -> raise (Failure "Unreachable")
 
 (* Make a debruijn variable of index 0 *)
@@ -230,19 +228,15 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   { regions; types; const_generics; trait_refs }
 
 (** The unit type *)
-let mk_unit_ty : ty =
-  TAdt { type_decl_id = TTuple; type_decl_generics = empty_generic_args }
+let mk_unit_ty : ty = TAdt { id = TTuple; generics = empty_generic_args }
 
 (** The usize type *)
 let mk_usize_ty : ty = TLiteral (TInteger Usize)
 
 let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with
-  | TAdt
-      {
-        type_decl_id = TBuiltin TBox;
-        type_decl_generics = { types = [ boxed_ty ]; _ };
-      } -> Some boxed_ty
+  | TAdt { id = TBuiltin TBox; generics = { types = [ boxed_ty ]; _ } } ->
+      Some boxed_ty
   | _ -> None
 
 let ty_is_box (box_ty : ty) : bool = Option.is_some (ty_as_opt_box box_ty)
@@ -265,11 +259,7 @@ let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
 
 (** Make a box type *)
 let mk_box_ty (ty : ty) : ty =
-  TAdt
-    {
-      type_decl_id = TBuiltin TBox;
-      type_decl_generics = mk_generic_args_from_types [ ty ];
-    }
+  TAdt { id = TBuiltin TBox; generics = mk_generic_args_from_types [ ty ] }
 
 (* TODO: move region set manipulation to aeneas *)
 

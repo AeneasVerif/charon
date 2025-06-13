@@ -564,7 +564,7 @@ let instantiate_method (trait_self : trait_instance_id)
 
 (** Helper *)
 let instantiate_trait_method (trait_ref : trait_ref) =
-  let trait_generics = trait_ref.trait_decl_ref.binder_value.decl_generics in
+  let trait_generics = trait_ref.trait_decl_ref.binder_value.generics in
   let trait_self = trait_ref.trait_id in
   instantiate_method trait_self trait_generics
 
@@ -600,7 +600,7 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
        } =
     lookup_trait_decl_method tdecl name
   in
-  let method_decl_id = bound_method.binder_value.fun_id in
+  let method_decl_id = bound_method.binder_value.id in
   let* method_decl =
     LlbcAst.FunDeclId.Map.find_opt method_decl_id crate.fun_decls
   in
@@ -608,7 +608,7 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
   let signature =
     st_substitute_visitor#visit_fun_sig
       (make_subst_from_generics method_decl.signature.generics
-         bound_method.binder_value.fun_generics)
+         bound_method.binder_value.generics)
       method_decl.signature
   in
   (* Rebind everything *)

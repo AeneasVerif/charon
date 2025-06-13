@@ -526,12 +526,11 @@ and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pty : expr) (ty : T.ty) : bool =
   match (pty, ty) with
   | EComp pid, TAdt tref ->
-      match_pattern_with_type_id ctx c m pid tref.type_decl_id
-        tref.type_decl_generics
+      match_pattern_with_type_id ctx c m pid tref.id tref.generics
   | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
   | EPrimAdt (pid, pgenerics), TAdt tref ->
-      match_primitive_adt pid tref.type_decl_id
-      && match_generic_args ctx c m pgenerics tref.type_decl_generics
+      match_primitive_adt pid tref.id
+      && match_generic_args ctx c m pgenerics tref.generics
   | ERef (pr, pty, prk), TRef (r, ty, rk) ->
       match_region c m pr r
       && match_expr_with_ty ctx c m pty ty
@@ -562,27 +561,23 @@ and match_expr_with_trait_impl_id (ctx : 'fun_body ctx) (c : match_config)
   (* Lookup the trait implementation *)
   let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
   (* Lookup the trait declaration *)
-  let d =
-    T.TraitDeclId.Map.find impl.impl_trait.trait_decl_id ctx.crate.trait_decls
-  in
+  let d = T.TraitDeclId.Map.find impl.impl_trait.id ctx.crate.trait_decls in
   (* Match *)
   match ptr with
   | EComp pid ->
       match_name_with_generics ctx c pid d.item_meta.name
-        impl.impl_trait.decl_generics
+        impl.impl_trait.generics
   | EPrimAdt _ | ERef _ | EVar _ | EArrow _ | ERawPtr _ -> false
 
 and match_trait_decl_ref (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref T.region_binder) : bool =
   (* Lookup the trait declaration *)
-  let d =
-    T.TraitDeclId.Map.find tr.binder_value.trait_decl_id ctx.crate.trait_decls
-  in
+  let d = T.TraitDeclId.Map.find tr.binder_value.id ctx.crate.trait_decls in
   (* Push a region group in the map, if necessary - TODO: make this more precise *)
   let m = maps_push_bound_regions_group_if_nonempty m tr.binder_regions in
   (* Match the trait decl ref *)
   match_name_with_generics ctx c ~m pid d.item_meta.name
-    tr.binder_value.decl_generics
+    tr.binder_value.generics
 
 and match_trait_decl_ref_item (ctx : 'fun_body ctx) (c : match_config)
     (m : maps) (pid : pattern) (tr : T.trait_decl_ref T.region_binder)
@@ -952,10 +947,9 @@ and trait_decl_ref_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (params : T.generic_params) (tr : T.trait_decl_ref) : expr =
   (* Compute the constraints map *)
   let m = compute_constraints_map params in
-  let { T.trait_decl_id; decl_generics } = tr in
-  let generics = generic_args_to_pattern ctx c m decl_generics in
+  let generics = generic_args_to_pattern ctx c m tr.generics in
   (* Lookup the declaration *)
-  let d = T.TraitDeclId.Map.find trait_decl_id ctx.crate.trait_decls in
+  let d = T.TraitDeclId.Map.find tr.id ctx.crate.trait_decls in
   EComp
     (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
        (Some generics))
@@ -964,8 +958,8 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
     (m : constraints) (ty : T.ty) : expr =
   match ty with
   | TAdt tref -> (
-      let generics = generic_args_to_pattern ctx c m tref.type_decl_generics in
-      match tref.type_decl_id with
+      let generics = generic_args_to_pattern ctx c m tref.generics in
+      match tref.id with
       | TAdtId id ->
           (* Lookup the declaration *)
           let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
@@ -1014,7 +1008,7 @@ and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
   if c.use_trait_decl_refs then
     let trait_decl_ref = trait_ref.trait_decl_ref in
     let d =
-      T.TraitDeclId.Map.find trait_decl_ref.binder_value.trait_decl_id
+      T.TraitDeclId.Map.find trait_decl_ref.binder_value.id
         ctx.crate.trait_decls
     in
     (* Push a regions map if necessary - TODO: make this more precise *)
@@ -1023,7 +1017,7 @@ and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
         trait_decl_ref.binder_regions
     in
     let g =
-      generic_args_to_pattern ctx c m trait_decl_ref.binder_value.decl_generics
+      generic_args_to_pattern ctx c m trait_decl_ref.binder_value.generics
     in
     let name =
       name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some g)

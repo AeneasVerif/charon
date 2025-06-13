@@ -212,8 +212,8 @@ and existential_predicate = unit
 
 (** Reference to a function declaration. *)
 and fun_decl_ref = {
-  fun_id : fun_decl_id;
-  fun_generics : generic_args;  (** Generic arguments passed to the function. *)
+  id : fun_decl_id;
+  generics : generic_args;  (** Generic arguments passed to the function. *)
 }
 
 (** A set of generic arguments. *)
@@ -225,10 +225,7 @@ and generic_args = {
 }
 
 (** Reference to a global declaration. *)
-and global_decl_ref = {
-  global_id : global_decl_id;
-  global_generics : generic_args;
-}
+and global_decl_ref = { id : global_decl_id; generics : generic_args }
 
 and ref_kind = RMut | RShared
 
@@ -261,16 +258,10 @@ and region_var = (region_id, string option) indexed_var
     ]}
 
     The substitution is: [[String, bool]]. *)
-and trait_decl_ref = {
-  trait_decl_id : trait_decl_id;
-  decl_generics : generic_args;
-}
+and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 
 (** A reference to a tait impl, using the provided arguments. *)
-and trait_impl_ref = {
-  trait_impl_id : trait_impl_id;
-  impl_generics : generic_args;
-}
+and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
 and trait_item_name = string
 
@@ -408,10 +399,7 @@ and ty =
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
 (** Reference to a type declaration or builtin type. *)
-and type_decl_ref = {
-  type_decl_id : type_id;
-  type_decl_generics : generic_args;
-}
+and type_decl_ref = { id : type_id; generics : generic_args }
 
 (** Type identifier.
 

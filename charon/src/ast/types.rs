@@ -161,9 +161,7 @@ pub struct TraitRef {
 /// The substitution is: `[String, bool]`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitDeclRef {
-    #[charon::rename("trait_decl_id")]
     pub id: TraitDeclId,
-    #[charon::rename("decl_generics")]
     pub generics: BoxedArgs,
 }
 
@@ -173,9 +171,7 @@ pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 /// A reference to a tait impl, using the provided arguments.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitImplRef {
-    #[charon::rename("trait_impl_id")]
     pub id: TraitImplId,
-    #[charon::rename("impl_generics")]
     pub generics: BoxedArgs,
 }
 
@@ -604,9 +600,7 @@ pub enum TypeId {
 /// Reference to a type declaration or builtin type.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeDeclRef {
-    #[charon::rename("type_decl_id")]
     pub id: TypeId,
-    #[charon::rename("type_decl_generics")]
     pub generics: BoxedArgs,
 }
 
