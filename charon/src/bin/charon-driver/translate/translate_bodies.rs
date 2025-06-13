@@ -1001,7 +1001,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 trait_info,
             } => {
                 trace!("func: {:?}", def_id);
-                let fun_def = self.t_ctx.hax_def(def_id)?;
+                let fun_def = self.hax_def(def_id)?;
                 let fun_src = TransItemSource::Fun(def_id.clone());
                 let name = self.t_ctx.translate_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];

@@ -137,7 +137,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
                     let ty = ctx.translate_ty(span, &p.ty)?;
-                    let type_name = TraitItemName(p.assoc_item.name.clone());
+                    let type_name = ctx.t_ctx.translate_trait_item_name(&p.assoc_item.def_id)?;
                     Ok(TraitTypeConstraint {
                         trait_ref,
                         type_name,
@@ -269,19 +269,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             index,
                             ..
                         } => {
+                            let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
                             if !generic_args.is_empty() {
                                 raise_error!(
                                     self,
                                     span,
                                     "Found unsupported GAT `{}` when resolving trait `{}`",
-                                    item.name,
+                                    name,
                                     trait_decl_ref.with_ctx(&self.into_fmt())
                                 )
                             }
                             trait_id = TraitRefKind::ItemClause(
                                 Box::new(trait_id),
                                 current_trait_decl_id,
-                                TraitItemName(item.name.clone()),
+                                name,
                                 TraitClauseId::new(*index),
                             );
                             current_trait_decl_id = self.register_trait_decl_id(
@@ -366,15 +367,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let types = types
                         .iter()
                         .map(|(def_id, ty)| {
-                            let item_def = self.hax_def(def_id)?;
+                            let name = self.t_ctx.translate_trait_item_name(def_id)?;
                             let ty = self.translate_ty(span, ty)?;
-                            let hax::FullDefKind::AssocTy {
-                                associated_item, ..
-                            } = item_def.kind()
-                            else {
-                                unreachable!()
-                            };
-                            let name = TraitItemName(associated_item.name.clone());
                             Ok((name, ty))
                         })
                         .try_collect()?;

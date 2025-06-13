@@ -169,7 +169,7 @@ impl ItemTransCtx<'_, '_> {
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<FnPtr, Error> {
-        let fun_def = self.t_ctx.hax_def(def_id)?;
+        let fun_def = self.hax_def(def_id)?;
 
         // Trait information
         trace!(
