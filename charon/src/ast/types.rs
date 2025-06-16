@@ -335,18 +335,45 @@ pub struct VariantLayout {
     pub field_offsets: Vector<FieldId, ByteCount>,
 }
 
-/// Layout of the discriminant with its offset and representation type.
+/// In the case of a direct encoding, the tag (i.e. the memory representation of the discriminant)
+/// is simply the discriminant cas to the `repr` type.
 ///
-/// Does not include information about the value range.
+/// In the case of niche encoding, the translation is more complex and requires the information
+/// stored in [`TagEncoding::Niche`]. For more information see [`TypeDecl::get_tag_from_variant`].
+///
+/// Note: Does not include information about the value range, e.g. in the case of custom niches.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum DiscriminantLayout {
-    Direct {
-        /// The offset of the discriminant in bytes.
-        offset: ByteCount,
-        /// The representation type of the discriminant.
-        repr: IntegerTy,
+pub enum TagEncoding {
+    /// Represents the direct encoding of the discriminant as the tag via integer casts.
+    Direct,
+    /// Represents the encoding of the discriminant in the niche of variant `untagged_variant`.
+    /// Contains all information required to translate between discriminant and tag.
+    Niche {
+        untagged_variant: VariantId,
+        /// The first variant that is tagged. Is required for computing the tag.
+        tagged_variants_start: VariantId,
+        /// The last variant that is tagged.
+        ///
+        /// Note: this can't be put into a `Range` with `tagged_variants_start`, since
+        /// the OCaml translation doesn't know range types. TODO: fix this in `generate_ml`.
+        tagged_variants_end: VariantId,
+        /// This is the same as in `rustc_abi::TagEncoding::Niche`.
+        /// Is required for computing the tag.
+        niche_start: u128,
     },
-    Niche, // TODO: Add more useful information about niches here in the future.
+}
+
+/// Layout of the discriminant.
+/// Describes the offset of the discriminant field as well as its encoding
+/// as `tag` in memory.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DiscriminantLayout {
+    /// The offset of the discriminant in bytes.
+    pub offset: ByteCount,
+    /// The representation type of the discriminant.
+    pub tag_ty: IntegerTy,
+    /// How the tag is encoding in memory.
+    pub encoding: TagEncoding,
 }
 
 /// Simplified type layout information.
@@ -464,6 +491,7 @@ pub struct Variant {
     pub fields: Vector<FieldId, Field>,
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This is
     /// different than the discriminant stored in memory (the one controlled by `repr`).
+    /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: ScalarValue,
 }
 

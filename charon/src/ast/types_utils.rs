@@ -437,6 +437,66 @@ impl IntegerTy {
             IntegerTy::U128 => size_of::<u128>(),
         }
     }
+
+    /// Do a wrapping addition for the represented type based on the inputs. Returns `None`
+    /// if the casts fails.
+    ///
+    /// The `u128` operands are supposed to be bit-representations of values in
+    /// the corresponding type (cf. [`ScalarValue::to_bits`]).
+    pub(crate) fn wrapping_add(&self, op1: u128, op2: u128) -> Option<u128> {
+        macro_rules! wrap_add_case {
+            ($t:ty) => {{
+                let op1 = TryInto::<$t>::try_into(op1).ok();
+                let op2 = op2.try_into().ok();
+                let res = op1.zip(op2).map(|(op1, op2)| op1.wrapping_add(op2));
+                res.map(|r| r as u128)
+            }};
+        }
+        match self {
+            IntegerTy::Isize => wrap_add_case!(isize),
+            IntegerTy::I8 => wrap_add_case!(i8),
+            IntegerTy::I16 => wrap_add_case!(i16),
+            IntegerTy::I32 => wrap_add_case!(i32),
+            IntegerTy::I64 => wrap_add_case!(i64),
+            IntegerTy::I128 => wrap_add_case!(i128),
+            IntegerTy::Usize => wrap_add_case!(usize),
+            IntegerTy::U8 => wrap_add_case!(u8),
+            IntegerTy::U16 => wrap_add_case!(u16),
+            IntegerTy::U32 => wrap_add_case!(u32),
+            IntegerTy::U64 => wrap_add_case!(u64),
+            IntegerTy::U128 => Some(op1.wrapping_add(op2)),
+        }
+    }
+
+    /// Do a wrapping subtraction for the represented type based on the inputs. Returns `None`
+    /// if the casts fails.
+    ///
+    /// The `u128` operands are supposed to be bit-representations of values in
+    /// the corresponding type (cf. [`ScalarValue::to_bits`]).
+    pub(crate) fn wrapping_sub(&self, op1: u128, op2: u128) -> Option<u128> {
+        macro_rules! wrap_sub_case {
+            ($t:ty) => {{
+                let op1 = TryInto::<$t>::try_into(op1).ok();
+                let op2 = op2.try_into().ok();
+                let res = op1.zip(op2).map(|(op1, op2)| op1.wrapping_sub(op2));
+                res.map(|r| r as u128)
+            }};
+        }
+        match self {
+            IntegerTy::Isize => wrap_sub_case!(isize),
+            IntegerTy::I8 => wrap_sub_case!(i8),
+            IntegerTy::I16 => wrap_sub_case!(i16),
+            IntegerTy::I32 => wrap_sub_case!(i32),
+            IntegerTy::I64 => wrap_sub_case!(i64),
+            IntegerTy::I128 => wrap_sub_case!(i128),
+            IntegerTy::Usize => wrap_sub_case!(usize),
+            IntegerTy::U8 => wrap_sub_case!(u8),
+            IntegerTy::U16 => wrap_sub_case!(u16),
+            IntegerTy::U32 => wrap_sub_case!(u32),
+            IntegerTy::U64 => wrap_sub_case!(u64),
+            IntegerTy::U128 => Some(op1.wrapping_sub(op2)),
+        }
+    }
 }
 
 /// A value of type `T` bound by the generic parameters of item
@@ -898,6 +958,146 @@ pub trait TyVisitable: Sized + AstVisitable {
             f,
             depth: DeBruijnId::zero(),
         })
+    }
+}
+
+impl DiscriminantLayout {
+    pub(crate) fn get_tag_from_discriminant(&self, discr: ScalarValue) -> Option<ScalarValue> {
+        match &self.encoding {
+            // The direct encoding is just a cast.
+            TagEncoding::Direct => Some(ScalarValue::from_bits(self.tag_ty, discr.to_bits())),
+            TagEncoding::Niche {
+                untagged_variant,
+                tagged_variants_start,
+                niche_start,
+                ..
+            } => {
+                // For niche representation, the discriminant should be the same as the variant ID, I guess?
+                if discr.to_bits() == untagged_variant.raw() as u128 {
+                    None // This variant does not have a tag.
+                } else {
+                    let discr_raw = discr.to_bits();
+                    let tagged_variants_start_raw = tagged_variants_start.raw() as u128;
+                    let step1 = discr_raw - tagged_variants_start_raw;
+                    let step2 = self.tag_ty.wrapping_add(step1, *niche_start)?;
+                    Some(ScalarValue::from_bits(self.tag_ty, step2))
+                }
+            }
+        }
+    }
+
+    pub(crate) fn get_discriminant_from_tag(
+        &self,
+        tag: ScalarValue,
+        discr_ty: IntegerTy,
+    ) -> Option<ScalarValue> {
+        match &self.encoding {
+            TagEncoding::Direct => {
+                assert_eq!(tag.get_integer_ty(), self.tag_ty);
+                Some(ScalarValue::from_bits(discr_ty, tag.to_bits()))
+            }
+            TagEncoding::Niche {
+                untagged_variant,
+                tagged_variants_start,
+                tagged_variants_end,
+                niche_start,
+            } => {
+                let tag_ty = tag.get_integer_ty();
+                assert_eq!(tag_ty, self.tag_ty);
+                let tag_u128 = tag.to_bits();
+                let step1 = tag_ty.wrapping_sub(tag_u128, *niche_start)?;
+                let step2 = step1 + (tagged_variants_start.raw() as u128);
+                let discr = ScalarValue::from_bits(discr_ty, step2);
+                TryInto::<usize>::try_into(step2)
+                    .ok()
+                    .map(VariantId::from_raw)
+                    .map(|variant| {
+                        // If the discriminant would not be valid, it must be the untagged variant and the computed value is useless.
+                        if variant >= *tagged_variants_start
+                            && variant <= *tagged_variants_end
+                            && variant != *untagged_variant
+                        {
+                            discr
+                        } else {
+                            ScalarValue::from_bits(discr_ty, untagged_variant.raw() as u128)
+                        }
+                    })
+            }
+        }
+    }
+}
+
+impl TypeDecl {
+    /// Computes the tag representation of the variant's discriminant if possible.
+    ///
+    /// If the discriminant is encoded as a niche the following holds:
+    /// If discriminant != self.discriminant_layout.untagged_variant
+    /// then tag = (d-self.discriminant_layout.tagged_variants_start).wrapping_add(self.discriminant_layout.niche_start)
+    ///
+    /// Note: it is possible that the tag is stored in the niche of a pointer type, but will
+    /// be returned as an integer instead. This is supposed to be a different interpretation of the same bytes.
+    pub fn get_tag_from_variant(&self, variant: VariantId) -> Option<ScalarValue> {
+        let layout = self.layout.as_ref()?;
+        let discr_layout = layout.discriminant_layout.as_ref()?;
+        match &self.kind {
+            TypeDeclKind::Enum(variants) => {
+                let discr = variants.get(variant)?.discriminant;
+                discr_layout.get_tag_from_discriminant(discr)
+            }
+            _ => None,
+        }
+    }
+
+    /// Computes the variant from the tag.
+    ///
+    /// Reverses the computation of [`Self::get_tag_from_variant`]. If the `tag`
+    /// does not correspond to any valid discriminant, but there is a niche,
+    /// the resulting `VariantId` will be for the untagged variant, i.e. the one
+    /// for which [`Self::is_niche_discriminant`] returns `true`.
+    ///
+    /// Note: If the tag is stored in the niche of a pointer type, the input scalar
+    /// should be the integer interpretation of the same bytes.
+    pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
+        let layout = self.layout.as_ref()?;
+        let discr_layout = layout.discriminant_layout.as_ref()?;
+        match &self.kind {
+            TypeDeclKind::Enum(variants) => {
+                if variants.is_empty() {
+                    None
+                } else {
+                    let discr_ty = variants.get(VariantId::ZERO)?.discriminant.get_integer_ty();
+                    let discr = discr_layout.get_discriminant_from_tag(tag, discr_ty)?;
+                    variants.iter_indexed().find_map(|(id, variant)| {
+                        if variant.discriminant == discr {
+                            Some(id)
+                        } else {
+                            None
+                        }
+                    })
+                }
+            }
+            _ => None,
+        }
+    }
+
+    /// Checks whether the given `VariantId` represents a variant with the niche.
+    /// Such a variant doesn't have a direct tag encoding, i.e., [`Self::get_tag_from_variant`]
+    /// will return None.
+    pub fn is_niche_discriminant(&self, variant: VariantId) -> bool {
+        if let Some(layout) = self.layout.as_ref() {
+            match layout.discriminant_layout.as_ref() {
+                Some(DiscriminantLayout {
+                    encoding:
+                        TagEncoding::Niche {
+                            untagged_variant, ..
+                        },
+                    ..
+                }) => variant == *untagged_variant,
+                _ => false,
+            }
+        } else {
+            false
+        }
     }
 }
 

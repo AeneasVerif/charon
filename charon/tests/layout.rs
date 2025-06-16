@@ -111,8 +111,64 @@ fn type_layout() -> anyhow::Result<()> {
             B(u32) = 43,
             C = 123456,
         }
+
+        #[repr(i8)]
+        enum MyOrder {
+            Less = -1,
+            Equal = 0,
+            Greater = 1,
+        }
         "#,
     )?;
+
+    // Check whether niche discriminant computations are correct, i.e. reversible.
+    for tdecl in crate_data.type_decls.iter() {
+        if let Some(layout) = tdecl.layout.as_ref() {
+            if layout.discriminant_layout.is_some() {
+                let name = repr_name(&crate_data, &tdecl.item_meta.name);
+                let variants_from_kind = match &tdecl.kind {
+                    TypeDeclKind::Enum(variants) => variants,
+                    _ => unreachable!(),
+                };
+                for var_id in layout.variant_layouts.all_indices() {
+                    let discr = variants_from_kind.get(var_id).unwrap().discriminant;
+
+                    // As discussed in https://rust-lang.zulipchat.com/#narrow/channel/182449-t-compiler.2Fhelp/topic/.E2.9C.94.20VariantId.3DDiscriminant.20when.20tag.20is.20niche.20encoded.3F/with/524384295
+                    // for niche-encoded tags, the variant id's should coincide with their discriminants.
+                    if let Some(DiscriminantLayout {
+                        encoding: TagEncoding::Niche { .. },
+                        ..
+                    }) = layout.discriminant_layout
+                    {
+                        assert_eq!(
+                            var_id.raw() as u128,
+                            discr.to_bits(),
+                            "For type {} the discriminant {} is != the variant ID {}.",
+                            name,
+                            discr,
+                            var_id
+                        );
+                    }
+
+                    let tag = tdecl.get_tag_from_variant(var_id);
+                    if tdecl.is_niche_discriminant(var_id) {
+                        assert_eq!(None, tag, "For type {} something went wrong!", name);
+                    } else {
+                        let roundtrip_var_id =
+                            tag.clone().and_then(|tag| tdecl.get_variant_from_tag(tag));
+                        assert_eq!(
+                            Some(var_id),
+                            roundtrip_var_id,
+                            "For type {} something went wrong, tag = {:?}",
+                            name,
+                            tag
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     let layouts: IndexMap<String, Option<Layout>> = crate_data
         .type_decls
         .iter()

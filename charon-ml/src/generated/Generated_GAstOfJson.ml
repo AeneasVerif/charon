@@ -552,11 +552,12 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (discriminant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Direct", `Assoc [ ("offset", offset); ("repr", repr) ]) ] ->
+    | `Assoc [ ("offset", offset); ("tag_ty", tag_ty); ("encoding", encoding) ]
+      ->
         let* offset = int_of_json ctx offset in
-        let* repr = integer_type_of_json ctx repr in
-        Ok (Direct (offset, repr))
-    | `String "Niche" -> Ok Niche
+        let* tag_ty = integer_type_of_json ctx tag_ty in
+        let* encoding = tag_encoding_of_json ctx encoding in
+        Ok ({ offset; tag_ty; encoding } : discriminant_layout)
     | _ -> Error "")
 
 and existential_predicate_of_json (ctx : of_json_ctx) (js : json) :
@@ -1437,6 +1438,36 @@ and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
           option_of_json raw_span_of_json ctx generated_from_span
         in
         Ok ({ span; generated_from_span } : span)
+    | _ -> Error "")
+
+and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
+    (tag_encoding, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Direct" -> Ok Direct
+    | `Assoc
+        [
+          ( "Niche",
+            `Assoc
+              [
+                ("untagged_variant", untagged_variant);
+                ("tagged_variants_start", tagged_variants_start);
+                ("tagged_variants_end", tagged_variants_end);
+                ("niche_start", niche_start);
+              ] );
+        ] ->
+        let* untagged_variant = variant_id_of_json ctx untagged_variant in
+        let* tagged_variants_start =
+          variant_id_of_json ctx tagged_variants_start
+        in
+        let* tagged_variants_end = variant_id_of_json ctx tagged_variants_end in
+        let* niche_start = int_of_json ctx niche_start in
+        Ok
+          (Niche
+             ( untagged_variant,
+               tagged_variants_start,
+               tagged_variants_end,
+               niche_start ))
     | _ -> Error "")
 
 and trait_clause_of_json (ctx : of_json_ctx) (js : json) :

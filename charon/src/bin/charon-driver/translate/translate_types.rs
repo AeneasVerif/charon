@@ -424,6 +424,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        fn translate_variant_id(r_id: r_abi::VariantIdx) -> VariantId {
+            VariantId::from_usize(r_abi::VariantIdx::as_usize(r_id))
+        }
+
         let tcx = self.t_ctx.tcx;
         let rdefid = self.def_id.as_rust_def_id().unwrap();
         let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
@@ -460,7 +464,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => {}
         }
 
-        // Get the offset of the discriminant when there is one.
+        // Get the layout of the discriminant when there is one (even if it is encoded in a niche).
         let discriminant_layout = match layout.variants() {
             r_abi::Variants::Multiple {
                 tag,
@@ -468,29 +472,42 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 tag_field,
                 ..
             } => {
-                match tag_encoding {
-                    r_abi::TagEncoding::Direct => {
-                        // The tag_field is the index into the `offsets` vector.
-                        let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
-                            unreachable!()
-                        };
+                // The tag_field is the index into the `offsets` vector.
+                let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
+                    unreachable!()
+                };
 
-                        // Only translates the representation if it is an integer.
-                        let repr = match tag.primitive() {
-                            r_abi::Primitive::Int(int_ty, signed) => {
-                                translate_primitive_int(int_ty, signed)
-                            }
-                            _ => unreachable!(),
-                        };
-                        offsets
-                            .get(r_abi::FieldIdx::from_usize(*tag_field))
-                            .map(|s| DiscriminantLayout::Direct {
-                                offset: r_abi::Size::bytes(*s),
-                                repr,
-                            })
+                let tag_ty = match tag.primitive() {
+                    r_abi::Primitive::Int(int_ty, signed) => {
+                        translate_primitive_int(int_ty, signed)
                     }
-                    r_abi::TagEncoding::Niche { .. } => Some(DiscriminantLayout::Niche),
-                }
+                    // Try to handle pointer as integers of the same size.
+                    r_abi::Primitive::Pointer(_) => IntegerTy::Isize,
+                    r_abi::Primitive::Float(_) => {
+                        unreachable!()
+                    }
+                };
+
+                let encoding = match tag_encoding {
+                    r_abi::TagEncoding::Direct => TagEncoding::Direct,
+                    r_abi::TagEncoding::Niche {
+                        untagged_variant,
+                        niche_variants,
+                        niche_start,
+                    } => TagEncoding::Niche {
+                        untagged_variant: translate_variant_id(*untagged_variant),
+                        tagged_variants_start: translate_variant_id(*niche_variants.start()),
+                        tagged_variants_end: translate_variant_id(*niche_variants.end()),
+                        niche_start: *niche_start,
+                    },
+                };
+                offsets
+                    .get(r_abi::FieldIdx::from_usize(*tag_field))
+                    .map(|s| DiscriminantLayout {
+                        offset: r_abi::Size::bytes(*s),
+                        tag_ty,
+                        encoding,
+                    })
             }
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };

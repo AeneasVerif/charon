@@ -496,15 +496,13 @@ and const_generic_var = {
 
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
-(** Layout of the discriminant with its offset and representation type.
-
-    Does not include information about the value range. *)
-and discriminant_layout =
-  | Direct of int * integer_type
-      (** Fields:
-          - [offset]: The offset of the discriminant in bytes.
-          - [repr]: The representation type of the discriminant. *)
-  | Niche
+(** Layout of the discriminant. Describes the offset of the discriminant field
+    as well as its encoding as [tag] in memory. *)
+and discriminant_layout = {
+  offset : int;  (** The offset of the discriminant in bytes. *)
+  tag_ty : integer_type;  (** The representation type of the discriminant. *)
+  encoding : tag_encoding;  (** How the tag is encoding in memory. *)
+}
 
 and field = {
   span : span;
@@ -649,6 +647,37 @@ and ptr_metadata =
       (** Metadata for [dyn Trait] and user-defined types that directly or
           indirectly contain a [dyn Trait]. *)
 
+(** In the case of a direct encoding, the tag (i.e. the memory representation of
+    the discriminant) is simply the discriminant cas to the [repr] type.
+
+    In the case of niche encoding, the translation is more complex and requires
+    the information stored in [[TagEncoding::Niche]]. For more information see
+    [[TypeDecl::get_tag_from_variant]].
+
+    Note: Does not include information about the value range, e.g. in the case
+    of custom niches. *)
+and tag_encoding =
+  | Direct
+      (** Represents the direct encoding of the discriminant as the tag via
+          integer casts. *)
+  | Niche of variant_id * variant_id * variant_id * int
+      (** Represents the encoding of the discriminant in the niche of variant
+          [untagged_variant]. Contains all information required to translate
+          between discriminant and tag.
+
+          Fields:
+          - [untagged_variant]
+          - [tagged_variants_start]: The first variant that is tagged. Is
+            required for computing the tag.
+          - [tagged_variants_end]: The last variant that is tagged.
+
+          Note: this can't be put into a [Range] with [tagged_variants_start],
+          since the OCaml translation doesn't know range types. TODO: fix this
+          in [generate_ml].
+          - [niche_start]: This is the same as in
+            [rustc_abi::TagEncoding::Niche]. Is required for computing the tag.
+      *)
+
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form
     [TraitRefKind::Clause] can refer to. *)
@@ -735,7 +764,8 @@ and variant = {
   discriminant : scalar_value;
       (** The discriminant value outputted by [std::mem::discriminant] for this
           variant. This is different than the discriminant stored in memory (the
-          one controlled by [repr]). *)
+          one controlled by [repr]). That one is described by
+          [[DiscriminantLayout]] and [[TagEncoding]]. *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])

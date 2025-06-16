@@ -169,6 +169,40 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl impl_ref -> (impl_ref.id, impl_ref.generics)
   | _ -> raise (Failure "Unreachable")
 
+let is_signed (int_ty : integer_type) =
+  match int_ty with
+  | Isize | I8 | I16 | I32 | I64 | I128 -> true
+  | Usize | U8 | U16 | U32 | U64 | U128 -> false
+
+let is_in_bounds (int_ty : integer_type) (v : Z.t) =
+  match int_ty with
+  | Isize -> Z.fits_int v
+  | I8 -> (v >= Z.(~- (~$0x80))) && v <= Z.of_int 0x7F
+  | I16 -> (v >= Z.(~- (~$0x8000))) && v <= Z.of_int 0x7FFF
+  | I32 -> Z.fits_int32 v
+  | I64 -> Z.fits_int64 v
+  | Usize -> Z.fits_int64_unsigned v
+  | U8 -> v >= Z.zero && v <= Z.of_int 0xFF
+  | U16 -> v >= Z.zero && v <= Z.of_int 0xFFFF
+  | U32 -> Z.fits_int32_unsigned v
+  | U64 -> Z.fits_int64_unsigned v
+  | I128 | U128 ->
+      true (* Only true if derived from anything representable in rust *)
+
+let max_of (int_ty : integer_type) =
+  (* FIXME: Not sure whether all of these values are even representable before being made into Z.t. *)
+  match int_ty with
+  | I8 -> Z.of_int 0x7FF
+  | I16 -> Z.of_int 0x7FFF
+  | I32 -> Z.of_int32 Int32.max_int
+  | Isize | I64 -> Z.of_int64 Int64.max_int
+  | I128 -> Z.of_string "0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+  | U8 -> Z.of_int 0xFF
+  | U16 -> Z.of_int 0xFFFF
+  | U32 -> Z.of_int64_unsigned 0xFFFFFFFFL (* Doesn't fit in Int32.t*)
+  | Usize | U64 -> Z.of_string "0xFFFFFFFFFFFFFFFF" (* Doesn't fit in Int64.t*)
+  | U128 -> Z.of_string "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+
 (* Make a debruijn variable of index 0 *)
 let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
 
@@ -337,3 +371,106 @@ let generic_params_lengths (args : generic_params) : int * int * int * int =
     List.length types,
     List.length const_generics,
     List.length trait_clauses )
+
+let get_tag_from_discriminant discr_layout (discr : Values.scalar_value) :
+    Values.scalar_value option =
+  match discr_layout.encoding with
+  | Direct ->
+      let var_id_z = discr.value in
+      if is_in_bounds discr_layout.tag_ty var_id_z then
+        Some { value = var_id_z; int_ty = discr_layout.tag_ty }
+      else None
+  | Niche (untagged, tagged_start, _, niche_start) ->
+      if VariantId.of_int (Z.to_int discr.value) = untagged then None
+      else
+        let step1 = Z.(discr.value - ~$(VariantId.to_int tagged_start)) in
+        (* Try to simulate wrapping_add with mod. *)
+        let step2 =
+          Z.((step1 + ~$niche_start) mod max_of discr_layout.tag_ty)
+        in
+        assert (is_in_bounds discr_layout.tag_ty step2);
+        Some { value = step2; int_ty = discr_layout.tag_ty }
+
+(** Computes the tag representation of the variant's discriminant if possible.
+
+    If the discriminant is encoded as a niche the following holds: If
+    discriminant != self.discriminant_layout.untagged_variant then tag =
+    (d-self.discriminant_layout.tagged_variants_start).wrapping_add(self.discriminant_layout.niche_start)
+
+    Note: it is possible that the tag is stored in the niche of a pointer type,
+    but will be returned as an integer instead. This is supposed to be a
+    different interpretation of the same bytes. *)
+let get_tag_from_variant ty_decl variant_id =
+  let ( let* ) = Option.bind in
+  let* layout = ty_decl.layout in
+  let* discr_layout = layout.discriminant_layout in
+  match ty_decl.kind with
+  | Enum variants ->
+      let* variant = VariantId.nth_opt variants variant_id in
+      get_tag_from_discriminant discr_layout variant.discriminant
+  | _ -> None
+
+let get_discriminant_from_tag discr_layout (tag : Values.scalar_value) discr_ty
+    =
+  match discr_layout.encoding with
+  | Direct ->
+      assert (discr_layout.tag_ty = tag.int_ty);
+      if is_in_bounds discr_ty tag.value then
+        Some { tag with int_ty = discr_ty }
+      else None
+  | Niche (untagged, tagged_start, tagged_end, niche_start) ->
+      assert (discr_layout.tag_ty = tag.int_ty);
+      (* Try to simulate wrapping_add with mod. *)
+      let step1 = Z.((tag.value - ~$niche_start) mod max_of tag.int_ty) in
+      let step2 = Z.(step1 + ~$(VariantId.to_int tagged_start)) in
+      if is_in_bounds discr_ty step2 then
+        let variant_id = Z.to_int step2 |> VariantId.of_int in
+        if
+          variant_id >= tagged_start && variant_id <= tagged_end
+          && variant_id <> untagged
+        then Some { value = step2; int_ty = discr_ty }
+        else
+          Some
+            { value = Z.of_int (VariantId.to_int untagged); int_ty = discr_ty }
+      else None
+
+(** Computes the variant from the tag.
+
+    Reverses the computation of [`Self::get_tag_from_discr`]. If the `tag` does
+    not correspond to any valid discriminant, but there is a niche, the
+    resulting `VariantId` will be for the untagged variant, i.e. the one for
+    which [`Self::is_niche_discriminant`] returns `true`.
+
+    Note: If the tag is stored in the niche of a pointer type, the input scalar
+    should be the integer interpretation of the same bytes. *)
+let get_variant_from_tag ty_decl tag =
+  let ( let* ) = Option.bind in
+  let* layout = ty_decl.layout in
+  let* discr_layout = layout.discriminant_layout in
+  match ty_decl.kind with
+  | Enum variants -> begin
+      match variants with
+      | [] -> None
+      | hd_variant :: _ ->
+          let discr_ty = hd_variant.discriminant.int_ty in
+          let* discr = get_discriminant_from_tag discr_layout tag discr_ty in
+          let rec find_mapi i = function
+            | [] -> None
+            | v :: tl ->
+                if v.discriminant = discr then Some (VariantId.of_int i)
+                else find_mapi (i + 1) tl
+          in
+          find_mapi 0 variants
+    end
+  | _ -> None
+
+let is_niche_discriminant ty_decl variant_id =
+  match ty_decl.layout with
+  | Some layout -> (
+      match layout.discriminant_layout with
+      | Some discr_layout -> (
+          match discr_layout.encoding with
+          | Niche (untagged_variant, _, _, _) -> untagged_variant = variant_id
+          | _ -> false)
+      | _ -> false)
+  | _ -> false
