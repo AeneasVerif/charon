@@ -70,17 +70,23 @@ fn {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut (closure
     let x@3: u8; // local
     let @4: u8; // anonymous local
     let @5: u8; // anonymous local
+    let @6: u8; // anonymous local
+    let @7: u8; // anonymous local
 
     storage_live(x@3)
-    x@3 := move ((tupled_args@2).0)
-    *((*(@1)).0) := copy (*((*(@1)).0)) + const (1 : u8)
     storage_live(@4)
-    @4 := copy (x@3)
+    storage_live(@7)
+    x@3 := move ((tupled_args@2).0)
+    @4 := copy (*((*(@1)).0)) + const (1 : u8)
+    *((*(@1)).0) := move (@4)
     storage_live(@5)
-    @5 := copy (*((*(@1)).0))
-    @0 := copy (@4) + copy (@5)
+    @5 := copy (x@3)
+    storage_live(@6)
+    @6 := copy (*((*(@1)).0))
+    @7 := copy (@5) + copy (@6)
+    @0 := move (@7)
+    storage_dead(@6)
     storage_dead(@5)
-    storage_dead(@4)
     return
 }
 

@@ -228,13 +228,16 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>))
     let rc@1: &'_ mut (Cell<u32>); // arg #1
     let @2: &'_ mut (u32); // anonymous local
     let @3: &'_ mut (Cell<u32>); // anonymous local
+    let @4: u32; // anonymous local
 
+    storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut *(rc@1)
     @2 := get_mut<'_, u32>(move (@3))
     storage_dead(@3)
-    *(@2) := copy (*(@2)) + const (1 : u32)
+    @4 := copy (*(@2)) + const (1 : u32)
+    *(@2) := move (@4)
     storage_dead(@2)
     @0 := ()
     @0 := ()

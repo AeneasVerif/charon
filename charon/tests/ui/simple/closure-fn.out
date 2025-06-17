@@ -138,9 +138,15 @@ fn {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_0, '_1, '_2>(@1: &'_2 (clos
     let @8: u8; // anonymous local
     let @9: u8; // anonymous local
     let @10: u8; // anonymous local
+    let @11: u8; // anonymous local
+    let @12: u8; // anonymous local
+    let @13: u8; // anonymous local
 
     storage_live(x@3)
     storage_live(y@4)
+    storage_live(@9)
+    storage_live(@11)
+    storage_live(@13)
     x@3 := move ((tupled_args@2).0)
     y@4 := move ((tupled_args@2).1)
     storage_live(@5)
@@ -149,18 +155,21 @@ fn {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_0, '_1, '_2>(@1: &'_2 (clos
     @7 := copy (*((*(@1)).0))
     storage_live(@8)
     @8 := copy (x@3)
-    @6 := copy (@7) + copy (@8)
+    @9 := copy (@7) + copy (@8)
+    @6 := move (@9)
     storage_dead(@8)
     storage_dead(@7)
-    storage_live(@9)
-    @9 := copy (y@4)
-    @5 := copy (@6) + copy (@9)
-    storage_dead(@9)
-    storage_dead(@6)
     storage_live(@10)
-    @10 := copy (*((*(@1)).1))
-    @0 := copy (@5) + copy (@10)
+    @10 := copy (y@4)
+    @11 := copy (@6) + copy (@10)
+    @5 := move (@11)
     storage_dead(@10)
+    storage_dead(@6)
+    storage_live(@12)
+    @12 := copy (*((*(@1)).1))
+    @13 := copy (@5) + copy (@12)
+    @0 := move (@13)
+    storage_dead(@12)
     storage_dead(@5)
     return
 }

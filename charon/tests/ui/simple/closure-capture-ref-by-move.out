@@ -11,8 +11,11 @@ fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut (closure<'
     let @0: (); // return
     let @1: &'_ mut (closure<'_0>); // arg #1
     let tupled_args@2: (); // arg #2
+    let @3: i32; // anonymous local
 
-    *((*(@1)).0) := copy (*((*(@1)).0)) + const (1 : i32)
+    storage_live(@3)
+    @3 := copy (*((*(@1)).0)) + const (1 : i32)
+    *((*(@1)).0) := move (@3)
     @0 := ()
     @0 := ()
     return

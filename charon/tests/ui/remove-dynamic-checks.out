@@ -22,12 +22,15 @@ pub fn add_u32(@1: u32, @2: u32) -> u32
     let y@2: u32; // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
 
+    storage_live(@5)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := copy (@3) + copy (@4)
+    @5 := copy (@3) + copy (@4)
+    @0 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -38,8 +41,11 @@ pub fn incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
+    let @2: u32; // anonymous local
 
-    *(x@1) := copy (*(x@1)) + const (1 : u32)
+    storage_live(@2)
+    @2 := copy (*(x@1)) + const (1 : u32)
+    *(x@1) := move (@2)
     @0 := ()
     @0 := ()
     return
@@ -53,12 +59,15 @@ pub fn subs_u32(@1: u32, @2: u32) -> u32
     let y@2: u32; // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
 
+    storage_live(@5)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := copy (@3) - copy (@4)
+    @5 := copy (@3) - copy (@4)
+    @0 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -124,12 +133,15 @@ pub fn mul_u32(@1: u32, @2: u32) -> u32
     let y@2: u32; // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
 
+    storage_live(@5)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := copy (@3) * copy (@4)
+    @5 := copy (@3) * copy (@4)
+    @0 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -143,12 +155,15 @@ pub fn add_i32(@1: i32, @2: i32) -> i32
     let y@2: i32; // arg #2
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
+    let @5: i32; // anonymous local
 
+    storage_live(@5)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := copy (@3) + copy (@4)
+    @5 := copy (@3) + copy (@4)
+    @0 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -162,12 +177,15 @@ pub fn subs_i32(@1: i32, @2: i32) -> i32
     let y@2: i32; // arg #2
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
+    let @5: i32; // anonymous local
 
+    storage_live(@5)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := copy (@3) - copy (@4)
+    @5 := copy (@3) - copy (@4)
+    @0 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -233,12 +251,15 @@ pub fn mul_i32(@1: i32, @2: i32) -> i32
     let y@2: i32; // arg #2
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
+    let @5: i32; // anonymous local
 
+    storage_live(@5)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := copy (@3) * copy (@4)
+    @5 := copy (@3) * copy (@4)
+    @0 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -269,7 +290,19 @@ pub fn mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
     let @19: u32; // anonymous local
     let @20: u32; // anonymous local
     let @21: u32; // anonymous local
+    let @22: u32; // anonymous local
+    let @23: u32; // anonymous local
+    let @24: u32; // anonymous local
+    let @25: u32; // anonymous local
+    let @26: u32; // anonymous local
+    let @27: u32; // anonymous local
 
+    storage_live(@9)
+    storage_live(@13)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@25)
+    storage_live(@27)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -277,53 +310,59 @@ pub fn mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
     @7 := copy (x@1)
     storage_live(@8)
     @8 := copy (y@2)
-    @6 := copy (@7) + copy (@8)
+    @9 := copy (@7) + copy (@8)
+    @6 := move (@9)
     storage_dead(@8)
     storage_dead(@7)
-    storage_live(@9)
     storage_live(@10)
-    @10 := copy (x@1)
     storage_live(@11)
-    @11 := copy (y@2)
-    @9 := move (@10) / move (@11)
-    storage_dead(@11)
-    storage_dead(@10)
-    @5 := copy (@6) * copy (@9)
-    storage_dead(@9)
-    storage_dead(@6)
+    @11 := copy (x@1)
     storage_live(@12)
-    storage_live(@13)
-    @13 := copy (x@1)
+    @12 := copy (y@2)
+    @10 := move (@11) / move (@12)
+    storage_dead(@12)
+    storage_dead(@11)
+    @13 := copy (@6) * copy (@10)
+    @5 := move (@13)
+    storage_dead(@10)
+    storage_dead(@6)
     storage_live(@14)
     storage_live(@15)
-    @15 := copy (z@3)
+    @15 := copy (x@1)
     storage_live(@16)
-    @16 := copy (y@2)
-    @14 := move (@15) % move (@16)
+    storage_live(@17)
+    @17 := copy (z@3)
+    storage_live(@18)
+    @18 := copy (y@2)
+    @16 := move (@17) % move (@18)
+    storage_dead(@18)
+    storage_dead(@17)
+    @19 := copy (@15) - copy (@16)
+    @14 := move (@19)
     storage_dead(@16)
     storage_dead(@15)
-    @12 := copy (@13) - copy (@14)
+    @20 := copy (@5) + copy (@14)
+    @4 := move (@20)
     storage_dead(@14)
-    storage_dead(@13)
-    @4 := copy (@5) + copy (@12)
-    storage_dead(@12)
     storage_dead(@5)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    @19 := copy (x@1)
-    storage_live(@20)
-    @20 := copy (y@2)
-    @18 := copy (@19) + copy (@20)
-    storage_dead(@20)
-    storage_dead(@19)
     storage_live(@21)
-    @21 := copy (z@3)
-    @17 := copy (@18) + copy (@21)
+    storage_live(@22)
+    storage_live(@23)
+    @23 := copy (x@1)
+    storage_live(@24)
+    @24 := copy (y@2)
+    @25 := copy (@23) + copy (@24)
+    @22 := move (@25)
+    storage_dead(@24)
+    storage_dead(@23)
+    storage_live(@26)
+    @26 := copy (z@3)
+    @27 := copy (@22) + copy (@26)
+    @21 := move (@27)
+    storage_dead(@26)
+    storage_dead(@22)
+    @0 := move (@4) % move (@21)
     storage_dead(@21)
-    storage_dead(@18)
-    @0 := move (@4) % move (@17)
-    storage_dead(@17)
     storage_dead(@4)
     return
 }
@@ -353,7 +392,19 @@ pub fn mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
     let @19: i32; // anonymous local
     let @20: i32; // anonymous local
     let @21: i32; // anonymous local
+    let @22: i32; // anonymous local
+    let @23: i32; // anonymous local
+    let @24: i32; // anonymous local
+    let @25: i32; // anonymous local
+    let @26: i32; // anonymous local
+    let @27: i32; // anonymous local
 
+    storage_live(@9)
+    storage_live(@13)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@25)
+    storage_live(@27)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -361,53 +412,59 @@ pub fn mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
     @7 := copy (x@1)
     storage_live(@8)
     @8 := copy (y@2)
-    @6 := copy (@7) + copy (@8)
+    @9 := copy (@7) + copy (@8)
+    @6 := move (@9)
     storage_dead(@8)
     storage_dead(@7)
-    storage_live(@9)
     storage_live(@10)
-    @10 := copy (x@1)
     storage_live(@11)
-    @11 := copy (y@2)
-    @9 := move (@10) / move (@11)
-    storage_dead(@11)
-    storage_dead(@10)
-    @5 := copy (@6) * copy (@9)
-    storage_dead(@9)
-    storage_dead(@6)
+    @11 := copy (x@1)
     storage_live(@12)
-    storage_live(@13)
-    @13 := copy (x@1)
+    @12 := copy (y@2)
+    @10 := move (@11) / move (@12)
+    storage_dead(@12)
+    storage_dead(@11)
+    @13 := copy (@6) * copy (@10)
+    @5 := move (@13)
+    storage_dead(@10)
+    storage_dead(@6)
     storage_live(@14)
     storage_live(@15)
-    @15 := copy (z@3)
+    @15 := copy (x@1)
     storage_live(@16)
-    @16 := copy (y@2)
-    @14 := move (@15) % move (@16)
+    storage_live(@17)
+    @17 := copy (z@3)
+    storage_live(@18)
+    @18 := copy (y@2)
+    @16 := move (@17) % move (@18)
+    storage_dead(@18)
+    storage_dead(@17)
+    @19 := copy (@15) - copy (@16)
+    @14 := move (@19)
     storage_dead(@16)
     storage_dead(@15)
-    @12 := copy (@13) - copy (@14)
+    @20 := copy (@5) + copy (@14)
+    @4 := move (@20)
     storage_dead(@14)
-    storage_dead(@13)
-    @4 := copy (@5) + copy (@12)
-    storage_dead(@12)
     storage_dead(@5)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    @19 := copy (x@1)
-    storage_live(@20)
-    @20 := copy (y@2)
-    @18 := copy (@19) + copy (@20)
-    storage_dead(@20)
-    storage_dead(@19)
     storage_live(@21)
-    @21 := copy (z@3)
-    @17 := copy (@18) + copy (@21)
+    storage_live(@22)
+    storage_live(@23)
+    @23 := copy (x@1)
+    storage_live(@24)
+    @24 := copy (y@2)
+    @25 := copy (@23) + copy (@24)
+    @22 := move (@25)
+    storage_dead(@24)
+    storage_dead(@23)
+    storage_live(@26)
+    @26 := copy (z@3)
+    @27 := copy (@22) + copy (@26)
+    @21 := move (@27)
+    storage_dead(@26)
+    storage_dead(@22)
+    @0 := move (@4) % move (@21)
     storage_dead(@21)
-    storage_dead(@18)
-    @0 := move (@4) % move (@17)
-    storage_dead(@17)
     storage_dead(@4)
     return
 }
@@ -459,13 +516,16 @@ fn shr_add_u32(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
 
+    storage_live(@6)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (y@2)
-    @4 := copy (@5) + const (1 : u32)
+    @6 := copy (@5) + const (1 : u32)
+    @4 := move (@6)
     storage_dead(@5)
     @0 := move (@3) >> move (@4)
     storage_dead(@4)
@@ -537,8 +597,11 @@ fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
 pub fn test_crate::_() -> isize
 {
     let @0: isize; // return
+    let @1: isize; // anonymous local
 
-    @0 := const (1 : isize) + const (1 : isize)
+    storage_live(@1)
+    @1 := const (1 : isize) + const (1 : isize)
+    @0 := move (@1)
     return
 }
 
@@ -547,8 +610,11 @@ pub const test_crate::_: isize = test_crate::_()
 pub fn test_crate::_#1() -> isize
 {
     let @0: isize; // return
+    let @1: isize; // anonymous local
 
-    @0 := const (1 : isize) - const (1 : isize)
+    storage_live(@1)
+    @1 := const (1 : isize) - const (1 : isize)
+    @0 := move (@1)
     return
 }
 
@@ -567,8 +633,11 @@ pub const test_crate::_#2: isize = test_crate::_#2()
 pub fn test_crate::_#3() -> isize
 {
     let @0: isize; // return
+    let @1: isize; // anonymous local
 
-    @0 := const (2 : isize) * const (2 : isize)
+    storage_live(@1)
+    @1 := const (2 : isize) * const (2 : isize)
+    @0 := move (@1)
     return
 }
 
@@ -628,10 +697,13 @@ pub fn test_crate::_#8() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
+    let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (1 : u32) + move (@1)
+    storage_live(@2)
+    @2 := test_crate::FOO
+    @1 := const (1 : u32) + move (@2)
+    @0 := move (@1)
     return
 }
 
@@ -641,10 +713,13 @@ pub fn test_crate::_#9() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
+    let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (10 : u32) - move (@1)
+    storage_live(@2)
+    @2 := test_crate::FOO
+    @1 := const (10 : u32) - move (@2)
+    @0 := move (@1)
     return
 }
 
@@ -654,10 +729,13 @@ pub fn test_crate::_#10() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
+    let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (2 : u32) * move (@1)
+    storage_live(@2)
+    @2 := test_crate::FOO
+    @1 := const (2 : u32) * move (@2)
+    @0 := move (@1)
     return
 }
 
@@ -798,21 +876,24 @@ fn add_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     let result@1: &'_ mut (Slice<u32>); // arg #1
     let x@2: u32; // arg #2
     let @3: u32; // anonymous local
-    let @4: usize; // anonymous local
-    let @5: &'_ mut (Slice<u32>); // anonymous local
-    let @6: &'_ mut (u32); // anonymous local
+    let @4: u32; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: &'_ mut (Slice<u32>); // anonymous local
+    let @7: &'_ mut (u32); // anonymous local
 
+    storage_live(@4)
     storage_live(@3)
     @3 := copy (x@2)
-    storage_live(@4)
-    @4 := const (0 : usize)
+    @4 := copy (@3) + const (1 : u32)
     storage_live(@5)
-    @5 := &mut *(result@1)
+    @5 := const (0 : usize)
     storage_live(@6)
-    @6 := @SliceIndexMut<'_, u32>(move (@5), copy (@4))
-    *(@6) := copy (@3) + const (1 : u32)
+    @6 := &mut *(result@1)
+    storage_live(@7)
+    @7 := @SliceIndexMut<'_, u32>(move (@6), copy (@5))
+    *(@7) := move (@4)
     storage_dead(@3)
-    storage_dead(@4)
+    storage_dead(@5)
     @0 := ()
     @0 := ()
     return
@@ -826,25 +907,31 @@ fn add_to_slice2<'_0>(@1: &'_0 mut (Slice<u8>), @2: usize, @3: u8)
     let i@2: usize; // arg #2
     let x@3: u8; // arg #3
     let @4: u8; // anonymous local
-    let @5: usize; // anonymous local
+    let @5: u8; // anonymous local
     let @6: usize; // anonymous local
-    let @7: &'_ mut (Slice<u8>); // anonymous local
-    let @8: &'_ mut (u8); // anonymous local
+    let @7: usize; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: &'_ mut (Slice<u8>); // anonymous local
+    let @10: &'_ mut (u8); // anonymous local
 
+    storage_live(@5)
+    storage_live(@8)
     storage_live(@4)
     @4 := copy (x@3)
-    storage_live(@5)
+    @5 := copy (@4) * const (7 : u8)
     storage_live(@6)
-    @6 := copy (i@2)
-    @5 := copy (@6) + const (1 : usize)
-    storage_dead(@6)
     storage_live(@7)
-    @7 := &mut *(result@1)
-    storage_live(@8)
-    @8 := @SliceIndexMut<'_, u8>(move (@7), copy (@5))
-    *(@8) := copy (@4) * const (7 : u8)
+    @7 := copy (i@2)
+    @8 := copy (@7) + const (1 : usize)
+    @6 := move (@8)
+    storage_dead(@7)
+    storage_live(@9)
+    @9 := &mut *(result@1)
+    storage_live(@10)
+    @10 := @SliceIndexMut<'_, u8>(move (@9), copy (@6))
+    *(@10) := move (@5)
     storage_dead(@4)
-    storage_dead(@5)
+    storage_dead(@6)
     @0 := ()
     @0 := ()
     return

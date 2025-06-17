@@ -54,8 +54,11 @@ impl<const N : usize> HasLen for Array<(), const N : usize> {
 fn {impl HasLen for Array<bool, const N : usize>}#2::LEN<const N : usize>() -> usize
 {
     let @0: usize; // return
+    let @1: usize; // anonymous local
 
-    @0 := const (const N : usize) + const (1 : usize)
+    storage_live(@1)
+    @1 := const (const N : usize) + const (1 : usize)
+    @0 := move (@1)
     return
 }
 
@@ -167,8 +170,11 @@ where
     [@TraitClause0]: AlsoHasLen<Self>,
 {
     let @0: usize; // return
+    let @1: usize; // anonymous local
 
-    @0 := const (@TraitClause0::parent_clause0::LEN) + const (1 : usize)
+    storage_live(@1)
+    @1 := const (@TraitClause0::parent_clause0::LEN) + const (1 : usize)
+    @0 := move (@1)
     return
 }
 

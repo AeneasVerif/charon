@@ -204,33 +204,37 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @10: &'_ mut (Range<i32>[Sized<i32>]); // anonymous local
     let @11: &'_ mut (Range<i32>[Sized<i32>]); // anonymous local
     let @12: isize; // anonymous local
-    let @13: (); // anonymous local
-    let @14: Range<usize>[Sized<usize>]; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: (); // anonymous local
     let @15: Range<usize>[Sized<usize>]; // anonymous local
-    let @16: usize; // anonymous local
-    let iter@17: Range<usize>[Sized<usize>]; // local
-    let @18: (); // anonymous local
-    let @19: Option<usize>[Sized<usize>]; // anonymous local
-    let @20: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
+    let @16: Range<usize>[Sized<usize>]; // anonymous local
+    let @17: usize; // anonymous local
+    let iter@18: Range<usize>[Sized<usize>]; // local
+    let @19: (); // anonymous local
+    let @20: Option<usize>[Sized<usize>]; // anonymous local
     let @21: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
-    let @22: isize; // anonymous local
-    let @23: Range<usize>[Sized<usize>]; // anonymous local
+    let @22: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
+    let @23: isize; // anonymous local
     let @24: Range<usize>[Sized<usize>]; // anonymous local
-    let @25: usize; // anonymous local
-    let iter@26: Range<usize>[Sized<usize>]; // local
-    let @27: (); // anonymous local
-    let @28: Option<usize>[Sized<usize>]; // anonymous local
-    let @29: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
+    let @25: Range<usize>[Sized<usize>]; // anonymous local
+    let @26: usize; // anonymous local
+    let iter@27: Range<usize>[Sized<usize>]; // local
+    let @28: (); // anonymous local
+    let @29: Option<usize>[Sized<usize>]; // anonymous local
     let @30: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
-    let @31: isize; // anonymous local
-    let @32: (); // anonymous local
-    let @33: bool; // anonymous local
-    let @34: usize; // anonymous local
+    let @31: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
+    let @32: isize; // anonymous local
+    let @33: usize; // anonymous local
+    let @34: (); // anonymous local
+    let @35: bool; // anonymous local
+    let @36: usize; // anonymous local
 
     bb0: {
         storage_live(@12);
-        storage_live(@22);
-        storage_live(@31);
+        storage_live(@13);
+        storage_live(@23);
+        storage_live(@32);
+        storage_live(@33);
         storage_live(s@3);
         s@3 := const (0 : usize);
         storage_live(@4);
@@ -274,18 +278,19 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_dead(iter@7);
         storage_dead(@5);
         storage_dead(@4);
-        storage_live(@13);
         storage_live(@14);
         storage_live(@15);
         storage_live(@16);
-        @16 := copy (step_out@1);
-        @15 := Range { start: const (0 : usize), end: move (@16) };
-        storage_dead(@16);
-        @14 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<usize>[Sized<usize>, {impl Step for usize}#43]](move (@15)) -> bb8 (unwind: bb2);
+        storage_live(@17);
+        @17 := copy (step_out@1);
+        @16 := Range { start: const (0 : usize), end: move (@17) };
+        storage_dead(@17);
+        @15 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<usize>[Sized<usize>, {impl Step for usize}#43]](move (@16)) -> bb8 (unwind: bb2);
     }
 
     bb6: {
-        s@3 := copy (s@3) + const (1 : usize);
+        @13 := copy (s@3) + const (1 : usize);
+        s@3 := move (@13);
         storage_dead(@11);
         storage_dead(@9);
         storage_dead(@8);
@@ -297,49 +302,49 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb8: {
-        storage_dead(@15);
-        storage_live(iter@17);
-        iter@17 := move (@14);
+        storage_dead(@16);
+        storage_live(iter@18);
+        iter@18 := move (@15);
         goto bb9;
     }
 
     bb9: {
-        storage_live(@18);
         storage_live(@19);
         storage_live(@20);
         storage_live(@21);
-        @21 := &mut iter@17;
-        @20 := &two-phase-mut *(@21);
-        @19 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, usize>[Sized<usize>, {impl Step for usize}#43](move (@20)) -> bb10 (unwind: bb2);
+        storage_live(@22);
+        @22 := &mut iter@18;
+        @21 := &two-phase-mut *(@22);
+        @20 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, usize>[Sized<usize>, {impl Step for usize}#43](move (@21)) -> bb10 (unwind: bb2);
     }
 
     bb10: {
-        storage_dead(@20);
-        @22 := @discriminant(@19);
-        switch move (@22) -> 0 : isize: bb11, 1 : isize: bb12, otherwise: bb13;
+        storage_dead(@21);
+        @23 := @discriminant(@20);
+        switch move (@23) -> 0 : isize: bb11, 1 : isize: bb12, otherwise: bb13;
     }
 
     bb11: {
         // Test comment
-        storage_dead(@21);
+        storage_dead(@22);
+        storage_dead(@20);
         storage_dead(@19);
-        storage_dead(@18);
-        storage_dead(iter@17);
+        storage_dead(iter@18);
+        storage_dead(@15);
         storage_dead(@14);
-        storage_dead(@13);
         @0 := copy (s@3);
         storage_dead(s@3);
         return;
     }
 
     bb12: {
-        storage_live(@23);
         storage_live(@24);
         storage_live(@25);
-        @25 := copy (step_in@2);
-        @24 := Range { start: const (0 : usize), end: move (@25) };
-        storage_dead(@25);
-        @23 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<usize>[Sized<usize>, {impl Step for usize}#43]](move (@24)) -> bb14 (unwind: bb2);
+        storage_live(@26);
+        @26 := copy (step_in@2);
+        @25 := Range { start: const (0 : usize), end: move (@26) };
+        storage_dead(@26);
+        @24 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}#6<usize>[Sized<usize>, {impl Step for usize}#43]](move (@25)) -> bb14 (unwind: bb2);
     }
 
     bb13: {
@@ -347,48 +352,49 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb14: {
-        storage_dead(@24);
-        storage_live(iter@26);
-        iter@26 := move (@23);
+        storage_dead(@25);
+        storage_live(iter@27);
+        iter@27 := move (@24);
         goto bb15;
     }
 
     bb15: {
-        storage_live(@27);
         storage_live(@28);
         storage_live(@29);
         storage_live(@30);
-        @30 := &mut iter@26;
-        @29 := &two-phase-mut *(@30);
-        @28 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, usize>[Sized<usize>, {impl Step for usize}#43](move (@29)) -> bb16 (unwind: bb2);
+        storage_live(@31);
+        @31 := &mut iter@27;
+        @30 := &two-phase-mut *(@31);
+        @29 := {impl Iterator for Range<A>[@TraitClause0]}#6::next<'_, usize>[Sized<usize>, {impl Step for usize}#43](move (@30)) -> bb16 (unwind: bb2);
     }
 
     bb16: {
-        storage_dead(@29);
-        @31 := @discriminant(@28);
-        switch move (@31) -> 0 : isize: bb17, 1 : isize: bb18, otherwise: bb19;
+        storage_dead(@30);
+        @32 := @discriminant(@29);
+        switch move (@32) -> 0 : isize: bb17, 1 : isize: bb18, otherwise: bb19;
     }
 
     bb17: {
-        storage_dead(@30);
+        storage_dead(@31);
+        storage_dead(@29);
         storage_dead(@28);
-        storage_dead(@27);
-        storage_dead(iter@26);
-        storage_dead(@23);
-        storage_dead(@21);
+        storage_dead(iter@27);
+        storage_dead(@24);
+        storage_dead(@22);
+        storage_dead(@20);
         storage_dead(@19);
-        storage_dead(@18);
         goto bb9;
     }
 
     bb18: {
-        s@3 := copy (s@3) + const (1 : usize);
-        storage_live(@32);
-        storage_live(@33);
+        @33 := copy (s@3) + const (1 : usize);
+        s@3 := move (@33);
         storage_live(@34);
-        @34 := copy (s@3);
-        @33 := move (@34) >= const (1 : usize);
-        if move (@33) -> bb20 else -> bb21;
+        storage_live(@35);
+        storage_live(@36);
+        @36 := copy (s@3);
+        @35 := move (@36) >= const (1 : usize);
+        if move (@35) -> bb20 else -> bb21;
     }
 
     bb19: {
@@ -396,17 +402,17 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb20: {
+        storage_dead(@36);
+        storage_dead(@35);
         storage_dead(@34);
-        storage_dead(@33);
-        storage_dead(@32);
-        storage_dead(@30);
+        storage_dead(@31);
+        storage_dead(@29);
         storage_dead(@28);
-        storage_dead(@27);
         goto bb15;
     }
 
     bb21: {
-        storage_dead(@34);
+        storage_dead(@36);
         panic(core::panicking::panic);
     }
 }
