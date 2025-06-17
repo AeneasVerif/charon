@@ -18,8 +18,11 @@ static test_crate::SLICE: Array<(), 4 : usize> = test_crate::SLICE()
 fn four() -> usize
 {
     let @0: usize; // return
+    let @1: usize; // anonymous local
 
-    @0 := const (2 : usize) + const (2 : usize)
+    storage_live(@1)
+    @1 := const (2 : usize) + const (2 : usize)
+    @0 := move (@1)
     return
 }
 

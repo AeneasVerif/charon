@@ -327,9 +327,15 @@ where
     let @7: usize; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
-    let @10: bool; // anonymous local
-    let @11: usize; // anonymous local
+    let @10: usize; // anonymous local
+    let @11: bool; // anonymous local
+    let @12: usize; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: usize; // anonymous local
 
+    storage_live(@9)
+    storage_live(@12)
+    storage_live(@14)
     storage_live(size@1)
     size@1 := size_of<T>[@TraitClause0]()
     storage_live(align@2)
@@ -345,21 +351,24 @@ where
     @7 := copy (size@1)
     storage_live(@8)
     @8 := copy (align@2)
-    @6 := copy (@7) + copy (@8)
+    @9 := copy (@7) + copy (@8)
+    @6 := move (@9)
     storage_dead(@8)
     storage_dead(@7)
-    storage_live(@9)
     storage_live(@10)
-    @10 := copy (ub@3)
-    @9 := cast<bool, usize>(move (@10))
-    storage_dead(@10)
-    @5 := copy (@6) + copy (@9)
-    storage_dead(@9)
-    storage_dead(@6)
     storage_live(@11)
-    @11 := copy (offset@4)
-    @0 := copy (@5) + copy (@11)
+    @11 := copy (ub@3)
+    @10 := cast<bool, usize>(move (@11))
     storage_dead(@11)
+    @12 := copy (@6) + copy (@10)
+    @5 := move (@12)
+    storage_dead(@10)
+    storage_dead(@6)
+    storage_live(@13)
+    @13 := copy (offset@4)
+    @14 := copy (@5) + copy (@13)
+    @0 := move (@14)
+    storage_dead(@13)
     storage_dead(@5)
     storage_dead(offset@4)
     storage_dead(ub@3)

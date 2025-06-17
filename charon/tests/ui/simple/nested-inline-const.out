@@ -5,9 +5,12 @@ fn main()
 {
     let @0: (); // return
     let @1: i32; // anonymous local
+    let @2: i32; // anonymous local
 
+    storage_live(@2)
     storage_live(@1)
-    @1 := const (1 : i32) + const (9 : i32)
+    @2 := const (1 : i32) + const (9 : i32)
+    @1 := move (@2)
     storage_dead(@1)
     @0 := ()
     @0 := ()

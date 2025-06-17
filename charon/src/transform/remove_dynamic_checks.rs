@@ -4,13 +4,11 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
-use std::mem;
-
 use derive_generic_visitor::*;
 
+use crate::ast::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{ExprBody, RawStatement, Statement};
-use crate::{ast::*, register_error};
 
 use super::ctx::UllbcPass;
 
@@ -39,8 +37,8 @@ fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` statement (and
 /// this is the only use of this statement).
 fn remove_dynamic_checks(
-    ctx: &mut TransformCtx,
-    _locals: &mut Locals,
+    _ctx: &mut TransformCtx,
+    locals: &mut Locals,
     statements: &mut [Statement],
 ) {
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
@@ -242,6 +240,9 @@ fn remove_dynamic_checks(
         // ```text
         // z := x + y;
         // ```
+        //
+        // But sometimes, because of constant promotion, we end up with a lone checked operation
+        // without assert. In that case we replace it with its wrapping equivalent.
         [Statement {
             content:
                 RawStatement::Assign(
@@ -253,67 +254,92 @@ fn remove_dynamic_checks(
                     ),
                 ),
             ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(assert_cond),
-                    expected: false,
-                    ..
-                }),
-            ..
         }, rest @ ..]
-            if let Some((sub1, ProjectionElem::Field(FieldProjKind::Tuple(..), fid1))) =
-                assert_cond.as_projection()
-                && fid1.index() == 1
-                && result.is_local()
-                && sub1 == result =>
+            if let Some(result_local) = result.as_local() =>
         {
-            // Switch to the unchecked operation.
+            // Look for uses of the overflow boolean.
+            let mut overflow_is_used = false;
+            for stmt in rest.iter_mut() {
+                stmt.dyn_visit_in_body(|p: &Place| {
+                    if let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
+                        p.as_projection()
+                        && fid.index() == 1
+                        && sub == result
+                    {
+                        overflow_is_used = true;
+                    }
+                });
+            }
+            // Check if the operation is followed by an assert.
+            let followed_by_assert = if let [Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(assert_cond),
+                        expected: false,
+                        ..
+                    }),
+                ..
+            }, ..] = rest
+                && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
+                    assert_cond.as_projection()
+                && fid.index() == 1
+                && sub == result
+            {
+                true
+            } else {
+                false
+            };
+            if overflow_is_used && !followed_by_assert {
+                // The overflow boolean is used in a way that isn't a builtin overflow check; we
+                // change nothing.
+                return;
+            }
             let Rvalue::BinaryOp(binop, ..) = rval_op else {
                 unreachable!()
             };
-            *binop = match binop {
-                BinOp::CheckedAdd => BinOp::Add,
-                BinOp::CheckedSub => BinOp::Sub,
-                BinOp::CheckedMul => BinOp::Mul,
-                _ => unreachable!(),
-            };
-
-            // If there's a use of the resulting value, fix it up. There may be none if the result
-            // was promoted and computed at compile-time.
-            let mut found_use = false;
-            for st in rest.iter_mut() {
-                if let RawStatement::Assign(_, Rvalue::Use(Operand::Move(assigned))) =
-                    &mut st.content
-                    && let Some((sub0, ProjectionElem::Field(FieldProjKind::Tuple(..), fid0))) =
-                        assigned.as_projection()
-                    && fid0.index() == 0
-                    && sub0 == result
-                {
-                    if found_use {
-                        register_error!(
-                            ctx,
-                            st.span,
-                            "Double use of a checked binary operation; \
-                            the MIR is not in the shape we expected."
-                        );
-                    }
-                    found_use = true;
-                    let RawStatement::Assign(_, rval) = &mut st.content else {
-                        unreachable!()
-                    };
-                    // Directly assign the result of the operation to the final place.
-                    mem::swap(rval_op, rval);
-                }
+            if followed_by_assert {
+                // We have a compiler-emitted assert. We replace the operation with one that has
+                // panic-on-overflow semantics.
+                *binop = match binop {
+                    BinOp::CheckedAdd => BinOp::Add,
+                    BinOp::CheckedSub => BinOp::Sub,
+                    BinOp::CheckedMul => BinOp::Mul,
+                    _ => unreachable!(),
+                };
+                // The failure behavior is part of the binop now, so we remove the assert.
+                rest[0].content = RawStatement::Nop;
+            } else {
+                // The overflow boolean is not used, we replace the operations with wrapping
+                // semantics.
+                *binop = match binop {
+                    BinOp::CheckedAdd => BinOp::WrappingAdd,
+                    BinOp::CheckedSub => BinOp::WrappingSub,
+                    BinOp::CheckedMul => BinOp::WrappingMul,
+                    _ => unreachable!(),
+                };
             }
-            // TODO: if !found_use, keep the operation to keep the overflow check.
-            rest
+            // Fixup the local type.
+            let result_local = &mut locals.locals[result_local];
+            result_local.ty = result_local.ty.as_tuple().unwrap()[0].clone();
+            // Replace uses of `r.0` with `r`.
+            for stmt in rest.iter_mut() {
+                stmt.dyn_visit_in_body_mut(|p: &mut Place| {
+                    if let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
+                        p.as_projection()
+                        && sub == result
+                    {
+                        assert_eq!(fid.index(), 0);
+                        *p = result.clone()
+                    }
+                });
+            }
+            return;
         }
 
         _ => return,
     };
 
-    // Remove the statements.
+    // Remove the statements we're not keeping.
     let keep_len = statements_to_keep.len();
     for i in 0..statements.len() - keep_len {
         statements[i].content = RawStatement::Nop;

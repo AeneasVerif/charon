@@ -205,15 +205,17 @@ pub fn test2()
     let z@3: u32; // local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
-    let p@6: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // local
-    let @7: u32; // anonymous local
+    let @6: u32; // anonymous local
+    let p@7: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // local
     let @8: u32; // anonymous local
-    let s@9: Sum<u32, bool>[Sized<u32>, Sized<bool>]; // local
-    let o@10: One<u64>[Sized<u64>]; // local
-    let e0@11: EmptyEnum; // local
-    let e1@12: EmptyEnum; // local
-    let enum0@13: Enum; // local
+    let @9: u32; // anonymous local
+    let s@10: Sum<u32, bool>[Sized<u32>, Sized<bool>]; // local
+    let o@11: One<u64>[Sized<u64>]; // local
+    let e0@12: EmptyEnum; // local
+    let e1@13: EmptyEnum; // local
+    let enum0@14: Enum; // local
 
+    storage_live(@6)
     storage_live(x@1)
     x@1 := const (23 : u32)
     storage_live(y@2)
@@ -223,34 +225,35 @@ pub fn test2()
     @4 := copy (x@1)
     storage_live(@5)
     @5 := copy (y@2)
-    z@3 := copy (@4) + copy (@5)
+    @6 := copy (@4) + copy (@5)
+    z@3 := move (@6)
     storage_dead(@5)
     storage_dead(@4)
-    storage_live(p@6)
-    storage_live(@7)
-    @7 := copy (x@1)
+    storage_live(p@7)
     storage_live(@8)
-    @8 := copy (z@3)
-    p@6 := Pair { x: move (@7), y: move (@8) }
+    @8 := copy (x@1)
+    storage_live(@9)
+    @9 := copy (z@3)
+    p@7 := Pair { x: move (@8), y: move (@9) }
+    storage_dead(@9)
     storage_dead(@8)
-    storage_dead(@7)
-    storage_live(s@9)
-    s@9 := Sum::Right { 0: const (true) }
-    storage_live(o@10)
-    o@10 := One::One { 0: const (3 : u64) }
-    storage_live(e0@11)
-    e0@11 := EmptyEnum::Empty {  }
-    storage_live(e1@12)
-    e1@12 := move (e0@11)
-    storage_live(enum0@13)
-    enum0@13 := Enum::Variant1 {  }
+    storage_live(s@10)
+    s@10 := Sum::Right { 0: const (true) }
+    storage_live(o@11)
+    o@11 := One::One { 0: const (3 : u64) }
+    storage_live(e0@12)
+    e0@12 := EmptyEnum::Empty {  }
+    storage_live(e1@13)
+    e1@13 := move (e0@12)
+    storage_live(enum0@14)
+    enum0@14 := Enum::Variant1 {  }
     @0 := ()
-    storage_dead(enum0@13)
-    storage_dead(e1@12)
-    storage_dead(e0@11)
-    storage_dead(o@10)
-    storage_dead(s@9)
-    storage_dead(p@6)
+    storage_dead(enum0@14)
+    storage_dead(e1@13)
+    storage_dead(e0@12)
+    storage_dead(o@11)
+    storage_dead(s@10)
+    storage_dead(p@7)
     storage_dead(z@3)
     storage_dead(y@2)
     storage_dead(x@1)
@@ -493,9 +496,11 @@ pub fn even(@1: u32) -> bool
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
+    storage_live(@6)
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
@@ -509,7 +514,8 @@ pub fn even(@1: u32) -> bool
         storage_live(@4)
         storage_live(@5)
         @5 := copy (x@1)
-        @4 := copy (@5) - const (1 : u32)
+        @6 := copy (@5) - const (1 : u32)
+        @4 := move (@6)
         storage_dead(@5)
         @0 := odd(move (@4))
         storage_dead(@4)
@@ -527,9 +533,11 @@ pub fn odd(@1: u32) -> bool
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
+    storage_live(@6)
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
@@ -543,7 +551,8 @@ pub fn odd(@1: u32) -> bool
         storage_live(@4)
         storage_live(@5)
         @5 := copy (x@1)
-        @4 := copy (@5) - const (1 : u32)
+        @6 := copy (@5) - const (1 : u32)
+        @4 := move (@6)
         storage_dead(@5)
         @0 := even(move (@4))
         storage_dead(@4)
@@ -671,8 +680,11 @@ pub fn incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
+    let @2: u32; // anonymous local
 
-    *(x@1) := copy (*(x@1)) + const (1 : u32)
+    storage_live(@2)
+    @2 := copy (*(x@1)) + const (1 : u32)
+    *(x@1) := move (@2)
     @0 := ()
     @0 := ()
     return
@@ -684,10 +696,13 @@ pub fn read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
     let @0: u32; // return
     let x@1: &'_ mut (u32); // arg #1
     let r@2: u32; // local
+    let @3: u32; // anonymous local
 
+    storage_live(@3)
     storage_live(r@2)
     r@2 := copy (*(x@1))
-    *(x@1) := copy (*(x@1)) + const (1 : u32)
+    @3 := copy (*(x@1)) + const (1 : u32)
+    *(x@1) := move (@3)
     @0 := copy (r@2)
     storage_dead(r@2)
     return

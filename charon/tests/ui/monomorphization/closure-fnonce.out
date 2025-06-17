@@ -80,8 +80,10 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     let @4: (); // anonymous local
     let @5: NotCopy; // anonymous local
     let @6: u8; // anonymous local
+    let @7: u8; // anonymous local
 
     storage_live(x@3)
+    storage_live(@7)
     x@3 := move ((tupled_args@2).0)
     storage_live(@4)
     storage_live(@5)
@@ -91,7 +93,8 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     storage_dead(@4)
     storage_live(@6)
     @6 := copy (x@3)
-    @0 := copy (@6) + const (1 : u8)
+    @7 := copy (@6) + const (1 : u8)
+    @0 := move (@7)
     storage_dead(@6)
     return
 }

@@ -16,10 +16,14 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Charon {
-    PrettyPrint(PrettyPrintArgs),
+    /// Runs charon on a single rust file (and the modules it references, if any).
     Rustc(RustcArgs),
+    /// Runs charon on a cargo project.
     Cargo(CargoArgs),
+    /// Print the path to the rustc toolchain used by charon.
     ToolchainPath(ToolchainPathArgs),
+    /// Pretty-print the given llbc file.
+    PrettyPrint(PrettyPrintArgs),
 }
 
 /// Read a llbc or ullbc file and pretty print it.

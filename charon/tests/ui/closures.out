@@ -6,10 +6,13 @@ pub fn incr_u32(@1: u32) -> u32
     let @0: u32; // return
     let x@1: u32; // arg #1
     let @2: u32; // anonymous local
+    let @3: u32; // anonymous local
 
+    storage_live(@3)
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := copy (@2) + const (1 : u32)
+    @3 := copy (@2) + const (1 : u32)
+    @0 := move (@3)
     storage_dead(@2)
     return
 }
@@ -535,12 +538,15 @@ fn {impl Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0>(@1
     let tupled_args@2: (u32); // arg #2
     let x@3: u32; // local
     let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
 
     storage_live(x@3)
+    storage_live(@5)
     x@3 := move ((tupled_args@2).0)
     storage_live(@4)
     @4 := copy (x@3)
-    @0 := copy (@4) + const (1 : u32)
+    @5 := copy (@4) + const (1 : u32)
+    @0 := move (@5)
     storage_dead(@4)
     return
 }
@@ -664,21 +670,27 @@ fn {impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
     let @7: u32; // anonymous local
+    let @8: u32; // anonymous local
+    let @9: u32; // anonymous local
 
     storage_live(z@3)
+    storage_live(@7)
+    storage_live(@9)
     z@3 := move ((tupled_args@2).0)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (*((*(@1)).0))
     storage_live(@6)
     @6 := copy (*((*(@1)).1))
-    @4 := copy (@5) + copy (@6)
+    @7 := copy (@5) + copy (@6)
+    @4 := move (@7)
     storage_dead(@6)
     storage_dead(@5)
-    storage_live(@7)
-    @7 := copy (z@3)
-    @0 := copy (@4) + copy (@7)
-    storage_dead(@7)
+    storage_live(@8)
+    @8 := copy (z@3)
+    @9 := copy (@4) + copy (@8)
+    @0 := move (@9)
+    storage_dead(@8)
     storage_dead(@4)
     return
 }
@@ -866,12 +878,15 @@ fn {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'
     let tupled_args@2: (&'_1 (usize)); // arg #2
     let x@3: &'_ (usize); // local
     let @4: usize; // anonymous local
+    let @5: usize; // anonymous local
 
     storage_live(x@3)
+    storage_live(@5)
     x@3 := move ((tupled_args@2).0)
     storage_live(@4)
     @4 := copy (*(x@3))
-    *((*(@1)).0) := copy (*((*(@1)).0)) + copy (@4)
+    @5 := copy (*((*(@1)).0)) + copy (@4)
+    *((*(@1)).0) := move (@5)
     @0 := ()
     storage_dead(@4)
     @0 := ()
