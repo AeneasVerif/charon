@@ -156,7 +156,9 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `String "CheckedSub" -> Ok CheckedSub
     | `String "CheckedMul" -> Ok CheckedMul
     | `String "Shl" -> Ok Shl
+    | `String "WrappingShl" -> Ok WrappingShl
     | `String "Shr" -> Ok Shr
+    | `String "WrappingShr" -> Ok WrappingShr
     | `String "Offset" -> Ok Offset
     | `String "Cmp" -> Ok Cmp
     | _ -> Error "")
