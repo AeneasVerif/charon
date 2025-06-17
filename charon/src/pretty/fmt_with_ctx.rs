@@ -172,6 +172,8 @@ impl Display for BinOp {
             BinOp::CheckedMul => write!(f, "checked.*"),
             BinOp::Shl => write!(f, "<<"),
             BinOp::Shr => write!(f, ">>"),
+            BinOp::WrappingShl => write!(f, "wrapping.<<"),
+            BinOp::WrappingShr => write!(f, "wrapping.>>"),
             BinOp::Cmp => write!(f, "cmp"),
             BinOp::Offset => write!(f, "offset"),
         }

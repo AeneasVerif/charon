@@ -19,6 +19,8 @@ let binop_can_fail (binop : binop) : bool =
   | WrappingAdd
   | WrappingSub
   | WrappingMul
+  | WrappingShl
+  | WrappingShr
   | CheckedAdd
   | CheckedSub
   | CheckedMul

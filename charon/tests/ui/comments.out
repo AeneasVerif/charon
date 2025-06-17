@@ -483,7 +483,7 @@ pub fn thing()
     storage_live(@2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
     @6 := test_crate::CONSTANT
-    @2 := move (@6) >> const (3 : i32)
+    @2 := move (@6) wrapping.>> const (3 : i32)
     @3 := copy (@2) + const (12 : u32)
     x@1 := move (@3)
     storage_dead(@2)
