@@ -396,7 +396,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     for o in offsets.iter() {
                         v.push(o.bytes());
                     }
-                    VariantLayout { field_offsets: v }
+                    VariantLayout {
+                        field_offsets: v,
+                        uninhabited: variant_layout.is_uninhabited(),
+                    }
                 }
                 r_abi::FieldsShape::Primitive
                 | r_abi::FieldsShape::Union(_)

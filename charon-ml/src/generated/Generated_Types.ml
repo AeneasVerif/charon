@@ -775,6 +775,10 @@ and variant_id = (VariantId.id[@visitors.opaque])
     Maps fields to their offset within the layout. *)
 and variant_layout = {
   field_offsets : int list;  (** The offset of each field. *)
+  uninhabited : bool;
+      (** Whether this variant is uninhabited. If [field_offsets] is empty this
+          could also mean that the variant is a ZST. Thus we need this flag
+          additionally. *)
 }
 [@@deriving
   show,

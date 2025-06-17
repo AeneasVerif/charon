@@ -333,6 +333,11 @@ pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
     pub field_offsets: Vector<FieldId, ByteCount>,
+    /// Whether this variant is uninhabited. If `field_offsets` is empty
+    /// this could also mean that the variant is a ZST. Thus we need this flag
+    /// additionally.
+    #[drive(skip)]
+    pub uninhabited: bool,
 }
 
 /// In the case of a direct encoding, the tag (i.e. the memory representation of the discriminant)

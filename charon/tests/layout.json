@@ -10,7 +10,8 @@
           0,
           4,
           8
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -25,7 +26,8 @@
         "field_offsets": [
           0,
           8
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -40,10 +42,12 @@
     "uninhabited": false,
     "variant_layouts": [
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       }
     ]
   },
@@ -58,19 +62,22 @@
     "uninhabited": false,
     "variant_layouts": [
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
         "field_offsets": [
           8,
           16
-        ]
+        ],
+        "uninhabited": false
       },
       {
         "field_offsets": [
           4,
           8
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -92,12 +99,14 @@
     "uninhabited": false,
     "variant_layouts": [
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
         "field_offsets": [
           0
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -108,7 +117,8 @@
     "uninhabited": false,
     "variant_layouts": [
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       }
     ]
   },
@@ -122,7 +132,8 @@
         "field_offsets": [
           0,
           8
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -136,7 +147,8 @@
         "field_offsets": [
           8,
           0
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -151,7 +163,8 @@
           4,
           0,
           5
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -166,7 +179,8 @@
           0,
           4,
           8
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -181,7 +195,8 @@
           0,
           1,
           5
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -199,12 +214,14 @@
         "field_offsets": [
           4,
           4
-        ]
+        ],
+        "uninhabited": true
       },
       {
         "field_offsets": [
           4
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -217,7 +234,8 @@
       {
         "field_offsets": [
           0
-        ]
+        ],
+        "uninhabited": true
       }
     ]
   },
@@ -239,12 +257,14 @@
     "uninhabited": false,
     "variant_layouts": [
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
         "field_offsets": [
           0
-        ]
+        ],
+        "uninhabited": false
       }
     ]
   },
@@ -275,13 +295,16 @@
       {
         "field_offsets": [
           0
-        ]
+        ],
+        "uninhabited": false
       },
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       }
     ]
   },
@@ -298,15 +321,18 @@
       {
         "field_offsets": [
           8
-        ]
+        ],
+        "uninhabited": false
       },
       {
         "field_offsets": [
           4
-        ]
+        ],
+        "uninhabited": false
       },
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       }
     ]
   },
@@ -321,13 +347,16 @@
     "uninhabited": false,
     "variant_layouts": [
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       },
       {
-        "field_offsets": []
+        "field_offsets": [],
+        "uninhabited": false
       }
     ]
   }

@@ -1913,11 +1913,13 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (variant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("field_offsets", field_offsets) ] ->
+    | `Assoc [ ("field_offsets", field_offsets); ("uninhabited", uninhabited) ]
+      ->
         let* field_offsets =
           vector_of_json field_id_of_json int_of_json ctx field_offsets
         in
-        Ok ({ field_offsets } : variant_layout)
+        let* uninhabited = bool_of_json ctx uninhabited in
+        Ok ({ field_offsets; uninhabited } : variant_layout)
     | _ -> Error "")
 
 and vector_of_json :

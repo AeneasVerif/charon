@@ -153,6 +153,12 @@ fn type_layout() -> anyhow::Result<()> {
                     let tag = tdecl.get_tag_from_variant(var_id);
                     if tdecl.is_niche_discriminant(var_id) {
                         assert_eq!(None, tag, "For type {} something went wrong!", name);
+                    } else if layout.is_variant_uninhabited(var_id) {
+                        assert_eq!(
+                            None, tag,
+                            "For type {} with uninhabited variant {} something went wrong!",
+                            name, var_id
+                        );
                     } else {
                         let roundtrip_var_id =
                             tag.clone().and_then(|tag| tdecl.get_variant_from_tag(tag));

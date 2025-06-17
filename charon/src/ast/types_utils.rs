@@ -438,63 +438,15 @@ impl IntegerTy {
         }
     }
 
-    /// Do a wrapping addition for the represented type based on the inputs. Returns `None`
-    /// if the casts fails.
-    ///
-    /// The `u128` operands are supposed to be bit-representations of values in
-    /// the corresponding type (cf. [`ScalarValue::to_bits`]).
-    pub(crate) fn wrapping_add(&self, op1: u128, op2: u128) -> Option<u128> {
-        macro_rules! wrap_add_case {
-            ($t:ty) => {{
-                let op1 = TryInto::<$t>::try_into(op1).ok();
-                let op2 = op2.try_into().ok();
-                let res = op1.zip(op2).map(|(op1, op2)| op1.wrapping_add(op2));
-                res.map(|r| r as u128)
-            }};
-        }
+    pub fn to_unsigned(&self) -> Self {
         match self {
-            IntegerTy::Isize => wrap_add_case!(isize),
-            IntegerTy::I8 => wrap_add_case!(i8),
-            IntegerTy::I16 => wrap_add_case!(i16),
-            IntegerTy::I32 => wrap_add_case!(i32),
-            IntegerTy::I64 => wrap_add_case!(i64),
-            IntegerTy::I128 => wrap_add_case!(i128),
-            IntegerTy::Usize => wrap_add_case!(usize),
-            IntegerTy::U8 => wrap_add_case!(u8),
-            IntegerTy::U16 => wrap_add_case!(u16),
-            IntegerTy::U32 => wrap_add_case!(u32),
-            IntegerTy::U64 => wrap_add_case!(u64),
-            IntegerTy::U128 => Some(op1.wrapping_add(op2)),
-        }
-    }
-
-    /// Do a wrapping subtraction for the represented type based on the inputs. Returns `None`
-    /// if the casts fails.
-    ///
-    /// The `u128` operands are supposed to be bit-representations of values in
-    /// the corresponding type (cf. [`ScalarValue::to_bits`]).
-    pub(crate) fn wrapping_sub(&self, op1: u128, op2: u128) -> Option<u128> {
-        macro_rules! wrap_sub_case {
-            ($t:ty) => {{
-                let op1 = TryInto::<$t>::try_into(op1).ok();
-                let op2 = op2.try_into().ok();
-                let res = op1.zip(op2).map(|(op1, op2)| op1.wrapping_sub(op2));
-                res.map(|r| r as u128)
-            }};
-        }
-        match self {
-            IntegerTy::Isize => wrap_sub_case!(isize),
-            IntegerTy::I8 => wrap_sub_case!(i8),
-            IntegerTy::I16 => wrap_sub_case!(i16),
-            IntegerTy::I32 => wrap_sub_case!(i32),
-            IntegerTy::I64 => wrap_sub_case!(i64),
-            IntegerTy::I128 => wrap_sub_case!(i128),
-            IntegerTy::Usize => wrap_sub_case!(usize),
-            IntegerTy::U8 => wrap_sub_case!(u8),
-            IntegerTy::U16 => wrap_sub_case!(u16),
-            IntegerTy::U32 => wrap_sub_case!(u32),
-            IntegerTy::U64 => wrap_sub_case!(u64),
-            IntegerTy::U128 => Some(op1.wrapping_sub(op2)),
+            IntegerTy::Isize => IntegerTy::Usize,
+            IntegerTy::I8 => IntegerTy::U8,
+            IntegerTy::I16 => IntegerTy::U16,
+            IntegerTy::I32 => IntegerTy::U32,
+            IntegerTy::I64 => IntegerTy::U64,
+            IntegerTy::I128 => IntegerTy::U128,
+            _ => *self,
         }
     }
 }
@@ -961,72 +913,6 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 }
 
-impl DiscriminantLayout {
-    pub(crate) fn get_tag_from_discriminant(&self, discr: ScalarValue) -> Option<ScalarValue> {
-        match &self.encoding {
-            // The direct encoding is just a cast.
-            TagEncoding::Direct => Some(ScalarValue::from_bits(self.tag_ty, discr.to_bits())),
-            TagEncoding::Niche {
-                untagged_variant,
-                tagged_variants_start,
-                niche_start,
-                ..
-            } => {
-                // For niche representation, the discriminant should be the same as the variant ID, I guess?
-                if discr.to_bits() == untagged_variant.raw() as u128 {
-                    None // This variant does not have a tag.
-                } else {
-                    let discr_raw = discr.to_bits();
-                    let tagged_variants_start_raw = tagged_variants_start.raw() as u128;
-                    let step1 = discr_raw - tagged_variants_start_raw;
-                    let step2 = self.tag_ty.wrapping_add(step1, *niche_start)?;
-                    Some(ScalarValue::from_bits(self.tag_ty, step2))
-                }
-            }
-        }
-    }
-
-    pub(crate) fn get_discriminant_from_tag(
-        &self,
-        tag: ScalarValue,
-        discr_ty: IntegerTy,
-    ) -> Option<ScalarValue> {
-        match &self.encoding {
-            TagEncoding::Direct => {
-                assert_eq!(tag.get_integer_ty(), self.tag_ty);
-                Some(ScalarValue::from_bits(discr_ty, tag.to_bits()))
-            }
-            TagEncoding::Niche {
-                untagged_variant,
-                tagged_variants_start,
-                tagged_variants_end,
-                niche_start,
-            } => {
-                let tag_ty = tag.get_integer_ty();
-                assert_eq!(tag_ty, self.tag_ty);
-                let tag_u128 = tag.to_bits();
-                let step1 = tag_ty.wrapping_sub(tag_u128, *niche_start)?;
-                let step2 = step1 + (tagged_variants_start.raw() as u128);
-                let discr = ScalarValue::from_bits(discr_ty, step2);
-                TryInto::<usize>::try_into(step2)
-                    .ok()
-                    .map(VariantId::from_raw)
-                    .map(|variant| {
-                        // If the discriminant would not be valid, it must be the untagged variant and the computed value is useless.
-                        if variant >= *tagged_variants_start
-                            && variant <= *tagged_variants_end
-                            && variant != *untagged_variant
-                        {
-                            discr
-                        } else {
-                            ScalarValue::from_bits(discr_ty, untagged_variant.raw() as u128)
-                        }
-                    })
-            }
-        }
-    }
-}
-
 impl TypeDecl {
     /// Computes the tag representation of the variant's discriminant if possible.
     ///
@@ -1038,11 +924,40 @@ impl TypeDecl {
     /// be returned as an integer instead. This is supposed to be a different interpretation of the same bytes.
     pub fn get_tag_from_variant(&self, variant: VariantId) -> Option<ScalarValue> {
         let layout = self.layout.as_ref()?;
+        if layout.is_variant_uninhabited(variant) {
+            return None;
+        }
         let discr_layout = layout.discriminant_layout.as_ref()?;
         match &self.kind {
             TypeDeclKind::Enum(variants) => {
+                let get_discr_of_variant =
+                    |variant: VariantId| variants.get(variant).unwrap().discriminant.to_bits();
                 let discr = variants.get(variant)?.discriminant;
-                discr_layout.get_tag_from_discriminant(discr)
+
+                match &discr_layout.encoding {
+                    // The direct encoding is just a cast.
+                    TagEncoding::Direct => {
+                        Some(ScalarValue::from_bits(discr_layout.tag_ty, discr.to_bits()))
+                    }
+                    TagEncoding::Niche {
+                        untagged_variant,
+                        tagged_variants_start,
+                        niche_start,
+                        ..
+                    } => {
+                        let discr_bits = discr.to_bits();
+                        if discr_bits == get_discr_of_variant(*untagged_variant) {
+                            None // This variant does not have a tag.
+                        } else {
+                            let step1 = discr_bits - get_discr_of_variant(*tagged_variants_start);
+                            // In theory we need to do a wrapping_add in the tag type,
+                            // but we follow the approach of the rustc backends, that
+                            // simply do teh addition in `u128` and cutoff the uninteresting bits.
+                            let step2 = step1.wrapping_add(*niche_start);
+                            Some(ScalarValue::from_bits(discr_layout.tag_ty, step2))
+                        }
+                    }
+                }
             }
             _ => None,
         }
@@ -1059,14 +974,88 @@ impl TypeDecl {
     /// should be the integer interpretation of the same bytes.
     pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
         let layout = self.layout.as_ref()?;
+        if layout.uninhabited {
+            return None;
+        };
         let discr_layout = layout.discriminant_layout.as_ref()?;
         match &self.kind {
             TypeDeclKind::Enum(variants) => {
                 if variants.is_empty() {
                     None
                 } else {
+                    let get_discr_of_variant =
+                        |variant: VariantId| variants.get(variant).unwrap().discriminant.to_bits();
                     let discr_ty = variants.get(VariantId::ZERO)?.discriminant.get_integer_ty();
-                    let discr = discr_layout.get_discriminant_from_tag(tag, discr_ty)?;
+
+                    /*
+                        The algorithm used in rustc is the following:
+
+                        ```rust
+                        let rel_max: VariantId = tagged_variants_end - tagged_variants_start;
+                        let discr_rel: tag_ty = tag - (niche_start as tag_ty);
+                        let is_in_niche: bool = (discr_rel as unsigned) <= (rel_max as unsingend tag_ty);
+
+                        let discr: discr_ty = if is_in_niche {
+                            let cast_tag: discr_ty = discr_rel as discr_ty;
+                            cast_tag + (tagged_variants_start as discr_ty)
+                        } else {
+                            untagged_variant as discr_ty
+                        };
+                        ```
+
+                        We can't directly compute the `VariantId`, since we need to find the
+                        corresponding variant to the computed discriminant first.
+                        In rustc, these are currently the same for many cases, but to be 
+                        completely sure and to handle explicit discriminants, we search for the corresponding variant.
+                    */
+                    let discr = match &discr_layout.encoding {
+                        TagEncoding::Direct => {
+                            assert_eq!(tag.get_integer_ty(), discr_layout.tag_ty);
+                            Some(ScalarValue::from_bits(discr_ty, tag.to_bits()))
+                        }
+                        TagEncoding::Niche {
+                            untagged_variant,
+                            tagged_variants_start,
+                            tagged_variants_end,
+                            niche_start,
+                        } => {
+                            fn bit_cast(int_ty: IntegerTy, val: u128) -> u128 {
+                                ScalarValue::from_bits(int_ty, val).to_bits()
+                            }
+
+                            let tag_ty = tag.get_integer_ty();
+                            let u_tag_ty = tag_ty.to_unsigned();
+                            assert_eq!(tag_ty, discr_layout.tag_ty);
+
+                            let rel_max = get_discr_of_variant(*tagged_variants_end)
+                                - get_discr_of_variant(*tagged_variants_start);
+                            let tag = tag.to_bits();
+                            let niche_start_cast = bit_cast(tag_ty, *niche_start);
+                            let discr_rel = tag - niche_start_cast;
+
+                            let is_in_niche =
+                                bit_cast(u_tag_ty, discr_rel) <= bit_cast(u_tag_ty, rel_max);
+
+                            let discr = if is_in_niche {
+                                let cast_tag = bit_cast(discr_ty, discr_rel);
+                                let tagged_variants_start_cast = bit_cast(
+                                    discr_ty,
+                                    get_discr_of_variant(*tagged_variants_start),
+                                );
+                                ScalarValue::from_bits(
+                                    discr_ty,
+                                    cast_tag + tagged_variants_start_cast,
+                                )
+                            } else {
+                                ScalarValue::from_bits(
+                                    discr_ty,
+                                    get_discr_of_variant(*untagged_variant),
+                                )
+                            };
+                            Some(discr)
+                        }
+                    }?;
+
                     variants.iter_indexed().find_map(|(id, variant)| {
                         if variant.discriminant == discr {
                             Some(id)
@@ -1095,6 +1084,16 @@ impl TypeDecl {
                 }) => variant == *untagged_variant,
                 _ => false,
             }
+        } else {
+            false
+        }
+    }
+}
+
+impl Layout {
+    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
+        if let Some(v) = self.variant_layouts.get(variant_id) {
+            v.uninhabited
         } else {
             false
         }
