@@ -127,6 +127,11 @@ pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
 //                                                     ^^
 // ```
 pub fn test_regions<'a>(x: &'a u32) -> u32 {
+    let f = |x: &&'a u32| **x;
+    (f)(&x)
+}
+
+pub fn test_regions_casted<'a>(x: &'a u32) -> u32 {
     let f: fn(&&'a u32) -> u32 = |x| **x;
     (f)(&x)
 }
