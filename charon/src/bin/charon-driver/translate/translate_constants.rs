@@ -109,18 +109,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, name)
             }
-            ConstantExprKind::GlobalName {
-                id,
-                generics,
-                trait_refs,
-                ..
-            } => {
-                trace!(
-                    "\n- generics: {:?}\n- trait_resf: {:?}\n",
-                    generics,
-                    trait_refs
-                );
-                let global_ref = self.translate_global_decl_ref(span, id, generics, trait_refs)?;
+            ConstantExprKind::GlobalName(item) => {
+                let global_ref = self.translate_global_decl_ref(span, item)?;
                 RawConstantExpr::Global(global_ref)
             }
             ConstantExprKind::Borrow(v)
@@ -150,15 +140,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let var = self.lookup_const_generic_var(span, id)?;
                 RawConstantExpr::Var(var)
             }
-            ConstantExprKind::FnPtr {
-                def_id: fn_id,
-                generics: substs,
-                generics_impls: trait_refs,
-                method_impl: trait_info,
-            } => {
-                let fn_ptr = self
-                    .translate_fn_ptr(span, fn_id, substs, trait_refs, trait_info)?
-                    .erase();
+            ConstantExprKind::FnPtr(item) => {
+                let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
                 RawConstantExpr::FnPtr(fn_ptr)
             }
             ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),

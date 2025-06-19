@@ -44,10 +44,7 @@ use crate::translate::translate_bodies::BodyTransCtx;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::common::*;
-use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
@@ -67,7 +64,7 @@ impl ItemTransCtx<'_, '_> {
         args: &hax::ClosureArgs,
     ) -> Result<ClosureInfo, Error> {
         let kind = translate_closure_kind(&args.kind);
-        let signature = self.translate_region_binder(span, &args.untupled_sig, |ctx, sig| {
+        let signature = self.translate_region_binder(span, &args.fn_sig, |ctx, sig| {
             let inputs = sig
                 .inputs
                 .iter()
@@ -83,17 +80,11 @@ impl ItemTransCtx<'_, '_> {
     pub fn translate_closure_type_ref(
         &mut self,
         span: Span,
-        def_id: &hax::DefId,
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
-        let mut tref = self.translate_type_decl_ref(
-            span,
-            def_id,
-            &closure.parent_args,
-            &closure.parent_trait_refs,
-        )?;
+        let mut tref = self.translate_type_decl_ref(span, &closure.item)?;
         // We add lifetime args for each borrowing upvar, gotta supply them here.
-        if self.def_id == *def_id {
+        if self.def_id == closure.item.def_id {
             tref.generics.regions.extend(
                 self.outermost_binder()
                     .by_ref_upvar_regions
@@ -126,15 +117,14 @@ impl ItemTransCtx<'_, '_> {
     pub fn translate_closure_impl_ref(
         &mut self,
         span: Span,
-        def_id: &hax::DefId,
         closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<TraitImplRef, Error> {
-        let impl_id = self.register_closure_trait_impl_id(span, def_id, target_kind);
-        let adt_ref = self.translate_closure_type_ref(span, def_id, closure)?;
+        let impl_id = self.register_closure_trait_impl_id(span, &closure.item.def_id, target_kind);
+        let adt_ref = self.translate_closure_type_ref(span, closure)?;
         let mut args = adt_ref.generics;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
-        if self.def_id == *def_id {
+        if self.def_id == closure.item.def_id {
             args.regions.extend(
                 self.outermost_binder()
                     .bound_region_vars
@@ -143,7 +133,7 @@ impl ItemTransCtx<'_, '_> {
             );
         } else {
             args.regions
-                .extend(closure.tupled_sig.bound_vars.iter().map(|_| Region::Erased));
+                .extend(closure.fn_sig.bound_vars.iter().map(|_| Region::Erased));
         }
 
         Ok(TraitImplRef {
@@ -156,7 +146,6 @@ impl ItemTransCtx<'_, '_> {
     pub fn translate_closure_trait_ref(
         &mut self,
         span: Span,
-        def_id: &hax::DefId,
         args: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<TraitDeclRef, Error> {
@@ -168,7 +157,7 @@ impl ItemTransCtx<'_, '_> {
         };
         let trait_id = self.register_trait_decl_id(span, &fn_trait);
 
-        let state_ty = self.get_closure_state_ty(span, def_id, args)?;
+        let state_ty = self.get_closure_state_ty(span, args)?;
         // The input tuple type and output type of the signature.
         let (inputs, _) = self.translate_closure_info(span, args)?.signature.erase();
         let input_tuple = Ty::mk_tuple(inputs);
@@ -182,10 +171,9 @@ impl ItemTransCtx<'_, '_> {
     pub fn get_closure_state_ty(
         &mut self,
         span: Span,
-        def_id: &hax::DefId,
         args: &hax::ClosureArgs,
     ) -> Result<Ty, Error> {
-        let tref = self.translate_closure_type_ref(span, def_id, args)?;
+        let tref = self.translate_closure_type_ref(span, args)?;
         Ok(TyKind::Adt(tref).into_ty())
     }
 
@@ -240,35 +228,19 @@ impl ItemTransCtx<'_, '_> {
         args: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<FunSig, Error> {
-        let signature = &args.tupled_sig;
-
-        // Translate the signature
+        let signature = &args.fn_sig;
         trace!(
             "signature of closure {:?}:\n{:?}",
             def.def_id,
-            signature.value
+            signature.value,
         );
-        let mut inputs: Vec<Ty> = signature
-            .value
-            .inputs
-            .iter()
-            .map(|ty| self.translate_ty(span, ty))
-            .try_collect()?;
-        let output = self.translate_ty(span, &signature.value.output)?;
-
-        let fmt_ctx = &self.into_fmt();
-        trace!(
-            "# Input variables types:\n{}",
-            pretty_display_list(|x| x.to_string_with_ctx(fmt_ctx), &inputs)
-        );
-        trace!("# Output variable type:\n{}", output.with_ctx(fmt_ctx));
 
         let is_unsafe = match signature.value.safety {
             hax::Safety::Unsafe => true,
             hax::Safety::Safe => false,
         };
 
-        let state_ty = self.get_closure_state_ty(span, def.def_id(), args)?;
+        let state_ty = self.get_closure_state_ty(span, args)?;
 
         // Depending on the kind of the closure generated, add a reference
         let state_ty = match target_kind {
@@ -287,8 +259,17 @@ impl ItemTransCtx<'_, '_> {
                 TyKind::Ref(r, state_ty, mutability).into_ty()
             }
         };
-        assert_eq!(inputs.len(), 1);
-        inputs.insert(0, state_ty);
+
+        // The types that the closure takes as input.
+        let input_tys: Vec<Ty> = signature
+            .value
+            .inputs
+            .iter()
+            .map(|ty| self.translate_ty(span, ty))
+            .try_collect()?;
+        // The method takes `self` and the closure inputs as a tuple.
+        let inputs = vec![state_ty, Ty::mk_tuple(input_tys)];
+        let output = self.translate_ty(span, &signature.value.output)?;
 
         Ok(FunSig {
             generics: self.the_only_binder().params.clone(),
@@ -410,8 +391,7 @@ impl ItemTransCtx<'_, '_> {
             // }
             (FnMut, Fn) => {
                 let fun_id = self.register_closure_method_decl_id(span, def.def_id(), closure_kind);
-                let impl_ref =
-                    self.translate_closure_impl_ref(span, def.def_id(), args, closure_kind)?;
+                let impl_ref = self.translate_closure_impl_ref(span, args, closure_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
                 // TODO: can we ask hax for the trait ref?
                 let fn_op = FnOperand::Regular(FnPtr {
@@ -494,11 +474,10 @@ impl ItemTransCtx<'_, '_> {
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
-            .push_params_from_binder(args.tupled_sig.rebind(()))?;
+            .push_params_from_binder(args.fn_sig.rebind(()))?;
 
-        let impl_ref = self.translate_closure_impl_ref(span, def.def_id(), args, target_kind)?;
-        let implemented_trait =
-            self.translate_closure_trait_ref(span, def.def_id(), args, target_kind)?;
+        let impl_ref = self.translate_closure_impl_ref(span, args, target_kind)?;
+        let implemented_trait = self.translate_closure_trait_ref(span, args, target_kind)?;
         let kind = ItemKind::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
@@ -542,7 +521,7 @@ impl ItemTransCtx<'_, '_> {
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
-            .push_params_from_binder(args.tupled_sig.rebind(()))?;
+            .push_params_from_binder(args.fn_sig.rebind(()))?;
 
         // The builtin traits we need.
         let sized_trait = self.get_lang_item(rustc_hir::LangItem::Sized);
@@ -551,8 +530,7 @@ impl ItemTransCtx<'_, '_> {
         let tuple_trait = self.get_lang_item(rustc_hir::LangItem::Tuple);
         let tuple_trait = self.register_trait_decl_id(span, &tuple_trait);
 
-        let implemented_trait =
-            self.translate_closure_trait_ref(span, def.def_id(), args, target_kind)?;
+        let implemented_trait = self.translate_closure_trait_ref(span, args, target_kind)?;
         let fn_trait = implemented_trait.id;
 
         // The input tuple type and output type of the signature.
@@ -592,9 +570,9 @@ impl ItemTransCtx<'_, '_> {
                         ClosureKind::Fn => ClosureKind::FnMut,
                     };
                     let parent_impl_ref =
-                        self.translate_closure_impl_ref(span, def.def_id(), args, parent_kind)?;
+                        self.translate_closure_impl_ref(span, args, parent_kind)?;
                     let parent_predicate =
-                        self.translate_closure_trait_ref(span, def.def_id(), args, parent_kind)?;
+                        self.translate_closure_trait_ref(span, args, parent_kind)?;
                     let parent_trait_ref = TraitRef {
                         kind: TraitRefKind::TraitImpl(parent_impl_ref),
                         trait_decl_ref: RegionBinder::empty(parent_predicate),

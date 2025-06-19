@@ -116,14 +116,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             },
 
-            hax::TyKind::Adt {
-                def_id,
-                generic_args,
-                trait_refs,
-            } => {
-                trace!("Adt: {:?}", def_id);
-                let mut tref =
-                    self.translate_type_decl_ref(span, def_id, generic_args, trait_refs)?;
+            hax::TyKind::Adt(item) => {
+                trace!("Adt: {:?}", item.def_id);
+                let mut tref = self.translate_type_decl_ref(span, item)?;
 
                 // Filter the type arguments.
                 // TODO: do this in a micro-pass
@@ -214,8 +209,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::TypeVar(var)
             }
 
-            hax::TyKind::Foreign(def_id) => {
-                let tref = self.translate_type_decl_ref(span, def_id, &[], &[])?;
+            hax::TyKind::Foreign(item) => {
+                let tref = self.translate_type_decl_ref(span, item)?;
                 TyKind::Adt(tref)
             }
             hax::TyKind::Infer(_) => {
@@ -257,8 +252,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })?;
                 TyKind::Arrow(sig)
             }
-            hax::TyKind::Closure(def_id, args) => {
-                let tref = self.translate_closure_type_ref(span, def_id, args)?;
+            hax::TyKind::Closure(args) => {
+                let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
             hax::TyKind::Error => {
