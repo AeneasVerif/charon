@@ -132,30 +132,7 @@ fn type_layout() -> anyhow::Result<()> {
         if let Some(layout) = tdecl.layout.as_ref() {
             if layout.discriminant_layout.is_some() {
                 let name = repr_name(&crate_data, &tdecl.item_meta.name);
-                let variants_from_kind = match &tdecl.kind {
-                    TypeDeclKind::Enum(variants) => variants,
-                    _ => unreachable!(),
-                };
                 for (var_id, variant) in layout.variant_layouts.iter_indexed() {
-                    let discr = variants_from_kind.get(var_id).unwrap().discriminant;
-
-                    // As discussed in https://rust-lang.zulipchat.com/#narrow/channel/182449-t-compiler.2Fhelp/topic/.E2.9C.94.20VariantId.3DDiscriminant.20when.20tag.20is.20niche.20encoded.3F/with/524384295
-                    // for niche-encoded tags, the variant id's should coincide with their discriminants.
-                    if let Some(DiscriminantLayout {
-                        encoding: TagEncoding::Niche { .. },
-                        ..
-                    }) = layout.discriminant_layout
-                    {
-                        assert_eq!(
-                            var_id.raw() as u128,
-                            discr.to_bits(),
-                            "For type {} the discriminant {} is != the variant ID {}.",
-                            name,
-                            discr,
-                            var_id
-                        );
-                    }
-
                     let tag = variant.tag;
                     if layout.is_variant_uninhabited(var_id) {
                         assert_eq!(

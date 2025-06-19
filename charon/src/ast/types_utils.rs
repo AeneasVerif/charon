@@ -914,10 +914,11 @@ pub trait TyVisitable: Sized + AstVisitable {
 }
 
 impl TypeDecl {
-    /// Computes the variant from the tag.
+    /// Computes the variant from the tag (i.e. the in-memory bytes that represent the discriminant).
+    /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).
     ///
     /// If the `tag` does not correspond to any valid discriminant but there is a niche,
-    /// the resulting `VariantId` will be for the untagged variant[`TagEncoding::Niche::untagged_variant`].
+    /// the resulting `VariantId` will be for the untagged variant [`TagEncoding::Niche::untagged_variant`].
     pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
         let layout = self.layout.as_ref()?;
         if layout.uninhabited {

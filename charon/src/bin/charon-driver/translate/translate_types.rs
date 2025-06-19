@@ -443,8 +443,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // be returned as an integer instead. This is supposed to be a different interpretation of the same bytes.
         fn translate_discr_to_tag(
             discr: ScalarValue,
+            variant: r_abi::VariantIdx,
             tag_ty: IntegerTy,
-            variants: &Vector<VariantId, Variant>,
             encoding: &r_abi::TagEncoding<r_abi::VariantIdx>,
         ) -> Option<ScalarValue> {
             match &encoding {
@@ -455,23 +455,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     niche_variants,
                     niche_start,
                 } => {
-                    let get_bits_of_variant = |variant: r_abi::VariantIdx| {
-                        let variant = translate_variant_id(variant);
-                        variants
-                            .get(variant)
-                            .expect("Variant index out of bounds while translating tag")
-                            .discriminant
-                            .to_bits()
-                    };
-                    let discr_bits = discr.to_bits();
-                    if discr_bits == get_bits_of_variant(*untagged_variant) {
+                    if variant == *untagged_variant {
                         None // This variant does not have a tag.
                     } else {
-                        let discr_rel = discr_bits - get_bits_of_variant(*niche_variants.start());
+                        let discr_rel = variant.as_u32() - niche_variants.start().as_u32();
                         // In theory we need to do a wrapping_add in the tag type,
                         // but we follow the approach of the rustc backends, that
                         // simply does the addition in `u128` and cuts off the uninteresting bits.
-                        let tag_bits = discr_rel.wrapping_add(*niche_start);
+                        let tag_bits = (discr_rel as u128).wrapping_add(*niche_start);
                         Some(ScalarValue::from_bits(tag_ty, tag_bits))
                     }
                 }
@@ -584,16 +575,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let tag = if variant_layout.is_uninhabited() {
                         None
                     } else {
-                        discr
-                            .zip(variants_from_kind)
-                            .and_then(|(discr, variants_from_kind)| {
-                                translate_discr_to_tag(
-                                    discr,
-                                    tag_ty,
-                                    variants_from_kind,
-                                    tag_encoding,
-                                )
-                            })
+                        discr.and_then(|discr| {
+                            translate_discr_to_tag(discr, id, tag_ty, tag_encoding)
+                        })
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tag));
                 }

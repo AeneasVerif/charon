@@ -333,21 +333,22 @@ pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
     pub field_offsets: Vector<FieldId, ByteCount>,
-    /// Whether this variant is uninhabited. If `field_offsets` is empty
-    /// this could also mean that the variant is a ZST. Thus we need this flag
-    /// additionally.
+    /// Whether the variant is uninhabited, i.e. has any valid possible value.
+    /// Note that uninhabited types can have arbitrary layouts.
     #[drive(skip)]
     pub uninhabited: bool,
     /// The memory representation of the discriminant corresponding to this
     /// variant. It must be of the same type as the corresponding [`DiscriminantLayout::tag_ty`].
     ///
-    /// If it's `None`, then this variant is either the untagged variant (cf. [`TagEncoding::Niche::untagged_variant`])
-    /// containing the relevant niche or the single variant of a struct or uninhabited.
+    /// If it's `None`, then this variant is either:
+    /// - the untagged variant (cf. [`TagEncoding::Niche::untagged_variant`]) of a niched enum;
+    /// - the single variant of a struct;
+    /// - uninhabited.
     #[drive(skip)]
     pub tag: Option<ScalarValue>,
 }
 
-/// Describes how the discriminant is related to the tag, i.e. its memory representation.
+/// Describes how we represent the active enum variant in memory.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TagEncoding {
     /// Represents the direct encoding of the discriminant as the tag via integer casts.

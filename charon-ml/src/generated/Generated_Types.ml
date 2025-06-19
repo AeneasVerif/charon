@@ -647,8 +647,7 @@ and ptr_metadata =
       (** Metadata for [dyn Trait] and user-defined types that directly or
           indirectly contain a [dyn Trait]. *)
 
-(** Describes how the discriminant is related to the tag, i.e. its memory
-    representation. *)
+(** Describes how we represent the active enum variant in memory. *)
 and tag_encoding =
   | Direct
       (** Represents the direct encoding of the discriminant as the tag via
@@ -758,17 +757,18 @@ and variant_id = (VariantId.id[@visitors.opaque])
 and variant_layout = {
   field_offsets : int list;  (** The offset of each field. *)
   uninhabited : bool;
-      (** Whether this variant is uninhabited. If [field_offsets] is empty this
-          could also mean that the variant is a ZST. Thus we need this flag
-          additionally. *)
+      (** Whether the variant is uninhabited, i.e. has any valid possible value.
+          Note that uninhabited types can have arbitrary layouts. *)
   tag : scalar_value option;
       (** The memory representation of the discriminant corresponding to this
           variant. It must be of the same type as the corresponding
           [[DiscriminantLayout::tag_ty]].
 
-          If it's [None], then this variant is either the untagged variant (cf.
-          [[TagEncoding::Niche::untagged_variant]]) containing the relevant
-          niche or the single variant of a struct or uninhabited. *)
+          If it's [None], then this variant is either:
+          - the untagged variant (cf. [[TagEncoding::Niche::untagged_variant]])
+            of a niched enum;
+          - the single variant of a struct;
+          - uninhabited. *)
 }
 [@@deriving
   show,
