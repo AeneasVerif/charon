@@ -255,7 +255,7 @@ fn remove_dynamic_checks(
                 ),
             ..
         }, rest @ ..]
-            if let Some(result_local) = result.as_local() =>
+            if let Some(result_local_id) = result.as_local() =>
         {
             // Look for uses of the overflow boolean.
             let mut overflow_is_used = false;
@@ -319,8 +319,10 @@ fn remove_dynamic_checks(
                 };
             }
             // Fixup the local type.
-            let result_local = &mut locals.locals[result_local];
+            let result_local = &mut locals.locals[result_local_id];
             result_local.ty = result_local.ty.as_tuple().unwrap()[0].clone();
+            // Fixup the place type.
+            let new_result_place = locals.place_for_var(result_local_id);
             // Replace uses of `r.0` with `r`.
             for stmt in rest.iter_mut() {
                 stmt.dyn_visit_in_body_mut(|p: &mut Place| {
@@ -329,10 +331,11 @@ fn remove_dynamic_checks(
                         && sub == result
                     {
                         assert_eq!(fid.index(), 0);
-                        *p = result.clone()
+                        *p = new_result_place.clone()
                     }
                 });
             }
+            *result = new_result_place;
             return;
         }
 
