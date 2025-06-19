@@ -914,64 +914,10 @@ pub trait TyVisitable: Sized + AstVisitable {
 }
 
 impl TypeDecl {
-    /// Computes the tag representation of the variant's discriminant if possible.
-    ///
-    /// If the discriminant is encoded as a niche the following holds:
-    /// If discriminant != self.discriminant_layout.untagged_variant
-    /// then tag = (d-self.discriminant_layout.tagged_variants_start).wrapping_add(self.discriminant_layout.niche_start)
-    ///
-    /// Note: it is possible that the tag is stored in the niche of a pointer type, but will
-    /// be returned as an integer instead. This is supposed to be a different interpretation of the same bytes.
-    pub fn get_tag_from_variant(&self, variant: VariantId) -> Option<ScalarValue> {
-        let layout = self.layout.as_ref()?;
-        if layout.is_variant_uninhabited(variant) {
-            return None;
-        }
-        let discr_layout = layout.discriminant_layout.as_ref()?;
-        match &self.kind {
-            TypeDeclKind::Enum(variants) => {
-                let get_discr_of_variant =
-                    |variant: VariantId| variants.get(variant).unwrap().discriminant.to_bits();
-                let discr = variants.get(variant)?.discriminant;
-
-                match &discr_layout.encoding {
-                    // The direct encoding is just a cast.
-                    TagEncoding::Direct => {
-                        Some(ScalarValue::from_bits(discr_layout.tag_ty, discr.to_bits()))
-                    }
-                    TagEncoding::Niche {
-                        untagged_variant,
-                        tagged_variants_start,
-                        niche_start,
-                        ..
-                    } => {
-                        let discr_bits = discr.to_bits();
-                        if discr_bits == get_discr_of_variant(*untagged_variant) {
-                            None // This variant does not have a tag.
-                        } else {
-                            let step1 = discr_bits - get_discr_of_variant(*tagged_variants_start);
-                            // In theory we need to do a wrapping_add in the tag type,
-                            // but we follow the approach of the rustc backends, that
-                            // simply do teh addition in `u128` and cutoff the uninteresting bits.
-                            let step2 = step1.wrapping_add(*niche_start);
-                            Some(ScalarValue::from_bits(discr_layout.tag_ty, step2))
-                        }
-                    }
-                }
-            }
-            _ => None,
-        }
-    }
-
     /// Computes the variant from the tag.
     ///
-    /// Reverses the computation of [`Self::get_tag_from_variant`]. If the `tag`
-    /// does not correspond to any valid discriminant, but there is a niche,
-    /// the resulting `VariantId` will be for the untagged variant, i.e. the one
-    /// for which [`Self::is_niche_discriminant`] returns `true`.
-    ///
-    /// Note: If the tag is stored in the niche of a pointer type, the input scalar
-    /// should be the integer interpretation of the same bytes.
+    /// If the `tag` does not correspond to any valid discriminant but there is a niche,
+    /// the resulting `VariantId` will be for the untagged variant[`TagEncoding::Niche::untagged_variant`].
     pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
         let layout = self.layout.as_ref()?;
         if layout.uninhabited {
@@ -983,109 +929,36 @@ impl TypeDecl {
                 if variants.is_empty() {
                     None
                 } else {
-                    let get_discr_of_variant =
-                        |variant: VariantId| variants.get(variant).unwrap().discriminant.to_bits();
                     let discr_ty = variants.get(VariantId::ZERO)?.discriminant.get_integer_ty();
 
-                    /*
-                        The algorithm used in rustc is the following:
-
-                        ```rust
-                        let rel_max: VariantId = tagged_variants_end - tagged_variants_start;
-                        let discr_rel: tag_ty = tag - (niche_start as tag_ty);
-                        let is_in_niche: bool = (discr_rel as unsigned) <= (rel_max as unsingend tag_ty);
-
-                        let discr: discr_ty = if is_in_niche {
-                            let cast_tag: discr_ty = discr_rel as discr_ty;
-                            cast_tag + (tagged_variants_start as discr_ty)
-                        } else {
-                            untagged_variant as discr_ty
-                        };
-                        ```
-
-                        We can't directly compute the `VariantId`, since we need to find the
-                        corresponding variant to the computed discriminant first.
-                        In rustc, these are currently the same for many cases, but to be 
-                        completely sure and to handle explicit discriminants, we search for the corresponding variant.
-                    */
-                    let discr = match &discr_layout.encoding {
+                    match &discr_layout.encoding {
                         TagEncoding::Direct => {
                             assert_eq!(tag.get_integer_ty(), discr_layout.tag_ty);
-                            Some(ScalarValue::from_bits(discr_ty, tag.to_bits()))
+                            let discr = ScalarValue::from_bits(discr_ty, tag.to_bits());
+                            // Find corresponding variant.
+                            variants.iter_indexed().find_map(|(id, variant)| {
+                                if variant.discriminant == discr {
+                                    Some(id)
+                                } else {
+                                    None
+                                }
+                            })
                         }
-                        TagEncoding::Niche {
-                            untagged_variant,
-                            tagged_variants_start,
-                            tagged_variants_end,
-                            niche_start,
-                        } => {
-                            fn bit_cast(int_ty: IntegerTy, val: u128) -> u128 {
-                                ScalarValue::from_bits(int_ty, val).to_bits()
-                            }
-
-                            let tag_ty = tag.get_integer_ty();
-                            let u_tag_ty = tag_ty.to_unsigned();
-                            assert_eq!(tag_ty, discr_layout.tag_ty);
-
-                            let rel_max = get_discr_of_variant(*tagged_variants_end)
-                                - get_discr_of_variant(*tagged_variants_start);
-                            let tag = tag.to_bits();
-                            let niche_start_cast = bit_cast(tag_ty, *niche_start);
-                            let discr_rel = tag - niche_start_cast;
-
-                            let is_in_niche =
-                                bit_cast(u_tag_ty, discr_rel) <= bit_cast(u_tag_ty, rel_max);
-
-                            let discr = if is_in_niche {
-                                let cast_tag = bit_cast(discr_ty, discr_rel);
-                                let tagged_variants_start_cast = bit_cast(
-                                    discr_ty,
-                                    get_discr_of_variant(*tagged_variants_start),
-                                );
-                                ScalarValue::from_bits(
-                                    discr_ty,
-                                    cast_tag + tagged_variants_start_cast,
-                                )
-                            } else {
-                                ScalarValue::from_bits(
-                                    discr_ty,
-                                    get_discr_of_variant(*untagged_variant),
-                                )
-                            };
-                            Some(discr)
-                        }
-                    }?;
-
-                    variants.iter_indexed().find_map(|(id, variant)| {
-                        if variant.discriminant == discr {
-                            Some(id)
-                        } else {
-                            None
-                        }
-                    })
+                        TagEncoding::Niche { untagged_variant } => layout
+                            .variant_layouts
+                            .iter_indexed()
+                            .find_map(|(id, variant_layout)| {
+                                if variant_layout.tag == Some(tag) {
+                                    Some(id)
+                                } else {
+                                    None
+                                }
+                            })
+                            .or(Some(*untagged_variant)),
+                    }
                 }
             }
             _ => None,
-        }
-    }
-
-    /// Checks whether the given `VariantId` represents a variant with the niche.
-    /// Such a variant doesn't have a direct tag encoding, i.e., [`Self::get_tag_from_variant`]
-    /// will return None.
-    pub fn is_niche_discriminant(&self, variant: VariantId) -> bool {
-        if let Some(layout) = self.layout.as_ref() {
-            match layout.discriminant_layout.as_ref() {
-                Some(DiscriminantLayout {
-                    encoding:
-                        TagEncoding::Niche {
-                            untagged_variant, ..
-                        },
-                    ..
-                }) => variant == *untagged_variant,
-                _ => false,
-            }
-        } else {
-            false
         }
     }
 }

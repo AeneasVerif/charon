@@ -118,6 +118,12 @@ fn type_layout() -> anyhow::Result<()> {
             Equal = 0,
             Greater = 1,
         }
+
+        enum WithNicheAndUninhabited {
+            First,
+            Second(!),
+            Third(NonZero<u32>)
+        }
         "#,
     )?;
 
@@ -130,7 +136,7 @@ fn type_layout() -> anyhow::Result<()> {
                     TypeDeclKind::Enum(variants) => variants,
                     _ => unreachable!(),
                 };
-                for var_id in layout.variant_layouts.all_indices() {
+                for (var_id, variant) in layout.variant_layouts.iter_indexed() {
                     let discr = variants_from_kind.get(var_id).unwrap().discriminant;
 
                     // As discussed in https://rust-lang.zulipchat.com/#narrow/channel/182449-t-compiler.2Fhelp/topic/.E2.9C.94.20VariantId.3DDiscriminant.20when.20tag.20is.20niche.20encoded.3F/with/524384295
@@ -150,25 +156,27 @@ fn type_layout() -> anyhow::Result<()> {
                         );
                     }
 
-                    let tag = tdecl.get_tag_from_variant(var_id);
-                    if tdecl.is_niche_discriminant(var_id) {
-                        assert_eq!(None, tag, "For type {} something went wrong!", name);
-                    } else if layout.is_variant_uninhabited(var_id) {
+                    let tag = variant.tag;
+                    if layout.is_variant_uninhabited(var_id) {
                         assert_eq!(
                             None, tag,
                             "For type {} with uninhabited variant {} something went wrong!",
                             name, var_id
                         );
                     } else {
-                        let roundtrip_var_id =
-                            tag.clone().and_then(|tag| tdecl.get_variant_from_tag(tag));
-                        assert_eq!(
-                            Some(var_id),
-                            roundtrip_var_id,
-                            "For type {} something went wrong, tag = {:?}",
-                            name,
-                            tag
-                        );
+                        match tag {
+                            None => (), // Must be the untagged variant
+                            Some(tag) => {
+                                let roundtrip_var_id = tdecl.get_variant_from_tag(tag.clone());
+                                assert_eq!(
+                                    Some(var_id),
+                                    roundtrip_var_id,
+                                    "For type {} something went wrong, tag = {:?}",
+                                    name,
+                                    tag
+                                )
+                            }
+                        }
                     }
                 }
             }

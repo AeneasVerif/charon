@@ -338,34 +338,22 @@ pub struct VariantLayout {
     /// additionally.
     #[drive(skip)]
     pub uninhabited: bool,
+    /// The memory representation of the discriminant corresponding to this
+    /// variant. It must be of the same type as the corresponding [`DiscriminantLayout::tag_ty`].
+    ///
+    /// If it's `None`, then this variant is either the untagged variant (cf. [`TagEncoding::Niche::untagged_variant`])
+    /// containing the relevant niche or the single variant of a struct or uninhabited.
+    #[drive(skip)]
+    pub tag: Option<ScalarValue>,
 }
 
-/// In the case of a direct encoding, the tag (i.e. the memory representation of the discriminant)
-/// is simply the discriminant cas to the `repr` type.
-///
-/// In the case of niche encoding, the translation is more complex and requires the information
-/// stored in [`TagEncoding::Niche`]. For more information see [`TypeDecl::get_tag_from_variant`].
-///
-/// Note: Does not include information about the value range, e.g. in the case of custom niches.
+/// Describes how the discriminant is related to the tag, i.e. its memory representation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TagEncoding {
     /// Represents the direct encoding of the discriminant as the tag via integer casts.
     Direct,
     /// Represents the encoding of the discriminant in the niche of variant `untagged_variant`.
-    /// Contains all information required to translate between discriminant and tag.
-    Niche {
-        untagged_variant: VariantId,
-        /// The first variant that is tagged. Is required for computing the tag.
-        tagged_variants_start: VariantId,
-        /// The last variant that is tagged.
-        ///
-        /// Note: this can't be put into a `Range` with `tagged_variants_start`, since
-        /// the OCaml translation doesn't know range types. TODO: fix this in `generate_ml`.
-        tagged_variants_end: VariantId,
-        /// This is the same as in `rustc_abi::TagEncoding::Niche`.
-        /// Is required for computing the tag.
-        niche_start: u128,
-    },
+    Niche { untagged_variant: VariantId },
 }
 
 /// Layout of the discriminant.
@@ -379,6 +367,7 @@ pub struct DiscriminantLayout {
     pub tag_ty: IntegerTy,
     /// How the tag is encoding in memory.
     pub encoding: TagEncoding,
+    // FIXME: Should probably contain the valid range of the tag, too.
 }
 
 /// Simplified type layout information.

@@ -11,7 +11,8 @@
           4,
           8
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -27,7 +28,8 @@
           0,
           8
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -43,11 +45,17 @@
     "variant_layouts": [
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U8": "0"
+        }
       },
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U8": "1"
+        }
       }
     ]
   },
@@ -63,21 +71,30 @@
     "variant_layouts": [
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "0"
+        }
       },
       {
         "field_offsets": [
           8,
           16
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "1"
+        }
       },
       {
         "field_offsets": [
           4,
           8
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "2"
+        }
       }
     ]
   },
@@ -89,10 +106,7 @@
       "tag_ty": "U32",
       "encoding": {
         "Niche": {
-          "untagged_variant": 1,
-          "tagged_variants_start": 0,
-          "tagged_variants_end": 0,
-          "niche_start": 0
+          "untagged_variant": 1
         }
       }
     },
@@ -100,13 +114,17 @@
     "variant_layouts": [
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "0"
+        }
       },
       {
         "field_offsets": [
           0
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -118,7 +136,8 @@
     "variant_layouts": [
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -133,7 +152,8 @@
           0,
           8
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -148,7 +168,8 @@
           8,
           0
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -164,7 +185,8 @@
           0,
           5
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -180,7 +202,8 @@
           4,
           8
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -196,7 +219,8 @@
           1,
           5
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -215,13 +239,17 @@
           4,
           4
         ],
-        "uninhabited": true
+        "uninhabited": true,
+        "tag": null
       },
       {
         "field_offsets": [
           4
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "1"
+        }
       }
     ]
   },
@@ -235,7 +263,8 @@
         "field_offsets": [
           0
         ],
-        "uninhabited": true
+        "uninhabited": true,
+        "tag": null
       }
     ]
   },
@@ -247,10 +276,7 @@
       "tag_ty": "Isize",
       "encoding": {
         "Niche": {
-          "untagged_variant": 1,
-          "tagged_variants_start": 0,
-          "tagged_variants_end": 0,
-          "niche_start": 0
+          "untagged_variant": 1
         }
       }
     },
@@ -258,13 +284,17 @@
     "variant_layouts": [
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "Isize": "0"
+        }
       },
       {
         "field_offsets": [
           0
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
@@ -283,10 +313,7 @@
       "tag_ty": "U32",
       "encoding": {
         "Niche": {
-          "untagged_variant": 0,
-          "tagged_variants_start": 1,
-          "tagged_variants_end": 2,
-          "niche_start": 1114112
+          "untagged_variant": 0
         }
       }
     },
@@ -296,15 +323,22 @@
         "field_offsets": [
           0
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": null
       },
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "1114112"
+        }
       },
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "U32": "1114113"
+        }
       }
     ]
   },
@@ -322,17 +356,26 @@
         "field_offsets": [
           8
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "I32": "12"
+        }
       },
       {
         "field_offsets": [
           4
         ],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "I32": "43"
+        }
       },
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "I32": "123456"
+        }
       }
     ]
   },
@@ -348,15 +391,61 @@
     "variant_layouts": [
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "I8": "-1"
+        }
       },
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "I8": "0"
+        }
       },
       {
         "field_offsets": [],
-        "uninhabited": false
+        "uninhabited": false,
+        "tag": {
+          "I8": "1"
+        }
+      }
+    ]
+  },
+  "test_crate::WithNicheAndUninhabited": {
+    "size": 4,
+    "align": 4,
+    "discriminant_layout": {
+      "offset": 0,
+      "tag_ty": "U32",
+      "encoding": {
+        "Niche": {
+          "untagged_variant": 2
+        }
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tag": {
+          "U32": "0"
+        }
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": true,
+        "tag": null
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tag": null
       }
     ]
   }

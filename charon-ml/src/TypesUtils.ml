@@ -372,78 +372,12 @@ let generic_params_lengths (args : generic_params) : int * int * int * int =
     List.length const_generics,
     List.length trait_clauses )
 
-let get_tag_from_discriminant discr_layout (discr : Values.scalar_value) :
-    Values.scalar_value option =
-  match discr_layout.encoding with
-  | Direct ->
-      let var_id_z = discr.value in
-      if is_in_bounds discr_layout.tag_ty var_id_z then
-        Some { value = var_id_z; int_ty = discr_layout.tag_ty }
-      else None
-  | Niche (untagged, tagged_start, _, niche_start) ->
-      if VariantId.of_int (Z.to_int discr.value) = untagged then None
-      else
-        let step1 = Z.(discr.value - ~$(VariantId.to_int tagged_start)) in
-        (* Try to simulate wrapping_add with mod. *)
-        let step2 =
-          Z.((step1 + ~$niche_start) mod max_of discr_layout.tag_ty)
-        in
-        assert (is_in_bounds discr_layout.tag_ty step2);
-        Some { value = step2; int_ty = discr_layout.tag_ty }
-
-(** Computes the tag representation of the variant's discriminant if possible.
-
-    If the discriminant is encoded as a niche the following holds: If
-    discriminant != self.discriminant_layout.untagged_variant then tag =
-    (d-self.discriminant_layout.tagged_variants_start).wrapping_add(self.discriminant_layout.niche_start)
-
-    Note: it is possible that the tag is stored in the niche of a pointer type,
-    but will be returned as an integer instead. This is supposed to be a
-    different interpretation of the same bytes. *)
-let get_tag_from_variant ty_decl variant_id =
-  let ( let* ) = Option.bind in
-  let* layout = ty_decl.layout in
-  let* discr_layout = layout.discriminant_layout in
-  match ty_decl.kind with
-  | Enum variants ->
-      let* variant = VariantId.nth_opt variants variant_id in
-      get_tag_from_discriminant discr_layout variant.discriminant
-  | _ -> None
-
-let get_discriminant_from_tag discr_layout (tag : Values.scalar_value) discr_ty
-    =
-  match discr_layout.encoding with
-  | Direct ->
-      assert (discr_layout.tag_ty = tag.int_ty);
-      if is_in_bounds discr_ty tag.value then
-        Some { tag with int_ty = discr_ty }
-      else None
-  | Niche (untagged, tagged_start, tagged_end, niche_start) ->
-      assert (discr_layout.tag_ty = tag.int_ty);
-      (* Try to simulate wrapping_add with mod. *)
-      let step1 = Z.((tag.value - ~$niche_start) mod max_of tag.int_ty) in
-      let step2 = Z.(step1 + ~$(VariantId.to_int tagged_start)) in
-      if is_in_bounds discr_ty step2 then
-        let variant_id = Z.to_int step2 |> VariantId.of_int in
-        if
-          variant_id >= tagged_start && variant_id <= tagged_end
-          && variant_id <> untagged
-        then Some { value = step2; int_ty = discr_ty }
-        else
-          Some
-            { value = Z.of_int (VariantId.to_int untagged); int_ty = discr_ty }
-      else None
-
 (** Computes the variant from the tag.
 
-    Reverses the computation of [`Self::get_tag_from_discr`]. If the `tag` does
-    not correspond to any valid discriminant, but there is a niche, the
-    resulting `VariantId` will be for the untagged variant, i.e. the one for
-    which [`Self::is_niche_discriminant`] returns `true`.
-
-    Note: If the tag is stored in the niche of a pointer type, the input scalar
-    should be the integer interpretation of the same bytes. *)
-let get_variant_from_tag ty_decl tag =
+    If the [tag] does not correspond to any valid discriminant but there is a
+    niche, the resulting [VariantId] will be for the untagged
+    variant[TagEncoding::Niche::untagged_variant]. *)
+let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
   let ( let* ) = Option.bind in
   let* layout = ty_decl.layout in
   let* discr_layout = layout.discriminant_layout in
@@ -451,26 +385,33 @@ let get_variant_from_tag ty_decl tag =
   | Enum variants -> begin
       match variants with
       | [] -> None
-      | hd_variant :: _ ->
+      | hd_variant :: _ -> (
           let discr_ty = hd_variant.discriminant.int_ty in
-          let* discr = get_discriminant_from_tag discr_layout tag discr_ty in
-          let rec find_mapi i = function
+          let rec find_mapi f i = function
             | [] -> None
             | v :: tl ->
-                if v.discriminant = discr then Some (VariantId.of_int i)
-                else find_mapi (i + 1) tl
+                if f i v then Some (VariantId.of_int i)
+                else find_mapi f (i + 1) tl
           in
-          find_mapi 0 variants
+
+          match discr_layout.encoding with
+          | Direct -> begin
+              assert (discr_layout.tag_ty = tag.int_ty);
+              let discr =
+                if is_in_bounds discr_ty tag.value then
+                  Some { tag with int_ty = discr_ty }
+                else None
+              in
+              find_mapi (fun i v -> Some v.discriminant = discr) 0 variants
+            end
+          | Niche untagged_var -> begin
+              match
+                find_mapi
+                  (fun id v -> Some tag = v.tag)
+                  0 layout.variant_layouts
+              with
+              | Some id -> Some id
+              | None -> Some untagged_var
+            end)
     end
   | _ -> None
-
-let is_niche_discriminant ty_decl variant_id =
-  match ty_decl.layout with
-  | Some layout -> (
-      match layout.discriminant_layout with
-      | Some discr_layout -> (
-          match discr_layout.encoding with
-          | Niche (untagged_variant, _, _, _) -> untagged_variant = variant_id
-          | _ -> false)
-      | _ -> false)
-  | _ -> false

@@ -76,23 +76,23 @@ let run_tests (folder : string) : unit =
                       in
                       Types.VariantId.iteri
                         (fun var_id _ ->
-                          let tag =
-                            TypesUtils.get_tag_from_variant ty_decl var_id
+                          let variant_layout =
+                            Types.VariantId.nth layout.variant_layouts var_id
                           in
-                          if TypesUtils.is_niche_discriminant ty_decl var_id
-                          then
-                            assert_eq tag None
-                              (name ^ " Variant should be niche encoded: "
-                              ^ PrintTypes.variant_id_to_pretty_string var_id)
-                              print_scalar_value_opt
+                          let tag = variant_layout.tag in
+                          if variant_layout.uninhabited then
+                            assert_eq tag None name print_scalar_value_opt
                           else
-                            let roundtrip_var_id =
-                              Option.bind tag (fun tag ->
-                                  TypesUtils.get_variant_from_tag ty_decl tag)
-                            in
-                            assert_eq roundtrip_var_id (Some var_id)
-                              (name ^ " with tag: " ^ print_scalar_value_opt tag)
-                              print_var_id_opt)
+                            match tag with
+                            | None -> () (* Must be the untagged variant *)
+                            | Some tag ->
+                                let roundtrip_var_id =
+                                  TypesUtils.get_variant_from_tag ty_decl tag
+                                in
+                                assert_eq roundtrip_var_id (Some var_id)
+                                  (name ^ " with tag: "
+                                  ^ print_scalar_value_opt (Some tag))
+                                  print_var_id_opt)
                         layout.variant_layouts
                     else ()
                 | None -> ())

@@ -647,36 +647,18 @@ and ptr_metadata =
       (** Metadata for [dyn Trait] and user-defined types that directly or
           indirectly contain a [dyn Trait]. *)
 
-(** In the case of a direct encoding, the tag (i.e. the memory representation of
-    the discriminant) is simply the discriminant cas to the [repr] type.
-
-    In the case of niche encoding, the translation is more complex and requires
-    the information stored in [[TagEncoding::Niche]]. For more information see
-    [[TypeDecl::get_tag_from_variant]].
-
-    Note: Does not include information about the value range, e.g. in the case
-    of custom niches. *)
+(** Describes how the discriminant is related to the tag, i.e. its memory
+    representation. *)
 and tag_encoding =
   | Direct
       (** Represents the direct encoding of the discriminant as the tag via
           integer casts. *)
-  | Niche of variant_id * variant_id * variant_id * int
+  | Niche of variant_id
       (** Represents the encoding of the discriminant in the niche of variant
-          [untagged_variant]. Contains all information required to translate
-          between discriminant and tag.
+          [untagged_variant].
 
           Fields:
-          - [untagged_variant]
-          - [tagged_variants_start]: The first variant that is tagged. Is
-            required for computing the tag.
-          - [tagged_variants_end]: The last variant that is tagged.
-
-          Note: this can't be put into a [Range] with [tagged_variants_start],
-          since the OCaml translation doesn't know range types. TODO: fix this
-          in [generate_ml].
-          - [niche_start]: This is the same as in
-            [rustc_abi::TagEncoding::Niche]. Is required for computing the tag.
-      *)
+          - [untagged_variant] *)
 
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form
@@ -779,6 +761,14 @@ and variant_layout = {
       (** Whether this variant is uninhabited. If [field_offsets] is empty this
           could also mean that the variant is a ZST. Thus we need this flag
           additionally. *)
+  tag : scalar_value option;
+      (** The memory representation of the discriminant corresponding to this
+          variant. It must be of the same type as the corresponding
+          [[DiscriminantLayout::tag_ty]].
+
+          If it's [None], then this variant is either the untagged variant (cf.
+          [[TagEncoding::Niche::untagged_variant]]) containing the relevant
+          niche or the single variant of a struct or uninhabited. *)
 }
 [@@deriving
   show,

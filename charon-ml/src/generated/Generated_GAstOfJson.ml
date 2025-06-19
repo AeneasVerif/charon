@@ -1445,29 +1445,9 @@ and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Direct" -> Ok Direct
-    | `Assoc
-        [
-          ( "Niche",
-            `Assoc
-              [
-                ("untagged_variant", untagged_variant);
-                ("tagged_variants_start", tagged_variants_start);
-                ("tagged_variants_end", tagged_variants_end);
-                ("niche_start", niche_start);
-              ] );
-        ] ->
+    | `Assoc [ ("Niche", `Assoc [ ("untagged_variant", untagged_variant) ]) ] ->
         let* untagged_variant = variant_id_of_json ctx untagged_variant in
-        let* tagged_variants_start =
-          variant_id_of_json ctx tagged_variants_start
-        in
-        let* tagged_variants_end = variant_id_of_json ctx tagged_variants_end in
-        let* niche_start = int_of_json ctx niche_start in
-        Ok
-          (Niche
-             ( untagged_variant,
-               tagged_variants_start,
-               tagged_variants_end,
-               niche_start ))
+        Ok (Niche untagged_variant)
     | _ -> Error "")
 
 and trait_clause_of_json (ctx : of_json_ctx) (js : json) :
@@ -1913,13 +1893,18 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (variant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("field_offsets", field_offsets); ("uninhabited", uninhabited) ]
-      ->
+    | `Assoc
+        [
+          ("field_offsets", field_offsets);
+          ("uninhabited", uninhabited);
+          ("tag", tag);
+        ] ->
         let* field_offsets =
           vector_of_json field_id_of_json int_of_json ctx field_offsets
         in
         let* uninhabited = bool_of_json ctx uninhabited in
-        Ok ({ field_offsets; uninhabited } : variant_layout)
+        let* tag = option_of_json scalar_value_of_json ctx tag in
+        Ok ({ field_offsets; uninhabited; tag } : variant_layout)
     | _ -> Error "")
 
 and vector_of_json :
