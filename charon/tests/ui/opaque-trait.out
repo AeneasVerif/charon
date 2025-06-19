@@ -70,36 +70,9 @@ where
     return
 }
 
-fn test_crate::{impl Trait for ()}#1::method1()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
-fn test_crate::{impl Trait for u8}::method1()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 fn test_crate::Trait::method2<Self>()
 where
     [@TraitClause0]: Trait<Self>,
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
-fn test_crate::{impl Trait for ()}#1::method2()
 {
     let @0: (); // return
 
@@ -144,6 +117,24 @@ fn {impl Trait for ()}#1::CONST3() -> usize
 // Full name: test_crate::{impl Trait for ()}#1::CONST3
 const {impl Trait for ()}#1::CONST3: usize = {impl Trait for ()}#1::CONST3()
 
+fn test_crate::{impl Trait for ()}#1::method1()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+fn test_crate::{impl Trait for ()}#1::method2()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
 // Full name: test_crate::{impl Trait for ()}#1
 impl Trait for () {
     const CONST1 = {impl Trait for ()}#1::CONST1
@@ -164,6 +155,15 @@ fn {impl Trait for u8}::CONST2() -> usize
 
 // Full name: test_crate::{impl Trait for u8}::CONST2
 const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
+
+fn test_crate::{impl Trait for u8}::method1()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
 
 // Full name: test_crate::{impl Trait for u8}::method2
 fn {impl Trait for u8}::method2()

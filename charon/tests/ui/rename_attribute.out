@@ -27,15 +27,6 @@ where
     return
 }
 
-pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
-{
-    let @0: bool; // return
-    let self@1: &'_ (bool); // arg #1
-
-    @0 := const (true)
-    return
-}
-
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
@@ -43,6 +34,15 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
     let self@1: &'_ (bool); // arg #1
 
     @0 := copy (*(self@1))
+    return
+}
+
+pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (bool); // arg #1
+
+    @0 := const (true)
     return
 }
 

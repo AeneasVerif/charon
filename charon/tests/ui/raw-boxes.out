@@ -1827,21 +1827,6 @@ where
     return
 }
 
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
-pub fn alloc::alloc::{impl Allocator for Global}#1::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
-where
-    [@TraitClause0]: Sized<Global>,
-{
-    let @0: &'_ (Global); // return
-    let self@1: &'_ (Global); // arg #1
-
-    @0 := copy (self@1)
-    return
-}
-
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
@@ -1859,37 +1844,6 @@ where
 
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop *(self@1)
-    *(self@1) := move (@3)
-    storage_dead(@3)
-    @0 := ()
-    return
-}
-
-// Full name: core::num::niche_types::NonZeroUsizeInner
-pub struct NonZeroUsizeInner {
-  usize,
-}
-
-// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone
-pub fn {impl Clone for NonZeroUsizeInner}#140::clone<'_0>(@1: &'_0 (NonZeroUsizeInner)) -> NonZeroUsizeInner
-{
-    let @0: NonZeroUsizeInner; // return
-    let self@1: &'_ (NonZeroUsizeInner); // arg #1
-
-    @0 := copy (*(self@1))
-    return
-}
-
-pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
-{
-    let @0: (); // return
-    let self@1: &'_ mut (NonZeroUsizeInner); // arg #1
-    let source@2: &'_ (NonZeroUsizeInner); // arg #2
-    let @3: NonZeroUsizeInner; // anonymous local
-
-    storage_live(@3)
-    @3 := {impl Clone for NonZeroUsizeInner}#140::clone<'_>(move (source@2))
     drop *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
@@ -2046,6 +2000,37 @@ where
     const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
     const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
     const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+}
+
+// Full name: core::num::niche_types::NonZeroUsizeInner
+pub struct NonZeroUsizeInner {
+  usize,
+}
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone
+pub fn {impl Clone for NonZeroUsizeInner}#140::clone<'_0>(@1: &'_0 (NonZeroUsizeInner)) -> NonZeroUsizeInner
+{
+    let @0: NonZeroUsizeInner; // return
+    let self@1: &'_ (NonZeroUsizeInner); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (NonZeroUsizeInner); // arg #1
+    let source@2: &'_ (NonZeroUsizeInner); // arg #2
+    let @3: NonZeroUsizeInner; // anonymous local
+
+    storage_live(@3)
+    @3 := {impl Clone for NonZeroUsizeInner}#140::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
 }
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140
@@ -2248,6 +2233,10 @@ unsafe fn __rust_alloc_zeroed(@1: usize, @2: usize) -> *mut u8
 fn alloc::alloc::__rust_no_alloc_shim_is_unstable() -> u8
 
 static alloc::alloc::__rust_no_alloc_shim_is_unstable: u8 = alloc::alloc::__rust_no_alloc_shim_is_unstable()
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
 
 // Full name: alloc::alloc::alloc
 pub unsafe fn alloc(@1: Layout) -> *mut u8
@@ -5657,6 +5646,17 @@ pub unsafe fn {impl Allocator for Global}#1::shrink<'_0>(@1: &'_0 (Global), @2: 
     storage_dead(data@10)
     @0 := Result::Ok { 0: move (@9) }
     storage_dead(@9)
+    return
+}
+
+pub fn alloc::alloc::{impl Allocator for Global}#1::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
+where
+    [@TraitClause0]: Sized<Global>,
+{
+    let @0: &'_ (Global); // return
+    let self@1: &'_ (Global); // arg #1
+
+    @0 := copy (self@1)
     return
 }
 

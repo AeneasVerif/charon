@@ -99,10 +99,14 @@ impl TransformPass for Transform {
                         is_global_initializer,
                         body,
                     } = fun_decl.clone();
+                    // We use the span of the *impl*, not the span of the
+                    // default method in the original trait declaration.
+                    let span = timpl.item_meta.span;
                     let item_meta = ItemMeta {
                         name: new_fun_name,
                         is_local: timpl.item_meta.is_local,
                         opacity,
+                        span,
                         ..item_meta
                     };
                     let signature = FunSig {

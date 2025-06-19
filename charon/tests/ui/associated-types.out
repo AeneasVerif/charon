@@ -129,32 +129,6 @@ where
     return
 }
 
-fn test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause1_Item>,
-{
-    let @0: Option<&'a (T)>[Sized<&'_ (T)>]; // return
-    let x@1: Option<&'a (T)>[Sized<&'_ (T)>]; // arg #1
-
-    @0 := copy (x@1)
-    return
-}
-
-fn test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}#1::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
-    [@TraitClause2]: test_crate::Foo<'a, T, Clause2_Item>,
-    T : 'a,
-{
-    let @0: T; // return
-    let x@1: T; // arg #1
-
-    @0 := copy (x@1)
-    return
-}
-
 // Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required
 fn {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>(@1: Option<&'_ (T)>[Sized<&'_ (T)>]) -> Option<&'_ (T)>[Sized<&'_ (T)>]
 where
@@ -162,6 +136,18 @@ where
 {
     let @0: Option<&'_ (T)>[Sized<&'_ (T)>]; // return
     let x@1: Option<&'_ (T)>[Sized<&'_ (T)>]; // arg #1
+
+    @0 := copy (x@1)
+    return
+}
+
+fn test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause1_Item>,
+{
+    let @0: Option<&'a (T)>[Sized<&'_ (T)>]; // return
+    let x@1: Option<&'a (T)>[Sized<&'_ (T)>]; // arg #1
 
     @0 := copy (x@1)
     return
@@ -184,6 +170,20 @@ fn {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}#1::use_item_requir
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
+    T : 'a,
+{
+    let @0: T; // return
+    let x@1: T; // arg #1
+
+    @0 := copy (x@1)
+    return
+}
+
+fn test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}#1::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+    [@TraitClause2]: test_crate::Foo<'a, T, Clause2_Item>,
     T : 'a,
 {
     let @0: T; // return
