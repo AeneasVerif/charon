@@ -87,7 +87,9 @@ and binop =
   | CheckedSub  (** Like [CheckedAdd]. *)
   | CheckedMul  (** Like [CheckedAdd]. *)
   | Shl  (** Fails if the shift is bigger than the bit-size of the type. *)
+  | WrappingShl  (** Wraps on overflow. *)
   | Shr  (** Fails if the shift is bigger than the bit-size of the type. *)
+  | WrappingShr  (** Wraps on overflow. *)
   | Offset
       (** [BinOp(Offset, ptr, n)] for [ptr] a pointer to type [T] offsets [ptr]
           by [n * size_of::<T>()]. *)

@@ -110,6 +110,8 @@ and binop_to_string (binop : binop) : string =
   | WrappingAdd -> "wrapping.+"
   | WrappingSub -> "wrapping.-"
   | WrappingMul -> "wrapping.*"
+  | WrappingShl -> "wrapping.<<"
+  | WrappingShr -> "wrapping.>>"
   | CheckedAdd -> "checked.+"
   | CheckedSub -> "checked.-"
   | CheckedMul -> "checked.*"
