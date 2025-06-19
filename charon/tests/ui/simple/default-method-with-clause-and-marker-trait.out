@@ -12,6 +12,17 @@ trait Trait<Self>
     fn default_method<T, [@TraitClause1]: HasAssoc<T>> = default_method<Self, T>[Self, @TraitClause0_1]
 }
 
+// Full name: test_crate::Trait::default_method
+fn default_method<Self, T>() -> @TraitClause2::Assoc
+where
+    [@TraitClause0]: Trait<Self>,
+    [@TraitClause2]: HasAssoc<T>,
+{
+    let @0: @TraitClause2::Assoc; // return
+
+    panic(core::panicking::panic)
+}
+
 fn test_crate::{impl Trait for T}::default_method<T, T>() -> @TraitClause2::Assoc
 where
     [@TraitClause2]: HasAssoc<T>,
@@ -34,17 +45,6 @@ fn main()
     @0 := ()
     @0 := ()
     return
-}
-
-// Full name: test_crate::Trait::default_method
-fn default_method<Self, T>() -> @TraitClause2::Assoc
-where
-    [@TraitClause0]: Trait<Self>,
-    [@TraitClause2]: HasAssoc<T>,
-{
-    let @0: @TraitClause2::Assoc; // return
-
-    panic(core::panicking::panic)
 }
 
 

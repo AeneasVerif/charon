@@ -4,8 +4,22 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+#[lang_item("NonNull")]
+pub opaque type core::ptr::non_null::NonNull::<test_crate::Node::<u8>>
+
+#[lang_item("Option")]
+pub enum core::option::Option::<core::ptr::non_null::NonNull::<Node<u8>[Sized<u8>]>> {
+  None,
+  Some(core::ptr::non_null::NonNull::<Node<u8>[Sized<u8>]>),
+}
+
 pub struct test_crate::LinkedList::<u8> {
   head: core::option::Option::<NonNull<Node<u8>[Sized<u8>]>>,
+}
+
+struct test_crate::Node::<u8> {
+  next: core::option::Option::<NonNull<Node<u8>[Sized<u8>]>>,
+  element: u8,
 }
 
 fn test_crate::{LinkedList<T>[@TraitClause0]}::new::<u8>() -> test_crate::LinkedList::<u8>

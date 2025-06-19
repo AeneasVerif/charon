@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
     const FOO : usize
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 fn test_crate::Trait::FOO<Self>() -> usize
 where

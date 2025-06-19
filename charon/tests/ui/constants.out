@@ -1,5 +1,13 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+pub fn core::num::{u32}#8::MAX() -> u32
+
+pub const core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
+
 pub fn test_crate::X0() -> u32
 {
     let @0: u32; // return
@@ -9,10 +17,6 @@ pub fn test_crate::X0() -> u32
 }
 
 pub const test_crate::X0: u32 = test_crate::X0()
-
-pub fn core::num::{u32}#8::MAX() -> u32
-
-pub const core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
 
 pub fn test_crate::X1() -> u32
 {
@@ -86,10 +90,6 @@ pub fn mk_pair0(@1: u32, @2: u32) -> (u32, u32)
     storage_dead(@3)
     return
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 // Full name: test_crate::Pair
 pub struct Pair<T1, T2>

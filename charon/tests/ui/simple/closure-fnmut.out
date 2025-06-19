@@ -33,6 +33,10 @@ pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self)
 where
     [@TraitClause0]: FnMut<Self, Args>,
 
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
 // Full name: test_crate::apply_to_zero_mut
 fn apply_to_zero_mut<impl FnMut(u8) -> u8>(@1: impl FnMut(u8) -> u8) -> u8
 where
@@ -147,10 +151,6 @@ fn main()
     @0 := ()
     return
 }
-
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 

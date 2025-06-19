@@ -4,6 +4,16 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
 // Full name: test_crate::HasType
 trait HasType<Self, Self_Type>
 {
@@ -16,14 +26,17 @@ trait HasMethod<Self>
     fn method<Clause0_Type, [@TraitClause0]: HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[Self, @TraitClause0_0]
 }
 
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
+// Full name: test_crate::HasMethod::method
+fn method<Self, Clause1_Type>()
 where
-    [@TraitClause0]: Sized<T>,
+    [@TraitClause0]: HasMethod<Self>,
+    [@TraitClause1]: HasType<Self, Clause1_Type>,
 {
-  None,
-  Some(T),
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
 }
 
 fn test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause1_Type>()
@@ -44,19 +57,6 @@ where
     [@TraitClause0]: Sized<T>,
 {
     fn method<Clause0_Type, [@TraitClause0]: HasType<Option<T>[@TraitClause0], Clause0_Type>> = test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_0]
-}
-
-// Full name: test_crate::HasMethod::method
-fn method<Self, Clause1_Type>()
-where
-    [@TraitClause0]: HasMethod<Self>,
-    [@TraitClause1]: HasType<Self, Clause1_Type>,
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
 }
 
 

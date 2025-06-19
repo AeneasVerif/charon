@@ -4,24 +4,6 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
-// Full name: alloc::vec::Vec
-#[lang_item("Vec")]
-pub opaque type Vec<T, A>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
-// Full name: alloc::slice::{Slice<T>}::into_vec
-#[lang_item("slice_into_vec")]
-pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> Vec<T, A>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
 // Full name: core::clone::Clone
 #[lang_item("clone")]
 pub trait Clone<Self>
@@ -30,12 +12,10 @@ pub trait Clone<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
-// Full name: alloc::vec::from_elem
-#[lang_item("vec_from_elem")]
-pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: core::clone::impls::{impl Clone for i32}#14::clone
 pub fn {impl Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
@@ -45,6 +25,35 @@ impl Clone for i32 {
     parent_clause0 = Sized<i32>
     fn clone<'_0> = {impl Clone for i32}#14::clone<'_0_0>
 }
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::alloc::exchange_malloc
+#[lang_item("exchange_malloc")]
+unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub opaque type Vec<T, A>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::slice::{Slice<T>}::into_vec
+#[lang_item("slice_into_vec")]
+pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> Vec<T, A>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::vec::from_elem
+#[lang_item("vec_from_elem")]
+pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 
 // Full name: test_crate::foo
 fn foo()
@@ -121,15 +130,6 @@ pub fn bar()
     @0 := ()
     return
 }
-
-// Full name: alloc::alloc::exchange_malloc
-#[lang_item("exchange_malloc")]
-unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
 
 
 

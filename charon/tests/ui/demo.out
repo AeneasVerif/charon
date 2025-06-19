@@ -4,6 +4,10 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
 // Full name: test_crate::choose
 pub fn choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
 where
@@ -157,10 +161,6 @@ pub fn use_incr()
     @0 := ()
     return
 }
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
 
 // Full name: test_crate::CList
 pub enum CList<T>
@@ -489,6 +489,10 @@ pub trait Counter<Self>
     fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>[Self]
 }
 
+pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
+where
+    [@TraitClause0]: Counter<Self>,
+
 // Full name: test_crate::{impl Counter for usize}::incr
 pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
 {
@@ -511,10 +515,6 @@ pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
 impl Counter for usize {
     fn incr<'_0> = {impl Counter for usize}::incr<'_0_0>
 }
-
-pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
-where
-    [@TraitClause0]: Counter<Self>,
 
 // Full name: test_crate::use_counter
 pub fn use_counter<'a, T>(@1: &'a mut (T)) -> usize

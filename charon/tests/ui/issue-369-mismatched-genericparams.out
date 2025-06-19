@@ -4,6 +4,16 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
 // Full name: test_crate::FromResidual
 pub trait FromResidual<Self, R>
 {
@@ -16,16 +26,6 @@ pub trait Try<Self>
     parent_clause0 : [@TraitClause0]: FromResidual<Self, ()>
     parent_clause1 : [@TraitClause1]: Sized<Self::Residual>
     type Residual
-}
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
 }
 
 // Full name: test_crate::{impl FromResidual<()> for Option<T>[@TraitClause0]}#1

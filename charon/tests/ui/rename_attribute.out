@@ -1,10 +1,30 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 // Full name: test_crate::BoolTrait
 pub trait BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
     fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
+}
+
+pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+where
+    [@TraitClause0]: BoolTrait<Self>,
+
+// Full name: test_crate::BoolTrait::ret_true
+pub fn ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+where
+    [@TraitClause0]: BoolTrait<Self>,
+{
+    let @0: bool; // return
+    let self@1: &'_ (Self); // arg #1
+
+    @0 := const (true)
+    return
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
@@ -31,10 +51,6 @@ impl BoolTrait for bool {
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
     fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 // Full name: test_crate::test_bool_trait
 pub fn test_bool_trait<T>(@1: bool) -> bool
@@ -104,22 +120,6 @@ const test_crate::C: u32 = test_crate::C()
 
 // Full name: test_crate::Test2
 type Test2 = u32
-
-pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
-where
-    [@TraitClause0]: BoolTrait<Self>,
-
-// Full name: test_crate::BoolTrait::ret_true
-pub fn ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
-where
-    [@TraitClause0]: BoolTrait<Self>,
-{
-    let @0: bool; // return
-    let self@1: &'_ (Self); // arg #1
-
-    @0 := const (true)
-    return
-}
 
 
 

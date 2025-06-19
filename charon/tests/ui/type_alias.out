@@ -1,5 +1,16 @@
 # Final LLBC before serialization:
 
+// Full name: core::borrow::Borrow
+#[lang_item("Borrow")]
+pub trait Borrow<Self, Borrowed>
+{
+    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
+}
+
+pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+where
+    [@TraitClause0]: Borrow<Self, Borrowed>,
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -12,12 +23,15 @@ pub trait Clone<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
 }
 
-// Full name: core::borrow::Borrow
-#[lang_item("Borrow")]
-pub trait Borrow<Self, Borrowed>
-{
-    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
-}
+// Full name: core::clone::Clone::clone
+#[lang_item("clone_fn")]
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
 
 // Full name: alloc::borrow::ToOwned
 #[lang_item("ToOwned")]
@@ -28,6 +42,11 @@ pub trait ToOwned<Self>
     type Owned
     fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>[Self]
 }
+
+#[lang_item("to_owned_method")]
+pub fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Owned
+where
+    [@TraitClause0]: ToOwned<Self>,
 
 // Full name: alloc::borrow::Cow
 #[lang_item("Cow")]
@@ -47,10 +66,6 @@ pub opaque type Vec<T, A>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
 
 // Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow
 pub fn {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
@@ -94,21 +109,6 @@ where
 {
   Cow<'a, Slice<T>>[{impl ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-
-#[lang_item("to_owned_method")]
-pub fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Owned
-where
-    [@TraitClause0]: ToOwned<Self>,
-
-pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
-where
-    [@TraitClause0]: Borrow<Self, Borrowed>,
 
 
 

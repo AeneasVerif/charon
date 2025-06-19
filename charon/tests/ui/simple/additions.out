@@ -1,37 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::num::{u8}#6::wrapping_add
-pub fn wrapping_add(@1: u8, @2: u8) -> u8
-{
-    let @0: u8; // return
-    let self@1: u8; // arg #1
-    let rhs@2: u8; // arg #2
-
-    @0 := copy (self@1) wrapping.+ copy (rhs@2)
-    return
-}
-
-// Full name: core::num::{u8}#6::overflowing_add
-pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
-{
-    let @0: (u8, bool); // return
-    let self@1: u8; // arg #1
-    let rhs@2: u8; // arg #2
-    let @3: u8; // anonymous local
-    let @4: bool; // anonymous local
-    let @5: (u8, bool); // anonymous local
-
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := copy (self@1) checked.+ copy (rhs@2)
-    @3 := copy ((@5).0)
-    @4 := copy ((@5).1)
-    storage_dead(@5)
-    @0 := (copy (@3), copy (@4))
-    return
-}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -45,23 +13,28 @@ pub trait Clone<Self>
     fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>[Self]
 }
 
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: Clone<Self>
-}
-
-pub fn core::intrinsics::saturating_add<T>(@1: T, @2: T) -> T
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
-{
-    let @0: T; // return
-    let a@1: T; // arg #1
-    let b@2: T; // arg #2
+    [@TraitClause0]: Clone<Self>,
 
-    undefined_behavior
+// Full name: core::clone::Clone::clone_from
+pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: Clone<Self>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Self); // arg #1
+    let source@2: &'_ (Self); // arg #2
+    let @3: Self; // anonymous local
+
+    storage_live(@3)
+    @3 := @TraitClause0::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}#6::clone
@@ -97,6 +70,25 @@ impl Clone for u8 {
     fn clone_from<'_0, '_1> = core::clone::impls::{impl Clone for u8}#6::clone_from<'_0_0, '_0_1>
 }
 
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: Clone<Self>
+}
+
+pub fn core::intrinsics::saturating_add<T>(@1: T, @2: T) -> T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+{
+    let @0: T; // return
+    let a@1: T; // arg #1
+    let b@2: T; // arg #2
+
+    undefined_behavior
+}
+
 // Full name: core::marker::{impl Copy for u8}#38
 impl Copy for u8 {
     parent_clause0 = {impl Clone for u8}#6
@@ -109,6 +101,38 @@ pub fn core::num::{u8}#6::saturating_add(@1: u8, @2: u8) -> u8
     let rhs@2: u8; // arg #2
 
     @0 := core::intrinsics::saturating_add<u8>[Sized<u8>, {impl Copy for u8}#38](move (self@1), move (rhs@2))
+    return
+}
+
+// Full name: core::num::{u8}#6::wrapping_add
+pub fn wrapping_add(@1: u8, @2: u8) -> u8
+{
+    let @0: u8; // return
+    let self@1: u8; // arg #1
+    let rhs@2: u8; // arg #2
+
+    @0 := copy (self@1) wrapping.+ copy (rhs@2)
+    return
+}
+
+// Full name: core::num::{u8}#6::overflowing_add
+pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
+{
+    let @0: (u8, bool); // return
+    let self@1: u8; // arg #1
+    let rhs@2: u8; // arg #2
+    let @3: u8; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: (u8, bool); // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := copy (self@1) checked.+ copy (rhs@2)
+    @3 := copy ((@5).0)
+    @4 := copy ((@5).1)
+    storage_dead(@5)
+    @0 := (copy (@3), copy (@4))
     return
 }
 
@@ -135,30 +159,6 @@ fn main()
     // unsafe {
     //     let _ = 255u8.unchecked_add(1);
     // }
-    @0 := ()
-    return
-}
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-
-// Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
-where
-    [@TraitClause0]: Clone<Self>,
-{
-    let @0: (); // return
-    let self@1: &'_ mut (Self); // arg #1
-    let source@2: &'_ (Self); // arg #2
-    let @3: Self; // anonymous local
-
-    storage_live(@3)
-    @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop *(self@1)
-    *(self@1) := move (@3)
-    storage_dead(@3)
     @0 := ()
     return
 }

@@ -1,8 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::Foo
-struct Foo {}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -14,6 +11,21 @@ pub trait Clone<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: Clone<Self>
+}
+
+// Full name: test_crate::Foo
+struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
 pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
@@ -29,13 +41,6 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 impl Clone for Foo {
     parent_clause0 = Sized<Foo>
     fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
-}
-
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
 // Full name: test_crate::{impl Copy for Foo}#1
@@ -113,11 +118,6 @@ where
     @0 := ()
     return
 }
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
 
 
 

@@ -1,5 +1,13 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
 // Full name: test_crate::test_static
 fn test_static(@1: &'static (u32)) -> &'static (u32)
 {
@@ -15,10 +23,6 @@ struct SStatic {
   x: &'static (u32),
 }
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
 // Full name: test_crate::E0
 enum E0<'a, 'b, T1, T2>
 where
@@ -29,10 +33,6 @@ where
 {
   V1(&'a mut (T1), &'b mut (T2)),
 }
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
 
 // Full name: test_crate::E1
 enum E1<'a, 'b, T1, T2>

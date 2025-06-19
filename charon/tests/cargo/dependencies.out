@@ -1,34 +1,14 @@
 # Final LLBC before serialization:
 
-// Full name: core::panicking::AssertKind
-pub enum AssertKind {
-  Eq,
-  Ne,
-  Match,
-}
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
-}
-
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
 where
     'a : 'a,
 
-// Full name: test_cargo_dependencies::main::silly_incr::closure
-struct closure {}
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -45,6 +25,27 @@ pub trait FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::panicking::AssertKind
+pub enum AssertKind {
+  Eq,
+  Ne,
+  Match,
+}
+
 // Full name: take_mut::take
 pub fn take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
 where
@@ -52,6 +53,9 @@ where
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: FnOnce<F, (T)>,
     @TraitClause2::Output = T,
+
+// Full name: test_cargo_dependencies::main::silly_incr::closure
+struct closure {}
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}::call_once
 fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
@@ -205,10 +209,6 @@ fn main()
     @0 := ()
     return
 }
-
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 

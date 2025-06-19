@@ -4,6 +4,89 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::default::Default
+#[lang_item("Default")]
+pub trait Default<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn default = core::default::Default::default<Self>[Self]
+}
+
+#[lang_item("default_fn")]
+pub fn core::default::Default::default<Self>() -> Self
+where
+    [@TraitClause0]: Default<Self>,
+
+// Full name: core::default::{impl Default for bool}#1::default
+pub fn {impl Default for bool}#1::default() -> bool
+
+// Full name: core::default::{impl Default for bool}#1
+impl Default for bool {
+    parent_clause0 = Sized<bool>
+    fn default = {impl Default for bool}#1::default
+}
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Formatter
+#[lang_item("Formatter")]
+pub opaque type Formatter<'a>
+where
+    'a : 'a,
+
+// Full name: core::fmt::Arguments
+#[lang_item("format_arguments")]
+pub opaque type Arguments<'a>
+where
+    'a : 'a,
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub opaque type Argument<'a>
+
+// Full name: core::fmt::{Arguments<'a>}#4::new_v1
+pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::fmt::Debug
+#[lang_item("Debug")]
+pub trait Debug<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+}
+
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Debug<Self>,
+
+// Full name: core::fmt::{impl Debug for bool}#16::fmt
+pub fn {impl Debug for bool}#16::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: core::fmt::{impl Debug for bool}#16
+impl Debug for bool {
+    fn fmt<'_0, '_1, '_2> = {impl Debug for bool}#16::fmt<'_0_0, '_0_1, '_0_2>
+}
+
+// Full name: core::fmt::rt::{Argument<'_0>}#1::new_debug
+pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Debug<T>,
+
+// Full name: std::io::stdio::_print
+pub fn _print<'_0>(@1: Arguments<'_0>)
+
 // Full name: test_crate::Left
 trait Left<Self, T>
 {
@@ -23,67 +106,9 @@ trait Join<Self, U>
     fn test = test_crate::Join::test<Self, U>[Self]
 }
 
-// Full name: core::default::Default
-#[lang_item("Default")]
-pub trait Default<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn default = core::default::Default::default<Self>[Self]
-}
-
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
+fn test_crate::Join::test<Self, U>()
 where
-    'a : 'a,
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-}
-
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-where
-    'a : 'a,
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
-#[lang_item("default_fn")]
-pub fn core::default::Default::default<Self>() -> Self
-where
-    [@TraitClause0]: Default<Self>,
-
-// Full name: core::fmt::rt::{Argument<'_0>}#1::new_debug
-pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Debug<T>,
-
-// Full name: core::fmt::{Arguments<'a>}#4::new_v1
-pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
-
-// Full name: std::io::stdio::_print
-pub fn _print<'_0>(@1: Arguments<'_0>)
+    [@TraitClause0]: Join<Self, U>,
 
 // Full name: test_crate::{impl Join<U> for T}::test
 fn {impl Join<U> for T}::test<T, U>()
@@ -187,23 +212,6 @@ where
     parent_clause0 = @TraitClause1
 }
 
-// Full name: core::default::{impl Default for bool}#1::default
-pub fn {impl Default for bool}#1::default() -> bool
-
-// Full name: core::default::{impl Default for bool}#1
-impl Default for bool {
-    parent_clause0 = Sized<bool>
-    fn default = {impl Default for bool}#1::default
-}
-
-// Full name: core::fmt::{impl Debug for bool}#16::fmt
-pub fn {impl Debug for bool}#16::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-
-// Full name: core::fmt::{impl Debug for bool}#16
-impl Debug for bool {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for bool}#16::fmt<'_0_0, '_0_1, '_0_2>
-}
-
 // Full name: test_crate::try_it
 fn try_it<T>()
 where
@@ -219,14 +227,6 @@ where
     @0 := ()
     return
 }
-
-fn test_crate::Join::test<Self, U>()
-where
-    [@TraitClause0]: Join<Self, U>,
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: Debug<Self>,
 
 
 

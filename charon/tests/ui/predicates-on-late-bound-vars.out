@@ -1,8 +1,54 @@
 # Final LLBC before serialization:
 
+// Full name: core::cell::RefCell
+#[lang_item("RefCell")]
+pub opaque type RefCell<T>
+
+// Full name: core::cell::BorrowError
+pub struct BorrowError {}
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+
+// Full name: core::cell::{RefCell<T>}#22::new
+pub fn new<T>(@1: T) -> RefCell<T>
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::cell::Ref
+#[lang_item("RefCellRef")]
+pub opaque type Ref<'b, T>
+where
+    T : 'b,
+
+// Full name: core::cell::{RefCell<T>}#23::try_borrow
+pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>[Self]
+}
+
+// Full name: core::clone::Clone::clone
+#[lang_item("clone_fn")]
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -28,14 +74,6 @@ fn wrap<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[Sized<&'a (u32)>]
     return
 }
 
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
-}
-
 // Full name: test_crate::wrap2
 fn wrap2<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[Sized<&'_ (u32)>]
 where
@@ -51,38 +89,6 @@ where
     storage_dead(@2)
     return
 }
-
-// Full name: core::cell::RefCell
-#[lang_item("RefCell")]
-pub opaque type RefCell<T>
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::cell::Ref
-#[lang_item("RefCellRef")]
-pub opaque type Ref<'b, T>
-where
-    T : 'b,
-
-// Full name: core::cell::BorrowError
-pub struct BorrowError {}
-
-// Full name: core::cell::{RefCell<T>}#22::new
-pub fn new<T>(@1: T) -> RefCell<T>
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: core::cell::{RefCell<T>}#23::try_borrow
-pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
 
 // Full name: test_crate::foo
 fn foo()
@@ -128,12 +134,6 @@ where
 
     panic(core::panicking::panic)
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
 
 
 
