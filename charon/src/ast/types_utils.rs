@@ -914,7 +914,7 @@ pub trait TyVisitable: Sized + AstVisitable {
 }
 
 impl TypeDecl {
-    /// Computes the variant from the tag (i.e. the in-memory bytes that represent the discriminant).
+    /// Looks up the variant corresponding to the tag (i.e. the in-memory bytes that represent the discriminant).
     /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).
     ///
     /// If the `tag` does not correspond to any valid discriminant but there is a niche,
@@ -925,41 +925,25 @@ impl TypeDecl {
             return None;
         };
         let discr_layout = layout.discriminant_layout.as_ref()?;
-        match &self.kind {
-            TypeDeclKind::Enum(variants) => {
-                if variants.is_empty() {
-                    None
-                } else {
-                    let discr_ty = variants.get(VariantId::ZERO)?.discriminant.get_integer_ty();
 
-                    match &discr_layout.encoding {
-                        TagEncoding::Direct => {
-                            assert_eq!(tag.get_integer_ty(), discr_layout.tag_ty);
-                            let discr = ScalarValue::from_bits(discr_ty, tag.to_bits());
-                            // Find corresponding variant.
-                            variants.iter_indexed().find_map(|(id, variant)| {
-                                if variant.discriminant == discr {
-                                    Some(id)
-                                } else {
-                                    None
-                                }
-                            })
-                        }
-                        TagEncoding::Niche { untagged_variant } => layout
-                            .variant_layouts
-                            .iter_indexed()
-                            .find_map(|(id, variant_layout)| {
-                                if variant_layout.tag == Some(tag) {
-                                    Some(id)
-                                } else {
-                                    None
-                                }
-                            })
-                            .or(Some(*untagged_variant)),
+        let variant_for_tag =
+            layout
+                .variant_layouts
+                .iter_indexed()
+                .find_map(|(id, variant_layout)| {
+                    if variant_layout.tag == Some(tag) {
+                        Some(id)
+                    } else {
+                        None
                     }
-                }
+                });
+
+        match &discr_layout.encoding {
+            TagEncoding::Direct => {
+                assert_eq!(tag.get_integer_ty(), discr_layout.tag_ty);
+                variant_for_tag
             }
-            _ => None,
+            TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
         }
     }
 }

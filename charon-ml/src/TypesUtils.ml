@@ -176,12 +176,12 @@ let is_signed (int_ty : integer_type) =
 
 let is_in_bounds (int_ty : integer_type) (v : Z.t) =
   match int_ty with
-  | Isize -> Z.fits_int v
+  | Isize -> Z.fits_nativeint v
   | I8 -> (v >= Z.(~- (~$0x80))) && v <= Z.of_int 0x7F
   | I16 -> (v >= Z.(~- (~$0x8000))) && v <= Z.of_int 0x7FFF
   | I32 -> Z.fits_int32 v
   | I64 -> Z.fits_int64 v
-  | Usize -> Z.fits_int64_unsigned v
+  | Usize -> Z.fits_nativeint_unsigned v
   | U8 -> v >= Z.zero && v <= Z.of_int 0xFF
   | U16 -> v >= Z.zero && v <= Z.of_int 0xFFFF
   | U32 -> Z.fits_int32_unsigned v
@@ -192,15 +192,17 @@ let is_in_bounds (int_ty : integer_type) (v : Z.t) =
 let max_of (int_ty : integer_type) =
   (* FIXME: Not sure whether all of these values are even representable before being made into Z.t. *)
   match int_ty with
+  | Isize -> Z.of_nativeint Nativeint.max_int
   | I8 -> Z.of_int 0x7FF
   | I16 -> Z.of_int 0x7FFF
   | I32 -> Z.of_int32 Int32.max_int
-  | Isize | I64 -> Z.of_int64 Int64.max_int
+  | I64 -> Z.of_int64 Int64.max_int
   | I128 -> Z.of_string "0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+  | Usize -> Z.of_nativeint_unsigned Nativeint.minus_one
   | U8 -> Z.of_int 0xFF
   | U16 -> Z.of_int 0xFFFF
   | U32 -> Z.of_int64_unsigned 0xFFFFFFFFL (* Doesn't fit in Int32.t*)
-  | Usize | U64 -> Z.of_string "0xFFFFFFFFFFFFFFFF" (* Doesn't fit in Int64.t*)
+  | U64 -> Z.of_string "0xFFFFFFFFFFFFFFFF" (* Doesn't fit in Int64.t*)
   | U128 -> Z.of_string "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
 
 (* Make a debruijn variable of index 0 *)
