@@ -160,41 +160,4 @@ impl ItemTransCtx<'_, '_> {
             };
         Ok(fun_id)
     }
-
-    /// Auxiliary function to translate function calls and references to functions.
-    /// Translate a function id applied with some substitutions.
-    ///
-    /// TODO: should we always erase the regions?
-    #[tracing::instrument(skip(self, span))]
-    pub(crate) fn translate_fn_ptr(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-    ) -> Result<RegionBinder<FnPtr>, Error> {
-        Ok(match &item.in_trait {
-            // Direct function call
-            None => {
-                let bound_fun_ref = self.translate_fun_decl_ref(span, item)?;
-                bound_fun_ref.map(|fun_ref| FnPtr {
-                    func: Box::new(FunIdOrTraitMethodRef::Fun(fun_ref.id)),
-                    generics: fun_ref.generics,
-                })
-            }
-            // Trait method
-            Some(_) => {
-                let bound_method_ref = self.translate_method_ref(span, item)?;
-                bound_method_ref.map(|method_ref| {
-                    let fun_id = FunIdOrTraitMethodRef::Trait(
-                        method_ref.trait_ref,
-                        method_ref.name,
-                        method_ref.method_decl_id,
-                    );
-                    FnPtr {
-                        func: Box::new(fun_id),
-                        generics: method_ref.generics,
-                    }
-                })
-            }
-        })
-    }
 }
