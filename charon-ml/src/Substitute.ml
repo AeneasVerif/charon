@@ -629,6 +629,25 @@ let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
   in
   Some s
 
+(* Lookup the signature of a `Ty::FnDef`. *)
+let lookup_fndef_sig (crate : 'a gcrate) (fn_def : fun_decl_ref region_binder) :
+    (ty list * ty) region_binder option =
+  let fun_decl_id = fn_def.binder_value.id in
+  let* fun_decl = LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls in
+  (* Substitute the signature to be valid under the binder. *)
+  let fn_sig =
+    st_substitute_visitor#visit_fun_sig
+      (make_subst_from_generics fun_decl.signature.generics
+         fn_def.binder_value.generics)
+      fun_decl.signature
+  in
+  (* Rebind everything *)
+  Some
+    {
+      binder_regions = fn_def.binder_regions;
+      binder_value = (fn_sig.inputs, fn_sig.output);
+    }
+
 (* Construct a set of generic arguments in the scope of `params` that matches
    `params` and feeds each required parameter with itself. E.g. given
    parameters for `<T, U> where U: PartialEq<T>`, the arguments would be `<T,
