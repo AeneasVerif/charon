@@ -153,20 +153,13 @@ impl ItemTransCtx<'_, '_> {
             // }
             // ```
             hax::AssocItemContainer::TraitImplContainer {
-                impl_id,
-                impl_generics,
-                impl_required_impl_exprs,
+                impl_,
                 implemented_trait_ref,
                 implemented_trait_item,
                 overrides_default,
                 ..
             } => {
-                let impl_ref = self.translate_trait_impl_ref(
-                    span,
-                    impl_id,
-                    impl_generics,
-                    impl_required_impl_exprs,
-                )?;
+                let impl_ref = self.translate_trait_impl_ref(span, impl_)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // Ensure we translate the corresponding decl signature.

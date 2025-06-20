@@ -120,14 +120,16 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::BinOp::Gt => BinOp::Gt,
             hax::BinOp::Div => BinOp::Div,
             hax::BinOp::Rem => BinOp::Rem,
-            hax::BinOp::Add => BinOp::WrappingAdd,
-            hax::BinOp::Sub => BinOp::WrappingSub,
-            hax::BinOp::Mul => BinOp::WrappingMul,
+            // TODO: this is incorrect
+            hax::BinOp::Add | hax::BinOp::AddUnchecked => BinOp::WrappingAdd,
+            hax::BinOp::Sub | hax::BinOp::SubUnchecked => BinOp::WrappingSub,
+            hax::BinOp::Mul | hax::BinOp::MulUnchecked => BinOp::WrappingMul,
             hax::BinOp::AddWithOverflow => BinOp::CheckedAdd,
             hax::BinOp::SubWithOverflow => BinOp::CheckedSub,
             hax::BinOp::MulWithOverflow => BinOp::CheckedMul,
-            hax::BinOp::Shl => BinOp::Shl,
-            hax::BinOp::Shr => BinOp::Shr,
+            // TODO: this is incorrect
+            hax::BinOp::Shl | hax::BinOp::ShlUnchecked => BinOp::Shl,
+            hax::BinOp::Shr | hax::BinOp::ShrUnchecked => BinOp::Shr,
             hax::BinOp::Cmp => BinOp::Cmp,
             hax::BinOp::Offset => BinOp::Offset,
         })
@@ -358,15 +360,10 @@ impl BodyTransCtx<'_, '_, '_> {
                     let ty = constant.ty.clone();
                     Ok((Operand::Const(Box::new(constant)), ty))
                 }
-                hax::ConstOperandKind::Promoted {
-                    def_id,
-                    args,
-                    impl_exprs,
-                } => {
+                hax::ConstOperandKind::Promoted(item) => {
                     let ty = self.translate_ty(span, &const_op.ty)?;
                     // A promoted constant that could not be evaluated.
-                    let global_ref =
-                        self.translate_global_decl_ref(span, def_id, args, impl_exprs)?;
+                    let global_ref = self.translate_global_decl_ref(span, item)?;
                     let constant = ConstantExpr {
                         value: RawConstantExpr::Global(global_ref),
                         ty: ty.clone(),
@@ -590,19 +587,16 @@ impl BodyTransCtx<'_, '_, '_> {
                         ))
                     }
                     hax::AggregateKind::Adt(
-                        adt_id,
+                        item,
                         variant_idx,
                         kind,
-                        substs,
-                        trait_refs,
                         _user_annotation,
                         field_index,
                     ) => {
                         use hax::AdtKind;
                         trace!("{:?}", rvalue);
 
-                        let tref =
-                            self.translate_type_decl_ref(span, adt_id, substs, trait_refs)?;
+                        let tref = self.translate_type_decl_ref(span, item)?;
                         let variant_id = match kind {
                             AdtKind::Struct | AdtKind::Union => None,
                             AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
@@ -615,14 +609,13 @@ impl BodyTransCtx<'_, '_, '_> {
                         let akind = AggregateKind::Adt(tref, variant_id, field_id);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Closure(def_id, closure_args) => {
+                    hax::AggregateKind::Closure(closure_args) => {
                         trace!(
                             "Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}",
-                            def_id,
-                            closure_args.tupled_sig
+                            closure_args.item.def_id,
+                            closure_args.fn_sig
                         );
-
-                        let tref = self.translate_closure_type_ref(span, def_id, closure_args)?;
+                        let tref = self.translate_closure_type_ref(span, closure_args)?;
                         let akind = AggregateKind::Adt(tref, None, None);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
@@ -926,15 +919,10 @@ impl BodyTransCtx<'_, '_, '_> {
         let lval = self.translate_place(span, destination)?;
         // Translate the function operand.
         let fn_operand = match fun {
-            hax::FunOperand::Static {
-                def_id,
-                generics,
-                trait_refs,
-                trait_info,
-            } => {
-                trace!("func: {:?}", def_id);
-                let fun_def = self.hax_def(def_id)?;
-                let fun_src = TransItemSource::Fun(def_id.clone());
+            hax::FunOperand::Static(item) => {
+                trace!("func: {:?}", item.def_id);
+                let fun_def = self.hax_def(&item.def_id)?;
+                let fun_src = TransItemSource::Fun(item.def_id.clone());
                 let name = self.t_ctx.translate_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
@@ -951,9 +939,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     // We ignore the arguments
                     return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
                 } else {
-                    let fn_ptr = self
-                        .translate_fn_ptr(span, def_id, generics, trait_refs, trait_info)?
-                        .erase();
+                    let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
                     FnOperand::Regular(fn_ptr)
                 }
             }

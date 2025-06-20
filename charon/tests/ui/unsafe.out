@@ -182,15 +182,15 @@ where
 #[lang_item("pointee_trait")]
 pub trait Pointee<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Pointee<Self>::Metadata>
-    parent_clause1 : [@TraitClause1]: Debug<Pointee<Self>::Metadata>
-    parent_clause2 : [@TraitClause2]: Copy<Pointee<Self>::Metadata>
-    parent_clause3 : [@TraitClause3]: Send<Pointee<Self>::Metadata>
-    parent_clause4 : [@TraitClause4]: Sync<Pointee<Self>::Metadata>
-    parent_clause5 : [@TraitClause5]: Ord<Pointee<Self>::Metadata>
-    parent_clause6 : [@TraitClause6]: Hash<Pointee<Self>::Metadata>
-    parent_clause7 : [@TraitClause7]: Unpin<Pointee<Self>::Metadata>
-    parent_clause8 : [@TraitClause8]: Freeze<Pointee<Self>::Metadata>
+    parent_clause0 : [@TraitClause0]: Sized<Self::Metadata>
+    parent_clause1 : [@TraitClause1]: Debug<Self::Metadata>
+    parent_clause2 : [@TraitClause2]: Copy<Self::Metadata>
+    parent_clause3 : [@TraitClause3]: Send<Self::Metadata>
+    parent_clause4 : [@TraitClause4]: Sync<Self::Metadata>
+    parent_clause5 : [@TraitClause5]: Ord<Self::Metadata>
+    parent_clause6 : [@TraitClause6]: Hash<Self::Metadata>
+    parent_clause7 : [@TraitClause7]: Unpin<Self::Metadata>
+    parent_clause8 : [@TraitClause8]: Freeze<Self::Metadata>
     type Metadata
 }
 

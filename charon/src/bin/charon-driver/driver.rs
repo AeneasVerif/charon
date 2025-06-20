@@ -52,17 +52,9 @@ fn set_skip_borrowck() {
 }
 fn skip_borrowck_if_set(providers: &mut Providers) {
     if SKIP_BORROWCK.load(Ordering::SeqCst) {
-        providers.mir_borrowck = |tcx, def_id| {
-            let (input_body, _promoted) = tcx.mir_promoted(def_id);
-            let input_body = &input_body.borrow();
-            // Empty result, which is what is used for tainted or custom_mir bodies.
-            let result = rustc_middle::mir::BorrowCheckResult {
-                concrete_opaque_types: Default::default(),
-                closure_requirements: None,
-                used_mut_upvars: Default::default(),
-                tainted_by_errors: input_body.tainted_by_errors,
-            };
-            tcx.arena.alloc(result)
+        providers.mir_borrowck = |tcx, _def_id| {
+            // Empty result, which is what is used for custom_mir bodies.
+            Ok(tcx.arena.alloc(Default::default()))
         }
     }
 }

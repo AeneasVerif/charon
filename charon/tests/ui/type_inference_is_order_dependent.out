@@ -41,13 +41,6 @@ pub opaque type Arguments<'a>
 where
     'a : 'a,
 
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
-// Full name: core::fmt::{Arguments<'a>}::new_v1
-pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -78,11 +71,18 @@ impl Debug for bool {
     fn fmt<'_0, '_1, '_2> = {impl Debug for bool}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub opaque type Argument<'a>
+
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
 pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
+
+// Full name: core::fmt::rt::{Arguments<'a>}::new_v1
+pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)

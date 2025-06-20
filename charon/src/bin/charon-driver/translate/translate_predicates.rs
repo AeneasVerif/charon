@@ -66,8 +66,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         trait_ref: &hax::TraitRef,
     ) -> Result<TraitDeclRef, Error> {
-        // For now a trait has no required bounds, so we pass an empty list.
-        self.translate_trait_decl_ref(span, &trait_ref.def_id, &trait_ref.generic_args, &[])
+        self.translate_trait_decl_ref(span, trait_ref)
     }
 
     pub(crate) fn register_predicate(
@@ -193,19 +192,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
-            ImplExprAtom::Concrete {
-                id: impl_def_id,
-                generics,
-                impl_exprs,
-            } => {
-                let impl_ref =
-                    self.translate_trait_impl_ref(span, impl_def_id, generics, impl_exprs)?;
+            ImplExprAtom::Concrete(item) => {
+                let impl_ref = self.translate_trait_impl_ref(span, item)?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_ref),
                     trait_decl_ref,
                 }
             }
-            // The self clause and the other clauses are handled in a similar manner
             ImplExprAtom::SelfImpl {
                 r#trait: trait_ref,
                 path,
@@ -247,13 +240,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     match path_elem {
                         AssocItem {
                             item,
-                            generic_args,
                             predicate,
                             index,
                             ..
                         } => {
                             let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-                            if !generic_args.is_empty() {
+                            if !item.generic_args.is_empty() {
                                 raise_error!(
                                     self,
                                     span,
@@ -318,16 +310,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .hax_skip_binder_ref()
                         .generic_args
                         .first()
-                    && let hax::TyKind::Closure(closure_id, closure_args) = closure_ty.kind()
+                    && let hax::TyKind::Closure(closure_args) = closure_ty.kind()
                 {
                     let binder =
                         self.translate_region_binder(span, &impl_source.r#trait, |ctx, _tref| {
-                            ctx.translate_closure_impl_ref(
-                                span,
-                                closure_id,
-                                closure_args,
-                                closure_kind,
-                            )
+                            ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
                         })?;
                     TraitRefKind::TraitImpl(binder.erase())
                 } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
@@ -373,6 +360,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 trait_ref
+            }
+            ImplExprAtom::Drop(..) => {
+                raise_error!(self, span, "Unsupported predicate: drop glue")
             }
         };
         Ok(trait_ref)
