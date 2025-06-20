@@ -552,11 +552,12 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (discriminant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Direct", `Assoc [ ("offset", offset); ("repr", repr) ]) ] ->
+    | `Assoc [ ("offset", offset); ("tag_ty", tag_ty); ("encoding", encoding) ]
+      ->
         let* offset = int_of_json ctx offset in
-        let* repr = integer_type_of_json ctx repr in
-        Ok (Direct (offset, repr))
-    | `String "Niche" -> Ok Niche
+        let* tag_ty = integer_type_of_json ctx tag_ty in
+        let* encoding = tag_encoding_of_json ctx encoding in
+        Ok ({ offset; tag_ty; encoding } : discriminant_layout)
     | _ -> Error "")
 
 and existential_predicate_of_json (ctx : of_json_ctx) (js : json) :
@@ -1439,6 +1440,16 @@ and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
         Ok ({ span; generated_from_span } : span)
     | _ -> Error "")
 
+and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
+    (tag_encoding, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Direct" -> Ok Direct
+    | `Assoc [ ("Niche", `Assoc [ ("untagged_variant", untagged_variant) ]) ] ->
+        let* untagged_variant = variant_id_of_json ctx untagged_variant in
+        Ok (Niche untagged_variant)
+    | _ -> Error "")
+
 and trait_clause_of_json (ctx : of_json_ctx) (js : json) :
     (trait_clause, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1882,11 +1893,18 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (variant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("field_offsets", field_offsets) ] ->
+    | `Assoc
+        [
+          ("field_offsets", field_offsets);
+          ("uninhabited", uninhabited);
+          ("tag", tag);
+        ] ->
         let* field_offsets =
           vector_of_json field_id_of_json int_of_json ctx field_offsets
         in
-        Ok ({ field_offsets } : variant_layout)
+        let* uninhabited = bool_of_json ctx uninhabited in
+        let* tag = option_of_json scalar_value_of_json ctx tag in
+        Ok ({ field_offsets; uninhabited; tag } : variant_layout)
     | _ -> Error "")
 
 and vector_of_json :

@@ -333,20 +333,42 @@ pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
     pub field_offsets: Vector<FieldId, ByteCount>,
+    /// Whether the variant is uninhabited, i.e. has any valid possible value.
+    /// Note that uninhabited types can have arbitrary layouts.
+    #[drive(skip)]
+    pub uninhabited: bool,
+    /// The memory representation of the discriminant corresponding to this
+    /// variant. It must be of the same type as the corresponding [`DiscriminantLayout::tag_ty`].
+    ///
+    /// If it's `None`, then this variant is either:
+    /// - the untagged variant (cf. [`TagEncoding::Niche::untagged_variant`]) of a niched enum;
+    /// - the single variant of a struct;
+    /// - uninhabited.
+    #[drive(skip)]
+    pub tag: Option<ScalarValue>,
 }
 
-/// Layout of the discriminant with its offset and representation type.
-///
-/// Does not include information about the value range.
+/// Describes how we represent the active enum variant in memory.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum DiscriminantLayout {
-    Direct {
-        /// The offset of the discriminant in bytes.
-        offset: ByteCount,
-        /// The representation type of the discriminant.
-        repr: IntegerTy,
-    },
-    Niche, // TODO: Add more useful information about niches here in the future.
+pub enum TagEncoding {
+    /// Represents the direct encoding of the discriminant as the tag via integer casts.
+    Direct,
+    /// Represents the encoding of the discriminant in the niche of variant `untagged_variant`.
+    Niche { untagged_variant: VariantId },
+}
+
+/// Layout of the discriminant.
+/// Describes the offset of the discriminant field as well as its encoding
+/// as `tag` in memory.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DiscriminantLayout {
+    /// The offset of the discriminant in bytes.
+    pub offset: ByteCount,
+    /// The representation type of the discriminant.
+    pub tag_ty: IntegerTy,
+    /// How the tag is encoding in memory.
+    pub encoding: TagEncoding,
+    // FIXME: Should probably contain the valid range of the tag, too.
 }
 
 /// Simplified type layout information.
@@ -464,6 +486,7 @@ pub struct Variant {
     pub fields: Vector<FieldId, Field>,
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This is
     /// different than the discriminant stored in memory (the one controlled by `repr`).
+    /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: ScalarValue,
 }
 

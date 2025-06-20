@@ -496,15 +496,13 @@ and const_generic_var = {
 
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
-(** Layout of the discriminant with its offset and representation type.
-
-    Does not include information about the value range. *)
-and discriminant_layout =
-  | Direct of int * integer_type
-      (** Fields:
-          - [offset]: The offset of the discriminant in bytes.
-          - [repr]: The representation type of the discriminant. *)
-  | Niche
+(** Layout of the discriminant. Describes the offset of the discriminant field
+    as well as its encoding as [tag] in memory. *)
+and discriminant_layout = {
+  offset : int;  (** The offset of the discriminant in bytes. *)
+  tag_ty : integer_type;  (** The representation type of the discriminant. *)
+  encoding : tag_encoding;  (** How the tag is encoding in memory. *)
+}
 
 and field = {
   span : span;
@@ -649,6 +647,18 @@ and ptr_metadata =
       (** Metadata for [dyn Trait] and user-defined types that directly or
           indirectly contain a [dyn Trait]. *)
 
+(** Describes how we represent the active enum variant in memory. *)
+and tag_encoding =
+  | Direct
+      (** Represents the direct encoding of the discriminant as the tag via
+          integer casts. *)
+  | Niche of variant_id
+      (** Represents the encoding of the discriminant in the niche of variant
+          [untagged_variant].
+
+          Fields:
+          - [untagged_variant] *)
+
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form
     [TraitRefKind::Clause] can refer to. *)
@@ -735,7 +745,8 @@ and variant = {
   discriminant : scalar_value;
       (** The discriminant value outputted by [std::mem::discriminant] for this
           variant. This is different than the discriminant stored in memory (the
-          one controlled by [repr]). *)
+          one controlled by [repr]). That one is described by
+          [[DiscriminantLayout]] and [[TagEncoding]]. *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])
@@ -745,6 +756,19 @@ and variant_id = (VariantId.id[@visitors.opaque])
     Maps fields to their offset within the layout. *)
 and variant_layout = {
   field_offsets : int list;  (** The offset of each field. *)
+  uninhabited : bool;
+      (** Whether the variant is uninhabited, i.e. has any valid possible value.
+          Note that uninhabited types can have arbitrary layouts. *)
+  tag : scalar_value option;
+      (** The memory representation of the discriminant corresponding to this
+          variant. It must be of the same type as the corresponding
+          [[DiscriminantLayout::tag_ty]].
+
+          If it's [None], then this variant is either:
+          - the untagged variant (cf. [[TagEncoding::Niche::untagged_variant]])
+            of a niched enum;
+          - the single variant of a struct;
+          - uninhabited. *)
 }
 [@@deriving
   show,

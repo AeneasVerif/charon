@@ -437,6 +437,18 @@ impl IntegerTy {
             IntegerTy::U128 => size_of::<u128>(),
         }
     }
+
+    pub fn to_unsigned(&self) -> Self {
+        match self {
+            IntegerTy::Isize => IntegerTy::Usize,
+            IntegerTy::I8 => IntegerTy::U8,
+            IntegerTy::I16 => IntegerTy::U16,
+            IntegerTy::I32 => IntegerTy::U32,
+            IntegerTy::I64 => IntegerTy::U64,
+            IntegerTy::I128 => IntegerTy::U128,
+            _ => *self,
+        }
+    }
 }
 
 /// A value of type `T` bound by the generic parameters of item
@@ -898,6 +910,51 @@ pub trait TyVisitable: Sized + AstVisitable {
             f,
             depth: DeBruijnId::zero(),
         })
+    }
+}
+
+impl TypeDecl {
+    /// Looks up the variant corresponding to the tag (i.e. the in-memory bytes that represent the discriminant).
+    /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).
+    ///
+    /// If the `tag` does not correspond to any valid discriminant but there is a niche,
+    /// the resulting `VariantId` will be for the untagged variant [`TagEncoding::Niche::untagged_variant`].
+    pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
+        let layout = self.layout.as_ref()?;
+        if layout.uninhabited {
+            return None;
+        };
+        let discr_layout = layout.discriminant_layout.as_ref()?;
+
+        let variant_for_tag =
+            layout
+                .variant_layouts
+                .iter_indexed()
+                .find_map(|(id, variant_layout)| {
+                    if variant_layout.tag == Some(tag) {
+                        Some(id)
+                    } else {
+                        None
+                    }
+                });
+
+        match &discr_layout.encoding {
+            TagEncoding::Direct => {
+                assert_eq!(tag.get_integer_ty(), discr_layout.tag_ty);
+                variant_for_tag
+            }
+            TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
+        }
+    }
+}
+
+impl Layout {
+    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
+        if let Some(v) = self.variant_layouts.get(variant_id) {
+            v.uninhabited
+        } else {
+            false
+        }
     }
 }
 

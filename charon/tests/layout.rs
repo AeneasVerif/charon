@@ -111,8 +111,55 @@ fn type_layout() -> anyhow::Result<()> {
             B(u32) = 43,
             C = 123456,
         }
+
+        #[repr(i8)]
+        enum MyOrder {
+            Less = -1,
+            Equal = 0,
+            Greater = 1,
+        }
+
+        enum WithNicheAndUninhabited {
+            First,
+            Second(!),
+            Third(NonZero<u32>)
+        }
         "#,
     )?;
+
+    // Check whether niche discriminant computations are correct, i.e. reversible.
+    for tdecl in crate_data.type_decls.iter() {
+        if let Some(layout) = tdecl.layout.as_ref() {
+            if layout.discriminant_layout.is_some() {
+                let name = repr_name(&crate_data, &tdecl.item_meta.name);
+                for (var_id, variant) in layout.variant_layouts.iter_indexed() {
+                    let tag = variant.tag;
+                    if layout.is_variant_uninhabited(var_id) {
+                        assert_eq!(
+                            None, tag,
+                            "For type {} with uninhabited variant {} something went wrong!",
+                            name, var_id
+                        );
+                    } else {
+                        match tag {
+                            None => (), // Must be the untagged variant
+                            Some(tag) => {
+                                let roundtrip_var_id = tdecl.get_variant_from_tag(tag.clone());
+                                assert_eq!(
+                                    Some(var_id),
+                                    roundtrip_var_id,
+                                    "For type {} something went wrong, tag = {:?}",
+                                    name,
+                                    tag
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     let layouts: IndexMap<String, Option<Layout>> = crate_data
         .type_decls
         .iter()
