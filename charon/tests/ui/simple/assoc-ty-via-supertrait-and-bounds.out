@@ -21,7 +21,7 @@ pub trait HasOutput2<Self, Self_Clause0_Output>
     parent_clause0 : [@TraitClause0]: HasOutput<Self, Self_Clause0_Output>
 }
 
-// Full name: test_crate::{impl HasOutput2<()> for ()}#1
+// Full name: test_crate::{impl HasOutput2<()> for ()}
 impl HasOutput2<()> for () {
     parent_clause0 = {impl HasOutput<()> for ()}
 }
@@ -34,7 +34,7 @@ where
   T,
 }
 
-// Full name: test_crate::{impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}#2
+// Full name: test_crate::{impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}
 impl<T, Clause1_Output> HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
@@ -43,13 +43,13 @@ where
     parent_clause0 = @TraitClause1::parent_clause0
 }
 
-// Full name: test_crate::{impl HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]}#3
+// Full name: test_crate::{impl HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]}
 impl<T, Clause1_Clause0_Output> HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: HasOutput2<T, Clause1_Clause0_Output>,
 {
-    parent_clause0 = {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}#2<T, Clause1_Clause0_Output>[@TraitClause0, @TraitClause1::parent_clause0]
+    parent_clause0 = {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}<T, Clause1_Clause0_Output>[@TraitClause0, @TraitClause1::parent_clause0]
 }
 
 // Full name: test_crate::take
@@ -70,7 +70,7 @@ fn main()
 {
     let @0: (); // return
 
-    @0 := take<Wrapper<()>[Sized<()>], ()>[Sized<Wrapper<()>[Sized<()>]>, {impl HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]}#3<(), ()>[Sized<()>, {impl HasOutput2<()> for ()}#1]]()
+    @0 := take<Wrapper<()>[Sized<()>], ()>[Sized<Wrapper<()>[Sized<()>]>, {impl HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[Sized<()>, {impl HasOutput2<()> for ()}]]()
     @0 := ()
     return
 }

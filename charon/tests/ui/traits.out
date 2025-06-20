@@ -153,8 +153,8 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::get_bool
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -173,7 +173,7 @@ where
     return
 }
 
-pub fn test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1::ret_true<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+pub fn test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -184,13 +184,13 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}
 impl<T> BoolTrait for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool<'_0_0, T>[@TraitClause0]
-    fn ret_true<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1::ret_true<'_0_0, T>[@TraitClause0]
+    fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0]
+    fn ret_true<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -208,12 +208,12 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := {impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool<'_, T>[@TraitClause0](move (@3))
+    @2 := {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
-        @0 := test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1::ret_true<'_, T>[@TraitClause0](move (@4))
+        @0 := test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
         storage_dead(@4)
     }
     else {
@@ -253,8 +253,8 @@ pub fn test_crate::ToU64::to_u64<Self>(@1: Self) -> u64
 where
     [@TraitClause0]: ToU64<Self>,
 
-// Full name: test_crate::{impl ToU64 for u64}#2::to_u64
-pub fn {impl ToU64 for u64}#2::to_u64(@1: u64) -> u64
+// Full name: test_crate::{impl ToU64 for u64}::to_u64
+pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
 {
     let @0: u64; // return
     let self@1: u64; // arg #1
@@ -263,13 +263,13 @@ pub fn {impl ToU64 for u64}#2::to_u64(@1: u64) -> u64
     return
 }
 
-// Full name: test_crate::{impl ToU64 for u64}#2
+// Full name: test_crate::{impl ToU64 for u64}
 impl ToU64 for u64 {
-    fn to_u64 = {impl ToU64 for u64}#2::to_u64
+    fn to_u64 = {impl ToU64 for u64}::to_u64
 }
 
-// Full name: test_crate::{impl ToU64 for (A, A)}#3::to_u64
-pub fn {impl ToU64 for (A, A)}#3::to_u64<A>(@1: (A, A)) -> u64
+// Full name: test_crate::{impl ToU64 for (A, A)}::to_u64
+pub fn {impl ToU64 for (A, A)}::to_u64<A>(@1: (A, A)) -> u64
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: ToU64<A>,
@@ -301,13 +301,13 @@ where
     return
 }
 
-// Full name: test_crate::{impl ToU64 for (A, A)}#3
+// Full name: test_crate::{impl ToU64 for (A, A)}
 impl<A> ToU64 for (A, A)
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: ToU64<A>,
 {
-    fn to_u64 = {impl ToU64 for (A, A)}#3::to_u64<A>[@TraitClause0, @TraitClause1]
+    fn to_u64 = {impl ToU64 for (A, A)}::to_u64<A>[@TraitClause0, @TraitClause1]
 }
 
 pub fn test_crate::f<T>(@1: (T, T)) -> u64
@@ -321,7 +321,7 @@ where
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for (A, A)}#3::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
+    @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
     drop x@1
     return
@@ -354,7 +354,7 @@ pub fn h0(@1: u64) -> u64
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := {impl ToU64 for u64}#2::to_u64(move (@2))
+    @0 := {impl ToU64 for u64}::to_u64(move (@2))
     storage_dead(@2)
     return
 }
@@ -367,8 +367,8 @@ where
   x: T,
 }
 
-// Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}#4::to_u64
-pub fn {impl ToU64 for Wrapper<T>[@TraitClause0]}#4::to_u64<T>(@1: Wrapper<T>[@TraitClause0]) -> u64
+// Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64
+pub fn {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>(@1: Wrapper<T>[@TraitClause0]) -> u64
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
@@ -385,13 +385,13 @@ where
     return
 }
 
-// Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}#4
+// Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}
 impl<T> ToU64 for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    fn to_u64 = {impl ToU64 for Wrapper<T>[@TraitClause0]}#4::to_u64<T>[@TraitClause0, @TraitClause1]
+    fn to_u64 = {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::h1
@@ -403,7 +403,7 @@ pub fn h1(@1: Wrapper<u64>[Sized<u64>]) -> u64
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}#4::to_u64<u64>[Sized<u64>, {impl ToU64 for u64}#2](move (@2))
+    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[Sized<u64>, {impl ToU64 for u64}](move (@2))
     storage_dead(@2)
     return
 }
@@ -420,7 +420,7 @@ where
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}#4::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
+    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
     drop x@1
     return
@@ -437,8 +437,8 @@ pub fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
 where
     [@TraitClause0]: ToType<Self, T>,
 
-// Full name: test_crate::{impl ToType<bool> for u64}#5::to_type
-pub fn {impl ToType<bool> for u64}#5::to_type(@1: u64) -> bool
+// Full name: test_crate::{impl ToType<bool> for u64}::to_type
+pub fn {impl ToType<bool> for u64}::to_type(@1: u64) -> bool
 {
     let @0: bool; // return
     let self@1: u64; // arg #1
@@ -451,10 +451,10 @@ pub fn {impl ToType<bool> for u64}#5::to_type(@1: u64) -> bool
     return
 }
 
-// Full name: test_crate::{impl ToType<bool> for u64}#5
+// Full name: test_crate::{impl ToType<bool> for u64}
 impl ToType<bool> for u64 {
     parent_clause0 = Sized<bool>
-    fn to_type = {impl ToType<bool> for u64}#5::to_type
+    fn to_type = {impl ToType<bool> for u64}::to_type
 }
 
 // Full name: test_crate::OfType
@@ -532,12 +532,12 @@ where
   T,
 }
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}#6::test::TestType1
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestType1
 struct TestType1 {
   u64,
 }
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}#6::test::{impl TestTrait for TestType1}::test
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}::test
 fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
 {
     let @0: bool; // return
@@ -551,7 +551,7 @@ fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
     return
 }
 
-pub fn test_crate::{TestType<T>[@TraitClause0]}#6::test<'_0, T>(@1: &'_0 (TestType<T>[@TraitClause0]), @2: T) -> bool
+pub fn test_crate::{TestType<T>[@TraitClause0]}::test<'_0, T>(@1: &'_0 (TestType<T>[@TraitClause0]), @2: T) -> bool
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
@@ -601,17 +601,17 @@ where
     return
 }
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}#6::test::TestTrait
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait
 trait TestTrait<Self>
 {
-    fn test<'_0> = test_crate::{TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0_0, Self>[Self]
+    fn test<'_0> = test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0_0, Self>[Self]
 }
 
-fn test_crate::{TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
+fn test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: TestTrait<Self>,
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}#6::test::{impl TestTrait for TestType1}
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}
 impl TestTrait for TestType1 {
     fn test<'_0> = {impl TestTrait for TestType1}::test<'_0_0>
 }
@@ -621,8 +621,8 @@ pub struct BoolWrapper {
   bool,
 }
 
-// Full name: test_crate::{impl ToType<T> for BoolWrapper}#7::to_type
-pub fn {impl ToType<T> for BoolWrapper}#7::to_type<T>(@1: BoolWrapper) -> T
+// Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type
+pub fn {impl ToType<T> for BoolWrapper}::to_type<T>(@1: BoolWrapper) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToType<bool, T>,
@@ -638,14 +638,14 @@ where
     return
 }
 
-// Full name: test_crate::{impl ToType<T> for BoolWrapper}#7
+// Full name: test_crate::{impl ToType<T> for BoolWrapper}
 impl<T> ToType<T> for BoolWrapper
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToType<bool, T>,
 {
     parent_clause0 = @TraitClause0
-    fn to_type = {impl ToType<T> for BoolWrapper}#7::to_type<T>[@TraitClause0, @TraitClause1]
+    fn to_type = {impl ToType<T> for BoolWrapper}::to_type<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::WithConstTy
@@ -680,8 +680,8 @@ pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mu
 where
     [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}#8::LEN1
-pub fn {impl WithConstTy<32 : usize> for bool}#8::LEN1() -> usize
+// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
+pub fn {impl WithConstTy<32 : usize> for bool}::LEN1() -> usize
 {
     let @0: usize; // return
 
@@ -689,11 +689,11 @@ pub fn {impl WithConstTy<32 : usize> for bool}#8::LEN1() -> usize
     return
 }
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}#8::LEN1
-pub const {impl WithConstTy<32 : usize> for bool}#8::LEN1: usize = {impl WithConstTy<32 : usize> for bool}#8::LEN1()
+// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
+pub const {impl WithConstTy<32 : usize> for bool}::LEN1: usize = {impl WithConstTy<32 : usize> for bool}::LEN1()
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}#8::f
-pub fn {impl WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
+// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
+pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
 {
     let @0: (); // return
     let @1: &'_ mut (u64); // arg #1
@@ -704,16 +704,16 @@ pub fn {impl WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (u64)
     return
 }
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}#8
+// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}
 impl WithConstTy<32 : usize> for bool {
     parent_clause0 = Sized<u8>
     parent_clause1 = Sized<u64>
-    parent_clause2 = {impl ToU64 for u64}#2
-    const LEN1 = {impl WithConstTy<32 : usize> for bool}#8::LEN1
-    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}#8]
+    parent_clause2 = {impl ToU64 for u64}
+    const LEN1 = {impl WithConstTy<32 : usize> for bool}::LEN1
+    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}]
     type V = u8
     type W = u64
-    fn f<'_0, '_1> = {impl WithConstTy<32 : usize> for bool}#8::f<'_0_0, '_0_1>
+    fn f<'_0, '_1> = {impl WithConstTy<32 : usize> for bool}::f<'_0_0, '_0_1>
 }
 
 // Full name: test_crate::use_with_const_ty1
@@ -874,12 +874,12 @@ pub trait ChildTrait1<Self>
     parent_clause0 : [@TraitClause0]: ParentTrait1<Self>
 }
 
-// Full name: test_crate::{impl ParentTrait1 for usize}#9
+// Full name: test_crate::{impl ParentTrait1 for usize}
 impl ParentTrait1 for usize {}
 
-// Full name: test_crate::{impl ChildTrait1 for usize}#10
+// Full name: test_crate::{impl ChildTrait1 for usize}
 impl ChildTrait1 for usize {
-    parent_clause0 = {impl ParentTrait1 for usize}#9
+    parent_clause0 = {impl ParentTrait1 for usize}
 }
 
 // Full name: test_crate::Iterator
@@ -947,21 +947,21 @@ pub fn test_crate::ChildTrait2::convert<Self>(@1: @TraitClause0::parent_clause0:
 where
     [@TraitClause0]: ChildTrait2<Self>,
 
-// Full name: test_crate::{impl WithTarget for u32}#11
+// Full name: test_crate::{impl WithTarget for u32}
 impl WithTarget for u32 {
     parent_clause0 = Sized<u32>
     type Target = u32
 }
 
-// Full name: test_crate::{impl ParentTrait2 for u32}#12
+// Full name: test_crate::{impl ParentTrait2 for u32}
 impl ParentTrait2 for u32 {
     parent_clause0 = Sized<u32>
-    parent_clause1 = {impl WithTarget for u32}#11
+    parent_clause1 = {impl WithTarget for u32}
     type U = u32
 }
 
-// Full name: test_crate::{impl ChildTrait2 for u32}#13::convert
-pub fn {impl ChildTrait2 for u32}#13::convert(@1: u32) -> u32
+// Full name: test_crate::{impl ChildTrait2 for u32}::convert
+pub fn {impl ChildTrait2 for u32}::convert(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -970,10 +970,10 @@ pub fn {impl ChildTrait2 for u32}#13::convert(@1: u32) -> u32
     return
 }
 
-// Full name: test_crate::{impl ChildTrait2 for u32}#13
+// Full name: test_crate::{impl ChildTrait2 for u32}
 impl ChildTrait2 for u32 {
-    parent_clause0 = {impl ParentTrait2 for u32}#12
-    fn convert = {impl ChildTrait2 for u32}#13::convert
+    parent_clause0 = {impl ParentTrait2 for u32}
+    fn convert = {impl ChildTrait2 for u32}::convert
 }
 
 // Full name: test_crate::CFnOnce
@@ -1048,8 +1048,8 @@ pub trait Trait<Self>
     const LEN : usize
 }
 
-// Full name: test_crate::{impl Trait for Array<T, const N : usize>}#14::LEN
-pub fn {impl Trait for Array<T, const N : usize>}#14::LEN<T, const N : usize>() -> usize
+// Full name: test_crate::{impl Trait for Array<T, const N : usize>}::LEN
+pub fn {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -1059,22 +1059,22 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait for Array<T, const N : usize>}#14::LEN
-pub const {impl Trait for Array<T, const N : usize>}#14::LEN<T, const N : usize>: usize
+// Full name: test_crate::{impl Trait for Array<T, const N : usize>}::LEN
+pub const {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>: usize
 where
     [@TraitClause0]: Sized<T>,
- = {impl Trait for Array<T, const N : usize>}#14::LEN()
+ = {impl Trait for Array<T, const N : usize>}::LEN()
 
-// Full name: test_crate::{impl Trait for Array<T, const N : usize>}#14
+// Full name: test_crate::{impl Trait for Array<T, const N : usize>}
 impl<T, const N : usize> Trait for Array<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 {
-    const LEN = {impl Trait for Array<T, const N : usize>}#14::LEN<T, const N : usize>[@TraitClause0]
+    const LEN = {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>[@TraitClause0]
 }
 
-// Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN
-pub fn {impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN<T>() -> usize
+// Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}::LEN
+pub fn {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
@@ -1085,20 +1085,20 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN
-pub const {impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN<T>: usize
+// Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}::LEN
+pub const {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>: usize
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
- = {impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN()
+ = {impl Trait for Wrapper<T>[@TraitClause0]}::LEN()
 
-// Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}#15
+// Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}
 impl<T> Trait for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    const LEN = {impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN<T>[@TraitClause0, @TraitClause1]
+    const LEN = {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::use_wrapper_len
@@ -1109,7 +1109,7 @@ where
 {
     let @0: usize; // return
 
-    @0 := const ({impl Trait for Wrapper<T>[@TraitClause0]}#15<T>[@TraitClause0, @TraitClause1]::LEN)
+    @0 := const ({impl Trait for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]::LEN)
     return
 }
 
@@ -1123,7 +1123,7 @@ where
   y: U,
 }
 
-pub fn test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
+pub fn test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -1135,12 +1135,12 @@ where
     return
 }
 
-pub const test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>: Result<T, i32>[@TraitClause0, Sized<i32>]
+pub const test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<T, U>: Result<T, i32>[@TraitClause0, Sized<i32>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<T>,
- = test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO()
+ = test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO()
 
 // Full name: test_crate::use_foo1
 pub fn use_foo1<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
@@ -1153,7 +1153,7 @@ where
     let @1: Result<T, i32>[@TraitClause0, Sized<i32>]; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+    @1 := test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
     @0 := move (@1)
     return
 }
@@ -1169,7 +1169,7 @@ where
     let @1: Result<U, i32>[@TraitClause1, Sized<i32>]; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
+    @1 := test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
     @0 := move (@1)
     return
 }
@@ -1182,10 +1182,10 @@ trait RecursiveImpl<Self>
     type Item
 }
 
-// Full name: test_crate::{impl RecursiveImpl for ()}#17
+// Full name: test_crate::{impl RecursiveImpl for ()}
 impl RecursiveImpl for () {
     parent_clause0 = Sized<()>
-    parent_clause1 = {impl RecursiveImpl for ()}#17
+    parent_clause1 = {impl RecursiveImpl for ()}
     type Item = ()
 }
 

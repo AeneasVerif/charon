@@ -7,9 +7,9 @@ pub trait Sized<Self>
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub opaque type UsizeNoHighBit
 
-pub fn core::num::{usize}#11::MAX() -> usize
+pub fn core::num::{usize}::MAX() -> usize
 
-pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
@@ -34,7 +34,7 @@ opaque type RawVecInner<A>
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one
+// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}::grow_one
 fn grow_one<'_0, T, A>(@1: &'_0 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
@@ -51,7 +51,7 @@ where
   len: usize,
 }
 
-// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push
+// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::push
 pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
 where
     [@TraitClause0]: Sized<T>,
@@ -93,7 +93,7 @@ where
     elem_size@13 := size_of<T>
     switch move (elem_size@13) {
         0 : usize => {
-            @16 := core::num::{usize}#11::MAX
+            @16 := core::num::{usize}::MAX
             @5 := move (@16)
         },
         _ => {

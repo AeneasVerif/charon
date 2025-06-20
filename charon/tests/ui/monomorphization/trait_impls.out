@@ -14,16 +14,16 @@ pub trait Eq<Self>
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
 impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
+    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
 }
 
-pub fn core::cmp::impls::{impl PartialEq<bool> for bool}#19::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
+pub fn core::cmp::impls::{impl PartialEq<bool> for bool}::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
 
-// Full name: core::cmp::impls::{impl Eq for bool}#38
+// Full name: core::cmp::impls::{impl Eq for bool}
 impl Eq for bool {
-    parent_clause0 = {impl PartialEq<bool> for bool}#19
+    parent_clause0 = {impl PartialEq<bool> for bool}
 }
 
 // Full name: core::marker::Sized
@@ -46,7 +46,7 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     @5 := &expected@2
     storage_live(@6)
     @6 := &init@1
-    @4 := {impl Eq for bool}#38::parent_clause0::eq(move (@5), move (@6))
+    @4 := {impl Eq for bool}::parent_clause0::eq(move (@5), move (@6))
     if move (@4) {
     }
     else {

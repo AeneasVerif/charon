@@ -30,8 +30,8 @@ enum Foo {
   B,
 }
 
-// Full name: test_crate::{impl Clone for Foo}#1::clone
-pub fn {impl Clone for Foo}#1::clone<'_0>(@1: &'_0 (Foo)) -> Foo
+// Full name: test_crate::{impl Clone for Foo}::clone
+pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 {
     let @0: Foo; // return
     let self@1: &'_ (Foo); // arg #1
@@ -40,15 +40,15 @@ pub fn {impl Clone for Foo}#1::clone<'_0>(@1: &'_0 (Foo)) -> Foo
     return
 }
 
-// Full name: test_crate::{impl Clone for Foo}#1
+// Full name: test_crate::{impl Clone for Foo}
 impl Clone for Foo {
     parent_clause0 = Sized<Foo>
-    fn clone<'_0> = {impl Clone for Foo}#1::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
 }
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
-    parent_clause0 = {impl Clone for Foo}#1
+    parent_clause0 = {impl Clone for Foo}
 }
 
 // Full name: test_crate::Ordering

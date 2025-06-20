@@ -115,7 +115,7 @@ where
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
 
-// Full name: core::fmt::{Arguments<'a>}#4::new_v1
+// Full name: core::fmt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
 // Full name: core::result::Result
@@ -140,28 +140,28 @@ pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut 
 where
     [@TraitClause0]: Debug<Self>,
 
-// Full name: core::fmt::{impl Debug for &'_0 (T)}#73::fmt
-pub fn {impl Debug for &'_0 (T)}#73::fmt<'_0, '_1, '_2, '_3, T>(@1: &'_1 (&'_0 (T)), @2: &'_2 mut (Formatter<'_3>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+// Full name: core::fmt::{impl Debug for &'_0 (T)}::fmt
+pub fn {impl Debug for &'_0 (T)}::fmt<'_0, '_1, '_2, '_3, T>(@1: &'_1 (&'_0 (T)), @2: &'_2 mut (Formatter<'_3>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
     [@TraitClause0]: Debug<T>,
 
-// Full name: core::fmt::{impl Debug for &'_0 (T)}#73
+// Full name: core::fmt::{impl Debug for &'_0 (T)}
 impl<'_0, T> Debug for &'_0 (T)
 where
     [@TraitClause0]: Debug<T>,
 {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for &'_0 (T)}#73::fmt<'_0, '_0_0, '_0_1, '_0_2, T>[@TraitClause0]
+    fn fmt<'_0, '_1, '_2> = {impl Debug for &'_0 (T)}::fmt<'_0, '_0_0, '_0_1, '_0_2, T>[@TraitClause0]
 }
 
-// Full name: core::fmt::num::{impl Debug for i32}#80::fmt
-pub fn {impl Debug for i32}#80::fmt<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+// Full name: core::fmt::num::{impl Debug for i32}::fmt
+pub fn {impl Debug for i32}::fmt<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::num::{impl Debug for i32}#80
+// Full name: core::fmt::num::{impl Debug for i32}
 impl Debug for i32 {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for i32}#80::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0, '_1, '_2> = {impl Debug for i32}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
-// Full name: core::fmt::rt::{Argument<'_0>}#1::new_debug
+// Full name: core::fmt::rt::{Argument<'_0>}::new_debug
 pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
@@ -401,37 +401,37 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[Sized<&'_ (T)>]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[Sized<&'_ (T)>]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}#182
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}
 impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = Sized<&'_ (T)>
     type Item = &'a (T)
-    fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next<'a, '_0_0, T>[@TraitClause0]
+    fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_0, T>[@TraitClause0]
 }
 
-// Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}#1::into_iter
-pub fn {impl IntoIterator for &'a (Slice<T>)}#1::into_iter<'a, T>(@1: &'a (Slice<T>)) -> Iter<'a, T>[@TraitClause0]
+// Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}::into_iter
+pub fn {impl IntoIterator for &'a (Slice<T>)}::into_iter<'a, T>(@1: &'a (Slice<T>)) -> Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}#1
+// Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}
 impl<'a, T> IntoIterator for &'a (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = Sized<&'_ (T)>
     parent_clause1 = Sized<Iter<'_, T>[@TraitClause0]>
-    parent_clause2 = {impl Iterator for Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]
+    parent_clause2 = {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, T>[@TraitClause0]
     type Item = &'a (T)
     type IntoIter = Iter<'a, T>[@TraitClause0]
-    fn into_iter = {impl IntoIterator for &'a (Slice<T>)}#1::into_iter<'a, T>[@TraitClause0]
+    fn into_iter = {impl IntoIterator for &'a (Slice<T>)}::into_iter<'a, T>[@TraitClause0]
 }
 
 // Full name: std::io::stdio::_eprint
@@ -483,7 +483,7 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := copy (slice@1)
-    @2 := {impl IntoIterator for &'a (Slice<T>)}#1::into_iter<'_, T>[@TraitClause0](move (@3))
+    @2 := {impl IntoIterator for &'a (Slice<T>)}::into_iter<'_, T>[@TraitClause0](move (@3))
     storage_dead(@3)
     storage_live(iter@4)
     iter@4 := move (@2)
@@ -494,7 +494,7 @@ where
         storage_live(@8)
         @8 := &mut iter@4
         @7 := &two-phase-mut *(@8)
-        @6 := {impl Iterator for Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, T>[@TraitClause0](move (@7))
+        @6 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, T>[@TraitClause0](move (@7))
         storage_dead(@7)
         match @6 {
             Option::None => {
@@ -520,7 +520,7 @@ where
                 storage_live(@21)
                 @21 := &x@9
                 @20 := &*(@21)
-                @19 := new_debug<'_, '_, &'_ (T)>[Sized<&'_ (T)>, {impl Debug for &'_0 (T)}#73<'_, T>[@TraitClause1]](move (@20))
+                @19 := new_debug<'_, '_, &'_ (T)>[Sized<&'_ (T)>, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@20))
                 storage_dead(@20)
                 @18 := [move (@19)]
                 storage_dead(@19)
@@ -576,7 +576,7 @@ fn main()
     @3 := &*(@4)
     @2 := @ArrayToSliceShared<'_, i32, 3 : usize>(move (@3))
     storage_dead(@3)
-    @1 := debug_slice<'_, i32>[Sized<i32>, {impl Debug for i32}#80](move (@2))
+    @1 := debug_slice<'_, i32>[Sized<i32>, {impl Debug for i32}](move (@2))
     storage_dead(@2)
     storage_dead(@5)
     storage_dead(@4)

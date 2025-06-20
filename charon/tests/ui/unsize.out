@@ -27,7 +27,7 @@ pub opaque type Rc<T, A>
 where
     [@TraitClause0]: Sized<A>,
 
-pub fn alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<T>(@1: T) -> Rc<T, Global>[Sized<Global>]
+pub fn alloc::rc::{Rc<T, Global>[Sized<Global>]}::new<T>(@1: T) -> Rc<T, Global>[Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -38,13 +38,13 @@ pub opaque type String
 #[lang_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 
-// Full name: alloc::string::{impl Clone for String}#6::clone
-pub fn {impl Clone for String}#6::clone<'_0>(@1: &'_0 (String)) -> String
+// Full name: alloc::string::{impl Clone for String}::clone
+pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
 
-// Full name: alloc::string::{impl Clone for String}#6
+// Full name: alloc::string::{impl Clone for String}
 impl Clone for String {
     parent_clause0 = Sized<String>
-    fn clone<'_0> = {impl Clone for String}#6::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for String}::clone<'_0_0>
 }
 
 // Full name: test_crate::foo
@@ -100,7 +100,7 @@ fn foo()
     storage_live(@9)
     storage_live(@10)
     @10 := copy (array@1)
-    @9 := alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@10))
+    @9 := alloc::rc::{Rc<T, Global>[Sized<Global>]}::new<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@10))
     @8 := unsize_cast<Rc<Array<i32, 2 : usize>, Global>[Sized<Global>], Rc<Slice<i32>, Global>[Sized<Global>]>(move (@9))
     drop @9
     storage_dead(@10)
@@ -123,7 +123,7 @@ fn foo()
     storage_live(@17)
     storage_live(@18)
     @18 := &string@11
-    @17 := {impl Clone for String}#6::clone<'_>(move (@18))
+    @17 := {impl Clone for String}::clone<'_>(move (@18))
     storage_dead(@18)
     @16 := @BoxNew<String>[Sized<String>](move (@17))
     @15 := unsize_cast<alloc::boxed::Box<String>[Sized<Global>], alloc::boxed::Box<dyn (exists(TODO))>[Sized<Global>]>(move (@16))
@@ -137,9 +137,9 @@ fn foo()
     storage_live(@21)
     storage_live(@22)
     @22 := &string@11
-    @21 := {impl Clone for String}#6::clone<'_>(move (@22))
+    @21 := {impl Clone for String}::clone<'_>(move (@22))
     storage_dead(@22)
-    @20 := alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<String>[Sized<String>](move (@21))
+    @20 := alloc::rc::{Rc<T, Global>[Sized<Global>]}::new<String>[Sized<String>](move (@21))
     @19 := unsize_cast<Rc<String, Global>[Sized<Global>], Rc<dyn (exists(TODO)), Global>[Sized<Global>]>(move (@20))
     drop @20
     storage_dead(@21)

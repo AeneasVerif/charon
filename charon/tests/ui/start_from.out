@@ -35,7 +35,7 @@ pub fn once<T>(@1: T) -> Once<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::num::{u32}#8::wrapping_add
+// Full name: core::num::{u32}::wrapping_add
 pub fn wrapping_add(@1: u32, @2: u32) -> u32
 
 // Full name: core::slice::iter::Iter
@@ -46,7 +46,7 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{Iter<'a, T>[@TraitClause0]}#6::as_slice
+// Full name: core::slice::iter::{Iter<'a, T>[@TraitClause0]}::as_slice
 pub fn as_slice<'a, '_1, T>(@1: &'_1 (Iter<'a, T>[@TraitClause0])) -> &'a (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,

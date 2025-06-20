@@ -28,7 +28,7 @@ pub trait FnMut<Self, Args, Self_Clause0_Output>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>[Self]
 }
 
-// Full name: core::array::{Array<T, const N : usize>}#23::map
+// Full name: core::array::{Array<T, const N : usize>}::map
 pub fn map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
@@ -49,13 +49,13 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::impls::{impl Clone for u32}#8::clone
-pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-// Full name: core::clone::impls::{impl Clone for u32}#8
+// Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
-    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
 }
 
 // Full name: core::ops::function::Fn
@@ -492,7 +492,7 @@ pub fn test_id_clone(@1: u32) -> u32
     let @4: u32; // anonymous local
 
     storage_live(f@2)
-    f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(const (id_clone<u32>[Sized<u32>, {impl Clone for u32}#8]))
+    f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(const (id_clone<u32>[Sized<u32>, {impl Clone for u32}]))
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -539,7 +539,7 @@ pub fn test_map_option_id_clone(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Size
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (id_clone<u32>[Sized<u32>, {impl Clone for u32}#8]))
+    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (id_clone<u32>[Sized<u32>, {impl Clone for u32}]))
     storage_dead(@2)
     return
 }

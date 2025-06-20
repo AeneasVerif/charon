@@ -84,8 +84,8 @@ pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 where
     [@TraitClause0]: From<Self, T>,
 
-// Full name: core::convert::num::{impl From<i32> for i64}#83::from
-pub fn {impl From<i32> for i64}#83::from(@1: i32) -> i64
+// Full name: core::convert::num::{impl From<i32> for i64}::from
+pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
 {
     let @0: i64; // return
     let small@1: i32; // arg #1
@@ -94,11 +94,11 @@ pub fn {impl From<i32> for i64}#83::from(@1: i32) -> i64
     return
 }
 
-// Full name: core::convert::num::{impl From<i32> for i64}#83
+// Full name: core::convert::num::{impl From<i32> for i64}
 impl From<i32> for i64 {
     parent_clause0 = Sized<i64>
     parent_clause1 = Sized<i32>
-    fn from = {impl From<i32> for i64}#83::from
+    fn from = {impl From<i32> for i64}::from
 }
 
 // Full name: core::marker::PhantomData
@@ -110,7 +110,7 @@ pub struct UsizeNoHighBit {
   usize,
 }
 
-pub fn core::num::{usize}#11::MAX() -> usize
+pub fn core::num::{usize}::MAX() -> usize
 {
     let @0: usize; // return
 
@@ -118,7 +118,7 @@ pub fn core::num::{usize}#11::MAX() -> usize
     return
 }
 
-pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
@@ -269,7 +269,7 @@ fn convert(@1: i32) -> i64
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := {impl From<i32> for i64}#83::from(move (@2))
+    @0 := {impl From<i32> for i64}::from(move (@2))
     storage_dead(@2)
     return
 }
@@ -293,7 +293,7 @@ fn max() -> usize
     let @1: usize; // anonymous local
 
     storage_live(@1)
-    @1 := core::num::{usize}#11::MAX
+    @1 := core::num::{usize}::MAX
     @0 := move (@1)
     return
 }

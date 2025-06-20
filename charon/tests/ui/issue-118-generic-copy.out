@@ -43,7 +43,7 @@ impl Clone for Foo {
     fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
 }
 
-// Full name: test_crate::{impl Copy for Foo}#1
+// Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
     parent_clause0 = {impl Clone for Foo}
 }

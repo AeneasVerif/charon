@@ -28,7 +28,7 @@ pub trait Try<Self>
     type Residual
 }
 
-// Full name: test_crate::{impl FromResidual<()> for Option<T>[@TraitClause0]}#1
+// Full name: test_crate::{impl FromResidual<()> for Option<T>[@TraitClause0]}
 impl<T> FromResidual<()> for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
@@ -41,7 +41,7 @@ impl<T> Try for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {impl FromResidual<()> for Option<T>[@TraitClause0]}#1<T>[@TraitClause0]
+    parent_clause0 = {impl FromResidual<()> for Option<T>[@TraitClause0]}<T>[@TraitClause0]
     parent_clause1 = Sized<()>
     type Residual = ()
 }

@@ -630,7 +630,7 @@ and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 (** See the comments for [Name] *)
 and path_elem =
   | PeIdent of string * disambiguator
-  | PeImpl of impl_elem * disambiguator
+  | PeImpl of impl_elem
   | PeMonomorphized of generic_args
       (** This item was obtained by monomorphizing its parent with the given
           args. *)

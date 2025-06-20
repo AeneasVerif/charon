@@ -4,9 +4,9 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
-pub fn core::num::{u32}#8::MAX() -> u32
+pub fn core::num::{u32}::MAX() -> u32
 
-pub const core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
+pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
 pub fn test_crate::X0() -> u32
 {
@@ -24,7 +24,7 @@ pub fn test_crate::X1() -> u32
     let @1: u32; // anonymous local
 
     storage_live(@1)
-    @1 := core::num::{u32}#8::MAX
+    @1 := core::num::{u32}::MAX
     @0 := move (@1)
     return
 }
@@ -387,7 +387,7 @@ where
   x: Array<T, const N : usize>,
 }
 
-pub fn test_crate::{V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>() -> usize
+pub fn test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -397,10 +397,10 @@ where
     return
 }
 
-pub const test_crate::{V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>: usize
+pub const test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>: usize
 where
     [@TraitClause0]: Sized<T>,
- = test_crate::{V<T, const N : usize>[@TraitClause0]}#1::LEN()
+ = test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN()
 
 // Full name: test_crate::use_v
 pub fn use_v<T, const N : usize>() -> usize
@@ -411,7 +411,7 @@ where
     let @1: usize; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::{V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>[@TraitClause0]
+    @1 := test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>[@TraitClause0]
     @0 := move (@1)
     return
 }

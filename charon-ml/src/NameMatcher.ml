@@ -451,7 +451,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       pid = id
       && T.Disambiguator.of_int pd = d
       && match_generic_args ctx c m pg g
-  | [ PImpl pty ], [ PeImpl (impl, _) ] -> (
+  | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
          - the impl is an inherent impl (linked to a type)
@@ -470,7 +470,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       && T.Disambiguator.of_int pd = d
       && pg = []
       && match_name_with_generics ctx c p n g
-  | PImpl pty :: p, PeImpl (impl, _) :: n -> (
+  | PImpl pty :: p, PeImpl impl :: n -> (
       (* We have to distinguish two cases:
          - the impl is an inherent impl (linked to a type)
          - the impl is a trait impl
@@ -931,7 +931,7 @@ and path_elem_with_generic_args_to_pattern (ctx : 'fun_body ctx)
       | None -> [ PIdent (s, d, []) ]
       | Some args -> [ PIdent (s, d, args) ]
     end
-  | PeImpl (impl, _) -> [ impl_elem_to_pattern ctx c impl ]
+  | PeImpl impl -> [ impl_elem_to_pattern ctx c impl ]
   | PeMonomorphized _ -> []
 
 and impl_elem_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)

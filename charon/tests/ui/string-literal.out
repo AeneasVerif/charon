@@ -35,12 +35,12 @@ pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mu
 where
     [@TraitClause0]: Display<Self>,
 
-// Full name: core::fmt::{impl Display for Str}#19::fmt
-pub fn {impl Display for Str}#19::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+// Full name: core::fmt::{impl Display for Str}::fmt
+pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::{impl Display for Str}#19
+// Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
-    fn fmt<'_0, '_1, '_2> = {impl Display for Str}#19::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
 // Full name: alloc::string::String
@@ -59,17 +59,17 @@ pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> String
 where
     [@TraitClause0]: ToString<Self>,
 
-// Full name: alloc::string::{impl ToString for T}#34::to_string
-pub fn {impl ToString for T}#34::to_string<'_0, T>(@1: &'_0 (T)) -> String
+// Full name: alloc::string::{impl ToString for T}::to_string
+pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 (T)) -> String
 where
     [@TraitClause0]: Display<T>,
 
-// Full name: alloc::string::{impl ToString for T}#34
+// Full name: alloc::string::{impl ToString for T}
 impl<T> ToString for T
 where
     [@TraitClause0]: Display<T>,
 {
-    fn to_string<'_0> = {impl ToString for T}#34::to_string<'_0_0, T>[@TraitClause0]
+    fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0]
 }
 
 fn test_crate::FOO() -> &'static (Str)
@@ -119,7 +119,7 @@ fn main()
     storage_live(@3)
     @3 := const ("Hello")
     @2 := &*(@3)
-    _s@1 := {impl ToString for T}#34::to_string<'_, Str>[{impl Display for Str}#19](move (@2))
+    _s@1 := {impl ToString for T}::to_string<'_, Str>[{impl Display for Str}](move (@2))
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()

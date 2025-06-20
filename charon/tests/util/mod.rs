@@ -105,7 +105,7 @@ pub fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
         .iter()
         .map(|path_elem| match path_elem {
             PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(elem, _) => match elem {
+            PathElem::Impl(elem) => match elem {
                 ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
                     None => format!("<trait impl#{impl_id}>"),
                     Some(timpl) => {

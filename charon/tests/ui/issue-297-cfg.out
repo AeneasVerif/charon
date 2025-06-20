@@ -349,19 +349,19 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}#71::next
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}#71::next<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Option<&'a (Slice<T>)>[Sized<&'_ (Slice<T>)>]
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Option<&'a (Slice<T>)>[Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}#71
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}
 impl<'a, T> Iterator for Chunks<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = Sized<&'_ (Slice<T>)>
     type Item = &'a (Slice<T>)
-    fn next<'_0> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}#71::next<'a, '_0_0, T>[@TraitClause0]
+    fn next<'_0> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_0_0, T>[@TraitClause0]
 }
 
 // Full name: core::slice::{Slice<T>}::chunks
@@ -577,7 +577,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
     @7 := &*(a@1)
     @6 := chunks<'_, u8>[Sized<u8>](move (@7), const (3 : usize))
     storage_dead(@7)
-    @5 := {impl IntoIterator for I}::into_iter<Chunks<'_, u8>[Sized<u8>]>[Sized<Chunks<'_, u8>[Sized<u8>]>, {impl Iterator for Chunks<'a, T>[@TraitClause0]}#71<'_, u8>[Sized<u8>]](move (@6))
+    @5 := {impl IntoIterator for I}::into_iter<Chunks<'_, u8>[Sized<u8>]>[Sized<Chunks<'_, u8>[Sized<u8>]>, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, u8>[Sized<u8>]](move (@6))
     storage_dead(@6)
     storage_live(iter@8)
     iter@8 := move (@5)
@@ -588,7 +588,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
         storage_live(@12)
         @12 := &mut iter@8
         @11 := &two-phase-mut *(@12)
-        @10 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[Sized<u8>](move (@11))
+        @10 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, u8>[Sized<u8>](move (@11))
         storage_dead(@11)
         match @10 {
             Option::None => {

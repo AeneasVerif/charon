@@ -204,7 +204,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     _ => unreachable!(),
                 };
 
-                Some(PathElem::Impl(impl_elem, disambiguator))
+                Some(PathElem::Impl(impl_elem))
             }
             // TODO: do nothing for now
             DefPathItem::OpaqueTy => None,
@@ -309,10 +309,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | TransItemSource::ClosureMethod(id, kind) => {
                 let _ = name.name.pop(); // Pop the `{closure}` path item
                 let impl_id = self.register_closure_trait_impl_id(&None, id, *kind);
-                name.name.push(PathElem::Impl(
-                    ImplElem::Trait(impl_id),
-                    Disambiguator::ZERO,
-                ));
+                name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
 
                 if matches!(src, TransItemSource::ClosureMethod(..)) {
                     let fn_name = kind.method_name().to_string();
@@ -322,10 +319,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
             TransItemSource::TraitImpl(id) if matches!(id.kind, hax::DefKind::TraitAlias) => {
                 let impl_id = self.register_trait_impl_id(&None, id);
-                name.name.push(PathElem::Impl(
-                    ImplElem::Trait(impl_id),
-                    Disambiguator::ZERO,
-                ));
+                name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
             _ => {}
         }
