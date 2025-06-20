@@ -248,7 +248,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       match ref_kind with
       | RMut -> "*mut " ^ ty_to_string env rty
       | RShared -> "*const " ^ ty_to_string env rty)
-  | TArrow binder ->
+  | TFnPtr binder ->
       let env = fmt_env_push_regions env binder.binder_regions in
       let inputs, output = binder.binder_value in
       let inputs =

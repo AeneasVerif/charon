@@ -1742,7 +1742,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
             TyKind::DynTrait(pred) => write!(f, "dyn ({})", pred.with_ctx(ctx)),
-            TyKind::Arrow(io) => {
+            TyKind::FnPtr(io) => {
                 write!(f, "{}", io.with_ctx(ctx))
             }
             TyKind::FnDef(binder) => {

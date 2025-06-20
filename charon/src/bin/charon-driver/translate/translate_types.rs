@@ -226,7 +226,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let output = ctx.translate_ty(span, &sig.output)?;
                     Ok((inputs, output))
                 })?;
-                TyKind::Arrow(sig)
+                TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
                 let fnref: RegionBinder<FnPtr> = self.translate_fn_ptr(span, item)?;

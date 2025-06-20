@@ -1728,13 +1728,13 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
     | `Assoc [ ("DynTrait", dyn_trait) ] ->
         let* dyn_trait = existential_predicate_of_json ctx dyn_trait in
         Ok (TDynTrait dyn_trait)
-    | `Assoc [ ("Arrow", arrow) ] ->
-        let* arrow =
+    | `Assoc [ ("FnPtr", fn_ptr) ] ->
+        let* fn_ptr =
           region_binder_of_json
             (pair_of_json (list_of_json ty_of_json) ty_of_json)
-            ctx arrow
+            ctx fn_ptr
         in
-        Ok (TArrow arrow)
+        Ok (TFnPtr fn_ptr)
     | `Assoc [ ("FnDef", fn_def) ] ->
         let* fn_def = region_binder_of_json fun_decl_ref_of_json ctx fn_def in
         Ok (TFnDef fn_def)

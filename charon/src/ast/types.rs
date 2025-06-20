@@ -791,7 +791,7 @@ pub enum TyKind {
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
     /// other kinds of generics.
-    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    FnPtr(RegionBinder<(Vec<Ty>, Ty)>),
     /// The unique type associated with each function item. Each function item is given
     /// a unique generic type that takes as input the function's early-bound generics. This type
     /// is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type

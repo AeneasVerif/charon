@@ -391,7 +391,7 @@ and ty =
           single type and no any regions or constants.
 
           TODO: we don't translate this properly yet. *)
-  | TArrow of (ty list * ty) region_binder
+  | TFnPtr of (ty list * ty) region_binder
       (** Function pointer type. This is a literal pointer to a region of memory
           that contains a callable function. This is a function signature with
           limited generics: it only supports lifetime generics, not other kinds
