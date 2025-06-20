@@ -787,12 +787,20 @@ pub enum TyKind {
     ///
     /// TODO: we don't translate this properly yet.
     DynTrait(ExistentialPredicate),
-    /// Arrow type, used for function pointers and reused for the unique type associated with each
-    /// function item.
+    /// Function pointer type. This is a literal pointer to a region of memory that
+    /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
-    /// other kinds of
-    /// generics.
-    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    /// other kinds of generics.
+    FnPtr(RegionBinder<(Vec<Ty>, Ty)>),
+    /// The unique type associated with each function item. Each function item is given
+    /// a unique generic type that takes as input the function's early-bound generics. This type
+    /// is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type
+    /// can be cast to a function pointer or passed to functions that expect `FnOnce`/`FnMut`/`Fn` parameters.
+    /// There's a binder here because charon function items take both early and late-bound
+    /// lifetimes as arguments; given that the type here is polymorpohic in the late-bound
+    /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
+    /// we need to bind them here.
+    FnDef(RegionBinder<FunDeclRef>),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),

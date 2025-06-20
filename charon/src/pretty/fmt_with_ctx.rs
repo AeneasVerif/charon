@@ -1684,6 +1684,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<(Vec<Ty>, Ty)> {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Update the bound regions
+        let ctx = &ctx.push_bound_regions(&self.regions);
+
+        write!(f, "fn")?;
+        if !self.regions.is_empty() {
+            write!(
+                f,
+                "<{}>",
+                self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
+            )?;
+        }
+        let (inputs, output) = &self.skip_binder;
+        let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
+        write!(f, "({inputs})")?;
+        if !output.is_unit() {
+            let output = output.with_ctx(ctx);
+            write!(f, " -> {output}")?;
+        }
+        Ok(())
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
@@ -1718,26 +1742,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
             TyKind::DynTrait(pred) => write!(f, "dyn ({})", pred.with_ctx(ctx)),
-            TyKind::Arrow(io) => {
-                // Update the bound regions
-                let ctx = &ctx.push_bound_regions(&io.regions);
-
-                write!(f, "fn")?;
-                if !io.regions.is_empty() {
-                    write!(
-                        f,
-                        "<{}>",
-                        io.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
-                    )?;
-                }
-                let (inputs, output) = &io.skip_binder;
-                let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
-                write!(f, "({inputs})")?;
-                if !output.is_unit() {
-                    let output = output.with_ctx(ctx);
-                    write!(f, " -> {output}")?;
-                }
-                Ok(())
+            TyKind::FnPtr(io) => {
+                write!(f, "{}", io.with_ctx(ctx))
+            }
+            TyKind::FnDef(binder) => {
+                let (regions, value) = binder.fmt_split(ctx);
+                if !regions.is_empty() {
+                    write!(f, "for<{regions}> ",)?
+                };
+                write!(f, "{value}",)
             }
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }

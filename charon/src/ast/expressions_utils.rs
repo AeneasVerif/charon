@@ -65,8 +65,8 @@ impl Place {
             Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
                 tref.generics.types[0].clone()
             }
-            Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_) | Arrow(..)
-            | Error(..) => panic!("internal type error"),
+            Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_) | FnPtr(..)
+            | FnDef(..) | Error(..) => panic!("internal type error"),
         };
         Place {
             ty: proj_ty,
@@ -127,7 +127,7 @@ impl ProjectionElem {
                         tref.generics.types[0].clone()
                     }
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
-                    | Arrow(..) | Error(..) => {
+                    | FnPtr(..) | FnDef(..) | Error(..) => {
                         // Type error
                         return Err(());
                     }

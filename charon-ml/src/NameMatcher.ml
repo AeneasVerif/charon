@@ -538,7 +538,7 @@ and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
   | EVar v, _ -> opt_update_tmap c m v ty
   | EComp pid, TTraitType (trait_ref, type_name) ->
       match_trait_type ctx c m pid trait_ref type_name
-  | EArrow (pinputs, pout), TArrow binder -> begin
+  | EArrow (pinputs, pout), TFnPtr binder -> begin
       (* Push a region group in the map, if necessary - TODO: make this more precise *)
       let m =
         maps_push_bound_regions_group_if_nonempty m binder.binder_regions
@@ -984,7 +984,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
           TypesUtils.empty_generic_args
       in
       EComp name
-  | TArrow binder ->
+  | TFnPtr binder ->
       (* Push a regions map if necessary - TODO: make this more precise *)
       let m =
         constraints_map_push_regions_map_if_nonempty m binder.binder_regions
@@ -998,6 +998,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       EArrow (inputs, output)
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
+  | TFnDef _ -> raise (Failure "Unimplemented: FnDef")
   | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")
   | TNever -> raise (Failure "Unimplemented: Never")
   | TError _ -> EVar None

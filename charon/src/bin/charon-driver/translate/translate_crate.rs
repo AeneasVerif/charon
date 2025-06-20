@@ -380,14 +380,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn translate_fun_decl_ref(
+    /// Auxiliary function to translate function calls and references to functions.
+    /// Translate a function id applied with some substitutions.
+    #[tracing::instrument(skip(self, span))]
+    pub(crate) fn translate_fn_ptr(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
-    ) -> Result<RegionBinder<MaybeBuiltinFunDeclRef>, Error> {
-        assert!(item.in_trait.is_none());
+    ) -> Result<RegionBinder<FnPtr>, Error> {
         let fun_id = self.translate_fun_id(span, &item.def_id)?;
-        let late_bound = match self.t_ctx.hax_def(&item.def_id)?.kind() {
+        let late_bound = match self.hax_def(&item.def_id)?.kind() {
             hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
                 Some(sig.as_ref().rebind(()))
             }
@@ -399,37 +401,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             &item.impl_exprs,
             late_bound,
         )?;
-        Ok(bound_generics.map(|generics| MaybeBuiltinFunDeclRef {
-            id: fun_id,
-            generics: Box::new(generics),
-        }))
-    }
-
-    /// The item is expected to have `in_trait = Some(_)`.
-    pub(crate) fn translate_method_ref(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-    ) -> Result<RegionBinder<TraitMethodRef>, Error> {
-        let method_decl_id = self.register_fun_decl_id(span, &item.def_id);
-        let trait_ref = self.translate_trait_impl_expr(span, item.in_trait.as_ref().unwrap())?;
-        let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-        let late_bound = match self.t_ctx.hax_def(&item.def_id)?.kind() {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                Some(sig.as_ref().rebind(()))
+        let fun_id = match &item.in_trait {
+            // Direct function call
+            None => FunIdOrTraitMethodRef::Fun(fun_id),
+            // Trait method
+            Some(impl_expr) => {
+                let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
+                let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
+                let method_decl_id = *fun_id
+                    .as_regular()
+                    .expect("methods are not builtin functions");
+                FunIdOrTraitMethodRef::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
-            _ => None,
         };
-        let bound_generics = self.translate_generic_args_with_late_bound(
-            span,
-            &item.generic_args,
-            &item.impl_exprs,
-            late_bound,
-        )?;
-        Ok(bound_generics.map(|generics| TraitMethodRef {
-            trait_ref: trait_ref.move_under_binder(),
-            name,
-            method_decl_id,
+        Ok(bound_generics.map(|generics| FnPtr {
+            func: Box::new(fun_id),
             generics: Box::new(generics),
         }))
     }

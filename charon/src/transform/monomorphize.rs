@@ -1,6 +1,7 @@
 //! # Micro-pass: monomorphize all functions and types; at the end of this pass, all functions and types are monomorphic.
 use derive_generic_visitor::*;
-use std::collections::{HashMap, HashSet};
+use indexmap::IndexMap;
+use std::collections::HashSet;
 
 use crate::ast::*;
 use crate::transform::TransformCtx;
@@ -32,21 +33,18 @@ impl<T, H> OptionHint<T, H> {
     }
 }
 
+#[derive(Default)]
 struct PassData {
     // Map of (poly item, generic args) -> mono item
     // None indicates the item hasn't been monomorphized yet
-    items: HashMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>>,
+    items: IndexMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>>,
     worklist: Vec<AnyTransId>,
     visited: HashSet<AnyTransId>,
 }
 
 impl PassData {
     fn new() -> Self {
-        PassData {
-            items: HashMap::new(),
-            worklist: Vec::new(),
-            visited: HashSet::new(),
-        }
+        Self::default()
     }
 }
 
@@ -133,6 +131,10 @@ impl VisitAst for UsageVisitor<'_> {
         match kind {
             TyKind::Adt(tref) => {
                 self.found_use_ty(tref);
+            }
+            TyKind::FnDef(binder) => {
+                let FunDeclRef { id, generics } = &binder.clone().erase();
+                self.found_use_fn(id, generics);
             }
             _ => {}
         }
@@ -240,6 +242,14 @@ impl VisitAstMut for SubstVisitor<'_> {
     fn enter_ty_kind(&mut self, kind: &mut TyKind) {
         match kind {
             TyKind::Adt(tref) => self.subst_use_ty(tref),
+            TyKind::FnDef(binder) => {
+                let FunDeclRef {
+                    mut id,
+                    mut generics,
+                } = binder.clone().erase();
+                self.subst_use_fun(&mut id, &mut generics);
+                *binder = RegionBinder::empty(FunDeclRef { id, generics });
+            }
             _ => {}
         }
     }

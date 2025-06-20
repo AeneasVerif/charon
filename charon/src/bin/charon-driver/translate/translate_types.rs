@@ -213,32 +213,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = self.translate_type_decl_ref(span, item)?;
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Infer(_) => {
-                trace!("Infer");
-                raise_error!(self, span, "Unsupported type: infer type")
-            }
 
-            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
-                // TODO: we don't translate the predicates yet because our machinery can't handle
-                // it.
-                trace!("Dynamic");
-                TyKind::DynTrait(ExistentialPredicate)
-            }
-
-            hax::TyKind::Coroutine(..) => {
-                trace!("Coroutine");
-                raise_error!(self, span, "Coroutine types are not supported yet")
-            }
-
-            hax::TyKind::Bound(_, _) => {
-                trace!("Bound");
-                raise_error!(self, span, "Unexpected type kind: bound")
-            }
-            hax::TyKind::Placeholder(_) => {
-                trace!("PlaceHolder");
-                raise_error!(self, span, "Unsupported type: placeholder")
-            }
-            hax::TyKind::Arrow(sig) | hax::TyKind::FnDef { fn_sig: sig, .. } => {
+            hax::TyKind::Arrow(sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
                 let sig = self.translate_region_binder(span, sig, |ctx, sig| {
@@ -250,18 +226,49 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let output = ctx.translate_ty(span, &sig.output)?;
                     Ok((inputs, output))
                 })?;
-                TyKind::Arrow(sig)
+                TyKind::FnPtr(sig)
+            }
+            hax::TyKind::FnDef { item, .. } => {
+                let fnref: RegionBinder<FnPtr> = self.translate_fn_ptr(span, item)?;
+                let fnref = fnref.map(|fref| FunDeclRef {
+                    id: *fref
+                        .func
+                        .as_fun()
+                        .expect("can't reference method as a function pointer")
+                        .as_regular()
+                        .expect("can't reference builtin function as a function pointer"),
+                    generics: fref.generics,
+                });
+                TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {
                 let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
+
+            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
+                // TODO: we don't translate the predicates yet because our machinery can't handle
+                // it.
+                TyKind::DynTrait(ExistentialPredicate)
+            }
+
+            hax::TyKind::Infer(_) => {
+                raise_error!(self, span, "Unsupported type: infer type")
+            }
+            hax::TyKind::Coroutine(..) => {
+                raise_error!(self, span, "Coroutine types are not supported yet")
+            }
+            hax::TyKind::Bound(_, _) => {
+                raise_error!(self, span, "Unexpected type kind: bound")
+            }
+            hax::TyKind::Placeholder(_) => {
+                raise_error!(self, span, "Unsupported type: placeholder")
+            }
+
             hax::TyKind::Error => {
-                trace!("Error");
                 raise_error!(self, span, "Type checking error")
             }
             hax::TyKind::Todo(s) => {
-                trace!("Todo: {s}");
                 raise_error!(self, span, "Unsupported type: {:?}", s)
             }
         };
