@@ -1,6 +1,7 @@
 //! # Micro-pass: monomorphize all functions and types; at the end of this pass, all functions and types are monomorphic.
 use derive_generic_visitor::*;
-use std::collections::{HashMap, HashSet};
+use indexmap::IndexMap;
+use std::collections::HashSet;
 
 use crate::ast::*;
 use crate::transform::TransformCtx;
@@ -32,21 +33,18 @@ impl<T, H> OptionHint<T, H> {
     }
 }
 
+#[derive(Default)]
 struct PassData {
     // Map of (poly item, generic args) -> mono item
     // None indicates the item hasn't been monomorphized yet
-    items: HashMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>>,
+    items: IndexMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>>,
     worklist: Vec<AnyTransId>,
     visited: HashSet<AnyTransId>,
 }
 
 impl PassData {
     fn new() -> Self {
-        PassData {
-            items: HashMap::new(),
-            worklist: Vec::new(),
-            visited: HashSet::new(),
-        }
+        Self::default()
     }
 }
 
