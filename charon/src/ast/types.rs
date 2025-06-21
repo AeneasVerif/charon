@@ -439,6 +439,8 @@ pub struct TypeDecl {
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
+    /// The context of the type: distinguishes top-level items from closure-related items.
+    pub src: ItemKind,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The layout of the type. Information may be partial because of generics or dynamically-
@@ -867,6 +869,12 @@ impl ClosureKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
+    /// The `FnOnce` implementation of this closure -- always exists.
+    pub fn_once_impl: RegionBinder<TraitImplRef>,
+    /// The `FnMut` implementation of this closure, if any.
+    pub fn_mut_impl: Option<RegionBinder<TraitImplRef>>,
+    /// The `Fn` implementation of this closure, if any.
+    pub fn_impl: Option<RegionBinder<TraitImplRef>>,
     /// The signature of the function that this closure represents.
     pub signature: RegionBinder<(Vec<Ty>, Ty)>,
 }
