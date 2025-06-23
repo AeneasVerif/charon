@@ -76,7 +76,7 @@ fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 (closure), @2: ())
     let @3: i32; // anonymous local
 
     storage_live(@3)
-    @3 := const (1 : i32) / const (0 : i32)
+    @3 := const (1 : i32) panic./ const (0 : i32)
     storage_dead(@3)
     @0 := ()
     @0 := ()

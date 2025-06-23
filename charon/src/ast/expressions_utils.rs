@@ -194,3 +194,23 @@ impl From<ConstGeneric> for RawConstantExpr {
         }
     }
 }
+
+impl BinOp {
+    pub fn with_overflow(&self, overflow: OverflowMode) -> Self {
+        match self {
+            BinOp::Add(_) | BinOp::AddChecked => BinOp::Add(overflow),
+            BinOp::Sub(_) | BinOp::SubChecked => BinOp::Sub(overflow),
+            BinOp::Mul(_) | BinOp::MulChecked => BinOp::Mul(overflow),
+            BinOp::Div(_) => BinOp::Div(overflow),
+            BinOp::Rem(_) => BinOp::Rem(overflow),
+            BinOp::Shl(_) => BinOp::Shl(overflow),
+            BinOp::Shr(_) => BinOp::Shr(overflow),
+            _ => {
+                panic!(
+                    "Cannot set overflow mode for this binary operator: {:?}",
+                    self
+                );
+            }
+        }
+    }
+}

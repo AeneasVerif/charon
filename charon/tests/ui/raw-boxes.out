@@ -603,7 +603,7 @@ fn max_size_for_align(@1: Alignment) -> usize
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(@4)
-    @0 := const (9223372036854775808 : usize) wrapping.- move (@2)
+    @0 := const (9223372036854775808 : usize) ub.- move (@2)
     storage_dead(@2)
     return
 }
@@ -771,7 +771,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@11)
     @12 := transmute<*const (), usize>(copy (addr@1))
     storage_live(@13)
-    @13 := copy (align@2) wrapping.- const (1 : usize)
+    @13 := copy (align@2) wrap.- const (1 : usize)
     @11 := copy (@12) & move (@13)
     storage_dead(@13)
     switch move (@11) {
@@ -1061,10 +1061,10 @@ fn runtime(@1: *const (), @2: *const (), @3: usize, @4: usize) -> bool
         storage_live(@22)
         @22 := copy (src_usize@5) < copy (dst_usize@6)
         if move (@22) {
-            diff@10 := copy (dst_usize@6) wrapping.- copy (src_usize@5)
+            diff@10 := copy (dst_usize@6) wrap.- copy (src_usize@5)
         }
         else {
-            diff@10 := copy (src_usize@5) wrapping.- copy (dst_usize@6)
+            diff@10 := copy (src_usize@5) wrap.- copy (dst_usize@6)
         }
         storage_dead(@22)
         storage_dead(rhs@21)
@@ -1198,7 +1198,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             storage_dead(@23)
             storage_live(@20)
             @21 := transmute<*const (), usize>(copy (src@1))
-            @22 := copy (align@4) wrapping.- const (1 : usize)
+            @22 := copy (align@4) wrap.- const (1 : usize)
             @20 := copy (@21) & copy (@22)
             switch move (@20) {
                 0 : usize => {
@@ -1582,7 +1582,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_dead(@23)
     storage_live(@20)
     @21 := transmute<*const (), usize>(copy (src@1))
-    @22 := copy (align@4) wrapping.- const (1 : usize)
+    @22 := copy (align@4) wrap.- const (1 : usize)
     @20 := copy (@21) & copy (@22)
     switch move (@20) {
         0 : usize => {
@@ -3847,7 +3847,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 self@29 := copy (raw_ptr@18) offset copy (old_size@6)
                 storage_dead(self@30)
                 storage_live(count@31)
-                count@31 := copy (new_size@14) wrapping.- copy (old_size@6)
+                count@31 := copy (new_size@14) wrap.- copy (old_size@6)
                 if copy (@54) {
                     storage_live(@67)
                     @67 := cast<*mut u8, *const ()>(copy (self@29))

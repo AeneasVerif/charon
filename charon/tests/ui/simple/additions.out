@@ -130,7 +130,7 @@ pub fn wrapping_add(@1: u8, @2: u8) -> u8
     let self@1: u8; // arg #1
     let rhs@2: u8; // arg #2
 
-    @0 := copy (self@1) wrapping.+ copy (rhs@2)
+    @0 := copy (self@1) wrap.+ copy (rhs@2)
     return
 }
 

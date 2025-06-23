@@ -613,7 +613,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb6: {
-        @13 := copy (s@3) + const (1 : usize);
+        @13 := copy (s@3) panic.+ const (1 : usize);
         s@3 := move (@13);
         storage_dead(@11);
         storage_dead(@9);
@@ -711,7 +711,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb18: {
-        @33 := copy (s@3) + const (1 : usize);
+        @33 := copy (s@3) panic.+ const (1 : usize);
         s@3 := move (@33);
         storage_live(@34);
         storage_live(@35);

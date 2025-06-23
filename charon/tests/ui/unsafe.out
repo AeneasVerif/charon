@@ -290,7 +290,7 @@ fn access_mutable_static()
     storage_live(@1)
     @3 := &raw mut test_crate::COUNTER
     @1 := move (@3)
-    @2 := copy (*(@1)) + const (1 : usize)
+    @2 := copy (*(@1)) panic.+ const (1 : usize)
     *(@1) := move (@2)
     storage_dead(@1)
     @0 := ()

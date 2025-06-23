@@ -147,6 +147,16 @@ impl<T> Binder<T> {
     }
 }
 
+impl Display for OverflowMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            OverflowMode::Panic => write!(f, "panic"),
+            OverflowMode::Wrap => write!(f, "wrap"),
+            OverflowMode::UB => write!(f, "ub"),
+        }
+    }
+}
+
 impl Display for BinOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         match self {
@@ -159,21 +169,16 @@ impl Display for BinOp {
             BinOp::Ne => write!(f, "!="),
             BinOp::Ge => write!(f, ">="),
             BinOp::Gt => write!(f, ">"),
-            BinOp::Div => write!(f, "/"),
-            BinOp::Rem => write!(f, "%"),
-            BinOp::Add => write!(f, "+"),
-            BinOp::Sub => write!(f, "-"),
-            BinOp::Mul => write!(f, "*"),
-            BinOp::WrappingAdd => write!(f, "wrapping.+"),
-            BinOp::WrappingSub => write!(f, "wrapping.-"),
-            BinOp::WrappingMul => write!(f, "wrapping.*"),
-            BinOp::CheckedAdd => write!(f, "checked.+"),
-            BinOp::CheckedSub => write!(f, "checked.-"),
-            BinOp::CheckedMul => write!(f, "checked.*"),
-            BinOp::Shl => write!(f, "<<"),
-            BinOp::Shr => write!(f, ">>"),
-            BinOp::WrappingShl => write!(f, "wrapping.<<"),
-            BinOp::WrappingShr => write!(f, "wrapping.>>"),
+            BinOp::Add(mode) => write!(f, "{}.+", mode),
+            BinOp::Sub(mode) => write!(f, "{}.-", mode),
+            BinOp::Mul(mode) => write!(f, "{}.*", mode),
+            BinOp::Div(mode) => write!(f, "{}./", mode),
+            BinOp::Rem(mode) => write!(f, "{}.%", mode),
+            BinOp::AddChecked => write!(f, "checked.+"),
+            BinOp::SubChecked => write!(f, "checked.-"),
+            BinOp::MulChecked => write!(f, "checked.*"),
+            BinOp::Shl(mode) => write!(f, "{}.<<", mode),
+            BinOp::Shr(mode) => write!(f, "{}.>>", mode),
             BinOp::Cmp => write!(f, "cmp"),
             BinOp::Offset => write!(f, "offset"),
         }

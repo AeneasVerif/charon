@@ -4556,7 +4556,7 @@ fn main()
                 v@12 := copy ((@9 as variant Option::Some).0)
                 storage_live(@13)
                 @13 := copy (v@12)
-                @14 := copy (i@2) + copy (@13)
+                @14 := copy (i@2) panic.+ copy (@13)
                 i@2 := move (@14)
                 storage_dead(@13)
                 storage_dead(v@12)
@@ -4656,7 +4656,7 @@ fn main()
                 break 0
             },
             Option::Some => {
-                @39 := copy (i@2) + const (1 : i32)
+                @39 := copy (i@2) panic.+ const (1 : i32)
                 i@2 := move (@39)
                 storage_dead(@38)
                 storage_dead(@36)
@@ -4699,7 +4699,7 @@ fn main()
                 break 0
             },
             Option::Some => {
-                @50 := copy (i@2) + const (1 : i32)
+                @50 := copy (i@2) panic.+ const (1 : i32)
                 i@2 := move (@50)
                 storage_dead(@49)
                 storage_dead(@47)

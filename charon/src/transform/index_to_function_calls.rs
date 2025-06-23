@@ -132,7 +132,11 @@ impl<'a> IndexVisitor<'a> {
             let index_var = self.fresh_var(None, usize_ty);
             let kind = RawStatement::Assign(
                 index_var.clone(),
-                Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(len_var.clone()), last_arg),
+                Rvalue::BinaryOp(
+                    BinOp::Sub(OverflowMode::UB),
+                    Operand::Copy(len_var.clone()),
+                    last_arg,
+                ),
             );
             self.statements.push(Statement::new(self.span, kind));
             let dead_kind = RawStatement::StorageDead(len_var.local_id());

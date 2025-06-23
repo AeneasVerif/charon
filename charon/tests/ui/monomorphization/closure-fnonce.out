@@ -64,7 +64,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     storage_dead(@4)
     storage_live(@6)
     @6 := copy (x@3)
-    @7 := copy (@6) + const (1 : u8)
+    @7 := copy (@6) panic.+ const (1 : u8)
     @0 := move (@7)
     storage_dead(@6)
     return
@@ -102,7 +102,7 @@ fn test_crate::main::{impl FnOnce<(u8)> for closure}::call_once::<>(@1: closure,
     storage_dead(@4)
     storage_live(@6)
     @6 := copy (x@3)
-    @7 := copy (@6) + const (1 : u8)
+    @7 := copy (@6) panic.+ const (1 : u8)
     @0 := move (@7)
     storage_dead(@6)
     return
