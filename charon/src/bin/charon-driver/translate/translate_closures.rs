@@ -125,7 +125,7 @@ impl ItemTransCtx<'_, '_> {
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
         let bound_tref = self.translate_closure_bound_type_ref(span, closure)?;
-        let tref = if self.def_id == closure.item.def_id {
+        let tref = if self.item_src.as_def_id() == &closure.item.def_id {
             // We have fresh upvar regions in scope.
             bound_tref.apply(
                 self.outermost_binder()
@@ -152,7 +152,7 @@ impl ItemTransCtx<'_, '_> {
         let adt_ref = self.translate_closure_type_ref(span, closure)?;
         let mut args = adt_ref.generics;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
-        if self.def_id == closure.item.def_id {
+        if self.item_src.as_def_id() == &closure.item.def_id {
             args.regions.extend(
                 self.outermost_binder()
                     .bound_region_vars
