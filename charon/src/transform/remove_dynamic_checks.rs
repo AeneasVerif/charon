@@ -143,6 +143,17 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == is_zero =>
         {
+            if let [Statement {
+                content:
+                    RawStatement::Assign(
+                        _,
+                        Rvalue::BinaryOp(bop @ (BinOp::Div(_) | BinOp::Rem(_)), _, _),
+                    ),
+                ..
+            }, ..] = rest
+            {
+                *bop = bop.with_overflow(OverflowMode::Panic);
+            }
             rest
         }
 
@@ -175,6 +186,17 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if and_op1 == is_neg_1 && and_op2 == is_min && cond == has_overflow =>
         {
+            if let [Statement {
+                content:
+                    RawStatement::Assign(
+                        _,
+                        Rvalue::BinaryOp(bop @ (BinOp::Div(_) | BinOp::Rem(_)), _, _),
+                    ),
+                ..
+            }, ..] = rest
+            {
+                *bop = bop.with_overflow(OverflowMode::Panic);
+            }
             rest
         }
 
@@ -206,6 +228,17 @@ fn remove_dynamic_checks(
                 && let Some(cast_local) = cast.as_local()
                 && !rest.iter().any(|st| uses_local(st, cast_local)) =>
         {
+            if let [Statement {
+                content:
+                    RawStatement::Assign(
+                        _,
+                        Rvalue::BinaryOp(bop @ (BinOp::Shl(_) | BinOp::Shr(_)), _, _),
+                    ),
+                ..
+            }, ..] = rest
+            {
+                *bop = bop.with_overflow(OverflowMode::Panic);
+            }
             rest
         }
         // or like:
@@ -226,6 +259,17 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == has_overflow =>
         {
+            if let [Statement {
+                content:
+                    RawStatement::Assign(
+                        _,
+                        Rvalue::BinaryOp(bop @ (BinOp::Shl(_) | BinOp::Shr(_)), _, _),
+                    ),
+                ..
+            }, ..] = rest
+            {
+                *bop = bop.with_overflow(OverflowMode::Panic);
+            }
             rest
         }
 
@@ -247,8 +291,8 @@ fn remove_dynamic_checks(
             content:
                 RawStatement::Assign(
                     result,
-                    rval_op @ Rvalue::BinaryOp(
-                        BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul,
+                    Rvalue::BinaryOp(
+                        binop @ (BinOp::AddChecked | BinOp::SubChecked | BinOp::MulChecked),
                         _,
                         _,
                     ),
@@ -294,29 +338,17 @@ fn remove_dynamic_checks(
                 // change nothing.
                 return;
             }
-            let Rvalue::BinaryOp(binop, ..) = rval_op else {
-                unreachable!()
-            };
+
             if followed_by_assert {
                 // We have a compiler-emitted assert. We replace the operation with one that has
                 // panic-on-overflow semantics.
-                *binop = match binop {
-                    BinOp::CheckedAdd => BinOp::Add,
-                    BinOp::CheckedSub => BinOp::Sub,
-                    BinOp::CheckedMul => BinOp::Mul,
-                    _ => unreachable!(),
-                };
+                *binop = binop.with_overflow(OverflowMode::Panic);
                 // The failure behavior is part of the binop now, so we remove the assert.
                 rest[0].content = RawStatement::Nop;
             } else {
                 // The overflow boolean is not used, we replace the operations with wrapping
                 // semantics.
-                *binop = match binop {
-                    BinOp::CheckedAdd => BinOp::WrappingAdd,
-                    BinOp::CheckedSub => BinOp::WrappingSub,
-                    BinOp::CheckedMul => BinOp::WrappingMul,
-                    _ => unreachable!(),
-                };
+                *binop = binop.with_overflow(OverflowMode::Wrap);
             }
             // Fixup the local type.
             let result_local = &mut locals.locals[result_local_id];

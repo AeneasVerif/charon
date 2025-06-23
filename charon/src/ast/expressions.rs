@@ -203,6 +203,18 @@ pub enum CastKind {
     Transmute(Ty, Ty),
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
+pub enum OverflowMode {
+    /// If this operation overflows, it panics. Only exists in debug mode, for instance in
+    /// `a + b`, and is introduced by the `remove_dynamic_checks` pass.
+    Panic,
+    /// If this operation overflows, it UBs, for instance in `core::num::unchecked_add`.
+    UB,
+    /// If this operation overflows, it wraps around, for instance in `core::num::wrapping_add`,
+    /// or `a + b` in release mode.
+    Wrap,
+}
+
 /// Binary operations.
 #[derive(
     Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
@@ -218,41 +230,30 @@ pub enum BinOp {
     Ne,
     Ge,
     Gt,
-    /// Fails if the divisor is 0, or if the operation is `int::MIN / -1`.
-    Div,
-    /// Fails if the divisor is 0, or if the operation is `int::MIN % -1`.
-    Rem,
-    /// Fails on overflow.
-    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
-    Add,
-    /// Fails on overflow.
-    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
-    Sub,
-    /// Fails on overflow.
-    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
-    Mul,
-    /// Wraps on overflow.
-    WrappingAdd,
-    /// Wraps on overflow.
-    WrappingSub,
-    /// Wraps on overflow.
-    WrappingMul,
+    #[drive(skip)]
+    Add(OverflowMode),
+    #[drive(skip)]
+    Sub(OverflowMode),
+    #[drive(skip)]
+    Mul(OverflowMode),
+    #[drive(skip)]
+    Div(OverflowMode),
+    #[drive(skip)]
+    Rem(OverflowMode),
     /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
     /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
     /// overflowed. This operation does not fail.
-    CheckedAdd,
-    /// Like `CheckedAdd`.
-    CheckedSub,
-    /// Like `CheckedAdd`.
-    CheckedMul,
+    AddChecked,
+    /// Like `AddChecked`.
+    SubChecked,
+    /// Like `AddChecked`.
+    MulChecked,
     /// Fails if the shift is bigger than the bit-size of the type.
-    Shl,
-    /// Wraps on overflow.
-    WrappingShl,
+    #[drive(skip)]
+    Shl(OverflowMode),
     /// Fails if the shift is bigger than the bit-size of the type.
-    Shr,
-    /// Wraps on overflow.
-    WrappingShr,
+    #[drive(skip)]
+    Shr(OverflowMode),
     /// `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`.
     Offset,
     /// `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`.

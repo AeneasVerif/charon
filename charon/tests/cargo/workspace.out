@@ -20,7 +20,7 @@ pub fn extra_random_number() -> u32
     storage_live(@1)
     // Even more random.
     @1 := random_number()
-    @2 := copy (@1) + const (1 : u32)
+    @2 := copy (@1) panic.+ const (1 : u32)
     @0 := move (@2)
     storage_dead(@1)
     return

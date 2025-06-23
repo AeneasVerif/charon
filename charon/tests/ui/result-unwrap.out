@@ -14,7 +14,7 @@ fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
 {
     let @0: u32; // return
 
-    @0 := const (1 : u32) wrapping.<< const (25 : i32)
+    @0 := const (1 : u32) panic.<< const (25 : i32)
     return
 }
 
@@ -24,7 +24,7 @@ fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
 {
     let @0: u32; // return
 
-    @0 := const (1 : u32) wrapping.<< const (26 : i32)
+    @0 := const (1 : u32) panic.<< const (26 : i32)
     return
 }
 

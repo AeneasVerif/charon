@@ -26,9 +26,9 @@ fn overflow() -> &'static (u32)
     storage_live(@8)
     storage_live(@1)
     @7 := core::num::{u32}::MAX
-    @2 := move (@7) + const (1 : u32)
+    @2 := move (@7) panic.+ const (1 : u32)
     @8 := core::num::{u32}::MAX
-    @6 := move (@8) wrapping.+ const (1 : u32)
+    @6 := move (@8) wrap.+ const (1 : u32)
     @5 := move (@6)
     @4 := &@5
     @3 := move (@4)
