@@ -59,7 +59,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
 
         // Initialize the item translation context
-        let bt_ctx = ItemTransCtx::new(def.def_id.clone(), trans_id, self);
+        let bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         match item_src {
             TransItemSource::Type(_) => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
@@ -96,6 +96,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
+            TransItemSource::InherentImpl(_) => {
+                panic!("inherent impls aren't translated to items")
+            }
             TransItemSource::ClosureTraitImpl(_, kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
@@ -109,6 +112,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSource::ClosureAsFnCast(_) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -213,6 +223,9 @@ impl ItemTransCtx<'_, '_> {
         // Translate generics and predicates
         self.translate_def_generics(span, def)?;
 
+        // Get the kind of the type decl -- is it a closure?
+        let src = self.get_item_kind(span, def)?;
+
         // Translate type body
         let kind = match &def.kind {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
@@ -239,13 +252,14 @@ impl ItemTransCtx<'_, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self.translate_layout(&kind);
-        let ptr_metadata = self.translate_ptr_metadata();
+        let layout = self.translate_layout(def.def_id(), &kind);
+        let ptr_metadata = self.translate_ptr_metadata(def.def_id());
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
             generics: self.into_generics(),
             kind,
+            src,
             layout,
             ptr_metadata,
         };

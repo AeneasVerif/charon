@@ -20,8 +20,12 @@ pub enum TransItemSource {
     TraitImpl(hax::DefId),
     Fun(hax::DefId),
     Type(hax::DefId),
+    /// We don't translate these as proper items, but we translate them a bit in names.
+    InherentImpl(hax::DefId),
     /// An impl of the appropriate `Fn*` trait for the given closure type.
     ClosureTraitImpl(hax::DefId, ClosureKind),
+    /// A cast of a state-less closure as a function pointer.
+    ClosureAsFnCast(hax::DefId),
     /// The `call_*` method of the appropriate `Fn*` trait.
     ClosureMethod(hax::DefId, ClosureKind),
 }
@@ -34,8 +38,10 @@ impl TransItemSource {
             | TransItemSource::TraitImpl(id)
             | TransItemSource::Fun(id)
             | TransItemSource::Type(id)
+            | TransItemSource::InherentImpl(id)
             | TransItemSource::ClosureTraitImpl(id, _)
-            | TransItemSource::ClosureMethod(id, _) => id,
+            | TransItemSource::ClosureMethod(id, _)
+            | TransItemSource::ClosureAsFnCast(id) => id,
         }
     }
 }
@@ -185,8 +191,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     TransItemSource::Global(_) => {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    TransItemSource::Fun(_) | TransItemSource::ClosureMethod(_, _) => {
+                    TransItemSource::Fun(_)
+                    | TransItemSource::ClosureMethod(_, _)
+                    | TransItemSource::ClosureAsFnCast(_) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
+                    }
+                    TransItemSource::InherentImpl(_) => {
+                        panic!("inherent impls aren't translated to items")
                     }
                 };
                 // Add the id to the queue of declarations to translate
@@ -296,6 +307,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .unwrap()
     }
 
+    pub(crate) fn register_closure_as_fun_decl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: &hax::DefId,
+    ) -> FunDeclId {
+        *self
+            .register_and_enqueue_id(src, TransItemSource::ClosureAsFnCast(id.clone()))
+            .as_fun()
+            .unwrap()
+    }
+
     pub(crate) fn register_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
@@ -313,7 +335,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
-            span: self.def_id.is_local.then_some(span),
+            span: self.item_src.as_def_id().is_local.then_some(span),
         })
     }
 
@@ -492,6 +514,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_closure_method_decl_id(&src, id, kind)
+    }
+
+    pub(crate) fn register_closure_as_fun_decl_id(
+        &mut self,
+        span: Span,
+        id: &hax::DefId,
+    ) -> FunDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_closure_as_fun_decl_id(&src, id)
     }
 }
 

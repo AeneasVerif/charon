@@ -61,7 +61,7 @@ pub fn test_closure_ref_param<T>(x: &T) -> &T {
     (f)(x)
 }
 
-trait Trait<'a> {}
+pub trait Trait<'a> {}
 
 pub fn test_closure_ref_early_bound<'a, T: Trait<'a>>(x: &'a T) -> &'a T {
     let f: fn(&T) -> &T = |y| y;
