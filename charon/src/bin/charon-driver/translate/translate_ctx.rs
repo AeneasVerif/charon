@@ -58,8 +58,7 @@ pub struct TranslateCtx<'tcx> {
 /// Augments the [TranslateCtx] with type-level variables.
 pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
-    /// TODO: this duplicates the field of [ErrorCtx]
-    pub def_id: hax::DefId,
+    pub item_src: TransItemSource,
     /// The id of the definition we are currently extracting, if there is one.
     pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
@@ -160,12 +159,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
-        def_id: hax::DefId,
+        item_src: TransItemSource,
         item_id: Option<AnyTransId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         ItemTransCtx {
-            def_id,
+            item_src,
             item_id,
             t_ctx,
             error_on_impl_expr_error: true,

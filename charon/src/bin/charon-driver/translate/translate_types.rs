@@ -7,6 +7,7 @@ use core::convert::*;
 use hax::HasParamEnv;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
+use hax_frontend_exporter::HasOwnerIdSetter;
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -352,12 +353,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate a Dynamically Sized Type metadata kind.
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
-    pub fn translate_ptr_metadata(&self) -> Option<PtrMetadata> {
+    pub fn translate_ptr_metadata(&self, def_id: &hax::DefId) -> Option<PtrMetadata> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = self.def_id.as_rust_def_id().unwrap();
-        let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        let rdefid = def_id.as_rust_def_id().unwrap();
+        let ty_env = self
+            .t_ctx
+            .hax_state
+            .clone()
+            .with_owner_id(rdefid)
+            .typing_env();
         // This `skip_binder` is ok because it's an `EarlyBinder`.
         let ty = tcx.type_of(rdefid).skip_binder();
 
@@ -386,7 +392,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&self, ty_decl_kind: &TypeDeclKind) -> Option<Layout> {
+    pub fn translate_layout(
+        &self,
+        def_id: &hax::DefId,
+        ty_decl_kind: &TypeDeclKind,
+    ) -> Option<Layout> {
         use rustc_abi as r_abi;
         // Panics if the fields layout is not `Arbitrary`.
         fn translate_variant_layout(
@@ -472,8 +482,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = self.def_id.as_rust_def_id().unwrap();
-        let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        let rdefid = def_id.as_rust_def_id().unwrap();
+        let ty_env = self
+            .t_ctx
+            .hax_state
+            .clone()
+            .with_owner_id(rdefid)
+            .typing_env();
         // This `skip_binder` is ok because it's an `EarlyBinder`.
         let ty = tcx.type_of(rdefid).skip_binder();
         let pseudo_input = ty_env.as_query_input(ty);
@@ -568,10 +583,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let discr = variants_from_kind.map(|variants_from_kind| {
-                        variants_from_kind
-                            .get(translate_variant_id(id))
-                            .expect("Variant index out of bounds while getting discr")
-                            .discriminant
+                        variants_from_kind[translate_variant_id(id)].discriminant
                     });
 
                     let tag = if variant_layout.is_uninhabited() {

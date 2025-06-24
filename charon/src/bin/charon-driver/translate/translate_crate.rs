@@ -20,6 +20,8 @@ pub enum TransItemSource {
     TraitImpl(hax::DefId),
     Fun(hax::DefId),
     Type(hax::DefId),
+    /// We don't translate these as proper items, but we translate them a bit in names.
+    InherentImpl(hax::DefId),
     /// An impl of the appropriate `Fn*` trait for the given closure type.
     ClosureTraitImpl(hax::DefId, ClosureKind),
     /// The `call_*` method of the appropriate `Fn*` trait.
@@ -34,6 +36,7 @@ impl TransItemSource {
             | TransItemSource::TraitImpl(id)
             | TransItemSource::Fun(id)
             | TransItemSource::Type(id)
+            | TransItemSource::InherentImpl(id)
             | TransItemSource::ClosureTraitImpl(id, _)
             | TransItemSource::ClosureMethod(id, _) => id,
         }
@@ -188,6 +191,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     TransItemSource::Fun(_) | TransItemSource::ClosureMethod(_, _) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
+                    TransItemSource::InherentImpl(_) => {
+                        panic!("inherent impls aren't translated to items")
+                    }
                 };
                 // Add the id to the queue of declarations to translate
                 self.id_map.insert(id.clone(), trans_id);
@@ -313,7 +319,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
-            span: self.def_id.is_local.then_some(span),
+            span: self.item_src.as_def_id().is_local.then_some(span),
         })
     }
 
