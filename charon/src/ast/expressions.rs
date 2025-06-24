@@ -204,6 +204,7 @@ pub enum CastKind {
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
+#[charon::variants_prefix("O")]
 pub enum OverflowMode {
     /// If this operation overflows, it panics. Only exists in debug mode, for instance in
     /// `a + b`, and is introduced by the `remove_dynamic_checks` pass.

@@ -91,6 +91,12 @@ and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   | Cast cast_kind -> cast_kind_to_string env cast_kind
   | ArrayToSlice _ -> "to_slice"
 
+and overflow_mode_to_string (mode : overflow_mode) : string =
+  match mode with
+  | OWrap -> "wrap"
+  | OUB -> "ub"
+  | OPanic -> "panic"
+
 and binop_to_string (binop : binop) : string =
   match binop with
   | BitXor -> "^"
@@ -102,21 +108,16 @@ and binop_to_string (binop : binop) : string =
   | Ne -> "!="
   | Ge -> ">="
   | Gt -> ">"
-  | Div -> "/"
-  | Rem -> "%"
-  | Add -> "+"
-  | Sub -> "-"
-  | Mul -> "*"
-  | WrappingAdd -> "wrapping.+"
-  | WrappingSub -> "wrapping.-"
-  | WrappingMul -> "wrapping.*"
-  | WrappingShl -> "wrapping.<<"
-  | WrappingShr -> "wrapping.>>"
-  | CheckedAdd -> "checked.+"
-  | CheckedSub -> "checked.-"
-  | CheckedMul -> "checked.*"
-  | Shl -> "<<"
-  | Shr -> ">>"
+  | Div om -> overflow_mode_to_string om ^ "./"
+  | Rem om -> overflow_mode_to_string om ^ ".%"
+  | Add om -> overflow_mode_to_string om ^ ".+"
+  | Sub om -> overflow_mode_to_string om ^ ".-"
+  | Mul om -> overflow_mode_to_string om ^ ".*"
+  | Shl om -> overflow_mode_to_string om ^ ".<<"
+  | Shr om -> overflow_mode_to_string om ^ ".>>"
+  | AddChecked -> "checked.+"
+  | SubChecked -> "checked.-"
+  | MulChecked -> "checked.*"
   | Cmp -> "cmp"
   | Offset -> "offset"
 

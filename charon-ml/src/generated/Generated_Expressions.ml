@@ -63,33 +63,22 @@ and binop =
   | Ne
   | Ge
   | Gt
-  | Div
-      (** Fails if the divisor is 0, or if the operation is [int::MIN / -1]. *)
-  | Rem
-      (** Fails if the divisor is 0, or if the operation is [int::MIN % -1]. *)
-  | Add
-      (** Fails on overflow. Not present in MIR: this is introduced by the
-          [remove_dynamic_checks] pass. *)
-  | Sub
-      (** Fails on overflow. Not present in MIR: this is introduced by the
-          [remove_dynamic_checks] pass. *)
-  | Mul
-      (** Fails on overflow. Not present in MIR: this is introduced by the
-          [remove_dynamic_checks] pass. *)
-  | WrappingAdd  (** Wraps on overflow. *)
-  | WrappingSub  (** Wraps on overflow. *)
-  | WrappingMul  (** Wraps on overflow. *)
-  | CheckedAdd
+  | Add of overflow_mode
+  | Sub of overflow_mode
+  | Mul of overflow_mode
+  | Div of overflow_mode
+  | Rem of overflow_mode
+  | AddChecked
       (** Returns [(result, did_overflow)], where [result] is the result of the
           operation with wrapping semantics, and [did_overflow] is a boolean
           that indicates whether the operation overflowed. This operation does
           not fail. *)
-  | CheckedSub  (** Like [CheckedAdd]. *)
-  | CheckedMul  (** Like [CheckedAdd]. *)
-  | Shl  (** Fails if the shift is bigger than the bit-size of the type. *)
-  | WrappingShl  (** Wraps on overflow. *)
-  | Shr  (** Fails if the shift is bigger than the bit-size of the type. *)
-  | WrappingShr  (** Wraps on overflow. *)
+  | SubChecked  (** Like [AddChecked]. *)
+  | MulChecked  (** Like [AddChecked]. *)
+  | Shl of overflow_mode
+      (** Fails if the shift is bigger than the bit-size of the type. *)
+  | Shr of overflow_mode
+      (** Fails if the shift is bigger than the bit-size of the type. *)
   | Offset
       (** [BinOp(Offset, ptr, n)] for [ptr] a pointer to type [T] offsets [ptr]
           by [n * size_of::<T>()]. *)
@@ -231,6 +220,18 @@ and operand =
   | Move of place
   | Constant of constant_expr
       (** Constant value (including constant and static variables) *)
+
+and overflow_mode =
+  | OPanic
+      (** If this operation overflows, it panics. Only exists in debug mode, for
+          instance in [a + b], and is introduced by the [remove_dynamic_checks]
+          pass. *)
+  | OUB
+      (** If this operation overflows, it UBs, for instance in
+          [core::num::unchecked_add]. *)
+  | OWrap
+      (** If this operation overflows, it wraps around, for instance in
+          [core::num::wrapping_add], or [a + b] in release mode. *)
 
 and place = { kind : place_kind; ty : ty }
 
