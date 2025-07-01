@@ -758,12 +758,7 @@ impl ItemTransCtx<'_, '_> {
             self.translate_closure_method_sig(def, span, closure, ClosureKind::FnOnce)?;
         let state_ty = signature.inputs.remove(0);
         let args_tuple_ty = signature.inputs.remove(0);
-        signature.inputs = args_tuple_ty
-            .as_tuple()
-            .unwrap()
-            .iter()
-            .map(Ty::clone)
-            .collect();
+        signature.inputs = args_tuple_ty.as_tuple().unwrap().iter().cloned().collect();
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Err(Opaque)
