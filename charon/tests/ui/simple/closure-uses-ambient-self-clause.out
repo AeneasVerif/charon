@@ -1,0 +1,1221 @@
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnOnce<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitImplRef>
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnMut<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitImplRef>
+         core::option::Option<charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitImplRef>>
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl Fn<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitImplRef>
+         core::option::Option<charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitImplRef>>
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnMut<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnOnce<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:4:5
+  |
+4 | /     fn foo(i: Self::Item) {
+5 | |         (|_: Self::Item| ())(i)
+6 | |     }
+  | |_____^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:4:5
+  |
+4 | /     fn foo(i: Self::Item) {
+5 | |         (|_: Self::Item| ())(i)
+6 | |     }
+  | |_____^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:9
+  |
+5 |         (|_: Self::Item| ())(i)
+  |         ^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::expressions::AggregateKind
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:9
+  |
+5 |         (|_: Self::Item| ())(i)
+  |         ^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:9
+  |
+5 |         (|_: Self::Item| ())(i)
+  |         ^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:9
+  |
+5 |         (|_: Self::Item| ())(i)
+  |         ^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl Fn<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::FunIdOrTraitMethodRef
+         alloc::boxed::Box<charon_lib::ast::expressions::FunIdOrTraitMethodRef>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:4:5
+  |
+4 | /     fn foo(i: Self::Item) {
+5 | |         (|_: Self::Item| ())(i)
+6 | |     }
+  | |_____^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::FunIdOrTraitMethodRef
+         alloc::boxed::Box<charon_lib::ast::expressions::FunIdOrTraitMethodRef>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:4:5
+  |
+4 | /     fn foo(i: Self::Item) {
+5 | |         (|_: Self::Item| ())(i)
+6 | |     }
+  | |_____^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:4:5
+  |
+4 | /     fn foo(i: Self::Item) {
+5 | |         (|_: Self::Item| ())(i)
+6 | |     }
+  | |_____^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl Fn<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnMut<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         alloc::boxed::Box<charon_lib::ast::expressions::Place>
+         charon_lib::ast::expressions::PlaceKind
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl Fn<(@TraitClause0::Item)> for closure<Self>}::call
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnOnce<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnOnce<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> /rustc/library/core/src/ops/function.rs:250:5
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> /rustc/library/core/src/ops/function.rs:250:5
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnMut<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::FunIdOrTraitMethodRef
+         alloc::boxed::Box<charon_lib::ast::expressions::FunIdOrTraitMethodRef>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::FunIdOrTraitMethodRef
+         alloc::boxed::Box<charon_lib::ast::expressions::FunIdOrTraitMethodRef>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: {impl FnOnce<(@TraitClause0::Item)> for closure<Self>}
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-uses-ambient-self-clause.rs:5:10
+  |
+5 |         (|_: Self::Item| ())(i)
+  |          ^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> /rustc/library/core/src/ops/function.rs:250:5
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: closure
+       expected: [[@TraitClause0]: Thing<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::TypeDeclRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Self, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>>
+ --> /rustc/library/core/src/ops/function.rs:250:5
+
+
+thread 'main' panicked at /home/nadrieril/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/index_vec-0.1.4/src/indexing.rs:37:10:
+index out of bounds: the len is 0 but the index is 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ERROR Compilation panicked
