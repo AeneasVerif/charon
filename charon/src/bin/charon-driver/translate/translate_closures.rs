@@ -76,41 +76,97 @@ impl ItemTransCtx<'_, '_> {
         Ok(ClosureInfo { kind, signature })
     }
 
+    /// Translate a reference to the closure ADT. The resulting type needs lifetime arguments for
+    /// the upvars (captured variables). If you don't know what to do about the bound lifetimes,
+    /// use `translate_closure_type_ref` instead.
+    pub fn translate_closure_bound_type_ref(
+        &mut self,
+        span: Span,
+        closure: &hax::ClosureArgs,
+    ) -> Result<RegionBinder<TypeDeclRef>, Error> {
+        // We add lifetime args for each borrowing upvar, gotta supply them here.
+        let upvar_binder = hax::Binder {
+            value: (),
+            bound_vars: closure
+                .upvar_tys
+                .iter()
+                .filter(|ty| {
+                    matches!(
+                        ty.kind(),
+                        hax::TyKind::Ref(
+                            hax::Region {
+                                kind: hax::RegionKind::ReErased
+                            },
+                            ..
+                        )
+                    )
+                })
+                .map(|_| hax::BoundVariableKind::Region(hax::BoundRegionKind::Anon))
+                .collect(),
+        };
+        let tref = self.translate_type_decl_ref(span, &closure.item)?;
+        self.translate_region_binder(span, &upvar_binder, |ctx, _| {
+            let mut tref = tref.move_under_binder();
+            tref.generics.regions.extend(
+                ctx.innermost_binder()
+                    .params
+                    .identity_args()
+                    .regions
+                    .into_iter(),
+            );
+            Ok(tref)
+        })
+    }
+
     /// Translate a reference to the closure ADT.
     pub fn translate_closure_type_ref(
         &mut self,
         span: Span,
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
-        let mut tref = self.translate_type_decl_ref(span, &closure.item)?;
-        // We add lifetime args for each borrowing upvar, gotta supply them here.
-        if self.def_id == closure.item.def_id {
-            tref.generics.regions.extend(
+        let bound_tref = self.translate_closure_bound_type_ref(span, closure)?;
+        let tref = if self.item_src.as_def_id() == &closure.item.def_id {
+            // We have fresh upvar regions in scope.
+            bound_tref.apply(
                 self.outermost_binder()
                     .by_ref_upvar_regions
                     .iter()
-                    .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r))),
-            );
+                    .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
+                    .collect(),
+            )
         } else {
-            tref.generics.regions.extend(
-                closure
-                    .upvar_tys
-                    .iter()
-                    .filter(|ty| {
-                        matches!(
-                            ty.kind(),
-                            hax::TyKind::Ref(
-                                hax::Region {
-                                    kind: hax::RegionKind::ReErased
-                                },
-                                ..
-                            )
-                        )
-                    })
-                    .map(|_| Region::Erased),
-            );
-        }
+            // No upvar lifetimes in scope, we supply erased regions instead.
+            bound_tref.erase()
+        };
         Ok(tref)
+    }
+
+    /// Translate a reference to the chosen closure impl. The resulting value needs lifetime
+    /// arguments for late-bound lifetimes. If you don't know what to do about the bound lifetimes,
+    /// use `translate_closure_impl_ref` instead.
+    pub fn translate_closure_bound_impl_ref(
+        &mut self,
+        span: Span,
+        closure: &hax::ClosureArgs,
+        target_kind: ClosureKind,
+    ) -> Result<RegionBinder<TraitImplRef>, Error> {
+        let impl_id = self.register_closure_trait_impl_id(span, &closure.item.def_id, target_kind);
+        let adt_ref = self.translate_closure_type_ref(span, closure)?;
+        let impl_ref = TraitImplRef {
+            id: impl_id,
+            generics: adt_ref.generics,
+        };
+        self.translate_region_binder(span, &closure.fn_sig, |ctx, _| {
+            let mut impl_ref = impl_ref.move_under_binder();
+            impl_ref.generics.regions.extend(
+                ctx.innermost_binder()
+                    .params
+                    .identity_args()
+                    .regions
+                    .into_iter(),
+            );
+            Ok(impl_ref)
+        })
     }
 
     /// Translate a reference to the chosen closure impl.
@@ -120,26 +176,20 @@ impl ItemTransCtx<'_, '_> {
         closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<TraitImplRef, Error> {
-        let impl_id = self.register_closure_trait_impl_id(span, &closure.item.def_id, target_kind);
-        let adt_ref = self.translate_closure_type_ref(span, closure)?;
-        let mut args = adt_ref.generics;
-        // Add the lifetime generics coming from the higher-kindedness of the signature.
-        if self.def_id == closure.item.def_id {
-            args.regions.extend(
+        let bound_impl_ref = self.translate_closure_bound_impl_ref(span, closure, target_kind)?;
+        let impl_ref = if self.item_src.as_def_id() == &closure.item.def_id {
+            // We have fresh regions in scope.
+            bound_impl_ref.apply(
                 self.outermost_binder()
                     .bound_region_vars
                     .iter()
-                    .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r))),
-            );
+                    .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
+                    .collect(),
+            )
         } else {
-            args.regions
-                .extend(closure.fn_sig.bound_vars.iter().map(|_| Region::Erased));
-        }
-
-        Ok(TraitImplRef {
-            id: impl_id,
-            generics: args,
-        })
+            bound_impl_ref.erase()
+        };
+        Ok(impl_ref)
     }
 
     /// Translate a trait reference to the chosen closure impl.
@@ -519,7 +569,7 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
-        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty());
         self.innermost_binder_mut()
             .push_params_from_binder(args.fn_sig.rebind(()))?;
 

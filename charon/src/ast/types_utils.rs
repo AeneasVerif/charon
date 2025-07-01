@@ -288,16 +288,26 @@ impl<T> RegionBinder<T> {
         }
     }
 
+    /// Substitute the bound variables with the given lifetimes.
+    pub fn apply(self, regions: Vector<RegionId, Region>) -> T
+    where
+        T: AstVisitable,
+    {
+        assert_eq!(regions.slot_count(), self.regions.slot_count());
+        let args = GenericArgs {
+            regions,
+            ..GenericArgs::empty()
+        };
+        self.skip_binder.substitute(&args)
+    }
+
     /// Substitute the bound variables with erased lifetimes.
     pub fn erase(self) -> T
     where
         T: AstVisitable,
     {
-        let args = GenericArgs {
-            regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
-            ..GenericArgs::empty()
-        };
-        self.skip_binder.substitute(&args)
+        let regions = self.regions.map_ref_indexed(|_, _| Region::Erased);
+        self.apply(regions)
     }
 }
 

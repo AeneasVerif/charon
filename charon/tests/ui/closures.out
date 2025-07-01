@@ -346,7 +346,7 @@ where
 }
 
 // Full name: test_crate::Trait
-trait Trait<'a, Self>
+pub trait Trait<'a, Self>
 
 struct test_crate::test_closure_ref_early_bound::closure<'a, T>
 where
