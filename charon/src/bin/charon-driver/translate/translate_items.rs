@@ -252,7 +252,7 @@ impl ItemTransCtx<'_, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self.translate_layout(def.def_id(), &kind);
+        let layout = self.translate_layout(def.def_id());
         let ptr_metadata = self.translate_ptr_metadata(def.def_id());
         let type_def = TypeDecl {
             def_id: trans_id,

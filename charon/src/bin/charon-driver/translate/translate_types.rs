@@ -392,11 +392,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(
-        &self,
-        def_id: &hax::DefId,
-        ty_decl_kind: &TypeDeclKind,
-    ) -> Option<Layout> {
+    pub fn translate_layout(&self, def_id: &hax::DefId) -> Option<Layout> {
         use rustc_abi as r_abi;
         // Panics if the fields layout is not `Arbitrary`.
         fn translate_variant_layout(
@@ -437,46 +433,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     r_abi::Integer::I32 => IntegerTy::U32,
                     r_abi::Integer::I64 => IntegerTy::U64,
                     r_abi::Integer::I128 => IntegerTy::U128,
-                }
-            }
-        }
-
-        fn translate_variant_id(r_id: r_abi::VariantIdx) -> VariantId {
-            VariantId::from_usize(r_abi::VariantIdx::as_usize(r_id))
-        }
-
-        // Computes the tag representation of the variant's discriminant if possible.
-        //
-        // If the discriminant is encoded as a niche the following holds:
-        // If discriminant != self.discriminant_layout.untagged_variant
-        // then tag = (d-self.discriminant_layout.tagged_variants_start).wrapping_add(self.discriminant_layout.niche_start)
-        //
-        // Note: it is possible that the tag is stored in the niche of a pointer type, but will
-        // be returned as an integer instead. This is supposed to be a different interpretation of the same bytes.
-        fn translate_discr_to_tag(
-            discr: ScalarValue,
-            variant: r_abi::VariantIdx,
-            tag_ty: IntegerTy,
-            encoding: &r_abi::TagEncoding<r_abi::VariantIdx>,
-        ) -> Option<ScalarValue> {
-            match &encoding {
-                // The direct encoding is just a cast.
-                r_abi::TagEncoding::Direct => Some(ScalarValue::from_bits(tag_ty, discr.to_bits())),
-                r_abi::TagEncoding::Niche {
-                    untagged_variant,
-                    niche_variants,
-                    niche_start,
-                } => {
-                    if variant == *untagged_variant {
-                        None // This variant does not have a tag.
-                    } else {
-                        let discr_rel = variant.as_u32() - niche_variants.start().as_u32();
-                        // In theory we need to do a wrapping_add in the tag type,
-                        // but we follow the approach of the rustc backends, that
-                        // simply does the addition in `u128` and cuts off the uninteresting bits.
-                        let tag_bits = (discr_rel as u128).wrapping_add(*niche_start);
-                        Some(ScalarValue::from_bits(tag_ty, tag_bits))
-                    }
                 }
             }
         }
@@ -533,7 +489,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     r_abi::TagEncoding::Niche {
                         untagged_variant, ..
                     } => TagEncoding::Niche {
-                        untagged_variant: translate_variant_id(*untagged_variant),
+                        untagged_variant: VariantId::from_usize(r_abi::VariantIdx::as_usize(
+                            *untagged_variant,
+                        )),
                     },
                 };
                 offsets.get(*tag_field).map(|s| DiscriminantLayout {
@@ -545,51 +503,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };
 
-        // Try to find the variants even through an alias.
-        fn get_variants_from_kind<'a>(
-            ty_decls: &'a Vector<TypeDeclId, TypeDecl>,
-            ty_decl_kind: &'a TypeDeclKind,
-        ) -> Option<&'a Vector<VariantId, Variant>> {
-            match ty_decl_kind {
-                TypeDeclKind::Enum(variants) => Some(variants),
-                TypeDeclKind::Alias(ty) => match ty.kind() {
-                    TyKind::Adt(r) => match r.id {
-                        TypeId::Adt(td_id) => ty_decls
-                            .get(td_id)
-                            .and_then(|td| get_variants_from_kind(ty_decls, &td.kind)),
-                        _ => None,
-                    },
-                    _ => None,
-                },
-                _ => None, // Sometimes, multiple variants can occur for aliases etc.
-            }
-        }
-
-        let type_decls = &self.t_ctx.translated.type_decls;
         let mut variant_layouts = Vector::new();
         match layout.variants() {
-            r_abi::Variants::Multiple {
-                tag_encoding,
-                variants,
-                ..
-            } => {
-                let variants_from_kind = get_variants_from_kind(type_decls, ty_decl_kind);
+            r_abi::Variants::Multiple { variants, .. } => {
                 let tag_ty = discriminant_layout
                     .as_ref()
                     .expect("No discriminant layout for enum?")
                     .tag_ty;
 
                 for (id, variant_layout) in variants.iter_enumerated() {
-                    let discr = variants_from_kind.map(|variants_from_kind| {
-                        variants_from_kind[translate_variant_id(id)].discriminant
-                    });
-
                     let tag = if variant_layout.is_uninhabited() {
                         None
                     } else {
-                        discr.and_then(|discr| {
-                            translate_discr_to_tag(discr, id, tag_ty, tag_encoding)
-                        })
+                        tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
+                            .map(|s| {
+                                assert_eq!(s.size(), r_abi::Size::from_bytes(tag_ty.size()));
+                                ScalarValue::from_bits(tag_ty, s.to_bits(s.size()))
+                            })
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tag));
                 }
