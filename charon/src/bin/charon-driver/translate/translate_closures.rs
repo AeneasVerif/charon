@@ -63,7 +63,20 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<ClosureInfo, Error> {
+        use ClosureKind::*;
         let kind = translate_closure_kind(&args.kind);
+
+        let fn_once_impl = self.translate_closure_bound_impl_ref(span, args, FnOnce)?;
+        let fn_mut_impl = if matches!(kind, FnMut | Fn) {
+            Some(self.translate_closure_bound_impl_ref(span, args, FnMut)?)
+        } else {
+            None
+        };
+        let fn_impl = if matches!(kind, Fn) {
+            Some(self.translate_closure_bound_impl_ref(span, args, Fn)?)
+        } else {
+            None
+        };
         let signature = self.translate_region_binder(span, &args.fn_sig, |ctx, sig| {
             let inputs = sig
                 .inputs
@@ -73,7 +86,13 @@ impl ItemTransCtx<'_, '_> {
             let output = ctx.translate_ty(span, &sig.output)?;
             Ok((inputs, output))
         })?;
-        Ok(ClosureInfo { kind, signature })
+        Ok(ClosureInfo {
+            kind,
+            fn_once_impl,
+            fn_mut_impl,
+            fn_impl,
+            signature,
+        })
     }
 
     /// Translate a reference to the closure ADT. The resulting type needs lifetime arguments for
@@ -139,6 +158,28 @@ impl ItemTransCtx<'_, '_> {
             bound_tref.erase()
         };
         Ok(tref)
+    }
+
+    /// For stateless closures, translate a function reference to the top-level function that
+    /// executes the closure code without taking the state as parameter.
+    pub fn translate_stateless_closure_as_fn_ref(
+        &mut self,
+        span: Span,
+        closure: &hax::ClosureArgs,
+    ) -> Result<RegionBinder<FunDeclRef>, Error> {
+        let id = self.register_closure_as_fun_decl_id(span, &closure.item.def_id);
+        let TypeDeclRef { generics, .. } = self.translate_closure_type_ref(span, closure)?;
+        self.translate_region_binder(span, &closure.fn_sig, |ctx, _| {
+            let mut generics = generics.move_under_binder();
+            generics.regions.extend(
+                ctx.innermost_binder()
+                    .params
+                    .identity_args()
+                    .regions
+                    .into_iter(),
+            );
+            Ok(FunDeclRef { id, generics })
+        })
     }
 
     /// Translate a reference to the chosen closure impl. The resulting value needs lifetime
@@ -682,6 +723,129 @@ impl ItemTransCtx<'_, '_> {
             consts: vec![],
             types,
             methods: vec![(call_fn_name, call_fn_binder)],
+        })
+    }
+
+    /// Given an item that is a non-capturing closure, generate the equivalent function,
+    /// by removing the state from the parameters and untupling the arguments.
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_stateless_closure_as_fn(
+        mut self,
+        def_id: FunDeclId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        let hax::FullDefKind::Closure { args: closure, .. } = &def.kind else {
+            unreachable!()
+        };
+
+        trace!("About to translate closure as fn:\n{:?}", def.def_id);
+
+        assert!(
+            closure.upvar_tys.is_empty(),
+            "Only stateless closures can be translated as functions"
+        );
+
+        self.translate_def_generics(span, def)?;
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
+        self.innermost_binder_mut()
+            .push_params_from_binder(closure.fn_sig.rebind(()))?;
+
+        // Translate the function signature
+        let mut signature =
+            self.translate_closure_method_sig(def, span, closure, ClosureKind::FnOnce)?;
+        let state_ty = signature.inputs.remove(0);
+        let args_tuple_ty = signature.inputs.remove(0);
+        signature.inputs = args_tuple_ty.as_tuple().unwrap().iter().cloned().collect();
+
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Err(Opaque)
+        } else {
+            // Target translation:
+            //
+            // fn call_fn(arg0: Args[0], ..., argN: Args[N]) -> Output {
+            //   let closure: Closure = {};
+            //   let args = (arg0, ..., argN);
+            //   closure.call(args)
+            // }
+            let mk_stt = |content| Statement::new(span, content);
+            let mk_block = |statements, terminator| -> BlockData {
+                BlockData {
+                    statements,
+                    terminator: Terminator::new(span, terminator),
+                }
+            };
+            let fun_id =
+                self.register_closure_method_decl_id(span, def.def_id(), ClosureKind::FnOnce);
+            let impl_ref = self.translate_closure_impl_ref(span, closure, ClosureKind::FnOnce)?;
+            let fn_op = FnOperand::Regular(FnPtr {
+                func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
+                generics: impl_ref.generics.clone(),
+            });
+
+            let mut locals = Locals {
+                arg_count: signature.inputs.len(),
+                locals: Vector::new(),
+            };
+            let mut statements = vec![];
+            let mut blocks = Vector::default();
+
+            let output = locals.new_var(None, signature.output.clone());
+            let args: Vec<Place> = signature
+                .inputs
+                .iter()
+                .enumerate()
+                .map(|(i, ty)| locals.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
+                .collect();
+            let args_tupled = locals.new_var(Some("args".to_string()), args_tuple_ty.clone());
+            let state = locals.new_var(Some("state".to_string()), state_ty.clone());
+
+            statements.push(mk_stt(RawStatement::Assign(
+                args_tupled.clone(),
+                Rvalue::Aggregate(
+                    AggregateKind::Adt(args_tuple_ty.as_adt().unwrap().clone(), None, None),
+                    args.into_iter().map(Operand::Move).collect(),
+                ),
+            )));
+
+            let state_ty_adt = state_ty.as_adt().unwrap();
+            statements.push(mk_stt(RawStatement::Assign(
+                state.clone(),
+                Rvalue::Aggregate(AggregateKind::Adt(state_ty_adt.clone(), None, None), vec![]),
+            )));
+
+            let start_block = blocks.reserve_slot();
+            let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
+            let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
+            let call = RawTerminator::Call {
+                target: ret_block,
+                call: Call {
+                    func: fn_op,
+                    args: vec![Operand::Move(state), Operand::Move(args_tupled)],
+                    dest: output,
+                },
+                on_unwind: unwind_block,
+            };
+            blocks.set_slot(start_block, mk_block(statements, call));
+
+            let body: ExprBody = GExprBody {
+                span,
+                locals,
+                comments: vec![],
+                body: blocks,
+            };
+            Ok(Body::Unstructured(body))
+        };
+
+        Ok(FunDecl {
+            def_id,
+            item_meta,
+            signature,
+            kind: ItemKind::TopLevel,
+            is_global_initializer: None,
+            body,
         })
     }
 }

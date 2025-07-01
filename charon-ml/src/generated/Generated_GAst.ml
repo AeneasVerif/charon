@@ -42,15 +42,6 @@ type assertion = {
 }
 
 and call = { func : fn_operand; args : operand list; dest : place }
-
-(** Additional information for closures. *)
-and closure_info = {
-  kind : closure_kind;
-  signature : (ty list * ty) region_binder;
-      (** The signature of the function that this closure represents. *)
-}
-
-and closure_kind = Fn | FnMut | FnOnce
 and copy_non_overlapping = { src : operand; dst : operand; count : operand }
 
 (** A function operand is used in function calls. It either designates a
@@ -69,54 +60,6 @@ and fun_sig = {
   inputs : ty list;
   output : ty;
 }
-
-(** Item kind: whether this function/const is part of a trait declaration, trait
-    implementation, or neither.
-
-    Example:
-    {@rust[
-      trait Foo {
-          fn bar(x : u32) -> u32; // trait item decl without default
-
-          fn baz(x : bool) -> bool { x } // trait item decl with default
-      }
-
-      impl Foo for ... {
-          fn bar(x : u32) -> u32 { x } // trait item implementation
-      }
-
-      fn test(...) { ... } // regular
-
-      impl Type {
-          fn test(...) { ... } // regular
-      }
-    ]} *)
-and item_kind =
-  | TopLevelItem  (** This item stands on its own. *)
-  | ClosureItem of closure_info
-      (** This is a closure in a function body.
-
-          Fields:
-          - [info] *)
-  | TraitDeclItem of trait_decl_ref * trait_item_name * bool
-      (** This is an associated item in a trait declaration. It has a body if
-          and only if the trait provided a default implementation.
-
-          Fields:
-          - [trait_ref]: The trait declaration this item belongs to.
-          - [item_name]: The name of the item.
-          - [has_default]: Whether the trait declaration provides a default
-            implementation. *)
-  | TraitImplItem of trait_impl_ref * trait_decl_ref * trait_item_name * bool
-      (** This is an associated item in a trait implementation.
-
-          Fields:
-          - [impl_ref]: The trait implementation the method belongs to.
-          - [trait_ref]: The trait declaration that the impl block implements.
-          - [item_name]: The name of the item
-          - [reuses_default]: True if the trait decl had a default
-            implementation for this function/const and this item is a copy of
-            the default item. *)
 
 (** A variable *)
 and local = {

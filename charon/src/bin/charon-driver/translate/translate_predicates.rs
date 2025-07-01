@@ -304,6 +304,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     _ => None,
                 });
 
+                // TODO: here, if closure_ty is a FnDef, we need to generate the matching
+                // trait impls, with an empty state as the first argument.
                 let kind = if let Some(closure_kind) = closure_kind
                     && let Some(hax::GenericArg::Type(closure_ty)) = impl_source
                         .r#trait
