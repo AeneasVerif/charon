@@ -13,50 +13,50 @@ use std::path::PathBuf;
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
 /// `FunDecl` one (for its initializer function).
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct TransItemSource {
+    pub def_id: hax::DefId,
+    pub kind: TransItemSourceKind,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
-pub enum TransItemSource {
-    Global(hax::DefId),
-    TraitDecl(hax::DefId),
-    TraitImpl(hax::DefId),
-    Fun(hax::DefId),
-    Type(hax::DefId),
+pub enum TransItemSourceKind {
+    Global,
+    TraitDecl,
+    TraitImpl,
+    Fun,
+    Type,
     /// We don't translate these as proper items, but we translate them a bit in names.
-    InherentImpl(hax::DefId),
+    InherentImpl,
     /// An impl of the appropriate `Fn*` trait for the given closure type.
-    ClosureTraitImpl(hax::DefId, ClosureKind),
-    /// A cast of a state-less closure as a function pointer.
-    ClosureAsFnCast(hax::DefId),
+    ClosureTraitImpl(ClosureKind),
     /// The `call_*` method of the appropriate `Fn*` trait.
-    ClosureMethod(hax::DefId, ClosureKind),
+    ClosureMethod(ClosureKind),
+    /// A cast of a state-less closure as a function pointer.
+    ClosureAsFnCast,
 }
 
 impl TransItemSource {
-    pub(crate) fn as_def_id(&self) -> &hax::DefId {
-        match self {
-            TransItemSource::Global(id)
-            | TransItemSource::TraitDecl(id)
-            | TransItemSource::TraitImpl(id)
-            | TransItemSource::Fun(id)
-            | TransItemSource::Type(id)
-            | TransItemSource::InherentImpl(id)
-            | TransItemSource::ClosureTraitImpl(id, _)
-            | TransItemSource::ClosureMethod(id, _)
-            | TransItemSource::ClosureAsFnCast(id) => id,
-        }
+    pub fn new(def_id: hax::DefId, kind: TransItemSourceKind) -> Self {
+        Self { def_id, kind }
     }
-}
 
-impl TransItemSource {
+    pub fn as_def_id(&self) -> &hax::DefId {
+        &self.def_id
+    }
+
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord {
-        let (variant_index, _) = self.variant_index_arity();
+        let (variant_index, _) = self.kind.variant_index_arity();
         let def_id = self.as_def_id();
-        let closure_kind = match self {
-            Self::ClosureTraitImpl(_, k) | Self::ClosureMethod(_, k) => match k {
-                ClosureKind::Fn => 1,
-                ClosureKind::FnMut => 2,
-                ClosureKind::FnOnce => 3,
-            },
+        let closure_kind = match self.kind {
+            TransItemSourceKind::ClosureTraitImpl(k) | TransItemSourceKind::ClosureMethod(k) => {
+                match k {
+                    ClosureKind::Fn => 1,
+                    ClosureKind::FnMut => 2,
+                    ClosureKind::FnOnce => 3,
+                }
+            }
             _ => 0,
         };
         (def_id.index, variant_index, closure_kind)
@@ -108,7 +108,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     return; // Error has already been emitted
                 };
                 let opacity = self.opacity_for_name(&name);
-                let trans_src = TransItemSource::TraitImpl(def.def_id.clone());
+                let trans_src =
+                    TransItemSource::new(def.def_id.clone(), TransItemSourceKind::TraitImpl);
                 let item_meta = self.translate_item_meta(&def, &trans_src, name, opacity);
                 let _ = self.register_module(item_meta, &def);
             }
@@ -172,41 +173,41 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn register_id_no_enqueue(
         &mut self,
-        src: &Option<DepSource>,
-        id: TransItemSource,
+        dep_src: &Option<DepSource>,
+        src: TransItemSource,
     ) -> AnyTransId {
-        let item_id = match self.id_map.get(&id) {
+        let item_id = match self.id_map.get(&src) {
             Some(tid) => *tid,
             None => {
-                let trans_id = match id {
-                    TransItemSource::Type(_) => {
+                let trans_id = match src.kind {
+                    TransItemSourceKind::Type => {
                         AnyTransId::Type(self.translated.type_decls.reserve_slot())
                     }
-                    TransItemSource::TraitDecl(_) => {
+                    TransItemSourceKind::TraitDecl => {
                         AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
                     }
-                    TransItemSource::TraitImpl(_) | TransItemSource::ClosureTraitImpl(_, _) => {
+                    TransItemSourceKind::TraitImpl | TransItemSourceKind::ClosureTraitImpl(..) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
-                    TransItemSource::Global(_) => {
+                    TransItemSourceKind::Global => {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    TransItemSource::Fun(_)
-                    | TransItemSource::ClosureMethod(_, _)
-                    | TransItemSource::ClosureAsFnCast(_) => {
+                    TransItemSourceKind::Fun
+                    | TransItemSourceKind::ClosureMethod(..)
+                    | TransItemSourceKind::ClosureAsFnCast => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
-                    TransItemSource::InherentImpl(_) => {
+                    TransItemSourceKind::InherentImpl => {
                         panic!("inherent impls aren't translated to items")
                     }
                 };
                 // Add the id to the queue of declarations to translate
-                self.id_map.insert(id.clone(), trans_id);
-                self.reverse_id_map.insert(trans_id, id.clone());
+                self.id_map.insert(src.clone(), trans_id);
+                self.reverse_id_map.insert(trans_id, src.clone());
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
-                if !matches!(id, TransItemSource::TraitImpl(_)) {
-                    if let Ok(name) = self.def_id_to_name(id.as_def_id()) {
+                if !matches!(src.kind, TransItemSourceKind::TraitImpl) {
+                    if let Ok(name) = self.def_id_to_name(src.as_def_id()) {
                         self.translated.item_names.insert(trans_id, name);
                     }
                 }
@@ -215,7 +216,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         };
         self.errors
             .borrow_mut()
-            .register_dep_source(src, item_id, id.as_def_id().is_local);
+            .register_dep_source(dep_src, item_id, src.as_def_id().is_local);
         item_id
     }
 
@@ -223,8 +224,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_and_enqueue_id(
         &mut self,
         src: &Option<DepSource>,
-        id: TransItemSource,
+        def_id: &hax::DefId,
+        kind: TransItemSourceKind,
     ) -> AnyTransId {
+        let id = TransItemSource::new(def_id.clone(), kind);
         self.items_to_translate.insert(id.clone());
         self.register_id_no_enqueue(src, id)
     }
@@ -232,10 +235,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> TypeDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::Type(id.clone()))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::Type)
             .as_type()
             .unwrap()
     }
@@ -243,10 +246,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_fun_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> FunDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::Fun(id.clone()))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::Fun)
             .as_fun()
             .unwrap()
     }
@@ -254,10 +257,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_trait_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> TraitDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::TraitDecl(id.clone()))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::TraitDecl)
             .as_trait_decl()
             .unwrap()
     }
@@ -265,20 +268,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> TraitImplId {
         // Register the corresponding trait early so we can filter on its name.
-        if let Ok(def) = self.hax_def(id) {
+        if let Ok(def) = self.hax_def(def_id) {
             let trait_id = match def.kind() {
                 hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref.def_id,
-                hax::FullDefKind::TraitAlias { .. } => id,
+                hax::FullDefKind::TraitAlias { .. } => def_id,
                 _ => unreachable!(),
             };
             let _ = self.register_trait_decl_id(src, trait_id);
         }
 
         *self
-            .register_and_enqueue_id(src, TransItemSource::TraitImpl(id.clone()))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::TraitImpl)
             .as_trait_impl()
             .unwrap()
     }
@@ -286,11 +289,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_closure_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
         kind: ClosureKind,
     ) -> TraitImplId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::ClosureTraitImpl(id.clone(), kind))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureTraitImpl(kind))
             .as_trait_impl()
             .unwrap()
     }
@@ -298,11 +301,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_closure_method_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
         kind: ClosureKind,
     ) -> FunDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::ClosureMethod(id.clone(), kind))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureMethod(kind))
             .as_fun()
             .unwrap()
     }
@@ -310,10 +313,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_closure_as_fun_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> FunDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::ClosureAsFnCast(id.clone()))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureAsFnCast)
             .as_fun()
             .unwrap()
     }
@@ -321,10 +324,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> GlobalDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::Global(id.clone()))
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::Global)
             .as_global()
             .unwrap()
     }
@@ -382,12 +385,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_fun_decl_id_no_enqueue(
         &mut self,
         span: Span,
-        id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> FunDeclId {
-        self.register_id_no_enqueue(span, TransItemSource::Fun(id.clone()))
-            .as_fun()
-            .copied()
-            .unwrap()
+        self.register_id_no_enqueue(
+            span,
+            TransItemSource::new(def_id.clone(), TransItemSourceKind::Fun),
+        )
+        .as_fun()
+        .copied()
+        .unwrap()
     }
 
     /// Translate a function def id

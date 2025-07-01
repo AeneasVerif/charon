@@ -1,5 +1,5 @@
 //! Translate information about items: name, attributes, etc.
-use super::translate_crate::TransItemSource;
+use super::translate_crate::{TransItemSource, TransItemSourceKind};
 use super::translate_ctx::{ItemTransCtx, TranslateCtx};
 use charon_lib::ast::*;
 use hax_frontend_exporter::{self as hax, DefPathItem};
@@ -187,7 +187,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = ItemTransCtx::new(
-                            TransItemSource::InherentImpl(def_id.clone()),
+                            TransItemSource::new(def_id.clone(), TransItemSourceKind::InherentImpl),
                             None,
                             self,
                         );
@@ -307,24 +307,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
         let def_id = src.as_def_id();
         let mut name = self.def_id_to_name(def_id)?;
-        match src {
-            TransItemSource::ClosureTraitImpl(id, kind)
-            | TransItemSource::ClosureMethod(id, kind) => {
+        match src.kind {
+            TransItemSourceKind::ClosureTraitImpl(kind)
+            | TransItemSourceKind::ClosureMethod(kind) => {
                 let _ = name.name.pop(); // Pop the `{closure}` path item
-                let impl_id = self.register_closure_trait_impl_id(&None, id, *kind);
+                let impl_id = self.register_closure_trait_impl_id(&None, def_id, kind);
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
 
-                if matches!(src, TransItemSource::ClosureMethod(..)) {
+                if matches!(src.kind, TransItemSourceKind::ClosureMethod(..)) {
                     let fn_name = kind.method_name().to_string();
                     name.name
                         .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
                 }
             }
-            TransItemSource::TraitImpl(id) if matches!(id.kind, hax::DefKind::TraitAlias) => {
-                let impl_id = self.register_trait_impl_id(&None, id);
+            TransItemSourceKind::TraitImpl if matches!(def_id.kind, hax::DefKind::TraitAlias) => {
+                let impl_id = self.register_trait_impl_id(&None, def_id);
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
-            TransItemSource::ClosureAsFnCast(_) => {
+            TransItemSourceKind::ClosureAsFnCast => {
                 name.name
                     .push(PathElem::Ident("as_fn".into(), Disambiguator::ZERO));
             }
