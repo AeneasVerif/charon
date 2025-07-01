@@ -457,7 +457,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         hax::PointerCoercion::ClosureFnPointer(_),
                         ..,
                     ) => {
-                        // we model casts of closures to function pointers by generating a new
+                        // We model casts of closures to function pointers by generating a new
                         // function item without the closure's state, that calls the actual closure.
                         let op_ty = match hax_operand {
                             hax::Operand::Move(p) | hax::Operand::Copy(p) => p.ty.kind(),
@@ -466,24 +466,11 @@ impl BodyTransCtx<'_, '_, '_> {
                         let hax::TyKind::Closure(closure) = op_ty else {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
-                        let id = self.register_closure_as_fun_decl_id(span, &closure.item.def_id);
-
-                        let TypeDeclRef { generics, .. } = src_ty.as_adt().unwrap();
-                        let mut generics = generics.clone();
-                        generics
-                            .regions
-                            .extend(closure.fn_sig.bound_vars.iter().map(|_| Region::Erased));
-                        let binder = RegionBinder::empty(FunDeclRef {
-                            id,
-                            generics: generics.clone(),
-                        });
-
-                        let src_ty = TyKind::FnDef(binder).into_ty();
+                        let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
+                        let fn_ptr: FnPtr = fn_ref.clone().erase().into();
+                        let src_ty = TyKind::FnDef(fn_ref).into_ty();
                         let operand = Operand::Const(Box::new(ConstantExpr {
-                            value: RawConstantExpr::FnPtr(FnPtr {
-                                func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(id))),
-                                generics: generics,
-                            }),
+                            value: RawConstantExpr::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
                         }));
                         Ok(Rvalue::UnaryOp(

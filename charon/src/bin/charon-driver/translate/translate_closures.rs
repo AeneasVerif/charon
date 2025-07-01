@@ -160,6 +160,28 @@ impl ItemTransCtx<'_, '_> {
         Ok(tref)
     }
 
+    /// For stateless closures, translate a function reference to the top-level function that
+    /// executes the closure code without taking the state as parameter.
+    pub fn translate_stateless_closure_as_fn_ref(
+        &mut self,
+        span: Span,
+        closure: &hax::ClosureArgs,
+    ) -> Result<RegionBinder<FunDeclRef>, Error> {
+        let id = self.register_closure_as_fun_decl_id(span, &closure.item.def_id);
+        let TypeDeclRef { generics, .. } = self.translate_closure_type_ref(span, closure)?;
+        self.translate_region_binder(span, &closure.fn_sig, |ctx, _| {
+            let mut generics = generics.move_under_binder();
+            generics.regions.extend(
+                ctx.innermost_binder()
+                    .params
+                    .identity_args()
+                    .regions
+                    .into_iter(),
+            );
+            Ok(FunDeclRef { id, generics })
+        })
+    }
+
     /// Translate a reference to the chosen closure impl. The resulting value needs lifetime
     /// arguments for late-bound lifetimes. If you don't know what to do about the bound lifetimes,
     /// use `translate_closure_impl_ref` instead.
@@ -707,7 +729,7 @@ impl ItemTransCtx<'_, '_> {
     /// Given an item that is a non-capturing closure, generate the equivalent function,
     /// by removing the state from the parameters and untupling the arguments.
     #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_closure_as_fn(
+    pub fn translate_stateless_closure_as_fn(
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,

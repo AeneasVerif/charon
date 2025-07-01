@@ -304,6 +304,17 @@ pub enum FunId {
     Builtin(BuiltinFunId),
 }
 
+impl From<FunDeclId> for FunId {
+    fn from(id: FunDeclId) -> Self {
+        Self::Regular(id)
+    }
+}
+impl From<BuiltinFunId> for FunId {
+    fn from(id: BuiltinFunId) -> Self {
+        Self::Builtin(id)
+    }
+}
+
 /// An built-in function identifier, identifying a function coming from a
 /// standard library.
 #[derive(
@@ -398,10 +409,30 @@ pub enum FunIdOrTraitMethodRef {
     Trait(TraitRef, TraitItemName, FunDeclId),
 }
 
+impl From<FunId> for FunIdOrTraitMethodRef {
+    fn from(id: FunId) -> Self {
+        Self::Fun(id)
+    }
+}
+impl From<FunDeclId> for FunIdOrTraitMethodRef {
+    fn from(id: FunDeclId) -> Self {
+        Self::Fun(id.into())
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FnPtr {
     pub func: Box<FunIdOrTraitMethodRef>,
     pub generics: BoxedArgs,
+}
+
+impl From<FunDeclRef> for FnPtr {
+    fn from(fn_ref: FunDeclRef) -> Self {
+        FnPtr {
+            func: Box::new(fn_ref.id.into()),
+            generics: fn_ref.generics,
+        }
+    }
 }
 
 /// A constant expression.

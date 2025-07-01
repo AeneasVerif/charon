@@ -529,7 +529,7 @@ pub fn test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
     storage_live(f@2)
     storage_live(@3)
     @3 := test_crate::test_closure_ref_u32::closure {  }
-    f@2 := cast<test_crate::test_closure_ref_u32::closure::as_fn<'_>, fn<'_0>(&'_0_0 (u32)) -> &'_0_0 (u32)>(const (test_crate::test_closure_ref_u32::closure::as_fn<'_>))
+    f@2 := cast<for<'_0> test_crate::test_closure_ref_u32::closure::as_fn<'_0_0>, fn<'_0>(&'_0_0 (u32)) -> &'_0_0 (u32)>(const (test_crate::test_closure_ref_u32::closure::as_fn<'_>))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
@@ -656,7 +656,7 @@ where
     storage_live(f@2)
     storage_live(@3)
     @3 := test_crate::test_closure_ref_param::closure {  }
-    f@2 := cast<test_crate::test_closure_ref_param::closure::as_fn<'_, T>[@TraitClause0], fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T)>(const (test_crate::test_closure_ref_param::closure::as_fn<'_, T>[@TraitClause0]))
+    f@2 := cast<for<'_0> test_crate::test_closure_ref_param::closure::as_fn<'_0_0, T>[@TraitClause0], fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T)>(const (test_crate::test_closure_ref_param::closure::as_fn<'_, T>[@TraitClause0]))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
@@ -801,7 +801,7 @@ where
     storage_live(f@2)
     storage_live(@3)
     @3 := test_crate::test_closure_ref_early_bound::closure {  }
-    f@2 := cast<test_crate::test_closure_ref_early_bound::closure::as_fn<'_, '_, T>[@TraitClause0, @TraitClause1], fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T)>(const (test_crate::test_closure_ref_early_bound::closure::as_fn<'_, '_, T>[@TraitClause0, @TraitClause1]))
+    f@2 := cast<for<'_0> test_crate::test_closure_ref_early_bound::closure::as_fn<'_, '_0_0, T>[@TraitClause0, @TraitClause1], fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T)>(const (test_crate::test_closure_ref_early_bound::closure::as_fn<'_, '_, T>[@TraitClause0, @TraitClause1]))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
@@ -1366,7 +1366,7 @@ pub fn test_regions_casted<'a>(@1: &'a (u32)) -> u32
     storage_live(f@2)
     storage_live(@3)
     @3 := test_crate::test_regions_casted::closure {  }
-    f@2 := cast<test_crate::test_regions_casted::closure::as_fn<'_>, fn<'_0>(&'_0_0 (&'_ (u32))) -> u32>(const (test_crate::test_regions_casted::closure::as_fn<'_>))
+    f@2 := cast<for<'_0> test_crate::test_regions_casted::closure::as_fn<'_0_0>, fn<'_0>(&'_0_0 (&'_ (u32))) -> u32>(const (test_crate::test_regions_casted::closure::as_fn<'_>))
     storage_dead(@3)
     storage_live(@4)
     @4 := copy (f@2)
