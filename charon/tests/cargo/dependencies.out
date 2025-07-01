@@ -6,21 +6,32 @@ pub opaque type Arguments<'a>
 where
     'a : 'a,
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
@@ -80,9 +91,10 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
 impl FnOnce<(u32)> for closure {
-    parent_clause0 = Sized<(u32)>
-    parent_clause1 = Tuple<(u32)>
-    parent_clause2 = Sized<u32>
+    parent_clause0 = MetaSized<(u32)>
+    parent_clause1 = Sized<(u32)>
+    parent_clause2 = Tuple<(u32)>
+    parent_clause3 = Sized<u32>
     type Output = u32
     fn call_once = {impl FnOnce<(u32)> for closure}::call_once
 }

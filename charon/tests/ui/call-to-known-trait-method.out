@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -68,6 +75,13 @@ impl Default for bool {
     fn default = {impl Default for bool}::default
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -110,8 +124,9 @@ where
 // Full name: test_crate::Trait
 trait Trait<Self, B, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: Sized<B>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<B>
+    parent_clause2 : [@TraitClause2]: Sized<Self_Item>
     fn method<C, [@TraitClause0]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, @TraitClause0_0]
 }
 
@@ -144,8 +159,9 @@ where
     [@TraitClause2]: Clone<A>,
     [@TraitClause3]: PartialEq<B, bool>,
 {
-    parent_clause0 = @TraitClause1
-    parent_clause1 = Sized<(A, B)>
+    parent_clause0 = MetaSized<Struct<A>[@TraitClause0]>
+    parent_clause1 = @TraitClause1
+    parent_clause2 = Sized<(A, B)>
     fn method<C, [@TraitClause0]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
 }
 

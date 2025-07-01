@@ -1,15 +1,58 @@
 # Final LLBC before serialization:
 
+// Full name: core::fmt::Arguments
+#[lang_item("format_arguments")]
+pub opaque type Arguments<'a>
+where
+    'a : 'a,
+
+// Full name: core::fmt::rt::Count
+#[lang_item("format_count")]
+pub enum Count {
+  Is(u16),
+  Param(usize),
+  Implied,
+}
+
+// Full name: core::fmt::rt::Placeholder
+#[lang_item("format_placeholder")]
+pub struct Placeholder {
+  position: usize,
+  flags: u32,
+  precision: Count,
+  width: Count,
+}
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub opaque type Argument<'a>
+
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
-// Full name: core::panicking::panic_nounwind
-#[lang_item("panic_nounwind")]
-pub fn panic_nounwind(@1: &'static (Str)) -> !
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::panicking::panic_nounwind_fmt
+pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::precondition_check
 fn precondition_check(@1: *const (), @2: isize, @3: usize)
@@ -20,85 +63,95 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     let size@3: usize; // arg #3
     let @4: bool; // anonymous local
     let @5: !; // anonymous local
-    let rhs@6: isize; // local
-    let self@7: usize; // local
-    let @8: i64; // anonymous local
-    let b@9: bool; // local
-    let @10: (i64, bool); // anonymous local
+    let @6: Arguments<'_>; // anonymous local
+    let pieces@7: &'_ (Array<&'_ (Str), 1 : usize>); // local
+    let @8: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let rhs@9: isize; // local
+    let self@10: usize; // local
     let @11: i64; // anonymous local
-    let @12: i64; // anonymous local
-    let byte_offset@13: isize; // local
-    let @14: (); // anonymous local
-    let @15: usize; // anonymous local
-    let overflow@16: bool; // local
-    let @17: bool; // anonymous local
-    let @18: bool; // anonymous local
-    let @19: (u64, bool); // anonymous local
-    let @20: u64; // anonymous local
-    let @21: u64; // anonymous local
+    let b@12: bool; // local
+    let @13: (i64, bool); // anonymous local
+    let @14: i64; // anonymous local
+    let @15: i64; // anonymous local
+    let byte_offset@16: isize; // local
+    let @17: (); // anonymous local
+    let @18: usize; // anonymous local
+    let overflow@19: bool; // local
+    let @20: bool; // anonymous local
+    let @21: bool; // anonymous local
+    let @22: (u64, bool); // anonymous local
+    let @23: u64; // anonymous local
+    let @24: u64; // anonymous local
+    let @25: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @26: &'_ (Slice<Argument<'_>>); // anonymous local
+    let @27: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @28: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
-    storage_live(self@7)
-    storage_live(byte_offset@13)
-    storage_live(@14)
-    storage_live(@15)
+    storage_live(pieces@7)
+    storage_live(self@10)
+    storage_live(byte_offset@16)
     storage_live(@17)
     storage_live(@18)
-    storage_live(@19)
     storage_live(@20)
     storage_live(@21)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(@24)
+    storage_live(@27)
+    storage_live(@28)
     storage_live(@4)
-    storage_live(overflow@16)
-    storage_live(rhs@6)
-    rhs@6 := cast<usize, isize>(copy (size@3))
-    storage_live(b@9)
-    storage_live(@8)
-    storage_live(@10)
+    storage_live(overflow@19)
+    storage_live(rhs@9)
+    rhs@9 := cast<usize, isize>(copy (size@3))
+    storage_live(b@12)
     storage_live(@11)
-    @11 := cast<isize, i64>(copy (count@2))
-    storage_live(@12)
-    @12 := cast<isize, i64>(copy (rhs@6))
-    @10 := move (@11) checked.* move (@12)
-    storage_dead(@12)
+    storage_live(@13)
+    storage_live(@14)
+    @14 := cast<isize, i64>(copy (count@2))
+    storage_live(@15)
+    @15 := cast<isize, i64>(copy (rhs@9))
+    @13 := move (@14) checked.* move (@15)
+    storage_dead(@15)
+    storage_dead(@14)
+    @11 := copy ((@13).0)
+    b@12 := copy ((@13).1)
+    storage_dead(@13)
+    byte_offset@16 := cast<i64, isize>(copy (@11))
     storage_dead(@11)
-    @8 := copy ((@10).0)
-    b@9 := copy ((@10).1)
-    storage_dead(@10)
-    byte_offset@13 := cast<i64, isize>(copy (@8))
-    storage_dead(@8)
-    if copy (b@9) {
-        @14 := cold_path()
-        storage_dead(b@9)
-        storage_dead(rhs@6)
-        storage_dead(overflow@16)
+    if copy (b@12) {
+        @17 := cold_path()
+        storage_dead(b@12)
+        storage_dead(rhs@9)
+        storage_dead(overflow@19)
     }
     else {
-        storage_dead(b@9)
-        storage_dead(rhs@6)
-        storage_live(self@7)
-        self@7 := transmute<*const (), usize>(copy (this@1))
-        storage_live(@18)
-        storage_live(@15)
-        @15 := cast<isize, usize>(copy (byte_offset@13))
-        storage_live(@19)
-        storage_live(@20)
-        @20 := cast<usize, u64>(copy (self@7))
+        storage_dead(b@12)
+        storage_dead(rhs@9)
+        storage_live(self@10)
+        self@10 := transmute<*const (), usize>(copy (this@1))
         storage_live(@21)
-        @21 := cast<usize, u64>(copy (@15))
-        @19 := move (@20) checked.+ move (@21)
-        storage_dead(@21)
-        storage_dead(@20)
-        @18 := copy ((@19).1)
-        storage_dead(@19)
-        storage_dead(@15)
-        storage_live(@17)
-        @17 := copy (byte_offset@13) < const (0 : isize)
-        overflow@16 := copy (@18) ^ move (@17)
-        storage_dead(@17)
+        storage_live(@18)
+        @18 := cast<isize, usize>(copy (byte_offset@16))
+        storage_live(@22)
+        storage_live(@23)
+        @23 := cast<usize, u64>(copy (self@10))
+        storage_live(@24)
+        @24 := cast<usize, u64>(copy (@18))
+        @22 := move (@23) checked.+ move (@24)
+        storage_dead(@24)
+        storage_dead(@23)
+        @21 := copy ((@22).1)
+        storage_dead(@22)
         storage_dead(@18)
-        storage_dead(self@7)
-        @4 := ~(copy (overflow@16))
-        storage_dead(overflow@16)
+        storage_live(@20)
+        @20 := copy (byte_offset@16) < const (0 : isize)
+        overflow@19 := copy (@21) ^ move (@20)
+        storage_dead(@20)
+        storage_dead(@21)
+        storage_dead(self@10)
+        @4 := ~(copy (overflow@19))
+        storage_dead(overflow@19)
         if move (@4) {
             storage_dead(@4)
             @0 := ()
@@ -107,7 +160,20 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
         else {
         }
     }
-    @5 := panic_nounwind(const ("unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    storage_live(@6)
+    storage_live(@8)
+    @8 := [const ("unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
+    pieces@7 := &@8
+    storage_live(@25)
+    @25 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@7))
+    storage_live(@26)
+    @27 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
+    @26 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@27))
+    @28 := Option::None {  }
+    @6 := Arguments { 0: move (@25), 1: move (@28), 2: move (@26) }
+    storage_dead(@26)
+    storage_dead(@25)
+    @5 := panic_nounwind_fmt<'_>(move (@6), const (false))
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset

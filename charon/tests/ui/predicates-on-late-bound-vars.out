@@ -1,8 +1,14 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::cell::RefCell
 #[lang_item("RefCell")]
 pub opaque type RefCell<T>
+where
+    [@TraitClause0]: MetaSized<T>,
 
 // Full name: core::cell::BorrowError
 pub struct BorrowError {}
@@ -10,9 +16,12 @@ pub struct BorrowError {}
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
-// Full name: core::cell::{RefCell<T>}::new
-pub fn new<T>(@1: T) -> RefCell<T>
+// Full name: core::cell::{RefCell<T>[@TraitClause0::parent_clause0]}::new
+pub fn new<T>(@1: T) -> RefCell<T>[@TraitClause0::parent_clause0]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -31,10 +40,13 @@ where
 #[lang_item("RefCellRef")]
 pub opaque type Ref<'b, T>
 where
+    [@TraitClause0]: MetaSized<T>,
     T : 'b,
 
-// Full name: core::cell::{RefCell<T>}::try_borrow
-pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
+// Full name: core::cell::{RefCell<T>[@TraitClause0]}::try_borrow
+pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>[@TraitClause0])) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[Sized<Ref<'_0, T>[@TraitClause0]>, Sized<BorrowError>]
+where
+    [@TraitClause0]: MetaSized<T>,
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -49,6 +61,13 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -94,9 +113,9 @@ where
 fn foo()
 {
     let @0: (); // return
-    let ref_b@1: RefCell<bool>; // local
-    let @2: Result<Ref<'_, bool>, BorrowError>[Sized<Ref<'_, bool>>, Sized<BorrowError>]; // anonymous local
-    let @3: &'_ (RefCell<bool>); // anonymous local
+    let ref_b@1: RefCell<bool>[MetaSized<bool>]; // local
+    let @2: Result<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]; // anonymous local
+    let @3: &'_ (RefCell<bool>[MetaSized<bool>]); // anonymous local
 
     storage_live(ref_b@1)
     ref_b@1 := new<bool>[Sized<bool>](const (false))
@@ -104,7 +123,7 @@ fn foo()
     storage_live(@3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     @3 := &ref_b@1
-    @2 := try_borrow<'_, bool>(move (@3))
+    @2 := try_borrow<'_, bool>[MetaSized<bool>](move (@3))
     storage_dead(@3)
     drop @2
     storage_dead(@2)
@@ -117,12 +136,13 @@ fn foo()
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::S>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::S>
     type S
 }
 
 // Full name: test_crate::f
-fn f<T, U>() -> Option<@TraitClause3::S>[@TraitClause3::parent_clause0]
+fn f<T, U>() -> Option<@TraitClause3::S>[@TraitClause3::parent_clause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -130,7 +150,7 @@ where
     [@TraitClause3]: Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
-    let @0: Option<@TraitClause3::S>[@TraitClause3::parent_clause0]; // return
+    let @0: Option<@TraitClause3::S>[@TraitClause3::parent_clause1]; // return
 
     panic(core::panicking::panic)
 }

@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -120,6 +127,7 @@ where
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn finish<'_0> = finish<'_0_0, Self>[Self]
     fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
 }
@@ -158,7 +166,8 @@ pub trait Send<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
 // Full name: core::marker::Sync
@@ -172,6 +181,13 @@ pub trait Freeze<Self>
 // Full name: core::marker::Unpin
 #[lang_item("unpin")]
 pub trait Unpin<Self>
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::ptr::const_ptr::{*const T}::read
 pub unsafe fn read<T>(@1: *const T) -> T
@@ -242,9 +258,14 @@ fn deref_raw_ptr()
 
 // Full name: test_crate::Trait
 trait Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {}
+impl Trait for () {
+    parent_clause0 = MetaSized<()>
+}
 
 fn test_crate::COUNTER() -> usize
 {

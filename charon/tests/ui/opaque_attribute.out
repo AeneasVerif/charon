@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -17,6 +24,7 @@ where
 // Full name: test_crate::BoolTrait
 pub trait BoolTrait<Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
 }
 
@@ -36,6 +44,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 
 // Full name: test_crate::{impl BoolTrait for bool}
 impl BoolTrait for bool {
+    parent_clause0 = MetaSized<bool>
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
 }
 
@@ -76,6 +85,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: BoolTrait<T>,
 {
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 

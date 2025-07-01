@@ -1,12 +1,21 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::cell::Cell
 #[lang_item("Cell")]
 pub opaque type Cell<T>
+where
+    [@TraitClause0]: MetaSized<T>,
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -20,17 +29,20 @@ pub trait Clone<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
-// Full name: core::cell::{Cell<T>}::get
-pub fn get<'_0, T>(@1: &'_0 (Cell<T>)) -> T
+// Full name: core::cell::{Cell<T>[@TraitClause0::parent_clause0]}::get
+pub fn get<'_0, T>(@1: &'_0 (Cell<T>[@TraitClause0::parent_clause0])) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 
-// Full name: core::cell::{Cell<T>}::get_mut
-pub fn get_mut<'_0, T>(@1: &'_0 mut (Cell<T>)) -> &'_0 mut (T)
+// Full name: core::cell::{Cell<T>[@TraitClause0]}::get_mut
+pub fn get_mut<'_0, T>(@1: &'_0 mut (Cell<T>[@TraitClause0])) -> &'_0 mut (T)
+where
+    [@TraitClause0]: MetaSized<T>,
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
@@ -48,7 +60,15 @@ impl Clone for u32 {
 
 // Full name: core::marker::{impl Copy for u32}
 impl Copy for u32 {
-    parent_clause0 = {impl Clone for u32}
+    parent_clause0 = MetaSized<u32>
+    parent_clause1 = {impl Clone for u32}
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
 #[lang_item("mem_swap")]
@@ -70,11 +90,15 @@ impl Clone for NonZeroU32Inner {
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}
 impl Copy for NonZeroU32Inner {
-    parent_clause0 = {impl Clone for NonZeroU32Inner}
+    parent_clause0 = MetaSized<NonZeroU32Inner>
+    parent_clause1 = {impl Clone for NonZeroU32Inner}
 }
 
 // Full name: core::num::nonzero::private::Sealed
 pub trait Sealed<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::num::nonzero::ZeroablePrimitive
 pub trait ZeroablePrimitive<Self>
@@ -88,7 +112,9 @@ pub trait ZeroablePrimitive<Self>
 }
 
 // Full name: core::num::nonzero::{impl Sealed for u32}
-impl Sealed for u32 {}
+impl Sealed for u32 {
+    parent_clause0 = MetaSized<u32>
+}
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
 impl ZeroablePrimitive for u32 {
@@ -213,11 +239,11 @@ pub fn test_vec_push()
 }
 
 // Full name: test_crate::use_get
-pub fn use_get<'_0>(@1: &'_0 (Cell<u32>)) -> u32
+pub fn use_get<'_0>(@1: &'_0 (Cell<u32>[MetaSized<u32>])) -> u32
 {
     let @0: u32; // return
-    let rc@1: &'_ (Cell<u32>); // arg #1
-    let @2: &'_ (Cell<u32>); // anonymous local
+    let rc@1: &'_ (Cell<u32>[MetaSized<u32>]); // arg #1
+    let @2: &'_ (Cell<u32>[MetaSized<u32>]); // anonymous local
 
     storage_live(@2)
     @2 := &*(rc@1)
@@ -227,19 +253,19 @@ pub fn use_get<'_0>(@1: &'_0 (Cell<u32>)) -> u32
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>))
+pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>[MetaSized<u32>]))
 {
     let @0: (); // return
-    let rc@1: &'_ mut (Cell<u32>); // arg #1
+    let rc@1: &'_ mut (Cell<u32>[MetaSized<u32>]); // arg #1
     let @2: &'_ mut (u32); // anonymous local
-    let @3: &'_ mut (Cell<u32>); // anonymous local
+    let @3: &'_ mut (Cell<u32>[MetaSized<u32>]); // anonymous local
     let @4: u32; // anonymous local
 
     storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut *(rc@1)
-    @2 := get_mut<'_, u32>(move (@3))
+    @2 := get_mut<'_, u32>[MetaSized<u32>](move (@3))
     storage_dead(@3)
     @4 := copy (*(@2)) + const (1 : u32)
     *(@2) := move (@4)

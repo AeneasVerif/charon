@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -17,6 +24,13 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -30,8 +44,9 @@ where
 // Full name: test_crate::Trait
 trait Trait<Self, T, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self_Item>
 }
 
 // Full name: test_crate::Struct
@@ -58,28 +73,32 @@ impl<T> Trait<T, u32> for Struct
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = @TraitClause0
-    parent_clause1 = Sized<u32>
+    parent_clause0 = MetaSized<Struct>
+    parent_clause1 = @TraitClause0
+    parent_clause2 = Sized<u32>
 }
 
 // Full name: test_crate::Alias
 trait Alias<Self, U>
 {
-    parent_clause0 : [@TraitClause0]: Trait<Self, Option<U>[Self::parent_clause2], u32>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
-    parent_clause2 : [@TraitClause2]: Sized<U>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Trait<Self, Option<U>[Self::parent_clause3], u32>
+    parent_clause2 : [@TraitClause2]: Clone<Self>
+    parent_clause3 : [@TraitClause3]: Sized<U>
 }
 
 // Full name: test_crate::Alias::{impl Alias<U> for Self}
 impl<Self, U> Alias<U> for Self
 where
-    [@TraitClause0]: Trait<Self, Option<U>[@TraitClause2], u32>,
-    [@TraitClause1]: Clone<Self>,
-    [@TraitClause2]: Sized<U>,
+    [@TraitClause0]: MetaSized<Self>,
+    [@TraitClause1]: Trait<Self, Option<U>[@TraitClause3], u32>,
+    [@TraitClause2]: Clone<Self>,
+    [@TraitClause3]: Sized<U>,
 {
     parent_clause0 = @TraitClause0
     parent_clause1 = @TraitClause1
     parent_clause2 = @TraitClause2
+    parent_clause3 = @TraitClause3
 }
 
 // Full name: test_crate::takes_alias
@@ -96,7 +115,7 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := @TraitClause1::parent_clause1::clone<'_>(move (@3))
+    @2 := @TraitClause1::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
     drop @2
     storage_dead(@2)
@@ -116,7 +135,7 @@ fn use_alias()
     storage_live(@1)
     storage_live(@2)
     @2 := Struct {  }
-    @1 := takes_alias<Struct>[Sized<Struct>, {impl Alias<U> for Self}<Struct, ()>[{impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}, Sized<()>]](move (@2))
+    @1 := takes_alias<Struct>[Sized<Struct>, {impl Alias<U> for Self}<Struct, ()>[MetaSized<Struct>, {impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}, Sized<()>]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

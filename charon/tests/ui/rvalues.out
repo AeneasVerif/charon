@@ -1,12 +1,22 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::mem::size_of
 #[lang_item("mem_size_of")]
@@ -15,6 +25,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::mem::align_of
+#[lang_item("mem_align_of")]
 pub fn align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
@@ -31,9 +42,10 @@ pub const core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
@@ -42,9 +54,10 @@ pub trait FnOnce<Self, Args>
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
 }
 
@@ -52,17 +65,18 @@ pub trait FnMut<Self, Args>
 #[lang_item("r#fn")]
 pub trait Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause0::parent_clause0::Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 
@@ -356,26 +370,29 @@ fn fn_casts()
 
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8)> for closure}
 impl FnOnce<(u8)> for closure {
-    parent_clause0 = Sized<(u8)>
-    parent_clause1 = Tuple<(u8)>
-    parent_clause2 = Sized<()>
+    parent_clause0 = MetaSized<(u8)>
+    parent_clause1 = Sized<(u8)>
+    parent_clause2 = Tuple<(u8)>
+    parent_clause3 = Sized<()>
     type Output = ()
     fn call_once = {impl FnOnce<(u8)> for closure}::call_once
 }
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8)> for closure}
 impl FnMut<(u8)> for closure {
-    parent_clause0 = {impl FnOnce<(u8)> for closure}
-    parent_clause1 = Sized<(u8)>
-    parent_clause2 = Tuple<(u8)>
+    parent_clause0 = MetaSized<(u8)>
+    parent_clause1 = {impl FnOnce<(u8)> for closure}
+    parent_clause2 = Sized<(u8)>
+    parent_clause3 = Tuple<(u8)>
     fn call_mut<'_0> = {impl FnMut<(u8)> for closure}::call_mut<'_0_0>
 }
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8)> for closure}
 impl Fn<(u8)> for closure {
-    parent_clause0 = {impl FnMut<(u8)> for closure}
-    parent_clause1 = Sized<(u8)>
-    parent_clause2 = Tuple<(u8)>
+    parent_clause0 = MetaSized<(u8)>
+    parent_clause1 = {impl FnMut<(u8)> for closure}
+    parent_clause2 = Sized<(u8)>
+    parent_clause3 = Tuple<(u8)>
     fn call<'_0> = {impl Fn<(u8)> for closure}::call<'_0_0>
 }
 
@@ -383,12 +400,12 @@ impl Fn<(u8)> for closure {
 fn boxes()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32>[Sized<Global>]; // anonymous local
-    let @2: alloc::boxed::Box<i32>[Sized<Global>]; // anonymous local
+    let @1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
+    let @2: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
 
     storage_live(@1)
     storage_live(@2)
-    @2 := @BoxNew<i32>[Sized<Global>](const (42 : i32))
+    @2 := @BoxNew<i32>[MetaSized<i32>, Sized<Global>](const (42 : i32))
     @1 := move (@2)
     drop @2
     storage_dead(@2)

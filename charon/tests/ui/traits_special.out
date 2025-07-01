@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -18,13 +25,14 @@ where
 // Full name: test_crate::From
 pub trait From<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Error>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn from<[@TraitClause0]: Sized<Self>> = test_crate::From::from<Self, T>[Self, @TraitClause0_0]
 }
 
-pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause1]
+pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause2]
 where
     [@TraitClause0]: From<Self, T>,
     [@TraitClause1]: Sized<Self>,
@@ -45,8 +53,9 @@ pub fn {impl From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<b
 
 // Full name: test_crate::{impl From<&'_0 (bool)> for bool}
 impl<'_0> From<&'_0 (bool)> for bool {
-    parent_clause0 = Sized<&'_ (bool)>
-    parent_clause1 = Sized<()>
+    parent_clause0 = MetaSized<bool>
+    parent_clause1 = Sized<&'_ (bool)>
+    parent_clause2 = Sized<()>
     type Error = ()
     fn from = {impl From<&'_0 (bool)> for bool}::from<'_0>
 }

@@ -179,6 +179,7 @@ fn predicate_origins() -> anyhow::Result<()> {
         (
             "test_crate::Trait",
             vec![
+                (WhereClauseOnTrait, "MetaSized"),
                 (WhereClauseOnTrait, "Clone"),
                 (WhereClauseOnTrait, "Sized"),
                 (WhereClauseOnTrait, "Copy"),
@@ -306,11 +307,7 @@ fn attributes() -> anyhow::Result<()> {
         unknown_attrs(&crate_data.global_decls[1].item_meta),
         vec!["clippy::foo"]
     );
-    // We don't parse that attribute ourselves, we let rustc do it.
-    assert_eq!(
-        unknown_attrs(&crate_data.fun_decls[0].item_meta),
-        vec!["inline(never)"]
-    );
+    assert!(unknown_attrs(&crate_data.fun_decls[0].item_meta).is_empty());
     assert_eq!(
         crate_data.fun_decls[0].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
@@ -588,7 +585,7 @@ fn declaration_groups() -> anyhow::Result<()> {
     // There are two function items: one for `foo`, one for the initializer of `Trait::FOO`.
     assert_eq!(crate_data.fun_decls.iter().count(), 2);
     let decl_groups = crate_data.ordered_decls.unwrap();
-    assert_eq!(decl_groups.len(), 5);
+    assert_eq!(decl_groups.len(), 6);
 
     Ok(())
 }
@@ -615,7 +612,7 @@ fn source_text() -> anyhow::Result<()> {
 
     let sources = crate_data
         .all_items()
-        .map(|i| i.item_meta().source_text.as_ref().unwrap())
+        .filter_map(|i| i.item_meta().source_text.as_ref())
         .collect_vec();
     assert_eq!(sources[0], "struct Foo { x: usize }");
     assert_eq!(

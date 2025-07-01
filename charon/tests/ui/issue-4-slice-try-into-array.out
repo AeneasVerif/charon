@@ -6,9 +6,16 @@ pub opaque type Formatter<'a>
 where
     'a : 'a,
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -65,7 +72,8 @@ pub trait Clone<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
 // Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from
@@ -148,7 +156,15 @@ where
 
 // Full name: core::marker::{impl Copy for u8}
 impl Copy for u8 {
-    parent_clause0 = {impl Clone for u8}
+    parent_clause0 = MetaSized<u8>
+    parent_clause1 = {impl Clone for u8}
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap

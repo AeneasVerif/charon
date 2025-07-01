@@ -1,29 +1,40 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: test_crate::HasOutput
 pub trait HasOutput<Self, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self_Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self_Output>
 }
 
 // Full name: test_crate::{impl HasOutput<()> for ()}
 impl HasOutput<()> for () {
-    parent_clause0 = Sized<()>
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<()>
 }
 
 // Full name: test_crate::HasOutput2
-pub trait HasOutput2<Self, Self_Clause0_Output>
+pub trait HasOutput2<Self, Self_Clause1_Output>
 {
-    parent_clause0 : [@TraitClause0]: HasOutput<Self, Self_Clause0_Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: HasOutput<Self, Self_Clause1_Output>
 }
 
 // Full name: test_crate::{impl HasOutput2<()> for ()}
 impl HasOutput2<()> for () {
-    parent_clause0 = {impl HasOutput<()> for ()}
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = {impl HasOutput<()> for ()}
 }
 
 // Full name: test_crate::Wrapper
@@ -40,23 +51,25 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: HasOutput<T, Clause1_Output>,
 {
-    parent_clause0 = @TraitClause1::parent_clause0
+    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause1 = @TraitClause1::parent_clause1
 }
 
-// Full name: test_crate::{impl HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]}
-impl<T, Clause1_Clause0_Output> HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]
+// Full name: test_crate::{impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}
+impl<T, Clause1_Clause1_Output> HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasOutput2<T, Clause1_Clause0_Output>,
+    [@TraitClause1]: HasOutput2<T, Clause1_Clause1_Output>,
 {
-    parent_clause0 = {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}<T, Clause1_Clause0_Output>[@TraitClause0, @TraitClause1::parent_clause0]
+    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause1 = {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}<T, Clause1_Clause1_Output>[@TraitClause0, @TraitClause1::parent_clause1]
 }
 
 // Full name: test_crate::take
-fn take<T, Clause1_Clause0_Output>()
+fn take<T, Clause1_Clause1_Output>()
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasOutput2<T, Clause1_Clause0_Output>,
+    [@TraitClause1]: HasOutput2<T, Clause1_Clause1_Output>,
 {
     let @0: (); // return
 
@@ -70,7 +83,7 @@ fn main()
 {
     let @0: (); // return
 
-    @0 := take<Wrapper<()>[Sized<()>], ()>[Sized<Wrapper<()>[Sized<()>]>, {impl HasOutput2<Clause1_Clause0_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[Sized<()>, {impl HasOutput2<()> for ()}]]()
+    @0 := take<Wrapper<()>[Sized<()>], ()>[Sized<Wrapper<()>[Sized<()>]>, {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[Sized<()>, {impl HasOutput2<()> for ()}]]()
     @0 := ()
     return
 }

@@ -1,9 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::borrow::Borrow
 #[lang_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Borrowed>
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
 }
 
@@ -14,6 +20,9 @@ where
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -29,6 +38,13 @@ pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -37,8 +53,9 @@ pub struct Global {}
 #[lang_item("ToOwned")]
 pub trait ToOwned<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::Owned>
-    parent_clause1 : [@TraitClause1]: Borrow<Self::Owned, Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Owned>
+    parent_clause2 : [@TraitClause2]: Borrow<Self::Owned, Self>
     type Owned
     fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>[Self]
 }
@@ -52,12 +69,13 @@ where
 #[lang_item("Cow")]
 pub enum Cow<'a, B>
 where
-    [@TraitClause0]: ToOwned<B>,
+    [@TraitClause0]: MetaSized<B>,
+    [@TraitClause1]: ToOwned<B>,
     B : 'a,
     B : 'a,
 {
   Borrowed(&'a (B)),
-  Owned(@TraitClause0::Owned),
+  Owned(@TraitClause1::Owned),
 }
 
 // Full name: alloc::vec::Vec
@@ -79,6 +97,8 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
+    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause1]>
+    parent_clause1 = MetaSized<Slice<T>>
     fn borrow<'_0> = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -94,8 +114,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = Sized<Vec<T, Global>[@TraitClause0, Sized<Global>]>
-    parent_clause1 = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, Sized<Global>]
+    parent_clause0 = MetaSized<Slice<T>>
+    parent_clause1 = Sized<Vec<T, Global>[@TraitClause0, Sized<Global>]>
+    parent_clause2 = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, Sized<Global>]
     type Owned = Vec<T, Global>[@TraitClause0, Sized<Global>]
     fn to_owned<'_0> = {impl ToOwned for Slice<T>}::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
@@ -107,7 +128,7 @@ where
     [@TraitClause1]: Clone<T>,
     T : 'a,
 {
-  Cow<'a, Slice<T>>[{impl ToOwned for Slice<T>}<T>[@TraitClause0, @TraitClause1]],
+  Cow<'a, Slice<T>>[MetaSized<Slice<T>>, {impl ToOwned for Slice<T>}<T>[@TraitClause0, @TraitClause1]],
 }
 
 

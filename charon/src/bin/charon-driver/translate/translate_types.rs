@@ -536,13 +536,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         untagged_variant: translate_variant_id(*untagged_variant),
                     },
                 };
-                offsets
-                    .get(r_abi::FieldIdx::from_usize(*tag_field))
-                    .map(|s| DiscriminantLayout {
-                        offset: r_abi::Size::bytes(*s),
-                        tag_ty,
-                        encoding,
-                    })
+                offsets.get(*tag_field).map(|s| DiscriminantLayout {
+                    offset: r_abi::Size::bytes(*s),
+                    tag_ty,
+                    encoding,
+                })
             }
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };

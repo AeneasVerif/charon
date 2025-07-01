@@ -2,9 +2,12 @@ error[E0261]: use of undeclared lifetime name `'a`
  --> tests/ui/unsupported/unbound-lifetime.rs:5:13
   |
 5 | fn get(_x: &'a u32) {}
-  |       -     ^^ undeclared lifetime
-  |       |
-  |       help: consider introducing lifetime `'a` here: `<'a>`
+  |             ^^ undeclared lifetime
+  |
+help: consider introducing lifetime `'a` here
+  |
+5 | fn get<'a>(_x: &'a u32) {}
+  |       ++++
 
 error: Unexpected region kind: Region { kind: ReError(ErrorGuaranteed { todo: "ErrorGuaranteed(())" }) }
  --> tests/ui/unsupported/unbound-lifetime.rs:5:1

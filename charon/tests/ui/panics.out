@@ -10,9 +10,6 @@ where
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
 
-// Full name: core::fmt::rt::{Argument<'_0>}::none
-pub fn none<'_0>() -> Array<Argument<'_0>, 0 : usize>
-
 // Full name: core::fmt::rt::{Arguments<'a>}::new_const
 pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
 
@@ -70,7 +67,7 @@ fn panic3()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := none<'_>()
+    @7 := []
     @6 := &@7
     @5 := &*(@6)
     @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
@@ -166,7 +163,7 @@ fn panic7()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := none<'_>()
+    @7 := []
     @6 := &@7
     @5 := &*(@6)
     @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))

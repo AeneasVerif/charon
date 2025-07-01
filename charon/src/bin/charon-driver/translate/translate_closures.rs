@@ -618,6 +618,9 @@ impl ItemTransCtx<'_, '_> {
         let sized_trait = self.get_lang_item(rustc_hir::LangItem::Sized);
         let sized_trait = self.register_trait_decl_id(span, &sized_trait);
 
+        let meta_sized_trait = self.get_lang_item(rustc_hir::LangItem::MetaSized);
+        let meta_sized_trait = self.register_trait_decl_id(span, &meta_sized_trait);
+
         let tuple_trait = self.get_lang_item(rustc_hir::LangItem::Tuple);
         let tuple_trait = self.register_trait_decl_id(span, &tuple_trait);
 
@@ -649,6 +652,7 @@ impl ItemTransCtx<'_, '_> {
 
             match target_kind {
                 ClosureKind::FnOnce => [
+                    builtin_tref(meta_sized_trait, input.clone()),
                     builtin_tref(sized_trait, input.clone()),
                     builtin_tref(tuple_trait, input.clone()),
                     builtin_tref(sized_trait, output.clone()),
@@ -669,6 +673,7 @@ impl ItemTransCtx<'_, '_> {
                         trait_decl_ref: RegionBinder::empty(parent_predicate),
                     };
                     [
+                        builtin_tref(meta_sized_trait, input.clone()),
                         parent_trait_ref,
                         builtin_tref(sized_trait, input.clone()),
                         builtin_tref(tuple_trait, input.clone()),
