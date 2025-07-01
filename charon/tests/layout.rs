@@ -124,6 +124,16 @@ fn type_layout() -> anyhow::Result<()> {
             Second(!),
             Third(NonZero<u32>)
         }
+
+        enum GenericUnsized<'a, T: ?Sized> {
+            First,
+            Second(&'a T),
+        }
+            
+        enum GenericButFixedSize<'a, T: Sized> {
+            First,
+            Second(&'a T),
+        }
         "#,
     )?;
 

@@ -448,5 +448,36 @@
         "tag": null
       }
     ]
+  },
+  "test_crate::GenericUnsized": null,
+  "test_crate::GenericButFixedSize": {
+    "size": 8,
+    "align": 8,
+    "discriminant_layout": {
+      "offset": 0,
+      "tag_ty": "Isize",
+      "encoding": {
+        "Niche": {
+          "untagged_variant": 1
+        }
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tag": {
+          "Isize": "0"
+        }
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tag": null
+      }
+    ]
   }
 }
