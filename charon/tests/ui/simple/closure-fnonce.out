@@ -1,12 +1,22 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::mem::drop
 #[lang_item("mem_drop")]
@@ -18,9 +28,10 @@ where
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
@@ -91,9 +102,10 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for closure}
 impl FnOnce<(u8)> for closure {
-    parent_clause0 = Sized<(u8)>
-    parent_clause1 = Tuple<(u8)>
-    parent_clause2 = Sized<u8>
+    parent_clause0 = MetaSized<(u8)>
+    parent_clause1 = Sized<(u8)>
+    parent_clause2 = Tuple<(u8)>
+    parent_clause3 = Sized<u8>
     type Output = u8
     fn call_once = {impl FnOnce<(u8)> for closure}::call_once
 }

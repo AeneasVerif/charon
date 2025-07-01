@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -12,7 +19,7 @@ pub struct Global {}
 fn main()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32>[Sized<Global>]; // anonymous local
+    let @1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
 
     storage_live(@1)
     @1 := @BoxNew<i32>[Sized<i32>](const (42 : i32))

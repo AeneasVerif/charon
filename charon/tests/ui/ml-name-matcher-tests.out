@@ -1,13 +1,23 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
+    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
 }
@@ -42,12 +52,18 @@ where
 
 // Full name: core::slice::index::private_slice_index::Sealed
 pub trait Sealed<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::slice::index::SliceIndex
 #[lang_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sealed<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sealed<Self>
+    parent_clause2 : [@TraitClause2]: MetaSized<T>
+    parent_clause3 : [@TraitClause3]: MetaSized<Self::Output>
     type Output
     fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>[Self]
     fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>[Self]
@@ -71,12 +87,17 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: SliceIndex<I, Slice<T>>,
 {
+    parent_clause0 = MetaSized<Slice<T>>
+    parent_clause1 = @TraitClause1::parent_clause0
+    parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[Sized<usize>]}
-impl Sealed for RangeFrom<usize>[Sized<usize>] {}
+impl Sealed for RangeFrom<usize>[Sized<usize>] {
+    parent_clause0 = MetaSized<RangeFrom<usize>[Sized<usize>]>
+}
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
 where
@@ -137,7 +158,10 @@ impl<T> SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {impl Sealed for RangeFrom<usize>[Sized<usize>]}
+    parent_clause0 = MetaSized<RangeFrom<usize>[Sized<usize>]>
+    parent_clause1 = {impl Sealed for RangeFrom<usize>[Sized<usize>]}
+    parent_clause2 = MetaSized<Slice<T>>
+    parent_clause3 = MetaSized<Slice<T>>
     type Output = Slice<T>
     fn get<'_0> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::get<'_0_0, T>[@TraitClause0]
     fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::get_mut<'_0_0, T>[@TraitClause0]
@@ -164,7 +188,8 @@ fn bar()
 // Full name: test_crate::Trait
 trait Trait<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
     fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
 }
 
@@ -173,8 +198,8 @@ where
     [@TraitClause0]: Trait<Self, T>,
     [@TraitClause1]: Sized<U>,
 
-// Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]}::method
-fn {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]}::method<T, U>()
+// Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]}::method
+fn {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]}::method<T, U>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -186,17 +211,18 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]}
-impl<T> Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]
+// Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]}
+impl<T> Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]}::method<T, U>[@TraitClause0, @TraitClause0_0]
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]>
+    parent_clause1 = Sized<Option<T>[@TraitClause0]>
+    fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]}::method<T, U>[@TraitClause0, @TraitClause0_0]
 }
 
-// Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[Sized<Global>]> for Option<U>[@TraitClause1]}::method
-fn {impl Trait<alloc::boxed::Box<T>[Sized<Global>]> for Option<U>[@TraitClause1]}::method<T, U, V>()
+// Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]}::method
+fn {impl Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]}::method<T, U, V>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -209,14 +235,15 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[Sized<Global>]> for Option<U>[@TraitClause1]}
-impl<T, U> Trait<alloc::boxed::Box<T>[Sized<Global>]> for Option<U>[@TraitClause1]
+// Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]}
+impl<T, U> Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
 {
-    parent_clause0 = Sized<alloc::boxed::Box<T>[Sized<Global>]>
-    fn method<V, [@TraitClause0]: Sized<V>> = {impl Trait<alloc::boxed::Box<T>[Sized<Global>]> for Option<U>[@TraitClause1]}::method<T, U, V>[@TraitClause0, @TraitClause1, @TraitClause0_0]
+    parent_clause0 = MetaSized<Option<U>[@TraitClause1]>
+    parent_clause1 = Sized<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]>
+    fn method<V, [@TraitClause0]: Sized<V>> = {impl Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]}::method<T, U, V>[@TraitClause0, @TraitClause1, @TraitClause0_0]
 }
 
 // Full name: test_crate::foo

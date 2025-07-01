@@ -61,6 +61,9 @@ impl TransformPass for Transform {
         // remove.
         let exclude: &[_] = if ctx.options.hide_marker_traits {
             &[
+                "core::marker::Destruct",
+                "core::marker::PointeeSized",
+                "core::marker::MetaSized",
                 "core::marker::Sized",
                 "core::marker::Tuple",
                 "core::marker::Send",

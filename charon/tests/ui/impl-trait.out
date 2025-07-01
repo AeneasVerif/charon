@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -36,17 +43,28 @@ impl<'_0, T> Clone for &'_0 (T) {
     fn clone<'_0> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_0, T>
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
@@ -58,8 +76,9 @@ where
 // Full name: test_crate::Foo
 pub trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::Type>
-    parent_clause1 : [@TraitClause1]: Clone<Self::Type>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Type>
+    parent_clause2 : [@TraitClause2]: Clone<Self::Type>
     type Type
     fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>[Self]
 }
@@ -88,8 +107,9 @@ pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = Sized<u32>
-    parent_clause1 = {impl Clone for u32}
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<u32>
+    parent_clause2 = {impl Clone for u32}
     type Type = u32
     fn get_ty<'_0> = {impl Foo for ()}::get_ty<'_0_0>
 }
@@ -139,8 +159,9 @@ fn use_foo()
 // Full name: test_crate::RPITIT
 pub trait RPITIT<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::>
-    parent_clause1 : [@TraitClause1]: Foo<Self::>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::>
+    parent_clause2 : [@TraitClause2]: Foo<Self::>
     type 
     fn make_foo = test_crate::RPITIT::make_foo<Self>[Self]
 }
@@ -167,8 +188,9 @@ pub fn {impl RPITIT for ()}::make_foo()
 
 // Full name: test_crate::{impl RPITIT for ()}
 impl RPITIT for () {
-    parent_clause0 = Sized<()>
-    parent_clause1 = {impl Foo for ()}
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<()>
+    parent_clause2 = {impl Foo for ()}
     type  = ()
     fn make_foo = {impl RPITIT for ()}::make_foo
 }
@@ -181,9 +203,9 @@ where
 {
     let @0: (); // return
     let foo@1: @TraitClause1::; // local
-    let @2: @TraitClause1::parent_clause1::Type; // anonymous local
-    let @3: &'_ (@TraitClause1::parent_clause1::Type); // anonymous local
-    let @4: &'_ (@TraitClause1::parent_clause1::Type); // anonymous local
+    let @2: @TraitClause1::parent_clause2::Type; // anonymous local
+    let @3: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
+    let @4: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
     let @5: &'_ (@TraitClause1::); // anonymous local
 
     storage_live(foo@1)
@@ -193,10 +215,10 @@ where
     storage_live(@4)
     storage_live(@5)
     @5 := &foo@1
-    @4 := @TraitClause1::parent_clause1::get_ty<'_>(move (@5))
+    @4 := @TraitClause1::parent_clause2::get_ty<'_>(move (@5))
     @3 := &*(@4)
     storage_dead(@5)
-    @2 := @TraitClause1::parent_clause1::parent_clause1::clone<'_>(move (@3))
+    @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
     drop @2
     storage_dead(@4)
@@ -259,9 +281,10 @@ impl<'_0, U> FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]
 where
     [@TraitClause0]: Sized<U>,
 {
-    parent_clause0 = Sized<(&'_ (U))>
-    parent_clause1 = Tuple<(&'_ (U))>
-    parent_clause2 = Sized<WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]>
+    parent_clause0 = MetaSized<(&'_ (U))>
+    parent_clause1 = Sized<(&'_ (U))>
+    parent_clause2 = Tuple<(&'_ (U))>
+    parent_clause3 = Sized<WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]>
     type Output = WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]
     fn call_once = {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
 }

@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -34,7 +41,15 @@ where
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
 // Full name: core::option::Option
@@ -66,8 +81,9 @@ where
 // Full name: test_crate::GenericTrait
 trait GenericTrait<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Clone<T>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Clone<T>
     fn other_method = test_crate::GenericTrait::other_method<Self, T>[Self]
     fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, T>> = test_crate::GenericTrait::provided<Self, T, U>[Self, @TraitClause0_0, @TraitClause0_1]
 }
@@ -176,8 +192,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause0]
+    parent_clause0 = MetaSized<Override<T>[@TraitClause0]>
+    parent_clause1 = Sized<Option<T>[@TraitClause0]>
+    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
     fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, Option<T>[@TraitClause0]>> = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_0, @TraitClause0_1]
 }
@@ -246,8 +263,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause0]
+    parent_clause0 = MetaSized<NoOverride<T>[@TraitClause0]>
+    parent_clause1 = Sized<Option<T>[@TraitClause0]>
+    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
     fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, Option<T>[@TraitClause0]>> = test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_0, @TraitClause0_1]
 }

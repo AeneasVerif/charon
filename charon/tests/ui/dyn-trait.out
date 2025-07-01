@@ -9,9 +9,16 @@ pub opaque type Formatter<'a>
 where
     'a : 'a,
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -48,6 +55,7 @@ pub opaque type String
 #[lang_item("ToString")]
 pub trait ToString<Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
 }
 
@@ -59,18 +67,21 @@ where
 // Full name: alloc::string::{impl ToString for T}::to_string
 pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 (T)) -> String
 where
-    [@TraitClause0]: Display<T>,
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Display<T>,
 
 // Full name: alloc::string::{impl ToString for T}
 impl<T> ToString for T
 where
-    [@TraitClause0]: Display<T>,
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Display<T>,
 {
-    fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0]
+    parent_clause0 = @TraitClause0
+    fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::construct
-fn construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>[Sized<Global>]
+fn construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Display<T>,
@@ -85,7 +96,7 @@ fn destruct<'_0>(@1: &'_0 (dyn (exists(TODO)))) -> String
 
     storage_live(@2)
     @2 := &*(x@1)
-    @0 := {impl ToString for T}::to_string<'_, dyn (exists(TODO))>[Display<dyn (exists(TODO))>](move (@2))
+    @0 := {impl ToString for T}::to_string<'_, dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Display<dyn (exists(TODO))>](move (@2))
     storage_dead(@2)
     return
 }

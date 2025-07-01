@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -26,6 +33,13 @@ impl Clone for i32 {
     fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -43,7 +57,7 @@ where
 
 // Full name: alloc::slice::{Slice<T>}::into_vec
 #[lang_item("slice_into_vec")]
-pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> Vec<T, A>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[MetaSized<Slice<T>>, @TraitClause1]) -> Vec<T, A>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -60,9 +74,9 @@ fn foo()
 {
     let @0: (); // return
     let _v@1: Vec<i32, Global>[Sized<i32>, Sized<Global>]; // local
-    let @2: alloc::boxed::Box<Slice<i32>>[Sized<Global>]; // anonymous local
-    let @3: alloc::boxed::Box<Array<i32, 1 : usize>>[Sized<Global>]; // anonymous local
-    let @4: alloc::boxed::Box<Array<i32, 1 : usize>>[Sized<Global>]; // anonymous local
+    let @2: alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]; // anonymous local
+    let @3: alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]; // anonymous local
+    let @4: alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]; // anonymous local
     let _v2@5: Vec<i32, Global>[Sized<i32>, Sized<Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
@@ -72,9 +86,9 @@ fn foo()
     storage_live(@3)
     @6 := [const (1 : i32)]
     storage_live(@4)
-    @4 := @BoxNew<Array<i32, 1 : usize>>[Sized<Global>](move (@6))
+    @4 := @BoxNew<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>](move (@6))
     @3 := move (@4)
-    @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[Sized<Global>], alloc::boxed::Box<Slice<i32>>[Sized<Global>]>(move (@3))
+    @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]>(move (@3))
     drop @3
     drop @4
     storage_dead(@4)
@@ -100,9 +114,9 @@ pub fn bar()
 {
     let @0: (); // return
     let @1: Vec<Foo, Global>[Sized<Foo>, Sized<Global>]; // anonymous local
-    let @2: alloc::boxed::Box<Slice<Foo>>[Sized<Global>]; // anonymous local
-    let @3: alloc::boxed::Box<Array<Foo, 1 : usize>>[Sized<Global>]; // anonymous local
-    let @4: alloc::boxed::Box<Array<Foo, 1 : usize>>[Sized<Global>]; // anonymous local
+    let @2: alloc::boxed::Box<Slice<Foo>>[MetaSized<Slice<Foo>>, Sized<Global>]; // anonymous local
+    let @3: alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]; // anonymous local
+    let @4: alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]; // anonymous local
     let @5: Foo; // anonymous local
     let @6: Array<Foo, 1 : usize>; // anonymous local
 
@@ -112,12 +126,12 @@ pub fn bar()
     storage_live(@3)
     @6 := [move (@5)]
     storage_live(@4)
-    @4 := @BoxNew<Array<Foo, 1 : usize>>[Sized<Global>](move (@6))
+    @4 := @BoxNew<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>](move (@6))
     storage_live(@5)
     @5 := Foo {  }
     storage_dead(@5)
     @3 := move (@4)
-    @2 := unsize_cast<alloc::boxed::Box<Array<Foo, 1 : usize>>[Sized<Global>], alloc::boxed::Box<Slice<Foo>>[Sized<Global>]>(move (@3))
+    @2 := unsize_cast<alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<Foo>>[MetaSized<Slice<Foo>>, Sized<Global>]>(move (@3))
     drop @3
     drop @4
     storage_dead(@4)

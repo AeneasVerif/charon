@@ -154,8 +154,11 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        let transform_ctx =
-            translate_crate::translate(&self.options, tcx, compiler.sess.sysroot.clone());
+        let transform_ctx = translate_crate::translate(
+            &self.options,
+            tcx,
+            compiler.sess.opts.sysroot.path().to_owned(),
+        );
         self.transform_ctx = Some(transform_ctx);
         Compilation::Continue
     }

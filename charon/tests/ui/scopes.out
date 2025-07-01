@@ -1,8 +1,13 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: test_crate::Trait
 trait Trait<'a, Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn method<'b> = test_crate::Trait::method<'a, 'b, Self>[Self]
 }
 
@@ -15,6 +20,7 @@ fn {impl Trait<'a> for &'a (())}::method<'a, 'b>(@1: &'b (&'a (()))) -> &'b (())
 
 // Full name: test_crate::{impl Trait<'a> for &'a (())}
 impl<'a> Trait<'a> for &'a (()) {
+    parent_clause0 = MetaSized<&'_ (())>
     fn method<'b> = {impl Trait<'a> for &'a (())}::method<'a, 'b>
 }
 

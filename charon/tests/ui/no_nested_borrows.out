@@ -1,13 +1,21 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::ops::deref::Deref
 #[lang_item("deref")]
 pub trait Deref<Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self::Target>
     type Target
     fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>[Self]
 }
@@ -34,32 +42,37 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
+pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])) -> &'_0 (T)
 where
-    [@TraitClause0]: Sized<A>,
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}
-impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0]
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
 where
-    [@TraitClause0]: Sized<A>,
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
 {
+    parent_clause0 = @TraitClause0
     type Target = T
-    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_0_0, T, A>[@TraitClause0]
+    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut
-pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut
+pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])) -> &'_0 mut (T)
 where
-    [@TraitClause0]: Sized<A>,
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}
-impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0]
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
 where
-    [@TraitClause0]: Sized<A>,
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}<T, A>[@TraitClause0]
-    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_0_0, T, A>[@TraitClause0]
+    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<T, A>[@TraitClause0, @TraitClause1]
+    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::Pair
@@ -77,7 +90,7 @@ pub enum List<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[Sized<Global>]),
+  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[MetaSized<List<T>[@TraitClause0]>, Sized<Global>]),
   Nil,
 }
 
@@ -350,7 +363,7 @@ pub fn test_list1()
 {
     let @0: (); // return
     let l@1: List<i32>[Sized<i32>]; // local
-    let @2: alloc::boxed::Box<List<i32>[Sized<i32>]>[Sized<Global>]; // anonymous local
+    let @2: alloc::boxed::Box<List<i32>[Sized<i32>]>[MetaSized<List<i32>[Sized<i32>]>, Sized<Global>]; // anonymous local
     let @3: List<i32>[Sized<i32>]; // anonymous local
 
     storage_live(l@1)
@@ -373,11 +386,11 @@ pub fn test_list1()
 pub fn test_box1()
 {
     let @0: (); // return
-    let b@1: alloc::boxed::Box<i32>[Sized<Global>]; // local
+    let b@1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // local
     let x@2: &'_ mut (i32); // local
-    let @3: &'_ mut (alloc::boxed::Box<i32>[Sized<Global>]); // anonymous local
+    let @3: &'_ mut (alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]); // anonymous local
     let x@4: &'_ (i32); // local
-    let @5: &'_ (alloc::boxed::Box<i32>[Sized<Global>]); // anonymous local
+    let @5: &'_ (alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]); // anonymous local
     let @6: (); // anonymous local
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
@@ -387,13 +400,13 @@ pub fn test_box1()
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
-    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_, i32, Global>[Sized<Global>](move (@3))
+    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_, i32, Global>[MetaSized<i32>, Sized<Global>](move (@3))
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
-    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_, i32, Global>[Sized<Global>](move (@5))
+    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_, i32, Global>[MetaSized<i32>, Sized<Global>](move (@5))
     storage_dead(@5)
     storage_live(@6)
     storage_live(@7)
@@ -472,7 +485,7 @@ where
     let @0: (T, List<T>[@TraitClause0]); // return
     let l@1: List<T>[@TraitClause0]; // arg #1
     let hd@2: T; // local
-    let tl@3: alloc::boxed::Box<List<T>[@TraitClause0]>[Sized<Global>]; // local
+    let tl@3: alloc::boxed::Box<List<T>[@TraitClause0]>[MetaSized<List<T>[@TraitClause0]>, Sized<Global>]; // local
     let @4: T; // anonymous local
     let @5: List<T>[@TraitClause0]; // anonymous local
 
@@ -519,7 +532,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
   Leaf(T),
-  Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[Sized<Global>]),
+  Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[MetaSized<Tree<T>[@TraitClause0]>, Sized<Global>]),
 }
 
 // Full name: test_crate::NodeElem
@@ -527,7 +540,7 @@ pub enum NodeElem<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[Sized<Global>], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[Sized<Global>]),
+  Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[MetaSized<Tree<T>[@TraitClause0]>, Sized<Global>], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[MetaSized<NodeElem<T>[@TraitClause0]>, Sized<Global>]),
   Nil,
 }
 

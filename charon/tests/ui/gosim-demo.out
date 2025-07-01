@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -178,7 +185,8 @@ pub trait TrustedRandomAccessNoCoerce<Self>
 #[lang_item("iterator")]
 pub trait Iterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::Item>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
 }
@@ -217,11 +225,12 @@ where
 #[lang_item("IntoIterator")]
 pub trait IntoIterator<Self>
 where
-    Self::parent_clause2::Item = Self::Item,
+    Self::parent_clause3::Item = Self::Item,
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::Item>
-    parent_clause1 : [@TraitClause1]: Sized<Self::IntoIter>
-    parent_clause2 : [@TraitClause2]: Iterator<Self::IntoIter>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
+    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
@@ -253,7 +262,8 @@ where
 // Full name: core::iter::traits::collect::Extend
 pub trait Extend<Self, A>
 {
-    parent_clause0 : [@TraitClause0]: Sized<A>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<A>
     fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
@@ -269,23 +279,25 @@ where
 #[lang_item("DoubleEndedIterator")]
 pub trait DoubleEndedIterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: Iterator<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause0::Item>[@TraitClause0::parent_clause0::parent_clause0]
+pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
 where
     [@TraitClause0]: DoubleEndedIterator<Self>,
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator
 pub trait ExactSizeIterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: Iterator<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Iterator<Self>
 }
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
 
@@ -293,12 +305,23 @@ where
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -315,9 +338,10 @@ where
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
 }
@@ -326,14 +350,15 @@ pub trait FnOnce<Self, Args>
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
 }
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 
@@ -346,7 +371,8 @@ where
 #[lang_item("FromResidual")]
 pub trait FromResidual<Self, R>
 {
-    parent_clause0 : [@TraitClause0]: Sized<R>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<R>
     fn from_residual = from_residual<Self, R>[Self]
 }
 
@@ -354,9 +380,10 @@ pub trait FromResidual<Self, R>
 #[lang_item("Try")]
 pub trait Try<Self>
 {
-    parent_clause0 : [@TraitClause0]: FromResidual<Self, Self::Residual>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Output>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FromResidual<Self, Self::Residual>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Residual>
     type Output
     type Residual
     fn from_output = from_output<Self>[Self]
@@ -371,7 +398,7 @@ where
 
 // Full name: core::ops::try_trait::Try::branch
 #[lang_item("branch")]
-pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause0::parent_clause0, @TraitClause0::parent_clause1]
+pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause1::parent_clause1, @TraitClause0::parent_clause2]
 where
     [@TraitClause0]: Try<Self>,
 
@@ -384,12 +411,13 @@ where
 // Full name: core::ops::try_trait::Residual
 pub trait Residual<Self, O>
 where
-    Self::parent_clause2::Output = O,
-    Self::parent_clause2::Residual = Self,
+    Self::parent_clause3::Output = O,
+    Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: Sized<O>
-    parent_clause1 : [@TraitClause1]: Sized<Self::TryType>
-    parent_clause2 : [@TraitClause2]: Try<Self::TryType>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<O>
+    parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
+    parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
 }
 
@@ -411,7 +439,8 @@ impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = Sized<&'_ (T)>
+    parent_clause0 = MetaSized<Iter<'_, T>[@TraitClause0]>
+    parent_clause1 = Sized<&'_ (T)>
     type Item = &'a (T)
     fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_0, T>[@TraitClause0]
 }
@@ -426,9 +455,10 @@ impl<'a, T> IntoIterator for &'a (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = Sized<&'_ (T)>
-    parent_clause1 = Sized<Iter<'_, T>[@TraitClause0]>
-    parent_clause2 = {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, T>[@TraitClause0]
+    parent_clause0 = MetaSized<&'_ (Slice<T>)>
+    parent_clause1 = Sized<&'_ (T)>
+    parent_clause2 = Sized<Iter<'_, T>[@TraitClause0]>
+    parent_clause3 = {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, T>[@TraitClause0]
     type Item = &'a (T)
     type IntoIter = Iter<'a, T>[@TraitClause0]
     fn into_iter = {impl IntoIterator for &'a (Slice<T>)}::into_iter<'a, T>[@TraitClause0]
@@ -456,22 +486,22 @@ where
     let @10: (); // anonymous local
     let @11: (); // anonymous local
     let @12: Arguments<'_>; // anonymous local
-    let @13: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @14: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @15: Array<&'_ (Str), 2 : usize>; // anonymous local
-    let @16: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @17: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @18: Array<Argument<'_>, 1 : usize>; // anonymous local
-    let @19: Argument<'_>; // anonymous local
-    let @20: &'_ (&'_ (T)); // anonymous local
-    let @21: &'_ (&'_ (T)); // anonymous local
+    let args@13: Array<Argument<'_>, 1 : usize>; // local
+    let @14: Argument<'_>; // anonymous local
+    let @15: &'_ (&'_ (T)); // anonymous local
+    let @16: &'_ (&'_ (T)); // anonymous local
+    let @17: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @18: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @19: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @20: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @21: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
     storage_live(@7)
     storage_live(x@9)
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
-    storage_live(@13)
+    storage_live(args@13)
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
@@ -506,36 +536,36 @@ where
                 storage_live(@10)
                 storage_live(@11)
                 storage_live(@12)
-                storage_live(@13)
+                storage_live(args@13)
                 storage_live(@14)
                 storage_live(@15)
-                @15 := [const ("- "), const ("\n")]
-                @14 := &@15
-                @13 := &*(@14)
                 storage_live(@16)
+                @16 := &x@9
+                @15 := &*(@16)
+                @14 := new_debug<'_, '_, &'_ (T)>[Sized<&'_ (T)>, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
+                storage_dead(@15)
+                args@13 := [move (@14)]
+                storage_dead(@14)
                 storage_live(@17)
                 storage_live(@18)
                 storage_live(@19)
+                @19 := [const ("- "), const ("\n")]
+                @18 := &@19
+                @17 := &*(@18)
                 storage_live(@20)
                 storage_live(@21)
-                @21 := &x@9
+                @21 := &args@13
                 @20 := &*(@21)
-                @19 := new_debug<'_, '_, &'_ (T)>[Sized<&'_ (T)>, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@20))
-                storage_dead(@20)
-                @18 := [move (@19)]
-                storage_dead(@19)
-                @17 := &@18
-                @16 := &*(@17)
-                @12 := new_v1<'_, 2 : usize, 1 : usize>(move (@13), move (@16))
-                storage_dead(@16)
-                storage_dead(@13)
-                @11 := _eprint<'_>(move (@12))
-                storage_dead(@12)
+                @12 := new_v1<'_, 2 : usize, 1 : usize>(move (@17), move (@20))
                 storage_dead(@21)
+                storage_dead(@20)
+                storage_dead(@19)
                 storage_dead(@18)
                 storage_dead(@17)
-                storage_dead(@15)
-                storage_dead(@14)
+                @11 := _eprint<'_>(move (@12))
+                storage_dead(@12)
+                storage_dead(@16)
+                storage_dead(args@13)
                 storage_dead(@11)
                 storage_dead(@10)
                 storage_dead(x@9)

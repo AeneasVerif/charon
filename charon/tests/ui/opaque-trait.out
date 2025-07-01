@@ -1,12 +1,20 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     const CONST1 : usize
     const CONST2 : usize
     const CONST3 : usize
@@ -137,6 +145,7 @@ fn test_crate::{impl Trait for ()}::method2()
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
+    parent_clause0 = MetaSized<()>
     const CONST1 = {impl Trait for ()}::CONST1
     const CONST2 = {impl Trait for ()}::CONST2
     const CONST3 = {impl Trait for ()}::CONST3
@@ -177,6 +186,7 @@ fn {impl Trait for u8}::method2()
 
 // Full name: test_crate::{impl Trait for u8}
 impl Trait for u8 {
+    parent_clause0 = MetaSized<u8>
     const CONST1 = test_crate::Trait::CONST1<u8>[{impl Trait for u8}]
     const CONST2 = {impl Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>[{impl Trait for u8}]

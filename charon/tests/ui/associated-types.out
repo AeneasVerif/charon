@@ -1,9 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::borrow::Borrow
 #[lang_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Borrowed>
     fn borrow<'_0> = borrow<'_0_0, Self, Borrowed>[Self]
 }
 
@@ -15,6 +21,9 @@ where
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -43,12 +52,21 @@ impl<'_0, T> Clone for &'_0 (T) {
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
 // Full name: core::marker::{impl Copy for &'_0 (T)}
 impl<'_0, T> Copy for &'_0 (T) {
-    parent_clause0 = {impl Clone for &'_0 (T)}<'_, T>
+    parent_clause0 = MetaSized<&'_ (T)>
+    parent_clause1 = {impl Clone for &'_0 (T)}<'_, T>
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
 // Full name: core::option::Option
@@ -83,15 +101,17 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause0]
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
 }
 
 // Full name: alloc::borrow::ToOwned
 #[lang_item("ToOwned")]
 pub trait ToOwned<Self, Self_Owned>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self_Owned>
-    parent_clause1 : [@TraitClause1]: Borrow<Self_Owned, Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self_Owned>
+    parent_clause2 : [@TraitClause2]: Borrow<Self_Owned, Self>
     fn to_owned<'_0> = to_owned<'_0_0, Self, Self_Owned>[Self]
 }
 
@@ -105,9 +125,10 @@ trait test_crate::Foo<'a, Self, Self_Item>
 where
     Self_Item : 'a,
 {
-    parent_clause0 : [@TraitClause0]: Copy<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
-    parent_clause2 : [@TraitClause2]: Clone<Self_Item>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Copy<Self>
+    parent_clause2 : [@TraitClause2]: Sized<Self_Item>
+    parent_clause3 : [@TraitClause3]: Clone<Self_Item>
     fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item>[Self]
     fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_0]
 }
@@ -158,9 +179,10 @@ impl<'a, T> test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {impl Copy for &'_0 (T)}<'_, T>
-    parent_clause1 = Sized<Option<&'_ (T)>[Sized<&'_ (T)>]>
-    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[Sized<&'_ (T)>, {impl Clone for &'_0 (T)}<'_, T>]
+    parent_clause0 = MetaSized<&'_ (T)>
+    parent_clause1 = {impl Copy for &'_0 (T)}<'_, T>
+    parent_clause2 = Sized<Option<&'_ (T)>[Sized<&'_ (T)>]>
+    parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[Sized<&'_ (T)>, {impl Clone for &'_0 (T)}<'_, T>]
     fn use_item_required = {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
     fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_0]
 }
@@ -200,9 +222,10 @@ where
     [@TraitClause1]: Copy<T>,
     T : 'a,
 {
-    parent_clause0 = {impl Copy for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]
-    parent_clause1 = @TraitClause0
-    parent_clause2 = @TraitClause1::parent_clause0
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause1 = {impl Copy for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]
+    parent_clause2 = @TraitClause0
+    parent_clause3 = @TraitClause1::parent_clause1
     fn use_item_required = {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_required<'a, T>[@TraitClause0, @TraitClause1]
     fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, T, Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_0]
 }
@@ -227,7 +250,7 @@ where
     @3 := @TraitClause1::use_item_provided<Clause2_Item>[@TraitClause2](move (@4))
     @2 := &@3
     storage_dead(@4)
-    @0 := @TraitClause2::parent_clause0::parent_clause0::clone<'_>(move (@2))
+    @0 := @TraitClause2::parent_clause1::parent_clause1::clone<'_>(move (@2))
     storage_dead(@2)
     storage_dead(@3)
     return
@@ -269,58 +292,65 @@ where
 
 trait test_crate::loopy::Bar<Self, Self_BarTy>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self_BarTy>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self_BarTy>
 }
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()}
 impl test_crate::loopy::Bar<bool> for () {
-    parent_clause0 = Sized<bool>
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<bool>
 }
 
 trait test_crate::loopy::Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::FooTy>
-    parent_clause1 : [@TraitClause1]: test_crate::loopy::Foo<Self::FooTy>
-    parent_clause2 : [@TraitClause2]: test_crate::loopy::Bar<Self::FooTy, Self::Self_Clause2_BarTy>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::FooTy>
+    parent_clause2 : [@TraitClause2]: test_crate::loopy::Foo<Self::FooTy>
+    parent_clause3 : [@TraitClause3]: test_crate::loopy::Bar<Self::FooTy, Self::Self_Clause3_BarTy>
     type FooTy
-    type Self_Clause2_BarTy
+    type Self_Clause3_BarTy
 }
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Foo for ()}
 impl test_crate::loopy::Foo for () {
-    parent_clause0 = Sized<()>
-    parent_clause1 = {impl test_crate::loopy::Foo for ()}
-    parent_clause2 = {impl test_crate::loopy::Bar<bool> for ()}
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<()>
+    parent_clause2 = {impl test_crate::loopy::Foo for ()}
+    parent_clause3 = {impl test_crate::loopy::Bar<bool> for ()}
     type FooTy = ()
-    type Self_Clause2_BarTy = bool
+    type Self_Clause3_BarTy = bool
 }
 
 // Full name: test_crate::loopy::Baz
 trait Baz<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Baz<T, T>
-    parent_clause2 : [@TraitClause2]: test_crate::loopy::Bar<T, Self::Self_Clause2_BarTy>
-    parent_clause3 : [@TraitClause3]: Sized<Self::BazTy>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Baz<T, T>
+    parent_clause3 : [@TraitClause3]: test_crate::loopy::Bar<T, Self::Self_Clause3_BarTy>
+    parent_clause4 : [@TraitClause4]: Sized<Self::BazTy>
     type BazTy
-    type Self_Clause2_BarTy
+    type Self_Clause3_BarTy
 }
 
 // Full name: test_crate::loopy::{impl Baz<()> for ()}
 impl Baz<()> for () {
-    parent_clause0 = Sized<()>
-    parent_clause1 = {impl Baz<()> for ()}
-    parent_clause2 = {impl test_crate::loopy::Bar<bool> for ()}
-    parent_clause3 = Sized<usize>
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<()>
+    parent_clause2 = {impl Baz<()> for ()}
+    parent_clause3 = {impl test_crate::loopy::Bar<bool> for ()}
+    parent_clause4 = Sized<usize>
     type BazTy = usize
-    type Self_Clause2_BarTy = bool
+    type Self_Clause3_BarTy = bool
 }
 
 trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Sized<U>
-    parent_clause2 : [@TraitClause2]: Sized<Self_BarTy>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<U>
+    parent_clause3 : [@TraitClause3]: Sized<Self_BarTy>
 }
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}
@@ -329,40 +359,44 @@ where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
-    parent_clause0 = Sized<u8>
-    parent_clause1 = @TraitClause0
-    parent_clause2 = Sized<&'_ (T)>
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<u8>
+    parent_clause2 = @TraitClause0
+    parent_clause3 = Sized<&'_ (T)>
 }
 
 trait test_crate::loopy_with_generics::Foo<'b, Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Sized<Self::FooTy>
-    parent_clause2 : [@TraitClause2]: test_crate::loopy_with_generics::Foo<'b, Self::FooTy, T>
-    parent_clause3 : [@TraitClause3]: test_crate::loopy_with_generics::Bar<'b, Self::FooTy, u8, Option<T>[Self::parent_clause0], Self::Self_Clause3_BarTy>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self::FooTy>
+    parent_clause3 : [@TraitClause3]: test_crate::loopy_with_generics::Foo<'b, Self::FooTy, T>
+    parent_clause4 : [@TraitClause4]: test_crate::loopy_with_generics::Bar<'b, Self::FooTy, u8, Option<T>[Self::parent_clause1], Self::Self_Clause4_BarTy>
     type FooTy
-    type Self_Clause3_BarTy
+    type Self_Clause4_BarTy
 }
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
 impl test_crate::loopy_with_generics::Foo<'static, u16> for () {
-    parent_clause0 = Sized<u16>
-    parent_clause1 = Sized<()>
-    parent_clause2 = {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
-    parent_clause3 = {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}<'_, Option<u16>[Sized<u16>]>[Sized<Option<u16>[Sized<u16>]>]
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<u16>
+    parent_clause2 = Sized<()>
+    parent_clause3 = {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
+    parent_clause4 = {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}<'_, Option<u16>[Sized<u16>]>[Sized<Option<u16>[Sized<u16>]>]
     type FooTy = ()
-    type Self_Clause3_BarTy = &'_ (Option<u16>[Sized<u16>])
+    type Self_Clause4_BarTy = &'_ (Option<u16>[Sized<u16>])
 }
 
 // Full name: test_crate::cow::Cow
-enum Cow<'a, B, Clause0_Owned>
+enum Cow<'a, B, Clause1_Owned>
 where
-    [@TraitClause0]: ToOwned<B, Clause0_Owned>,
+    [@TraitClause0]: MetaSized<B>,
+    [@TraitClause1]: ToOwned<B, Clause1_Owned>,
     B : 'a,
     B : 'a,
 {
   Borrowed(&'a (B)),
-  Owned(Clause0_Owned),
+  Owned(Clause1_Owned),
 }
 
 trait test_crate::params::Foo<'a, Self, T, Self_X, Self_Item>
@@ -370,9 +404,10 @@ where
     T : 'a,
     Self_X : 'a,
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    parent_clause1 : [@TraitClause1]: Sized<Self_X>
-    parent_clause2 : [@TraitClause2]: Sized<Self_Item>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self_X>
+    parent_clause3 : [@TraitClause3]: Sized<Self_Item>
 }
 
 // Full name: test_crate::params::{impl test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'_ (())))> for ()}
@@ -381,9 +416,10 @@ where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
-    parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    parent_clause1 = Sized<&'_ (())>
-    parent_clause2 = Sized<&'_ ((Option<T>[@TraitClause0], &'_ (())))>
+    parent_clause0 = MetaSized<()>
+    parent_clause1 = Sized<Option<T>[@TraitClause0]>
+    parent_clause2 = Sized<&'_ (())>
+    parent_clause3 = Sized<&'_ ((Option<T>[@TraitClause0], &'_ (())))>
 }
 
 

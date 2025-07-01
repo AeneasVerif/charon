@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -45,7 +52,7 @@ where
     T1 : 'b,
 {
   V1(&'a mut (T1), &'b mut (T2)),
-  V2(alloc::boxed::Box<E1<'a, 'b, T2, T1>[@TraitClause1, @TraitClause0]>[Sized<Global>]),
+  V2(alloc::boxed::Box<E1<'a, 'b, T2, T1>[@TraitClause1, @TraitClause0]>[MetaSized<E1<'_, '_, T2, T1>[@TraitClause1, @TraitClause0]>, Sized<Global>]),
 }
 
 // Full name: test_crate::E2
@@ -59,7 +66,7 @@ where
     T2 : 'a,
 {
   V1(&'a mut (T1), &'b mut (T2)),
-  V3(alloc::boxed::Box<E2<'b, 'a, T1, T2>[@TraitClause0, @TraitClause1]>[Sized<Global>]),
+  V3(alloc::boxed::Box<E2<'b, 'a, T1, T2>[@TraitClause0, @TraitClause1]>[MetaSized<E2<'_, '_, T1, T2>[@TraitClause0, @TraitClause1]>, Sized<Global>]),
 }
 
 // Full name: test_crate::E3
@@ -77,8 +84,8 @@ where
     'b : 'c,
 {
   V1(&'a mut (T1), &'b mut (T2)),
-  V2(alloc::boxed::Box<E3<'a, 'b, 'c, T2, T1>[@TraitClause1, @TraitClause0]>[Sized<Global>]),
-  V3(alloc::boxed::Box<E3<'b, 'a, 'c, T1, T2>[@TraitClause0, @TraitClause1]>[Sized<Global>]),
+  V2(alloc::boxed::Box<E3<'a, 'b, 'c, T2, T1>[@TraitClause1, @TraitClause0]>[MetaSized<E3<'_, '_, '_, T2, T1>[@TraitClause1, @TraitClause0]>, Sized<Global>]),
+  V3(alloc::boxed::Box<E3<'b, 'a, 'c, T1, T2>[@TraitClause0, @TraitClause1]>[MetaSized<E3<'_, '_, '_, T1, T2>[@TraitClause0, @TraitClause1]>, Sized<Global>]),
   V4(&'c (&'a (T1))),
 }
 
@@ -99,8 +106,8 @@ where
     'b : 'c,
 {
   V1(&'a mut (T1), &'b mut (T2)),
-  V2(alloc::boxed::Box<E4<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>[Sized<Global>]),
-  V3(alloc::boxed::Box<E4<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>[Sized<Global>]),
+  V2(alloc::boxed::Box<E4<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>[MetaSized<E4<'_, '_, '_, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>, Sized<Global>]),
+  V3(alloc::boxed::Box<E4<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>[MetaSized<E4<'_, '_, '_, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>, Sized<Global>]),
   V4(&'c (&'a (T3))),
 }
 
@@ -121,8 +128,8 @@ where
     'c : 'b,
 {
   V1(&'a mut (T1), &'b mut (T2)),
-  V2(alloc::boxed::Box<E5<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>[Sized<Global>]),
-  V3(alloc::boxed::Box<E5<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>[Sized<Global>]),
+  V2(alloc::boxed::Box<E5<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>[MetaSized<E5<'_, '_, '_, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>, Sized<Global>]),
+  V3(alloc::boxed::Box<E5<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>[MetaSized<E5<'_, '_, '_, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>, Sized<Global>]),
   V4(&'a (&'c (T3))),
 }
 

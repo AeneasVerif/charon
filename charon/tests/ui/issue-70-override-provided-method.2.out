@@ -1,8 +1,13 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn required<'_0> = test_crate::Trait::required<'_0_0, Self>[Self]
     fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>[Self]
     fn provided2<'_0> = provided2<'_0_0, Self>[Self]
@@ -145,6 +150,7 @@ fn test_crate::{impl Trait for Foo}::provided2<'_0>(@1: &'_0 (Foo))
 
 // Full name: test_crate::{impl Trait for Foo}
 impl Trait for Foo {
+    parent_clause0 = MetaSized<Foo>
     fn required<'_0> = {impl Trait for Foo}::required<'_0_0>
     fn provided1<'_0> = test_crate::{impl Trait for Foo}::provided1<'_0_0>
     fn provided2<'_0> = test_crate::{impl Trait for Foo}::provided2<'_0_0>
@@ -219,6 +225,7 @@ fn test_crate::{impl Trait for Bar}::provided2<'_0>(@1: &'_0 (Bar))
 
 // Full name: test_crate::{impl Trait for Bar}
 impl Trait for Bar {
+    parent_clause0 = MetaSized<Bar>
     fn required<'_0> = {impl Trait for Bar}::required<'_0_0>
     fn provided1<'_0> = {impl Trait for Bar}::provided1<'_0_0>
     fn provided2<'_0> = test_crate::{impl Trait for Bar}::provided2<'_0_0>

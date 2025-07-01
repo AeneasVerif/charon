@@ -1,8 +1,15 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
 
 // Full name: core::default::Default
 #[lang_item("Default")]
@@ -90,19 +97,22 @@ pub fn _print<'_0>(@1: Arguments<'_0>)
 // Full name: test_crate::Left
 trait Left<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
 }
 
 // Full name: test_crate::Right
 trait Right<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<T>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
 }
 
 // Full name: test_crate::Join
 trait Join<Self, U>
 {
-    parent_clause0 : [@TraitClause0]: Sized<U>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<U>
     fn test = test_crate::Join::test<Self, U>[Self]
 }
 
@@ -123,53 +133,53 @@ where
     let @0: (); // return
     let @1: (); // anonymous local
     let @2: Arguments<'_>; // anonymous local
-    let @3: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @4: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @5: Array<&'_ (Str), 2 : usize>; // anonymous local
-    let @6: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @7: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @8: Array<Argument<'_>, 1 : usize>; // anonymous local
-    let @9: Argument<'_>; // anonymous local
-    let @10: &'_ (U); // anonymous local
-    let @11: &'_ (U); // anonymous local
-    let @12: U; // anonymous local
+    let args@3: Array<Argument<'_>, 1 : usize>; // local
+    let @4: Argument<'_>; // anonymous local
+    let @5: &'_ (U); // anonymous local
+    let @6: &'_ (U); // anonymous local
+    let @7: U; // anonymous local
+    let @8: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @9: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @10: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
-    storage_live(@3)
+    storage_live(args@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := [const (""), const ("\n")]
-    @4 := &@5
-    @3 := &*(@4)
     storage_live(@6)
     storage_live(@7)
+    @7 := @TraitClause4::default()
+    @6 := &@7
+    @5 := &*(@6)
+    @4 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@5))
+    storage_dead(@5)
+    args@3 := [move (@4)]
+    storage_dead(@4)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    @10 := [const (""), const ("\n")]
+    @9 := &@10
+    @8 := &*(@9)
     storage_live(@11)
     storage_live(@12)
-    @12 := @TraitClause4::default()
-    @11 := &@12
-    @10 := &*(@11)
-    @9 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@10))
-    storage_dead(@10)
-    @8 := [move (@9)]
-    storage_dead(@9)
-    @7 := &@8
-    @6 := &*(@7)
-    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@3), move (@6))
-    storage_dead(@6)
-    storage_dead(@3)
-    @1 := _print<'_>(move (@2))
-    storage_dead(@2)
-    drop @12
+    @12 := &args@3
+    @11 := &*(@12)
+    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@8), move (@11))
     storage_dead(@12)
     storage_dead(@11)
+    storage_dead(@10)
+    storage_dead(@9)
     storage_dead(@8)
+    @1 := _print<'_>(move (@2))
+    storage_dead(@2)
+    drop @7
     storage_dead(@7)
-    storage_dead(@5)
-    storage_dead(@4)
+    storage_dead(@6)
+    storage_dead(args@3)
     storage_dead(@1)
     @0 := ()
     @0 := ()
@@ -186,7 +196,8 @@ where
     [@TraitClause4]: Default<U>,
     [@TraitClause5]: Debug<U>,
 {
-    parent_clause0 = @TraitClause1
+    parent_clause0 = @TraitClause0::parent_clause0
+    parent_clause1 = @TraitClause1
     fn test = {impl Join<U> for T}::test<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
 }
 
@@ -198,7 +209,8 @@ where
     [@TraitClause2]: Default<U>,
     [@TraitClause3]: Debug<U>,
 {
-    parent_clause0 = @TraitClause1
+    parent_clause0 = @TraitClause0::parent_clause0
+    parent_clause1 = @TraitClause1
 }
 
 // Full name: test_crate::{impl Right<U> for T}
@@ -209,7 +221,8 @@ where
     [@TraitClause2]: Default<U>,
     [@TraitClause3]: Debug<U>,
 {
-    parent_clause0 = @TraitClause1
+    parent_clause0 = @TraitClause0::parent_clause0
+    parent_clause1 = @TraitClause1
 }
 
 // Full name: test_crate::try_it
