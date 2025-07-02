@@ -551,7 +551,7 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::Rvalue::UnaryOp(unop, operand) => {
                 let unop = match unop {
                     hax::UnOp::Not => UnOp::Not,
-                    hax::UnOp::Neg => UnOp::Neg,
+                    hax::UnOp::Neg => UnOp::Neg(OverflowMode::Wrap),
                     hax::UnOp::PtrMetadata => UnOp::PtrMetadata,
                 };
                 Ok(Rvalue::UnaryOp(

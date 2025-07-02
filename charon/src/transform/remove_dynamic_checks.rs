@@ -34,7 +34,7 @@ fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
     x.drive_body(&mut UsesLocalVisitor(local)).is_break()
 }
 
-fn make_overflow_panic<T: BodyVisitable>(
+fn make_binop_overflow_panic<T: BodyVisitable>(
     x: &mut [T],
     matches: impl Fn(&BinOp, &Operand, &Operand) -> bool,
 ) -> bool {
@@ -45,6 +45,24 @@ fn make_overflow_panic<T: BodyVisitable>(
                 && matches(binop, op_l, op_r)
             {
                 *binop = binop.with_overflow(OverflowMode::Panic);
+                found = true;
+            }
+        });
+    }
+    found
+}
+
+fn make_unop_overflow_panic<T: BodyVisitable>(
+    x: &mut [T],
+    matches: impl Fn(&UnOp, &Operand) -> bool,
+) -> bool {
+    let mut found = false;
+    for y in x.iter_mut() {
+        y.dyn_visit_in_body_mut(|rv: &mut Rvalue| {
+            if let Rvalue::UnaryOp(unop, op) = rv
+                && matches(unop, op)
+            {
+                *unop = unop.with_overflow(OverflowMode::Panic);
                 found = true;
             }
         });
@@ -142,6 +160,12 @@ fn remove_dynamic_checks(
         //   assert(move b == false)
         //   ...
         //   res := x {/,%} const y;
+        //
+        // This also overlaps with overflow checks for negation, which looks like:
+        //   is_min := x == INT::min
+        //   assert(move is_min == false)
+        //   ...
+        //   res := -x;
         [Statement {
             content:
                 RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, y_op, Operand::Const(_zero))),
@@ -157,8 +181,10 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == is_zero =>
         {
-            let found = make_overflow_panic(rest, |bop, _, r| {
+            let found = make_binop_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Div(_) | BinOp::Rem(_)) && equiv_op(r, y_op)
+            }) || make_unop_overflow_panic(rest, |unop, o| {
+                matches!(unop, UnOp::Neg(_)) && equiv_op(o, y_op)
             });
             if found {
                 rest
@@ -231,7 +257,7 @@ fn remove_dynamic_checks(
                 && let Some(cast_local) = cast.as_local()
                 && !rest.iter().any(|st| uses_local(st, cast_local)) =>
         {
-            let found = make_overflow_panic(rest, |bop, _, r| {
+            let found = make_binop_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
             });
             if found {
@@ -271,28 +297,26 @@ fn remove_dynamic_checks(
             if cond == has_overflow =>
         {
             // look for a shift operation
-            let found = make_overflow_panic(rest, |bop, _, r| {
+            let mut found = make_binop_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
             });
-            if found {
-                rest
-            } else {
+            if !found {
                 // otherwise, look for an array access
-                let mut index_used = false;
                 for stmt in rest.iter_mut() {
                     stmt.dyn_visit_in_body(|p: &Place| {
                         if let Some((_, ProjectionElem::Index { offset, .. })) = p.as_projection()
                             && equiv_op(offset, y_op)
                         {
-                            index_used = true;
+                            found = true;
                         }
                     });
                 }
-                if index_used {
-                    rest
-                } else {
-                    return;
-                }
+            }
+
+            if found {
+                rest
+            } else {
+                return;
             }
         }
 

@@ -214,3 +214,17 @@ impl BinOp {
         }
     }
 }
+
+impl UnOp {
+    pub fn with_overflow(&self, overflow: OverflowMode) -> Self {
+        match self {
+            UnOp::Neg(_) => UnOp::Neg(overflow),
+            _ => {
+                panic!(
+                    "Cannot set overflow mode for this unary operator: {:?}",
+                    self
+                );
+            }
+        }
+    }
+}
