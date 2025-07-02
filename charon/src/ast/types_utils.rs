@@ -7,7 +7,6 @@ use std::convert::Infallible;
 use std::fmt::Debug;
 use std::iter::Iterator;
 use std::mem;
-use std::ops::Index;
 
 impl TraitClause {
     /// Constructs the trait ref that refers to this clause.
@@ -701,141 +700,165 @@ impl RefKind {
     }
 }
 
+/// Visitor for type-level variables. Used to visit the variables contained in a value, as seen
+/// from the outside of the value. This means that any variable bound inside the value will be
+/// skipped, and all the seen De Bruijn indices will count from the outside of the value. The
+/// returned value, if any, will be put in place of the variable.
+pub trait VarsVisitor {
+    fn visit_region_var(&mut self, _v: RegionDbVar) -> Option<Region> {
+        None
+    }
+    fn visit_type_var(&mut self, _v: TypeDbVar) -> Option<Ty> {
+        None
+    }
+    fn visit_const_generic_var(&mut self, _v: ConstGenericDbVar) -> Option<ConstGeneric> {
+        None
+    }
+    fn visit_clause_var(&mut self, _v: ClauseDbVar) -> Option<TraitRefKind> {
+        None
+    }
+    fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
+        None
+    }
+}
+
 /// Visitor for the [TyVisitable::substitute] function.
 /// This substitutes variables bound at the level where we start to substitute (level 0).
 #[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     self_ref: &'a TraitRefKind,
-    // Tracks the depth of binders we're inside of.
-    // Important: we must update it whenever we go inside a binder.
-    binder_depth: DeBruijnId,
 }
-
 impl<'a> SubstVisitor<'a> {
     pub(crate) fn new(generics: &'a GenericArgs, self_ref: &'a TraitRefKind) -> Self {
-        Self {
-            generics,
-            self_ref,
-            binder_depth: DeBruijnId::zero(),
-        }
+        Self { generics, self_ref }
     }
 
-    /// Process the variable, either modifying the variable in-place or returning the new value to
-    /// assign to the type/region/const generic/trait ref that was this variable.
-    fn process_var<Id, T>(&self, var: &mut DeBruijnVar<Id>) -> Option<T>
+    /// Returns the value for this variable, if any.
+    fn process_var<Id, T>(&self, var: DeBruijnVar<Id>, get: impl Fn(Id) -> &'a T) -> Option<T>
     where
         Id: Copy,
-        GenericArgs: Index<Id, Output = T>,
         T: Clone + TyVisitable,
+        DeBruijnVar<Id>: Into<T>,
     {
-        use std::cmp::Ordering::*;
         match var {
-            DeBruijnVar::Bound(dbid, varid) => match (*dbid).cmp(&self.binder_depth) {
-                Equal => Some(
-                    self.generics[*varid]
-                        .clone()
-                        .move_under_binders(self.binder_depth),
-                ),
-                Greater => {
+            DeBruijnVar::Bound(dbid, varid) => {
+                Some(if let Some(dbid) = dbid.sub(DeBruijnId::one()) {
                     // This is bound outside the binder we're substituting for.
-                    *dbid = dbid.decr();
-                    None
-                }
-                Less => None,
-            },
+                    DeBruijnVar::Bound(dbid, varid).into()
+                } else {
+                    get(varid).clone()
+                })
+            }
             DeBruijnVar::Free(..) => None,
         }
     }
 }
-
-impl VisitAstMut for SubstVisitor<'_> {
-    fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-        self.binder_depth = self.binder_depth.incr()
+impl VarsVisitor for SubstVisitor<'_> {
+    fn visit_region_var(&mut self, v: RegionDbVar) -> Option<Region> {
+        self.process_var(v, |id| &self.generics[id])
     }
-    fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-        self.binder_depth = self.binder_depth.decr()
+    fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
+        self.process_var(v, |id| &self.generics[id])
     }
-    fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-        self.binder_depth = self.binder_depth.incr()
+    fn visit_const_generic_var(&mut self, v: ConstGenericDbVar) -> Option<ConstGeneric> {
+        self.process_var(v, |id| &self.generics[id])
     }
-    fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-        self.binder_depth = self.binder_depth.decr()
+    fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+        self.process_var(v, |id| &self.generics[id].kind)
     }
-
-    fn exit_region(&mut self, r: &mut Region) {
-        match r {
-            Region::Var(var) => {
-                if let Some(new_r) = self.process_var(var) {
-                    *r = new_r;
-                }
-            }
-            _ => (),
-        }
-    }
-
-    fn exit_ty(&mut self, ty: &mut Ty) {
-        let new_ty = ty.with_kind_mut(|kind| match kind {
-            TyKind::TypeVar(var) => self.process_var(var),
-            _ => None,
-        });
-        if let Some(new_ty) = new_ty {
-            *ty = new_ty
-        }
-    }
-
-    fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
-        match cg {
-            ConstGeneric::Var(var) => {
-                if let Some(new_cg) = self.process_var(var) {
-                    *cg = new_cg;
-                }
-            }
-            _ => (),
-        }
-    }
-
-    fn exit_constant_expr(&mut self, ce: &mut ConstantExpr) {
-        match &mut ce.value {
-            RawConstantExpr::Var(var) => {
-                if let Some(new_ce) = self.process_var(var) {
-                    ce.value = match new_ce {
-                        ConstGeneric::Global(id) => RawConstantExpr::Global(GlobalDeclRef {
-                            id,
-                            generics: Box::new(GenericArgs::empty()),
-                        }),
-                        ConstGeneric::Var(var) => RawConstantExpr::Var(var),
-                        ConstGeneric::Value(lit) => RawConstantExpr::Literal(lit),
-                    };
-                }
-            }
-            _ => (),
-        }
-    }
-
-    fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
-        match kind {
-            TraitRefKind::SelfId => {
-                *kind = self.self_ref.clone().move_under_binders(self.binder_depth);
-            }
-            TraitRefKind::Clause(var) => {
-                if let Some(new_tr) = self.process_var(var) {
-                    *kind = new_tr.kind;
-                }
-            }
-            _ => (),
-        }
+    fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
+        Some(self.self_ref.clone())
     }
 }
 
 /// Types that are involved at the type-level and may be substituted around.
 pub trait TyVisitable: Sized + AstVisitable {
+    /// Visit the variables contained in `self`, as seen from the outside of `self`. This means
+    /// that any variable bound inside `self` will be skipped, and all the seen De Bruijn indices
+    /// will count from the outside of `self`.
+    fn visit_vars(&mut self, v: &mut impl VarsVisitor) {
+        #[derive(Visitor)]
+        struct Wrap<'v, V> {
+            v: &'v mut V,
+            depth: DeBruijnId,
+        }
+        impl<V: VarsVisitor> VisitAstMut for Wrap<'_, V> {
+            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                self.depth = self.depth.incr()
+            }
+            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                self.depth = self.depth.decr()
+            }
+            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                self.depth = self.depth.incr()
+            }
+            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                self.depth = self.depth.decr()
+            }
+
+            fn exit_region(&mut self, r: &mut Region) {
+                if let Region::Var(var) = r
+                    && let Some(var) = var.move_out_from_depth(self.depth)
+                    && let Some(new_r) = self.v.visit_region_var(var)
+                {
+                    *r = new_r.move_under_binders(self.depth);
+                }
+            }
+            fn exit_ty(&mut self, ty: &mut Ty) {
+                if let TyKind::TypeVar(var) = ty.kind()
+                    && let Some(var) = var.move_out_from_depth(self.depth)
+                    && let Some(new_ty) = self.v.visit_type_var(var)
+                {
+                    *ty = new_ty.move_under_binders(self.depth);
+                }
+            }
+            fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
+                if let ConstGeneric::Var(var) = cg
+                    && let Some(var) = var.move_out_from_depth(self.depth)
+                    && let Some(new_cg) = self.v.visit_const_generic_var(var)
+                {
+                    *cg = new_cg.move_under_binders(self.depth);
+                }
+            }
+            fn exit_constant_expr(&mut self, ce: &mut ConstantExpr) {
+                if let RawConstantExpr::Var(var) = &mut ce.value
+                    && let Some(var) = var.move_out_from_depth(self.depth)
+                    && let Some(new_cg) = self.v.visit_const_generic_var(var)
+                {
+                    ce.value = new_cg.move_under_binders(self.depth).into();
+                }
+            }
+            fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
+                match kind {
+                    TraitRefKind::SelfId => {
+                        if let Some(new_kind) = self.v.visit_self_clause() {
+                            *kind = new_kind.move_under_binders(self.depth);
+                        }
+                    }
+                    TraitRefKind::Clause(var) => {
+                        if let Some(var) = var.move_out_from_depth(self.depth)
+                            && let Some(new_kind) = self.v.visit_clause_var(var)
+                        {
+                            *kind = new_kind.move_under_binders(self.depth);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        let _ = self.drive_mut(&mut Wrap {
+            v,
+            depth: DeBruijnId::zero(),
+        });
+    }
+
     fn substitute(self, generics: &GenericArgs) -> Self {
         self.substitute_with_self(generics, &TraitRefKind::SelfId)
     }
 
     fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
-        let _ = self.drive_mut(&mut SubstVisitor::new(generics, self_ref));
+        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref));
         self
     }
 

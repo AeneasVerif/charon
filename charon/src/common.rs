@@ -27,6 +27,27 @@ pub fn pretty_display_list<T>(
     }
 }
 
+/// Implement `From` and `TryFrom` to wrap/unwrap enum variants with a single payload.
+#[macro_export]
+macro_rules! impl_from_enum {
+    ($enum:ident::$variant:ident($ty:ty)) => {
+        impl From<$ty> for $enum {
+            fn from(x: $ty) -> Self {
+                $enum::$variant(x)
+            }
+        }
+        impl TryFrom<$enum> for $ty {
+            type Error = ();
+            fn try_from(e: $enum) -> Result<Self, Self::Error> {
+                match e {
+                    $enum::$variant(x) => Ok(x),
+                    _ => Err(()),
+                }
+            }
+        }
+    };
+}
+
 /// Yield `None` then infinitely many `Some(x)`.
 pub fn repeat_except_first<T: Clone>(x: T) -> impl Iterator<Item = Option<T>> {
     [None].into_iter().chain(std::iter::repeat(Some(x)))
