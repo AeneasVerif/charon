@@ -1889,7 +1889,9 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Not" -> Ok Not
-    | `String "Neg" -> Ok Neg
+    | `Assoc [ ("Neg", neg) ] ->
+        let* neg = overflow_mode_of_json ctx neg in
+        Ok (Neg neg)
     | `String "PtrMetadata" -> Ok PtrMetadata
     | `Assoc [ ("Cast", cast) ] ->
         let* cast = cast_kind_of_json ctx cast in

@@ -409,10 +409,7 @@ and rvalue =
 (** Unary operation *)
 and unop =
   | Not
-  | Neg
-      (** This can overflow. In practice, rust introduces an assert before (in
-          debug mode) to check that it is not equal to the minimum integer value
-          (for the proper type). *)
+  | Neg of overflow_mode  (** This can overflow, for [-i::MIN]. *)
   | PtrMetadata
       (** Retreive the metadata part of a fat pointer. For slices, this
           retreives their length. *)

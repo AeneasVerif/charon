@@ -86,7 +86,7 @@ and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
 and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   match unop with
   | Not -> "¬"
-  | Neg -> "-"
+  | Neg om -> overflow_mode_to_string om ^ ".-"
   | PtrMetadata -> "ptr_metadata"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
   | ArrayToSlice _ -> "to_slice"

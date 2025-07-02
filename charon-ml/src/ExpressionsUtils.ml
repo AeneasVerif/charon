@@ -1,8 +1,8 @@
 open Expressions
 
 let unop_can_fail : unop -> bool = function
-  | Neg | Cast _ | PtrMetadata | ArrayToSlice _ -> true
-  | Not -> false
+  | Neg (OPanic | OUB) | Cast _ | PtrMetadata | ArrayToSlice _ -> true
+  | Neg OWrap | Not -> false
 
 let binop_can_fail : binop -> bool = function
   | BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt
