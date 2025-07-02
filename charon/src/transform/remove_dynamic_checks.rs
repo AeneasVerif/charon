@@ -34,6 +34,31 @@ fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
     x.drive_body(&mut UsesLocalVisitor(local)).is_break()
 }
 
+fn make_overflow_panic<T: BodyVisitable>(
+    x: &mut [T],
+    matches: impl Fn(&BinOp, &Operand, &Operand) -> bool,
+) {
+    for y in x.iter_mut() {
+        y.dyn_visit_in_body_mut(|rv: &mut Rvalue| {
+            if let Rvalue::BinaryOp(binop, op_l, op_r) = rv
+                && matches(binop, op_l, op_r)
+            {
+                *binop = binop.with_overflow(OverflowMode::Panic);
+            }
+        });
+    }
+}
+
+/// Check if the two operands are equivalent: either they're the same constant, or they represent
+/// the same place (regardless of whether the operand is a move or a copy)
+fn equiv_op(op_l: &Operand, op_r: &Operand) -> bool {
+    match (op_l, op_r) {
+        (Operand::Copy(l) | Operand::Move(l), Operand::Copy(r) | Operand::Move(r)) => l == r,
+        (Operand::Const(l), Operand::Const(r)) => l == r,
+        _ => false,
+    }
+}
+
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` statement (and
 /// this is the only use of this statement).
 fn remove_dynamic_checks(
@@ -126,11 +151,18 @@ fn remove_dynamic_checks(
         }
 
         // Zero checks for division and remainder. They look like:
-        //   b := copy x == const 0
+        //   b := copy y == const 0
         //   assert(move b == false)
+        //   ...
+        //   res := x {/,%} move y;
+        //   ... or ...
+        //   b := const y == const 0
+        //   assert(move b == false)
+        //   ...
+        //   res := x {/,%} const y;
         [Statement {
             content:
-                RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, _, Operand::Const(_zero))),
+                RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, y_op, Operand::Const(_zero))),
             ..
         }, Statement {
             content:
@@ -143,17 +175,9 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == is_zero =>
         {
-            if let [Statement {
-                content:
-                    RawStatement::Assign(
-                        _,
-                        Rvalue::BinaryOp(bop @ (BinOp::Div(_) | BinOp::Rem(_)), _, _),
-                    ),
-                ..
-            }, ..] = rest
-            {
-                *bop = bop.with_overflow(OverflowMode::Panic);
-            }
+            make_overflow_panic(rest, |bop, _, r| {
+                matches!(bop, BinOp::Div(_) | BinOp::Rem(_)) && equiv_op(r, y_op)
+            });
             rest
         }
 
@@ -162,6 +186,8 @@ fn remove_dynamic_checks(
         //   is_min := x == INT::min
         //   has_overflow := move (is_neg_1) & move (is_min)
         //   assert(move has_overflow == false)
+        // Note here we don't need to update the operand to panic, as this was already done
+        // by the previous pass for division by zero.
         [Statement {
             content: RawStatement::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
             ..
@@ -186,26 +212,17 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if and_op1 == is_neg_1 && and_op2 == is_min && cond == has_overflow =>
         {
-            if let [Statement {
-                content:
-                    RawStatement::Assign(
-                        _,
-                        Rvalue::BinaryOp(bop @ (BinOp::Div(_) | BinOp::Rem(_)), _, _),
-                    ),
-                ..
-            }, ..] = rest
-            {
-                *bop = bop.with_overflow(OverflowMode::Panic);
-            }
             rest
         }
 
         // Overflow checks for right/left shift. They can look like:
-        //   a := _ as u32; // or another type
+        //   a := y as u32; // or another type
         //   b := move a < const 32; // or another constant
         //   assert(move b == true);
+        //   ...
+        //   res := x {<<,>>} y;
         [Statement {
-            content: RawStatement::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), _)),
+            content: RawStatement::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), y_op)),
             ..
         }, Statement {
             content:
@@ -228,25 +245,22 @@ fn remove_dynamic_checks(
                 && let Some(cast_local) = cast.as_local()
                 && !rest.iter().any(|st| uses_local(st, cast_local)) =>
         {
-            if let [Statement {
-                content:
-                    RawStatement::Assign(
-                        _,
-                        Rvalue::BinaryOp(bop @ (BinOp::Shl(_) | BinOp::Shr(_)), _, _),
-                    ),
-                ..
-            }, ..] = rest
-            {
-                *bop = bop.with_overflow(OverflowMode::Panic);
-            }
+            make_overflow_panic(rest, |bop, _, r| {
+                matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
+            });
             rest
         }
         // or like:
-        //   b := _ < const 32; // or another constant
+        //   b := y < const 32; // or another constant
         //   assert(move b == true);
+        //   ...
+        //   res := x {<<,>>} y;
         [Statement {
             content:
-                RawStatement::Assign(has_overflow, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(..))),
+                RawStatement::Assign(
+                    has_overflow,
+                    Rvalue::BinaryOp(BinOp::Lt, y_op, Operand::Const(..)),
+                ),
             ..
         }, Statement {
             content:
@@ -259,17 +273,9 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == has_overflow =>
         {
-            if let [Statement {
-                content:
-                    RawStatement::Assign(
-                        _,
-                        Rvalue::BinaryOp(bop @ (BinOp::Shl(_) | BinOp::Shr(_)), _, _),
-                    ),
-                ..
-            }, ..] = rest
-            {
-                *bop = bop.with_overflow(OverflowMode::Panic);
-            }
+            make_overflow_panic(rest, |bop, _, r| {
+                matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
+            });
             rest
         }
 
