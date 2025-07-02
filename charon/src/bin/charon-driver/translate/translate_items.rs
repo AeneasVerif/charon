@@ -478,7 +478,7 @@ impl ItemTransCtx<'_, '_> {
                 hax::FullDefKind::AssocFn { .. } => {
                     let fun_def = self.hax_def(item_def_id)?;
                     let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
-                    let fn_ref = self.translate_binder_for_def(
+                    let mut fn_ref = self.translate_binder_for_def(
                         item_span,
                         binder_kind,
                         &fun_def,
@@ -500,27 +500,55 @@ impl ItemTransCtx<'_, '_> {
                             };
 
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
-                            let mut fun_generics = bt_ctx
+                            let fun_generics = bt_ctx
                                 .outermost_binder()
                                 .params
-                                .identity_args_at_depth(DeBruijnId::one());
-                            // Add the necessary explicit `Self` clause at the start.
-                            fun_generics.trait_refs.insert_and_shift_ids(
-                                0.into(),
-                                self_trait_ref.clone().move_under_binder(),
-                            );
-                            fun_generics = fun_generics.concat(
-                                &bt_ctx
-                                    .innermost_binder()
-                                    .params
-                                    .identity_args_at_depth(DeBruijnId::zero()),
-                            );
+                                .identity_args_at_depth(DeBruijnId::one())
+                                .concat(
+                                    &bt_ctx
+                                        .innermost_binder()
+                                        .params
+                                        .identity_args_at_depth(DeBruijnId::zero()),
+                                );
                             Ok(FunDeclRef {
                                 id: fun_id,
                                 generics: Box::new(fun_generics),
                             })
                         },
                     )?;
+                    // In hax, associated items take an extra explicit `Self: Trait` clause, but we
+                    // don't want that to be part of the method clauses. Hence we remove the first
+                    // bound clause and replace its uses with references to the ambient `Self`
+                    // clause available in trait declarations.
+                    {
+                        struct ReplaceSelfVisitor;
+                        impl VarsVisitor for ReplaceSelfVisitor {
+                            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+                                if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
+                                    // Replace clause 0 and decrement the others.
+                                    Some(if let Some(new_id) = clause_id.index().checked_sub(1) {
+                                        TraitRefKind::Clause(DeBruijnVar::Bound(
+                                            DeBruijnId::ZERO,
+                                            TraitClauseId::new(new_id),
+                                        ))
+                                    } else {
+                                        TraitRefKind::SelfId
+                                    })
+                                } else {
+                                    None
+                                }
+                            }
+                        }
+                        fn_ref.params.visit_vars(&mut ReplaceSelfVisitor);
+                        fn_ref.skip_binder.visit_vars(&mut ReplaceSelfVisitor);
+                        fn_ref
+                            .params
+                            .trait_clauses
+                            .remove_and_shift_ids(TraitClauseId::ZERO);
+                        fn_ref.params.trait_clauses.iter_mut().for_each(|clause| {
+                            clause.clause_id -= 1;
+                        });
+                    }
                     methods.push((item_name.clone(), fn_ref));
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {

@@ -9,7 +9,7 @@ use derive_generic_visitor::{Drive, DriveMut};
 use index_vec::Idx;
 use serde::{Deserialize, Serialize};
 
-use crate::ast::*;
+use crate::{ast::*, impl_from_enum};
 
 /// The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details.
 #[derive(
@@ -30,6 +30,10 @@ use crate::ast::*;
 #[drive(skip)]
 pub struct DeBruijnId {
     pub index: usize,
+}
+
+impl DeBruijnId {
+    pub const ZERO: DeBruijnId = DeBruijnId { index: 0 };
 }
 
 /// Type-level variable.
@@ -166,6 +170,16 @@ pub type RegionDbVar = DeBruijnVar<RegionId>;
 pub type TypeDbVar = DeBruijnVar<TypeVarId>;
 pub type ConstGenericDbVar = DeBruijnVar<ConstGenericVarId>;
 pub type ClauseDbVar = DeBruijnVar<TraitClauseId>;
+
+impl_from_enum!(Region::Var(RegionDbVar));
+impl_from_enum!(TyKind::TypeVar(TypeDbVar));
+impl_from_enum!(ConstGeneric::Var(ConstGenericDbVar));
+impl_from_enum!(TraitRefKind::Clause(ClauseDbVar));
+impl From<TypeDbVar> for Ty {
+    fn from(x: TypeDbVar) -> Self {
+        TyKind::TypeVar(x).into_ty()
+    }
+}
 
 impl DeBruijnId {
     pub fn zero() -> Self {

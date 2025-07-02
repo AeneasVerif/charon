@@ -181,3 +181,16 @@ impl ProjectionElem {
         })
     }
 }
+
+impl From<ConstGeneric> for RawConstantExpr {
+    fn from(cg: ConstGeneric) -> Self {
+        match cg {
+            ConstGeneric::Global(id) => RawConstantExpr::Global(GlobalDeclRef {
+                id,
+                generics: Box::new(GenericArgs::empty()),
+            }),
+            ConstGeneric::Var(var) => RawConstantExpr::Var(var),
+            ConstGeneric::Value(lit) => RawConstantExpr::Literal(lit),
+        }
+    }
+}

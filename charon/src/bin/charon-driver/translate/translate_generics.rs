@@ -340,7 +340,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         def: &hax::FullDef,
         is_parent: bool,
-        explicit_self_clause: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind::*;
         // Add generics from the parent item, recursively (recursivity is important for closures,
@@ -357,17 +356,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | Variant { .. } => {
                 let parent_def_id = def.parent.as_ref().unwrap();
                 let parent_def = self.hax_def(parent_def_id)?;
-                self.push_generics_for_def(span, &parent_def, true, true)?;
+                self.push_generics_for_def(span, &parent_def, true)?;
             }
             _ => {}
         }
-        self.push_generics_for_def_without_parents(
-            span,
-            def,
-            !is_parent,
-            !is_parent,
-            explicit_self_clause,
-        )?;
+        self.push_generics_for_def_without_parents(span, def, !is_parent, !is_parent)?;
         Ok(())
     }
 
@@ -379,34 +372,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
         include_late_bound: bool,
         include_assoc_ty_clauses: bool,
-        explicit_self_clause: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
         if let Some(param_env) = def.param_env() {
             // Add the generic params.
             self.push_generic_params(&param_env.generics)?;
-            // Add the explicit self trait clause if required.
-            if let FullDefKind::Trait { self_predicate, .. } = &def.kind
-                && explicit_self_clause
-            {
-                // We add an explicit `Self` clause to trait method declarations. Trait method
-                // implementations already don't use the implicit `Self` clause. This way, methods
-                // don't need an implicit `Self` clause: they're normal functions, and the trait
-                // decl/impl takes care to pass the right arguments.
-                let self_predicate =
-                    RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?);
-                let clause_id =
-                    self.innermost_generics_mut()
-                        .trait_clauses
-                        .push_with(|clause_id| TraitClause {
-                            clause_id,
-                            origin: PredicateOrigin::TraitSelf,
-                            span: Some(span),
-                            trait_: self_predicate,
-                        });
-                // Record the id so we can resolve `ImplExpr::Self`s to it.
-                self.self_clause_id = Some(clause_id);
-            }
             // Add the predicates.
             let origin = match &def.kind {
                 FullDefKind::Struct { .. }
@@ -526,7 +496,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         assert!(self.binding_levels.len() == 0);
         self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def(span, def, false, false)?;
+        self.push_generics_for_def(span, def, false)?;
         self.innermost_binder_mut().params.check_consistency();
         Ok(())
     }
@@ -538,7 +508,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
     ) -> Result<(), Error> {
         self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def_without_parents(span, def, true, true, false)?;
+        self.push_generics_for_def_without_parents(span, def, true, true)?;
         self.innermost_binder().params.check_consistency();
         Ok(())
     }
