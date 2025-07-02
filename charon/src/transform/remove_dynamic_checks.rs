@@ -37,16 +37,19 @@ fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
 fn make_overflow_panic<T: BodyVisitable>(
     x: &mut [T],
     matches: impl Fn(&BinOp, &Operand, &Operand) -> bool,
-) {
+) -> bool {
+    let mut found = false;
     for y in x.iter_mut() {
         y.dyn_visit_in_body_mut(|rv: &mut Rvalue| {
             if let Rvalue::BinaryOp(binop, op_l, op_r) = rv
                 && matches(binop, op_l, op_r)
             {
                 *binop = binop.with_overflow(OverflowMode::Panic);
+                found = true;
             }
         });
     }
+    found
 }
 
 /// Check if the two operands are equivalent: either they're the same constant, or they represent
@@ -59,7 +62,7 @@ fn equiv_op(op_l: &Operand, op_r: &Operand) -> bool {
     }
 }
 
-/// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` statement (and
+/// Rustc inserts dynamic checks during MIR lowering. They all end in an `Assert` statement (and
 /// this is the only use of this statement).
 fn remove_dynamic_checks(
     _ctx: &mut TransformCtx,
@@ -129,27 +132,6 @@ fn remove_dynamic_checks(
             rest
         }
 
-        // Bounds checks for arrays. They look like:
-        //   b := copy x < const _
-        //   assert(move b == true)
-        [Statement {
-            content:
-                RawStatement::Assign(is_in_bounds, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(_))),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: true,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if cond == is_in_bounds =>
-        {
-            rest
-        }
-
         // Zero checks for division and remainder. They look like:
         //   b := copy y == const 0
         //   assert(move b == false)
@@ -175,10 +157,14 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == is_zero =>
         {
-            make_overflow_panic(rest, |bop, _, r| {
+            let found = make_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Div(_) | BinOp::Rem(_)) && equiv_op(r, y_op)
             });
-            rest
+            if found {
+                rest
+            } else {
+                return;
+            }
         }
 
         // Overflow checks for signed division and remainder. They look like:
@@ -245,16 +231,27 @@ fn remove_dynamic_checks(
                 && let Some(cast_local) = cast.as_local()
                 && !rest.iter().any(|st| uses_local(st, cast_local)) =>
         {
-            make_overflow_panic(rest, |bop, _, r| {
+            let found = make_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
             });
-            rest
+            if found {
+                rest
+            } else {
+                return;
+            }
         }
         // or like:
         //   b := y < const 32; // or another constant
         //   assert(move b == true);
         //   ...
         //   res := x {<<,>>} y;
+        //
+        // this also overlaps with out of bounds checks for arrays, so we check for either;
+        // these look like:
+        //   b := copy y < const _
+        //   assert(move b == true)
+        //   ...
+        //   res := a[y];
         [Statement {
             content:
                 RawStatement::Assign(
@@ -273,10 +270,30 @@ fn remove_dynamic_checks(
         }, rest @ ..]
             if cond == has_overflow =>
         {
-            make_overflow_panic(rest, |bop, _, r| {
+            // look for a shift operation
+            let found = make_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
             });
-            rest
+            if found {
+                rest
+            } else {
+                // otherwise, look for an array access
+                let mut index_used = false;
+                for stmt in rest.iter_mut() {
+                    stmt.dyn_visit_in_body(|p: &Place| {
+                        if let Some((_, ProjectionElem::Index { offset, .. })) = p.as_projection()
+                            && equiv_op(offset, y_op)
+                        {
+                            index_used = true;
+                        }
+                    });
+                }
+                if index_used {
+                    rest
+                } else {
+                    return;
+                }
+            }
         }
 
         // Overflow checks for addition/subtraction/multiplication. They look like:

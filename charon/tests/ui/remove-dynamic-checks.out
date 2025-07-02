@@ -6,9 +6,13 @@ pub fn neg_test(@1: i32) -> i32
     let @0: i32; // return
     let x@1: i32; // arg #1
     let @2: i32; // anonymous local
+    let @3: bool; // anonymous local
 
+    storage_live(@3)
     storage_live(@2)
     @2 := copy (x@1)
+    @3 := copy (@2) == const (-2147483648 : i32)
+    assert(move (@3) == false)
     @0 := -(move (@2))
     storage_dead(@2)
     return
@@ -482,7 +486,7 @@ fn shl_u32(@1: u32, @2: u32) -> u32
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := move (@3) wrap.<< move (@4)
+    @0 := move (@3) panic.<< move (@4)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -501,7 +505,7 @@ fn shr_u32(@1: u32, @2: u32) -> u32
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := move (@3) wrap.>> move (@4)
+    @0 := move (@3) panic.>> move (@4)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -527,7 +531,7 @@ fn shr_add_u32(@1: u32, @2: u32) -> u32
     @6 := copy (@5) panic.+ const (1 : u32)
     @4 := move (@6)
     storage_dead(@5)
-    @0 := move (@3) wrap.>> move (@4)
+    @0 := move (@3) panic.>> move (@4)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -588,7 +592,7 @@ fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
     @5 := copy (y@2)
     @4 := cast<i32, u32>(move (@5))
     storage_dead(@5)
-    @0 := move (@3) wrap.>> move (@4)
+    @0 := move (@3) panic.>> move (@4)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -748,7 +752,7 @@ pub fn test_crate::_#11() -> u32
 
     storage_live(@1)
     @1 := test_crate::FOO
-    @0 := const (2 : u32) wrap.>> move (@1)
+    @0 := const (2 : u32) panic.>> move (@1)
     return
 }
 
@@ -761,7 +765,7 @@ pub fn test_crate::_#12() -> u32
 
     storage_live(@1)
     @1 := test_crate::FOO
-    @0 := const (2 : u32) wrap.<< move (@1)
+    @0 := const (2 : u32) panic.<< move (@1)
     return
 }
 
