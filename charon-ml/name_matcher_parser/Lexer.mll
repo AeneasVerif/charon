@@ -5,7 +5,7 @@
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z']
-let ident = (alpha) (alpha | digit | '_')*
+let ident = (alpha | '_') (alpha | digit | '_')*
 let whitespace = [' ']+
 
 (* Rules *)
@@ -40,7 +40,7 @@ rule token = parse
   | _ { raise (Failure ("Character not allowed in source text: '" ^ Lexing.lexeme lexbuf ^ "'")) }
 
 and index = parse
+  | '_' { None }
   | ident { Some (VarName (Lexing.lexeme lexbuf)) }
   | digit+ { Some (VarIndex (int_of_string (Lexing.lexeme lexbuf))) }
-  | '_' { None }
   | "" { None }
