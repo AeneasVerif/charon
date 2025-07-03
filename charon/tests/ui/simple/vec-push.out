@@ -128,7 +128,7 @@ where
     src@11 := move (value@2)
     *(end@9) := copy (src@11)
     storage_dead(src@11)
-    (*(self@1)).len := copy (len@3) wrapping.+ const (1 : usize)
+    (*(self@1)).len := copy (len@3) wrap.+ const (1 : usize)
     @0 := ()
     return
 }

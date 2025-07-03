@@ -454,7 +454,7 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
         if move (@7) {
             storage_dead(@9)
             storage_dead(@8)
-            @10 := copy (sampled@2) + const (100 : usize)
+            @10 := copy (sampled@2) panic.+ const (100 : usize)
             sampled@2 := move (@10)
         }
         else {
@@ -469,7 +469,7 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     storage_dead(@7)
     storage_dead(@4)
     storage_dead(@3)
-    @11 := copy (sampled@2) + const (101 : usize)
+    @11 := copy (sampled@2) panic.+ const (101 : usize)
     sampled@2 := move (@11)
     @0 := copy (sampled@2)
     storage_dead(sampled@2)
@@ -670,7 +670,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 @26 := copy (b2@17)
                 @25 := move (@26) & const (15 : i16)
                 storage_dead(@26)
-                @24 := move (@25) << const (8 : i32)
+                @24 := move (@25) panic.<< const (8 : i32)
                 storage_dead(@25)
                 storage_live(@27)
                 @27 := copy (b1@14)
@@ -681,12 +681,12 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@29)
                 storage_live(@30)
                 @30 := copy (b3@20)
-                @29 := move (@30) << const (4 : i32)
+                @29 := move (@30) panic.<< const (4 : i32)
                 storage_dead(@30)
                 storage_live(@31)
                 storage_live(@32)
                 @32 := copy (b2@17)
-                @31 := move (@32) >> const (4 : i32)
+                @31 := move (@32) panic.>> const (4 : i32)
                 storage_dead(@32)
                 d2@28 := move (@29) | move (@31)
                 storage_dead(@31)
@@ -716,7 +716,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         *(@51) := move (@38)
                         storage_dead(@38)
                         storage_dead(@39)
-                        @40 := copy (sampled@3) + const (1 : usize)
+                        @40 := copy (sampled@3) panic.+ const (1 : usize)
                         sampled@3 := move (@40)
                     }
                     else {
@@ -753,7 +753,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         *(@53) := move (@45)
                         storage_dead(@45)
                         storage_dead(@46)
-                        @47 := copy (sampled@3) + const (1 : usize)
+                        @47 := copy (sampled@3) panic.+ const (1 : usize)
                         sampled@3 := move (@47)
                     }
                     else {

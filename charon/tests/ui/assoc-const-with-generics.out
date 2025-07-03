@@ -66,7 +66,7 @@ fn {impl HasLen for Array<bool, const N : usize>}::LEN<const N : usize>() -> usi
     let @1: usize; // anonymous local
 
     storage_live(@1)
-    @1 := const (const N : usize) + const (1 : usize)
+    @1 := const (const N : usize) panic.+ const (1 : usize)
     @0 := move (@1)
     return
 }
@@ -188,7 +188,7 @@ where
     let @1: usize; // anonymous local
 
     storage_live(@1)
-    @1 := const (@TraitClause0::parent_clause1::LEN) + const (1 : usize)
+    @1 := const (@TraitClause0::parent_clause1::LEN) panic.+ const (1 : usize)
     @0 := move (@1)
     return
 }

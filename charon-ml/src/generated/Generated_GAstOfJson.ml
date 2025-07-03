@@ -144,19 +144,30 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `String "Ne" -> Ok Ne
     | `String "Ge" -> Ok Ge
     | `String "Gt" -> Ok Gt
-    | `String "Div" -> Ok Div
-    | `String "Rem" -> Ok Rem
-    | `String "Add" -> Ok Add
-    | `String "Sub" -> Ok Sub
-    | `String "Mul" -> Ok Mul
-    | `String "WrappingAdd" -> Ok WrappingAdd
-    | `String "WrappingSub" -> Ok WrappingSub
-    | `String "WrappingMul" -> Ok WrappingMul
-    | `String "CheckedAdd" -> Ok CheckedAdd
-    | `String "CheckedSub" -> Ok CheckedSub
-    | `String "CheckedMul" -> Ok CheckedMul
-    | `String "Shl" -> Ok Shl
-    | `String "Shr" -> Ok Shr
+    | `Assoc [ ("Add", add) ] ->
+        let* add = overflow_mode_of_json ctx add in
+        Ok (Add add)
+    | `Assoc [ ("Sub", sub) ] ->
+        let* sub = overflow_mode_of_json ctx sub in
+        Ok (Sub sub)
+    | `Assoc [ ("Mul", mul) ] ->
+        let* mul = overflow_mode_of_json ctx mul in
+        Ok (Mul mul)
+    | `Assoc [ ("Div", div) ] ->
+        let* div = overflow_mode_of_json ctx div in
+        Ok (Div div)
+    | `Assoc [ ("Rem", rem) ] ->
+        let* rem = overflow_mode_of_json ctx rem in
+        Ok (Rem rem)
+    | `String "AddChecked" -> Ok AddChecked
+    | `String "SubChecked" -> Ok SubChecked
+    | `String "MulChecked" -> Ok MulChecked
+    | `Assoc [ ("Shl", shl) ] ->
+        let* shl = overflow_mode_of_json ctx shl in
+        Ok (Shl shl)
+    | `Assoc [ ("Shr", shr) ] ->
+        let* shr = overflow_mode_of_json ctx shr in
+        Ok (Shr shr)
     | `String "Offset" -> Ok Offset
     | `String "Cmp" -> Ok Cmp
     | _ -> Error "")
@@ -1189,6 +1200,15 @@ and outlives_pred_of_json :
         Ok (x_0, x_1)
     | _ -> Error "")
 
+and overflow_mode_of_json (ctx : of_json_ctx) (js : json) :
+    (overflow_mode, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Panic" -> Ok OPanic
+    | `String "UB" -> Ok OUB
+    | `String "Wrap" -> Ok OWrap
+    | _ -> Error "")
+
 and path_elem_of_json (ctx : of_json_ctx) (js : json) :
     (path_elem, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1869,7 +1889,9 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Not" -> Ok Not
-    | `String "Neg" -> Ok Neg
+    | `Assoc [ ("Neg", neg) ] ->
+        let* neg = overflow_mode_of_json ctx neg in
+        Ok (Neg neg)
     | `String "PtrMetadata" -> Ok PtrMetadata
     | `Assoc [ ("Cast", cast) ] ->
         let* cast = cast_kind_of_json ctx cast in

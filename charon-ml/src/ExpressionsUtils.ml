@@ -1,26 +1,15 @@
 open Expressions
 
-let unop_can_fail (unop : unop) : bool =
-  match unop with
-  | Neg | Cast _ | PtrMetadata | ArrayToSlice _ -> true
-  | Not -> false
+let unop_can_fail : unop -> bool = function
+  | Neg (OPanic | OUB) | Cast _ | PtrMetadata | ArrayToSlice _ -> true
+  | Neg OWrap | Not -> false
 
-let binop_can_fail (binop : binop) : bool =
-  match binop with
-  | BitXor
-  | BitAnd
-  | BitOr
-  | Eq
-  | Lt
-  | Le
-  | Ne
-  | Ge
-  | Gt
-  | WrappingAdd
-  | WrappingSub
-  | WrappingMul
-  | CheckedAdd
-  | CheckedSub
-  | CheckedMul
-  | Cmp -> false
-  | Div | Rem | Add | Sub | Mul | Shl | Shr | Offset -> true
+let binop_can_fail : binop -> bool = function
+  | BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt
+  | Add OWrap
+  | Sub OWrap
+  | Mul OWrap
+  | Shl OWrap
+  | Shr OWrap
+  | AddChecked | SubChecked | MulChecked | Cmp -> false
+  | Div _ | Rem _ | Add _ | Sub _ | Mul _ | Shl _ | Shr _ | Offset -> true
