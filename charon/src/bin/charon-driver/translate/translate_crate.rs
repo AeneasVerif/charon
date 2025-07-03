@@ -1,3 +1,19 @@
+//! This file governs the overall translation of items.
+//!
+//! Translation works as follows: we translate each `TransItemSource` of interest into an
+//! appropriate item. In the process of translating an item we may find more `hax::DefId`s of
+//! interest; we register those as an appropriate `TransItemSource`, which will 1/ enqueue the item
+//! so that it eventually gets translated too, and 2/ return an `AnyTransId` we can use to refer to
+//! it.
+//!
+//! We start with the DefId of the current crate (or of anything passed to `--start-from`) and
+//! recursively translate everything we find.
+//!
+//! There's another important component at play: opacity. Each item is assigned an opacity based on
+//! its name. By default, items from the local crate are transparent and items from foreign crates
+//! are opaque (this can be controlled with `--include`, `--opaque` and `--exclude`). If an item is
+//! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
+//! signature) but not its contents.
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
@@ -66,6 +82,10 @@ impl Ord for TransItemSource {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
+    ///
+    /// Note that this registers items depth-first instead of the typical breadth-first/lazy order
+    /// that arises when we enqueue items. The ordering matters for now so we keep this; eventually
+    /// it would be nice to have modules work with `TransItemSource` too.
     fn register_module_item(&mut self, def_id: &hax::DefId) {
         use hax::DefKind::*;
         trace!("Registering {def_id:?}");
