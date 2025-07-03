@@ -81,42 +81,23 @@ impl Ord for TransItemSource {
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
-    /// Add this item to the queue of items to translate. Each translated item will then
-    /// recursively register the items it refers to. We call this on the crate root and end up
-    /// exploring the whole crate.
-    #[tracing::instrument(skip(self))]
-    pub fn enqueue_item(&mut self, def_id: &hax::DefId) {
+    /// Returns the default translation kind for the given `DefId`. Returns `None` for items that
+    /// we don't translate. Errors on unexpected items.
+    pub fn base_kind_for_item(&mut self, def_id: &hax::DefId) -> Option<TransItemSourceKind> {
         use hax::DefKind::*;
-        match &def_id.kind {
+        Some(match &def_id.kind {
             Enum { .. } | Struct { .. } | Union { .. } | TyAlias { .. } | ForeignTy => {
-                let _ = self.register_type_decl_id(&None, def_id);
+                TransItemSourceKind::Type
             }
-            Fn { .. } | AssocFn { .. } => {
-                let _ = self.register_fun_decl_id(&None, def_id);
-            }
-            Const { .. } | Static { .. } | AssocConst { .. } => {
-                let _ = self.register_global_decl_id(&None, def_id);
-            }
-
-            Trait { .. } | TraitAlias { .. } => {
-                let _ = self.register_trait_decl_id(&None, def_id);
-            }
-            Impl { of_trait: true } => {
-                let _ = self.register_trait_impl_id(&None, def_id);
-            }
-
-            Impl { of_trait: false } => {
-                let trans_src =
-                    TransItemSource::new(def_id.clone(), TransItemSourceKind::InherentImpl);
-                self.items_to_translate.insert(trans_src);
-            }
-            Mod { .. } | ForeignMod { .. } => {
-                let trans_src = TransItemSource::new(def_id.clone(), TransItemSourceKind::Module);
-                self.items_to_translate.insert(trans_src);
-            }
+            Fn { .. } | AssocFn { .. } => TransItemSourceKind::Fun,
+            Const { .. } | Static { .. } | AssocConst { .. } => TransItemSourceKind::Global,
+            Trait { .. } | TraitAlias { .. } => TransItemSourceKind::TraitDecl,
+            Impl { of_trait: true } => TransItemSourceKind::TraitImpl,
+            Impl { of_trait: false } => TransItemSourceKind::InherentImpl,
+            Mod { .. } | ForeignMod { .. } => TransItemSourceKind::Module,
 
             // We skip these
-            ExternCrate { .. } | GlobalAsm { .. } | Macro { .. } | Use { .. } => {}
+            ExternCrate { .. } | GlobalAsm { .. } | Macro { .. } | Use { .. } => return None,
             // We cannot encounter these since they're not top-level items.
             AnonConst { .. }
             | AssocTy { .. }
@@ -138,16 +119,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "Cannot register item `{def_id:?}` with kind `{:?}`",
                     def_id.kind
                 );
+                return None;
             }
-        }
+        })
+    }
+
+    /// Add this item to the queue of items to translate. Each translated item will then
+    /// recursively register the items it refers to. We call this on the crate root and end up
+    /// exploring the whole crate.
+    #[tracing::instrument(skip(self))]
+    pub fn enqueue_item(&mut self, def_id: &hax::DefId) -> Option<AnyTransId> {
+        let kind = self.base_kind_for_item(def_id)?;
+        self.register_and_enqueue_id(&None, def_id, kind)
     }
 
     pub(crate) fn register_id_no_enqueue(
         &mut self,
         dep_src: &Option<DepSource>,
-        src: TransItemSource,
-    ) -> AnyTransId {
-        let item_id = match self.id_map.get(&src) {
+        src: &TransItemSource,
+    ) -> Option<AnyTransId> {
+        let item_id = match self.id_map.get(src) {
             Some(tid) => *tid,
             None => {
                 let trans_id = match src.kind {
@@ -169,7 +160,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                     TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
-                        panic!("inherent impls and modules aren't translated to items")
+                        return None;
                     }
                 };
                 // Add the id to the queue of declarations to translate
@@ -188,19 +179,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.errors
             .borrow_mut()
             .register_dep_source(dep_src, item_id, src.as_def_id().is_local);
-        item_id
+        Some(item_id)
     }
 
     /// Register this id and enqueue it for translation.
     pub(crate) fn register_and_enqueue_id(
         &mut self,
-        src: &Option<DepSource>,
+        dep_src: &Option<DepSource>,
         def_id: &hax::DefId,
         kind: TransItemSourceKind,
-    ) -> AnyTransId {
-        let id = TransItemSource::new(def_id.clone(), kind);
-        self.items_to_translate.insert(id.clone());
-        self.register_id_no_enqueue(src, id)
+    ) -> Option<AnyTransId> {
+        let item_src = TransItemSource::new(def_id.clone(), kind);
+        let id = self.register_id_no_enqueue(dep_src, &item_src);
+        self.items_to_translate.insert(item_src);
+        id
     }
 
     pub(crate) fn register_type_decl_id(
@@ -210,6 +202,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> TypeDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::Type)
+            .unwrap()
             .as_type()
             .unwrap()
     }
@@ -221,6 +214,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> FunDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::Fun)
+            .unwrap()
             .as_fun()
             .unwrap()
     }
@@ -232,6 +226,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> TraitDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::TraitDecl)
+            .unwrap()
             .as_trait_decl()
             .unwrap()
     }
@@ -253,6 +248,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::TraitImpl)
+            .unwrap()
             .as_trait_impl()
             .unwrap()
     }
@@ -265,6 +261,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> TraitImplId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureTraitImpl(kind))
+            .unwrap()
             .as_trait_impl()
             .unwrap()
     }
@@ -277,6 +274,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> FunDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureMethod(kind))
+            .unwrap()
             .as_fun()
             .unwrap()
     }
@@ -288,6 +286,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> FunDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureAsFnCast)
+            .unwrap()
             .as_fun()
             .unwrap()
     }
@@ -299,6 +298,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> GlobalDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::Global)
+            .unwrap()
             .as_global()
             .unwrap()
     }
@@ -313,9 +313,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn register_id_no_enqueue(&mut self, span: Span, id: TransItemSource) -> AnyTransId {
+    pub(crate) fn register_id_no_enqueue(
+        &mut self,
+        span: Span,
+        id: TransItemSource,
+    ) -> Option<AnyTransId> {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_id_no_enqueue(&src, id)
+        self.t_ctx.register_id_no_enqueue(&src, &id)
     }
 
     pub(crate) fn register_type_decl_id(&mut self, span: Span, id: &hax::DefId) -> TypeDeclId {
@@ -362,6 +366,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             span,
             TransItemSource::new(def_id.clone(), TransItemSourceKind::Fun),
         )
+        .unwrap()
         .as_fun()
         .copied()
         .unwrap()

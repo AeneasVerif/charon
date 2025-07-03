@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
-        let trans_id = self.id_map.get(&item_src).copied();
+        let trans_id = self.register_id_no_enqueue(&None, item_src);
         let def_id = item_src.as_def_id();
         self.with_def_id(def_id, trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
