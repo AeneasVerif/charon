@@ -19,7 +19,7 @@ pub struct TransItemSource {
     pub kind: TransItemSourceKind,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
@@ -46,20 +46,8 @@ impl TransItemSource {
     }
 
     /// Value with which we order values.
-    fn sort_key(&self) -> impl Ord {
-        let (variant_index, _) = self.kind.variant_index_arity();
-        let def_id = self.as_def_id();
-        let closure_kind = match self.kind {
-            TransItemSourceKind::ClosureTraitImpl(k) | TransItemSourceKind::ClosureMethod(k) => {
-                match k {
-                    ClosureKind::Fn => 1,
-                    ClosureKind::FnMut => 2,
-                    ClosureKind::FnOnce => 3,
-                }
-            }
-            _ => 0,
-        };
-        (def_id.index, variant_index, closure_kind)
+    fn sort_key(&self) -> impl Ord + '_ {
+        (self.def_id.index, &self.kind)
     }
 }
 
