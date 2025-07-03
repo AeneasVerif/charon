@@ -312,10 +312,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | TransItemSourceKind::ClosureMethod(..)
             | TransItemSourceKind::DropGlueImpl
             | TransItemSourceKind::DropGlueMethod => {
-                let _ = name.name.pop(); // Pop the `{closure}` or `<type_name>` path item
                 let impl_id = match src.kind {
                     TransItemSourceKind::ClosureTraitImpl(kind)
                     | TransItemSourceKind::ClosureMethod(kind) => {
+                        let _ = name.name.pop(); // Pop the `{closure}`
                         self.register_closure_trait_impl_id(&None, def_id, kind)
                     }
                     TransItemSourceKind::DropGlueImpl | TransItemSourceKind::DropGlueMethod => {

@@ -122,12 +122,12 @@ where
   Some(T),
 }
 
-// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}::drop
+// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}::drop
 fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}
+// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}
 impl<T> Drop for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,

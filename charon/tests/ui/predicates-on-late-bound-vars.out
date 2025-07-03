@@ -91,13 +91,13 @@ where
   Some(T),
 }
 
-// Full name: core::result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop
+// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop
 fn {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0, T, E>(@1: &'_0 mut (Result<T, E>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
 
-// Full name: core::result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}
+// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}
 impl<T, E> Drop for Result<T, E>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,

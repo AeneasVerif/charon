@@ -44,12 +44,12 @@ where
   S,
 }
 
-// Full name: test_crate::{impl Drop for HashMap<S>[@TraitClause0]}::drop
+// Full name: test_crate::HashMap::{impl Drop for HashMap<S>[@TraitClause0]}::drop
 fn {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0, S>(@1: &'_0 mut (HashMap<S>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<S>,
 
-// Full name: test_crate::{impl Drop for HashMap<S>[@TraitClause0]}
+// Full name: test_crate::HashMap::{impl Drop for HashMap<S>[@TraitClause0]}
 impl<S> Drop for HashMap<S>[@TraitClause0]
 where
     [@TraitClause0]: Sized<S>,

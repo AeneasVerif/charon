@@ -42,10 +42,10 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::{impl Drop for String}::drop
+// Full name: alloc::string::String::{impl Drop for String}::drop
 fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
-// Full name: alloc::string::{impl Drop for String}
+// Full name: alloc::string::String::{impl Drop for String}
 impl Drop for String {
     parent_clause0 = MetaSized<String>
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
@@ -70,7 +70,7 @@ struct test_crate::Foo {
   String,
 }
 
-// Full name: test_crate::{impl Drop for test_crate::Foo}::drop
+// Full name: test_crate::Foo::{impl Drop for test_crate::Foo}::drop
 fn {impl Drop for test_crate::Foo}::drop<'_0>(@1: &'_0 mut (test_crate::Foo))
 {
     let @0: (); // return
@@ -84,7 +84,7 @@ fn {impl Drop for test_crate::Foo}::drop<'_0>(@1: &'_0 mut (test_crate::Foo))
     return
 }
 
-// Full name: test_crate::{impl Drop for test_crate::Foo}
+// Full name: test_crate::Foo::{impl Drop for test_crate::Foo}
 impl Drop for test_crate::Foo {
     parent_clause0 = MetaSized<test_crate::Foo>
     fn drop<'_0> = {impl Drop for test_crate::Foo}::drop<'_0_0>
