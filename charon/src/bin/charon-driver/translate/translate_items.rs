@@ -1,5 +1,5 @@
 use super::translate_bodies::BodyTransCtx;
-use super::translate_crate::TransItemSource;
+use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
@@ -60,61 +60,61 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the item translation context
         let bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
-        match item_src {
-            TransItemSource::Type(_) => {
+        match item_src.kind {
+            TransItemSourceKind::Type => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
                     unreachable!()
                 };
                 let ty = bt_ctx.translate_type_decl(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
-            TransItemSource::Fun(_) => {
+            TransItemSourceKind::Fun => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSource::Global(_) => {
+            TransItemSourceKind::Global => {
                 let Some(AnyTransId::Global(id)) = trans_id else {
                     unreachable!()
                 };
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            TransItemSource::TraitDecl(_) => {
+            TransItemSourceKind::TraitDecl => {
                 let Some(AnyTransId::TraitDecl(id)) = trans_id else {
                     unreachable!()
                 };
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            TransItemSource::TraitImpl(_) => {
+            TransItemSourceKind::TraitImpl => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            TransItemSource::InherentImpl(_) => {
+            TransItemSourceKind::InherentImpl => {
                 panic!("inherent impls aren't translated to items")
             }
-            TransItemSource::ClosureTraitImpl(_, kind) => {
+            TransItemSourceKind::ClosureTraitImpl(kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
                 let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, *kind)?;
+                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?;
                 self.translated.trait_impls.set_slot(id, closure_trait_impl);
             }
-            TransItemSource::ClosureMethod(_, kind) => {
+            TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
+                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSource::ClosureAsFnCast(_) => {
+            TransItemSourceKind::ClosureAsFnCast => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
