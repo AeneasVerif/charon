@@ -38,9 +38,37 @@ pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> 
 where
     [@TraitClause0]: DerefMut<Self>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+}
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
 pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])) -> &'_0 (T)
@@ -203,7 +231,7 @@ where
     let x@1: IdType<T>[@TraitClause0]; // arg #1
 
     @0 := move ((x@1).0)
-    drop x@1
+    drop[Drop<IdType<T>[@TraitClause0]>] x@1
     return
 }
 
@@ -219,9 +247,9 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := IdType { 0: move (@2) }
-    drop @2
+    drop[Drop<T>] @2
     storage_dead(@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -373,10 +401,10 @@ pub fn test_list1()
     @2 := @BoxNew<List<i32>[Sized<i32>]>[Sized<List<i32>[Sized<i32>]>](move (@3))
     storage_dead(@3)
     l@1 := List::Cons { 0: const (0 : i32), 1: move (@2) }
-    drop @2
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<i32>[Sized<i32>], Global>[MetaSized<List<i32>[Sized<i32>]>, Sized<Global>]] @2
     storage_dead(@2)
     @0 := ()
-    drop l@1
+    drop[Drop<List<i32>[Sized<i32>]>] l@1
     storage_dead(l@1)
     @0 := ()
     return
@@ -425,7 +453,7 @@ pub fn test_box1()
     @0 := ()
     storage_dead(x@4)
     storage_dead(x@2)
-    drop b@1
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] b@1
     storage_dead(b@1)
     @0 := ()
     return
@@ -505,15 +533,15 @@ where
     storage_live(@5)
     @5 := move (*(tl@3))
     @0 := (move (@4), move (@5))
-    drop @5
+    drop[Drop<List<T>[@TraitClause0]>] @5
     storage_dead(@5)
-    drop @4
+    drop[Drop<T>] @4
     storage_dead(@4)
-    drop tl@3
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[MetaSized<List<T>[@TraitClause0]>, Sized<Global>]] tl@3
     storage_dead(tl@3)
-    drop hd@2
+    drop[Drop<T>] hd@2
     storage_dead(hd@2)
-    drop l@1
+    drop[Drop<List<T>[@TraitClause0]>] l@1
     return
 }
 

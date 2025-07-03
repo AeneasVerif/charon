@@ -11,6 +11,19 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -132,7 +145,7 @@ fn main()
     @9 := test_crate::Foo(const (42 : u32), move (@11))
     storage_dead(@11)
     storage_dead(@10)
-    drop @9
+    drop[Drop<test_crate::Foo>] @9
     storage_dead(@9)
     storage_live(f@12)
     f@12 := const (Variant<'_, i32>[Sized<i32>])

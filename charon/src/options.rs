@@ -155,6 +155,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
+    /// Whether to add `Drop` bounds everywhere to enable proper tracking of what code runs on a
+    /// given `drop` call.
+    #[clap(long)]
+    #[serde(default)]
+    pub add_drop_bounds: bool,
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
     /// from the path `crate` (which translates the whole crate).

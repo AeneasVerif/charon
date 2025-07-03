@@ -14,6 +14,19 @@ pub trait Sized<Self>
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub opaque type UsizeNoHighBit
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
 pub opaque type NonNull<T>

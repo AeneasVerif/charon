@@ -24,6 +24,14 @@ struct NotCopy {}
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<NotCopy>(@1: NotCopy)
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -122,7 +130,7 @@ fn test_crate::apply_to_zero_once::<closure>(@1: closure) -> u8
     @0 := {impl FnOnce<(u8)> for closure}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<closure>] f@1
     return
 }
 

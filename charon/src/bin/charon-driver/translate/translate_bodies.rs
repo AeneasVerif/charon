@@ -814,12 +814,14 @@ impl BodyTransCtx<'_, '_, '_> {
             TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
             TerminatorKind::Drop {
                 place,
+                impl_expr,
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 ..
             } => {
                 let place = self.translate_place(span, place)?;
-                statements.push(Statement::new(span, RawStatement::Drop(place)));
+                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                statements.push(Statement::new(span, RawStatement::Drop(place, tref)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }

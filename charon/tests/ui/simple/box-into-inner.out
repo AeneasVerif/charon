@@ -96,7 +96,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
     assert(copy (@13) == true)
     _x@2 := move (*(@6))
     @0 := ()
-    drop _x@2
+    drop[Drop<String>] _x@2
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1

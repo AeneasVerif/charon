@@ -148,6 +148,18 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ZeroablePrimitive<T>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
 pub fn unwrap<T>(@1: Option<T>[@TraitClause0]) -> T
@@ -175,6 +187,22 @@ pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for Vec<T, A>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+}
 
 pub fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))
 where
@@ -232,7 +260,7 @@ pub fn test_vec_push()
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop v@1
+    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
     storage_dead(v@1)
     @0 := ()
     return

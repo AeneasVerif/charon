@@ -38,6 +38,18 @@ pub fn core::f64::{f64}::MIN() -> f64
 
 pub const core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -91,6 +103,22 @@ pub struct Global {}
 // Full name: alloc::alloc::exchange_malloc
 #[lang_item("exchange_malloc")]
 unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+}
 
 // Full name: test_crate::addr_of
 fn addr_of()
@@ -308,7 +336,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u8)> for closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<closure>] @1
     @0 := ()
     return
 }
@@ -407,9 +435,9 @@ fn boxes()
     storage_live(@2)
     @2 := @BoxNew<i32>[MetaSized<i32>, Sized<Global>](const (42 : i32))
     @1 := move (@2)
-    drop @2
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @2
     storage_dead(@2)
-    drop @1
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @1
     storage_dead(@1)
     @0 := ()
     @0 := ()

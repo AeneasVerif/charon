@@ -189,6 +189,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
+        use hax::DropData;
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
@@ -354,6 +355,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_decl_ref,
                 }
             }
+            ImplExprAtom::Drop(DropData::Implicit | DropData::Noop) => TraitRef {
+                kind: TraitRefKind::BuiltinOrAuto {
+                    trait_decl_ref: trait_decl_ref.clone(),
+                    parent_trait_refs: Default::default(),
+                    types: vec![],
+                },
+                trait_decl_ref,
+            },
+            ImplExprAtom::Drop(DropData::Glue { impl_exprs, .. }) => {
+                // TODO: translate this into a proper impl; may need `TransItemSource::DropGlue(TypeId)`.
+                let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                TraitRef {
+                    kind: TraitRefKind::BuiltinOrAuto {
+                        trait_decl_ref: trait_decl_ref.clone(),
+                        parent_trait_refs,
+                        types: vec![],
+                    },
+                    trait_decl_ref,
+                }
+            }
             ImplExprAtom::Error(msg) => {
                 let trait_ref = TraitRef {
                     kind: TraitRefKind::Unknown(msg.clone()),
@@ -363,9 +384,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 trait_ref
-            }
-            ImplExprAtom::Drop(..) => {
-                raise_error!(self, span, "Unsupported predicate: drop glue")
             }
         };
         Ok(trait_ref)

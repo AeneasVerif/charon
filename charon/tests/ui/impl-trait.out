@@ -57,6 +57,19 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -146,11 +159,11 @@ fn use_foo()
     storage_dead(@5)
     @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<u32>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop foo@1
+    drop[Drop<()>] foo@1
     storage_dead(foo@1)
     @0 := ()
     return
@@ -221,11 +234,11 @@ where
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<@TraitClause1::parent_clause2::Type>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop foo@1
+    drop[Drop<@TraitClause1::>] foo@1
     storage_dead(foo@1)
     @0 := ()
     return
@@ -323,7 +336,7 @@ pub fn use_wrap()
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
-    drop f@1
+    drop[Drop<closure<u32>[Sized<u32>]>] f@1
     storage_dead(f@1)
     @0 := ()
     return

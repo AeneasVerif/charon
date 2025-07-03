@@ -18,6 +18,14 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -108,7 +116,7 @@ fn test_crate::takes_closure::<test_crate::foo::<'_, u32>>(@1: test_crate::foo::
     storage_dead(@2)
     storage_dead(@6)
     storage_dead(@5)
-    drop c@1
+    drop[Drop<test_crate::foo::<'_, u32>>] c@1
     @0 := ()
     return
 }

@@ -144,6 +144,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
+        TraitRef,
     ),
     // Types that we unconditionally explore.
     drive(

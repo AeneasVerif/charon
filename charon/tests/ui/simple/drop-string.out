@@ -1,19 +1,8 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::Send
-#[lang_item("Send")]
-pub trait Send<Self>
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-}
 
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
@@ -28,17 +17,22 @@ pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
-// Full name: test_crate::foo
-fn foo<M>(@1: M)
-where
-    [@TraitClause0]: Sized<M>,
-    [@TraitClause1]: Send<M>,
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: alloc::string::{String}::new
+#[lang_item("string_new")]
+pub fn new() -> String
+
+// Full name: test_crate::use_string
+fn use_string(@1: String)
 {
     let @0: (); // return
-    let _msg@1: M; // arg #1
+    let @1: String; // arg #1
 
     @0 := ()
-    drop[Drop<M>] _msg@1
+    drop[Drop<String>] @1
     @0 := ()
     return
 }
@@ -47,16 +41,13 @@ where
 fn main()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
-    let @2: (); // anonymous local
+    let _s@1: String; // local
 
-    storage_live(@1)
-    storage_live(@2)
-    @2 := ()
-    @1 := foo<()>[Sized<()>, Send<()>](move (@2))
-    storage_dead(@2)
-    storage_dead(@1)
+    storage_live(_s@1)
+    _s@1 := new()
     @0 := ()
+    drop[Drop<String>] _s@1
+    storage_dead(_s@1)
     @0 := ()
     return
 }

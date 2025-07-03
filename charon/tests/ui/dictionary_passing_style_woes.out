@@ -40,6 +40,19 @@ pub trait Destruct<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: test_crate::Iterator
 trait Iterator<Self, Self_Item>
 {
@@ -78,7 +91,7 @@ where
     let t@1: Clause1_Item; // arg #1
 
     @0 := move (t@1)
-    drop t@1
+    drop[Drop<Clause1_Item>] t@1
     return
 }
 
@@ -97,7 +110,7 @@ where
     @2 := move (t@1)
     @0 := callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop t@1
+    drop[Drop<Clause1_Item>] t@1
     return
 }
 
@@ -142,7 +155,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -160,7 +173,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -190,9 +203,9 @@ where
     @4 := b<T, Clause2_Clause1_Assoc>[@TraitClause0, @TraitClause2](move (@5))
     storage_dead(@5)
     @0 := (move (@2), move (@4))
-    drop @4
+    drop[Drop<Clause1_Clause1_Assoc>] @4
     storage_dead(@4)
-    drop @2
+    drop[Drop<Clause1_Clause1_Assoc>] @2
     storage_dead(@2)
     return
 }

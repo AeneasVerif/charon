@@ -29,7 +29,7 @@ and raw_statement =
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
   | Deinit of place
-  | Drop of place
+  | Drop of place * trait_ref
       (** Drop the value at the given place.
 
           For MIR built and promoted, this is a conditional drop: the value will

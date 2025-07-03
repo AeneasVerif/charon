@@ -37,6 +37,14 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 fn test_crate::do_test::<bool>(@1: bool, @2: bool)
 {
     let @0: (); // return
@@ -62,8 +70,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb2: {
-        drop expected@2;
-        drop init@1;
+        drop[Drop<bool>] expected@2;
+        drop[Drop<bool>] init@1;
         unwind_continue;
     }
 
@@ -73,8 +81,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@4);
         storage_dead(@3);
         @0 := ();
-        drop expected@2;
-        drop init@1;
+        drop[Drop<bool>] expected@2;
+        drop[Drop<bool>] init@1;
         @0 := ();
         return;
     }
