@@ -59,10 +59,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
 
         // Initialize the item translation context
-        let bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
+        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         match item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
-                self.register_module(item_meta, &def)?
+                bt_ctx.register_module(item_meta, &def);
             }
             TransItemSourceKind::Type => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
@@ -127,6 +127,34 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 }
 
 impl ItemTransCtx<'_, '_> {
+    /// Register the items inside this module or inherent impl.
+    // TODO: we may want to accumulate the set of modules we found, to check that all
+    // the opaque modules given as arguments actually exist
+    #[tracing::instrument(skip(self, item_meta))]
+    pub(crate) fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) {
+        if !item_meta.opacity.is_transparent() {
+            return;
+        }
+        match def.kind() {
+            hax::FullDefKind::InherentImpl { items, .. } => {
+                for (_, item_def) in items {
+                    self.t_ctx.enqueue_item(&item_def.def_id);
+                }
+            }
+            hax::FullDefKind::Mod { items, .. } => {
+                for (_, def_id) in items {
+                    self.t_ctx.enqueue_item(def_id);
+                }
+            }
+            hax::FullDefKind::ForeignMod { items, .. } => {
+                for def_id in items {
+                    self.t_ctx.enqueue_item(def_id);
+                }
+            }
+            _ => panic!("Item should be a module but isn't: {def:?}"),
+        }
+    }
+
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,

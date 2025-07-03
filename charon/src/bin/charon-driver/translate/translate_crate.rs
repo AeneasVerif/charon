@@ -18,7 +18,6 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use hax::FullDefKind;
 use hax_frontend_exporter::{self as hax, SInto};
 use itertools::Itertools;
 use macros::VariantIndexArity;
@@ -82,12 +81,12 @@ impl Ord for TransItemSource {
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
-    /// Register a HIR item and all its children. We call this on the crate root items and end up
+    /// Add this item to the queue of items to translate. Each translated item will then
+    /// recursively register the items it refers to. We call this on the crate root and end up
     /// exploring the whole crate.
-    fn register_module_item(&mut self, def_id: &hax::DefId) {
+    #[tracing::instrument(skip(self))]
+    pub fn enqueue_item(&mut self, def_id: &hax::DefId) {
         use hax::DefKind::*;
-        trace!("Registering {def_id:?}");
-
         match &def_id.kind {
             Enum { .. } | Struct { .. } | Union { .. } | TyAlias { .. } | ForeignTy => {
                 let _ = self.register_type_decl_id(&None, def_id);
@@ -141,40 +140,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 );
             }
         }
-    }
-
-    /// Register the items inside this module.
-    // TODO: we may want to accumulate the set of modules we found, to check that all
-    // the opaque modules given as arguments actually exist
-    pub(crate) fn register_module(
-        &mut self,
-        item_meta: ItemMeta,
-        def: &hax::FullDef,
-    ) -> Result<(), Error> {
-        let opacity = item_meta.opacity;
-        if !opacity.is_transparent() {
-            return Ok(());
-        }
-        match def.kind() {
-            FullDefKind::InherentImpl { items, .. } => {
-                for (_, item_def) in items {
-                    self.register_module_item(&item_def.def_id);
-                }
-            }
-            FullDefKind::Mod { items, .. } => {
-                for (_, def_id) in items {
-                    self.register_module_item(def_id);
-                }
-            }
-            FullDefKind::ForeignMod { items, .. } => {
-                // Foreign modules can't be named or have attributes, so we can't mark them opaque.
-                for def_id in items {
-                    self.register_module_item(def_id);
-                }
-            }
-            _ => panic!("Item should be a module but isn't: {def:?}"),
-        }
-        Ok(())
     }
 
     pub(crate) fn register_id_no_enqueue(
@@ -552,8 +517,6 @@ pub fn translate<'tcx, 'ctx>(
         },
     );
 
-    // Retrieve the crate name: if the user specified a custom name, use it, otherwise retrieve it
-    // from hax.
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()
         .sinto(&hax_state);
@@ -584,7 +547,7 @@ pub fn translate<'tcx, 'ctx>(
 
     if options.start_from.is_empty() {
         // Recursively register all the items in the crate, starting from the crate root.
-        ctx.register_module_item(&crate_def_id);
+        ctx.enqueue_item(&crate_def_id);
     } else {
         // Start translating from the selected items.
         for path in options.start_from.iter() {
@@ -594,7 +557,7 @@ pub fn translate<'tcx, 'ctx>(
                 Ok(resolved) => {
                     for def_id in resolved {
                         let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                        ctx.register_module_item(&def_id);
+                        ctx.enqueue_item(&def_id);
                     }
                 }
                 Err(path) => {
