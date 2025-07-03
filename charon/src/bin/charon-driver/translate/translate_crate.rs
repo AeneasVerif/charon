@@ -44,6 +44,8 @@ pub enum TransItemSourceKind {
     Type,
     /// We don't translate these as proper items, but we translate them a bit in names.
     InherentImpl,
+    /// We don't translate these as proper items, but we use them to explore the crate.
+    Module,
     /// An impl of the appropriate `Fn*` trait for the given closure type.
     ClosureTraitImpl(ClosureKind),
     /// The `call_*` method of the appropriate `Fn*` trait.
@@ -82,10 +84,6 @@ impl Ord for TransItemSource {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
-    ///
-    /// Note that this registers items depth-first instead of the typical breadth-first/lazy order
-    /// that arises when we enqueue items. The ordering matters for now so we keep this; eventually
-    /// it would be nice to have modules work with `TransItemSource` too.
     fn register_module_item(&mut self, def_id: &hax::DefId) {
         use hax::DefKind::*;
         trace!("Registering {def_id:?}");
@@ -108,18 +106,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let _ = self.register_trait_impl_id(&None, def_id);
             }
 
-            Impl { of_trait: false } | Mod { .. } | ForeignMod { .. } => {
-                let Ok(def) = self.hax_def(def_id) else {
-                    return; // Error has already been emitted
-                };
-                let Ok(name) = self.def_id_to_name(&def.def_id) else {
-                    return; // Error has already been emitted
-                };
-                let opacity = self.opacity_for_name(&name);
+            Impl { of_trait: false } => {
                 let trans_src =
-                    TransItemSource::new(def.def_id.clone(), TransItemSourceKind::TraitImpl);
-                let item_meta = self.translate_item_meta(&def, &trans_src, name, opacity);
-                let _ = self.register_module(item_meta, &def);
+                    TransItemSource::new(def_id.clone(), TransItemSourceKind::InherentImpl);
+                self.items_to_translate.insert(trans_src);
+            }
+            Mod { .. } | ForeignMod { .. } => {
+                let trans_src = TransItemSource::new(def_id.clone(), TransItemSourceKind::Module);
+                self.items_to_translate.insert(trans_src);
             }
 
             // We skip these
@@ -152,7 +146,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Register the items inside this module.
     // TODO: we may want to accumulate the set of modules we found, to check that all
     // the opaque modules given as arguments actually exist
-    fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) -> Result<(), Error> {
+    pub(crate) fn register_module(
+        &mut self,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<(), Error> {
         let opacity = item_meta.opacity;
         if !opacity.is_transparent() {
             return Ok(());
@@ -205,8 +203,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     | TransItemSourceKind::ClosureAsFnCast => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
-                    TransItemSourceKind::InherentImpl => {
-                        panic!("inherent impls aren't translated to items")
+                    TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
+                        panic!("inherent impls and modules aren't translated to items")
                     }
                 };
                 // Add the id to the queue of declarations to translate

@@ -61,6 +61,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         // Initialize the item translation context
         let bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         match item_src.kind {
+            TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
+                self.register_module(item_meta, &def)?
+            }
             TransItemSourceKind::Type => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
                     unreachable!()
@@ -95,9 +98,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 };
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
-            }
-            TransItemSourceKind::InherentImpl => {
-                panic!("inherent impls aren't translated to items")
             }
             TransItemSourceKind::ClosureTraitImpl(kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
