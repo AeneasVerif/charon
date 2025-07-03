@@ -15,3 +15,7 @@ where
 {
     vector: IndexVec<I>,
 }
+
+// Makes a `TraitRef::Builtin` for `Drop`. Regression test: we used to not remove marker traits
+// from that.
+fn foo<T>(_x: T) {}

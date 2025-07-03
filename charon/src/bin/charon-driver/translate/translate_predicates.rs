@@ -355,32 +355,30 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_decl_ref,
                 }
             }
-            ImplExprAtom::Drop(DropData::Implicit | DropData::Noop) => TraitRef {
-                kind: TraitRefKind::BuiltinOrAuto {
-                    trait_decl_ref: trait_decl_ref.clone(),
-                    parent_trait_refs: Default::default(),
-                    types: vec![],
-                },
-                trait_decl_ref,
-            },
-            ImplExprAtom::Drop(DropData::Glue { impl_exprs, ty }) => {
-                let kind = match ty.kind() {
-                    hax::TyKind::Adt(item) => {
-                        let impl_ref = self.translate_drop_trait_impl_ref(span, item)?;
-                        TraitRefKind::TraitImpl(impl_ref)
-                    }
-                    _ => {
-                        let parent_trait_refs =
-                            self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                        TraitRefKind::BuiltinOrAuto {
-                            trait_decl_ref: trait_decl_ref.clone(),
-                            parent_trait_refs,
-                            types: vec![],
-                        }
-                    }
-                };
+            ImplExprAtom::Drop(DropData::Glue { ty, .. })
+                if let hax::TyKind::Adt(item) = ty.kind() =>
+            {
+                let impl_ref = self.translate_drop_trait_impl_ref(span, item)?;
                 TraitRef {
-                    kind,
+                    kind: TraitRefKind::TraitImpl(impl_ref),
+                    trait_decl_ref,
+                }
+            }
+            ImplExprAtom::Drop(..) => {
+                let meta_sized_trait = self.get_lang_item(rustc_hir::LangItem::MetaSized);
+                let meta_sized_trait = self.register_trait_decl_id(span, &meta_sized_trait);
+                let self_ty = trait_decl_ref.clone().erase().generics.types[0].clone();
+                TraitRef {
+                    kind: TraitRefKind::BuiltinOrAuto {
+                        trait_decl_ref: trait_decl_ref.clone(),
+                        parent_trait_refs: [TraitRef::new_builtin(
+                            meta_sized_trait,
+                            self_ty,
+                            Default::default(),
+                        )]
+                        .into(),
+                        types: vec![],
+                    },
                     trait_decl_ref,
                 }
             }
