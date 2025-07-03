@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
-        let trans_id = self.id_map.get(&item_src).copied();
+        let trans_id = self.register_id_no_enqueue(&None, item_src);
         let def_id = item_src.as_def_id();
         self.with_def_id(def_id, trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
@@ -59,8 +59,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
 
         // Initialize the item translation context
-        let bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
+        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         match item_src.kind {
+            TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
+                bt_ctx.register_module(item_meta, &def);
+            }
             TransItemSourceKind::Type => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
                     unreachable!()
@@ -96,9 +99,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            TransItemSourceKind::InherentImpl => {
-                panic!("inherent impls aren't translated to items")
-            }
             TransItemSourceKind::ClosureTraitImpl(kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
@@ -127,6 +127,34 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 }
 
 impl ItemTransCtx<'_, '_> {
+    /// Register the items inside this module or inherent impl.
+    // TODO: we may want to accumulate the set of modules we found, to check that all
+    // the opaque modules given as arguments actually exist
+    #[tracing::instrument(skip(self, item_meta))]
+    pub(crate) fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) {
+        if !item_meta.opacity.is_transparent() {
+            return;
+        }
+        match def.kind() {
+            hax::FullDefKind::InherentImpl { items, .. } => {
+                for (_, item_def) in items {
+                    self.t_ctx.enqueue_item(&item_def.def_id);
+                }
+            }
+            hax::FullDefKind::Mod { items, .. } => {
+                for (_, def_id) in items {
+                    self.t_ctx.enqueue_item(def_id);
+                }
+            }
+            hax::FullDefKind::ForeignMod { items, .. } => {
+                for def_id in items {
+                    self.t_ctx.enqueue_item(def_id);
+                }
+            }
+            _ => panic!("Item should be a module but isn't: {def:?}"),
+        }
+    }
+
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,
