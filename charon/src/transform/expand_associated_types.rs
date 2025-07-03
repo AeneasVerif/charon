@@ -858,7 +858,7 @@ impl<'a> ComputeItemModifications<'a> {
                 types,
                 ..
             } => {
-                for (name, ty) in types.iter().cloned() {
+                for (name, ty, _) in types.iter().cloned() {
                     let path = TraitRefPath::self_ref().with_assoc_type(name);
                     out.push((path, ty));
                 }
@@ -982,8 +982,8 @@ impl UpdateItemBody<'_> {
             } => match path.pop_first_parent() {
                 None => types
                     .iter()
-                    .find(|(name, _)| name == &path.type_name)
-                    .map(|(_, ty)| ty.clone()),
+                    .find(|(name, _, _)| name == &path.type_name)
+                    .map(|(_, ty, _)| ty.clone()),
                 Some((parent_clause_id, sub_path)) => {
                     let parent_ref = &parent_trait_refs[parent_clause_id];
                     self.lookup_path_on_trait_ref(&sub_path, &parent_ref.kind)

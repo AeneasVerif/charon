@@ -2377,7 +2377,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<F, (&'_ (T))>,
+    [@TraitClause3]: FnMut<F, (&'a (T))>,
     @TraitClause3::parent_clause1::Output = (),
 
 #[lang_item("iter_filter")]
@@ -2581,7 +2581,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<B>,
     [@TraitClause2]: Sized<F>,
-    [@TraitClause3]: FnMut<F, (B, &'_ (T))>,
+    [@TraitClause3]: FnMut<F, (B, &'a (T))>,
     @TraitClause3::parent_clause1::Output = B,
 
 pub fn core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::reduce<'a, T, F>(@1: Iter<'a, T>[@TraitClause0], @2: F) -> Option<&'a (T)>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]
@@ -2610,7 +2610,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<F, (&'_ (T))>,
+    [@TraitClause3]: FnMut<F, (&'a (T))>,
     @TraitClause3::parent_clause1::Output = bool,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::any
@@ -2619,16 +2619,16 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<F, (&'_ (T))>,
+    [@TraitClause3]: FnMut<F, (&'a (T))>,
     @TraitClause3::parent_clause1::Output = bool,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: P) -> Option<&'_ (T)>[Sized<&'_ (T)>]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: P) -> Option<&'a (T)>[Sized<&'_ (T)>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<P>,
     [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (&'_ (T)))>,
+    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (&'a (T)))>,
     for<'_0> @TraitClause3::parent_clause1::Output = bool,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map
@@ -2638,7 +2638,7 @@ where
     [@TraitClause1]: Sized<B>,
     [@TraitClause2]: Sized<F>,
     [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: FnMut<F, (&'_ (T))>,
+    [@TraitClause4]: FnMut<F, (&'a (T))>,
     @TraitClause4::parent_clause1::Output = Option<B>[@TraitClause1],
 
 pub fn core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::try_find<'a, '_1, T, R, impl FnMut(&Self::Item) -> R>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: impl FnMut(&Self::Item) -> R) -> @TraitClause5::TryType
@@ -2659,7 +2659,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<P>,
     [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<P, (&'_ (T))>,
+    [@TraitClause3]: FnMut<P, (&'a (T))>,
     @TraitClause3::parent_clause1::Output = bool,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::rposition
@@ -2896,7 +2896,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'_ (T)), &'_0_1 (&'_ (T)))>,
+    [@TraitClause3]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'a (T)), &'_0_1 (&'a (T)))>,
     for<'_0, '_1> @TraitClause3::parent_clause1::Output = bool,
 
 pub fn core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by_key<'a, T, F, K>(@1: Iter<'a, T>[@TraitClause0], @2: F) -> bool
@@ -2910,7 +2910,7 @@ where
     @TraitClause4::parent_clause1::Output = K,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked
-pub unsafe fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: usize) -> &'_ (T)
+pub unsafe fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: usize) -> &'a (T)
 where
     [@TraitClause0]: Sized<T>,
 
@@ -2935,7 +2935,7 @@ where
     fn intersperse<[@TraitClause0]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause1]: Clone<&'a (T)>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::intersperse<'a, T>[@TraitClause0, @TraitClause0_0, @TraitClause0_1]
     fn intersperse_with<G, [@TraitClause0]: Sized<G>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<G, ()>, @TraitClause1_2::parent_clause1::Output = &'a (T)> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::intersperse_with<'a, T, G>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn map<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (T))>, @TraitClause1_3::parent_clause1::Output = B> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::map<'a, T, B, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn for_each<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'_ (T))>, @TraitClause1_2::parent_clause1::Output = ()> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::for_each<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn for_each<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'a (T))>, @TraitClause1_2::parent_clause1::Output = ()> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::for_each<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn filter<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (&'a (T)))>, for<'_0> @TraitClause1_2::parent_clause1::Output = bool> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::filter<'a, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn filter_map<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (T))>, @TraitClause1_3::parent_clause1::Output = Option<B>[@TraitClause1_0]> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::filter_map<'a, T, B, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
     fn enumerate<[@TraitClause0]: Sized<Iter<'a, T>[@TraitClause0]>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::enumerate<'a, T>[@TraitClause0, @TraitClause0_0]
@@ -2960,15 +2960,15 @@ where
     fn is_partitioned<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<P, (&'a (T))>, @TraitClause1_2::parent_clause1::Output = bool> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_partitioned<'a, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause4]: FnMut<F, (B, &'a (T))>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause1::Output = R, @TraitClause1_5::Output = B> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::try_fold<'a, '_0_0, T, B, F, R>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
     fn try_for_each<'_0, F, R, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (T))>, [@TraitClause4]: Try<R>, @TraitClause1_3::parent_clause1::Output = R, @TraitClause1_4::Output = ()> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::try_for_each<'a, '_0_0, T, F, R>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn fold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: FnMut<F, (B, &'_ (T))>, @TraitClause1_2::parent_clause1::Output = B> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::fold<'a, T, B, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn fold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: FnMut<F, (B, &'a (T))>, @TraitClause1_2::parent_clause1::Output = B> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::fold<'a, T, B, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn reduce<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'a (T), &'a (T))>, @TraitClause1_2::parent_clause1::Output = &'a (T)> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::reduce<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn try_reduce<'_0, R, impl FnMut(Self::Item, Self::Item) -> R, [@TraitClause0]: Sized<R>, [@TraitClause1]: Sized<impl FnMut(Self::Item, Self::Item) -> R>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: Try<R>, [@TraitClause4]: Residual<@TraitClause1_3::Residual, Option<&'a (T)>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>, [@TraitClause5]: FnMut<impl FnMut(Self::Item, Self::Item) -> R, (&'a (T), &'a (T))>, @TraitClause1_3::Output = &'a (T), @TraitClause1_5::parent_clause1::Output = R> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::try_reduce<'a, '_0_0, T, R, impl FnMut(Self::Item, Self::Item) -> R>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn all<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'_ (T))>, @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::all<'a, '_0_0, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn any<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'_ (T))>, @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::any<'a, '_0_0, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn find<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (&'_ (T)))>, for<'_0> @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_0_0, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn find_map<'_0, B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'_ (T))>, @TraitClause1_3::parent_clause1::Output = Option<B>[@TraitClause1_0]> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map<'a, '_0_0, T, B, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn all<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'a (T))>, @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::all<'a, '_0_0, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn any<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (&'a (T))>, @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::any<'a, '_0_0, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn find<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (&'a (T)))>, for<'_0> @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_0_0, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn find_map<'_0, B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (T))>, @TraitClause1_3::parent_clause1::Output = Option<B>[@TraitClause1_0]> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map<'a, '_0_0, T, B, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
     fn try_find<'_0, R, impl FnMut(&Self::Item) -> R, [@TraitClause0]: Sized<R>, [@TraitClause1]: Sized<impl FnMut(&Self::Item) -> R>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: Try<R>, [@TraitClause4]: Residual<@TraitClause1_3::Residual, Option<&'a (T)>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>, [@TraitClause5]: for<'_0> FnMut<impl FnMut(&Self::Item) -> R, (&'_0_0 (&'a (T)))>, @TraitClause1_3::Output = bool, for<'_0> @TraitClause1_5::parent_clause1::Output = R> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::try_find<'a, '_0_0, T, R, impl FnMut(&Self::Item) -> R>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn position<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<P, (&'_ (T))>, @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::position<'a, '_0_0, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn position<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: FnMut<P, (&'a (T))>, @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::position<'a, '_0_0, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn rposition<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: FnMut<P, (@TraitClause1_3::parent_clause1::Item)>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: ExactSizeIterator<Iter<'a, T>[@TraitClause0]>, [@TraitClause4]: DoubleEndedIterator<Iter<'a, T>[@TraitClause0]>, @TraitClause1_1::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::rposition<'a, '_0_0, T, P>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn max<[@TraitClause0]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause1]: Ord<&'a (T)>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::max<'a, T>[@TraitClause0, @TraitClause0_0, @TraitClause0_1]
     fn min<[@TraitClause0]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause1]: Ord<&'a (T)>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::min<'a, T>[@TraitClause0, @TraitClause0_0, @TraitClause0_1]
@@ -2996,7 +2996,7 @@ where
     fn gt<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<&'a (T), @TraitClause1_1::Item>, [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::gt<'a, T, I>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
     fn ge<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<&'a (T), @TraitClause1_1::Item>, [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::ge<'a, T, I>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
     fn is_sorted<[@TraitClause0]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause1]: PartialOrd<&'a (T), &'a (T)>> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted<'a, T>[@TraitClause0, @TraitClause0_0, @TraitClause0_1]
-    fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'_ (T)), &'_0_1 (&'_ (T)))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'a (T)), &'_0_1 (&'a (T)))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (T))>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause1::Output = K> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by_key<'a, T, F, K>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn __iterator_get_unchecked<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_0_0, T>[@TraitClause0]
 }
@@ -3029,7 +3029,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a (Slice<T>)>[Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3038,7 +3038,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0]), @2: usize) -> Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (Slice<T>)>[Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3617,7 +3617,7 @@ where
     @TraitClause4::parent_clause1::Output = K,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::__iterator_get_unchecked
-pub unsafe fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0]), @2: usize) -> &'_ (Slice<T>)
+pub unsafe fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0]), @2: usize) -> &'a (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3736,7 +3736,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a (Slice<T>)>[Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3745,7 +3745,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (Slice<T>)>[Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -4324,7 +4324,7 @@ where
     @TraitClause4::parent_clause1::Output = K,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::__iterator_get_unchecked
-pub unsafe fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> &'_ (Slice<T>)
+pub unsafe fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> &'a (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 

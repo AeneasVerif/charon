@@ -151,7 +151,7 @@ where
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required
-fn {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>(@1: Option<&'_ (T)>[Sized<&'_ (T)>]) -> Option<&'_ (T)>[Sized<&'_ (T)>]
+fn {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -410,8 +410,8 @@ where
     parent_clause3 : [@TraitClause3]: Sized<Self_Item>
 }
 
-// Full name: test_crate::params::{impl test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'_ (())))> for ()}
-impl<'a, T> test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'_ (())))> for ()
+// Full name: test_crate::params::{impl test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'a (())))> for ()}
+impl<'a, T> test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'a (())))> for ()
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,

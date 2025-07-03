@@ -1662,7 +1662,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 if !types.is_empty() {
                     let types = types
                         .iter()
-                        .map(|(name, ty)| {
+                        .map(|(name, ty, _)| {
                             let ty = ty.with_ctx(ctx);
                             format!("{name}  = {ty}")
                         })

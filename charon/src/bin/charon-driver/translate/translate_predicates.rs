@@ -336,10 +336,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types
                         .iter()
-                        .map(|(def_id, ty)| {
+                        .map(|(def_id, ty, impl_exprs)| {
                             let name = self.t_ctx.translate_trait_item_name(def_id)?;
                             let ty = self.translate_ty(span, ty)?;
-                            Ok((name, ty))
+                            let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                            Ok((name, ty, trait_refs))
                         })
                         .try_collect()?;
                     TraitRefKind::BuiltinOrAuto {
