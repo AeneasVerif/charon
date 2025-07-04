@@ -272,12 +272,6 @@ pub struct GenericParams {
     pub trait_type_constraints: Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
-/// A predicate of the form `exists<T> where T: Trait`.
-///
-/// TODO: store something useful here
-#[derive(Debug, Default, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ExistentialPredicate;
-
 /// Where a given predicate came from.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PredicateOrigin {
@@ -901,4 +895,34 @@ pub struct FunSig {
     pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct ExistentialTraitRef {
+    /// This field corresponds to all required info in Rustc
+    pub trait_ref : TraitDeclRef,
+    // the following field(s) is/are addional information in Charon
+    /// The trait vtable structure, referring to a (potentially generic) ADT
+    pub vtable_ref : TypeDeclId,
+}
+/// Corresponding to `ty::TermKind` in Rustc
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub enum TyTerm {
+    Ty(Ty),
+    // TODO: ConstExpr should be implemented -- Hash is not derived, maybe derive in the future?
+    Const
+    // Const(ConstantExpr),
+}
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct ExistentialProjection {
+    pub trait_ref: TraitDeclRef,
+    pub term : TyTerm,
+}
+
+/// A predicate of the form `exists<T> where T: Trait`.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub enum ExistentialPredicate {
+    Trait(ExistentialTraitRef),
+    Projection(ExistentialProjection),
+    AutoTrait(TraitDeclId),
 }

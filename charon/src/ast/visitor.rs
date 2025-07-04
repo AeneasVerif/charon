@@ -72,7 +72,8 @@ use indexmap::IndexMap;
         llbc_statement: llbc_ast::Statement, ullbc_statement: ullbc_ast::Statement,
         AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
-        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl
+        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
+        ExistentialProjection, TyTerm, ExistentialTraitRef
     )
 )]
 pub trait AstVisitable: Any {
