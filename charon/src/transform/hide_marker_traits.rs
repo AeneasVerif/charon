@@ -65,11 +65,9 @@ impl VisitAstMut for RemoveMarkersVisitor {
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        // Remove any mention of these traits in generic parameters and arguments.
-        // We always hide `Allocator` because in `Box` it refers to a type parameter that we always
-        // remove.
-        let exclude: &[_] = if ctx.options.hide_marker_traits {
-            &[
+        // We remove any mention of these traits in generic parameters and arguments.
+        let mut exclude = if ctx.options.hide_marker_traits {
+            vec![
                 "core::marker::Destruct",
                 "core::marker::PointeeSized",
                 "core::marker::MetaSized",
@@ -78,13 +76,16 @@ impl TransformPass for Transform {
                 "core::marker::Send",
                 "core::marker::Sync",
                 "core::marker::Unpin",
-                "core::alloc::Allocator",
             ]
-        } else if ctx.options.raw_boxes {
-            &[]
         } else {
-            &["core::alloc::Allocator"]
+            vec![]
         };
+        if ctx.options.hide_allocator {
+            exclude.push("core::alloc::Allocator");
+        }
+        if exclude.is_empty() {
+            return;
+        }
 
         let exclude: Vec<NamePattern> = exclude
             .into_iter()
