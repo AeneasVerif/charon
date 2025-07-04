@@ -24,6 +24,14 @@ struct Thing {}
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<Thing>(@1: Thing)
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -128,7 +136,7 @@ fn test_crate::apply_to_zero::<test_crate::main::closure::<'_>>(@1: test_crate::
     @0 := {impl Fn<(u8)> for test_crate::main::closure<'_0>}<'_>::call(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure::<'_>>] f@1
     return
 }
 
@@ -197,7 +205,7 @@ fn test_crate::apply_to_zero_mut::<test_crate::main::closure#1::<'_>>(@1: test_c
     @0 := {impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_>::call_mut(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure#1::<'_>>] f@1
     return
 }
 
@@ -286,7 +294,7 @@ fn test_crate::apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate:
     @0 := {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure#2>] f@1
     return
 }
 

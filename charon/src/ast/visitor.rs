@@ -55,6 +55,7 @@ use indexmap::IndexMap;
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),
+        for<A: AstVisitable, B: AstVisitable, C: AstVisitable> (A, B, C),
         for<A: AstVisitable, B: AstVisitable> Result<A, B>,
         for<A: AstVisitable, B: AstVisitable> OutlivesPred<A, B>,
         for<T: AstVisitable> Vec<T>,
@@ -143,6 +144,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
+        TraitRef,
     ),
     // Types that we unconditionally explore.
     drive(
@@ -155,6 +157,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         for<T: BodyVisitable> Option<T>,
         for<T: BodyVisitable, E: BodyVisitable> Result<T, E>,
         for<A: BodyVisitable, B: BodyVisitable> (A, B),
+        for<A: BodyVisitable, B: BodyVisitable, C: BodyVisitable> (A, B, C),
         for<T: BodyVisitable> Vec<T>,
         for<I: Idx, T: BodyVisitable> Vector<I, T>,
     ),

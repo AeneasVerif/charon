@@ -18,11 +18,22 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
-// Full name: core::mem::drop
 #[lang_item("mem_drop")]
-pub fn drop<T>(@1: T)
+pub fn core::mem::drop<T>(@1: T)
 where
     [@TraitClause0]: Sized<T>,
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -59,7 +70,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<impl FnOnce(u8) -> u8>] f@1
     return
 }
 
@@ -89,7 +100,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     storage_live(@4)
     storage_live(@5)
     @5 := move ((@1).0)
-    @4 := drop<NotCopy>[Sized<NotCopy>](move (@5))
+    @4 := core::mem::drop<NotCopy>[Sized<NotCopy>](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)

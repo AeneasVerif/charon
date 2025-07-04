@@ -200,7 +200,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.109"
+version = "0.1.110"
 dependencies = [
  "annotate-snippets",
  "anstream",
@@ -438,9 +438,9 @@ dependencies = [
 
 [[package]]
 name = "derive_generic_visitor"
-version = "0.1.1"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3e1c241e4f464b614bd7650f1a7c4c0e20e5ef21564d6b916b4c51fd76f7688"
+checksum = "8f97cf6da50801d6ce913a011f0588883b9ef894603adc3cb40ebe1eb1ac43e5"
 dependencies = [
  "derive_generic_visitor_macros",
 ]
@@ -788,7 +788,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hax-adt-into"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#358c68c886e13101fa27df8b7766d636c574cc43"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#7382371b43796c7a1b4abc8cd12153fe0f1409ec"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -799,7 +799,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#358c68c886e13101fa27df8b7766d636c574cc43"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#7382371b43796c7a1b4abc8cd12153fe0f1409ec"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -816,7 +816,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#358c68c886e13101fa27df8b7766d636c574cc43"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#7382371b43796c7a1b4abc8cd12153fe0f1409ec"
 dependencies = [
  "hax-adt-into",
  "schemars",

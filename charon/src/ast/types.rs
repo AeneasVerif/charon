@@ -130,7 +130,7 @@ pub enum TraitRefKind {
         /// FnOnce`.
         parent_trait_refs: Vector<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
-        types: Vec<(TraitItemName, Ty)>,
+        types: Vec<(TraitItemName, Ty, Vector<TraitClauseId, TraitRef>)>,
     },
 
     /// The automatically-generated implementation for `dyn Trait`.

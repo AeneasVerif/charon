@@ -121,6 +121,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::DropGlueImpl => {
+                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
+                    unreachable!()
+                };
+                let timpl = bt_ctx.translate_drop_impl(id, item_meta, &def)?;
+                self.translated.trait_impls.set_slot(id, timpl);
+            }
+            TransItemSourceKind::DropGlueMethod => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
     }

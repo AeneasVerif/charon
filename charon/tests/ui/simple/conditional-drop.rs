@@ -1,10 +1,11 @@
 //@ charon-args=--mir=elaborated
-fn use_string(_: String) {}
+//@ charon-args=--add-drop-bounds
+fn use_box(_: Box<u32>) {}
 
 fn main() {
-    let s = String::new();
+    let b = Box::new(1u32);
     if false {
-        use_string(s);
+        use_box(b);
     }
-    // `s` is dropped implicitly here
+    // `b` is dropped implicitly here
 }

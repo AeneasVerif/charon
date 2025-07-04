@@ -417,6 +417,19 @@ where
   Break(B),
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
@@ -519,7 +532,7 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(i32)> for closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<closure>] @1
     return
 }
 

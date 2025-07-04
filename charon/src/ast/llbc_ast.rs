@@ -41,7 +41,7 @@ pub enum RawStatement {
     /// it has not already been moved out. For MIR elaborated and optimized, this is a real drop.
     ///
     /// This drop is then equivalent to a call to `std::ptr::drop_in_place(&raw mut place)`.
-    Drop(Place),
+    Drop(Place, TraitRef),
     Assert(Assert),
     Call(Call),
     /// Panic also handles "unreachable". We keep the name of the panicking function that was

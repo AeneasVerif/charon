@@ -18,6 +18,19 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -68,7 +81,7 @@ where
     @0 := @TraitClause1::call_mut<'_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<impl FnMut(u8) -> u8>] f@1
     return
 }
 
@@ -117,7 +130,7 @@ fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<closure<'_0>>] @1
     return
 }
 

@@ -308,16 +308,36 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let def_id = src.as_def_id();
         let mut name = self.def_id_to_name(def_id)?;
         match src.kind {
-            TransItemSourceKind::ClosureTraitImpl(kind)
-            | TransItemSourceKind::ClosureMethod(kind) => {
-                let _ = name.name.pop(); // Pop the `{closure}` path item
-                let impl_id = self.register_closure_trait_impl_id(&None, def_id, kind);
+            TransItemSourceKind::ClosureTraitImpl(..)
+            | TransItemSourceKind::ClosureMethod(..)
+            | TransItemSourceKind::DropGlueImpl
+            | TransItemSourceKind::DropGlueMethod => {
+                let impl_id = match src.kind {
+                    TransItemSourceKind::ClosureTraitImpl(kind)
+                    | TransItemSourceKind::ClosureMethod(kind) => {
+                        let _ = name.name.pop(); // Pop the `{closure}`
+                        self.register_closure_trait_impl_id(&None, def_id, kind)
+                    }
+                    TransItemSourceKind::DropGlueImpl | TransItemSourceKind::DropGlueMethod => {
+                        self.register_drop_trait_impl_id(&None, def_id)
+                    }
+                    _ => unreachable!(),
+                };
+
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
 
-                if matches!(src.kind, TransItemSourceKind::ClosureMethod(..)) {
-                    let fn_name = kind.method_name().to_string();
-                    name.name
-                        .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+                match src.kind {
+                    TransItemSourceKind::ClosureMethod(kind) => {
+                        let fn_name = kind.method_name().to_string();
+                        name.name
+                            .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+                    }
+                    TransItemSourceKind::DropGlueMethod => {
+                        let fn_name = "drop".to_string();
+                        name.name
+                            .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+                    }
+                    _ => {}
                 }
             }
             TransItemSourceKind::TraitImpl if matches!(def_id.kind, hax::DefKind::TraitAlias) => {
@@ -470,12 +490,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
-        let attr_info = self.translate_attr_info(def);
         let is_local = def.def_id.is_local;
-        let lang_item = def
-            .lang_item
-            .clone()
-            .or_else(|| def.diagnostic_item.clone());
+        let (attr_info, lang_item) = if item_src.is_derived_item() {
+            (AttrInfo::default(), None)
+        } else {
+            let attr_info = self.translate_attr_info(def);
+            let lang_item = def
+                .lang_item
+                .clone()
+                .or_else(|| def.diagnostic_item.clone());
+            (attr_info, lang_item)
+        };
 
         let opacity = if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())

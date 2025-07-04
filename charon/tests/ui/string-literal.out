@@ -50,9 +50,30 @@ impl Display for Str {
     fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
 
 // Full name: alloc::string::ToString
 #[lang_item("ToString")]
@@ -134,7 +155,7 @@ fn main()
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()
-    drop _s@1
+    drop[{impl Drop for String}] _s@1
     storage_dead(_s@1)
     @0 := ()
     return

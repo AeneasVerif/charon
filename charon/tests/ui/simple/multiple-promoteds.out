@@ -39,18 +39,6 @@ pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0
 where
     [@TraitClause0]: Add<Self, Rhs>,
 
-// Full name: core::ops::arith::{impl Add<u32> for u32}::add
-pub fn {impl Add<u32> for u32}::add(@1: u32, @2: u32) -> u32
-
-// Full name: core::ops::arith::{impl Add<u32> for u32}
-impl Add<u32> for u32 {
-    parent_clause0 = MetaSized<u32>
-    parent_clause1 = Sized<u32>
-    parent_clause2 = Sized<u32>
-    type Output = u32
-    fn add = {impl Add<u32> for u32}::add
-}
-
 // Full name: test_crate::six
 fn six() -> u32
 {

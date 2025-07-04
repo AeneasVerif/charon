@@ -36,7 +36,7 @@ pub enum RawStatement {
     /// is implicitly deallocated at the end of the function.
     StorageDead(LocalId),
     Deinit(Place),
-    Drop(Place),
+    Drop(Place, TraitRef),
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
     /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert(Assert),

@@ -656,6 +656,27 @@ impl TypeDeclRef {
     }
 }
 
+impl TraitRef {
+    pub fn new_builtin(
+        trait_id: TraitDeclId,
+        ty: Ty,
+        parents: Vector<TraitClauseId, TraitRef>,
+    ) -> Self {
+        let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
+            id: trait_id,
+            generics: Box::new(GenericArgs::new_types([ty].into())),
+        });
+        TraitRef {
+            kind: TraitRefKind::BuiltinOrAuto {
+                trait_decl_ref: trait_decl_ref.clone(),
+                parent_trait_refs: parents,
+                types: Default::default(),
+            },
+            trait_decl_ref,
+        }
+    }
+}
+
 impl Field {
     /// The new name for this field, as suggested by the `#[charon::rename]` attribute.
     pub fn renamed_name(&self) -> Option<&str> {

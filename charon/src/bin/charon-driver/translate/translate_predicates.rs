@@ -189,6 +189,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
+        use hax::DropData;
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
@@ -336,10 +337,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types
                         .iter()
-                        .map(|(def_id, ty)| {
+                        .map(|(def_id, ty, impl_exprs)| {
                             let name = self.t_ctx.translate_trait_item_name(def_id)?;
                             let ty = self.translate_ty(span, ty)?;
-                            Ok((name, ty))
+                            let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                            Ok((name, ty, trait_refs))
                         })
                         .try_collect()?;
                     TraitRefKind::BuiltinOrAuto {
@@ -353,6 +355,33 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_decl_ref,
                 }
             }
+            ImplExprAtom::Drop(DropData::Glue { ty, .. })
+                if let hax::TyKind::Adt(item) = ty.kind() =>
+            {
+                let impl_ref = self.translate_drop_trait_impl_ref(span, item)?;
+                TraitRef {
+                    kind: TraitRefKind::TraitImpl(impl_ref),
+                    trait_decl_ref,
+                }
+            }
+            ImplExprAtom::Drop(..) => {
+                let meta_sized_trait = self.get_lang_item(rustc_hir::LangItem::MetaSized);
+                let meta_sized_trait = self.register_trait_decl_id(span, &meta_sized_trait);
+                let self_ty = trait_decl_ref.clone().erase().generics.types[0].clone();
+                TraitRef {
+                    kind: TraitRefKind::BuiltinOrAuto {
+                        trait_decl_ref: trait_decl_ref.clone(),
+                        parent_trait_refs: [TraitRef::new_builtin(
+                            meta_sized_trait,
+                            self_ty,
+                            Default::default(),
+                        )]
+                        .into(),
+                        types: vec![],
+                    },
+                    trait_decl_ref,
+                }
+            }
             ImplExprAtom::Error(msg) => {
                 let trait_ref = TraitRef {
                     kind: TraitRefKind::Unknown(msg.clone()),
@@ -362,9 +391,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 trait_ref
-            }
-            ImplExprAtom::Drop(..) => {
-                raise_error!(self, span, "Unsupported predicate: drop glue")
             }
         };
         Ok(trait_ref)

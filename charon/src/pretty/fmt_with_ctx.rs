@@ -1308,8 +1308,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             RawStatement::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
             }
-            RawStatement::Drop(place) => {
-                write!(f, "{tab}drop {}", place.with_ctx(ctx))
+            RawStatement::Drop(place, tref) => {
+                write!(
+                    f,
+                    "{tab}drop[{}] {}",
+                    tref.with_ctx(ctx),
+                    place.with_ctx(ctx),
+                )
             }
             RawStatement::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
             RawStatement::Nop => write!(f, "{tab}nop"),
@@ -1352,8 +1357,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Deinit(place) => {
                 write!(f, "deinit({})", place.with_ctx(ctx))
             }
-            RawStatement::Drop(place) => {
-                write!(f, "drop {}", place.with_ctx(ctx))
+            RawStatement::Drop(place, tref) => {
+                write!(f, "drop[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
             }
             RawStatement::Assert(assert) => {
                 write!(f, "{}", assert.with_ctx(ctx),)
@@ -1662,7 +1667,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 if !types.is_empty() {
                     let types = types
                         .iter()
-                        .map(|(name, ty)| {
+                        .map(|(name, ty, _)| {
                             let ty = ty.with_ctx(ctx);
                             format!("{name}  = {ty}")
                         })
