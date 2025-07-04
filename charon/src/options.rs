@@ -148,6 +148,10 @@ pub struct CliOpts {
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
+    /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+    #[clap(long)]
+    #[serde(default)]
+    pub hide_allocator: bool,
     /// Trait method declarations take a `Self: Trait` clause as parameter, so that they can be
     /// reused by multiple trait impls. This however causes trait definitions to be mutually
     /// recursive with their method declarations. This flag removes `Self` clauses that aren't used
@@ -278,6 +282,7 @@ pub enum Preset {
 
 impl CliOpts {
     pub fn apply_preset(&mut self) {
+        self.hide_allocator = !self.raw_boxes;
         if let Some(preset) = self.preset {
             match preset {
                 Preset::OldDefaults => {}
@@ -380,6 +385,8 @@ pub struct TranslateOptions {
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
+    /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+    pub hide_allocator: bool,
     /// Remove unused `Self: Trait` clauses on method declarations.
     pub remove_unused_self_clauses: bool,
     /// Monomorphize functions.
@@ -445,7 +452,7 @@ impl TranslateOptions {
                 opacities.push((pat.to_string(), Invisible));
             }
 
-            if !options.raw_boxes {
+            if options.hide_allocator {
                 opacities.push((format!("core::alloc::Allocator"), Invisible));
                 opacities.push((
                     format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
@@ -468,6 +475,7 @@ impl TranslateOptions {
         TranslateOptions {
             mir_level,
             hide_marker_traits: options.hide_marker_traits,
+            hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,

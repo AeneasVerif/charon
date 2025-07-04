@@ -7,6 +7,7 @@ pub mod expand_associated_types;
 pub mod filter_invisible_trait_impls;
 pub mod filter_unreachable_blocks;
 pub mod graphs;
+pub mod hide_allocator_param;
 pub mod hide_marker_traits;
 pub mod index_intermediate_assigns;
 pub mod index_to_function_calls;
@@ -55,6 +56,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     NonBody(&check_generics::Check("after translation")),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&hide_marker_traits::Transform),
+    // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+    NonBody(&hide_allocator_param::Transform),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&filter_invisible_trait_impls::Transform),
