@@ -3,6 +3,8 @@ open Types
 open Values
 open Expressions
 open Meta
+open Identifiers
+module StatementId = IdGen ()
 
 type block = { span : span; statements : statement list }
 
@@ -59,9 +61,14 @@ and raw_statement =
 
 and statement = {
   span : span;
+  statement_id : statement_id;
+      (** Initially set to 0, then set by a micro-pass to an id uniquely
+          identifying the statement through a micro-passe. *)
   content : raw_statement;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
+
+and statement_id = (StatementId.id[@visitors.opaque])
 
 and switch =
   | If of operand * block * block
