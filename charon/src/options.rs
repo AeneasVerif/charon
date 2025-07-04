@@ -299,7 +299,6 @@ impl CliOpts {
                         .push("{impl core::ops::drop::Drop for _}".to_owned());
                 }
                 Preset::Eurydice => {
-                    self.hide_allocator = true;
                     self.remove_associated_types.push("*".to_owned());
                 }
                 Preset::Tests => {
