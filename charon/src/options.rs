@@ -282,13 +282,15 @@ pub enum Preset {
 
 impl CliOpts {
     pub fn apply_preset(&mut self) {
-        self.hide_allocator = !self.raw_boxes;
         if let Some(preset) = self.preset {
             match preset {
-                Preset::OldDefaults => {}
+                Preset::OldDefaults => {
+                    self.hide_allocator = !self.raw_boxes;
+                }
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
                     self.hide_marker_traits = true;
+                    self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
                     // Hide drop impls because they often involve nested borrows. which aeneas
                     // doesn't handle yet.
@@ -297,9 +299,11 @@ impl CliOpts {
                         .push("{impl core::ops::drop::Drop for _}".to_owned());
                 }
                 Preset::Eurydice => {
+                    self.hide_allocator = true;
                     self.remove_associated_types.push("*".to_owned());
                 }
                 Preset::Tests => {
+                    self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
                 }
             }
