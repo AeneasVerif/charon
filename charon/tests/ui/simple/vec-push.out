@@ -58,23 +58,23 @@ where
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub struct Vec<T, A>
+pub struct Vec<T>
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 {
-  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, type_error("removed allocator parameter")>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
-// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
+// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
+pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (Vec<T, A>[@TraitClause0, @TraitClause1]); // arg #1
+    let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
     let value@2: T; // arg #2
     let len@3: usize; // local
     let @4: bool; // anonymous local
@@ -147,11 +147,11 @@ where
 }
 
 // Full name: test_crate::vec
-fn vec<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
+fn vec<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
 {
     let @0: (); // return
-    let x@1: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // arg #1
-    let @2: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
+    let x@1: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // arg #1
+    let @2: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
 
     storage_live(@2)
     @2 := &two-phase-mut *(x@1)

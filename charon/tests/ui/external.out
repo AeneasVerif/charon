@@ -172,36 +172,36 @@ pub struct Global {}
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub opaque type Vec<T, A>
+pub opaque type Vec<T>
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
 #[lang_item("vec_new")]
-pub fn alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::new<T>() -> Vec<T, Global>[@TraitClause0, Sized<Global>]
+pub fn alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::new<T>() -> Vec<T>[@TraitClause0, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
+pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for Vec<T, A>[@TraitClause0, @TraitClause1]
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
 pub fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))
@@ -247,12 +247,12 @@ pub fn test_new_non_zero_u32(@1: u32) -> NonZero<u32>[Sized<u32>, {impl Zeroable
 pub fn test_vec_push()
 {
     let @0: (); // return
-    let v@1: Vec<u32, Global>[Sized<u32>, Sized<Global>]; // local
+    let v@1: Vec<u32>[Sized<u32>, Sized<Global>]; // local
     let @2: (); // anonymous local
-    let @3: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @3: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
 
     storage_live(v@1)
-    v@1 := alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::new<u32>[Sized<u32>]()
+    v@1 := alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::new<u32>[Sized<u32>]()
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut v@1
@@ -260,7 +260,7 @@ pub fn test_vec_push()
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
     storage_dead(v@1)
     @0 := ()
     return

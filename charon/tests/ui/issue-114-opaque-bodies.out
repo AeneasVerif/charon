@@ -190,23 +190,23 @@ where
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub struct Vec<T, A>
+pub struct Vec<T>
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 {
-  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, type_error("removed allocator parameter")>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
-// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (Vec<T, A>[@TraitClause0, @TraitClause1]); // arg #1
+    let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
     let @2: *mut Slice<T>; // anonymous local
     let data@3: *mut T; // local
     let len@4: usize; // local
@@ -229,14 +229,14 @@ where
     return
 }
 
-// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for Vec<T, A>[@TraitClause0, @TraitClause1]
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: issue_114_opaque_bodies_aux::inline_always
@@ -346,13 +346,13 @@ fn convert(@1: i32) -> i64
 }
 
 // Full name: test_crate::vec
-fn vec(@1: Vec<u32, Global>[Sized<u32>, Sized<Global>])
+fn vec(@1: Vec<u32>[Sized<u32>, Sized<Global>])
 {
     let @0: (); // return
-    let _x@1: Vec<u32, Global>[Sized<u32>, Sized<Global>]; // arg #1
+    let _x@1: Vec<u32>[Sized<u32>, Sized<Global>]; // arg #1
 
     @0 := ()
-    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] _x@1
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] _x@1
     @0 := ()
     return
 }

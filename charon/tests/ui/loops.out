@@ -692,59 +692,59 @@ pub struct Global {}
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub opaque type Vec<T, A>
+pub opaque type Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+
+pub fn alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_0, T, A>(@1: &'_0 (Vec<T>[@TraitClause0, @TraitClause1])) -> usize
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-pub fn alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::len<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index
-pub fn {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
+// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index
+pub fn {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 (Vec<T>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 
-// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}
-impl<T, I, A> Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]
+// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}
+impl<T, I, A> Index<I> for Vec<T>[@TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause2]>
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause2]>
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause3::parent_clause3
     type Output = @TraitClause3::Output
-    fn index<'_0> = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index<'_0> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut
-pub fn {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
+pub fn {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}
-impl<T, I, A> IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}
+impl<T, I, A> IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause2]>
-    parent_clause1 = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause2]>
+    parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 // Full name: test_crate::test_loop1
@@ -2038,17 +2038,17 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
 }
 
 // Full name: test_crate::clear
-pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
+pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
 {
     let @0: (); // return
-    let v@1: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // arg #1
+    let v@1: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // arg #1
     let i@2: usize; // local
     let @3: bool; // anonymous local
     let @4: usize; // anonymous local
     let @5: usize; // anonymous local
-    let @6: &'_ (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @6: &'_ (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
     let @7: &'_ mut (u32); // anonymous local
-    let @8: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @8: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
     let @11: (); // anonymous local
@@ -2067,7 +2067,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
         storage_live(@5)
         storage_live(@6)
         @6 := &*(v@1)
-        @5 := alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
+        @5 := alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
@@ -2082,7 +2082,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
         @8 := &mut *(v@1)
         storage_live(@9)
         @9 := copy (i@2)
-        @7 := {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
+        @7 := {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
         storage_dead(@9)
         storage_dead(@8)
         *(@7) := const (0 : u32)
