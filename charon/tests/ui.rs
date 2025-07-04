@@ -61,7 +61,7 @@ static HELP_STRING: &str = unindent!(
     - `//@ rustc-args=<rustc cli options>`
     - `//@ no-check-output`: don't store the output in a file; useful if the output is unstable or
          differs between debug and release mode.
-    - `//@ no-default-options`: don't set default options like --edition=2021.
+    - `//@ no-default-options`: don't set default options like --hide-allocator
     - `//@ aux-crate=<file path>`: compile this file as a crate dependency.
     "
 );

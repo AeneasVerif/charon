@@ -986,6 +986,7 @@ fn main() -> Result<()> {
         let mut cmd = Command::cargo_bin("charon")?;
         cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
+        cmd.arg("--hide-allocator");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
