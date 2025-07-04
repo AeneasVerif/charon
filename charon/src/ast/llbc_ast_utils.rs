@@ -62,6 +62,7 @@ impl Statement {
     pub fn new(span: Span, content: RawStatement) -> Self {
         Statement {
             span,
+            id: StatementId::ZERO,
             content,
             comments_before: vec![],
         }

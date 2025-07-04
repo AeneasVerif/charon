@@ -6,6 +6,7 @@ pub mod duplicate_return;
 pub mod expand_associated_types;
 pub mod filter_invisible_trait_impls;
 pub mod filter_unreachable_blocks;
+pub mod generate_statement_ids;
 pub mod graphs;
 pub mod hide_marker_traits;
 pub mod index_intermediate_assigns;
