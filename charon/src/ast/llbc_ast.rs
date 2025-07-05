@@ -12,6 +12,8 @@ use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
+generate_index_type!(StatementId);
+
 /// A raw statement: a statement without meta data.
 #[derive(
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
@@ -73,6 +75,10 @@ pub enum RawStatement {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
+    /// Integer uniquely identifying this statement among the statmeents in the current body. To
+    /// simplify things we generate globally-fresh ids when creating a new `Statement`.
+    #[charon::rename("statement_id")]
+    pub id: StatementId,
     pub content: RawStatement,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
