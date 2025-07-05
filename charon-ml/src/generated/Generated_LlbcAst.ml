@@ -62,8 +62,9 @@ and raw_statement =
 and statement = {
   span : span;
   statement_id : statement_id;
-      (** Initially set to 0, then set by a micro-pass to an id uniquely
-          identifying the statement through a micro-passe. *)
+      (** Integer uniquely identifying this statement among the statmeents in
+          the current body. To simplify things we generate globally-fresh ids
+          when creating a new [Statement]. *)
   content : raw_statement;
   comments_before : string list;  (** Comments that precede this statement. *)
 }

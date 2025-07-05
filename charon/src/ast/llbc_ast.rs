@@ -75,8 +75,8 @@ pub enum RawStatement {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
-    /// Initially set to 0, then set by a micro-pass to an id uniquely identifying
-    /// the statement through a micro-passe.
+    /// Integer uniquely identifying this statement among the statmeents in the current body. To
+    /// simplify things we generate globally-fresh ids when creating a new `Statement`.
     #[charon::rename("statement_id")]
     pub id: StatementId,
     pub content: RawStatement,
