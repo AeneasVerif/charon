@@ -78,50 +78,50 @@ where
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub opaque type Vec<T, A>
+pub opaque type Vec<T>
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
 // Full name: alloc::slice::{Slice<T>}::into_vec
 #[lang_item("slice_into_vec")]
-pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[MetaSized<Slice<T>>, @TraitClause1]) -> Vec<T, A>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[MetaSized<Slice<T>>, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::vec::from_elem
 #[lang_item("vec_from_elem")]
-pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
+pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T>[@TraitClause0, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 
-// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for Vec<T, A>[@TraitClause0, @TraitClause1]
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::foo
 fn foo()
 {
     let @0: (); // return
-    let _v@1: Vec<i32, Global>[Sized<i32>, Sized<Global>]; // local
+    let _v@1: Vec<i32>[Sized<i32>, Sized<Global>]; // local
     let @2: alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]; // anonymous local
     let @3: alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]; // anonymous local
     let @4: alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]; // anonymous local
-    let _v2@5: Vec<i32, Global>[Sized<i32>, Sized<Global>]; // local
+    let _v2@5: Vec<i32>[Sized<i32>, Sized<Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
     storage_live(@6)
@@ -142,9 +142,9 @@ fn foo()
     storage_live(_v2@5)
     _v2@5 := from_elem<i32>[Sized<i32>, {impl Clone for i32}](const (1 : i32), const (10 : usize))
     @0 := ()
-    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v2@5
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v2@5
     storage_dead(_v2@5)
-    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v@1
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v@1
     storage_dead(_v@1)
     @0 := ()
     return
@@ -157,7 +157,7 @@ pub struct Foo {}
 pub fn bar()
 {
     let @0: (); // return
-    let @1: Vec<Foo, Global>[Sized<Foo>, Sized<Global>]; // anonymous local
+    let @1: Vec<Foo>[Sized<Foo>, Sized<Global>]; // anonymous local
     let @2: alloc::boxed::Box<Slice<Foo>>[MetaSized<Slice<Foo>>, Sized<Global>]; // anonymous local
     let @3: alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]; // anonymous local
     let @4: alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]; // anonymous local
@@ -182,7 +182,7 @@ pub fn bar()
     storage_dead(@3)
     @1 := into_vec<Foo, Global>[Sized<Foo>, Sized<Global>](move (@2))
     storage_dead(@2)
-    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<Foo, Global>[Sized<Foo>, Sized<Global>]] @1
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<Foo, Global>[Sized<Foo>, Sized<Global>]] @1
     storage_dead(@1)
     @0 := ()
     @0 := ()

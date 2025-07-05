@@ -114,6 +114,14 @@ where
         self.vector.remove(id)
     }
 
+    /// Remove the last slot.
+    pub fn pop(&mut self) -> Option<T> {
+        if self.vector.last().is_some() {
+            self.elem_count -= 1;
+        }
+        self.vector.pop().flatten()
+    }
+
     pub fn push(&mut self, x: T) -> I {
         self.elem_count += 1;
         self.vector.push(Some(x))
