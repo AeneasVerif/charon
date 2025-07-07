@@ -398,7 +398,7 @@ fn fn_casts()
 
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8)> for closure}
 impl FnOnce<(u8)> for closure {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = Sized<(u8)>
     parent_clause2 = Tuple<(u8)>
     parent_clause3 = Sized<()>
@@ -408,7 +408,7 @@ impl FnOnce<(u8)> for closure {
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8)> for closure}
 impl FnMut<(u8)> for closure {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnOnce<(u8)> for closure}
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>
@@ -417,7 +417,7 @@ impl FnMut<(u8)> for closure {
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8)> for closure}
 impl Fn<(u8)> for closure {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnMut<(u8)> for closure}
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>

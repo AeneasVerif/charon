@@ -80,7 +80,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for closure}
 impl FnOnce<(u8)> for closure {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = Sized<(u8)>
     parent_clause2 = Tuple<(u8)>
     parent_clause3 = Sized<u8>
