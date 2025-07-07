@@ -72,7 +72,7 @@ struct test_crate::main::closure::<'_> {
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure<'_0>}
 impl<'_0> FnOnce<(u8)> for test_crate::main::closure<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<test_crate::main::closure<'_0>>
     parent_clause1 = Sized<(u8)>
     parent_clause2 = Tuple<(u8)>
     parent_clause3 = Sized<u8>
@@ -82,7 +82,7 @@ impl<'_0> FnOnce<(u8)> for test_crate::main::closure<'_0> {
 
 // Full name: test_crate::main::{impl FnMut<(u8)> for test_crate::main::closure<'_0>}
 impl<'_0> FnMut<(u8)> for test_crate::main::closure<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<test_crate::main::closure<'_0>>
     parent_clause1 = {impl FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0>
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>
@@ -91,7 +91,7 @@ impl<'_0> FnMut<(u8)> for test_crate::main::closure<'_0> {
 
 // Full name: test_crate::main::{impl Fn<(u8)> for test_crate::main::closure<'_0>}
 impl<'_0> Fn<(u8)> for test_crate::main::closure<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<test_crate::main::closure<'_0>>
     parent_clause1 = {impl FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0>
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>
@@ -146,7 +146,7 @@ struct test_crate::main::closure#1::<'_> {
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure#1<'_0>}
 impl<'_0> FnOnce<(u8)> for test_crate::main::closure#1<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<test_crate::main::closure#1<'_0>>
     parent_clause1 = Sized<(u8)>
     parent_clause2 = Tuple<(u8)>
     parent_clause3 = Sized<u8>
@@ -156,7 +156,7 @@ impl<'_0> FnOnce<(u8)> for test_crate::main::closure#1<'_0> {
 
 // Full name: test_crate::main::{impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}
 impl<'_0> FnMut<(u8)> for test_crate::main::closure#1<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<test_crate::main::closure#1<'_0>>
     parent_clause1 = {impl FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0>
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>
@@ -244,7 +244,7 @@ fn {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(@1: test_crate
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure#2}
 impl FnOnce<(u8)> for test_crate::main::closure#2 {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<test_crate::main::closure#2>
     parent_clause1 = Sized<(u8)>
     parent_clause2 = Tuple<(u8)>
     parent_clause3 = Sized<u8>

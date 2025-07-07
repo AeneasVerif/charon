@@ -181,7 +181,7 @@ impl<Self> FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<(@TraitClause0::Item)>
+    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
     parent_clause1 = Sized<(@TraitClause0::Item)>
     parent_clause2 = Tuple<(@TraitClause0::Item)>
     parent_clause3 = Sized<()>
@@ -194,7 +194,7 @@ impl<Self> FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<(@TraitClause0::Item)>
+    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
     parent_clause1 = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
     parent_clause2 = Sized<(@TraitClause0::Item)>
     parent_clause3 = Tuple<(@TraitClause0::Item)>
@@ -206,7 +206,7 @@ impl<Self> Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<(@TraitClause0::Item)>
+    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
     parent_clause1 = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
     parent_clause2 = Sized<(@TraitClause0::Item)>
     parent_clause3 = Tuple<(@TraitClause0::Item)>

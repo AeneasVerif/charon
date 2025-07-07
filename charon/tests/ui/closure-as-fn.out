@@ -171,7 +171,7 @@ fn main()
 
 // Full name: test_crate::main::{impl FnOnce<()> for closure}
 impl FnOnce<()> for closure {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
     parent_clause3 = Sized<()>
@@ -181,7 +181,7 @@ impl FnOnce<()> for closure {
 
 // Full name: test_crate::main::{impl FnMut<()> for closure}
 impl FnMut<()> for closure {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnOnce<()> for closure}
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>
@@ -190,7 +190,7 @@ impl FnMut<()> for closure {
 
 // Full name: test_crate::main::{impl Fn<()> for closure}
 impl Fn<()> for closure {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnMut<()> for closure}
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>

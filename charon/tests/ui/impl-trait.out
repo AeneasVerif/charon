@@ -295,7 +295,7 @@ impl<'_0, U> FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]
 where
     [@TraitClause0]: Sized<U>,
 {
-    parent_clause0 = MetaSized<(&'_ (U))>
+    parent_clause0 = MetaSized<closure<U>[@TraitClause0]>
     parent_clause1 = Sized<(&'_ (U))>
     parent_clause2 = Tuple<(&'_ (U))>
     parent_clause3 = Sized<WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]>

@@ -134,7 +134,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, const K : usize>,
 {
-    parent_clause0 = MetaSized<(usize)>
+    parent_clause0 = MetaSized<closure<T, const K : usize>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(usize)>
     parent_clause2 = Tuple<(usize)>
     parent_clause3 = Sized<T>
@@ -148,7 +148,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, const K : usize>,
 {
-    parent_clause0 = MetaSized<(usize)>
+    parent_clause0 = MetaSized<closure<T, const K : usize>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}<T, const K : usize>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(usize)>
     parent_clause3 = Tuple<(usize)>

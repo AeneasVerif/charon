@@ -632,6 +632,11 @@ impl ItemTransCtx<'_, '_> {
         let input = Ty::mk_tuple(inputs);
 
         let parent_trait_refs = {
+            let self_is_meta_sized = TraitRef::new_builtin(
+                meta_sized_trait,
+                implemented_trait.generics.types[0].clone(),
+                Default::default(),
+            );
             let input_is_meta_sized =
                 TraitRef::new_builtin(meta_sized_trait, input.clone(), Default::default());
             let input_is_sized = TraitRef::new_builtin(
@@ -654,7 +659,7 @@ impl ItemTransCtx<'_, '_> {
                         [output_is_meta_sized].into(),
                     );
                     [
-                        input_is_meta_sized,
+                        self_is_meta_sized,
                         input_is_sized,
                         input_is_tuple,
                         output_is_sized,
@@ -676,7 +681,7 @@ impl ItemTransCtx<'_, '_> {
                         trait_decl_ref: RegionBinder::empty(parent_predicate),
                     };
                     [
-                        input_is_meta_sized,
+                        self_is_meta_sized,
                         parent_trait_ref,
                         input_is_sized,
                         input_is_tuple,
