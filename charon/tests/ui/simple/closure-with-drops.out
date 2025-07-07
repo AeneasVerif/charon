@@ -1,24 +1,113 @@
-
-thread 'rustc' panicked at /rustc-dev/35f6036521777bdc0dcea1f980be4c192962a168/compiler/rustc_type_ir/src/binder.rs:764:9:
-type parameter `<closure_kind>/#1` (<closure_kind>/#1/1) out of range when instantiating, args=[T/#0]
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Hax panicked when translating `Body { basic_blocks: BasicBlocks { basic_blocks: [BasicBlockData { statements: [StorageLive(_2), _2 = {closure@tests/ui/simple/closure-with-drops.rs:4:13: 4:15} { x: move _1 }, PlaceMention(_2)], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:4:23: 4:24 (#0), scope: scope[0] }, kind: drop(_2) -> [return: bb1, unwind: bb3] }), is_cleanup: false }, BasicBlockData { statements: [StorageDead(_2), _0 = const ()], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:5:1: 5:2 (#0), scope: scope[0] }, kind: drop(_1) -> [return: bb2, unwind: bb4] }), is_cleanup: false }, BasicBlockData { statements: [], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:5:2: 5:2 (#0), scope: scope[0] }, kind: return }), is_cleanup: false }, BasicBlockData { statements: [], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:5:1: 5:2 (#0), scope: scope[0] }, kind: drop(_1) -> [return: bb4, unwind terminate(cleanup)] }), is_cleanup: true }, BasicBlockData { statements: [], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:3:1: 5:2 (#0), scope: scope[0] }, kind: resume }), is_cleanup: true }], cache: Cache { predecessors: OnceLock(<uninit>), switch_sources: OnceLock(<uninit>), reverse_postorder: OnceLock(<uninit>), dominators: OnceLock(<uninit>) } }, phase: Built, pass_count: 7, source: MirSource { instance: Item(test_crate::foo), promoted: None }, source_scopes: [SourceScopeData { span: tests/ui/simple/closure-with-drops.rs:3:1: 5:2 (#0), parent_scope: None, inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::foo.0) }) }, SourceScopeData { span: tests/ui/simple/closure-with-drops.rs:4:5: 5:2 (#0), parent_scope: Some(scope[0]), inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::foo.0) }) }], coroutine: None, local_decls: [LocalDecl { mutability: Mut, local_info: Set(Boring), ty: (), user_ty: None, source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:3:16: 3:16 (#0), scope: scope[0] } }, LocalDecl { mutability: Not, local_info: Set(User(Var(VarBindingForm { binding_mode: BindingMode(No, Not), opt_ty_info: Some(tests/ui/simple/closure-with-drops.rs:3:14: 3:15 (#0)), opt_match_place: Some((None, tests/ui/simple/closure-with-drops.rs:3:11: 3:12 (#0))), pat_span: tests/ui/simple/closure-with-drops.rs:3:11: 3:12 (#0) }))), ty: T/#0, user_ty: None, source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:3:11: 3:12 (#0), scope: scope[0] } }, LocalDecl { mutability: Mut, local_info: Set(Boring), ty: Closure(test_crate::foo::{closure#0}, [T/#0, i32, Binder { value: extern "RustCall" fn(()), bound_vars: [] }, (T/#0,)]), user_ty: None, source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:4:13: 4:23 (#0), scope: scope[0] } }], user_type_annotations: [], arg_count: 1, spread_arg: None, var_debug_info: [x => _1], span: tests/ui/simple/closure-with-drops.rs:3:1: 5:2 (#0), required_consts: None, mentioned_items: None, is_polymorphic: true, injection_phase: None, tainted_by_errors: None, coverage_info_hi: None, function_coverage_info: None }`.
- --> tests/ui/simple/closure-with-drops.rs:3:1
+error: Found inconsistent generics after translation:
+       Mismatched trait parent clauses:
+       target: FnOnce
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: Sized<Args>, [@TraitClause2]: Tuple<Args>, [@TraitClause3]: Drop<Self>, [@TraitClause4]: Drop<Args>, [@TraitClause5]: Sized<Self::Output>, [@TraitClause6]: Drop<Self::Output>]
+            got: [MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>, Sized<()>, Tuple<()>, Sized<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <T, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>, [@TraitClause1]: @TraitDecl1<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-with-drops.rs:4:13
   |
-3 | / fn foo<T>(x: T) {
-4 | |     let _ = || drop(x);
-5 | | }
-  | |_^
+4 |     let _ = || drop(x);
+  |             ^^^^^^^^^^
 
-
-thread 'rustc' panicked at /nix/store/ymky77grccl6l8pdh76ck574r1qb5ayn-rust-default-1.90.0-nightly-2025-06-30/lib/rustlib/rustc-src/rust/compiler/rustc_type_ir/src/binder.rs:629:13:
-Binder { value: <<closure_kind> as std::ops::Drop>, bound_vars: [] } has parameters, but no args were provided in instantiate
-error: Hax panicked when translating `Body { basic_blocks: BasicBlocks { basic_blocks: [BasicBlockData { statements: [StorageLive(_1), _1 = {closure@tests/ui/simple/closure-with-drops.rs:8:13: 8:15}, FakeRead(ForLet(None), _1), _0 = const (), StorageDead(_1)], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:9:2: 9:2 (#0), scope: scope[0] }, kind: return }), is_cleanup: false }], cache: Cache { predecessors: OnceLock(<uninit>), switch_sources: OnceLock(<uninit>), reverse_postorder: OnceLock(<uninit>), dominators: OnceLock(<uninit>) } }, phase: Built, pass_count: 7, source: MirSource { instance: Item(test_crate::bar), promoted: None }, source_scopes: [SourceScopeData { span: tests/ui/simple/closure-with-drops.rs:7:1: 9:2 (#0), parent_scope: None, inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::bar.0) }) }, SourceScopeData { span: tests/ui/simple/closure-with-drops.rs:8:5: 9:2 (#0), parent_scope: Some(scope[0]), inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::bar.0) }) }], coroutine: None, local_decls: [LocalDecl { mutability: Mut, local_info: Set(Boring), ty: (), user_ty: None, source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:7:9: 7:9 (#0), scope: scope[0] } }, LocalDecl { mutability: Not, local_info: Set(User(Var(VarBindingForm { binding_mode: BindingMode(No, Not), opt_ty_info: None, opt_match_place: Some((None, tests/ui/simple/closure-with-drops.rs:8:13: 8:18 (#0))), pat_span: tests/ui/simple/closure-with-drops.rs:8:9: 8:10 (#0) }))), ty: Closure(test_crate::bar::{closure#0}, [i8, Binder { value: extern "RustCall" fn(()), bound_vars: [] }, ()]), user_ty: None, source_info: SourceInfo { span: tests/ui/simple/closure-with-drops.rs:8:9: 8:10 (#0), scope: scope[0] } }], user_type_annotations: [], arg_count: 0, spread_arg: None, var_debug_info: [x => _1], span: tests/ui/simple/closure-with-drops.rs:7:1: 9:2 (#0), required_consts: None, mentioned_items: None, is_polymorphic: false, injection_phase: None, tainted_by_errors: None, coverage_info_hi: None, function_coverage_info: None }`.
- --> tests/ui/simple/closure-with-drops.rs:7:1
+error: Found inconsistent generics after translation:
+       Mismatched trait parent clauses:
+       target: FnOnce
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: Sized<Args>, [@TraitClause2]: Tuple<Args>, [@TraitClause3]: Drop<Self>, [@TraitClause4]: Drop<Args>, [@TraitClause5]: Sized<Self::Output>, [@TraitClause6]: Drop<Self::Output>]
+            got: [MetaSized<test_crate::bar::closure>, Sized<()>, Tuple<()>, Sized<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> tests/ui/simple/closure-with-drops.rs:8:13
   |
-7 | / fn bar() {
-8 | |     let x = || {};
-9 | | }
-  | |_^
+8 |     let x = || {};
+  |             ^^^^^
 
-ERROR Charon failed to translate this code (2 errors)
+error: Found inconsistent generics after translation:
+       Mismatched trait parent clauses:
+       target: FnMut
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: FnOnce<Self, Args>, [@TraitClause2]: Sized<Args>, [@TraitClause3]: Tuple<Args>, [@TraitClause4]: Drop<Self>, [@TraitClause5]: Drop<Args>]
+            got: [MetaSized<test_crate::bar::closure>, {impl FnOnce<()> for test_crate::bar::closure}, Sized<()>, Tuple<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> tests/ui/simple/closure-with-drops.rs:8:13
+  |
+8 |     let x = || {};
+  |             ^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait parent clauses:
+       target: Fn
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: FnMut<Self, Args>, [@TraitClause2]: Sized<Args>, [@TraitClause3]: Tuple<Args>, [@TraitClause4]: Drop<Self>, [@TraitClause5]: Drop<Args>]
+            got: [MetaSized<test_crate::bar::closure>, {impl FnMut<()> for test_crate::bar::closure}, Sized<()>, Tuple<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> tests/ui/simple/closure-with-drops.rs:8:13
+  |
+8 |     let x = || {};
+  |             ^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched trait parent clauses:
+       target: FnOnce
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: Sized<Args>, [@TraitClause2]: Tuple<Args>, [@TraitClause3]: Drop<Self>, [@TraitClause4]: Drop<Args>, [@TraitClause5]: Sized<Self::Output>, [@TraitClause6]: Drop<Self::Output>]
+            got: [MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>, Sized<()>, Tuple<()>, Sized<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <T, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>, [@TraitClause1]: @TraitDecl1<missing(@Type1_0)>>
+ --> tests/ui/simple/closure-with-drops.rs:4:13
+  |
+4 |     let _ = || drop(x);
+  |             ^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched trait parent clauses:
+       target: FnOnce
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: Sized<Args>, [@TraitClause2]: Tuple<Args>, [@TraitClause3]: Drop<Self>, [@TraitClause4]: Drop<Args>, [@TraitClause5]: Sized<Self::Output>, [@TraitClause6]: Drop<Self::Output>]
+            got: [MetaSized<test_crate::bar::closure>, Sized<()>, Tuple<()>, Sized<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> tests/ui/simple/closure-with-drops.rs:8:13
+  |
+8 |     let x = || {};
+  |             ^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched trait parent clauses:
+       target: FnMut
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: FnOnce<Self, Args>, [@TraitClause2]: Sized<Args>, [@TraitClause3]: Tuple<Args>, [@TraitClause4]: Drop<Self>, [@TraitClause5]: Drop<Args>]
+            got: [MetaSized<test_crate::bar::closure>, {impl FnOnce<()> for test_crate::bar::closure}, Sized<()>, Tuple<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> tests/ui/simple/closure-with-drops.rs:8:13
+  |
+8 |     let x = || {};
+  |             ^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched trait parent clauses:
+       target: Fn
+       expected: [[@TraitClause0]: MetaSized<Self>, [@TraitClause1]: FnMut<Self, Args>, [@TraitClause2]: Sized<Args>, [@TraitClause3]: Tuple<Args>, [@TraitClause4]: Drop<Self>, [@TraitClause5]: Drop<Args>]
+            got: [MetaSized<test_crate::bar::closure>, {impl FnMut<()> for test_crate::bar::closure}, Sized<()>, Tuple<()>]
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> tests/ui/simple/closure-with-drops.rs:8:13
+  |
+8 |     let x = || {};
+  |             ^^^^^
+
+ERROR Charon failed to translate this code (8 errors)

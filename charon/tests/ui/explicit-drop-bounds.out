@@ -38,37 +38,34 @@ impl Drop for String {
 
 // Full name: test_crate::Trait
 trait Trait<Self, T>
-where
-    [@TraitClause0]: Drop<Self>,
-    [@TraitClause1]: Drop<T>,
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Type>
-    parent_clause3 : [@TraitClause3]: Drop<Self::Type>
+    parent_clause2 : [@TraitClause2]: Drop<Self>
+    parent_clause3 : [@TraitClause3]: Drop<T>
+    parent_clause4 : [@TraitClause4]: Sized<Self::Type>
+    parent_clause5 : [@TraitClause5]: Drop<Self::Type>
     type Type
-    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Drop<U>> = foo<Self, T, U>[@TraitClause0, @TraitClause1, Self, @TraitClause0_0, @TraitClause0_1]
+    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Drop<U>> = foo<Self, T, U>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: test_crate::Trait::foo
 fn foo<Self, T, U>(@1: U)
 where
-    [@TraitClause0]: Drop<Self>,
-    [@TraitClause1]: Drop<T>,
-    [@TraitClause2]: Trait<Self, T>[@TraitClause0, @TraitClause1],
-    [@TraitClause3]: Sized<U>,
-    [@TraitClause4]: Drop<U>,
+    [@TraitClause0]: Trait<Self, T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Drop<U>,
 {
     let @0: (); // return
     let x@1: U; // arg #1
 
     @0 := ()
-    drop[@TraitClause4] x@1
+    drop[@TraitClause2] x@1
     @0 := ()
     return
 }
 
-fn test_crate::{impl Trait<u32>[Drop<()>, Drop<u32>] for ()}::foo<U>(@1: U)
+fn test_crate::{impl Trait<u32> for ()}::foo<U>(@1: U)
 where
     [@TraitClause0]: Sized<U>,
     [@TraitClause1]: Drop<U>,
@@ -82,14 +79,16 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<u32>[Drop<()>, Drop<u32>] for ()}
-impl Trait<u32>[Drop<()>, Drop<u32>] for () {
+// Full name: test_crate::{impl Trait<u32> for ()}
+impl Trait<u32> for () {
     parent_clause0 = MetaSized<()>
     parent_clause1 = Sized<u32>
-    parent_clause2 = Sized<String>
-    parent_clause3 = {impl Drop for String}
+    parent_clause2 = Drop<()>
+    parent_clause3 = Drop<u32>
+    parent_clause4 = Sized<String>
+    parent_clause5 = {impl Drop for String}
     type Type = String
-    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Drop<U>> = test_crate::{impl Trait<u32>[Drop<()>, Drop<u32>] for ()}::foo<U>[@TraitClause0_0, @TraitClause0_1]
+    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Drop<U>> = test_crate::{impl Trait<u32> for ()}::foo<U>[@TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: test_crate::use_trait
@@ -97,7 +96,7 @@ fn use_trait<T, X>(@1: T, @2: X)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<X>,
-    [@TraitClause2]: Trait<X, T>[@TraitClause4, @TraitClause3],
+    [@TraitClause2]: Trait<X, T>,
     [@TraitClause3]: Drop<T>,
     [@TraitClause4]: Drop<X>,
 {
@@ -122,7 +121,7 @@ fn main()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
-    @1 := use_trait<u32, ()>[Sized<u32>, Sized<()>, {impl Trait<u32>[Drop<()>, Drop<u32>] for ()}, Drop<u32>, Drop<()>](const (42 : u32), move (@2))
+    @1 := use_trait<u32, ()>[Sized<u32>, Sized<()>, {impl Trait<u32> for ()}, Drop<u32>, Drop<()>](const (42 : u32), move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()
