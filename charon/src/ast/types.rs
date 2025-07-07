@@ -802,7 +802,7 @@ pub enum TyKind {
     /// lifetimes as arguments; given that the type here is polymorpohic in the late-bound
     /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
     /// we need to bind them here.
-    FnDef(RegionBinder<FunDeclRef>),
+    FnDef(RegionBinder<FnPtr>),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),

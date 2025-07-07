@@ -470,8 +470,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
                         let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
-                        let fn_ptr: FnPtr = fn_ref.clone().erase().into();
-                        let src_ty = TyKind::FnDef(fn_ref).into_ty();
+                        let fn_ptr_bound = fn_ref.map(FunDeclRef::into);
+                        let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
+                        let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         let operand = Operand::Const(Box::new(ConstantExpr {
                             value: RawConstantExpr::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
