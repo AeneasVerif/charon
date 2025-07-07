@@ -665,7 +665,7 @@ and match_expr_with_const_generic (ctx : 'fun_body ctx) (c : match_config)
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
-let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
+let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
   match fid with
   | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
   | ArrayToSliceShared -> "ArrayToSliceShared"
@@ -681,7 +681,7 @@ let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
       "std::ptr::from_raw_parts" ^ mut
 
 let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
-    (func : E.fn_ptr) : bool =
+    (func : T.fn_ptr) : bool =
   match func.func with
   | FunId (FBuiltin fid) -> (
       let to_name (s : string list) : T.name =
@@ -1103,7 +1103,7 @@ let name_with_generics_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
 (** We use the [params] to compute proper names for the variables. Note that it
     is safe to provide empty generic parameters. *)
 let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
-    (params : T.generic_params) (func : E.fn_ptr) : pattern =
+    (params : T.generic_params) (func : T.fn_ptr) : pattern =
   (* Convert the function pointer to a pattern *)
   let m = compute_constraints_map params in
   let args = generic_args_to_pattern ctx c m func.generics in
@@ -1141,7 +1141,7 @@ let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (lazy
       (let fmt_env = ctx_to_fmt_env ctx in
        "fn_ptr_to_pattern:" ^ "\n- fn_ptr: "
-       ^ PrintExpressions.fn_ptr_to_string fmt_env func
+       ^ PrintTypes.fn_ptr_to_string fmt_env func
        ^ "\n- pattern: "
        ^ pattern_to_string { tgt = TkPattern } pat));
   assert (

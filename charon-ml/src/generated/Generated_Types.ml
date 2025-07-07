@@ -190,6 +190,50 @@ class virtual ['self] map_ty_base_base =
         { index; name }
   end
 
+(** An built-in function identifier, identifying a function coming from a
+    standard library. *)
+type builtin_fun_id =
+  | BoxNew  (** [alloc::boxed::Box::new] *)
+  | ArrayToSliceShared
+      (** Cast an array as a slice.
+
+          Converted from [UnOp::ArrayToSlice] *)
+  | ArrayToSliceMut
+      (** Cast an array as a slice.
+
+          Converted from [UnOp::ArrayToSlice] *)
+  | ArrayRepeat
+      (** [repeat(n, x)] returns an array where [x] has been replicated [n]
+          times.
+
+          We introduce this when desugaring the [ArrayRepeat] rvalue. *)
+  | Index of builtin_index_op
+      (** Converted from indexing [ProjectionElem]s. The signature depends on
+          the parameters. It could look like:
+          - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
+          - [fn SliceIndexShared<T>(&[T], usize) -> &T]
+          - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
+          - [fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]]
+          - etc *)
+  | PtrFromParts of ref_kind
+      (** Build a raw pointer, from a data pointer and metadata. The metadata
+          can be unit, if building a thin pointer.
+
+          Converted from [AggregateKind::RawPtr] *)
+
+(** One of 8 built-in indexing operations. *)
+and builtin_index_op = {
+  is_array : bool;  (** Whether this is a slice or array. *)
+  mutability : ref_kind;
+      (** Whether we're indexing mutably or not. Determines the type ofreference
+          of the input and output. *)
+  is_range : bool;
+      (** Whether we're indexing a single element or a subrange. If [true], the
+          function takes two indices and the output is a slice; otherwise, the
+          function take one index and the output is a reference to a single
+          element. *)
+}
+
 (** Builtin types identifiers.
 
     WARNING: for now, all the built-in types are covariant in the generic
@@ -199,7 +243,7 @@ class virtual ['self] map_ty_base_base =
 
     TODO: update to not hardcode the types (except [Box] maybe) and be more
     modular. TODO: move to builtins.rs? *)
-type builtin_ty =
+and builtin_ty =
   | TBox  (** Boxes are de facto a primitive type. *)
   | TArray  (** Primitive type *)
   | TSlice  (** Primitive type *)
@@ -210,11 +254,29 @@ type builtin_ty =
     TODO: store something useful here *)
 and existential_predicate = unit
 
+and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
+
 (** Reference to a function declaration. *)
 and fun_decl_ref = {
   id : fun_decl_id;
   generics : generic_args;  (** Generic arguments passed to the function. *)
 }
+
+(** A function identifier. See [crate::ullbc_ast::Terminator] *)
+and fun_id =
+  | FRegular of fun_decl_id
+      (** A "regular" function (function local to the crate, external function
+          not treated as a primitive one). *)
+  | FBuiltin of builtin_fun_id
+      (** A primitive function, coming from a standard library (for instance:
+          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
+
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
+      (** If a trait: the reference to the trait and the id of the trait method.
+          The fun decl id is not really necessary - we put it here for
+          convenience purposes. *)
 
 (** A set of generic arguments. *)
 and generic_args = {
@@ -396,7 +458,7 @@ and ty =
           that contains a callable function. This is a function signature with
           limited generics: it only supports lifetime generics, not other kinds
           of generics. *)
-  | TFnDef of fun_decl_ref region_binder
+  | TFnDef of fn_ptr region_binder
       (** The unique type associated with each function item. Each function item
           is given a unique generic type that takes as input the function's
           early-bound generics. This type is not generally nameable in Rust;
