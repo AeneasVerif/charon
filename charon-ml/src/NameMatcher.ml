@@ -705,11 +705,11 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
               && match_generic_args ctx c (mk_empty_maps ()) g2 func.generics
               &&
               match box_impl with
-              | [ PIdent ("Box", _, [ GExpr (EVar _) ]) ]
+              | [ PIdent ("Box", _, _) ]
               | [
                   PIdent ("alloc", _, []);
                   PIdent ("boxed", _, []);
-                  PIdent ("Box", _, [ GExpr (EVar _) ]);
+                  PIdent ("Box", _, _);
                 ] -> true
               | _ -> false)
           | _ -> false)

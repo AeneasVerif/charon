@@ -191,7 +191,6 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     if first == "vec" {
                         first = "list".to_string();
-                        expr.pop(); // Remove the allocator generic param
                     }
                     expr.insert(0, first + "_of_json");
                 }
@@ -256,7 +255,6 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     if base_ty == "vec" {
                         base_ty = "list".to_string();
-                        args.pop(); // Remove the allocator generic param
                     }
                     if base_ty == "vector" {
                         base_ty = "list".to_string();
@@ -986,6 +984,7 @@ fn main() -> Result<()> {
         let mut cmd = Command::cargo_bin("charon")?;
         cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
+        cmd.arg("--hide-allocator");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");

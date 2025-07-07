@@ -23,18 +23,3 @@ impl BuiltinTy {
         Name::from_path(name)
     }
 }
-
-/// When translating from MIR to ULLBC, we ignore some type parameters for some builtin types.
-/// For instance, many types like box or vec are parameterized (in MIR) by an allocator
-/// (`std::alloc::Allocator`): we ignore it.
-pub fn type_to_used_params(id: BuiltinTy) -> Vec<bool> {
-    match id {
-        BuiltinTy::Box => {
-            vec![true, false]
-        }
-        BuiltinTy::Str => {
-            vec![]
-        }
-        BuiltinTy::Array | BuiltinTy::Slice => vec![true],
-    }
-}

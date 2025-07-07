@@ -331,6 +331,9 @@ type cli_options = {
   hide_marker_traits : bool;
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
           anywhere they show up. *)
+  hide_allocator : bool;
+      (** Hide the [A] type parameter on standard library containers ([Box],
+          [Vec], etc). *)
   remove_unused_self_clauses : bool;
       (** Trait method declarations take a [Self: Trait] clause as parameter, so
           that they can be reused by multiple trait impls. This however causes

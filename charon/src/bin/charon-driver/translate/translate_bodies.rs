@@ -256,12 +256,12 @@ impl BodyTransCtx<'_, '_, '_> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     TypeId::Builtin(BuiltinTy::Box) => {
-                                        // Some more sanity checks
+                                        // Some sanity checks
                                         assert!(generics.regions.is_empty());
-                                        assert!(generics.types.elem_count() == 1);
+                                        assert!(generics.types.elem_count() == 2);
                                         assert!(generics.const_generics.is_empty());
-                                        assert!(variant_id.is_none());
                                         assert!(field_id == FieldId::ZERO);
+                                        // We pretend this is a deref.
                                         ProjectionElem::Deref
                                     }
                                     _ => raise_error!(self, span, "Unexpected field projection"),
