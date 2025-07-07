@@ -604,7 +604,14 @@ impl ItemTransCtx<'_, '_> {
         target_kind: ClosureKind,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
-        let hax::FullDefKind::Closure { args, .. } = &def.kind else {
+        let hax::FullDefKind::Closure {
+            args,
+            fn_once_impl,
+            fn_mut_impl,
+            fn_impl,
+            ..
+        } = &def.kind
+        else {
             unreachable!()
         };
 
@@ -614,86 +621,25 @@ impl ItemTransCtx<'_, '_> {
         self.innermost_binder_mut()
             .push_params_from_binder(args.fn_sig.rebind(()))?;
 
-        // The builtin traits we need.
-        let sized_trait = self.get_lang_item(rustc_hir::LangItem::Sized);
-        let sized_trait = self.register_trait_decl_id(span, &sized_trait);
-
-        let meta_sized_trait = self.get_lang_item(rustc_hir::LangItem::MetaSized);
-        let meta_sized_trait = self.register_trait_decl_id(span, &meta_sized_trait);
-
-        let tuple_trait = self.get_lang_item(rustc_hir::LangItem::Tuple);
-        let tuple_trait = self.register_trait_decl_id(span, &tuple_trait);
-
-        let implemented_trait = self.translate_closure_trait_ref(span, args, target_kind)?;
+        // Hax gives us trait-related information for the impl we're building.
+        let vimpl = match target_kind {
+            ClosureKind::FnOnce => fn_once_impl,
+            ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
+            ClosureKind::Fn => fn_impl.as_ref().unwrap(),
+        };
+        let implemented_trait = self.translate_trait_ref(span, &vimpl.trait_pred.trait_ref)?;
         let fn_trait = implemented_trait.id;
 
-        // The input tuple type and output type of the signature.
-        let (inputs, output) = self.translate_closure_info(span, args)?.signature.erase();
-        let input = Ty::mk_tuple(inputs);
-
-        let parent_trait_refs = {
-            let self_is_meta_sized = TraitRef::new_builtin(
-                meta_sized_trait,
-                implemented_trait.generics.types[0].clone(),
-                Default::default(),
-            );
-            let input_is_meta_sized =
-                TraitRef::new_builtin(meta_sized_trait, input.clone(), Default::default());
-            let input_is_sized = TraitRef::new_builtin(
-                sized_trait,
-                input.clone(),
-                [input_is_meta_sized.clone()].into(),
-            );
-            let input_is_tuple = TraitRef::new_builtin(
-                tuple_trait,
-                input.clone(),
-                [input_is_meta_sized.clone()].into(),
-            );
-            match target_kind {
-                ClosureKind::FnOnce => {
-                    let output_is_meta_sized =
-                        TraitRef::new_builtin(meta_sized_trait, output.clone(), Default::default());
-                    let output_is_sized = TraitRef::new_builtin(
-                        sized_trait,
-                        output.clone(),
-                        [output_is_meta_sized].into(),
-                    );
-                    [
-                        self_is_meta_sized,
-                        input_is_sized,
-                        input_is_tuple,
-                        output_is_sized,
-                    ]
-                    .into()
-                }
-                ClosureKind::FnMut | ClosureKind::Fn => {
-                    let parent_kind = match target_kind {
-                        ClosureKind::FnOnce => unreachable!(),
-                        ClosureKind::FnMut => ClosureKind::FnOnce,
-                        ClosureKind::Fn => ClosureKind::FnMut,
-                    };
-                    let parent_impl_ref =
-                        self.translate_closure_impl_ref(span, args, parent_kind)?;
-                    let parent_predicate =
-                        self.translate_closure_trait_ref(span, args, parent_kind)?;
-                    let parent_trait_ref = TraitRef {
-                        kind: TraitRefKind::TraitImpl(parent_impl_ref),
-                        trait_decl_ref: RegionBinder::empty(parent_predicate),
-                    };
-                    [
-                        self_is_meta_sized,
-                        parent_trait_ref,
-                        input_is_sized,
-                        input_is_tuple,
-                    ]
-                    .into()
-                }
-            }
-        };
-        let types = match target_kind {
-            ClosureKind::FnOnce => vec![(TraitItemName("Output".into()), output.clone())],
-            ClosureKind::FnMut | ClosureKind::Fn => vec![],
-        };
+        let mut parent_trait_refs =
+            self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
+        let mut types = vec![];
+        for (output, impl_exprs) in &vimpl.types {
+            // The associated type, if any, is `Output`.
+            let output = self.translate_ty(span, output)?;
+            types.push((TraitItemName("Output".into()), output.clone()));
+            let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+            parent_trait_refs.extend(trait_refs);
+        }
 
         // Construct the `call_*` method reference.
         let call_fn_id = self.register_closure_method_decl_id(span, &def.def_id, target_kind);

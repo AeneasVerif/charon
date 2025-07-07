@@ -462,7 +462,7 @@ where
     parent_clause0 = MetaSized<test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(&'_ (u32))>
     parent_clause2 = Tuple<(&'_ (u32))>
-    parent_clause3 = Sized<T>
+    parent_clause3 = @TraitClause0
     type Output = T
     fn call_once = {impl FnOnce<(&'_ (u32))> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, '_2, T>[@TraitClause0, @TraitClause1]
 }

@@ -1721,7 +1721,7 @@ where
     parent_clause0 = MetaSized<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(T)>
     parent_clause2 = Tuple<(T)>
-    parent_clause3 = Sized<T>
+    parent_clause3 = @TraitClause0
     fn call_once = {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
 }
 

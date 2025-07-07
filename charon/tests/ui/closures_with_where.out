@@ -137,7 +137,7 @@ where
     parent_clause0 = MetaSized<closure<T, const K : usize>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(usize)>
     parent_clause2 = Tuple<(usize)>
-    parent_clause3 = Sized<T>
+    parent_clause3 = @TraitClause0
     type Output = T
     fn call_once = {impl FnOnce<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_once<T, const K : usize>[@TraitClause0, @TraitClause1]
 }

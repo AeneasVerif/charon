@@ -128,14 +128,14 @@ where
 
     pub fn push_all<It>(&mut self, it: It) -> impl Iterator<Item = I> + use<'_, I, T, It>
     where
-        It: Iterator<Item = T>,
+        It: IntoIterator<Item = T>,
     {
-        it.map(move |x| self.push(x))
+        it.into_iter().map(move |x| self.push(x))
     }
 
     pub fn extend<It>(&mut self, it: It)
     where
-        It: Iterator<Item = T>,
+        It: IntoIterator<Item = T>,
     {
         self.push_all(it).for_each(|_| ())
     }
