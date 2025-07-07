@@ -24,6 +24,9 @@ trait Trait<T> {
 }
 
 #[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}")]
+#[pattern::pass("_::{impl test_crate::Trait<_> for _}")]
+#[pattern::pass("*::{impl test_crate::Trait<_> for _}")]
+#[pattern::pass("{impl test_crate::Trait<_> for _}")]
 #[pattern::pass("test_crate::{impl test_crate::Trait<_, _>}")]
 #[pattern::fail("test_crate::{impl test_crate::Trait<_>}")]
 #[pattern::fail("test_crate::{impl test_crate::Trait<_, _> for _}")]
@@ -44,6 +47,7 @@ trait Trait<T> {
 #[pattern::fail("test_crate::Trait<_>")]
 impl<T> Trait<Option<T>> for Box<T> {
     #[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}::method")]
+    #[pattern::pass("{impl test_crate::Trait<_> for _}::method")]
     #[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}::_")]
     #[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}")]
     #[pattern::pass("test_crate::{impl test_crate::Trait<_, _>}"::method)]

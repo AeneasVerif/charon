@@ -117,9 +117,9 @@ fn test_crate::C() -> u32
     storage_live(@2)
     storage_live(@3)
     storage_live(@1)
-    @2 := const (100 : u32) + const (10 : u32)
+    @2 := const (100 : u32) panic.+ const (10 : u32)
     @1 := move (@2)
-    @3 := copy (@1) + const (1 : u32)
+    @3 := copy (@1) panic.+ const (1 : u32)
     @0 := move (@3)
     storage_dead(@1)
     return

@@ -18,6 +18,19 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args, Self_Output>
@@ -84,7 +97,7 @@ where
     let @1: F; // arg #1
 
     @0 := ()
-    drop @1
+    drop[Drop<F>] @1
     @0 := ()
     return
 }

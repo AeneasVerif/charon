@@ -18,6 +18,14 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -115,19 +123,19 @@ fn test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}::call::<'_, '_, '
     @7 := copy (*((*(@1)).0))
     storage_live(@8)
     @8 := copy (x@3)
-    @9 := copy (@7) + copy (@8)
+    @9 := copy (@7) panic.+ copy (@8)
     @6 := move (@9)
     storage_dead(@8)
     storage_dead(@7)
     storage_live(@10)
     @10 := copy (y@4)
-    @11 := copy (@6) + copy (@10)
+    @11 := copy (@6) panic.+ copy (@10)
     @5 := move (@11)
     storage_dead(@10)
     storage_dead(@6)
     storage_live(@12)
     @12 := copy (*((*(@1)).1))
-    @13 := copy (@5) + copy (@12)
+    @13 := copy (@5) panic.+ copy (@12)
     @0 := move (@13)
     storage_dead(@12)
     storage_dead(@5)
@@ -181,19 +189,19 @@ fn test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}::call::<'_, '_, '
     @7 := copy (*((*(@1)).0))
     storage_live(@8)
     @8 := copy (x@3)
-    @9 := copy (@7) + copy (@8)
+    @9 := copy (@7) panic.+ copy (@8)
     @6 := move (@9)
     storage_dead(@8)
     storage_dead(@7)
     storage_live(@10)
     @10 := copy (y@4)
-    @11 := copy (@6) + copy (@10)
+    @11 := copy (@6) panic.+ copy (@10)
     @5 := move (@11)
     storage_dead(@10)
     storage_dead(@6)
     storage_live(@12)
     @12 := copy (*((*(@1)).1))
-    @13 := copy (@5) + copy (@12)
+    @13 := copy (@5) panic.+ copy (@12)
     @0 := move (@13)
     storage_dead(@12)
     storage_dead(@5)
@@ -253,7 +261,7 @@ fn test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once::<
     storage_live(@3)
     @3 := &mut @1
     @0 := test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut::<'_, '_, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::main::closure::<'_, '_>>] @1
     return
 }
 
@@ -271,7 +279,7 @@ fn test_crate::apply_to_once::<test_crate::main::closure::<'_, '_>>(@1: test_cra
     @0 := {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_, '_>::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure::<'_, '_>>] f@1
     return
 }
 

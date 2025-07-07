@@ -279,7 +279,7 @@ where
     }
     else {
         storage_live(@13)
-        @13 := copy (self@4) wrapping.- copy (rhs@5)
+        @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
         storage_dead(@13)
         storage_dead(@12)
@@ -364,7 +364,7 @@ where
     }
     else {
         storage_live(@13)
-        @13 := copy (self@4) wrapping.- copy (rhs@5)
+        @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
         storage_dead(@13)
         storage_dead(@12)
@@ -502,7 +502,7 @@ where
     storage_live(@9)
     @9 := copy ((self@1).end)
     offset@10 := copy ((self@1).start)
-    new_len@8 := move (@9) wrapping.- copy (offset@10)
+    new_len@8 := move (@9) ub.- copy (offset@10)
     storage_dead(@9)
     storage_live(@11)
     storage_live(@12)
@@ -614,7 +614,7 @@ where
     storage_live(@9)
     @9 := copy ((self@1).end)
     offset@10 := copy ((self@1).start)
-    new_len@8 := move (@9) wrapping.- copy (offset@10)
+    new_len@8 := move (@9) ub.- copy (offset@10)
     storage_dead(@9)
     storage_live(@11)
     storage_live(@12)
@@ -670,7 +670,7 @@ where
     }
     else {
         storage_live(@14)
-        @14 := copy (self@6) wrapping.- copy (rhs@7)
+        @14 := copy (self@6) ub.- copy (rhs@7)
         @5 := Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
@@ -749,7 +749,7 @@ where
     }
     else {
         storage_live(@14)
-        @14 := copy (self@6) wrapping.- copy (rhs@7)
+        @14 := copy (self@6) ub.- copy (rhs@7)
         @5 := Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)

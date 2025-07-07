@@ -24,6 +24,14 @@ struct Thing {}
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<Thing>(@1: Thing)
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -107,7 +115,7 @@ fn test_crate::main::{impl Fn<(u8)> for test_crate::main::closure<'_0>}::call::<
     @4 := copy (x@3)
     storage_live(@5)
     @5 := copy (*((*(@1)).0))
-    @6 := copy (@4) + copy (@5)
+    @6 := copy (@4) panic.+ copy (@5)
     @0 := move (@6)
     storage_dead(@5)
     storage_dead(@4)
@@ -128,7 +136,7 @@ fn test_crate::apply_to_zero::<test_crate::main::closure::<'_>>(@1: test_crate::
     @0 := {impl Fn<(u8)> for test_crate::main::closure<'_0>}<'_>::call(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure::<'_>>] f@1
     return
 }
 
@@ -170,13 +178,13 @@ fn test_crate::main::{impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}::ca
     storage_live(@4)
     storage_live(@7)
     x@3 := move ((tupled_args@2).0)
-    @4 := copy (*((*(@1)).0)) + const (1 : u8)
+    @4 := copy (*((*(@1)).0)) panic.+ const (1 : u8)
     *((*(@1)).0) := move (@4)
     storage_live(@5)
     @5 := copy (x@3)
     storage_live(@6)
     @6 := copy (*((*(@1)).0))
-    @7 := copy (@5) + copy (@6)
+    @7 := copy (@5) panic.+ copy (@6)
     @0 := move (@7)
     storage_dead(@6)
     storage_dead(@5)
@@ -197,7 +205,7 @@ fn test_crate::apply_to_zero_mut::<test_crate::main::closure#1::<'_>>(@1: test_c
     @0 := {impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_>::call_mut(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure#1::<'_>>] f@1
     return
 }
 
@@ -228,7 +236,7 @@ fn {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(@1: test_crate
     storage_dead(@4)
     storage_live(@6)
     @6 := copy (x@3)
-    @7 := copy (@6) + const (1 : u8)
+    @7 := copy (@6) panic.+ const (1 : u8)
     @0 := move (@7)
     storage_dead(@6)
     return
@@ -266,7 +274,7 @@ fn test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure#2}::call_o
     storage_dead(@4)
     storage_live(@6)
     @6 := copy (x@3)
-    @7 := copy (@6) + const (1 : u8)
+    @7 := copy (@6) panic.+ const (1 : u8)
     @0 := move (@7)
     storage_dead(@6)
     return
@@ -286,7 +294,7 @@ fn test_crate::apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate:
     @0 := {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure#2>] f@1
     return
 }
 

@@ -40,6 +40,19 @@ pub trait Destruct<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
@@ -79,7 +92,7 @@ where
     let _other@2: T; // arg #2
 
     @0 := ()
-    drop _other@2
+    drop[Drop<T>] _other@2
     @0 := ()
     return
 }

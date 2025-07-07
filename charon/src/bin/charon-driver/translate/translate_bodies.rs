@@ -10,7 +10,7 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::panic;
 
-use super::translate_crate::TransItemSource;
+use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
@@ -118,18 +118,21 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::BinOp::Ne => BinOp::Ne,
             hax::BinOp::Ge => BinOp::Ge,
             hax::BinOp::Gt => BinOp::Gt,
-            hax::BinOp::Div => BinOp::Div,
-            hax::BinOp::Rem => BinOp::Rem,
-            // TODO: this is incorrect
-            hax::BinOp::Add | hax::BinOp::AddUnchecked => BinOp::WrappingAdd,
-            hax::BinOp::Sub | hax::BinOp::SubUnchecked => BinOp::WrappingSub,
-            hax::BinOp::Mul | hax::BinOp::MulUnchecked => BinOp::WrappingMul,
-            hax::BinOp::AddWithOverflow => BinOp::CheckedAdd,
-            hax::BinOp::SubWithOverflow => BinOp::CheckedSub,
-            hax::BinOp::MulWithOverflow => BinOp::CheckedMul,
-            // TODO: this is incorrect
-            hax::BinOp::Shl | hax::BinOp::ShlUnchecked => BinOp::Shl,
-            hax::BinOp::Shr | hax::BinOp::ShrUnchecked => BinOp::Shr,
+            hax::BinOp::Add => BinOp::Add(OverflowMode::Wrap),
+            hax::BinOp::AddUnchecked => BinOp::Add(OverflowMode::UB),
+            hax::BinOp::Sub => BinOp::Sub(OverflowMode::Wrap),
+            hax::BinOp::SubUnchecked => BinOp::Sub(OverflowMode::UB),
+            hax::BinOp::Mul => BinOp::Mul(OverflowMode::Wrap),
+            hax::BinOp::MulUnchecked => BinOp::Mul(OverflowMode::UB),
+            hax::BinOp::Div => BinOp::Div(OverflowMode::UB),
+            hax::BinOp::Rem => BinOp::Rem(OverflowMode::UB),
+            hax::BinOp::AddWithOverflow => BinOp::AddChecked,
+            hax::BinOp::SubWithOverflow => BinOp::SubChecked,
+            hax::BinOp::MulWithOverflow => BinOp::MulChecked,
+            hax::BinOp::Shl => BinOp::Shl(OverflowMode::Wrap),
+            hax::BinOp::ShlUnchecked => BinOp::Shl(OverflowMode::UB),
+            hax::BinOp::Shr => BinOp::Shr(OverflowMode::Wrap),
+            hax::BinOp::ShrUnchecked => BinOp::Shr(OverflowMode::UB),
             hax::BinOp::Cmp => BinOp::Cmp,
             hax::BinOp::Offset => BinOp::Offset,
         })
@@ -548,7 +551,7 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::Rvalue::UnaryOp(unop, operand) => {
                 let unop = match unop {
                     hax::UnOp::Not => UnOp::Not,
-                    hax::UnOp::Neg => UnOp::Neg,
+                    hax::UnOp::Neg => UnOp::Neg(OverflowMode::Wrap),
                     hax::UnOp::PtrMetadata => UnOp::PtrMetadata,
                 };
                 Ok(Rvalue::UnaryOp(
@@ -811,12 +814,14 @@ impl BodyTransCtx<'_, '_, '_> {
             TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
             TerminatorKind::Drop {
                 place,
+                impl_expr,
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 ..
             } => {
                 let place = self.translate_place(span, place)?;
-                statements.push(Statement::new(span, RawStatement::Drop(place)));
+                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                statements.push(Statement::new(span, RawStatement::Drop(place, tref)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
@@ -965,7 +970,7 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::FunOperand::Static(item) => {
                 trace!("func: {:?}", item.def_id);
                 let fun_def = self.hax_def(&item.def_id)?;
-                let fun_src = TransItemSource::Fun(item.def_id.clone());
+                let fun_src = TransItemSource::new(item.def_id.clone(), TransItemSourceKind::Fun);
                 let name = self.t_ctx.translate_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];

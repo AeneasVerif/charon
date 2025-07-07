@@ -327,7 +327,7 @@ and trait_instance_id =
   | BuiltinOrAuto of
       trait_decl_ref region_binder
       * trait_ref list
-      * (trait_item_name * ty) list
+      * (trait_item_name * ty * trait_ref list) list
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.

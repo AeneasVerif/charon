@@ -11,9 +11,37 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+}
 
 // Full name: test_crate::main
 fn main()
@@ -23,7 +51,7 @@ fn main()
 
     storage_live(@1)
     @1 := @BoxNew<i32>[Sized<i32>](const (42 : i32))
-    drop @1
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @1
     storage_dead(@1)
     @0 := ()
     @0 := ()

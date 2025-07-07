@@ -632,32 +632,35 @@ impl ItemTransCtx<'_, '_> {
         let input = Ty::mk_tuple(inputs);
 
         let parent_trait_refs = {
-            // Makes a built-in trait ref for `ty: trait`.
-            let builtin_tref = |trait_id, ty| {
-                let generics = Box::new(GenericArgs::new_types([ty].into()));
-                let trait_decl_ref = TraitDeclRef {
-                    id: trait_id,
-                    generics,
-                };
-                let trait_decl_ref = RegionBinder::empty(trait_decl_ref);
-                TraitRef {
-                    kind: TraitRefKind::BuiltinOrAuto {
-                        trait_decl_ref: trait_decl_ref.clone(),
-                        parent_trait_refs: Vector::new(),
-                        types: vec![],
-                    },
-                    trait_decl_ref,
-                }
-            };
-
+            let input_is_meta_sized =
+                TraitRef::new_builtin(meta_sized_trait, input.clone(), Default::default());
+            let input_is_sized = TraitRef::new_builtin(
+                sized_trait,
+                input.clone(),
+                [input_is_meta_sized.clone()].into(),
+            );
+            let input_is_tuple = TraitRef::new_builtin(
+                tuple_trait,
+                input.clone(),
+                [input_is_meta_sized.clone()].into(),
+            );
             match target_kind {
-                ClosureKind::FnOnce => [
-                    builtin_tref(meta_sized_trait, input.clone()),
-                    builtin_tref(sized_trait, input.clone()),
-                    builtin_tref(tuple_trait, input.clone()),
-                    builtin_tref(sized_trait, output.clone()),
-                ]
-                .into(),
+                ClosureKind::FnOnce => {
+                    let output_is_meta_sized =
+                        TraitRef::new_builtin(meta_sized_trait, output.clone(), Default::default());
+                    let output_is_sized = TraitRef::new_builtin(
+                        sized_trait,
+                        output.clone(),
+                        [output_is_meta_sized].into(),
+                    );
+                    [
+                        input_is_meta_sized,
+                        input_is_sized,
+                        input_is_tuple,
+                        output_is_sized,
+                    ]
+                    .into()
+                }
                 ClosureKind::FnMut | ClosureKind::Fn => {
                     let parent_kind = match target_kind {
                         ClosureKind::FnOnce => unreachable!(),
@@ -673,10 +676,10 @@ impl ItemTransCtx<'_, '_> {
                         trait_decl_ref: RegionBinder::empty(parent_predicate),
                     };
                     [
-                        builtin_tref(meta_sized_trait, input.clone()),
+                        input_is_meta_sized,
                         parent_trait_ref,
-                        builtin_tref(sized_trait, input.clone()),
-                        builtin_tref(tuple_trait, input.clone()),
+                        input_is_sized,
+                        input_is_tuple,
                     ]
                     .into()
                 }

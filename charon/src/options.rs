@@ -155,6 +155,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
+    /// Whether to add `Drop` bounds everywhere to enable proper tracking of what code runs on a
+    /// given `drop` call.
+    #[clap(long)]
+    #[serde(default)]
+    pub add_drop_bounds: bool,
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
     /// from the path `crate` (which translates the whole crate).
@@ -280,6 +285,11 @@ impl CliOpts {
                     self.remove_associated_types.push("*".to_owned());
                     self.hide_marker_traits = true;
                     self.remove_unused_self_clauses = true;
+                    // Hide drop impls because they often involve nested borrows. which aeneas
+                    // doesn't handle yet.
+                    self.exclude.push("core::ops::drop::Drop".to_owned());
+                    self.exclude
+                        .push("{impl core::ops::drop::Drop for _}".to_owned());
                 }
                 Preset::Eurydice => {
                     self.remove_associated_types.push("*".to_owned());
@@ -472,6 +482,7 @@ impl TranslateOptions {
 
     /// Find the opacity requested for the given name. This does not take into account
     /// `#[charon::opaque]` annotations, only cli parameters.
+    #[tracing::instrument(skip(self, krate), ret)]
     pub fn opacity_for_name(&self, krate: &TranslatedCrate, name: &Name) -> ItemOpacity {
         // Find the most precise pattern that matches this name. There is always one since
         // the list contains the `_` pattern. If there are conflicting settings for this item, we

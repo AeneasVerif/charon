@@ -337,6 +337,9 @@ type cli_options = {
           trait definitions to be mutually recursive with their method
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion. *)
+  add_drop_bounds : bool;
+      (** Whether to add [Drop] bounds everywhere to enable proper tracking of
+          what code runs on a given [drop] call. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to

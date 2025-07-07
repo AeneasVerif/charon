@@ -83,7 +83,7 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     y@3 := move ((tupled_args@2).0)
     storage_live(@4)
     @4 := copy (y@3)
-    @5 := copy (@4) + const (1 : u32)
+    @5 := copy (@4) panic.+ const (1 : u32)
     @0 := move (@5)
     storage_dead(@4)
     return
