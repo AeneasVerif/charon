@@ -44,7 +44,7 @@ pub use pretty::formatter;
 pub use transform::{graphs, reorder_decls, ullbc_to_llbc};
 
 /// The version of the crate, as defined in `Cargo.toml`.
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Read a `.llbc` file.
 pub fn deserialize_llbc(path: &std::path::Path) -> anyhow::Result<ast::TranslatedCrate> {

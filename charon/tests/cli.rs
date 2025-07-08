@@ -49,6 +49,18 @@ fn charon_pretty_print() -> Result<()> {
 }
 
 #[test]
+fn charon_version() -> Result<()> {
+    charon(&["version"], ".", |stdout, cmd| {
+        let version = charon_lib::VERSION;
+        ensure!(
+            stdout.trim() == version,
+            "Output of `{cmd}` is:\n{stdout:?}\nIt should be {version}."
+        );
+        Ok(())
+    })
+}
+
+#[test]
 fn charon_cargo_p_crate2() -> Result<()> {
     charon(
         &["cargo", "--print-llbc", "--", "-p", "crate2", "--quiet"],
