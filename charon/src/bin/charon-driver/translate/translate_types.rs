@@ -485,10 +485,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         None
                     } else {
                         tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
-                            .map(|s| {
-                                assert_eq!(s.size(), r_abi::Size::from_bytes(tag_ty.size()));
-                                ScalarValue::from_bits(tag_ty, s.to_bits(s.size()))
-                            })
+                            .map(|s| ScalarValue::from_bits(tag_ty, s.to_bits(s.size())))
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tag));
                 }

@@ -79,6 +79,10 @@ pub fn main() -> Result<()> {
             println!("{}", path.display());
             ExitStatus::default()
         }
+        Some(Charon::Version) => {
+            println!("{}", charon_lib::VERSION);
+            ExitStatus::default()
+        }
         // Legacy calling syntax.
         None => {
             let options = cli.opts;
