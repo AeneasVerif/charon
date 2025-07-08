@@ -471,6 +471,7 @@ impl From<FunDeclRef> for FnPtr {
 /// reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
 #[derive(
     Debug,
+    Hash,
     PartialEq,
     Eq,
     Clone,
@@ -553,7 +554,7 @@ pub enum RawConstantExpr {
     Opaque(String),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ConstantExpr {
     pub value: RawConstantExpr,
     pub ty: Ty,

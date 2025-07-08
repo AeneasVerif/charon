@@ -782,7 +782,7 @@ pub enum TyKind {
     /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
     ///
     /// TODO: we don't translate this properly yet.
-    DynTrait(ExistentialPredicate),
+    DynTrait(Vec<RegionBinder<ExistentialPredicate>>, Region, DynKind),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
@@ -898,25 +898,29 @@ pub struct FunSig {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub enum DynKind {
+    Dyn,
+    DynStar,
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ExistentialTraitRef {
     /// This field corresponds to all required info in Rustc
-    pub trait_ref : TraitDeclRef,
+    pub trait_ref: TraitDeclRef,
     // the following field(s) is/are addional information in Charon
     /// The trait vtable structure, referring to a (potentially generic) ADT
-    pub vtable_ref : TypeDeclId,
+    pub vtable_typ_id: TypeDeclId,
 }
 /// Corresponding to `ty::TermKind` in Rustc
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum TyTerm {
     Ty(Ty),
-    // TODO: ConstExpr should be implemented -- Hash is not derived, maybe derive in the future?
-    Const
-    // Const(ConstantExpr),
+    Const(ConstantExpr),
 }
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ExistentialProjection {
     pub trait_ref: TraitDeclRef,
-    pub term : TyTerm,
+    pub term: TyTerm,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.

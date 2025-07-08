@@ -42,6 +42,45 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
+    fn check_at_most_one_existential_trait_ref(
+        &self,
+        span: Span,
+        preds: &Vec<hax::Binder<hax::ExistentialPredicate>>,
+    ) -> Result<(), Error> {
+        let all_ex_trait_ref = preds
+            .iter()
+            .filter_map(|binded_pred| {
+                if let hax::ExistentialPredicate::Trait(trait_ref) = &binded_pred.value {
+                    Some(trait_ref)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        if all_ex_trait_ref.len() <= 1 {
+            return Ok(());
+        }
+        // prepare to print
+        // all: Trait1 + Trait 2 + ...
+        let all = all_ex_trait_ref
+            .iter()
+            .map(|x| {
+                self.t_ctx
+                    .tcx
+                    .def_path_str(x.def_id.as_rust_def_id().unwrap())
+            })
+            .collect::<Vec<String>>()
+            .join(" + ");
+        let str = format!(
+            "dyn multiple traits is not supported as per Rustc 1.90.0. I.e., (dyn {all}).
+            Consider the workaround by defining:
+            `trait Multiple : {all} {{}}`,
+            `impl <T : {all}> Multiple for T {{}}`
+            using `dyn Multiple` instead.",
+        );
+        raise_error!(self, span, "{}", str);
+    }
+
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/
@@ -216,10 +255,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
-                // TODO: we don't translate the predicates yet because our machinery can't handle
-                // it.
-                TyKind::DynTrait(ExistentialPredicate)
+            hax::TyKind::Dynamic(preds, region, kind) => {
+                let region = self.translate_region(span, region)?;
+                let kind = match kind {
+                    hax::DynKind::Dyn => DynKind::Dyn,
+                    hax::DynKind::DynStar => DynKind::DynStar,
+                };
+                // This is a robustness check: the current version of Rustc
+                // accepts at most one existential trait ref in a dyn object.
+                // But things may change in the future
+                self.check_at_most_one_existential_trait_ref(span, preds)?;
+                let preds = preds
+                    .iter()
+                    .map(|binded_pred| {
+                        self.translate_region_binder(span, binded_pred, |ctx, x| {
+                            ctx.translate_existential_predicate(span, x)
+                        })
+                    })
+                    .collect::<Result<_, Error>>()?;
+                TyKind::DynTrait(preds, region, kind)
             }
 
             hax::TyKind::Infer(_) => {

@@ -127,6 +127,11 @@ pub enum ItemKind {
         #[drive(skip)]
         reuses_default: bool,
     },
+    /// This is a virtual table struct for a trait
+    VTable {
+        /// which trait is this VTable for
+        trait_id: TraitDeclId,
+    },
 }
 
 /// A function definition

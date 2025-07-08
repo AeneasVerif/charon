@@ -55,6 +55,13 @@ pub enum TransItemSourceKind {
     DropGlueImpl,
     /// The `drop` method for the impl above.
     DropGlueMethod,
+    /// The virtual table struct (ADT), associated DefId should refer to the trait-decl itself.
+    VTable,
+    /// The virtual table global instance for a specific type, corresponding to TraitRef.
+    /// The associated DefId is essentially meaningless
+    VTableInstance(hax::TraitRef),
+    /// The init body of the `VTableInstance`, as per the practice of `Global`
+    VTableInstanceBody(hax::TraitRef),
 }
 
 impl TransItemSource {
@@ -68,12 +75,19 @@ impl TransItemSource {
 
     /// Whether this item is the "main" item for this def_id or not (e.g. drop impl/methods are not
     /// the main item).
+    /// VTable and its instances all have DefId referring to the trait itself, so also not the main item.
     pub(crate) fn is_derived_item(&self) -> bool {
         use TransItemSourceKind::*;
         match self.kind {
             Global | TraitDecl | TraitImpl | InherentImpl | Module | Fun | Type => false,
-            ClosureTraitImpl(..) | ClosureMethod(..) | ClosureAsFnCast | DropGlueImpl
-            | DropGlueMethod => true,
+            ClosureTraitImpl(..)
+            | ClosureMethod(..)
+            | ClosureAsFnCast
+            | DropGlueImpl
+            | DropGlueMethod
+            | VTable
+            | VTableInstance(_)
+            | VTableInstanceBody(_) => true,
         }
     }
 
@@ -158,13 +172,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             None => {
                 use TransItemSourceKind::*;
                 let trans_id = match src.kind {
-                    Type => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
+                    Type | VTable => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
                     TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
                     TraitImpl | ClosureTraitImpl(..) | DropGlueImpl => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
-                    Global => AnyTransId::Global(self.translated.global_decls.reserve_slot()),
-                    Fun | ClosureMethod(..) | ClosureAsFnCast | DropGlueMethod => {
+                    Global | VTableInstance(_) => {
+                        AnyTransId::Global(self.translated.global_decls.reserve_slot())
+                    }
+                    Fun
+                    | ClosureMethod(..)
+                    | ClosureAsFnCast
+                    | DropGlueMethod
+                    | VTableInstanceBody(_) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                     InherentImpl | Module => return None,

@@ -60,7 +60,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
-        match item_src.kind {
+        match &item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
                 bt_ctx.register_module(item_meta, &def);
             }
@@ -104,14 +104,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?;
+                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, *kind)?;
                 self.translated.trait_impls.set_slot(id, closure_trait_impl);
             }
             TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
+                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::ClosureAsFnCast => {
@@ -133,6 +133,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTable => {
+                let Some(AnyTransId::Type(id)) = trans_id else {
+                    unreachable!()
+                };
+                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def.def_id, &def)?;
+                self.translated.type_decls.set_slot(id, ty_decl);
+            }
+            TransItemSourceKind::VTableInstance(tref) => {
+                let Some(AnyTransId::Global(id)) = trans_id else {
+                    unreachable!()
+                };
+                let global_decl = bt_ctx.translate_vtable_instance(id, item_meta, tref)?;
+                self.translated.global_decls.set_slot(id, global_decl);
+            }
+            TransItemSourceKind::VTableInstanceBody(tref) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_instance_body(id, item_meta, tref)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
