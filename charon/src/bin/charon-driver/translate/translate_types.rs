@@ -1,6 +1,5 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::builtins;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
@@ -118,28 +117,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
 
             hax::TyKind::Adt(item) => {
-                trace!("Adt: {:?}", item.def_id);
-                let mut tref = self.translate_type_decl_ref(span, item)?;
-
-                // Filter the type arguments.
-                // TODO: do this in a micro-pass
-                if let TypeId::Builtin(builtin_ty) = tref.id {
-                    let used_args = builtins::type_to_used_params(builtin_ty);
-                    error_assert!(
-                        self,
-                        span,
-                        tref.generics.types.elem_count() == used_args.len()
-                    );
-                    let types = std::mem::take(&mut tref.generics.types)
-                        .into_iter()
-                        .zip(used_args)
-                        .filter(|(_, used)| *used)
-                        .map(|(ty, _)| ty)
-                        .collect();
-                    tref.generics.types = types;
-                }
-
-                // Return the instantiated ADT
+                let tref = self.translate_type_decl_ref(span, item)?;
                 TyKind::Adt(tref)
             }
             hax::TyKind::Str => {
@@ -230,16 +208,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
-                let fnref: RegionBinder<FnPtr> = self.translate_fn_ptr(span, item)?;
-                let fnref = fnref.map(|fref| FunDeclRef {
-                    id: *fref
-                        .func
-                        .as_fun()
-                        .expect("can't reference method as a function pointer")
-                        .as_regular()
-                        .expect("can't reference builtin function as a function pointer"),
-                    generics: fref.generics,
-                });
+                let fnref = self.translate_fn_ptr(span, item)?;
                 TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {

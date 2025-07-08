@@ -18,6 +18,19 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -127,7 +140,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<impl FnOnce(u8, u8) -> u8>] f@1
     return
 }
 
@@ -212,13 +225,13 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<closure<'_0, '_1>>] @1
     return
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u8, u8)>
+    parent_clause0 = MetaSized<closure<'_0, '_1>>
     parent_clause1 = Sized<(u8, u8)>
     parent_clause2 = Tuple<(u8, u8)>
     parent_clause3 = Sized<u8>
@@ -228,7 +241,7 @@ impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u8, u8)>
+    parent_clause0 = MetaSized<closure<'_0, '_1>>
     parent_clause1 = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = Sized<(u8, u8)>
     parent_clause3 = Tuple<(u8, u8)>
@@ -237,7 +250,7 @@ impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> Fn<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u8, u8)>
+    parent_clause0 = MetaSized<closure<'_0, '_1>>
     parent_clause1 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = Sized<(u8, u8)>
     parent_clause3 = Tuple<(u8, u8)>

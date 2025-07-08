@@ -29,12 +29,11 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
-// Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 
@@ -68,7 +67,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Ord
@@ -77,20 +76,50 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>[Self]
+    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
 }
 
-// Full name: core::cmp::Ord::cmp
 #[lang_item("ord_cmp_method")]
-pub fn cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
 
-// Full name: core::cmp::PartialOrd::partial_cmp
 #[lang_item("cmp_partialord_cmp")]
-pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
+
+// Full name: core::cmp::impls::{impl PartialEq<()> for ()}::eq
+pub fn {impl PartialEq<()> for ()}::eq<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> bool
+
+// Full name: core::cmp::impls::{impl PartialEq<()> for ()}
+impl PartialEq<()> for () {
+    fn eq<'_0, '_1> = {impl PartialEq<()> for ()}::eq<'_0_0, '_0_1>
+}
+
+// Full name: core::cmp::impls::{impl Eq for ()}
+impl Eq for () {
+    parent_clause0 = {impl PartialEq<()> for ()}
+}
+
+// Full name: core::cmp::impls::{impl PartialOrd<()> for ()}::partial_cmp
+pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> Option<Ordering>[Sized<Ordering>]
+
+// Full name: core::cmp::impls::{impl PartialOrd<()> for ()}
+impl PartialOrd<()> for () {
+    parent_clause0 = {impl PartialEq<()> for ()}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<()> for ()}::partial_cmp<'_0_0, '_0_1>
+}
+
+// Full name: core::cmp::impls::{impl Ord for ()}::cmp
+pub fn {impl Ord for ()}::cmp<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> Ordering
+
+// Full name: core::cmp::impls::{impl Ord for ()}
+impl Ord for () {
+    parent_clause0 = {impl Eq for ()}
+    parent_clause1 = {impl PartialOrd<()> for ()}
+    fn cmp<'_0, '_1> = {impl Ord for ()}::cmp<'_0_0, '_0_1>
+}
 
 // Full name: core::fmt::Error
 pub struct Error {}
@@ -116,13 +145,20 @@ where
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
-// Full name: core::fmt::Debug::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
     [@TraitClause0]: Debug<Self>,
+
+// Full name: core::fmt::{impl Debug for ()}::fmt
+pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (()), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: core::fmt::{impl Debug for ()}
+impl Debug for () {
+    fn fmt<'_0, '_1, '_2> = {impl Debug for ()}::fmt<'_0_0, '_0_1, '_0_2>
+}
 
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
@@ -136,11 +172,10 @@ pub trait Hasher<Self>
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
-// Full name: core::hash::Hash::hash
-pub fn hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+pub fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
@@ -155,6 +190,17 @@ where
 pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
 where
     [@TraitClause0]: Hasher<Self>,
+
+// Full name: core::hash::impls::{impl Hash for ()}::hash
+pub fn {impl Hash for ()}::hash<'_0, '_1, H>(@1: &'_0 (()), @2: &'_1 mut (H))
+where
+    [@TraitClause0]: Sized<H>,
+    [@TraitClause1]: Hasher<H>,
+
+// Full name: core::hash::impls::{impl Hash for ()}
+impl Hash for () {
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = {impl Hash for ()}::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
+}
 
 pub unsafe fn core::intrinsics::assume(@1: bool)
 

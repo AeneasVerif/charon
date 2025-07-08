@@ -3,6 +3,8 @@ open Types
 open Values
 open Expressions
 open Meta
+open Identifiers
+module StatementId = IdGen ()
 
 type block = { span : span; statements : statement list }
 
@@ -29,7 +31,7 @@ and raw_statement =
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
   | Deinit of place
-  | Drop of place
+  | Drop of place * trait_ref
       (** Drop the value at the given place.
 
           For MIR built and promoted, this is a conditional drop: the value will
@@ -59,9 +61,15 @@ and raw_statement =
 
 and statement = {
   span : span;
+  statement_id : statement_id;
+      (** Integer uniquely identifying this statement among the statmeents in
+          the current body. To simplify things we generate globally-fresh ids
+          when creating a new [Statement]. *)
   content : raw_statement;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
+
+and statement_id = (StatementId.id[@visitors.opaque])
 
 and switch =
   | If of operand * block * block

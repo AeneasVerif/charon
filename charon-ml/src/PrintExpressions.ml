@@ -121,37 +121,6 @@ and binop_to_string (binop : binop) : string =
   | Cmp -> "cmp"
   | Offset -> "offset"
 
-and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
-  match aid with
-  | BoxNew -> "alloc::boxed::Box::new"
-  | ArrayToSliceShared -> "@ArrayToSliceShared"
-  | ArrayToSliceMut -> "@ArrayToSliceMut"
-  | ArrayRepeat -> "@ArrayRepeat"
-  | Index { is_array; mutability; is_range } ->
-      let ty = if is_array then "Array" else "Slice" in
-      let op = if is_range then "SubSlice" else "Index" in
-      let mutability = ref_kind_to_string mutability in
-      "@" ^ ty ^ op ^ mutability
-  | PtrFromParts mut ->
-      let mut = if mut = RMut then "Mut" else "" in
-      "@PtrFromParts" ^ mut
-
-and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
-  match fid with
-  | FRegular fid -> fun_decl_id_to_string env fid
-  | FBuiltin aid -> builtin_fun_id_to_string aid
-
-and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
-    (r : fun_id_or_trait_method_ref) : string =
-  match r with
-  | TraitMethod (trait_ref, method_name, _) ->
-      trait_ref_to_string env trait_ref ^ "::" ^ method_name
-  | FunId fid -> fun_id_to_string env fid
-
-and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
-  let generics = generic_args_to_string env ptr.generics in
-  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
-
 and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   match cv.value with
   | CLiteral lit ->

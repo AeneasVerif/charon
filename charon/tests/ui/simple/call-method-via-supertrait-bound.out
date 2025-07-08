@@ -11,6 +11,19 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: test_crate::OtherTrait
 trait OtherTrait<Self>
 {
@@ -77,7 +90,7 @@ where
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop x@1
+    drop[Drop<T>] x@1
     @0 := ()
     return
 }

@@ -77,6 +77,18 @@ pub trait Destruct<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
 pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
@@ -108,6 +120,20 @@ where
 {
   None,
   Some(T),
+}
+
+// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}::drop
+fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}
+impl<T> Drop for Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: test_crate::incr_u32
@@ -163,19 +189,19 @@ where
             @7 := move (x@3)
             @6 := (move (@7))
             @4 := @TraitClause2::call<'_>(move (@5), move (@6))
-            drop @7
+            drop[Drop<T>] @7
             storage_dead(@7)
             storage_dead(@6)
             storage_dead(@5)
             @0 := Option::Some { 0: move (@4) }
-            drop @4
+            drop[Drop<T>] @4
             storage_dead(@4)
-            drop x@3
+            drop[Drop<T>] x@3
             storage_dead(x@3)
         },
     }
-    drop f@2
-    drop x@1
+    drop[Drop<F>] f@2
+    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -212,7 +238,7 @@ where
             storage_dead(@6)
             storage_dead(@5)
             @0 := Option::Some { 0: move (@4) }
-            drop @4
+            drop[Drop<T>] @4
             storage_dead(@4)
             storage_dead(x@3)
             return
@@ -277,7 +303,7 @@ fn {impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure}::call_onc
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_u32::closure>] @1
     return
 }
 
@@ -324,7 +350,7 @@ pub fn test_closure_u32(@1: u32) -> u32
 
 // Full name: test_crate::test_closure_u32::{impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure}
 impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_u32::closure>
     parent_clause1 = Sized<(u32)>
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
@@ -333,7 +359,7 @@ impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure {
 
 // Full name: test_crate::test_closure_u32::{impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure}
 impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_u32::closure>
     parent_clause1 = {impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -342,7 +368,7 @@ impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure {
 
 // Full name: test_crate::test_closure_u32::{impl Fn<(u32), u32> for test_crate::test_closure_u32::closure}
 impl Fn<(u32), u32> for test_crate::test_closure_u32::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_u32::closure>
     parent_clause1 = {impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -404,7 +430,7 @@ fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::ca
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_u32s::closure>] @1
     return
 }
 
@@ -456,7 +482,7 @@ pub fn test_closure_u32s(@1: u32) -> u32
 
 // Full name: test_crate::test_closure_u32s::{impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
 impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
-    parent_clause0 = MetaSized<(u32, u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_u32s::closure>
     parent_clause1 = Sized<(u32, u32)>
     parent_clause2 = Tuple<(u32, u32)>
     parent_clause3 = Sized<u32>
@@ -465,7 +491,7 @@ impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
 
 // Full name: test_crate::test_closure_u32s::{impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
 impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
-    parent_clause0 = MetaSized<(u32, u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_u32s::closure>
     parent_clause1 = {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
     parent_clause2 = Sized<(u32, u32)>
     parent_clause3 = Tuple<(u32, u32)>
@@ -474,7 +500,7 @@ impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
 
 // Full name: test_crate::test_closure_u32s::{impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
 impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
-    parent_clause0 = MetaSized<(u32, u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_u32s::closure>
     parent_clause1 = {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
     parent_clause2 = Sized<(u32, u32)>
     parent_clause3 = Tuple<(u32, u32)>
@@ -522,7 +548,7 @@ fn {impl FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::cl
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_ref_u32::closure>] @1
     return
 }
 
@@ -573,7 +599,7 @@ pub fn test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}
 impl<'_0> FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure {
-    parent_clause0 = MetaSized<(&'_ (u32))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_u32::closure>
     parent_clause1 = Sized<(&'_ (u32))>
     parent_clause2 = Tuple<(&'_ (u32))>
     parent_clause3 = Sized<&'_ (u32)>
@@ -582,7 +608,7 @@ impl<'_0> FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::c
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}
 impl<'_0> FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure {
-    parent_clause0 = MetaSized<(&'_ (u32))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_u32::closure>
     parent_clause1 = {impl FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}<'_0>
     parent_clause2 = Sized<(&'_ (u32))>
     parent_clause3 = Tuple<(&'_ (u32))>
@@ -591,7 +617,7 @@ impl<'_0> FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::cl
 
 // Full name: test_crate::test_closure_ref_u32::{impl Fn<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}
 impl<'_0> Fn<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure {
-    parent_clause0 = MetaSized<(&'_ (u32))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_u32::closure>
     parent_clause1 = {impl FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}<'_0>
     parent_clause2 = Sized<(&'_ (u32))>
     parent_clause3 = Tuple<(&'_ (u32))>
@@ -648,7 +674,7 @@ where
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}::call_mut<'_0, '_, T>[@TraitClause0](move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_ref_param::closure<T>[@TraitClause0]>] @1
     return
 }
 
@@ -706,7 +732,7 @@ impl<'_0, T> FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<(&'_ (T))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_param::closure<T>[@TraitClause0]>
     parent_clause1 = Sized<(&'_ (T))>
     parent_clause2 = Tuple<(&'_ (T))>
     parent_clause3 = Sized<&'_ (T)>
@@ -718,7 +744,7 @@ impl<'_0, T> FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::c
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<(&'_ (T))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_param::closure<T>[@TraitClause0]>
     parent_clause1 = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}<'_0, T>[@TraitClause0]
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
@@ -730,7 +756,7 @@ impl<'_0, T> Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::clos
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<(&'_ (T))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_param::closure<T>[@TraitClause0]>
     parent_clause1 = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}<'_0, T>[@TraitClause0]
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
@@ -797,7 +823,7 @@ where
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_mut<'_, '_1, '_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]>] @1
     return
 }
 
@@ -858,7 +884,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = MetaSized<(&'_ (T))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(&'_ (T))>
     parent_clause2 = Tuple<(&'_ (T))>
     parent_clause3 = Sized<&'_ (T)>
@@ -871,7 +897,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = MetaSized<(&'_ (T))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}<'_, '_1, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
@@ -884,7 +910,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = MetaSized<(&'_ (T))>
+    parent_clause0 = MetaSized<test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}<'_, '_1, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
@@ -939,7 +965,7 @@ fn {impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure}::call_onc
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u32), u32> for test_crate::test_map_option2::closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_map_option2::closure>] @1
     return
 }
 
@@ -986,7 +1012,7 @@ pub fn test_map_option2(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 
 // Full name: test_crate::test_map_option2::{impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure}
 impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_map_option2::closure>
     parent_clause1 = Sized<(u32)>
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
@@ -995,7 +1021,7 @@ impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure {
 
 // Full name: test_crate::test_map_option2::{impl FnMut<(u32), u32> for test_crate::test_map_option2::closure}
 impl FnMut<(u32), u32> for test_crate::test_map_option2::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_map_option2::closure>
     parent_clause1 = {impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -1004,7 +1030,7 @@ impl FnMut<(u32), u32> for test_crate::test_map_option2::closure {
 
 // Full name: test_crate::test_map_option2::{impl Fn<(u32), u32> for test_crate::test_map_option2::closure}
 impl Fn<(u32), u32> for test_crate::test_map_option2::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_map_option2::closure>
     parent_clause1 = {impl FnMut<(u32), u32> for test_crate::test_map_option2::closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -1020,7 +1046,7 @@ where
     let x@1: T; // arg #1
 
     @0 := move (x@1)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -1074,7 +1100,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::clone<'_>(move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -1122,7 +1148,7 @@ where
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -1188,13 +1214,13 @@ fn {impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_onc
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_map_option3::closure>] @1
     return
 }
 
 // Full name: test_crate::test_map_option3::{impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}
 impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_map_option3::closure>
     parent_clause1 = Sized<(u32)>
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
@@ -1203,7 +1229,7 @@ impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure {
 
 // Full name: test_crate::test_map_option3::{impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}
 impl FnMut<(u32), u32> for test_crate::test_map_option3::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_map_option3::closure>
     parent_clause1 = {impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -1212,7 +1238,7 @@ impl FnMut<(u32), u32> for test_crate::test_map_option3::closure {
 
 // Full name: test_crate::test_map_option3::{impl Fn<(u32), u32> for test_crate::test_map_option3::closure}
 impl Fn<(u32), u32> for test_crate::test_map_option3::closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_map_option3::closure>
     parent_clause1 = {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -1308,13 +1334,13 @@ fn {impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}::
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_regions::closure>] @1
     return
 }
 
 // Full name: test_crate::test_regions::{impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}
 impl<'_0> FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
-    parent_clause0 = MetaSized<(&'_ (&'_ (u32)))>
+    parent_clause0 = MetaSized<test_crate::test_regions::closure>
     parent_clause1 = Sized<(&'_ (&'_ (u32)))>
     parent_clause2 = Tuple<(&'_ (&'_ (u32)))>
     parent_clause3 = Sized<u32>
@@ -1323,7 +1349,7 @@ impl<'_0> FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}
 impl<'_0> FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
-    parent_clause0 = MetaSized<(&'_ (&'_ (u32)))>
+    parent_clause0 = MetaSized<test_crate::test_regions::closure>
     parent_clause1 = {impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}<'_0>
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
@@ -1332,7 +1358,7 @@ impl<'_0> FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}
 impl<'_0> Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
-    parent_clause0 = MetaSized<(&'_ (&'_ (u32)))>
+    parent_clause0 = MetaSized<test_crate::test_regions::closure>
     parent_clause1 = {impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}<'_0>
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
@@ -1380,7 +1406,7 @@ fn {impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::clo
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_regions_casted::closure>] @1
     return
 }
 
@@ -1431,7 +1457,7 @@ pub fn test_regions_casted<'a>(@1: &'a (u32)) -> u32
 
 // Full name: test_crate::test_regions_casted::{impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}
 impl<'_0> FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure {
-    parent_clause0 = MetaSized<(&'_ (&'_ (u32)))>
+    parent_clause0 = MetaSized<test_crate::test_regions_casted::closure>
     parent_clause1 = Sized<(&'_ (&'_ (u32)))>
     parent_clause2 = Tuple<(&'_ (&'_ (u32)))>
     parent_clause3 = Sized<u32>
@@ -1440,7 +1466,7 @@ impl<'_0> FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::cl
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}
 impl<'_0> FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure {
-    parent_clause0 = MetaSized<(&'_ (&'_ (u32)))>
+    parent_clause0 = MetaSized<test_crate::test_regions_casted::closure>
     parent_clause1 = {impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}<'_0>
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
@@ -1449,7 +1475,7 @@ impl<'_0> FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::clo
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}
 impl<'_0> Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure {
-    parent_clause0 = MetaSized<(&'_ (&'_ (u32)))>
+    parent_clause0 = MetaSized<test_crate::test_regions_casted::closure>
     parent_clause1 = {impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}<'_0>
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
@@ -1557,13 +1583,13 @@ fn {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_capture::closure<'_0, '_1>>] @1
     return
 }
 
 // Full name: test_crate::test_closure_capture::{impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_capture::closure<'_0, '_1>>
     parent_clause1 = Sized<(u32)>
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
@@ -1572,7 +1598,7 @@ impl<'_0, '_1> FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<
 
 // Full name: test_crate::test_closure_capture::{impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
 impl<'_0, '_1> FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_capture::closure<'_0, '_1>>
     parent_clause1 = {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -1581,7 +1607,7 @@ impl<'_0, '_1> FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
 impl<'_0, '_1> Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<test_crate::test_closure_capture::closure<'_0, '_1>>
     parent_clause1 = {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -1612,7 +1638,7 @@ where
     @4 := &x@3
     @0 := @TraitClause1::clone<'_>(move (@4))
     storage_dead(@4)
-    drop x@3
+    drop[Drop<T>] x@3
     return
 }
 
@@ -1641,13 +1667,13 @@ where
     @6 := move (x@1)
     @5 := (move (@6))
     @0 := {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@5))
-    drop @6
+    drop[Drop<T>] @6
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(@3)
     storage_dead(f@2)
     storage_dead(@4)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -1682,7 +1708,7 @@ where
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]>] @1
     return
 }
 
@@ -1692,10 +1718,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<(T)>
+    parent_clause0 = MetaSized<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(T)>
     parent_clause2 = Tuple<(T)>
-    parent_clause3 = Sized<T>
+    parent_clause3 = @TraitClause0
     fn call_once = {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
 }
 
@@ -1705,7 +1731,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<(T)>
+    parent_clause0 = MetaSized<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(T)>
     parent_clause3 = Tuple<(T)>
@@ -1718,7 +1744,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<(T)>
+    parent_clause0 = MetaSized<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(T)>
     parent_clause3 = Tuple<(T)>
@@ -1752,13 +1778,13 @@ fn {impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once(
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_array_map::closure>] @1
     return
 }
 
 // Full name: test_crate::test_array_map::{impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}
 impl FnOnce<(i32), i32> for test_crate::test_array_map::closure {
-    parent_clause0 = MetaSized<(i32)>
+    parent_clause0 = MetaSized<test_crate::test_array_map::closure>
     parent_clause1 = Sized<(i32)>
     parent_clause2 = Tuple<(i32)>
     parent_clause3 = Sized<i32>
@@ -1767,7 +1793,7 @@ impl FnOnce<(i32), i32> for test_crate::test_array_map::closure {
 
 // Full name: test_crate::test_array_map::{impl FnMut<(i32), i32> for test_crate::test_array_map::closure}
 impl FnMut<(i32), i32> for test_crate::test_array_map::closure {
-    parent_clause0 = MetaSized<(i32)>
+    parent_clause0 = MetaSized<test_crate::test_array_map::closure>
     parent_clause1 = {impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}
     parent_clause2 = Sized<(i32)>
     parent_clause3 = Tuple<(i32)>
@@ -1876,14 +1902,14 @@ fn {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<test_crate::test_fnmut_with_ref::closure<'_0>>] @1
     @0 := ()
     return
 }
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}
 impl<'_0, '_1> FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0> {
-    parent_clause0 = MetaSized<(&'_ (usize))>
+    parent_clause0 = MetaSized<test_crate::test_fnmut_with_ref::closure<'_0>>
     parent_clause1 = Sized<(&'_ (usize))>
     parent_clause2 = Tuple<(&'_ (usize))>
     parent_clause3 = Sized<()>
@@ -1892,7 +1918,7 @@ impl<'_0, '_1> FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::cl
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}
 impl<'_0, '_1> FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0> {
-    parent_clause0 = MetaSized<(&'_ (usize))>
+    parent_clause0 = MetaSized<test_crate::test_fnmut_with_ref::closure<'_0>>
     parent_clause1 = {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1>
     parent_clause2 = Sized<(&'_ (usize))>
     parent_clause3 = Tuple<(&'_ (usize))>

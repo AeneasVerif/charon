@@ -31,6 +31,19 @@ pub trait Destruct<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -117,10 +130,10 @@ where
     @3 := &x@1
     @2 := @TraitClause1::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<T>] @2
     storage_dead(@2)
     @0 := ()
-    drop x@1
+    drop[Drop<T>] x@1
     @0 := ()
     return
 }

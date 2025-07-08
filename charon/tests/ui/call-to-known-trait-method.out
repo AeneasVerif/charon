@@ -82,6 +82,19 @@ pub trait Destruct<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -106,7 +119,7 @@ where
     storage_live(@1)
     @1 := @TraitClause1::default()
     @0 := Struct { 0: move (@1) }
-    drop @1
+    drop[Drop<A>] @1
     storage_dead(@1)
     return
 }

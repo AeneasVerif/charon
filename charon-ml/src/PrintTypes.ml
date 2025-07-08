@@ -229,6 +229,37 @@ and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
   | CgVar var -> const_generic_db_var_to_string env var
   | CgValue lit -> literal_to_string lit
 
+and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
+  match aid with
+  | BoxNew -> "alloc::boxed::Box::new"
+  | ArrayToSliceShared -> "@ArrayToSliceShared"
+  | ArrayToSliceMut -> "@ArrayToSliceMut"
+  | ArrayRepeat -> "@ArrayRepeat"
+  | Index { is_array; mutability; is_range } ->
+      let ty = if is_array then "Array" else "Slice" in
+      let op = if is_range then "SubSlice" else "Index" in
+      let mutability = ref_kind_to_string mutability in
+      "@" ^ ty ^ op ^ mutability
+  | PtrFromParts mut ->
+      let mut = if mut = RMut then "Mut" else "" in
+      "@PtrFromParts" ^ mut
+
+and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
+  match fid with
+  | FRegular fid -> fun_decl_id_to_string env fid
+  | FBuiltin aid -> builtin_fun_id_to_string aid
+
+and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
+    (r : fun_id_or_trait_method_ref) : string =
+  match r with
+  | TraitMethod (trait_ref, method_name, _) ->
+      trait_ref_to_string env trait_ref ^ "::" ^ method_name
+  | FunId fid -> fun_id_to_string env fid
+
+and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
+  let generics = generic_args_to_string env ptr.generics in
+  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
+
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with
   | TAdt tref -> type_decl_ref_to_string env tref
@@ -257,7 +288,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       inputs ^ ty_to_string env output
   | TFnDef f ->
       let env = fmt_env_push_regions env f.binder_regions in
-      let fn = fun_decl_id_to_string env f.binder_value.id in
+      let fn = fn_ptr_to_string env f.binder_value in
       fn
   | TDynTrait _ -> "dyn (TODO)"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"

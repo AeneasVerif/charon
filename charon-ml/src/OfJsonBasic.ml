@@ -56,6 +56,18 @@ let pair_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
       Ok (a, b)
   | _ -> Error ("pair_of_json failed on: " ^ show js)
 
+let triple_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (b_of_json : 'ctx -> json -> ('b, string) result)
+    (c_of_json : 'ctx -> json -> ('c, string) result) (ctx : 'ctx) (js : json) :
+    ('a * 'b * 'c, string) result =
+  match js with
+  | `List [ a; b; c ] ->
+      let* a = a_of_json ctx a in
+      let* b = b_of_json ctx b in
+      let* c = c_of_json ctx c in
+      Ok (a, b, c)
+  | _ -> Error ("triple_of_json failed on: " ^ show js)
+
 let list_of_json (a_of_json : 'ctx -> json -> ('a, string) result) (ctx : 'ctx)
     (js : json) : ('a list, string) result =
   combine_error_msgs js "list_of_json"

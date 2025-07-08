@@ -256,12 +256,12 @@ impl BodyTransCtx<'_, '_, '_> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     TypeId::Builtin(BuiltinTy::Box) => {
-                                        // Some more sanity checks
+                                        // Some sanity checks
                                         assert!(generics.regions.is_empty());
-                                        assert!(generics.types.elem_count() == 1);
+                                        assert!(generics.types.elem_count() == 2);
                                         assert!(generics.const_generics.is_empty());
-                                        assert!(variant_id.is_none());
                                         assert!(field_id == FieldId::ZERO);
+                                        // We pretend this is a deref.
                                         ProjectionElem::Deref
                                     }
                                     _ => raise_error!(self, span, "Unexpected field projection"),
@@ -470,8 +470,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
                         let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
-                        let fn_ptr: FnPtr = fn_ref.clone().erase().into();
-                        let src_ty = TyKind::FnDef(fn_ref).into_ty();
+                        let fn_ptr_bound = fn_ref.map(FunDeclRef::into);
+                        let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
+                        let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         let operand = Operand::Const(Box::new(ConstantExpr {
                             value: RawConstantExpr::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
@@ -814,12 +815,14 @@ impl BodyTransCtx<'_, '_, '_> {
             TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
             TerminatorKind::Drop {
                 place,
+                impl_expr,
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 ..
             } => {
                 let place = self.translate_place(span, place)?;
-                statements.push(Statement::new(span, RawStatement::Drop(place)));
+                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                statements.push(Statement::new(span, RawStatement::Drop(place, tref)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }

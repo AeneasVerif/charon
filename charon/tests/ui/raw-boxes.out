@@ -147,6 +147,14 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
     return
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
 pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 where
     [@TraitClause0]: Destruct<usize>,
@@ -158,7 +166,7 @@ where
 
     storage_live(@3)
     @3 := {impl Clone for usize}::clone<'_>(move (source@2))
-    drop *(self@1)
+    drop[Drop<usize>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -2015,11 +2023,33 @@ where
 
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop *(self@1)
+    drop[Drop<Self>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
     return
+}
+
+// Full name: core::intrinsics::size_of_val
+pub unsafe fn size_of_val<T>(@1: *const T) -> usize
+where
+    [@TraitClause0]: MetaSized<T>,
+{
+    let @0: usize; // return
+    let ptr@1: *const T; // arg #1
+
+    undefined_behavior
+}
+
+// Full name: core::intrinsics::align_of_val
+pub unsafe fn align_of_val<T>(@1: *const T) -> usize
+where
+    [@TraitClause0]: MetaSized<T>,
+{
+    let @0: usize; // return
+    let ptr@1: *const T; // arg #1
+
+    undefined_behavior
 }
 
 // Full name: core::num::niche_types::NonZeroUsizeInner
@@ -2048,7 +2078,7 @@ where
 
     storage_live(@3)
     @3 := {impl Clone for NonZeroUsizeInner}::clone<'_>(move (source@2))
-    drop *(self@1)
+    drop[Drop<NonZeroUsizeInner>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -2109,6 +2139,10 @@ where
 {
   @TraitClause1::NonZeroInner,
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
@@ -5874,7 +5908,7 @@ where
     storage_dead(@4)
     storage_dead(@3)
     @0 := copy ((@2).0)
-    drop @2
+    drop[Drop<(*mut T, A)>] @2
     storage_dead(@2)
     return
 }
@@ -5913,12 +5947,103 @@ where
     storage_dead(@5)
     storage_dead(@4)
     @2 := copy ((@3).0)
-    drop @3
+    drop[Drop<(*mut T, A)>] @3
     storage_dead(@3)
     storage_dead(b@8)
     @0 := &mut *(@2)
     storage_dead(@2)
     return
+}
+
+// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
+pub fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(@1: &'_0 mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause2]: Allocator<A>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]); // arg #1
+    let layout@2: Layout; // local
+    let t@3: *const T; // local
+    let @4: *mut T; // anonymous local
+    let self@5: &'_ (Layout); // local
+    let @6: (); // anonymous local
+    let @7: &'_ (A); // anonymous local
+    let size@8: usize; // local
+    let align@9: usize; // local
+    let @10: bool; // anonymous local
+    let @11: (); // anonymous local
+    let @12: Alignment; // anonymous local
+    let unique@13: NonNull<u8>; // local
+    let @14: *const u8; // anonymous local
+    let ptr@15: NonNull<T>; // local
+    let ptr@16: PhantomData<T>; // local
+
+    storage_live(layout@2)
+    storage_live(@4)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(size@8)
+    storage_live(@11)
+    storage_live(unique@13)
+    storage_live(@14)
+    storage_live(ptr@15)
+    storage_live(ptr@16)
+    ptr@15 := copy (((*(self@1)).0).pointer)
+    ptr@16 := copy (((*(self@1)).0)._marker)
+    storage_live(t@3)
+    @4 := transmute<NonNull<T>, *mut T>(copy (ptr@15))
+    t@3 := transmute<NonNull<T>, *const T>(copy (ptr@15))
+    storage_live(align@9)
+    size@8 := size_of_val<T>[@TraitClause0](copy (t@3))
+    align@9 := align_of_val<T>[@TraitClause0](move (t@3))
+    storage_live(@10)
+    @10 := ub_checks<bool>
+    if move (@10) {
+        @11 := core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(copy (size@8), copy (align@9))
+    }
+    else {
+    }
+    storage_dead(@10)
+    storage_live(@12)
+    @12 := transmute<usize, Alignment>(copy (align@9))
+    layout@2 := Layout { size: copy (size@8), align: move (@12) }
+    storage_dead(@12)
+    storage_dead(align@9)
+    storage_dead(t@3)
+    storage_live(self@5)
+    self@5 := &layout@2
+    storage_dead(self@5)
+    switch move (size@8) {
+        0 : usize => {
+        },
+        _ => {
+            storage_live(@7)
+            @7 := &(*(self@1)).1
+            storage_live(@14)
+            @14 := cast<*mut T, *const u8>(copy (@4))
+            unique@13 := NonNull { pointer: move (@14) }
+            storage_dead(@14)
+            @6 := @TraitClause2::deallocate<'_>(move (@7), move (unique@13), copy (layout@2))
+            storage_dead(@7)
+            @0 := ()
+            return
+        },
+    }
+    @0 := ()
+    return
+}
+
+// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
+impl<T, A> Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause2]: Allocator<A>,
+{
+    parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
+    fn drop<'_0> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: test_crate::foo
@@ -5959,7 +6084,7 @@ unsafe fn foo()
     i@8 := copy (*(@9))
     @0 := ()
     storage_dead(i@8)
-    drop b@6
+    drop[{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]] b@6
     storage_dead(b@6)
     storage_dead(p@2)
     storage_dead(b@1)

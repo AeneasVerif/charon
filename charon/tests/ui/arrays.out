@@ -71,6 +71,19 @@ where
     fn index_mut<'_0> = {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_0_0, T, I, Clause2_Clause1_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 pub fn core::ops::index::Index::index<'_0, Self, Idx, Clause0_Output>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Clause0_Output)
 where
     [@TraitClause0]: Index<Self, Idx, Clause0_Output>,
@@ -317,7 +330,7 @@ where
     storage_dead(@3)
     @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop s@1
+    drop[Drop<Array<T, 32 : usize>>] s@1
     return
 }
 

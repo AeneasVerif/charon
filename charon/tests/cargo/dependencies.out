@@ -91,7 +91,7 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
 impl FnOnce<(u32)> for closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = Sized<(u32)>
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>

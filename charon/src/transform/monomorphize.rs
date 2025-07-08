@@ -127,17 +127,21 @@ impl VisitAst for UsageVisitor<'_> {
         }
     }
 
-    fn enter_ty_kind(&mut self, kind: &TyKind) {
+    fn visit_ty_kind(&mut self, kind: &TyKind) -> ControlFlow<Infallible> {
         match kind {
             TyKind::Adt(tref) => {
                 self.found_use_ty(tref);
             }
             TyKind::FnDef(binder) => {
-                let FunDeclRef { id, generics } = &binder.clone().erase();
-                self.found_use_fn(id, generics);
+                // we don't want to visit inside the binder, as it will have regions that
+                // haven't been erased; instead we visit the erased version, and skip
+                // the default "visit_inner" behaviour
+                let _ = self.visit(&binder.clone().erase());
+                return Continue(());
             }
             _ => {}
-        }
+        };
+        self.visit_inner(kind)
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
@@ -243,12 +247,17 @@ impl VisitAstMut for SubstVisitor<'_> {
         match kind {
             TyKind::Adt(tref) => self.subst_use_ty(tref),
             TyKind::FnDef(binder) => {
-                let FunDeclRef {
-                    mut id,
-                    mut generics,
-                } = binder.clone().erase();
-                self.subst_use_fun(&mut id, &mut generics);
-                *binder = RegionBinder::empty(FunDeclRef { id, generics });
+                // erase the FnPtr binder, as we'll monomorphise its content
+                if let FnPtr {
+                    func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(id)),
+                    generics,
+                } = binder.clone().erase()
+                {
+                    *binder = RegionBinder::empty(FnPtr {
+                        func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(id))),
+                        generics,
+                    });
+                }
             }
             _ => {}
         }

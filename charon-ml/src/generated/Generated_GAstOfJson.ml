@@ -315,7 +315,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("exclude", exclude);
           ("remove_associated_types", remove_associated_types);
           ("hide_marker_traits", hide_marker_traits);
+          ("hide_allocator", hide_allocator);
           ("remove_unused_self_clauses", remove_unused_self_clauses);
+          ("add_drop_bounds", add_drop_bounds);
           ("start_from", start_from);
           ("no_cargo", no_cargo);
           ("rustc_args", rustc_args);
@@ -354,9 +356,11 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           list_of_json string_of_json ctx remove_associated_types
         in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
+        let* hide_allocator = bool_of_json ctx hide_allocator in
         let* remove_unused_self_clauses =
           bool_of_json ctx remove_unused_self_clauses
         in
+        let* add_drop_bounds = bool_of_json ctx add_drop_bounds in
         let* start_from = list_of_json string_of_json ctx start_from in
         let* no_cargo = bool_of_json ctx no_cargo in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
@@ -396,7 +400,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              exclude;
              remove_associated_types;
              hide_marker_traits;
+             hide_allocator;
              remove_unused_self_clauses;
+             add_drop_bounds;
              start_from;
              no_cargo;
              rustc_args;
@@ -1708,7 +1714,8 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* types =
           list_of_json
-            (pair_of_json trait_item_name_of_json ty_of_json)
+            (triple_of_json trait_item_name_of_json ty_of_json
+               (vector_of_json trait_clause_id_of_json trait_ref_of_json))
             ctx types
         in
         Ok (BuiltinOrAuto (trait_decl_ref, parent_trait_refs, types))
@@ -1778,7 +1785,7 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         in
         Ok (TFnPtr fn_ptr)
     | `Assoc [ ("FnDef", fn_def) ] ->
-        let* fn_def = region_binder_of_json fun_decl_ref_of_json ctx fn_def in
+        let* fn_def = region_binder_of_json fn_ptr_of_json ctx fn_def in
         Ok (TFnDef fn_def)
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in

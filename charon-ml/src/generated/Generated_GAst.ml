@@ -17,10 +17,10 @@ module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
 (* Imports *)
-type builtin_fun_id = Expressions.builtin_fun_id [@@deriving show, ord]
-type fun_id = Expressions.fun_id [@@deriving show, ord]
+type builtin_fun_id = Types.builtin_fun_id [@@deriving show, ord]
+type fun_id = Types.fun_id [@@deriving show, ord]
 
-type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
+type fun_id_or_trait_method_ref = Types.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
@@ -331,12 +331,18 @@ type cli_options = {
   hide_marker_traits : bool;
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
           anywhere they show up. *)
+  hide_allocator : bool;
+      (** Hide the [A] type parameter on standard library containers ([Box],
+          [Vec], etc). *)
   remove_unused_self_clauses : bool;
       (** Trait method declarations take a [Self: Trait] clause as parameter, so
           that they can be reused by multiple trait impls. This however causes
           trait definitions to be mutually recursive with their method
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion. *)
+  add_drop_bounds : bool;
+      (** Whether to add [Drop] bounds everywhere to enable proper tracking of
+          what code runs on a given [drop] call. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to
