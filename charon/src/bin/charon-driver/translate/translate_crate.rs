@@ -56,7 +56,7 @@ pub enum TransItemSourceKind {
     /// The `drop` method for the impl above.
     DropGlueMethod,
     /// The virtual table struct (ADT), associated DefId should refer to the trait-decl itself.
-    VTable,
+    VTable(hax::ExistentialTraitRef),
     /// The virtual table global instance for a specific type, corresponding to TraitRef.
     /// The associated DefId is essentially meaningless
     VTableInstance(hax::TraitRef),
@@ -85,7 +85,7 @@ impl TransItemSource {
             | ClosureAsFnCast
             | DropGlueImpl
             | DropGlueMethod
-            | VTable
+            | VTable(_)
             | VTableInstance(_)
             | VTableInstanceBody(_) => true,
         }
@@ -172,7 +172,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             None => {
                 use TransItemSourceKind::*;
                 let trans_id = match src.kind {
-                    Type | VTable => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
+                    Type | VTable(_) => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
                     TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
                     TraitImpl | ClosureTraitImpl(..) | DropGlueImpl => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
@@ -314,6 +314,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureAsFnCast)
             .unwrap()
             .as_fun()
+            .unwrap()
+    }
+
+    pub(crate) fn register_vtable_as_type_decl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: &hax::DefId,
+        hax_ex_tref: &hax::ExistentialTraitRef,
+    ) -> TypeDeclId {
+        // Register the vtable struct as a type decl.
+        let vtable_struct_id = self.register_type_decl_id(src, def_id);
+        // Register the vtable as a trait decl.
+        *self
+            .register_and_enqueue_id(
+                src,
+                def_id,
+                TransItemSourceKind::VTable(hax_ex_tref.clone()),
+            )
+            .unwrap()
+            .as_type()
             .unwrap()
     }
 
@@ -555,6 +575,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_closure_as_fun_decl_id(&src, id)
+    }
+
+    pub(crate) fn register_vtable_as_type_decl_id(
+        &mut self,
+        span: Span,
+        def_id: &hax::DefId,
+        hax_ex_tref: &hax::ExistentialTraitRef,
+    ) -> TypeDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_vtable_as_type_decl_id(&src, def_id, hax_ex_tref)
     }
 
     pub(crate) fn register_drop_trait_impl_id(

@@ -781,7 +781,7 @@ pub enum TyKind {
     /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
     /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
     ///
-    /// TODO: we don't translate this properly yet.
+    /// Only one of the predicates have vtable inside.
     DynTrait(Vec<RegionBinder<ExistentialPredicate>>, Region, DynKind),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
@@ -797,6 +797,8 @@ pub enum TyKind {
     /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
     /// we need to bind them here.
     FnDef(RegionBinder<FnPtr>),
+    /// A placeholder for existential predicates -- the `Self` is erased in such predicates.
+    ExistentialPlaceholder,
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
@@ -917,13 +919,18 @@ pub enum TyTerm {
     Ty(Ty),
     Const(ConstantExpr),
 }
+/// A projection of the form `TraitItemName<GenericArgs> = TyTerm`.
+/// where the `TraitItemName` is the name of the trait item, either a type or a constant
+/// associated to the principle trait (represented by the `ExistentialTraitRef`).
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ExistentialProjection {
-    pub trait_ref: TraitDeclRef,
+    pub trait_item : TraitItemName,
+    pub generics : Box<GenericArgs>,
     pub term: TyTerm,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
+/// This predicate itself contains all the predicate info for the stuff
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ExistentialPredicate {
     Trait(ExistentialTraitRef),

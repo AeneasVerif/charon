@@ -130,7 +130,7 @@ pub enum ItemKind {
     /// This is a virtual table struct for a trait
     VTable {
         /// which trait is this VTable for
-        trait_id: TraitDeclId,
+        trait_decl_ref: TraitDeclRef,
     },
 }
 

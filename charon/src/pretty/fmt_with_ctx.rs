@@ -1775,6 +1775,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 };
                 write!(f, "{value}",)
             }
+            // To make sure this is not definable as ADT or so
+            TyKind::ExistentialPlaceholder => write!(f, "$Exist$"),
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }
     }

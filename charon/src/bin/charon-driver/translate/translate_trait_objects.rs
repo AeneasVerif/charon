@@ -10,32 +10,19 @@ use hax_frontend_exporter as hax;
 use itertools::Itertools;
 use tracing::field;
 
-/// Type: `()`
-fn unit_ty() -> Ty {
-    Ty::new(TyKind::Adt(TypeDeclRef {
-        id: TypeId::Tuple,
-        generics: Box::new(GenericArgs::empty()),
-    }))
-}
 
 /// Type: `*[mut] ()`
 fn unit_raw_ptr(is_mut: bool) -> Ty {
     Ty::new(TyKind::RawPtr(
-        unit_ty(),
-        if is_mut {
-            RefKind::Mut
-        } else {
-            RefKind::Shared
-        },
+        Ty::mk_unit(),
+        RefKind::mutable(is_mut),
     ))
 }
 
 fn dummy_public_attr_info() -> AttrInfo {
     AttrInfo {
-        attributes: Vec::new(),
-        inline: None,
-        rename: None,
         public: true,
+        ..Default::default()
     }
 }
 
@@ -47,7 +34,7 @@ fn drop_func_field() -> Field {
         name: Some("drop_func".into()),
         ty: Ty::new(TyKind::FnPtr(RegionBinder {
             regions: Vector::new(),
-            skip_binder: (Vec::from([unit_raw_ptr(true)]), unit_ty()),
+            skip_binder: (Vec::from([unit_raw_ptr(true)]), Ty::mk_unit()),
         })),
     }
 }
@@ -88,13 +75,24 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<ExistentialTraitRef, Error> {
         let trait_decl_ref =
             self.translate_trait_decl_ref_from_ex_trait_ref(span, &tref.def_id, &tref.args)?;
-        let id = self.register_type_decl_id(span, &tref.def_id);
+        let id = self.register_vtable_as_type_decl_id(span, &tref.def_id, tref);
         Ok(ExistentialTraitRef {
             trait_ref: trait_decl_ref,
             vtable_typ_id: id,
         })
     }
 
+    fn translate_ex_generics(
+        &mut self,
+        span: Span,
+        args: &[hax::GenericArg],
+    ) -> Result<Box<GenericArgs>, Error> {   
+        let mut generics = Box::new(self.translate_generic_args(span, args, &[])?);
+        generics.types.insert_and_shift_ids(TypeVarId::from_usize(0), Ty::new(TyKind::ExistentialPlaceholder));
+        Ok(generics)
+    }
+
+    /// An existential trait reference is represented separately as an `DefId`` with its args
     fn translate_trait_decl_ref_from_ex_trait_ref(
         &mut self,
         span: Span,
@@ -103,7 +101,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TraitDeclRef, Error> {
         Ok(TraitDeclRef {
             id: self.register_trait_decl_id(span, def_id),
-            generics: Box::new(self.translate_generic_args(span, args, &[])?),
+            generics: self.translate_ex_generics(span, args)?,
         })
     }
 
@@ -112,18 +110,20 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         proj: &hax::ExistentialProjection,
     ) -> Result<ExistentialProjection, Error> {
-        let trait_decl_ref =
-            self.translate_trait_decl_ref_from_ex_trait_ref(span, &proj.def_id, &proj.args)?;
-        // self.translate_trait_decl_ref(span, item);
+        let args = self.translate_ex_generics(span, &proj.args)?;
+        let name = self.t_ctx.translate_trait_item_name(&proj.def_id)?;
         let term = match &proj.term {
-            hax_frontend_exporter::Term::Ty(ty) => TyTerm::Ty(self.translate_ty(span, ty)?),
+            hax_frontend_exporter::Term::Ty(ty) => {
+                TyTerm::Ty(self.translate_ty(span, ty)?)
+            }
             hax_frontend_exporter::Term::Const(decorated) => {
                 TyTerm::Const(self.translate_constant_expr_to_constant_expr(span, decorated)?)
             }
         };
         Ok(ExistentialProjection {
-            trait_ref: trait_decl_ref,
-            term: term,
+            trait_item: name,
+            generics: args,
+            term,
         })
     }
 
@@ -172,10 +172,10 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         typ_id: TypeDeclId,
         item_meta: ItemMeta,
+        hax_ex_tref: &hax::ExistentialTraitRef,
         trait_def_id: &hax::DefId,
         trait_full_def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
-        let trait_id = self.register_trait_decl_id(Span::dummy(), trait_def_id);
         // the list of the form [(name, type)]
         let method_list = self.lookup_vtable_method_list(trait_def_id);
         // the true layout of the vtable:
@@ -203,11 +203,12 @@ impl ItemTransCtx<'_, '_> {
             };
             fields.push(field);
         }
+        let trait_def_ref = self.translate_trait_decl_ref_from_ex_trait_ref(Span::dummy(), &hax_ex_tref.def_id, &hax_ex_tref.args)?;
         Ok(TypeDecl {
             def_id: typ_id,
             item_meta: item_meta,
             generics: self.into_generics(),
-            src: ItemKind::VTable { trait_id: trait_id },
+            src: ItemKind::VTable { trait_decl_ref: trait_def_ref },
             kind: TypeDeclKind::Struct(fields),
             layout: Some(layout),
             // There is definitely no metadata associated with this type
