@@ -108,7 +108,10 @@ fn transform_constant_expr(
                 .map(|x| transform_constant_expr(span, Box::new(x), new_var))
                 .collect_vec();
 
-            let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));
+            let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Unsigned(
+                IntegerTy::Usize,
+                fields.len() as u128,
+            )));
             let tref = val.ty.kind().as_adt().unwrap();
             assert_matches!(
                 *tref.id.as_builtin().unwrap(),

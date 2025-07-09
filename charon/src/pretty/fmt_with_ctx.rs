@@ -1264,18 +1264,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
 impl Display for ScalarValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         match self {
-            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
-            ScalarValue::I8(v) => write!(f, "{v} : i8"),
-            ScalarValue::I16(v) => write!(f, "{v} : i16"),
-            ScalarValue::I32(v) => write!(f, "{v} : i32"),
-            ScalarValue::I64(v) => write!(f, "{v} : i64"),
-            ScalarValue::I128(v) => write!(f, "{v} : i128"),
-            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
-            ScalarValue::U8(v) => write!(f, "{v} : u8"),
-            ScalarValue::U16(v) => write!(f, "{v} : u16"),
-            ScalarValue::U32(v) => write!(f, "{v} : u32"),
-            ScalarValue::U64(v) => write!(f, "{v} : u64"),
-            ScalarValue::U128(v) => write!(f, "{v} : u128"),
+            ScalarValue::Signed(ty, v) => write!(f, "{v} : {}", ty),
+            ScalarValue::Unsigned(ty, v) => write!(f, "{v} : {}", ty),
         }
     }
 }
