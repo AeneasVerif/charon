@@ -449,7 +449,6 @@ impl BodyTransCtx<'_, '_, '_> {
                     hax::CastKind::PtrToPtr
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer, ..)
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer, ..)
-                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::DynStar, ..)
                     | hax::CastKind::FnPtrToPtr
                     | hax::CastKind::PointerExposeProvenance
                     | hax::CastKind::PointerWithExposedProvenance => Ok(Rvalue::UnaryOp(

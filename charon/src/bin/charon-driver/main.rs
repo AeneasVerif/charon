@@ -7,7 +7,6 @@
 #![feature(if_let_guard)]
 #![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
-#![feature(let_chains)]
 
 extern crate rustc_abi;
 extern crate rustc_ast;

@@ -82,7 +82,7 @@ impl BindingLevel {
         use hax::BoundRegionKind::*;
         let name = match region {
             Anon => None,
-            Named(_, symbol) => translate_region_name(symbol.clone()),
+            NamedAnon(symbol) | Named(_, symbol) => translate_region_name(symbol.clone()),
             ClosureEnv => Some("@env".to_owned()),
         };
         let rid = self
