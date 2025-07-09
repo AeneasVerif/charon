@@ -489,6 +489,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Translate the generics and predicates of this item and its parents.
+    /// This function makes the generic environment in `self`, so that the generics and parent clauses
+    /// are available for the analysis afterwards.
     pub(crate) fn translate_def_generics(
         &mut self,
         span: Span,
