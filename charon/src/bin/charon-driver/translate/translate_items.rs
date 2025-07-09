@@ -139,7 +139,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(AnyTransId::Type(id)) = trans_id else {
                     unreachable!()
                 };
-                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &hax_ex_tref, &def.def_id, &def)?;
+                let ty_decl = bt_ctx.translate_vtable_struct(
+                    id,
+                    item_meta,
+                    &hax_ex_tref,
+                    &def.def_id,
+                    &def,
+                )?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
             TransItemSourceKind::VTableInstance(tref) => {

@@ -924,8 +924,8 @@ pub enum TyTerm {
 /// associated to the principle trait (represented by the `ExistentialTraitRef`).
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ExistentialProjection {
-    pub trait_item : TraitItemName,
-    pub generics : Box<GenericArgs>,
+    pub trait_item: TraitItemName,
+    pub generics: Box<GenericArgs>,
     pub term: TyTerm,
 }
 

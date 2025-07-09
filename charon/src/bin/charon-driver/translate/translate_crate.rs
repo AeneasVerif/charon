@@ -584,7 +584,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         hax_ex_tref: &hax::ExistentialTraitRef,
     ) -> TypeDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_vtable_as_type_decl_id(&src, def_id, hax_ex_tref)
+        self.t_ctx
+            .register_vtable_as_type_decl_id(&src, def_id, hax_ex_tref)
     }
 
     pub(crate) fn register_drop_trait_impl_id(

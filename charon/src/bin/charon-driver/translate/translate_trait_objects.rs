@@ -1,4 +1,5 @@
 use std::mem;
+use std::ops::ControlFlow::Continue;
 
 use crate::translate::translate_bodies::BodyTransCtx;
 
@@ -10,13 +11,9 @@ use hax_frontend_exporter as hax;
 use itertools::Itertools;
 use tracing::field;
 
-
 /// Type: `*[mut] ()`
 fn unit_raw_ptr(is_mut: bool) -> Ty {
-    Ty::new(TyKind::RawPtr(
-        Ty::mk_unit(),
-        RefKind::mutable(is_mut),
-    ))
+    Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::mutable(is_mut)))
 }
 
 fn dummy_public_attr_info() -> AttrInfo {
@@ -86,9 +83,12 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         args: &[hax::GenericArg],
-    ) -> Result<Box<GenericArgs>, Error> {   
+    ) -> Result<Box<GenericArgs>, Error> {
         let mut generics = Box::new(self.translate_generic_args(span, args, &[])?);
-        generics.types.insert_and_shift_ids(TypeVarId::from_usize(0), Ty::new(TyKind::ExistentialPlaceholder));
+        generics.types.insert_and_shift_ids(
+            TypeVarId::from_usize(0),
+            Ty::new(TyKind::ExistentialPlaceholder),
+        );
         Ok(generics)
     }
 
@@ -113,9 +113,7 @@ impl ItemTransCtx<'_, '_> {
         let args = self.translate_ex_generics(span, &proj.args)?;
         let name = self.t_ctx.translate_trait_item_name(&proj.def_id)?;
         let term = match &proj.term {
-            hax_frontend_exporter::Term::Ty(ty) => {
-                TyTerm::Ty(self.translate_ty(span, ty)?)
-            }
+            hax_frontend_exporter::Term::Ty(ty) => TyTerm::Ty(self.translate_ty(span, ty)?),
             hax_frontend_exporter::Term::Const(decorated) => {
                 TyTerm::Const(self.translate_constant_expr_to_constant_expr(span, decorated)?)
             }
@@ -164,7 +162,49 @@ impl ItemTransCtx<'_, '_> {
     /// - `self : Arc<Self>` becomes `Arc<()>`
     /// - `self : Rc<Self>` becomes `Rc<()>`
     /// - `self : Pin<P>` becomes `Pin<P'>` where `P'` is recursively translated for the erased type.
+    /// See, e.g.,
+    ///     https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility
+    /// for more details
     fn lookup_vtable_method_list(&self, trait_def_id: &hax::DefId) -> Vec<(String, Ty)> {
+        // perform a DFS ourselves to find the methods in the vtable
+        // as we only have the `hax::DefId` of the trait, but no `TraitRef` to call Rustc
+        let mut vec = Vec::new();
+        let call_back = |trait_ref : &rustc_middle::ty::TraitRef| {
+            vec.append(&mut self.lookup_vtable_methods_of_one_trait_segment(trait_ref));
+        };
+        self.prepare_trait_segments(trait_def_id, call_back);
+        vec
+    }
+
+    /// Call `rustc_trait_selection::traits::vtable::prepare_vtable_segments`
+    /// to get the correct order of the trait segments
+    /// The `TraitRef` to be supplied to the `call_back` is from the dummy object
+    /// the generic args might need to be substituted by the bounded generics
+    fn prepare_trait_segments(
+        &self,
+        trait_def_id: &hax::DefId,
+        mut call_back: impl FnMut(&rustc_middle::ty::TraitRef),
+    ) {
+        let tcx = self.t_ctx.tcx;
+        let rid = trait_def_id.as_rust_def_id().unwrap();
+        let dummy = rustc_middle::ty::TraitRef::identity(tcx, rid);
+        use rustc_trait_selection::traits::vtable::*;
+        prepare_vtable_segments(tcx, dummy, |segment| -> std::ops::ControlFlow<()> {
+            match segment {
+                VtblSegment::MetadataDSA => Continue(()),
+                VtblSegment::TraitOwnEntries { trait_ref, .. } => {
+                    call_back(&trait_ref);
+                    Continue(())
+                }
+            }
+        });
+    }
+
+    /// Look up the the raw value for the traits and then 
+    fn lookup_vtable_methods_of_one_trait_segment(
+        &self,
+        trait_def_id: &rustc_middle::ty::TraitRef,
+    ) -> Vec<(String, Ty)> {
         todo!()
     }
 
@@ -176,7 +216,7 @@ impl ItemTransCtx<'_, '_> {
         trait_def_id: &hax::DefId,
         trait_full_def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
-        // the list of the form [(name, type)]
+        // the list of the form [(name, type)], the types should be for the shim functions
         let method_list = self.lookup_vtable_method_list(trait_def_id);
         // the true layout of the vtable:
         // [ drop_func : *mut () -> (),
@@ -203,12 +243,14 @@ impl ItemTransCtx<'_, '_> {
             };
             fields.push(field);
         }
-        let trait_def_ref = self.translate_trait_decl_ref_from_ex_trait_ref(Span::dummy(), &hax_ex_tref.def_id, &hax_ex_tref.args)?;
+        let trait_id = self.register_trait_decl_id(Span::dummy(), &hax_ex_tref.def_id);
+        let generics = self.into_generics();
+        let trait_decl_ref = TraitDeclRef { id: trait_id, generics: Box::new(generics.identity_args()) };
         Ok(TypeDecl {
             def_id: typ_id,
             item_meta: item_meta,
-            generics: self.into_generics(),
-            src: ItemKind::VTable { trait_decl_ref: trait_def_ref },
+            generics: generics,
+            src: ItemKind::VTable { trait_decl_ref: trait_decl_ref },
             kind: TypeDeclKind::Struct(fields),
             layout: Some(layout),
             // There is definitely no metadata associated with this type
