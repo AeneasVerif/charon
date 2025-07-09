@@ -333,11 +333,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .unwrap()
     }
 
-     pub(crate) fn register_target_info(&mut self) {
+    pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         self.translated.target_information = krate::TargetInfo {
-            target_pointer_size: target_data.pointer_size.bytes(),
-            is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little)
+            target_pointer_size: target_data.pointer_size().bytes(),
+            is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
         }
     }
 }
