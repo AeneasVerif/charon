@@ -87,6 +87,7 @@ and gtranslated_crate_of_json
         [
           ("crate_name", name);
           ("options", options);
+          ("target_information", target_info);
           ("item_names", _);
           ("short_names", _);
           ("files", files);
@@ -100,6 +101,7 @@ and gtranslated_crate_of_json
         let* ctx = id_to_file_of_json files in
         let* name = string_of_json ctx name in
         let* options = cli_options_of_json ctx options in
+        let* target_information = target_info_of_json ctx target_info in
 
         let* declarations =
           list_of_json declaration_group_of_json ctx declarations
@@ -150,6 +152,7 @@ and gtranslated_crate_of_json
           {
             name;
             options;
+            target_information;
             declarations;
             type_decls;
             fun_decls;
