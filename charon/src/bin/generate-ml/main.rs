@@ -902,13 +902,13 @@ impl GenerateCodeFor {
                         })
                         .join("\n");
                     if let Some(visitors) = visitors {
-                        let DeriveVisitors {
+                        let &DeriveVisitors {
                             name,
                             mut ancestors,
                             reduce,
                             extra_types,
                         } = visitors;
-                        let varieties: &[_] = if *reduce {
+                        let varieties: &[_] = if reduce {
                             &["iter", "map", "reduce", "mapreduce"]
                         } else {
                             &["iter", "map"]
@@ -921,7 +921,7 @@ impl GenerateCodeFor {
                                 ctx,
                                 &intermediate_visitor_name,
                                 ancestors,
-                                *reduce,
+                                reduce,
                                 extra_types
                                     .iter()
                                     .map(|s| s.to_string())
@@ -930,7 +930,9 @@ impl GenerateCodeFor {
                             );
                             intermediate_visitor_name_slice = [intermediate_visitor_name.as_str()];
                             ancestors = &intermediate_visitor_name_slice;
-                            decls = format!("(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}");
+                            decls = format!(
+                                "(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}"
+                            );
                         }
                         let visitors = varieties
                             .iter()

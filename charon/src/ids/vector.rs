@@ -290,7 +290,7 @@ where
         self.iter_indexed().map(|(id, _)| id)
     }
 
-    pub fn all_indices(&self) -> impl Iterator<Item = I> {
+    pub fn all_indices(&self) -> impl Iterator<Item = I> + use<I, T> {
         self.vector.indices()
     }
 
