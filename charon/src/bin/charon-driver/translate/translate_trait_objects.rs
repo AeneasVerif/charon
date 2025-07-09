@@ -70,13 +70,9 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         tref: &hax::ExistentialTraitRef,
     ) -> Result<ExistentialTraitRef, Error> {
-        let trait_decl_ref =
-            self.translate_trait_decl_ref_from_ex_trait_ref(span, &tref.def_id, &tref.args)?;
-        let id = self.register_vtable_as_type_decl_id(span, &tref.def_id, tref);
-        Ok(ExistentialTraitRef {
-            trait_ref: trait_decl_ref,
-            vtable_typ_id: id,
-        })
+        Ok(ExistentialTraitRef(
+            self.translate_trait_decl_ref_from_ex_trait_ref(span, &tref.def_id, &tref.args)?,
+        ))
     }
 
     fn translate_ex_generics(
@@ -169,7 +165,7 @@ impl ItemTransCtx<'_, '_> {
         // perform a DFS ourselves to find the methods in the vtable
         // as we only have the `hax::DefId` of the trait, but no `TraitRef` to call Rustc
         let mut vec = Vec::new();
-        let call_back = |trait_ref : &rustc_middle::ty::TraitRef| {
+        let call_back = |trait_ref: &rustc_middle::ty::TraitRef| {
             vec.append(&mut self.lookup_vtable_methods_of_one_trait_segment(trait_ref));
         };
         self.prepare_trait_segments(trait_def_id, call_back);
@@ -200,7 +196,7 @@ impl ItemTransCtx<'_, '_> {
         });
     }
 
-    /// Look up the the raw value for the traits and then 
+    /// Look up the the raw value for the traits and then
     fn lookup_vtable_methods_of_one_trait_segment(
         &self,
         trait_def_id: &rustc_middle::ty::TraitRef,
@@ -245,12 +241,17 @@ impl ItemTransCtx<'_, '_> {
         }
         let trait_id = self.register_trait_decl_id(Span::dummy(), &hax_ex_tref.def_id);
         let generics = self.into_generics();
-        let trait_decl_ref = TraitDeclRef { id: trait_id, generics: Box::new(generics.identity_args()) };
+        let trait_decl_ref = TraitDeclRef {
+            id: trait_id,
+            generics: Box::new(generics.identity_args()),
+        };
         Ok(TypeDecl {
             def_id: typ_id,
             item_meta: item_meta,
             generics: generics,
-            src: ItemKind::VTable { trait_decl_ref: trait_decl_ref },
+            src: ItemKind::VTable {
+                trait_decl_ref: trait_decl_ref,
+            },
             kind: TypeDeclKind::Struct(fields),
             layout: Some(layout),
             // There is definitely no metadata associated with this type

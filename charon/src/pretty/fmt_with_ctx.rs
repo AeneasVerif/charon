@@ -343,8 +343,45 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for ExistentialPredicate {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "exists(TODO)")
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ExistentialPredicate::Trait(trait_ref) => {
+                write!(f, "{}", trait_ref.with_ctx(ctx))
+            }
+            ExistentialPredicate::Projection(proj) => {
+                write!(f, "{}", proj.with_ctx(ctx))
+            }
+            ExistentialPredicate::AutoTrait(def_id) => {
+                write!(f, "AutoTrait({})", def_id.with_ctx(ctx))
+            }
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for ExistentialProjection {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}::{} = {}",
+            self.trait_item.0,
+            self.generics.with_ctx(ctx),
+            self.term.with_ctx(ctx)
+        )
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for TyTerm {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TyTerm::Ty(ty) => write!(f, "{}", ty.with_ctx(ctx)),
+            TyTerm::Const(const_expr) => write!(f, "{}", const_expr.with_ctx(ctx)),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for ExistentialTraitRef {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.with_ctx(ctx))
     }
 }
 
@@ -1757,8 +1794,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 let preds = preds
                     .iter()
                     .map(|p| p.fmt_as_for(ctx).to_string())
-                    .collect::<Vec<String>>()
-                    .join(" + ");
+                    .format(" + ");
                 write!(f, "(dyn {} + {})", preds, region.with_ctx(ctx))
             }
             TyKind::FnPtr(io) => {

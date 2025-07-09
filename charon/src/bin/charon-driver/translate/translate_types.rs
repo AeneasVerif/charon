@@ -1,7 +1,9 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::HasParamEnv;
 use hax::Visibility;
@@ -45,12 +47,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn check_at_most_one_existential_trait_ref(
         &self,
         span: Span,
-        preds: &Vec<hax::Binder<hax::ExistentialPredicate>>,
+        preds: &Vec<RegionBinder<ExistentialPredicate>>,
     ) -> Result<(), Error> {
         let all_ex_trait_ref = preds
             .iter()
             .filter_map(|binded_pred| {
-                if let hax::ExistentialPredicate::Trait(trait_ref) = &binded_pred.value {
+                if let ExistentialPredicate::Trait(trait_ref) = &binded_pred.skip_binder {
                     Some(trait_ref)
                 } else {
                     None
@@ -64,11 +66,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // all: Trait1 + Trait 2 + ...
         let all = all_ex_trait_ref
             .iter()
-            .map(|x| {
-                self.t_ctx
-                    .tcx
-                    .def_path_str(x.def_id.as_rust_def_id().unwrap())
-            })
+            .map(|x| x.with_ctx(&self.into_fmt()).to_string())
             .format(" + ");
         let str = format!(
             "dyn multiple traits is not supported as per Rustc 1.90.0. I.e., (dyn {all}).
@@ -256,10 +254,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Dynamic(preds, region, ..) => {
                 let region = self.translate_region(span, region)?;
-                // This is a robustness check: the current version of Rustc
-                // accepts at most one existential trait ref in a dyn object.
-                // But things may change in the future
-                self.check_at_most_one_existential_trait_ref(span, preds)?;
                 let preds = preds
                     .iter()
                     .map(|binded_pred| {
@@ -268,6 +262,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         })
                     })
                     .collect::<Result<_, Error>>()?;
+                // This is a robustness check: the current version of Rustc
+                // accepts at most one existential trait ref in a dyn object.
+                // But things may change in the future
+                self.check_at_most_one_existential_trait_ref(span, &preds)?;
                 TyKind::DynTrait(preds, region)
             }
 

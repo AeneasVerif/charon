@@ -1,43 +1,281 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::FormattingOptions
-pub struct FormattingOptions {
-  flags: u32,
-  width: u16,
-  precision: u16,
-}
-
-fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
+fn core::char::TAG_TWO_B() -> u8
 {
-    let @0: u32; // return
+    let @0: u8; // return
 
-    @0 := const (1 : u32) panic.<< const (25 : i32)
+    @0 := const (192 : u8)
     return
 }
 
-const core::fmt::flags::DEBUG_LOWER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_LOWER_HEX_FLAG()
+const core::char::TAG_TWO_B: u8 = core::char::TAG_TWO_B()
 
-fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
+fn core::char::TAG_CONT() -> u8
 {
-    let @0: u32; // return
+    let @0: u8; // return
 
-    @0 := const (1 : u32) panic.<< const (26 : i32)
+    @0 := const (128 : u8)
     return
 }
 
-const core::fmt::flags::DEBUG_UPPER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_UPPER_HEX_FLAG()
+const core::char::TAG_CONT: u8 = core::char::TAG_CONT()
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub struct Formatter<'a>
-where
-    'a : 'a,
+fn core::char::TAG_THREE_B() -> u8
 {
-  options: FormattingOptions,
-  buf: &'a mut (dyn (exists(TODO))),
+    let @0: u8; // return
+
+    @0 := const (224 : u8)
+    return
+}
+
+const core::char::TAG_THREE_B: u8 = core::char::TAG_THREE_B()
+
+fn core::char::TAG_FOUR_B() -> u8
+{
+    let @0: u8; // return
+
+    @0 := const (240 : u8)
+    return
+}
+
+const core::char::TAG_FOUR_B: u8 = core::char::TAG_FOUR_B()
+
+// Full name: core::char::methods::encode_utf8_raw_unchecked
+pub unsafe fn encode_utf8_raw_unchecked(@1: u32, @2: *mut u8)
+{
+    let @0: (); // return
+    let code@1: u32; // arg #1
+    let dst@2: *mut u8; // arg #2
+    let len@3: usize; // local
+    let @4: u8; // anonymous local
+    let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
+    let @7: u8; // anonymous local
+    let @8: u32; // anonymous local
+    let @9: *mut u8; // anonymous local
+    let @10: u8; // anonymous local
+    let @11: u32; // anonymous local
+    let @12: u32; // anonymous local
+    let @13: u8; // anonymous local
+    let @14: u32; // anonymous local
+    let @15: u32; // anonymous local
+    let @16: *mut u8; // anonymous local
+    let @17: u8; // anonymous local
+    let @18: u32; // anonymous local
+    let @19: *mut u8; // anonymous local
+    let @20: u8; // anonymous local
+    let @21: u32; // anonymous local
+    let @22: u32; // anonymous local
+    let @23: u8; // anonymous local
+    let @24: u32; // anonymous local
+    let @25: u32; // anonymous local
+    let @26: *mut u8; // anonymous local
+    let @27: u8; // anonymous local
+    let @28: u32; // anonymous local
+    let @29: u32; // anonymous local
+    let @30: *mut u8; // anonymous local
+    let @31: u8; // anonymous local
+    let @32: u32; // anonymous local
+    let @33: *mut u8; // anonymous local
+    let @34: bool; // anonymous local
+    let @35: bool; // anonymous local
+    let @36: bool; // anonymous local
+    let @37: u8; // anonymous local
+    let @38: u8; // anonymous local
+    let @39: u8; // anonymous local
+    let @40: u8; // anonymous local
+    let @41: u8; // anonymous local
+    let @42: u8; // anonymous local
+    let @43: u8; // anonymous local
+    let @44: u8; // anonymous local
+    let @45: u8; // anonymous local
+
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(@24)
+    storage_live(@25)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@28)
+    storage_live(@29)
+    storage_live(@30)
+    storage_live(@31)
+    storage_live(@32)
+    storage_live(@33)
+    storage_live(@37)
+    storage_live(@38)
+    storage_live(@39)
+    storage_live(@40)
+    storage_live(@41)
+    storage_live(@42)
+    storage_live(@43)
+    storage_live(@44)
+    storage_live(@45)
+    storage_live(len@3)
+    storage_live(@34)
+    storage_live(@35)
+    storage_live(@36)
+    @34 := copy (code@1) < const (128 : u32)
+    if move (@34) {
+        len@3 := const (1 : usize)
+        storage_dead(@36)
+        storage_dead(@35)
+        storage_dead(@34)
+        *(dst@2) := cast<u32, u8>(copy (code@1))
+    }
+    else {
+        @35 := copy (code@1) < const (2048 : u32)
+        if move (@35) {
+            len@3 := const (2 : usize)
+            storage_dead(@36)
+            storage_dead(@35)
+            storage_dead(@34)
+            storage_live(@4)
+            storage_live(@5)
+            storage_live(@6)
+            @6 := copy (code@1) wrap.>> const (6 : i32)
+            @5 := move (@6) & const (31 : u32)
+            storage_dead(@6)
+            @4 := cast<u32, u8>(move (@5))
+            storage_dead(@5)
+            @37 := core::char::TAG_TWO_B
+            *(dst@2) := move (@4) | move (@37)
+            storage_dead(@4)
+            storage_live(@7)
+            storage_live(@8)
+            @8 := copy (code@1) & const (63 : u32)
+            @7 := cast<u32, u8>(move (@8))
+            storage_dead(@8)
+            storage_live(@9)
+            @9 := copy (dst@2) offset const (1 : usize)
+            @38 := core::char::TAG_CONT
+            *(@9) := move (@7) | move (@38)
+            storage_dead(@7)
+            storage_dead(@9)
+        }
+        else {
+            @36 := copy (code@1) < const (65536 : u32)
+            if move (@36) {
+                len@3 := const (3 : usize)
+                storage_dead(@36)
+                storage_dead(@35)
+                storage_dead(@34)
+                storage_live(@10)
+                storage_live(@11)
+                storage_live(@12)
+                @12 := copy (code@1) wrap.>> const (12 : i32)
+                @11 := move (@12) & const (15 : u32)
+                storage_dead(@12)
+                @10 := cast<u32, u8>(move (@11))
+                storage_dead(@11)
+                @39 := core::char::TAG_THREE_B
+                *(dst@2) := move (@10) | move (@39)
+                storage_dead(@10)
+                storage_live(@13)
+                storage_live(@14)
+                storage_live(@15)
+                @15 := copy (code@1) wrap.>> const (6 : i32)
+                @14 := move (@15) & const (63 : u32)
+                storage_dead(@15)
+                @13 := cast<u32, u8>(move (@14))
+                storage_dead(@14)
+                storage_live(@16)
+                @16 := copy (dst@2) offset const (1 : usize)
+                @40 := core::char::TAG_CONT
+                *(@16) := move (@13) | move (@40)
+                storage_dead(@13)
+                storage_dead(@16)
+                storage_live(@17)
+                storage_live(@18)
+                @18 := copy (code@1) & const (63 : u32)
+                @17 := cast<u32, u8>(move (@18))
+                storage_dead(@18)
+                storage_live(@19)
+                @19 := copy (dst@2) offset const (2 : usize)
+                @41 := core::char::TAG_CONT
+                *(@19) := move (@17) | move (@41)
+                storage_dead(@17)
+                storage_dead(@19)
+            }
+            else {
+                len@3 := const (4 : usize)
+                storage_dead(@36)
+                storage_dead(@35)
+                storage_dead(@34)
+                storage_live(@20)
+                storage_live(@21)
+                storage_live(@22)
+                @22 := copy (code@1) wrap.>> const (18 : i32)
+                @21 := move (@22) & const (7 : u32)
+                storage_dead(@22)
+                @20 := cast<u32, u8>(move (@21))
+                storage_dead(@21)
+                @42 := core::char::TAG_FOUR_B
+                *(dst@2) := move (@20) | move (@42)
+                storage_dead(@20)
+                storage_live(@23)
+                storage_live(@24)
+                storage_live(@25)
+                @25 := copy (code@1) wrap.>> const (12 : i32)
+                @24 := move (@25) & const (63 : u32)
+                storage_dead(@25)
+                @23 := cast<u32, u8>(move (@24))
+                storage_dead(@24)
+                storage_live(@26)
+                @26 := copy (dst@2) offset const (1 : usize)
+                @43 := core::char::TAG_CONT
+                *(@26) := move (@23) | move (@43)
+                storage_dead(@23)
+                storage_dead(@26)
+                storage_live(@27)
+                storage_live(@28)
+                storage_live(@29)
+                @29 := copy (code@1) wrap.>> const (6 : i32)
+                @28 := move (@29) & const (63 : u32)
+                storage_dead(@29)
+                @27 := cast<u32, u8>(move (@28))
+                storage_dead(@28)
+                storage_live(@30)
+                @30 := copy (dst@2) offset const (2 : usize)
+                @44 := core::char::TAG_CONT
+                *(@30) := move (@27) | move (@44)
+                storage_dead(@27)
+                storage_dead(@30)
+                storage_live(@31)
+                storage_live(@32)
+                @32 := copy (code@1) & const (63 : u32)
+                @31 := cast<u32, u8>(move (@32))
+                storage_dead(@32)
+                storage_live(@33)
+                @33 := copy (dst@2) offset const (3 : usize)
+                @45 := core::char::TAG_CONT
+                *(@33) := move (@31) | move (@45)
+                storage_dead(@31)
+                storage_dead(@33)
+            }
+        }
+    }
+    storage_dead(len@3)
+    @0 := ()
+    return
 }
 
 // Full name: core::marker::MetaSized
@@ -62,16 +300,828 @@ where
   Err(E),
 }
 
-// Full name: core::fmt::Debug
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::fmt::rt::Count
+#[lang_item("format_count")]
+pub enum Count {
+  Is(u16),
+  Param(usize),
+  Implied,
+}
+
+// Full name: core::fmt::rt::Placeholder
+#[lang_item("format_placeholder")]
+pub struct Placeholder {
+  position: usize,
+  flags: u32,
+  precision: Count,
+  width: Count,
+}
+
+// Full name: core::fmt::FormattingOptions
+pub struct FormattingOptions {
+  flags: u32,
+  width: u16,
+  precision: u16,
+}
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T,
+}
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
+
+pub trait core::fmt::Write<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn write_str<'_0, '_1> = write_str<'_0_0, '_0_1, Self>[Self]
+    fn write_char<'_0> = write_char<'_0_0, Self>[Self]
+    fn write_fmt<'_0, '_1> = write_fmt<'_0_0, '_0_1, Self>[Self]
+}
+
+// Full name: core::fmt::Arguments
+#[lang_item("format_arguments")]
+pub struct Arguments<'a>
+where
+    'a : 'a,
+{
+  pieces: &'a (Slice<&'static (Str)>),
+  fmt: Option<&'a (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>],
+  args: &'a (Slice<Argument<'a>>),
+}
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub struct Argument<'a> {
+  ty: ArgumentType<'a>,
+}
+
+// Full name: core::fmt::Formatter
+#[lang_item("Formatter")]
+pub struct Formatter<'a>
+where
+    'a : 'a,
+{
+  options: FormattingOptions,
+  buf: &'a mut ((dyn exists(TODO) + 'a)),
+}
+
+// Full name: core::fmt::rt::ArgumentType
+enum ArgumentType<'a> {
+  Placeholder(value: NonNull<()>, formatter: fn<'_0, '_1>(NonNull<()>, &'_0_0 mut (Formatter<'_0_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
+  Count(u16),
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+}
+
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
+}
+
+// Full name: core::intrinsics::ctpop
+pub fn ctpop<T>(@1: T) -> u32
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+{
+    let @0: u32; // return
+    let x@1: T; // arg #1
+
+    undefined_behavior
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
+{
+    let @0: usize; // return
+    let self@1: &'_ (usize); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
+pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
+where
+    [@TraitClause0]: Destruct<usize>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (usize); // arg #1
+    let source@2: &'_ (usize); // arg #2
+    let @3: usize; // anonymous local
+
+    storage_live(@3)
+    @3 := {impl Clone for usize}::clone<'_>(move (source@2))
+    drop[Drop<usize>] *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl Clone for usize {
+    parent_clause0 = Sized<usize>
+    fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
+    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl Copy for usize {
+    parent_clause0 = MetaSized<usize>
+    parent_clause1 = {impl Clone for usize}
+}
+
+// Full name: core::panicking::panic_nounwind_fmt::compiletime
+fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+{
+    let @0: !; // return
+    let fmt@1: Arguments<'_>; // arg #1
+    let force_no_backtrace@2: bool; // arg #2
+
+    panic(core::panicking::panic_fmt)
+}
+
+// Full name: core::panicking::panic_nounwind_fmt
+pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+{
+    let @0: !; // return
+    let fmt@1: Arguments<'_>; // arg #1
+    let force_no_backtrace@2: bool; // arg #2
+    let @3: (Arguments<'_>, bool); // anonymous local
+    let @4: Arguments<'_>; // anonymous local
+    let @5: bool; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    @4 := copy (fmt@1)
+    storage_live(@5)
+    @5 := copy (force_no_backtrace@2)
+    @3 := (move (@4), move (@5))
+    storage_dead(@5)
+    storage_dead(@4)
+    @0 := compiletime<'_>(move ((@3).0), move ((@3).1))
+}
+
+// Full name: core::slice::raw::from_raw_parts_mut::precondition_check
+fn precondition_check(@1: *mut (), @2: usize, @3: usize, @4: usize)
+{
+    let @0: (); // return
+    let data@1: *mut (); // arg #1
+    let size@2: usize; // arg #2
+    let align@3: usize; // arg #3
+    let len@4: usize; // arg #4
+    let @5: bool; // anonymous local
+    let ptr@6: *const (); // local
+    let @7: bool; // anonymous local
+    let @8: !; // anonymous local
+    let @9: Arguments<'_>; // anonymous local
+    let pieces@10: &'_ (Array<&'_ (Str), 1 : usize>); // local
+    let @11: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @12: bool; // anonymous local
+    let @13: Arguments<'_>; // anonymous local
+    let @14: usize; // anonymous local
+    let @15: usize; // anonymous local
+    let @16: usize; // anonymous local
+    let @17: u32; // anonymous local
+    let @18: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @19: &'_ (Slice<Argument<'_>>); // anonymous local
+    let max_len@20: usize; // local
+    let @21: bool; // anonymous local
+    let @22: usize; // anonymous local
+    let @23: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @24: &'_ (Slice<Argument<'_>>); // anonymous local
+    let @25: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @26: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @27: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @28: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @29: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @30: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @31: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(pieces@10)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(max_len@20)
+    storage_live(@21)
+    storage_live(@22)
+    storage_live(@25)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@28)
+    storage_live(@29)
+    storage_live(@30)
+    storage_live(@31)
+    storage_live(@5)
+    storage_live(ptr@6)
+    ptr@6 := cast<*mut (), *const ()>(copy (data@1))
+    storage_live(@15)
+    storage_live(@17)
+    @17 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@3))
+    switch move (@17) {
+        1 : u32 => {
+        },
+        _ => {
+            @26 := [const ("is_aligned_to: align is not a power-of-two")]
+            @25 := &@26
+            @28 := []
+            @27 := &@28
+            storage_dead(@17)
+            storage_live(@13)
+            storage_live(@18)
+            @18 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@25))
+            storage_live(@19)
+            @19 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@27))
+            @29 := Option::None {  }
+            @13 := Arguments { pieces: move (@18), fmt: move (@29), args: move (@19) }
+            storage_dead(@19)
+            storage_dead(@18)
+            panic(core::panicking::panic_fmt)
+        },
+    }
+    storage_dead(@17)
+    storage_live(@14)
+    @15 := transmute<*mut (), usize>(copy (data@1))
+    storage_live(@16)
+    @16 := copy (align@3) wrap.- const (1 : usize)
+    @14 := copy (@15) & move (@16)
+    storage_dead(@16)
+    switch move (@14) {
+        0 : usize => {
+            storage_dead(@14)
+            storage_live(@12)
+            @12 := copy (@15) == const (0 : usize)
+            @5 := ~(move (@12))
+            storage_dead(@12)
+            storage_dead(@15)
+            if move (@5) {
+                storage_dead(ptr@6)
+                storage_live(@7)
+                storage_live(@21)
+                storage_live(max_len@20)
+                @21 := copy (size@2) == const (0 : usize)
+                switch copy (size@2) {
+                    0 : usize => {
+                        max_len@20 := const (18446744073709551615 : usize)
+                    },
+                    _ => {
+                        assert(copy (@21) == false)
+                        max_len@20 := const (9223372036854775807 : usize) ub./ copy (size@2)
+                    },
+                }
+                storage_live(@22)
+                @22 := copy (max_len@20)
+                @7 := copy (len@4) <= move (@22)
+                storage_dead(@22)
+                storage_dead(max_len@20)
+                storage_dead(@21)
+                if move (@7) {
+                    storage_dead(@7)
+                    storage_dead(@5)
+                    @0 := ()
+                    return
+                }
+                else {
+                }
+            }
+            else {
+                storage_dead(ptr@6)
+            }
+        },
+        _ => {
+            storage_dead(@14)
+            storage_dead(@15)
+            storage_dead(ptr@6)
+        },
+    }
+    storage_live(@9)
+    storage_live(@11)
+    @11 := [const ("unsafe precondition(s) violated: slice::from_raw_parts_mut requires the pointer to be aligned and non-null, and the total size of the slice not to exceed `isize::MAX`\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
+    pieces@10 := &@11
+    storage_live(@23)
+    @23 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@10))
+    storage_live(@24)
+    @30 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
+    @24 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@30))
+    @31 := Option::None {  }
+    @9 := Arguments { pieces: move (@23), fmt: move (@31), args: move (@24) }
+    storage_dead(@24)
+    storage_dead(@23)
+    @8 := panic_nounwind_fmt<'_>(move (@9), const (false))
+}
+
+// Full name: core::char::methods::encode_utf8_raw::do_panic::runtime
+fn runtime(@1: u32, @2: usize, @3: usize) -> !
+
+// Full name: core::char::methods::encode_utf8_raw
+pub fn encode_utf8_raw<'_0>(@1: u32, @2: &'_0 mut (Slice<u8>)) -> &'_0 mut (Slice<u8>)
+{
+    let @0: &'_ mut (Slice<u8>); // return
+    let code@1: u32; // arg #1
+    let dst@2: &'_ mut (Slice<u8>); // arg #2
+    let len@3: usize; // local
+    let @4: bool; // anonymous local
+    let dst_len@5: usize; // local
+    let @6: usize; // anonymous local
+    let @7: !; // anonymous local
+    let len@8: usize; // local
+    let @9: (); // anonymous local
+    let @10: *mut u8; // anonymous local
+    let data@11: *mut u8; // local
+    let len@12: usize; // local
+    let @13: bool; // anonymous local
+    let @14: bool; // anonymous local
+    let @15: bool; // anonymous local
+    let @16: *mut Slice<u8>; // anonymous local
+    let @17: *mut Slice<u8>; // anonymous local
+    let @18: (); // anonymous local
+    let @19: *mut (); // anonymous local
+    let @20: *mut Slice<u8>; // anonymous local
+    let @21: bool; // anonymous local
+
+    storage_live(dst_len@5)
+    storage_live(@7)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(data@11)
+    storage_live(len@12)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
+    storage_live(len@3)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    @13 := copy (code@1) < const (128 : u32)
+    if move (@13) {
+        len@3 := const (1 : usize)
+    }
+    else {
+        @14 := copy (code@1) < const (2048 : u32)
+        if move (@14) {
+            len@3 := const (2 : usize)
+        }
+        else {
+            @15 := copy (code@1) < const (65536 : u32)
+            if move (@15) {
+                len@3 := const (3 : usize)
+            }
+            else {
+                len@3 := const (4 : usize)
+            }
+        }
+    }
+    storage_dead(@15)
+    storage_dead(@14)
+    storage_dead(@13)
+    storage_live(@4)
+    dst_len@5 := ptr_metadata(copy (dst@2))
+    storage_live(@6)
+    @6 := copy (len@3)
+    @4 := copy (dst_len@5) < move (@6)
+    if move (@4) {
+    }
+    else {
+        storage_dead(@6)
+        storage_dead(@4)
+        storage_live(@10)
+        storage_live(@16)
+        @16 := &raw mut *(dst@2)
+        @10 := cast<*mut Slice<u8>, *mut u8>(move (@16))
+        storage_dead(@16)
+        @9 := encode_utf8_raw_unchecked(move (code@1), move (@10))
+        storage_dead(@10)
+        storage_live(data@11)
+        @17 := &raw mut *(dst@2)
+        data@11 := cast<*mut Slice<u8>, *mut u8>(copy (@17))
+        storage_live(len@12)
+        len@12 := copy (len@3)
+        storage_live(@21)
+        @21 := ub_checks<bool>
+        if copy (@21) {
+            storage_live(@19)
+            @19 := cast<*mut Slice<u8>, *mut ()>(copy (@17))
+            @18 := precondition_check(move (@19), const (1 : usize), const (1 : usize), copy (len@12))
+            storage_dead(@19)
+        }
+        else {
+        }
+        storage_live(@20)
+        @20 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@11), copy (len@12))
+        @0 := &mut *(@20)
+        storage_dead(@20)
+        storage_dead(@21)
+        storage_dead(len@12)
+        storage_dead(data@11)
+        storage_dead(len@3)
+        return
+    }
+    storage_dead(@6)
+    storage_live(len@8)
+    len@8 := copy (len@3)
+    @7 := runtime(move (code@1), move (len@8), move (dst_len@5))
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::clone::Clone::clone_from
+pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: Clone<Self>,
+    [@TraitClause1]: Destruct<Self>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Self); // arg #1
+    let source@2: &'_ (Self); // arg #2
+    let @3: Self; // anonymous local
+
+    storage_live(@3)
+    @3 := @TraitClause0::clone<'_>(move (source@2))
+    drop[Drop<Self>] *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}::clone
+pub fn {impl Clone for bool}::clone<'_0>(@1: &'_0 (bool)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (bool); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+pub fn core::clone::impls::{impl Clone for bool}::clone_from<'_0, '_1>(@1: &'_0 mut (bool), @2: &'_1 (bool))
+where
+    [@TraitClause0]: Destruct<bool>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (bool); // arg #1
+    let source@2: &'_ (bool); // arg #2
+    let @3: bool; // anonymous local
+
+    storage_live(@3)
+    @3 := {impl Clone for bool}::clone<'_>(move (source@2))
+    drop[Drop<bool>] *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}
+impl Clone for bool {
+    parent_clause0 = Sized<bool>
+    fn clone<'_0> = {impl Clone for bool}::clone<'_0_0>
+    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<bool>> = core::clone::impls::{impl Clone for bool}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+}
+
+// Full name: core::fmt::Write::write_str
+pub fn write_str<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Str)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: core::fmt::Write<Self>,
+
+// Full name: core::fmt::Write::write_char
+pub fn write_char<'_0, Self>(@1: &'_0 mut (Self), @2: char) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: core::fmt::Write<Self>,
+{
+    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
+    let self@1: &'_ mut (Self); // arg #1
+    let c@2: char; // arg #2
+    let @3: &'_ (Str); // anonymous local
+    let dst@4: &'_ mut (Slice<u8>); // local
+    let @5: &'_ mut (Array<u8, 4 : usize>); // anonymous local
+    let @6: Array<u8, 4 : usize>; // anonymous local
+    let v@7: &'_ mut (Slice<u8>); // local
+    let @8: u32; // anonymous local
+    let @9: *mut Str; // anonymous local
+    let @10: *mut Slice<u8>; // anonymous local
+
+    storage_live(@5)
+    storage_live(@9)
+    storage_live(@3)
+    storage_live(dst@4)
+    storage_live(@6)
+    @6 := @ArrayRepeat<'_, u8, 4 : usize>(const (0 : u8))
+    @5 := &mut @6
+    dst@4 := @ArrayToSliceMut<'_, u8, 4 : usize>(copy (@5))
+    storage_live(v@7)
+    storage_live(@8)
+    @8 := cast<char, u32>(copy (c@2))
+    v@7 := encode_utf8_raw<'_>(move (@8), move (dst@4))
+    storage_dead(@8)
+    storage_live(@10)
+    @10 := &raw mut *(v@7)
+    @9 := cast<*mut Slice<u8>, *mut Str>(move (@10))
+    storage_dead(@10)
+    storage_dead(v@7)
+    @3 := &*(@9)
+    storage_dead(dst@4)
+    @0 := @TraitClause0::write_str<'_, '_>(move (self@1), move (@3))
+    storage_dead(@6)
+    storage_dead(@3)
+    return
+}
+
+// Full name: core::intrinsics::is_val_statically_known
+pub fn is_val_statically_known<T>(@1: T) -> bool
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+{
+    let @0: bool; // return
+    let _arg@1: T; // arg #1
+
+    @0 := const (false)
+    return
+}
+
+// Full name: core::marker::{impl Copy for bool}
+impl Copy for bool {
+    parent_clause0 = MetaSized<bool>
+    parent_clause1 = {impl Clone for bool}
+}
+
+// Full name: core::fmt::write
+pub fn write<'_0, '_1>(@1: &'_0 mut ((dyn exists(TODO) + '_0)), @2: Arguments<'_1>) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: core::fmt::Write::write_fmt::{impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt
+fn {impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt<'_0, '_1, W>(@1: &'_0 mut (W), @2: Arguments<'_1>) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: MetaSized<W>,
+    [@TraitClause1]: core::fmt::Write<W>,
+{
+    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
+    let self@1: &'_ mut (W); // arg #1
+    let args@2: Arguments<'_>; // arg #2
+    let @3: Option<&'_ (Str)>[Sized<&'_ (Str)>]; // anonymous local
+    let self@4: &'_ (Arguments<'_>); // local
+    let s@5: &'_ (Str); // local
+    let @6: &'_ mut (W); // anonymous local
+    let @7: &'_ mut ((dyn exists(TODO) + '_)); // anonymous local
+    let @8: &'_ mut (&'_ mut (W)); // anonymous local
+    let s@9: Option<&'_ (Str)>[Sized<&'_ (Str)>]; // local
+    let @10: bool; // anonymous local
+    let @11: bool; // anonymous local
+    let self@12: &'_ (Option<&'_ (Str)>[Sized<&'_ (Str)>]); // local
+    let @13: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @14: &'_ (Slice<Argument<'_>>); // anonymous local
+    let @15: usize; // anonymous local
+    let @16: usize; // anonymous local
+    let @17: usize; // anonymous local
+    let s@18: &'_ (&'_ (Str)); // local
+    let @19: &'_ (Str); // anonymous local
+    let @20: isize; // anonymous local
+    let @21: Option<&'_ (Str)>[Sized<&'_ (Str)>]; // anonymous local
+    let @22: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @23: &'_ (&'_ (Str)); // anonymous local
+    let @24: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @25: &'_ (&'_ (Str)); // anonymous local
+
+    storage_live(s@5)
+    storage_live(@6)
+    storage_live(@8)
+    storage_live(s@18)
+    storage_live(@21)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(@24)
+    storage_live(@25)
+    storage_live(@3)
+    storage_live(self@4)
+    self@4 := &args@2
+    storage_live(s@9)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@19)
+    @13 := copy ((args@2).pieces)
+    @14 := copy ((args@2).args)
+    @17 := len(*(@13))
+    switch move (@17) {
+        0 : usize => {
+            @15 := len(*(@14))
+            switch move (@15) {
+                0 : usize => {
+                    s@9 := Option::Some { 0: const ("") }
+                },
+                _ => {
+                    @21 := Option::None {  }
+                    s@9 := move (@21)
+                },
+            }
+        },
+        _ => {
+            switch move (@17) {
+                1 : usize => {
+                    @16 := len(*(@14))
+                    switch move (@16) {
+                        0 : usize => {
+                            storage_live(s@18)
+                            storage_live(@24)
+                            @24 := &*(@13)
+                            storage_live(@25)
+                            @25 := @SliceIndexShared<'_, &'_ (Str)>(move (@24), const (0 : usize))
+                            s@18 := &*(@25)
+                            storage_live(@22)
+                            @22 := &*(@13)
+                            storage_live(@23)
+                            @23 := @SliceIndexShared<'_, &'_ (Str)>(move (@22), const (0 : usize))
+                            @19 := copy (*(@23))
+                            s@9 := Option::Some { 0: copy (@19) }
+                            storage_dead(s@18)
+                        },
+                        _ => {
+                            @21 := Option::None {  }
+                            s@9 := move (@21)
+                        },
+                    }
+                },
+                _ => {
+                    @21 := Option::None {  }
+                    s@9 := move (@21)
+                },
+            }
+        },
+    }
+    storage_dead(@19)
+    storage_dead(@17)
+    storage_dead(@16)
+    storage_dead(@15)
+    storage_dead(@14)
+    storage_dead(@13)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(self@12)
+    self@12 := &s@9
+    storage_live(@20)
+    match s@9 {
+        Option::None => {
+            @20 := const (0 : isize)
+        },
+        Option::Some => {
+            @20 := const (1 : isize)
+        },
+    }
+    @11 := copy (@20) == const (1 : isize)
+    storage_dead(@20)
+    storage_dead(self@12)
+    @10 := is_val_statically_known<bool>[Sized<bool>, {impl Copy for bool}](move (@11))
+    if move (@10) {
+        storage_dead(@11)
+        @3 := copy (s@9)
+        storage_dead(@10)
+        storage_dead(s@9)
+        storage_dead(self@4)
+        match @3 {
+            Option::Some => {
+                s@5 := copy ((@3 as variant Option::Some).0)
+                storage_live(@6)
+                @6 := copy (self@1)
+                @0 := @TraitClause1::write_str<'_, '_>(move (@6), move (s@5))
+                storage_dead(@6)
+                storage_dead(@3)
+                return
+            },
+            Option::None => {
+            },
+        }
+    }
+    else {
+        storage_dead(@11)
+        storage_dead(@10)
+        storage_dead(s@9)
+        storage_dead(self@4)
+    }
+    storage_dead(@3)
+    storage_live(@7)
+    @8 := &mut self@1
+    @7 := unsize_cast<&'_ mut (&'_ mut (W)), &'_ mut ((dyn exists(TODO) + '_))>(copy (@8))
+    @0 := write<'_, '_>(move (@7), copy (args@2))
+    storage_dead(@7)
+    return
+}
+
+// Full name: core::fmt::Write::write_fmt
+pub fn write_fmt<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: Arguments<'_1>) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: core::fmt::Write<Self>,
+{
+    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
+    let self@1: &'_ mut (Self); // arg #1
+    let args@2: Arguments<'_>; // arg #2
+
+    @0 := {impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt<'_, '_, Self>[@TraitClause0::parent_clause0, @TraitClause0](move (self@1), move (args@2))
+    return
+}
+
+// Full name: core::fmt::Write::write_fmt::SpecWriteFmt
+trait SpecWriteFmt<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn spec_write_fmt<'_0> = core::fmt::Write::write_fmt::SpecWriteFmt::spec_write_fmt<'_0_0, Self>[Self]
+}
+
+fn core::fmt::Write::write_fmt::SpecWriteFmt::spec_write_fmt<'_0, Self>(@1: Self, @2: Arguments<'_0>) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: SpecWriteFmt<Self>,
+
+// Full name: core::fmt::Write::write_fmt::{impl SpecWriteFmt for &'_0 mut (W)}
+impl<'_0, W> SpecWriteFmt for &'_0 mut (W)
+where
+    [@TraitClause0]: MetaSized<W>,
+    [@TraitClause1]: core::fmt::Write<W>,
+{
+    parent_clause0 = MetaSized<&'_ mut (W)>
+    fn spec_write_fmt<'_0> = {impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt<'_0, '_0_0, W>[@TraitClause0, @TraitClause1]
+}
+
+fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (1 : u32) panic.<< const (25 : i32)
+    return
+}
+
+const core::fmt::flags::DEBUG_LOWER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_LOWER_HEX_FLAG()
+
+fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (1 : u32) panic.<< const (26 : i32)
+    return
+}
+
+const core::fmt::flags::DEBUG_UPPER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_UPPER_HEX_FLAG()
+
 #[lang_item("Debug")]
-pub trait Debug<Self>
+pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
-    [@TraitClause0]: Debug<Self>,
+    [@TraitClause0]: core::fmt::Debug<Self>,
 
 // Full name: core::fmt::Display
 #[lang_item("Display")]
@@ -123,8 +1173,8 @@ impl UpperHex for u32 {
 // Full name: core::fmt::num::imp::{impl Display for u32}::fmt
 pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::num::{impl Debug for u32}::fmt
-pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+// Full name: core::fmt::num::{impl core::fmt::Debug for u32}::fmt
+pub fn {impl core::fmt::Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 {
     let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
     let self@1: &'_ (u32); // arg #1
@@ -173,22 +1223,14 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     return
 }
 
-// Full name: core::fmt::num::{impl Debug for u32}
-impl Debug for u32 {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for u32}::fmt<'_0_0, '_0_1, '_0_2>
+// Full name: core::fmt::num::{impl core::fmt::Debug for u32}
+impl core::fmt::Debug for u32 {
+    fn fmt<'_0, '_1, '_2> = {impl core::fmt::Debug for u32}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
 // Full name: core::fmt::num::imp::{impl Display for u32}
 impl Display for u32 {
     fn fmt<'_0, '_1, '_2> = {impl Display for u32}::fmt<'_0_0, '_0_1, '_0_2>
-}
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -197,19 +1239,19 @@ where
     [@TraitClause0]: Drop<Self>,
 
 // Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(TODO)))) -> !
+fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists(TODO) + '_1))) -> !
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
-    [@TraitClause2]: Debug<E>,
+    [@TraitClause2]: core::fmt::Debug<E>,
 {
     let t@0: T; // return
     let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e@2: E; // local
     let @3: !; // anonymous local
-    let @4: &'_ (dyn (exists(TODO))); // anonymous local
+    let @4: &'_ ((dyn exists(TODO) + '_)); // anonymous local
     let @5: &'_ (E); // anonymous local
 
     storage_live(e@2)
@@ -224,7 +1266,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(copy (@5))
+            @4 := unsize_cast<&'_ (E), &'_ ((dyn exists(TODO) + '_))>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }
@@ -240,7 +1282,7 @@ fn test_crate::unwrap(@1: Result<u32, u32>[Sized<u32>, Sized<u32>]) -> u32
 
     storage_live(@2)
     @2 := copy (res@1)
-    @0 := core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[Sized<u32>, Sized<u32>, {impl Debug for u32}](move (@2))
+    @0 := core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[Sized<u32>, Sized<u32>, {impl core::fmt::Debug for u32}](move (@2))
     storage_dead(@2)
     return
 }

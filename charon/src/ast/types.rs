@@ -902,14 +902,9 @@ pub struct FunSig {
     pub output: Ty,
 }
 
+/// A wrapper of TraitDeclRef with `Self` specially being `Ty::ExistentialPlaceholder`
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ExistentialTraitRef {
-    /// This field corresponds to all required info in Rustc
-    pub trait_ref: TraitDeclRef,
-    // the following field(s) is/are addional information in Charon
-    /// The trait vtable structure, referring to a (potentially generic) ADT
-    pub vtable_typ_id: TypeDeclId,
-}
+pub struct ExistentialTraitRef(pub TraitDeclRef);
 /// Corresponding to `ty::TermKind` in Rustc
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum TyTerm {
