@@ -323,7 +323,7 @@ pub enum PredicateOrigin {
 }
 
 // rustc counts bytes in layouts as u64
-type ByteCount = u64;
+pub type ByteCount = u64;
 
 /// Simplified layout of a single variant.
 ///

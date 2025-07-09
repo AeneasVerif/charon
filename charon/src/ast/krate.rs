@@ -96,6 +96,15 @@ pub enum AnyTransItemMut<'ctx> {
     TraitImpl(&'ctx mut TraitImpl),
 }
 
+
+#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
+pub struct TargetInfo {
+    /// The pointer size of the target in bytes.
+    pub target_pointer_size: types::ByteCount,
+    /// Whether the target platform uses little endian byte order.
+    pub is_little_endian: bool
+}
+
 /// The data of a translated crate.
 #[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
 pub struct TranslatedCrate {
@@ -108,6 +117,10 @@ pub struct TranslatedCrate {
     /// the proper options.
     #[drive(skip)]
     pub options: crate::options::CliOpts,
+
+    /// Information about the target platform for which rustc is called on for the crate.
+    #[drive(skip)]
+    pub target_information: TargetInfo,
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.

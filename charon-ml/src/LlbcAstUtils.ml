@@ -191,11 +191,16 @@ class ['self] map_crate_with_span =
         (option : cli_options) : cli_options =
       option
 
+    method visit_target_info (decl_span_info : (any_decl_id * span) option)
+        (target_info : target_info) : target_info =
+      target_info
+
     method visit_crate (decl_span_info : (any_decl_id * span) option)
         (crate : crate) : crate =
       let {
         name;
         options;
+        target_information;
         declarations;
         type_decls;
         fun_decls;
@@ -207,6 +212,9 @@ class ['self] map_crate_with_span =
       in
       let name = self#visit_string decl_span_info name in
       let options = self#visit_cli_options decl_span_info options in
+      let target_information =
+        self#visit_target_info decl_span_info target_information
+      in
       let declarations =
         List.map (self#visit_declaration_group decl_span_info) declarations
       in
@@ -230,6 +238,7 @@ class ['self] map_crate_with_span =
       {
         name;
         options;
+        target_information;
         declarations;
         type_decls;
         fun_decls;
@@ -370,6 +379,7 @@ class ['self] iter_crate_with_span =
       let {
         name;
         options;
+        target_information;
         declarations;
         type_decls;
         fun_decls;
