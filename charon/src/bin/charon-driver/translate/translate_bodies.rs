@@ -305,8 +305,11 @@ impl BodyTransCtx<'_, '_, '_> {
                         from_end,
                         min_length: _,
                     } => {
-                        let offset =
-                            Operand::Const(Box::new(ScalarValue::Usize(offset).to_constant()));
+                        let offset = Operand::Const(Box::new(
+                            ScalarValue::from_uint(IntegerTy::Usize, offset as u128)
+                                .unwrap()
+                                .to_constant(),
+                        ));
                         subplace.project(
                             ProjectionElem::Index {
                                 offset: Box::new(offset),
@@ -316,8 +319,16 @@ impl BodyTransCtx<'_, '_, '_> {
                         )
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
-                        let from = Operand::Const(Box::new(ScalarValue::Usize(from).to_constant()));
-                        let to = Operand::Const(Box::new(ScalarValue::Usize(to).to_constant()));
+                        let from = Operand::Const(Box::new(
+                            ScalarValue::from_uint(IntegerTy::Usize, from as u128)
+                                .unwrap()
+                                .to_constant(),
+                        ));
+                        let to = Operand::Const(Box::new(
+                            ScalarValue::from_uint(IntegerTy::Usize, to as u128)
+                                .unwrap()
+                                .to_constant(),
+                        ));
                         subplace.project(
                             ProjectionElem::Subslice {
                                 from: Box::new(from),
@@ -574,9 +585,10 @@ impl BodyTransCtx<'_, '_, '_> {
                 match aggregate_kind {
                     hax::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ty(span, ty)?;
-                        let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
-                            operands_t.len() as u64,
-                        )));
+                        let cg = ConstGeneric::Value(Literal::Scalar(
+                            ScalarValue::from_uint(IntegerTy::Usize, operands_t.len() as u128)
+                                .unwrap(),
+                        ));
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Array(t_ty, cg),
                             operands_t,
@@ -890,7 +902,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(ScalarValue, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
+                        let v = ScalarValue::from_bytes(int_ty, v.data_le_bytes);
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })

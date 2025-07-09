@@ -1068,7 +1068,7 @@ fn generate_ml(
             "ScalarValue",
             indoc!(
                 r#"
-                | `Assoc [ (ty, bi) ] ->
+                `Assoc [ (_, `List [ ty; bi ]) ] ->
                     let big_int_of_json (js : json) : (big_int, string) result =
                       combine_error_msgs js __FUNCTION__
                         (match js with
@@ -1077,11 +1077,12 @@ fn generate_ml(
                         | _ -> Error "")
                     in
                     let* value = big_int_of_json bi in
-                    let* int_ty = integer_type_of_json ctx (`String ty) in
+                    let* int_ty = integer_type_of_json ctx ty in
                     let sv = { value; int_ty } in
                     if not (check_scalar_value_in_range sv) then
-                      raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
-                    Ok sv
+                      Error ("Scalar value not in range: " ^ show_scalar_value sv)
+                    else
+                      Ok sv
                 "#
             ),
         ),
