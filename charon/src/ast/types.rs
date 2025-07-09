@@ -932,7 +932,6 @@ pub struct ExistentialProjection {
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
-/// This predicate itself contains all the predicate info for the stuff
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ExistentialPredicate {
     Trait(ExistentialTraitRef),
