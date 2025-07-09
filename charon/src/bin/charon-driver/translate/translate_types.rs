@@ -255,12 +255,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(preds, region, kind) => {
+            hax::TyKind::Dynamic(preds, region, ..) => {
                 let region = self.translate_region(span, region)?;
-                let kind = match kind {
-                    hax::DynKind::Dyn => DynKind::Dyn,
-                    hax::DynKind::DynStar => DynKind::DynStar,
-                };
                 // This is a robustness check: the current version of Rustc
                 // accepts at most one existential trait ref in a dyn object.
                 // But things may change in the future
@@ -273,7 +269,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         })
                     })
                     .collect::<Result<_, Error>>()?;
-                TyKind::DynTrait(preds, region, kind)
+                TyKind::DynTrait(preds, region)
             }
 
             hax::TyKind::Infer(_) => {

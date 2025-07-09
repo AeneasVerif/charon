@@ -1753,17 +1753,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::TraitType(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
-            TyKind::DynTrait(preds, region, kind) => {
-                let kind = match kind {
-                    DynKind::Dyn => "",
-                    DynKind::DynStar => "*",
-                };
+            TyKind::DynTrait(preds, region) => {
                 let preds = preds
                     .iter()
                     .map(|p| p.fmt_as_for(ctx).to_string())
                     .collect::<Vec<String>>()
                     .join(" + ");
-                write!(f, "(dyn{} {} + {})", kind, preds, region.with_ctx(ctx))
+                write!(f, "(dyn {} + {})", preds, region.with_ctx(ctx))
             }
             TyKind::FnPtr(io) => {
                 write!(f, "{}", io.with_ctx(ctx))

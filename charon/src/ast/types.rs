@@ -781,8 +781,9 @@ pub enum TyKind {
     /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
     /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
     ///
-    /// Only one of the predicates have vtable inside.
-    DynTrait(Vec<RegionBinder<ExistentialPredicate>>, Region, DynKind),
+    /// Only the first Predicate is used as the *principal* predicate, i.e. the one that
+    /// corresponds to a vtable. It is uniquely of the `ExistentialTraitRef` type.
+    DynTrait(Vec<RegionBinder<ExistentialPredicate>>, Region),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
@@ -899,12 +900,6 @@ pub struct FunSig {
     pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub enum DynKind {
-    Dyn,
-    DynStar,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]

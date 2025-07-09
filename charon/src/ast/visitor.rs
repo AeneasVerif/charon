@@ -74,7 +74,7 @@ use indexmap::IndexMap;
         AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
-        ExistentialProjection, TyTerm, ExistentialTraitRef, DynKind
+        ExistentialProjection, TyTerm, ExistentialTraitRef
     )
 )]
 pub trait AstVisitable: Any {
