@@ -36,7 +36,7 @@
 use anyhow::Result;
 use charon_lib::{
     logger,
-    options::{CliOpts, CHARON_ARGS},
+    options::{CHARON_ARGS, CliOpts},
 };
 use clap::Parser;
 use cli::{Charon, Cli};

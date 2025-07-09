@@ -109,7 +109,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     TyKind::TraitType(trait_ref, name)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
-                    return self.translate_ty(span, hidden_ty)
+                    return self.translate_ty(span, hidden_ty);
                 }
                 _ => {
                     raise_error!(self, span, "Unsupported alias type: {:?}", alias.kind)

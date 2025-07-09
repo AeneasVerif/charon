@@ -211,8 +211,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 trace!(
                     "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
-                    trait_ref,
-                    path,
+                    trait_ref, path,
                 );
                 // If we are refering to a trait clause, we need to find the relevant one.
                 let mut trait_id = match &impl_source.r#impl {

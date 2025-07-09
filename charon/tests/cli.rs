@@ -1,4 +1,4 @@
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use std::{path::PathBuf, process::Command};

@@ -93,62 +93,65 @@ fn remove_dynamic_checks(
         //   l := ptr_metadata(copy a)
         //   b := copy x < copy l
         //   assert(move b == true)
-        [Statement {
-            content:
-                RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op))),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assign(
-                    is_in_bounds,
-                    Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
-                ),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: true,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if lt_op2 == len && cond == is_in_bounds && len_op.ty().is_ref() =>
-        {
-            rest
-        }
+        [
+            Statement {
+                content:
+                    RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op))),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        is_in_bounds,
+                        Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
+                    ),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(cond),
+                        expected: true,
+                        ..
+                    }),
+                ..
+            },
+            rest @ ..,
+        ] if lt_op2 == len && cond == is_in_bounds && len_op.ty().is_ref() => rest,
         // Sometimes that instead looks like:
         //   a := &raw const *z
         //   l := ptr_metadata(move a)
         //   b := copy x < copy l
         //   assert(move b == true)
-        [Statement {
-            content: RawStatement::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op))),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assign(
-                    is_in_bounds,
-                    Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
-                ),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: true,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if reborrow == len_op && lt_op2 == len && cond == is_in_bounds =>
-        {
-            rest
-        }
+        [
+            Statement {
+                content: RawStatement::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op))),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        is_in_bounds,
+                        Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
+                    ),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(cond),
+                        expected: true,
+                        ..
+                    }),
+                ..
+            },
+            rest @ ..,
+        ] if reborrow == len_op && lt_op2 == len && cond == is_in_bounds => rest,
 
         // Zero checks for division and remainder. They look like:
         //   b := copy y == const 0
@@ -166,21 +169,26 @@ fn remove_dynamic_checks(
         //   assert(move is_min == false)
         //   ...
         //   res := -x;
-        [Statement {
-            content:
-                RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, y_op, Operand::Const(_zero))),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: false,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if cond == is_zero =>
-        {
+        [
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        is_zero,
+                        Rvalue::BinaryOp(BinOp::Eq, y_op, Operand::Const(_zero)),
+                    ),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(cond),
+                        expected: false,
+                        ..
+                    }),
+                ..
+            },
+            rest @ ..,
+        ] if cond == is_zero => {
             let found = make_binop_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Div(_) | BinOp::Rem(_)) && equiv_op(r, y_op)
             }) || make_unop_overflow_panic(rest, |unop, o| {
@@ -200,32 +208,39 @@ fn remove_dynamic_checks(
         //   assert(move has_overflow == false)
         // Note here we don't need to update the operand to panic, as this was already done
         // by the previous pass for division by zero.
-        [Statement {
-            content: RawStatement::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
-            ..
-        }, Statement {
-            content: RawStatement::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _int_min)),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assign(
-                    has_overflow,
-                    Rvalue::BinaryOp(BinOp::BitAnd, Operand::Move(and_op1), Operand::Move(and_op2)),
-                ),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: false,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if and_op1 == is_neg_1 && and_op2 == is_min && cond == has_overflow =>
-        {
-            rest
-        }
+        [
+            Statement {
+                content:
+                    RawStatement::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
+                ..
+            },
+            Statement {
+                content: RawStatement::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _int_min)),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        has_overflow,
+                        Rvalue::BinaryOp(
+                            BinOp::BitAnd,
+                            Operand::Move(and_op1),
+                            Operand::Move(and_op2),
+                        ),
+                    ),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(cond),
+                        expected: false,
+                        ..
+                    }),
+                ..
+            },
+            rest @ ..,
+        ] if and_op1 == is_neg_1 && and_op2 == is_min && cond == has_overflow => rest,
 
         // Overflow checks for right/left shift. They can look like:
         //   a := y as u32; // or another type
@@ -233,29 +248,33 @@ fn remove_dynamic_checks(
         //   assert(move b == true);
         //   ...
         //   res := x {<<,>>} y;
-        [Statement {
-            content: RawStatement::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), y_op)),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assign(
-                    has_overflow,
-                    Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lhs), Operand::Const(..)),
-                ),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: true,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if cond == has_overflow
-                && lhs == cast
-                && let Some(cast_local) = cast.as_local()
-                && !rest.iter().any(|st| uses_local(st, cast_local)) =>
+        [
+            Statement {
+                content: RawStatement::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), y_op)),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        has_overflow,
+                        Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lhs), Operand::Const(..)),
+                    ),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(cond),
+                        expected: true,
+                        ..
+                    }),
+                ..
+            },
+            rest @ ..,
+        ] if cond == has_overflow
+            && lhs == cast
+            && let Some(cast_local) = cast.as_local()
+            && !rest.iter().any(|st| uses_local(st, cast_local)) =>
         {
             let found = make_binop_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
@@ -278,24 +297,26 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         //   ...
         //   res := a[y];
-        [Statement {
-            content:
-                RawStatement::Assign(
-                    has_overflow,
-                    Rvalue::BinaryOp(BinOp::Lt, y_op, Operand::Const(..)),
-                ),
-            ..
-        }, Statement {
-            content:
-                RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected: true,
-                    ..
-                }),
-            ..
-        }, rest @ ..]
-            if cond == has_overflow =>
-        {
+        [
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        has_overflow,
+                        Rvalue::BinaryOp(BinOp::Lt, y_op, Operand::Const(..)),
+                    ),
+                ..
+            },
+            Statement {
+                content:
+                    RawStatement::Assert(Assert {
+                        cond: Operand::Move(cond),
+                        expected: true,
+                        ..
+                    }),
+                ..
+            },
+            rest @ ..,
+        ] if cond == has_overflow => {
             // look for a shift operation
             let mut found = make_binop_overflow_panic(rest, |bop, _, r| {
                 matches!(bop, BinOp::Shl(_) | BinOp::Shr(_)) && equiv_op(r, y_op)
@@ -334,20 +355,21 @@ fn remove_dynamic_checks(
         //
         // But sometimes, because of constant promotion, we end up with a lone checked operation
         // without assert. In that case we replace it with its wrapping equivalent.
-        [Statement {
-            content:
-                RawStatement::Assign(
-                    result,
-                    Rvalue::BinaryOp(
-                        binop @ (BinOp::AddChecked | BinOp::SubChecked | BinOp::MulChecked),
-                        _,
-                        _,
+        [
+            Statement {
+                content:
+                    RawStatement::Assign(
+                        result,
+                        Rvalue::BinaryOp(
+                            binop @ (BinOp::AddChecked | BinOp::SubChecked | BinOp::MulChecked),
+                            _,
+                            _,
+                        ),
                     ),
-                ),
-            ..
-        }, rest @ ..]
-            if let Some(result_local_id) = result.as_local() =>
-        {
+                ..
+            },
+            rest @ ..,
+        ] if let Some(result_local_id) = result.as_local() => {
             // Look for uses of the overflow boolean.
             let mut overflow_is_used = false;
             for stmt in rest.iter_mut() {
@@ -362,15 +384,18 @@ fn remove_dynamic_checks(
                 });
             }
             // Check if the operation is followed by an assert.
-            let followed_by_assert = if let [Statement {
-                content:
-                    RawStatement::Assert(Assert {
-                        cond: Operand::Move(assert_cond),
-                        expected: false,
-                        ..
-                    }),
-                ..
-            }, ..] = rest
+            let followed_by_assert = if let [
+                Statement {
+                    content:
+                        RawStatement::Assert(Assert {
+                            cond: Operand::Move(assert_cond),
+                            expected: false,
+                            ..
+                        }),
+                    ..
+                },
+                ..,
+            ] = rest
                 && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
                     assert_cond.as_projection()
                 && fid.index() == 1

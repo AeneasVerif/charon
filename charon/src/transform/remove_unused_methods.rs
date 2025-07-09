@@ -1,7 +1,7 @@
 //! Remove the trait/impl methods that were not translated.
 use crate::ast::*;
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 pub struct Transform;
 impl TransformPass for Transform {

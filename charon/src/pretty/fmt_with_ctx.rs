@@ -1,6 +1,6 @@
 //! Utilities for pretty-printing (u)llbc.
 use crate::{
-    common::{repeat_except_first, TAB_INCR},
+    common::{TAB_INCR, repeat_except_first},
     formatter::*,
     gast,
     llbc_ast::{self as llbc, *},

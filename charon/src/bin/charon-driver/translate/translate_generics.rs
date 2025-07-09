@@ -50,11 +50,7 @@ pub(crate) struct BindingLevel {
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
 fn translate_region_name(s: String) -> Option<String> {
-    if s == "'_" {
-        None
-    } else {
-        Some(s)
-    }
+    if s == "'_" { None } else { Some(s) }
 }
 
 impl BindingLevel {
@@ -86,7 +82,7 @@ impl BindingLevel {
         use hax::BoundRegionKind::*;
         let name = match region {
             Anon => None,
-            Named(_, symbol) => translate_region_name(symbol.clone()),
+            NamedAnon(symbol) | Named(_, symbol) => translate_region_name(symbol.clone()),
             ClosureEnv => Some("@env".to_owned()),
         };
         let rid = self

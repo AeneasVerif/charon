@@ -47,11 +47,12 @@ impl GenericParams {
     /// Run some sanity checks.
     pub fn check_consistency(&self) {
         // Sanity check: check the clause ids are consistent.
-        assert!(self
-            .trait_clauses
-            .iter()
-            .enumerate()
-            .all(|(i, c)| c.clause_id.index() == i));
+        assert!(
+            self.trait_clauses
+                .iter()
+                .enumerate()
+                .all(|(i, c)| c.clause_id.index() == i)
+        );
 
         // Sanity check: region names are pairwise distinct (this caused trouble when generating
         // names for the backward functions in Aeneas): at some point, Rustc introduced names equal
@@ -694,11 +695,7 @@ impl Variant {
 
 impl RefKind {
     pub fn mutable(x: bool) -> Self {
-        if x {
-            Self::Mut
-        } else {
-            Self::Shared
-        }
+        if x { Self::Mut } else { Self::Shared }
     }
 }
 

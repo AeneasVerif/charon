@@ -39,9 +39,9 @@ pub mod unbind_item_vars;
 pub mod update_block_indices;
 pub mod utils;
 
+use Pass::*;
 pub use ctx::TransformCtx;
 use ctx::{LlbcPass, TransformPass, UllbcPass};
-use Pass::*;
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
