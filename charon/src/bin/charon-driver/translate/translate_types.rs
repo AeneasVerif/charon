@@ -69,8 +69,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .tcx
                     .def_path_str(x.def_id.as_rust_def_id().unwrap())
             })
-            .collect::<Vec<String>>()
-            .join(" + ");
+            .format(" + ");
         let str = format!(
             "dyn multiple traits is not supported as per Rustc 1.90.0. I.e., (dyn {all}).
             Consider the workaround by defining:
