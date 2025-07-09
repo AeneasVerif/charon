@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use crate::{
     ast::*,
-    errors::{display_unspanned_error, ErrorCtx},
+    errors::{ErrorCtx, display_unspanned_error},
     name_matcher::NamePattern,
     raise_error, register_error,
 };

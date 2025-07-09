@@ -295,7 +295,7 @@ impl<'de> Deserialize<'de> for ScalarValue {
                     _ => {
                         return Err(A::Error::custom(format!(
                             "{k} is not a valid type for a ScalarValue"
-                        )))
+                        )));
                     }
                 })
             }

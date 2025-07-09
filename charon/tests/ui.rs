@@ -19,7 +19,7 @@ use std::{
 };
 use walkdir::{DirEntry, WalkDir};
 
-use util::{compare_or_overwrite, Action};
+use util::{Action, compare_or_overwrite};
 
 mod util;
 
@@ -239,7 +239,9 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 } else {
                     "errored"
                 };
-                bail!("Command: `{cmd_str}`\nCompilation was expected to panic but instead {status}:\n{stderr}");
+                bail!(
+                    "Command: `{cmd_str}`\nCompilation was expected to panic but instead {status}:\n{stderr}"
+                );
             }
             stderr
         }
@@ -250,7 +252,9 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 } else {
                     "panicked"
                 };
-                bail!("Command: `{cmd_str}`\nCompilation was expected to fail but instead {status}:\n{stderr}");
+                bail!(
+                    "Command: `{cmd_str}`\nCompilation was expected to fail but instead {status}:\n{stderr}"
+                );
             }
             stderr
         }

@@ -322,8 +322,7 @@ impl ItemTransCtx<'_, '_> {
         let signature = &args.fn_sig;
         trace!(
             "signature of closure {:?}:\n{:?}",
-            def.def_id,
-            signature.value,
+            def.def_id, signature.value,
         );
 
         let is_unsafe = match signature.value.safety {

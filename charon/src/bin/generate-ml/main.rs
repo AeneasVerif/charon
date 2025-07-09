@@ -8,7 +8,7 @@
 //! crate root. Don't forget to format the output code after regenerating.
 #![feature(if_let_guard)]
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
 use convert_case::{Case, Casing};

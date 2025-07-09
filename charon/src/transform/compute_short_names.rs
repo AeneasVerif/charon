@@ -1,8 +1,8 @@
-use std::collections::{hash_map::Entry, HashMap};
+use std::collections::{HashMap, hash_map::Entry};
 
 use crate::ast::*;
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 enum FoundName {
     Unique(AnyTransId),

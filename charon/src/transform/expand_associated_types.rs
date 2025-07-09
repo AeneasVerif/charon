@@ -82,7 +82,7 @@ use macros::EnumAsGetters;
 
 use crate::{ast::*, formatter::IntoFormatter, ids::Vector, pretty::FmtWithCtx, register_error};
 
-use super::{ctx::TransformPass, utils::GenericsSource, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass, utils::GenericsSource};
 
 /// Represent some `TraitRef`s as paths for easier manipulation.
 use trait_ref_path::*;

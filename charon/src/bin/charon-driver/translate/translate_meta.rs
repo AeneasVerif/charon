@@ -62,7 +62,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // the hash.
                         let mut components_iter = virtual_name.components();
                         if let Some(
-                            [Component::RootDir, Component::Normal(rustc), Component::Normal(hash)],
+                            [
+                                Component::RootDir,
+                                Component::Normal(rustc),
+                                Component::Normal(hash),
+                            ],
                         ) = components_iter.by_ref().array_chunks().next()
                             && rustc.to_str() == Some("rustc")
                             && hash.len() == 40

@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use crate::{ast::*, name_matcher::NamePattern};
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 #[derive(Visitor)]
 struct RemoveLastParamVisitor {

@@ -640,8 +640,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     hax::AggregateKind::Closure(closure_args) => {
                         trace!(
                             "Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}",
-                            closure_args.item.def_id,
-                            closure_args.fn_sig
+                            closure_args.item.def_id, closure_args.fn_sig
                         );
                         let tref = self.translate_closure_type_ref(span, closure_args)?;
                         let akind = AggregateKind::Adt(tref, None, None);

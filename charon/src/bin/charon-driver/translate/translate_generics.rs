@@ -50,11 +50,7 @@ pub(crate) struct BindingLevel {
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
 fn translate_region_name(s: String) -> Option<String> {
-    if s == "'_" {
-        None
-    } else {
-        Some(s)
-    }
+    if s == "'_" { None } else { Some(s) }
 }
 
 impl BindingLevel {

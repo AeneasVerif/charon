@@ -33,7 +33,7 @@ use charon_lib::{
     export, logger,
     options::{self, CliOpts},
     transform::{
-        Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES,
+        FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, Pass, PrintCtxPass,
         SHARED_FINALIZING_PASSES, ULLBC_PASSES,
     },
 };
