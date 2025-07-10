@@ -432,29 +432,25 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tgt_ty = self.translate_ty(span, tgt_ty)?;
 
                 // Translate the operand
-                let (operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
+                let (mut operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
 
-                match cast_kind {
+                let cast_kind = match cast_kind {
                     hax::CastKind::IntToInt
                     | hax::CastKind::IntToFloat
                     | hax::CastKind::FloatToInt
                     | hax::CastKind::FloatToFloat => {
                         let tgt_ty = *tgt_ty.kind().as_literal().unwrap();
                         let src_ty = *src_ty.kind().as_literal().unwrap();
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
-                            operand,
-                        ))
+                        CastKind::Scalar(src_ty, tgt_ty)
                     }
                     hax::CastKind::PtrToPtr
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer, ..)
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer, ..)
                     | hax::CastKind::FnPtrToPtr
                     | hax::CastKind::PointerExposeProvenance
-                    | hax::CastKind::PointerWithExposedProvenance => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::RawPtr(src_ty, tgt_ty)),
-                        operand,
-                    )),
+                    | hax::CastKind::PointerWithExposedProvenance => {
+                        CastKind::RawPtr(src_ty, tgt_ty)
+                    }
                     hax::CastKind::PointerCoercion(
                         hax::PointerCoercion::ClosureFnPointer(_),
                         ..,
@@ -472,27 +468,18 @@ impl BodyTransCtx<'_, '_, '_> {
                         let fn_ptr_bound = fn_ref.map(FunDeclRef::into);
                         let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
-                        let operand = Operand::Const(Box::new(ConstantExpr {
+                        operand = Operand::Const(Box::new(ConstantExpr {
                             value: RawConstantExpr::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
                         }));
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                            operand,
-                        ))
+                        CastKind::FnPtr(src_ty, tgt_ty)
                     }
                     hax::CastKind::PointerCoercion(
                         hax::PointerCoercion::UnsafeFnPointer
                         | hax::PointerCoercion::ReifyFnPointer,
                         ..,
-                    ) => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                        operand,
-                    )),
-                    hax::CastKind::Transmute => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Transmute(src_ty, tgt_ty)),
-                        operand,
-                    )),
+                    ) => CastKind::FnPtr(src_ty, tgt_ty),
+                    hax::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),
                     hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
                         let meta = match meta {
                             hax::UnsizingMetadata::Length(len) => {
@@ -506,11 +493,11 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
-                        let unop =
-                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta));
-                        Ok(Rvalue::UnaryOp(unop, operand))
+                        CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta)
                     }
-                }
+                };
+                let unop = UnOp::Cast(cast_kind);
+                Ok(Rvalue::UnaryOp(unop, operand))
             }
             hax::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
                 self.translate_binaryop_kind(span, *binop)?,
