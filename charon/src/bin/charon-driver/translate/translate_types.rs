@@ -64,9 +64,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         // prepare to print
         // all: Trait1 + Trait 2 + ...
+        let fmt = &self.into_fmt();
         let all = all_ex_trait_ref
             .iter()
-            .map(|x| x.with_ctx(&self.into_fmt()).to_string())
+            .map(|x| x.with_ctx(fmt))
             .format(" + ");
         let str = format!(
             "dyn multiple traits is not supported as per Rustc 1.90.0. I.e., (dyn {all}).

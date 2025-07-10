@@ -220,10 +220,10 @@ impl ItemTransCtx<'_, '_> {
         //   self_ty_align : usize,
         //   ...  -- the method list ]
         // We IGNORE the vacant placeholder & upcast-ptr here!
-        let ptr_size = IntegerTy::size(&IntegerTy::Isize);
+        let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
         let ptr_align = ptr_size;
         let layout = Layout {
-            size: Some(((3 + method_list.len()) * ptr_size) as u64),
+            size: todo!(),
             align: Some(ptr_align as u64),
             discriminant_layout: None,
             uninhabited: false,
