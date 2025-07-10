@@ -600,11 +600,29 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ offset; tag_ty; encoding } : discriminant_layout)
     | _ -> Error "")
 
-and existential_predicate_of_json (ctx : of_json_ctx) (js : json) :
-    (existential_predicate, string) result =
+and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
+    (dyn_predicate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Null -> Ok ()
+    | `Assoc [ ("Trait", trait) ] ->
+        let* trait = trait_decl_ref_of_json ctx trait in
+        Ok (Trait trait)
+    | `Assoc [ ("Projection", projection) ] ->
+        let* projection = dyn_type_constraint_of_json ctx projection in
+        Ok (Projection projection)
+    | _ -> Error "")
+
+and dyn_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
+    (dyn_type_constraint, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [ ("trait_item", trait_item); ("generics", generics); ("term", term) ]
+      ->
+        let* trait_item = trait_item_name_of_json ctx trait_item in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        let* term = ty_of_json ctx term in
+        Ok ({ trait_item; generics; term } : dyn_type_constraint)
     | _ -> Error "")
 
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
@@ -1789,9 +1807,12 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         let* x_0 = trait_ref_of_json ctx x_0 in
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (TTraitType (x_0, x_1))
-    | `Assoc [ ("DynTrait", dyn_trait) ] ->
-        let* dyn_trait = existential_predicate_of_json ctx dyn_trait in
-        Ok (TDynTrait dyn_trait)
+    | `Assoc [ ("DynTrait", `List [ x_0; x_1 ]) ] ->
+        let* x_0 =
+          list_of_json (region_binder_of_json dyn_predicate_of_json) ctx x_0
+        in
+        let* x_1 = region_of_json ctx x_1 in
+        Ok (TDynTrait (x_0, x_1))
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr =
           region_binder_of_json
@@ -1802,6 +1823,7 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
     | `Assoc [ ("FnDef", fn_def) ] ->
         let* fn_def = region_binder_of_json fn_ptr_of_json ctx fn_def in
         Ok (TFnDef fn_def)
+    | `String "ExistentialPlaceholder" -> Ok TExistentialPlaceholder
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TError error)

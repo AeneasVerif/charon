@@ -31,25 +31,25 @@ pub trait Sized<Self>
 }
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 (dyn (exists(TODO)))
+fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn Any<_> + 'static))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,
 {
-    let @0: &'_ (dyn (exists(TODO))); // return
+    let @0: &'_ ((dyn Any<_> + '_)); // return
     let x@1: &'_ (T); // arg #1
-    let @2: &'_ (dyn (exists(TODO))); // anonymous local
-    let @3: &'_ (dyn (exists(TODO))); // anonymous local
+    let @2: &'_ ((dyn Any<_> + '_)); // anonymous local
+    let @3: &'_ ((dyn Any<_> + '_)); // anonymous local
     let @4: &'_ (T); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(x@1)
-    @3 := unsize_cast<&'_ (T), &'_ (dyn (exists(TODO))), @TraitClause1>(move (@4))
+    @3 := unsize_cast<&'_ (T), &'_ ((dyn Any<_> + '_)), @TraitClause1>(move (@4))
     storage_dead(@4)
     @2 := &*(@3)
-    @0 := unsize_cast<&'_ (dyn (exists(TODO))), &'_ (dyn (exists(TODO))), Any<dyn (exists(TODO))>>(move (@2))
+    @0 := unsize_cast<&'_ ((dyn Any<_> + '_)), &'_ ((dyn Any<_> + '_)), Any<(dyn Any<_> + '_)>>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return

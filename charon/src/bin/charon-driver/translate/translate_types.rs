@@ -214,10 +214,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
-                // TODO: we don't translate the predicates yet because our machinery can't handle
-                // it.
-                TyKind::DynTrait(ExistentialPredicate)
+            hax::TyKind::Dynamic(preds, region, ..) => {
+                // This is a robustness check: the current version of Rustc
+                // accepts at most one method-bearing predicate in a trait object.
+                // But things may change in the future.
+                self.check_at_most_one_pred_has_methods(span, &preds)?;
+                let region = self.translate_region(span, region)?;
+                let preds = preds
+                    .iter()
+                    .map(|bound_pred| {
+                        self.translate_region_binder(span, bound_pred, |ctx, x| {
+                            ctx.translate_existential_predicate(span, x)
+                        })
+                    })
+                    .try_collect()?;
+                TyKind::DynTrait(preds, region)
             }
 
             hax::TyKind::Infer(_) => {

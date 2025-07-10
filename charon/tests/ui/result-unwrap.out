@@ -187,7 +187,7 @@ where
     [@TraitClause0]: Drop<Self>,
 
 // Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(TODO)))) -> !
+fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn Debug<_> + '_1))) -> !
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
@@ -199,7 +199,7 @@ where
     let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e@2: E; // local
     let @3: !; // anonymous local
-    let @4: &'_ (dyn (exists(TODO))); // anonymous local
+    let @4: &'_ ((dyn Debug<_> + '_)); // anonymous local
     let @5: &'_ (E); // anonymous local
 
     storage_live(e@2)
@@ -214,7 +214,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO))), @TraitClause2>(copy (@5))
+            @4 := unsize_cast<&'_ (E), &'_ ((dyn Debug<_> + '_)), @TraitClause2>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }

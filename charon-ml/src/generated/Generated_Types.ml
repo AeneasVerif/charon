@@ -249,10 +249,24 @@ and builtin_ty =
   | TSlice  (** Primitive type *)
   | TStr  (** Primitive type *)
 
-(** A predicate of the form [exists<T> where T: Trait].
+(** A predicate in a [dyn Trait] type. These predicates apply to an
+    existentially quentified type, represented as
+    [TyKind::ExistentialPlaceholder]. *)
+and dyn_predicate =
+  | Trait of trait_decl_ref
+      (** Trait predicate that the target type must satisfy. *)
+  | Projection of dyn_type_constraint
+      (** Projection associated to the principal trait of this [dyn Trait]. We
+          don't currently support other projections. *)
 
-    TODO: store something useful here *)
-and existential_predicate = unit
+(** A projection of the form [TraitItemName<GenericArgs> = Ty], where the
+    [TraitItemName] is an associate type of the principal trait of a [dyn Trait]
+    type. *)
+and dyn_type_constraint = {
+  trait_item : trait_item_name;
+  generics : generic_args;
+  term : ty;
+}
 
 and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
 
@@ -445,14 +459,16 @@ and ty =
               type Bar; // type associated to the trait Foo
             }
           ]} *)
-  | TDynTrait of existential_predicate
+  | TDynTrait of dyn_predicate region_binder list * region
       (** [dyn Trait]
 
           This carries an existentially quantified list of predicates, e.g.
           [exists<T> where T: Into<u64>]. The predicate must quantify over a
           single type and no any regions or constants.
 
-          TODO: we don't translate this properly yet. *)
+          Only the first Predicate is used as the *principal* predicate, i.e.
+          the one that corresponds to a vtable. It is uniquely of the
+          [ExistentialTraitRef] type. *)
   | TFnPtr of (ty list * ty) region_binder
       (** Function pointer type. This is a literal pointer to a region of memory
           that contains a callable function. This is a function signature with
@@ -469,6 +485,11 @@ and ty =
           given that the type here is polymorpohic in the late-bound variables
           (those that could appear in a function pointer type like
           [for<'a> fn(&'a u32)]), we need to bind them here. *)
+  | TExistentialPlaceholder
+      (** Fake type used in [dyn Trait] predicates: such a predicate has the
+          [Self] type existentially quantified. In order for generics to stay
+          consistent, we use this placeholder to represent the existentially
+          quantified type. *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
 (** Reference to a type declaration or builtin type. *)

@@ -272,12 +272,6 @@ pub struct GenericParams {
     pub trait_type_constraints: Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
-/// A predicate of the form `exists<T> where T: Trait`.
-///
-/// TODO: store something useful here
-#[derive(Debug, Default, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ExistentialPredicate;
-
 /// Where a given predicate came from.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PredicateOrigin {
@@ -787,8 +781,9 @@ pub enum TyKind {
     /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
     /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
     ///
-    /// TODO: we don't translate this properly yet.
-    DynTrait(ExistentialPredicate),
+    /// Only the first Predicate is used as the *principal* predicate, i.e. the one that
+    /// corresponds to a vtable. It is uniquely of the `ExistentialTraitRef` type.
+    DynTrait(Vec<RegionBinder<DynPredicate>>, Region),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
@@ -803,6 +798,10 @@ pub enum TyKind {
     /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
     /// we need to bind them here.
     FnDef(RegionBinder<FnPtr>),
+    /// Fake type used in `dyn Trait` predicates: such a predicate has the `Self` type
+    /// existentially quantified. In order for generics to stay consistent, we use this placeholder to
+    /// represent the existentially quantified type.
+    ExistentialPlaceholder,
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
@@ -901,4 +900,24 @@ pub struct FunSig {
     pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
+}
+
+/// A projection of the form `TraitItemName<GenericArgs> = Ty`, where the `TraitItemName` is an
+/// associate type of the principal trait of a `dyn Trait` type.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct DynTypeConstraint {
+    pub trait_item: TraitItemName,
+    pub generics: BoxedArgs,
+    pub term: Ty,
+}
+
+/// A predicate in a `dyn Trait` type. These predicates apply to an existentially quentified type,
+/// represented as `TyKind::ExistentialPlaceholder`.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub enum DynPredicate {
+    /// Trait predicate that the target type must satisfy.
+    Trait(TraitDeclRef),
+    /// Projection associated to the principal trait of this `dyn Trait`. We don't currently
+    /// support other projections.
+    Projection(DynTypeConstraint),
 }
