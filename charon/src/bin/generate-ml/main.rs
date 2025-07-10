@@ -176,6 +176,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
         TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
         TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
         TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::UnsignedInteger(_)) => "int_of_json".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut expr = Vec::new();
@@ -219,6 +220,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
         TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
         TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
         TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::UnsignedInteger(_)) => "int".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut args = tref
@@ -1068,7 +1070,7 @@ fn generate_ml(
             "ScalarValue",
             indoc!(
                 r#"
-                `Assoc [ (_, `List [ ty; bi ]) ] ->
+                `Assoc [ (polarity, `List [ ty; bi ]) ] ->
                     let big_int_of_json (js : json) : (big_int, string) result =
                       combine_error_msgs js __FUNCTION__
                         (match js with
@@ -1077,7 +1079,7 @@ fn generate_ml(
                         | _ -> Error "")
                     in
                     let* value = big_int_of_json bi in
-                    let* int_ty = integer_type_of_json ctx ty in
+                    let* int_ty = integer_type_of_json ctx (`Assoc [ (polarity, ty) ]) in
                     let sv = { value; int_ty } in
                     if not (check_scalar_value_in_range !target_ptr_size sv) then
                       Error ("Scalar value not in range: " ^ show_scalar_value sv)

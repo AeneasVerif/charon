@@ -61,33 +61,33 @@ let usize_max ptr_size =
 
 let scalar_min ptr_size (int_ty : integer_type) : big_int =
   match int_ty with
-  | Isize -> isize_min ptr_size
-  | I8 -> i8_min
-  | I16 -> i16_min
-  | I32 -> i32_min
-  | I64 -> i64_min
-  | I128 -> i128_min
-  | Usize -> usize_min ptr_size
-  | U8 -> u8_min
-  | U16 -> u16_min
-  | U32 -> u32_min
-  | U64 -> u64_min
-  | U128 -> u128_min
+  | Signed Isize -> isize_min ptr_size
+  | Signed I8 -> i8_min
+  | Signed I16 -> i16_min
+  | Signed I32 -> i32_min
+  | Signed I64 -> i64_min
+  | Signed I128 -> i128_min
+  | Unsigned Usize -> usize_min ptr_size
+  | Unsigned U8 -> u8_min
+  | Unsigned U16 -> u16_min
+  | Unsigned U32 -> u32_min
+  | Unsigned U64 -> u64_min
+  | Unsigned U128 -> u128_min
 
 let scalar_max ptr_size (int_ty : integer_type) : big_int =
   match int_ty with
-  | Isize -> isize_max ptr_size
-  | I8 -> i8_max
-  | I16 -> i16_max
-  | I32 -> i32_max
-  | I64 -> i64_max
-  | I128 -> i128_max
-  | Usize -> usize_max ptr_size
-  | U8 -> u8_max
-  | U16 -> u16_max
-  | U32 -> u32_max
-  | U64 -> u64_max
-  | U128 -> u128_max
+  | Signed Isize -> isize_max ptr_size
+  | Signed I8 -> i8_max
+  | Signed I16 -> i16_max
+  | Signed I32 -> i32_max
+  | Signed I64 -> i64_max
+  | Signed I128 -> i128_max
+  | Unsigned Usize -> usize_max ptr_size
+  | Unsigned U8 -> u8_max
+  | Unsigned U16 -> u16_max
+  | Unsigned U32 -> u32_max
+  | Unsigned U64 -> u64_max
+  | Unsigned U128 -> u128_max
 
 (** Check that an integer value is in range *)
 let check_int_in_range ptr_size (int_ty : integer_type) (i : big_int) : bool =
@@ -106,5 +106,5 @@ let mk_scalar ptr_size (int_ty : integer_type) (i : big_int) :
 
 let integer_type_is_signed (int_ty : integer_type) : bool =
   match int_ty with
-  | Isize | I8 | I16 | I32 | I64 | I128 -> true
-  | Usize | U8 | U16 | U32 | U64 | U128 -> false
+  | Signed _ -> true
+  | Unsigned _ -> false

@@ -1,6 +1,6 @@
 //! Contains definitions for variables and constant values.
 
-use crate::ast::{FloatTy, IntegerTy};
+use crate::ast::{FloatTy, IntTy, UIntTy};
 use core::hash::Hash;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -68,8 +68,8 @@ pub enum Literal {
 )]
 #[drive(skip)]
 pub enum ScalarValue {
-    Unsigned(IntegerTy, u128),
-    Signed(IntegerTy, i128),
+    Unsigned(UIntTy, u128),
+    Signed(IntTy, i128),
 }
 
 /// This is simlar to the Scalar value above. However, instead of storing
