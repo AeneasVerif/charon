@@ -174,37 +174,6 @@ let is_signed (int_ty : integer_type) =
   | Isize | I8 | I16 | I32 | I64 | I128 -> true
   | Usize | U8 | U16 | U32 | U64 | U128 -> false
 
-let is_in_bounds (int_ty : integer_type) (v : Z.t) =
-  match int_ty with
-  | Isize -> Z.fits_nativeint v
-  | I8 -> (v >= Z.(~- (~$0x80))) && v <= Z.of_int 0x7F
-  | I16 -> (v >= Z.(~- (~$0x8000))) && v <= Z.of_int 0x7FFF
-  | I32 -> Z.fits_int32 v
-  | I64 -> Z.fits_int64 v
-  | Usize -> Z.fits_nativeint_unsigned v
-  | U8 -> v >= Z.zero && v <= Z.of_int 0xFF
-  | U16 -> v >= Z.zero && v <= Z.of_int 0xFFFF
-  | U32 -> Z.fits_int32_unsigned v
-  | U64 -> Z.fits_int64_unsigned v
-  | I128 | U128 ->
-      true (* Only true if derived from anything representable in rust *)
-
-let max_of (int_ty : integer_type) =
-  (* FIXME: Not sure whether all of these values are even representable before being made into Z.t. *)
-  match int_ty with
-  | Isize -> Z.of_nativeint Nativeint.max_int
-  | I8 -> Z.of_int 0x7FF
-  | I16 -> Z.of_int 0x7FFF
-  | I32 -> Z.of_int32 Int32.max_int
-  | I64 -> Z.of_int64 Int64.max_int
-  | I128 -> Z.of_string "0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-  | Usize -> Z.of_nativeint_unsigned Nativeint.minus_one
-  | U8 -> Z.of_int 0xFF
-  | U16 -> Z.of_int 0xFFFF
-  | U32 -> Z.of_int64_unsigned 0xFFFFFFFFL (* Doesn't fit in Int32.t*)
-  | U64 -> Z.of_string "0xFFFFFFFFFFFFFFFF" (* Doesn't fit in Int64.t*)
-  | U128 -> Z.of_string "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-
 (* Make a debruijn variable of index 0 *)
 let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
 
@@ -379,7 +348,7 @@ let generic_params_lengths (args : generic_params) : int * int * int * int =
     If the [tag] does not correspond to any valid discriminant but there is a
     niche, the resulting [VariantId] will be for the untagged
     variant[TagEncoding::Niche::untagged_variant]. *)
-let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
+let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
   let ( let* ) = Option.bind in
   let* layout = ty_decl.layout in
   let* discr_layout = layout.discriminant_layout in
@@ -400,7 +369,7 @@ let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
           | Direct -> begin
               assert (discr_layout.tag_ty = tag.int_ty);
               let discr =
-                if is_in_bounds discr_ty tag.value then
+                if Scalars.check_int_in_range ptr_size discr_ty tag.value then
                   Some { tag with int_ty = discr_ty }
                 else None
               in

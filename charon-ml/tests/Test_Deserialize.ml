@@ -65,6 +65,7 @@ let run_tests (folder : string) : unit =
               | Some v -> "Some " ^ PrintValues.scalar_value_to_string v
               | None -> "None"
             in
+            let ptr_size = m.target_information.target_pointer_size in
             Types.TypeDeclId.Map.iter
               (fun _ (ty_decl : Types.type_decl) ->
                 match ty_decl.Types.layout with
@@ -87,7 +88,8 @@ let run_tests (folder : string) : unit =
                             | None -> () (* Must be the untagged variant *)
                             | Some tag ->
                                 let roundtrip_var_id =
-                                  TypesUtils.get_variant_from_tag ty_decl tag
+                                  TypesUtils.get_variant_from_tag ptr_size
+                                    ty_decl tag
                                 in
                                 assert_eq roundtrip_var_id (Some var_id)
                                   (name ^ " with tag: "

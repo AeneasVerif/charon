@@ -25,6 +25,7 @@ type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
 let path_buf_of_json = string_of_json
+let target_ptr_size = ref 0
 
 let rec ___ = ()
 
@@ -1474,7 +1475,7 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
         let* value = big_int_of_json bi in
         let* int_ty = integer_type_of_json ctx ty in
         let sv = { value; int_ty } in
-        if not (check_scalar_value_in_range sv) then
+        if not (check_scalar_value_in_range !target_ptr_size sv) then
           Error ("Scalar value not in range: " ^ show_scalar_value sv)
         else Ok sv
     | _ -> Error "")

@@ -1079,7 +1079,7 @@ fn generate_ml(
                     let* value = big_int_of_json bi in
                     let* int_ty = integer_type_of_json ctx ty in
                     let sv = { value; int_ty } in
-                    if not (check_scalar_value_in_range sv) then
+                    if not (check_scalar_value_in_range !target_ptr_size sv) then
                       Error ("Scalar value not in range: " ^ show_scalar_value sv)
                     else
                       Ok sv
