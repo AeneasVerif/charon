@@ -1874,7 +1874,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
             UnOp::Neg(mode) => write!(f, "{}.-", mode),
             UnOp::PtrMetadata => write!(f, "ptr_metadata"),
             UnOp::Cast(kind) => write!(f, "{}", kind.with_ctx(ctx)),
-            UnOp::ArrayToSlice(..) => write!(f, "array_to_slice"),
         }
     }
 }

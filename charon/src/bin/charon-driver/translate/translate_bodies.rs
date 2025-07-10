@@ -494,43 +494,20 @@ impl BodyTransCtx<'_, '_, '_> {
                         operand,
                     )),
                     hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
-                        let unop = if let (
-                            TyKind::Ref(_, deref!(TyKind::Adt(tref1)), kind1),
-                            TyKind::Ref(_, deref!(TyKind::Adt(tref2)), kind2),
-                        ) = (src_ty.kind(), tgt_ty.kind())
-                            && matches!(tref1.id, TypeId::Builtin(BuiltinTy::Array))
-                            && matches!(tref2.id, TypeId::Builtin(BuiltinTy::Slice))
-                        {
-                            // In MIR terminology, we go from &[T; l] to &[T] which means we
-                            // effectively "unsize" the type, as `l` no longer appears in the
-                            // destination type. At runtime, the converse happens: the length
-                            // materializes into the fat pointer.
-                            assert!(
-                                tref1.generics.types.elem_count() == 1
-                                    && tref1.generics.const_generics.elem_count() == 1
-                            );
-                            assert!(tref1.generics.types[0] == tref2.generics.types[0]);
-                            assert!(kind1 == kind2);
-                            UnOp::ArrayToSlice(
-                                *kind1,
-                                tref1.generics.types[0].clone(),
-                                tref1.generics.const_generics[0].clone(),
-                            )
-                        } else {
-                            let meta = match meta {
-                                hax::UnsizingMetadata::Length(len) => {
-                                    let len =
-                                        self.translate_constant_expr_to_const_generic(span, len)?;
-                                    UnsizingMetadata::Length(len)
-                                }
-                                hax::UnsizingMetadata::VTablePtr(impl_expr) => {
-                                    let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                    UnsizingMetadata::VTablePtr(tref)
-                                }
-                                hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
-                            };
-                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta))
+                        let meta = match meta {
+                            hax::UnsizingMetadata::Length(len) => {
+                                let len =
+                                    self.translate_constant_expr_to_const_generic(span, len)?;
+                                UnsizingMetadata::Length(len)
+                            }
+                            hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                                UnsizingMetadata::VTablePtr(tref)
+                            }
+                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
+                        let unop =
+                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta));
                         Ok(Rvalue::UnaryOp(unop, operand))
                     }
                 }

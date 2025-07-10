@@ -1918,11 +1918,6 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
     | `Assoc [ ("Cast", cast) ] ->
         let* cast = cast_kind_of_json ctx cast in
         Ok (Cast cast)
-    | `Assoc [ ("ArrayToSlice", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = ref_kind_of_json ctx x_0 in
-        let* x_1 = ty_of_json ctx x_1 in
-        let* x_2 = const_generic_of_json ctx x_2 in
-        Ok (ArrayToSlice (x_0, x_1, x_2))
     | _ -> Error "")
 
 and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :

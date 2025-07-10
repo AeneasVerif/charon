@@ -156,14 +156,6 @@ pub enum UnOp {
     PtrMetadata,
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
-    /// Coercion from array (i.e., [T; N]) to slice.
-    ///
-    /// **Remark:** We introduce this unop when translating from MIR, **then transform**
-    /// it to a function call in a micro pass. The type and the scalar value are not
-    /// *necessary* as we can retrieve them from the context, but storing them here is
-    /// very useful. The [RefKind] argument states whethere we operate on a mutable
-    /// or a shared borrow to an array.
-    ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
 /// Nullary operation
