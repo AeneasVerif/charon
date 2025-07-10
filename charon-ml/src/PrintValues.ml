@@ -34,7 +34,9 @@ let literal_type_to_string (ty : literal_type) : string =
 let big_int_to_string (bi : big_int) : string = Z.to_string bi
 
 let scalar_value_to_string (sv : scalar_value) : string =
-  big_int_to_string sv.value ^ ": " ^ integer_type_to_string sv.int_ty
+  big_int_to_string (Scalars.get_val sv)
+  ^ ": "
+  ^ integer_type_to_string (Scalars.get_ty sv)
 
 let float_value_to_string (fv : float_value) : string =
   fv.float_value ^ ": " ^ float_type_to_string fv.float_ty

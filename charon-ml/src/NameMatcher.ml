@@ -428,7 +428,7 @@ let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
 
 let match_literal (pl : literal) (l : Values.literal) : bool =
   match (pl, l) with
-  | LInt pv, VScalar v -> pv = v.value
+  | LInt pv, VScalar v -> pv = Scalars.get_val v
   | LBool pv, VBool v -> pv = v
   | LChar pv, VChar v -> Uchar.of_char pv = v
   | _ -> false
@@ -900,7 +900,7 @@ let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
 
 let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
   match lit with
-  | VScalar sv -> LInt sv.value
+  | VScalar sv -> LInt (Scalars.get_val sv)
   | VBool v -> LBool v
   | VChar v when Uchar.is_char v -> LChar (Uchar.to_char v)
   | VChar _ ->

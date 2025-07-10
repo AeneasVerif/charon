@@ -34,13 +34,12 @@ and literal_type =
   | TChar
 
 (** A scalar value. *)
-and scalar_value = {
+and scalar_value =
   (* Note that we use unbounded integers everywhere.
    We then harcode the boundaries for the different types.
  *)
-  value : big_int;
-  int_ty : integer_type;
-}
+  | SignedScalar of big_int * int_type
+  | UnsignedScalar of big_int * u_int_type
 
 and u_int_type = Usize | U8 | U16 | U32 | U64 | U128
 [@@deriving

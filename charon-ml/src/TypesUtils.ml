@@ -353,7 +353,7 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
       match variants with
       | [] -> None
       | hd_variant :: _ -> (
-          let discr_ty = hd_variant.discriminant.int_ty in
+          let discr_ty = Scalars.get_ty hd_variant.discriminant in
           let rec find_mapi f i = function
             | [] -> None
             | v :: tl ->
@@ -363,11 +363,13 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
 
           match discr_layout.encoding with
           | Direct -> begin
-              assert (discr_layout.tag_ty = tag.int_ty);
+              assert (discr_layout.tag_ty = Scalars.get_ty tag);
               let discr =
-                if Scalars.check_int_in_range ptr_size discr_ty tag.value then
-                  Some { tag with int_ty = discr_ty }
-                else None
+                match
+                  Scalars.mk_scalar ptr_size discr_ty (Scalars.get_val tag)
+                with
+                | Ok sv -> Some sv
+                | Error _ -> None
               in
               find_mapi (fun i v -> Some v.discriminant = discr) 0 variants
             end
