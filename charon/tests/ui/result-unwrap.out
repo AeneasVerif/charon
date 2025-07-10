@@ -224,7 +224,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(copy (@5))
+            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO))), @TraitClause2>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }

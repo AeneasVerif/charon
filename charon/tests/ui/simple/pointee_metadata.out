@@ -250,7 +250,7 @@ fn slice_metadata()
     @5 := [const (0 : u32), const (1 : u32)]
     @4 := &@5
     @3 := &raw const *(@4)
-    @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>>(move (@3))
+    @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>, 2 : usize>(move (@3))
     storage_dead(@3)
     @1 := to_raw_parts<Slice<u32>>(move (@2))
     storage_dead(@2)

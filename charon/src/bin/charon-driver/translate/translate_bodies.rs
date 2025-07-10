@@ -493,7 +493,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         UnOp::Cast(CastKind::Transmute(src_ty, tgt_ty)),
                         operand,
                     )),
-                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize, ..) => {
+                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
                         let unop = if let (
                             TyKind::Ref(_, deref!(TyKind::Adt(tref1)), kind1),
                             TyKind::Ref(_, deref!(TyKind::Adt(tref2)), kind2),
@@ -517,7 +517,19 @@ impl BodyTransCtx<'_, '_, '_> {
                                 tref1.generics.const_generics[0].clone(),
                             )
                         } else {
-                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone()))
+                            let meta = match meta {
+                                hax::UnsizingMetadata::Length(len) => {
+                                    let len =
+                                        self.translate_constant_expr_to_const_generic(span, len)?;
+                                    UnsizingMetadata::Length(len)
+                                }
+                                hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                                    let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                                    UnsizingMetadata::VTablePtr(tref)
+                                }
+                                hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+                            };
+                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta))
                         };
                         Ok(Rvalue::UnaryOp(unop, operand))
                     }

@@ -24,6 +24,37 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Formatter
+#[lang_item("Formatter")]
+pub opaque type Formatter<'a>
+where
+    'a : 'a,
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::fmt::Display
+#[lang_item("Display")]
+pub trait Display<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+}
+
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Display<Self>,
+
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -115,6 +146,14 @@ impl Clone for String {
     fn clone<'_0> = {impl Clone for String}::clone<'_0_0>
 }
 
+// Full name: alloc::string::{impl Display for String}::fmt
+pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: alloc::string::{impl Display for String}
+impl Display for String {
+    fn fmt<'_0, '_1, '_2> = {impl Display for String}::fmt<'_0_0, '_0_1, '_0_2>
+}
+
 // Full name: test_crate::foo
 fn foo()
 {
@@ -158,7 +197,7 @@ fn foo()
     storage_live(@7)
     @7 := copy (array@1)
     @6 := @BoxNew<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@7))
-    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]>(move (@6))
+    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>], 2 : usize>(move (@6))
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]] @6
     storage_dead(@7)
     storage_dead(@6)
@@ -182,7 +221,7 @@ fn foo()
     storage_live(@14)
     @14 := &string@11
     @13 := &*(@14)
-    @12 := unsize_cast<&'_ (String), &'_ (dyn (exists(TODO)))>(move (@13))
+    @12 := unsize_cast<&'_ (String), &'_ (dyn (exists(TODO))), {impl Display for String}>(move (@13))
     storage_dead(@13)
     storage_dead(@14)
     storage_dead(@12)
@@ -194,7 +233,7 @@ fn foo()
     @17 := {impl Clone for String}::clone<'_>(move (@18))
     storage_dead(@18)
     @16 := @BoxNew<String>[Sized<String>](move (@17))
-    @15 := unsize_cast<alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>], alloc::boxed::Box<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>]>(move (@16))
+    @15 := unsize_cast<alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>], alloc::boxed::Box<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>], {impl Display for String}>(move (@16))
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[MetaSized<String>, Sized<Global>]] @16
     storage_dead(@17)
     storage_dead(@16)

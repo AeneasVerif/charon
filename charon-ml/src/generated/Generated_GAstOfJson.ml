@@ -279,10 +279,11 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
         Ok (CastFnPtr (x_0, x_1))
-    | `Assoc [ ("Unsize", `List [ x_0; x_1 ]) ] ->
+    | `Assoc [ ("Unsize", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
-        Ok (CastUnsize (x_0, x_1))
+        let* x_2 = unsizing_metadata_of_json ctx x_2 in
+        Ok (CastUnsize (x_0, x_1, x_2))
     | `Assoc [ ("Transmute", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
@@ -1922,6 +1923,19 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
         let* x_1 = ty_of_json ctx x_1 in
         let* x_2 = const_generic_of_json ctx x_2 in
         Ok (ArrayToSlice (x_0, x_1, x_2))
+    | _ -> Error "")
+
+and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
+    (unsizing_metadata, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Length", length) ] ->
+        let* length = const_generic_of_json ctx length in
+        Ok (MetaLength length)
+    | `Assoc [ ("VTablePtr", v_table_ptr) ] ->
+        let* v_table_ptr = trait_ref_of_json ctx v_table_ptr in
+        Ok (MetaVTablePtr v_table_ptr)
+    | `String "Unknown" -> Ok MetaUnknown
     | _ -> Error "")
 
 and v_table_of_json (ctx : of_json_ctx) (js : json) : (v_table, string) result =

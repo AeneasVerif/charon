@@ -128,7 +128,7 @@ and cast_kind =
           support conversions with Char. *)
   | CastRawPtr of ty * ty
   | CastFnPtr of ty * ty
-  | CastUnsize of ty * ty
+  | CastUnsize of ty * ty * unsizing_metadata
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
           coercions, behind a pointer (reference, [Box], or other type that
@@ -362,6 +362,11 @@ and unop =
           context, but storing them here is very useful. The [RefKind] argument
           states whethere we operate on a mutable or a shared borrow to an
           array. *)
+
+and unsizing_metadata =
+  | MetaLength of const_generic
+  | MetaVTablePtr of trait_ref
+  | MetaUnknown
 [@@deriving
   show,
   eq,

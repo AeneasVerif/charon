@@ -73,7 +73,7 @@ and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
       ^ ">"
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) | CastTransmute (src, tgt) ->
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
-  | CastUnsize (src, tgt) ->
+  | CastUnsize (src, tgt, _) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
 and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
