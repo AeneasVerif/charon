@@ -440,6 +440,25 @@ impl IntegerTy {
             _ => *self,
         }
     }
+
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            IntegerTy::Isize => ptr_size as usize,
+            IntegerTy::I8 => size_of::<i8>(),
+            IntegerTy::I16 => size_of::<i16>(),
+            IntegerTy::I32 => size_of::<i32>(),
+            IntegerTy::I64 => size_of::<i64>(),
+            IntegerTy::I128 => size_of::<i128>(),
+            IntegerTy::Usize => ptr_size as usize,
+            IntegerTy::U8 => size_of::<u8>(),
+            IntegerTy::U16 => size_of::<u16>(),
+            IntegerTy::U32 => size_of::<u32>(),
+            IntegerTy::U64 => size_of::<u64>(),
+            IntegerTy::U128 => size_of::<u128>(),
+        }
+    }
 }
 
 /// A value of type `T` bound by the generic parameters of item

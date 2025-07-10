@@ -221,6 +221,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
                 let subplace = self.translate_place(span, hax_subplace)?;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
                 let place = match kind {
                     hax::ProjectionElem::Deref => subplace.project(ProjectionElem::Deref, ty),
                     hax::ProjectionElem::Field(field_kind) => {
@@ -306,7 +307,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         min_length: _,
                     } => {
                         let offset = Operand::Const(Box::new(
-                            ScalarValue::from_uint(IntegerTy::Usize, offset as u128)
+                            ScalarValue::from_uint(ptr_size, IntegerTy::Usize, offset as u128)
                                 .unwrap()
                                 .to_constant(),
                         ));
@@ -320,12 +321,12 @@ impl BodyTransCtx<'_, '_, '_> {
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
                         let from = Operand::Const(Box::new(
-                            ScalarValue::from_uint(IntegerTy::Usize, from as u128)
+                            ScalarValue::from_uint(ptr_size, IntegerTy::Usize, from as u128)
                                 .unwrap()
                                 .to_constant(),
                         ));
                         let to = Operand::Const(Box::new(
-                            ScalarValue::from_uint(IntegerTy::Usize, to as u128)
+                            ScalarValue::from_uint(ptr_size, IntegerTy::Usize, to as u128)
                                 .unwrap()
                                 .to_constant(),
                         ));
@@ -581,13 +582,18 @@ impl BodyTransCtx<'_, '_, '_> {
                     .iter()
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
 
                 match aggregate_kind {
                     hax::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ty(span, ty)?;
                         let cg = ConstGeneric::Value(Literal::Scalar(
-                            ScalarValue::from_uint(IntegerTy::Usize, operands_t.len() as u128)
-                                .unwrap(),
+                            ScalarValue::from_uint(
+                                ptr_size,
+                                IntegerTy::Usize,
+                                operands_t.len() as u128,
+                            )
+                            .unwrap(),
                         ));
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Array(t_ty, cg),

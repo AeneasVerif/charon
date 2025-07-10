@@ -8,11 +8,72 @@ pub enum ScalarError {
     IncorrectSign,
     /// Out of bounds scalar
     OutOfBounds,
+    UnsupportedPtrSize,
 }
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
 
+macro_rules! from_ne_bytes {
+    ($m:ident, $b:ident, [$(($i:ident, $s:ident, $n_ty:ty, $t:ty)),*]) => {
+        match $m {
+            $(
+                IntegerTy::$i => {
+                    let n = size_of::<$n_ty>();
+                    let b: [u8; _] = if cfg!(target_endian = "big"){
+                        $b[16-n..16].try_into().unwrap()
+                    } else {
+                        $b[0..n].try_into().unwrap()
+                    };
+                    ScalarValue::$s($m,<$n_ty>::from_ne_bytes(b) as $t)
+                }
+            )*
+        }
+    }
+}
+
 impl ScalarValue {
+    fn ptr_size_max(ptr_size: ByteCount, signed: bool) -> ScalarResult<u128> {
+        match ptr_size {
+            2 => Ok(if signed {
+                i16::MAX as u128
+            } else {
+                u16::MAX as u128
+            }),
+            4 => Ok(if signed {
+                i32::MAX as u128
+            } else {
+                u32::MAX as u128
+            }),
+            8 => Ok(if signed {
+                i64::MAX as u128
+            } else {
+                u64::MAX as u128
+            }),
+            _ => Err(ScalarError::UnsupportedPtrSize),
+        }
+    }
+
+    fn ptr_size_min(ptr_size: ByteCount, signed: bool) -> ScalarResult<i128> {
+        match ptr_size {
+            2 => Ok(if signed {
+                i16::MIN as i128
+            } else {
+                u16::MIN as i128
+            }),
+            4 => Ok(if signed {
+                i32::MIN as i128
+            } else {
+                u32::MIN as i128
+            }),
+            8 => Ok(if signed {
+                i64::MIN as i128
+            } else {
+                u64::MIN as i128
+            }),
+            _ => Err(ScalarError::UnsupportedPtrSize),
+        }
+    }
+
     pub fn get_integer_ty(&self) -> IntegerTy {
         match self {
             ScalarValue::Signed(ty, _) | ScalarValue::Unsigned(ty, _) => *ty,
@@ -37,9 +98,9 @@ impl ScalarValue {
         }
     }
 
-    pub fn uint_is_in_bounds(ty: IntegerTy, v: u128) -> bool {
+    pub fn uint_is_in_bounds(ptr_size: ByteCount, ty: IntegerTy, v: u128) -> bool {
         match ty {
-            IntegerTy::Usize => v <= (usize::MAX as u128),
+            IntegerTy::Usize => v <= Self::ptr_size_max(ptr_size, false).unwrap(),
             IntegerTy::U8 => v <= (u8::MAX as u128),
             IntegerTy::U16 => v <= (u16::MAX as u128),
             IntegerTy::U32 => v <= (u32::MAX as u128),
@@ -61,8 +122,8 @@ impl ScalarValue {
         }
     }
 
-    pub fn from_uint(ty: IntegerTy, v: u128) -> ScalarResult<ScalarValue> {
-        if !ScalarValue::uint_is_in_bounds(ty, v) {
+    pub fn from_uint(ptr_size: ByteCount, ty: IntegerTy, v: u128) -> ScalarResult<ScalarValue> {
+        if !ScalarValue::uint_is_in_bounds(ptr_size, ty, v) {
             trace!("Not in bounds for {:?}: {}", ty, v);
             Err(ScalarError::OutOfBounds)
         } else {
@@ -80,9 +141,12 @@ impl ScalarValue {
         }
     }
 
-    pub fn int_is_in_bounds(ty: IntegerTy, v: i128) -> bool {
+    pub fn int_is_in_bounds(ptr_size: ByteCount, ty: IntegerTy, v: i128) -> bool {
         match ty {
-            IntegerTy::Isize => v >= (isize::MIN as i128) && v <= (isize::MAX as i128),
+            IntegerTy::Isize => {
+                v >= Self::ptr_size_min(ptr_size, true).unwrap()
+                    && v <= Self::ptr_size_max(ptr_size, true).unwrap() as i128
+            }
             IntegerTy::I8 => v >= (i8::MIN as i128) && v <= (i8::MAX as i128),
             IntegerTy::I16 => v >= (i16::MIN as i128) && v <= (i16::MAX as i128),
             IntegerTy::I32 => v >= (i32::MIN as i128) && v <= (i32::MAX as i128),
@@ -113,11 +177,24 @@ impl ScalarValue {
     }
 
     pub fn from_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
-        if ty.is_signed() {
-            Self::Signed(ty, i128::from_ne_bytes(bytes))
-        } else {
-            Self::Unsigned(ty, u128::from_ne_bytes(bytes))
-        }
+        from_ne_bytes!(
+            ty,
+            bytes,
+            [
+                (Isize, Signed, isize, i128),
+                (I8, Signed, i8, i128),
+                (I16, Signed, i16, i128),
+                (I32, Signed, i32, i128),
+                (I64, Signed, i64, i128),
+                (I128, Signed, i128, i128),
+                (Usize, Unsigned, usize, u128),
+                (U8, Unsigned, u8, u128),
+                (U16, Unsigned, u16, u128),
+                (U32, Unsigned, u32, u128),
+                (U64, Unsigned, u64, u128),
+                (U128, Unsigned, u128, u128)
+            ]
+        )
     }
 
     pub fn from_bits(ty: IntegerTy, bits: u128) -> Self {
@@ -128,8 +205,8 @@ impl ScalarValue {
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
     /// bits (see [ScalarValue::from_le_bytes]).
-    pub fn from_int(ty: IntegerTy, v: i128) -> ScalarResult<ScalarValue> {
-        if !ScalarValue::int_is_in_bounds(ty, v) {
+    pub fn from_int(ptr_size: ByteCount, ty: IntegerTy, v: i128) -> ScalarResult<ScalarValue> {
+        if !ScalarValue::int_is_in_bounds(ptr_size, ty, v) {
             Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_int(ty, v))
@@ -224,5 +301,26 @@ impl<'de> Deserialize<'de> for ScalarValue {
             }
         }
         deserializer.deserialize_map(Visitor)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_big_endian_scalars() -> ScalarResult<()> {
+        let u128 = 0x12345678901234567890123456789012u128;
+        let ne_bytes = u128.to_ne_bytes();
+
+        let ne_scalar = ScalarValue::from_bytes(IntegerTy::U128, ne_bytes);
+        assert_eq!(ne_scalar, ScalarValue::Unsigned(IntegerTy::U128, u128));
+
+        let i64 = 0x1234567890123456i64;
+        let ne_bytes = (i64 as i128).to_ne_bytes();
+        let ne_scalar = ScalarValue::from_bytes(IntegerTy::I64, ne_bytes);
+        assert_eq!(ne_scalar, ScalarValue::Signed(IntegerTy::I64, i64 as i128));
+
+        Ok(())
     }
 }

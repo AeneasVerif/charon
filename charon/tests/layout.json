@@ -47,14 +47,20 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U8": "0"
+          "Unsigned": [
+            "U8",
+            "0"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U8": "1"
+          "Unsigned": [
+            "U8",
+            "1"
+          ]
         }
       }
     ]
@@ -73,7 +79,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "0"
+          "Unsigned": [
+            "U32",
+            "0"
+          ]
         }
       },
       {
@@ -83,7 +92,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "U32": "1"
+          "Unsigned": [
+            "U32",
+            "1"
+          ]
         }
       },
       {
@@ -93,7 +105,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "U32": "2"
+          "Unsigned": [
+            "U32",
+            "2"
+          ]
         }
       }
     ]
@@ -116,7 +131,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "0"
+          "Unsigned": [
+            "U32",
+            "0"
+          ]
         }
       },
       {
@@ -248,7 +266,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "U32": "1"
+          "Unsigned": [
+            "U32",
+            "1"
+          ]
         }
       }
     ]
@@ -286,7 +307,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "Isize": "0"
+          "Signed": [
+            "Isize",
+            "0"
+          ]
         }
       },
       {
@@ -330,14 +354,20 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "1114112"
+          "Unsigned": [
+            "U32",
+            "1114112"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "1114113"
+          "Unsigned": [
+            "U32",
+            "1114113"
+          ]
         }
       }
     ]
@@ -358,7 +388,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "I32": "12"
+          "Signed": [
+            "I32",
+            "12"
+          ]
         }
       },
       {
@@ -367,14 +400,20 @@
         ],
         "uninhabited": false,
         "tag": {
-          "I32": "43"
+          "Signed": [
+            "I32",
+            "43"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I32": "123456"
+          "Signed": [
+            "I32",
+            "123456"
+          ]
         }
       }
     ]
@@ -393,21 +432,30 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I8": "-1"
+          "Signed": [
+            "I8",
+            "-1"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I8": "0"
+          "Signed": [
+            "I8",
+            "0"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I8": "1"
+          "Signed": [
+            "I8",
+            "1"
+          ]
         }
       }
     ]
@@ -430,7 +478,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "0"
+          "Unsigned": [
+            "U32",
+            "0"
+          ]
         }
       },
       {
@@ -468,7 +519,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "Isize": "0"
+          "Signed": [
+            "Isize",
+            "0"
+          ]
         }
       },
       {

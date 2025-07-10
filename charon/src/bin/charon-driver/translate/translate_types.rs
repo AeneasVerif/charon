@@ -476,13 +476,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .as_ref()
                     .expect("No discriminant layout for enum?")
                     .tag_ty;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
 
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let tag = if variant_layout.is_uninhabited() {
                         None
                     } else {
                         tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
-                            .map(|s| ScalarValue::from_bits(tag_ty, s.to_bits(s.size())))
+                            .map(|s| {
+                                if tag_ty.is_signed() {
+                                    ScalarValue::from_int(ptr_size, tag_ty, s.to_int(tag_size))
+                                        .unwrap()
+                                } else {
+                                    ScalarValue::from_uint(ptr_size, tag_ty, s.to_uint(tag_size))
+                                        .unwrap()
+                                }
+                            })
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tag));
                 }
