@@ -47,6 +47,7 @@ jobs:
   # from the main branch, but this can be overridden with a command in the PR
   # description.
   select-dep-versions:
+    needs: [charon]
     runs-on: [self-hosted, linux, nix]
     env:
       CI_EVENT: ${{ github.event_name }}

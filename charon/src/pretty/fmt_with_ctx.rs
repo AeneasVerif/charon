@@ -262,13 +262,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
             CastKind::FnPtr(src, tgt) | CastKind::RawPtr(src, tgt) => {
                 write!(f, "cast<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
             }
-            CastKind::Unsize(src, tgt) => {
+            CastKind::Unsize(src, tgt, meta) => {
                 write!(
                     f,
-                    "unsize_cast<{}, {}>",
+                    "unsize_cast<{}, {}",
                     src.with_ctx(ctx),
-                    tgt.with_ctx(ctx)
-                )
+                    tgt.with_ctx(ctx),
+                )?;
+                match meta {
+                    UnsizingMetadata::Length(len) => write!(f, ", {}", len.with_ctx(ctx))?,
+                    UnsizingMetadata::VTablePtr(tref) => write!(f, ", {}", tref.with_ctx(ctx))?,
+                    UnsizingMetadata::Unknown => {}
+                }
+                write!(f, ">")
             }
             CastKind::Transmute(src, tgt) => {
                 write!(f, "transmute<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
@@ -1868,7 +1874,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
             UnOp::Neg(mode) => write!(f, "{}.-", mode),
             UnOp::PtrMetadata => write!(f, "ptr_metadata"),
             UnOp::Cast(kind) => write!(f, "{}", kind.with_ctx(ctx)),
-            UnOp::ArrayToSlice(..) => write!(f, "array_to_slice"),
         }
     }
 }

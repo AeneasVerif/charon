@@ -432,29 +432,25 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tgt_ty = self.translate_ty(span, tgt_ty)?;
 
                 // Translate the operand
-                let (operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
+                let (mut operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
 
-                match cast_kind {
+                let cast_kind = match cast_kind {
                     hax::CastKind::IntToInt
                     | hax::CastKind::IntToFloat
                     | hax::CastKind::FloatToInt
                     | hax::CastKind::FloatToFloat => {
                         let tgt_ty = *tgt_ty.kind().as_literal().unwrap();
                         let src_ty = *src_ty.kind().as_literal().unwrap();
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
-                            operand,
-                        ))
+                        CastKind::Scalar(src_ty, tgt_ty)
                     }
                     hax::CastKind::PtrToPtr
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer, ..)
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer, ..)
                     | hax::CastKind::FnPtrToPtr
                     | hax::CastKind::PointerExposeProvenance
-                    | hax::CastKind::PointerWithExposedProvenance => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::RawPtr(src_ty, tgt_ty)),
-                        operand,
-                    )),
+                    | hax::CastKind::PointerWithExposedProvenance => {
+                        CastKind::RawPtr(src_ty, tgt_ty)
+                    }
                     hax::CastKind::PointerCoercion(
                         hax::PointerCoercion::ClosureFnPointer(_),
                         ..,
@@ -472,56 +468,36 @@ impl BodyTransCtx<'_, '_, '_> {
                         let fn_ptr_bound = fn_ref.map(FunDeclRef::into);
                         let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
-                        let operand = Operand::Const(Box::new(ConstantExpr {
+                        operand = Operand::Const(Box::new(ConstantExpr {
                             value: RawConstantExpr::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
                         }));
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                            operand,
-                        ))
+                        CastKind::FnPtr(src_ty, tgt_ty)
                     }
                     hax::CastKind::PointerCoercion(
                         hax::PointerCoercion::UnsafeFnPointer
                         | hax::PointerCoercion::ReifyFnPointer,
                         ..,
-                    ) => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                        operand,
-                    )),
-                    hax::CastKind::Transmute => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Transmute(src_ty, tgt_ty)),
-                        operand,
-                    )),
-                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize, ..) => {
-                        let unop = if let (
-                            TyKind::Ref(_, deref!(TyKind::Adt(tref1)), kind1),
-                            TyKind::Ref(_, deref!(TyKind::Adt(tref2)), kind2),
-                        ) = (src_ty.kind(), tgt_ty.kind())
-                            && matches!(tref1.id, TypeId::Builtin(BuiltinTy::Array))
-                            && matches!(tref2.id, TypeId::Builtin(BuiltinTy::Slice))
-                        {
-                            // In MIR terminology, we go from &[T; l] to &[T] which means we
-                            // effectively "unsize" the type, as `l` no longer appears in the
-                            // destination type. At runtime, the converse happens: the length
-                            // materializes into the fat pointer.
-                            assert!(
-                                tref1.generics.types.elem_count() == 1
-                                    && tref1.generics.const_generics.elem_count() == 1
-                            );
-                            assert!(tref1.generics.types[0] == tref2.generics.types[0]);
-                            assert!(kind1 == kind2);
-                            UnOp::ArrayToSlice(
-                                *kind1,
-                                tref1.generics.types[0].clone(),
-                                tref1.generics.const_generics[0].clone(),
-                            )
-                        } else {
-                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone()))
+                    ) => CastKind::FnPtr(src_ty, tgt_ty),
+                    hax::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),
+                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
+                        let meta = match meta {
+                            hax::UnsizingMetadata::Length(len) => {
+                                let len =
+                                    self.translate_constant_expr_to_const_generic(span, len)?;
+                                UnsizingMetadata::Length(len)
+                            }
+                            hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                                UnsizingMetadata::VTablePtr(tref)
+                            }
+                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
-                        Ok(Rvalue::UnaryOp(unop, operand))
+                        CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta)
                     }
-                }
+                };
+                let unop = UnOp::Cast(cast_kind);
+                Ok(Rvalue::UnaryOp(unop, operand))
             }
             hax::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
                 self.translate_binaryop_kind(span, *binop)?,
