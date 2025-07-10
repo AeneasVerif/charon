@@ -26,5 +26,6 @@ type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
 let path_buf_of_json = string_of_json
+let target_ptr_size = ref 0
 
 (* __REPLACE0__ *)
