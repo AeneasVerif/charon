@@ -2,10 +2,13 @@ use std::mem;
 use std::ops::ControlFlow::Continue;
 
 use crate::translate::translate_bodies::BodyTransCtx;
+use crate::translate::translate_types;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
@@ -148,99 +151,159 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    /// Returns the list of methods in the vtable for the given trait.
-    /// Just the methods! Ignoring `Vacant` and `TraitVPtr`.
-    /// Also, the types of the methods are already for the Shim functions,
-    /// i.e. the receiver of the functions are turned to the corresponding erased version:
-    /// - `&self` becomes `*()`
-    /// - `&mut self` becomes `*mut ()`
-    /// - `self : Box<Self>` becomes `Box<()>`
-    /// - `self : Arc<Self>` becomes `Arc<()>`
-    /// - `self : Rc<Self>` becomes `Rc<()>`
-    /// - `self : Pin<P>` becomes `Pin<P'>` where `P'` is recursively translated for the erased type.
-    /// See, e.g.,
-    ///     https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility
-    /// for more details
-    fn lookup_vtable_method_list(&self, trait_def_id: &hax::DefId) -> Vec<(String, Ty)> {
-        // perform a DFS ourselves to find the methods in the vtable
-        // as we only have the `hax::DefId` of the trait, but no `TraitRef` to call Rustc
-        let mut vec = Vec::new();
-        let call_back = |trait_ref: &rustc_middle::ty::TraitRef| {
-            vec.append(&mut self.lookup_vtable_methods_of_one_trait_segment(trait_ref));
-        };
-        self.prepare_trait_segments(trait_def_id, call_back);
-        vec
+    // /// Returns the list of methods in the vtable for the given trait.
+    // /// Just the methods! Ignoring `Vacant` and `TraitVPtr`.
+    // /// Also, the types of the methods are already for the Shim functions,
+    // /// i.e. the receiver of the functions are turned to the corresponding erased version:
+    // /// - `&self` becomes `*()`
+    // /// - `&mut self` becomes `*mut ()`
+    // /// - `self : Box<Self>` becomes `Box<()>`
+    // /// - `self : Arc<Self>` becomes `Arc<()>`
+    // /// - `self : Rc<Self>` becomes `Rc<()>`
+    // /// - `self : Pin<P>` becomes `Pin<P'>` where `P'` is recursively translated for the erased type.
+    // /// See, e.g.,
+    // ///     https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility
+    // /// for more details
+    // fn lookup_vtable_method_list(&self, trait_def_id: &hax::DefId) -> Vec<(String, Ty)> {
+    //     // perform a DFS ourselves to find the methods in the vtable
+    //     // as we only have the `hax::DefId` of the trait, but no `TraitRef` to call Rustc
+    //     let mut vec = Vec::new();
+    //     let call_back = |trait_ref: &rustc_middle::ty::TraitRef| {
+    //         vec.append(&mut self.lookup_vtable_methods_of_one_trait_segment(trait_ref));
+    //     };
+    //     self.prepare_trait_segments(trait_def_id, call_back);
+    //     vec
+    // }
+
+    // /// Call `rustc_trait_selection::traits::vtable::prepare_vtable_segments`
+    // /// to get the correct order of the trait segments
+    // /// The `TraitRef` to be supplied to the `call_back` is from the dummy object
+    // /// the generic args might need to be substituted by the bounded generics
+    // fn prepare_trait_segments(
+    //     &self,
+    //     trait_def_id: &hax::DefId,
+    //     mut call_back: impl FnMut(&rustc_middle::ty::TraitRef),
+    // ) {
+    //     let tcx = self.t_ctx.tcx;
+    //     let rid = trait_def_id.as_rust_def_id().unwrap();
+    //     let dummy = rustc_middle::ty::TraitRef::identity(tcx, rid);
+    //     use rustc_trait_selection::traits::vtable::*;
+    //     prepare_vtable_segments(tcx, dummy, |segment| -> std::ops::ControlFlow<()> {
+    //         match segment {
+    //             VtblSegment::MetadataDSA => Continue(()),
+    //             VtblSegment::TraitOwnEntries { trait_ref, .. } => {
+    //                 call_back(&trait_ref);
+    //                 Continue(())
+    //             }
+    //         }
+    //     });
+    // }
+
+    fn add_parent_trait_vtable_ptrs(
+        &mut self,
+        fields: &mut Vector<FieldId, Field>,
+        parent_clauses: &Vector<TraitClauseId, (hax::TraitPredicate, TraitClause)>,
+    ) -> Result<(), Error> {
+        for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
+            let trait_ref = &clause.trait_.skip_binder;
+            let generics = trait_ref.generics.clone();
+            let def_id = &pred.trait_ref.def_id;
+            let id = self.translate_type_id(Span::dummy(), def_id)?;
+            let vtbl_st = TypeDeclRef {
+                id: id,
+                generics: generics,
+            };
+            let field = Field {
+                span: Span::dummy(),
+                attr_info: dummy_public_attr_info(),
+                name: Some(format!("super_trait_{idx}").into()),
+                ty: Ty::new(TyKind::RawPtr(
+                    Ty::new(TyKind::Adt(vtbl_st)),
+                    RefKind::Shared,
+                )),
+            };
+            fields.push(field);
+        }
+        Ok(())
     }
 
-    /// Call `rustc_trait_selection::traits::vtable::prepare_vtable_segments`
-    /// to get the correct order of the trait segments
-    /// The `TraitRef` to be supplied to the `call_back` is from the dummy object
-    /// the generic args might need to be substituted by the bounded generics
-    fn prepare_trait_segments(
-        &self,
-        trait_def_id: &hax::DefId,
-        mut call_back: impl FnMut(&rustc_middle::ty::TraitRef),
-    ) {
-        let tcx = self.t_ctx.tcx;
-        let rid = trait_def_id.as_rust_def_id().unwrap();
-        let dummy = rustc_middle::ty::TraitRef::identity(tcx, rid);
-        use rustc_trait_selection::traits::vtable::*;
-        prepare_vtable_segments(tcx, dummy, |segment| -> std::ops::ControlFlow<()> {
-            match segment {
-                VtblSegment::MetadataDSA => Continue(()),
-                VtblSegment::TraitOwnEntries { trait_ref, .. } => {
-                    call_back(&trait_ref);
-                    Continue(())
+    fn add_vtable_methods_from_trait_items(
+        &mut self,
+        fields: &mut Vector<FieldId, Field>,
+        items: &Vec<(hax::AssocItem, std::sync::Arc<hax::FullDef>)>,
+    ) -> Result<(), Error> {
+        let items: Vec<(TraitItemName, &hax::AssocItem, std::sync::Arc<hax::FullDef>)> = items
+            .iter()
+            .map(|(item, def)| {
+                let name = self.t_ctx.translate_trait_item_name(def.def_id())?;
+                Ok((name, item, def.clone()))
+            })
+            .try_collect()?;
+        for (item_name, _, hax_def) in &items {
+            match &hax_def.kind {
+                hax::FullDefKind::AssocFn { .. } => {
+                    let field = Field {
+                        span: Span::dummy(),
+                        attr_info: dummy_public_attr_info(),
+                        name: Some(item_name.to_string().into()),
+                        ty: shim_ty
+                    };
+                    fields.push(field);
                 }
+                _ => { }
             }
-        });
-    }
-
-    /// Look up the the raw value for the traits and then
-    fn lookup_vtable_methods_of_one_trait_segment(
-        &self,
-        trait_def_id: &rustc_middle::ty::TraitRef,
-    ) -> Vec<(String, Ty)> {
-        todo!()
+        }
+        Ok(())
     }
 
     pub(crate) fn translate_vtable_struct(
         mut self,
         typ_id: TypeDeclId,
         item_meta: ItemMeta,
-        hax_ex_tref: &hax::ExistentialTraitRef,
-        trait_def_id: &hax::DefId,
         trait_full_def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
-        // the list of the form [(name, type)], the types should be for the shim functions
-        let method_list = self.lookup_vtable_method_list(trait_def_id);
+        // start by getting the generic environment ready
+        self.translate_def_generics(Span::dummy(), trait_full_def)?;
+        let mut fields = common_vtable_entries();
+        // translate the super pointers
+        let parent_clauses = mem::take(&mut self.parent_trait_clauses);
+        self.add_parent_trait_vtable_ptrs(&mut fields, &parent_clauses)?;
+        // if it is a trait definition, we need to add the methods
+        if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
+            self.add_vtable_methods_from_trait_items(&mut fields, items)?;
+        }
+        // else, it should be a trait alias, which should not have any methods in its vtable
+
+        // take out the required stuff before consuming `self`
+        let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+        let trait_id = self.register_trait_decl_id(Span::dummy(), &trait_full_def.def_id);
+        let generics = self.into_generics();
         // the true layout of the vtable:
         // [ drop_func : *mut () -> (),
         //   self_ty_size : usize,
         //   self_ty_align : usize,
+        //   ...  -- the super trait vtables
         //   ...  -- the method list ]
         // We IGNORE the vacant placeholder & upcast-ptr here!
-        let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
         let ptr_align = ptr_size;
         let layout = Layout {
-            size: todo!(),
+            // everything is of the same size as a pointer
+            size: Some((fields.iter().count() as u64) * ptr_size),
             align: Some(ptr_align as u64),
             discriminant_layout: None,
             uninhabited: false,
             variant_layouts: Vector::new(),
         };
-        let mut fields = common_vtable_entries();
-        for (method_name, method_ty) in method_list {
-            let field = Field {
-                span: Span::dummy(),
-                attr_info: dummy_public_attr_info(),
-                name: Some(method_name),
-                ty: method_ty,
-            };
-            fields.push(field);
-        }
-        let trait_id = self.register_trait_decl_id(Span::dummy(), &hax_ex_tref.def_id);
-        let generics = self.into_generics();
+        // for (method_name, method_ty) in method_list {
+        //     let field = Field {
+        //         span: Span::dummy(),
+        //         attr_info: dummy_public_attr_info(),
+        //         name: Some(method_name),
+        //         ty: method_ty,
+        //     };
+        //     fields.push(field);
+        // }
+        // let generics = self.into_generics();
         let trait_decl_ref = TraitDeclRef {
             id: trait_id,
             generics: Box::new(generics.identity_args()),
@@ -263,7 +326,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         glob_id: GlobalDeclId,
         item_meta: ItemMeta,
-        tref: &hax::TraitRef,
+        def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
         todo!()
     }
@@ -272,7 +335,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         init_func_id: FunDeclId,
         item_meta: ItemMeta,
-        tref: &hax::TraitRef,
+        def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         todo!()
     }

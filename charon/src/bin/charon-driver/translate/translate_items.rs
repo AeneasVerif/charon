@@ -135,31 +135,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTable(hax_ex_tref) => {
+            TransItemSourceKind::VTable => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
                     unreachable!()
                 };
-                let ty_decl = bt_ctx.translate_vtable_struct(
-                    id,
-                    item_meta,
-                    &hax_ex_tref,
-                    &def.def_id,
-                    &def,
-                )?;
+                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
-            TransItemSourceKind::VTableInstance(tref) => {
+            TransItemSourceKind::VTableInstance => {
                 let Some(AnyTransId::Global(id)) = trans_id else {
                     unreachable!()
                 };
-                let global_decl = bt_ctx.translate_vtable_instance(id, item_meta, tref)?;
+                let global_decl = bt_ctx.translate_vtable_instance(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            TransItemSourceKind::VTableInstanceBody(tref) => {
+            TransItemSourceKind::VTableInstanceBody => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_instance_body(id, item_meta, tref)?;
+                let fun_decl = bt_ctx.translate_vtable_instance_body(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -499,7 +493,7 @@ impl ItemTransCtx<'_, '_> {
             return Ok(TraitDecl {
                 def_id,
                 item_meta,
-                parent_clauses: mem::take(&mut self.parent_trait_clauses),
+                parent_clauses: into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses)),
                 generics: self.into_generics(),
                 type_clauses: Default::default(),
                 consts: Default::default(),
@@ -667,7 +661,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitDecl {
             def_id,
             item_meta,
-            parent_clauses: mem::take(&mut self.parent_trait_clauses),
+            parent_clauses: into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses)),
             generics: self.into_generics(),
             type_clauses,
             consts,
@@ -702,7 +696,7 @@ impl ItemTransCtx<'_, '_> {
             // `translate_def_generics` registers the clauses as implied clauses, but we want them
             // as required clauses for the impl.
             assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-            let clauses = mem::take(&mut self.parent_trait_clauses);
+            let clauses = into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses));
             self.innermost_generics_mut().trait_clauses = clauses;
             let trait_id = self.register_trait_decl_id(span, def.def_id());
             let mut generics = self.the_only_binder().params.identity_args();
