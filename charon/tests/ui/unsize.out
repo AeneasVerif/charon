@@ -27,12 +27,6 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>

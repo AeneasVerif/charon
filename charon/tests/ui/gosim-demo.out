@@ -106,12 +106,6 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>

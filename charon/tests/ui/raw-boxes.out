@@ -209,23 +209,6 @@ pub struct NonNull<T> {
   pointer: *const T,
 }
 
-// Full name: core::fmt::FormattingOptions
-pub struct FormattingOptions {
-  flags: u32,
-  width: u16,
-  precision: u16,
-}
-
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub struct Formatter<'a>
-where
-    'a : 'a,
-{
-  options: FormattingOptions,
-  buf: &'a mut (dyn (exists(TODO))),
-}
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
