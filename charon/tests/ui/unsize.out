@@ -44,16 +44,16 @@ where
   Err(E),
 }
 
+// Full name: core::fmt::Display
 #[lang_item("Display")]
-pub trait core::fmt::Display<Self>
+pub trait Display<Self>
 {
-    fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
-// Full name: core::fmt::Display::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
-    [@TraitClause0]: core::fmt::Display<Self>,
+    [@TraitClause0]: Display<Self>,
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -146,6 +146,14 @@ impl Clone for String {
     fn clone<'_0> = {impl Clone for String}::clone<'_0_0>
 }
 
+// Full name: alloc::string::{impl Display for String}::fmt
+pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: alloc::string::{impl Display for String}
+impl Display for String {
+    fn fmt<'_0, '_1, '_2> = {impl Display for String}::fmt<'_0_0, '_0_1, '_0_2>
+}
+
 // Full name: test_crate::foo
 fn foo()
 {
@@ -189,7 +197,7 @@ fn foo()
     storage_live(@7)
     @7 := copy (array@1)
     @6 := @BoxNew<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@7))
-    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]>(move (@6))
+    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>], 2 : usize>(move (@6))
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]] @6
     storage_dead(@7)
     storage_dead(@6)

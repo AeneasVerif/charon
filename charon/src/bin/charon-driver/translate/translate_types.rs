@@ -5,10 +5,8 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
-use hax::HasParamEnv;
-use hax::Visibility;
+use hax::{BaseState, HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::HasOwnerIdSetter;
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {

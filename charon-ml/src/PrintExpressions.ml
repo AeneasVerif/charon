@@ -73,7 +73,7 @@ and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
       ^ ">"
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) | CastTransmute (src, tgt) ->
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
-  | CastUnsize (src, tgt) ->
+  | CastUnsize (src, tgt, _) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
 and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
@@ -89,7 +89,6 @@ and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   | Neg om -> overflow_mode_to_string om ^ ".-"
   | PtrMetadata -> "ptr_metadata"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
-  | ArrayToSlice _ -> "to_slice"
 
 and overflow_mode_to_string (mode : overflow_mode) : string =
   match mode with

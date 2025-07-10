@@ -156,14 +156,6 @@ pub enum UnOp {
     PtrMetadata,
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
-    /// Coercion from array (i.e., [T; N]) to slice.
-    ///
-    /// **Remark:** We introduce this unop when translating from MIR, **then transform**
-    /// it to a function call in a micro pass. The type and the scalar value are not
-    /// *necessary* as we can retrieve them from the context, but storing them here is
-    /// very useful. The [RefKind] argument states whethere we operate on a mutable
-    /// or a shared borrow to an array.
-    ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
 /// Nullary operation
@@ -196,10 +188,20 @@ pub enum CastKind {
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
-    Unsize(Ty, Ty),
+    Unsize(Ty, Ty, UnsizingMetadata),
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty, Ty),
+}
+
+#[derive(
+    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+)]
+#[charon::variants_prefix("Meta")]
+pub enum UnsizingMetadata {
+    Length(ConstGeneric),
+    VTablePtr(TraitRef),
+    Unknown,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
