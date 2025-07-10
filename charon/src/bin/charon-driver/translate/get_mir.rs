@@ -3,8 +3,8 @@
 use std::panic;
 use std::rc::Rc;
 
+use hax::{BaseState, UnderOwnerState};
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter};
 use rustc_hir as hir;
 use rustc_middle::mir::Body;
 use rustc_middle::ty::TyCtxt;
