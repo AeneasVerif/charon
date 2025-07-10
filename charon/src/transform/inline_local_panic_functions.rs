@@ -9,7 +9,7 @@
 //! to them by a `Panic` terminator.
 use std::collections::HashSet;
 
-use super::{ctx::UllbcPass, TransformCtx};
+use super::{TransformCtx, ctx::UllbcPass};
 use crate::{builtins, names::Name, ullbc_ast::*};
 
 pub struct Transform;

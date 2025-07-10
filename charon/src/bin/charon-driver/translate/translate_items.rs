@@ -814,8 +814,7 @@ impl ItemTransCtx<'_, '_> {
                 .format("\n");
             trace!(
                 "Trait impl: {:?}\n- parent_trait_refs:\n{}",
-                def.def_id,
-                refs
+                def.def_id, refs
             );
         }
 

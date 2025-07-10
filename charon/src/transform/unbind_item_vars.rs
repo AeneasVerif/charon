@@ -5,7 +5,7 @@ use index_vec::Idx;
 
 use crate::ast::*;
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 /// Replace variables bound at the top-level with `Free` vars.
 #[derive(Default, Visitor)]

@@ -1497,6 +1497,20 @@ and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Niche untagged_variant)
     | _ -> Error "")
 
+and target_info_of_json (ctx : of_json_ctx) (js : json) :
+    (target_info, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("target_pointer_size", target_pointer_size);
+          ("is_little_endian", is_little_endian);
+        ] ->
+        let* target_pointer_size = int_of_json ctx target_pointer_size in
+        let* is_little_endian = bool_of_json ctx is_little_endian in
+        Ok ({ target_pointer_size; is_little_endian } : target_info)
+    | _ -> Error "")
+
 and trait_clause_of_json (ctx : of_json_ctx) (js : json) :
     (trait_clause, string) result =
   combine_error_msgs js __FUNCTION__

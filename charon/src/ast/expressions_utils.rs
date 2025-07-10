@@ -110,11 +110,7 @@ impl Rvalue {
 
 impl BorrowKind {
     pub fn mutable(x: bool) -> Self {
-        if x {
-            Self::Mut
-        } else {
-            Self::Shared
-        }
+        if x { Self::Mut } else { Self::Shared }
     }
 }
 

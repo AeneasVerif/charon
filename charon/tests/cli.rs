@@ -1,4 +1,4 @@
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use std::{path::PathBuf, process::Command};
@@ -46,6 +46,18 @@ fn charon_pretty_print() -> Result<()> {
             })
         },
     )
+}
+
+#[test]
+fn charon_version() -> Result<()> {
+    charon(&["version"], ".", |stdout, cmd| {
+        let version = charon_lib::VERSION;
+        ensure!(
+            stdout.trim() == version,
+            "Output of `{cmd}` is:\n{stdout:?}\nIt should be {version}."
+        );
+        Ok(())
+    })
 }
 
 #[test]

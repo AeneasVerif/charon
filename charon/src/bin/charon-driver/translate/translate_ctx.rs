@@ -17,7 +17,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
+    DepSource, ErrorCtx, Level, error_assert, raise_error, register_error,
 };
 
 /// Translation context used while translating the crate data into our representation.

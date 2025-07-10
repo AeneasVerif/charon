@@ -47,11 +47,12 @@ impl GenericParams {
     /// Run some sanity checks.
     pub fn check_consistency(&self) {
         // Sanity check: check the clause ids are consistent.
-        assert!(self
-            .trait_clauses
-            .iter()
-            .enumerate()
-            .all(|(i, c)| c.clause_id.index() == i));
+        assert!(
+            self.trait_clauses
+                .iter()
+                .enumerate()
+                .all(|(i, c)| c.clause_id.index() == i)
+        );
 
         // Sanity check: region names are pairwise distinct (this caused trouble when generating
         // names for the backward functions in Aeneas): at some point, Rustc introduced names equal
@@ -428,25 +429,6 @@ impl IntegerTy {
         !(self.is_signed())
     }
 
-    /// Return the size (in bytes) of an integer of the proper type
-    pub fn size(&self) -> usize {
-        use std::mem::size_of;
-        match self {
-            IntegerTy::Isize => size_of::<isize>(),
-            IntegerTy::I8 => size_of::<i8>(),
-            IntegerTy::I16 => size_of::<i16>(),
-            IntegerTy::I32 => size_of::<i32>(),
-            IntegerTy::I64 => size_of::<i64>(),
-            IntegerTy::I128 => size_of::<i128>(),
-            IntegerTy::Usize => size_of::<isize>(),
-            IntegerTy::U8 => size_of::<u8>(),
-            IntegerTy::U16 => size_of::<u16>(),
-            IntegerTy::U32 => size_of::<u32>(),
-            IntegerTy::U64 => size_of::<u64>(),
-            IntegerTy::U128 => size_of::<u128>(),
-        }
-    }
-
     pub fn to_unsigned(&self) -> Self {
         match self {
             IntegerTy::Isize => IntegerTy::Usize,
@@ -713,11 +695,7 @@ impl Variant {
 
 impl RefKind {
     pub fn mutable(x: bool) -> Self {
-        if x {
-            Self::Mut
-        } else {
-            Self::Shared
-        }
+        if x { Self::Mut } else { Self::Shared }
     }
 }
 

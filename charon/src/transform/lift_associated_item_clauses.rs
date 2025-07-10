@@ -6,7 +6,7 @@ use std::mem;
 
 use crate::{ast::*, ids::Vector};
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 pub struct Transform;
 impl TransformPass for Transform {

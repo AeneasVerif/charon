@@ -2,15 +2,15 @@ use std::{fmt, str::FromStr};
 
 use itertools::Itertools;
 use nom::{
+    Parser,
     bytes::complete::{tag, take_while},
     character::complete::{multispace0, multispace1},
     combinator::{map_res, success},
     error::ParseError,
     multi::separated_list0,
     sequence::{delimited, preceded},
-    Parser,
 };
-use nom_supreme::{error::ErrorTree, ParserExt};
+use nom_supreme::{ParserExt, error::ErrorTree};
 
 use super::{PatElem, PatTy, Pattern};
 use crate::ast::RefKind;

@@ -527,9 +527,7 @@ impl TransformPass for Transform {
                 };
                 trace!(
                     "Mono: Monomorphized {:?} with {:?} to {:?}",
-                    id,
-                    gargs,
-                    new_mono
+                    id, gargs, new_mono
                 );
                 if id != &new_mono {
                     trace!(" - From {:?}", ctx.translated.get_item(id.clone()));

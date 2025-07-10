@@ -287,10 +287,7 @@ fn attributes() -> anyhow::Result<()> {
         unknown_attrs(&crate_data.type_decls[0].item_meta),
         vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo(\"arg\")"]
     );
-    assert_eq!(
-        unknown_attrs(&crate_data.type_decls[1].item_meta),
-        vec!["non_exhaustive"]
-    );
+    assert!(unknown_attrs(&crate_data.type_decls[1].item_meta).is_empty());
     assert_eq!(
         unknown_attrs(&crate_data.trait_decls[0].item_meta),
         vec!["clippy::foo"]

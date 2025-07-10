@@ -24,6 +24,8 @@ pub enum Charon {
     ToolchainPath(ToolchainPathArgs),
     /// Pretty-print the given llbc file.
     PrettyPrint(PrettyPrintArgs),
+    /// Print the version.
+    Version,
 }
 
 /// Read a llbc or ullbc file and pretty print it.

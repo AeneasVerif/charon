@@ -44,11 +44,14 @@ impl Transform {
         for i in 0..block.statements.len() {
             let suffix = &mut block.statements[i..];
             match suffix {
-                [Statement {
-                    content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
-                    span: span1,
-                    ..
-                }, rest @ ..] => {
+                [
+                    Statement {
+                        content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
+                        span: span1,
+                        ..
+                    },
+                    rest @ ..,
+                ] => {
                     // The destination should be a variable
                     assert!(dest.is_local());
 
@@ -86,11 +89,16 @@ impl Transform {
 
                     // We look for a `SwitchInt` just after the discriminant read.
                     match rest {
-                        [Statement {
-                            content:
-                                RawStatement::Switch(switch @ Switch::SwitchInt(Operand::Move(_), ..)),
-                            ..
-                        }, ..] => {
+                        [
+                            Statement {
+                                content:
+                                    RawStatement::Switch(
+                                        switch @ Switch::SwitchInt(Operand::Move(_), ..),
+                                    ),
+                                ..
+                            },
+                            ..,
+                        ] => {
                             // Convert between discriminants and variant indices. Remark: the discriminant can
                             // be of any *signed* integer type (`isize`, `i8`, etc.).
                             let discr_to_id: HashMap<ScalarValue, VariantId> = variants
@@ -151,12 +159,14 @@ impl Transform {
                 }
                 // Replace calls of `core::intrinsics::discriminant_value` on a known enum with the
                 // appropriate MIR.
-                [Statement {
-                    content: RawStatement::Call(call),
-                    span: span1,
-                    ..
-                }, ..]
-                    if let Some(discriminant_intrinsic) = discriminant_intrinsic
+                [
+                    Statement {
+                        content: RawStatement::Call(call),
+                        span: span1,
+                        ..
+                    },
+                    ..,
+                ] if let Some(discriminant_intrinsic) = discriminant_intrinsic
                         // Detect a call to the intrinsic...
                         && let FnOperand::Regular(fn_ptr) = &call.func
                         && let FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) = fn_ptr.func.as_ref()

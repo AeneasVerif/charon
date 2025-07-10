@@ -36,7 +36,7 @@
 use anyhow::Result;
 use charon_lib::{
     logger,
-    options::{CliOpts, CHARON_ARGS},
+    options::{CHARON_ARGS, CliOpts},
 };
 use clap::Parser;
 use cli::{Charon, Cli};
@@ -77,6 +77,10 @@ pub fn main() -> Result<()> {
         Some(Charon::ToolchainPath(_)) => {
             let path = toolchain_path()?;
             println!("{}", path.display());
+            ExitStatus::default()
+        }
+        Some(Charon::Version) => {
+            println!("{}", charon_lib::VERSION);
             ExitStatus::default()
         }
         // Legacy calling syntax.
