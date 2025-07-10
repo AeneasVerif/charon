@@ -291,7 +291,6 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       let fn = fn_ptr_to_string env f.binder_value in
       fn
   | TDynTrait _ -> "dyn (TODO)"
-  | TExistentialPlaceholder -> "_"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"
 
 (** Return two lists:

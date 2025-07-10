@@ -1,84 +1,76 @@
+use crate::translate::{translate_generics::BindingLevel, translate_predicates::PredicateLocation};
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use hax_frontend_exporter as hax;
 
 impl ItemTransCtx<'_, '_> {
     pub fn check_at_most_one_pred_has_methods(
-        &self,
+        &mut self,
         span: Span,
-        preds: &Vec<hax::Binder<hax::ExistentialPredicate>>,
+        preds: &hax::GenericPredicates,
     ) -> Result<(), Error> {
-        let all_ex_trait_ref = preds.iter().filter_map(|bound| {
-            if let hax::ExistentialPredicate::Trait(trait_ref) = &bound.value {
-                Some(trait_ref)
-            } else {
-                None
+        // Only the first clause is allowed to have methods.
+        for (clause, _) in preds.predicates.iter().skip(1) {
+            if let hax::ClauseKind::Trait(trait_predicate) = clause.kind.hax_skip_binder_ref() {
+                let trait_def_id = &trait_predicate.trait_ref.def_id;
+                let trait_def = self.hax_def(trait_def_id)?;
+                let has_methods = match trait_def.kind() {
+                    hax::FullDefKind::Trait { items, .. } => items
+                        .iter()
+                        .any(|(assoc, _)| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
+                    hax::FullDefKind::TraitAlias { .. } => false,
+                    _ => unreachable!(),
+                };
+                if has_methods {
+                    raise_error!(
+                        self,
+                        span,
+                        "`dyn Trait` with multiple method-bearing predicates is not supported"
+                    );
+                }
             }
-        });
-        if all_ex_trait_ref.count() > 1 {
-            raise_error!(
-                self,
-                span,
-                "`dyn Trait` with multiple method-bearing predicates is not supported"
-            );
         }
         Ok(())
     }
 
-    /// Translate generics for an exitential predicate. These generics are missing a `Self` type,
-    /// which we add here, represented with `ExistentialPlaceholder`.
-    fn translate_ex_generics(
+    pub fn translate_existential_predicates(
         &mut self,
         span: Span,
-        args: &[hax::GenericArg],
-    ) -> Result<Box<GenericArgs>, Error> {
-        let mut generics = Box::new(self.translate_generic_args(span, args, &[])?);
-        generics.types.insert_and_shift_ids(
-            TypeVarId::from_usize(0),
-            TyKind::ExistentialPlaceholder.into_ty(),
-        );
-        Ok(generics)
-    }
-
-    pub fn translate_existential_predicate(
-        &mut self,
-        span: Span,
-        pred: &hax::ExistentialPredicate,
+        self_ty: &hax::ParamTy,
+        preds: &hax::GenericPredicates,
+        region: &hax::Region,
     ) -> Result<DynPredicate, Error> {
-        Ok(match pred {
-            hax::ExistentialPredicate::Trait(tref) => DynPredicate::Trait(TraitDeclRef {
-                id: self.register_trait_decl_id(span, &tref.def_id),
-                generics: self.translate_ex_generics(span, &tref.args)?,
-            }),
-            hax::ExistentialPredicate::AutoTrait(def_id) => {
-                let trait_id = self.register_trait_decl_id(span, def_id);
-                let ty = TyKind::ExistentialPlaceholder.into_ty();
-                let tref = TraitDeclRef {
-                    id: trait_id,
-                    generics: Box::new(GenericArgs::new_types([ty].into())),
-                };
-                DynPredicate::Trait(tref)
-            }
-            hax::ExistentialPredicate::Projection(proj) => {
-                // TODO: this is incorrect if the projection doesn't apply to the principal.
-                let args = self.translate_ex_generics(span, &proj.args)?;
-                let name = self.t_ctx.translate_trait_item_name(&proj.def_id)?;
-                let term = match &proj.term {
-                    hax::Term::Ty(ty) => self.translate_ty(span, ty)?,
-                    hax::Term::Const(_) => {
-                        raise_error!(
-                            self,
-                            span,
-                            "`dyn Trait` with associated const constraints are not supported",
-                        )
-                    }
-                };
-                DynPredicate::Projection(DynTypeConstraint {
-                    trait_item: name,
-                    generics: args,
-                    term,
-                })
-            }
-        })
+        // This is a robustness check: the current version of Rustc
+        // accepts at most one method-bearing predicate in a trait object.
+        // But things may change in the future.
+        self.check_at_most_one_pred_has_methods(span, preds)?;
+
+        // Translate the region outside the binder.
+        let region = self.translate_region(span, region)?;
+        let region = region.move_under_binder();
+
+        // Add a binder that contains the existentially quantified type.
+        self.binding_levels.push(BindingLevel::new(true));
+
+        // Add the existentially quantified type.
+        let ty_id = self
+            .innermost_binder_mut()
+            .push_type_var(self_ty.index, self_ty.name.clone());
+        let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
+
+        self.innermost_binder_mut()
+            .params
+            .types_outlive
+            .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
+        self.register_predicates(preds, PredicateOrigin::Dyn, &PredicateLocation::Base)?;
+
+        let params = self.binding_levels.pop().unwrap().params;
+        let binder = Binder {
+            params: params,
+            skip_binder: ty,
+            kind: BinderKind::Dyn,
+        };
+        Ok(DynPredicate { binder })
     }
 }

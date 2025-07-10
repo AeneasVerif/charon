@@ -154,22 +154,22 @@ where
 }
 
 // Full name: test_crate::construct
-fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn Display<_> + 'static)>[MetaSized<(dyn Display<_> + '_)>, Sized<Global>]
+fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : 'static)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Display<T>,
     T : 'static,
 
 // Full name: test_crate::destruct
-fn destruct<'_0>(@1: &'_0 ((dyn Display<_> + '_0))) -> String
+fn destruct<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_0))) -> String
 {
     let @0: String; // return
-    let x@1: &'_ ((dyn Display<_> + '_)); // arg #1
-    let @2: &'_ ((dyn Display<_> + '_)); // anonymous local
+    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)); // arg #1
+    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
-    @0 := {impl ToString for T}::to_string<'_, (dyn Display<_> + '_)>[MetaSized<(dyn Display<_> + '_)>, Display<(dyn Display<_> + '_)>](move (@2))
+    @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Display<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>](move (@2))
     storage_dead(@2)
     return
 }
@@ -178,13 +178,13 @@ fn destruct<'_0>(@1: &'_0 ((dyn Display<_> + '_0))) -> String
 fn combine()
 
 // Full name: test_crate::foo
-fn foo<'_0, '_1, T>(@1: &'_0 ((dyn for<'a> Fn<_, (&'a (T))> + for<'a> Output::<_, (&'a (T))> = T + 'static)), @2: &'_1 ((dyn PartialEq<_, Option<T>[@TraitClause0]> + '_1)))
+fn foo<'_0, '_1, T>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (&'a (T))> + _dyn : 'static + for<'a> @TraitClause1_0::parent_clause1::parent_clause1::Output = T)), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Option<T>[@TraitClause0]> + _dyn : '_1)))
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let @1: &'_ ((dyn for<'a> Fn<_, (&'a (T))> + for<'a> Output::<_, (&'a (T))> = T + '_)); // arg #1
-    let @2: &'_ ((dyn PartialEq<_, Option<T>[@TraitClause0]> + '_)); // arg #2
+    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (&'a (T))> + _dyn : '_ + for<'a> @TraitClause1_0::parent_clause1::parent_clause1::Output = T)); // arg #1
+    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Option<T>[@TraitClause0]> + _dyn : '_)); // arg #2
 
     @0 := ()
     @0 := ()
@@ -192,10 +192,10 @@ where
 }
 
 // Full name: test_crate::bar
-fn bar<'_0>(@1: &'_0 ((dyn for<'_0> Fn<_, (&'_0_0 ((dyn Display<_> + '_0_0)))> + for<'_0> Output::<_, (&'_0_0 ((dyn Display<_> + '_0_0)))> = () + '_0)))
+fn bar<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'_0> Fn<_dyn, (&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_2_0)))> + _dyn : '_0 + for<'_0> @TraitClause1_0::parent_clause1::parent_clause1::Output = ())))
 {
     let @0: (); // return
-    let @1: &'_ ((dyn for<'_0> Fn<_, (&'_0_0 ((dyn Display<_> + '_0_0)))> + for<'_0> Output::<_, (&'_0_0 ((dyn Display<_> + '_0_0)))> = () + '_)); // arg #1
+    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0]: for<'_0> Fn<_dyn, (&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_2_0)))> + _dyn : '_ + for<'_0> @TraitClause1_0::parent_clause1::parent_clause1::Output = ())); // arg #1
 
     @0 := ()
     @0 := ()

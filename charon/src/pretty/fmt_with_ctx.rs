@@ -350,26 +350,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
 
 impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            DynPredicate::Trait(trait_ref) => {
-                write!(f, "{}", trait_ref.with_ctx(ctx))
-            }
-            DynPredicate::Projection(proj) => {
-                write!(f, "{}", proj.with_ctx(ctx))
-            }
-        }
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for DynTypeConstraint {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}::{} = {}",
-            self.trait_item.0,
-            self.generics.with_ctx(ctx),
-            self.term.with_ctx(ctx)
-        )
+        let ctx = &ctx.push_binder(Cow::Borrowed(&self.binder.params));
+        let ty = self.binder.skip_binder.with_ctx(ctx);
+        let clauses = self.binder.params.formatted_clauses(ctx).format(" + ");
+        write!(f, "exists<{ty}> {clauses}")
     }
 }
 
@@ -1778,12 +1762,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::TraitType(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
-            TyKind::DynTrait(preds, region) => {
-                let preds = preds
-                    .iter()
-                    .map(|p| p.fmt_as_for(ctx).to_string())
-                    .format(" + ");
-                write!(f, "(dyn {} + {})", preds, region.with_ctx(ctx))
+            TyKind::DynTrait(pred) => {
+                write!(f, "(dyn {})", pred.with_ctx(ctx))
             }
             TyKind::FnPtr(io) => {
                 write!(f, "{}", io.with_ctx(ctx))
@@ -1795,8 +1775,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 };
                 write!(f, "{value}",)
             }
-            // To make sure this is not definable as ADT or so
-            TyKind::ExistentialPlaceholder => write!(f, "_"),
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }
     }

@@ -229,6 +229,8 @@ pub enum BinderKind {
     TraitMethod(TraitDeclId, TraitItemName),
     /// The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods.
     InherentImplBlock,
+    /// Binder used for `dyn Trait` existential predicates.
+    Dyn,
     /// Some other use of a binder outside the main Charon ast.
     Other,
 }
@@ -314,6 +316,8 @@ pub enum PredicateOrigin {
     // }
     // ```
     TraitItem(TraitItemName),
+    /// Clauses that are part of a `dyn Trait` type.
+    Dyn,
 }
 
 // rustc counts bytes in layouts as u64
@@ -777,13 +781,7 @@ pub enum TyKind {
     /// ```
     TraitType(TraitRef, TraitItemName),
     /// `dyn Trait`
-    ///
-    /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
-    /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
-    ///
-    /// Only the first Predicate is used as the *principal* predicate, i.e. the one that
-    /// corresponds to a vtable. It is uniquely of the `ExistentialTraitRef` type.
-    DynTrait(Vec<RegionBinder<DynPredicate>>, Region),
+    DynTrait(DynPredicate),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
@@ -798,10 +796,6 @@ pub enum TyKind {
     /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
     /// we need to bind them here.
     FnDef(RegionBinder<FnPtr>),
-    /// Fake type used in `dyn Trait` predicates: such a predicate has the `Self` type
-    /// existentially quantified. In order for generics to stay consistent, we use this placeholder to
-    /// represent the existentially quantified type.
-    ExistentialPlaceholder,
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
@@ -902,22 +896,14 @@ pub struct FunSig {
     pub output: Ty,
 }
 
-/// A projection of the form `TraitItemName<GenericArgs> = Ty`, where the `TraitItemName` is an
-/// associate type of the principal trait of a `dyn Trait` type.
+/// The contents of a `dyn Trait` type.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct DynTypeConstraint {
-    pub trait_item: TraitItemName,
-    pub generics: BoxedArgs,
-    pub term: Ty,
-}
-
-/// A predicate in a `dyn Trait` type. These predicates apply to an existentially quentified type,
-/// represented as `TyKind::ExistentialPlaceholder`.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub enum DynPredicate {
-    /// Trait predicate that the target type must satisfy.
-    Trait(TraitDeclRef),
-    /// Projection associated to the principal trait of this `dyn Trait`. We don't currently
-    /// support other projections.
-    Projection(DynTypeConstraint),
+pub struct DynPredicate {
+    /// This binder binds a single type `T`, which is considered existentially quantified. The
+    /// predicates in the binder apply to `T` and represent the `dyn Trait` constraints.
+    /// E.g. `dyn Iterator<Item=u32> + Send` is represented as `exists<T: Iterator<Item=u32> + Send> T`.
+    ///
+    /// Only the first trait clause may have methods. We use the vtable of this trait in the `dyn
+    /// Trait` pointer metadata.
+    pub binder: Binder<Ty>,
 }

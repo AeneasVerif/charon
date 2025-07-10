@@ -43,7 +43,7 @@ use indexmap::IndexMap;
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
         CastKind, ClosureInfo, ClosureKind, ConstGenericVar, ConstGenericVarId,
-        Disambiguator, DynPredicate, DynTypeConstraint, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
+        Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, Literal, LiteralTy,
         llbc_ast::Block, llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, RawConstantExpr,
