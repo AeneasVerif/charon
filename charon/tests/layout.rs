@@ -134,6 +134,12 @@ fn type_layout() -> anyhow::Result<()> {
             First,
             Second(&'a T),
         }
+
+        #[repr(u128)]
+        enum MaxBitsDiscr {
+            First = 42,
+            Second = 18446744073709551615,
+        }
         "#,
     )?;
 

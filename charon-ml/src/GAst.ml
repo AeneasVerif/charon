@@ -37,7 +37,6 @@ type 'body gfun_decl = {
 }
 [@@deriving show]
 
-(* Hand-written because the rust equivalent isn't generic *)
 type target_info = { target_pointer_size : int; is_little_endian : bool }
 [@@deriving show]
 

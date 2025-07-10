@@ -1,6 +1,5 @@
 //! Implementations for [crate::values]
 use crate::ast::*;
-use serde::{Deserialize, Serialize, Serializer, ser::SerializeTupleVariant};
 
 #[derive(Debug, Clone)]
 pub enum ScalarError {
@@ -13,18 +12,14 @@ pub enum ScalarError {
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
 
-macro_rules! from_ne_bytes {
+macro_rules! from_le_bytes {
     ($m:ident, $b:ident, [$(($i_ty: ty, $i:ident, $s:ident, $n_ty:ty, $t:ty)),*]) => {
         match $m {
             $(
                 IntegerTy::$s(<$i_ty>::$i) => {
                     let n = size_of::<$n_ty>();
-                    let b: [u8; _] = if cfg!(target_endian = "big"){
-                        $b[16-n..16].try_into().unwrap()
-                    } else {
-                        $b[0..n].try_into().unwrap()
-                    };
-                    ScalarValue::$s(<$i_ty>::$i, <$n_ty>::from_ne_bytes(b) as $t)
+                    let b: [u8; _] = $b[0..n].try_into().unwrap();
+                    ScalarValue::$s(<$i_ty>::$i, <$n_ty>::from_le_bytes(b) as $t)
                 }
             )*
         }
@@ -155,12 +150,16 @@ impl ScalarValue {
     pub fn to_bits(&self) -> u128 {
         match *self {
             ScalarValue::Unsigned(_, v) => v,
-            ScalarValue::Signed(_, v) => u128::from_be_bytes(v.to_ne_bytes()),
+            ScalarValue::Signed(_, v) => u128::from_le_bytes(v.to_le_bytes()),
         }
     }
 
-    pub fn from_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
-        from_ne_bytes!(
+    /// Translates little endian bytes into a corresponding `ScalarValue`.
+    /// This needs to do the round-trip to the correct integer type to guarantee
+    /// that the values are correctly sign-extended (e.g. if the bytes encode -1i8, taking all 16 bytes
+    /// would lead to the value 255i128 instead of -1i128).
+    pub fn from_le_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
+        from_le_bytes!(
             ty,
             bytes,
             [
@@ -181,13 +180,13 @@ impl ScalarValue {
     }
 
     pub fn from_bits(ty: IntegerTy, bits: u128) -> Self {
-        let bytes = bits.to_ne_bytes();
-        Self::from_bytes(ty, bytes)
+        let bytes = bits.to_le_bytes();
+        Self::from_le_bytes(ty, bytes)
     }
 
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
-    /// bits (see [ScalarValue::from_bytes]).
+    /// bits (see [ScalarValue::from_le_bytes]).
     pub fn from_int(ptr_size: ByteCount, ty: IntTy, v: i128) -> ScalarResult<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ptr_size, ty, v) {
             Err(ScalarError::OutOfBounds)
@@ -198,8 +197,8 @@ impl ScalarValue {
 
     pub fn to_constant(self) -> ConstantExpr {
         let literal_ty = match self {
-            ScalarValue::Signed(int_ty, _) => LiteralTy::Integer(int_ty),
-            ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UnsignedInteger(uint_ty),
+            ScalarValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
+            ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
         ConstantExpr {
             value: RawConstantExpr::Literal(Literal::Scalar(self)),
@@ -208,93 +207,45 @@ impl ScalarValue {
     }
 }
 
-/// Custom serializer that stores integers as strings to avoid overflow.
-impl Serialize for ScalarValue {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "ScalarValue";
-        let variant_name = self.variant_name();
-        let (variant_index, _variant_arity) = self.variant_index_arity();
-        let mut tv =
-            serializer.serialize_tuple_variant(enum_name, variant_index, variant_name, 2)?;
-        match self {
-            ScalarValue::Signed(ty, i) => {
-                tv.serialize_field(ty)?;
-                tv.serialize_field(&i.to_string())?;
-            }
-            ScalarValue::Unsigned(ty, i) => {
-                tv.serialize_field(ty)?;
-                tv.serialize_field(&i.to_string())?;
-            }
-        };
-        tv.end()
-    }
-}
+/// Custom serializer that stores 128 bit integers as strings to avoid overflow.
+pub(crate) mod scalar_value_ser_de {
+    use std::{marker::PhantomData, str::FromStr};
 
-impl<'de> Deserialize<'de> for ScalarValue {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    use serde::de::{Deserializer, Error};
+
+    pub fn serialize<S, V>(val: &V, serializer: S) -> Result<S::Ok, S::Error>
     where
-        D: serde::Deserializer<'de>,
+        S: serde::ser::Serializer,
+        V: ToString,
     {
-        struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = ScalarValue;
+        serializer.serialize_str(&val.to_string())
+    }
+
+    pub fn deserialize<'de, D, V>(deserializer: D) -> Result<V, D::Error>
+    where
+        D: Deserializer<'de>,
+        V: FromStr,
+    {
+        struct Visitor<V> {
+            _val: PhantomData<V>,
+        }
+        impl<'de, V> serde::de::Visitor<'de> for Visitor<V>
+        where
+            V: FromStr,
+        {
+            type Value = V;
             fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "ScalarValue")
+                write!(f, "ScalarValue value")
             }
-            fn visit_map<A: serde::de::MapAccess<'de>>(
-                self,
-                mut map: A,
-            ) -> Result<Self::Value, A::Error> {
-                use serde::de::Error;
-                let (k, (ty, i)): (String, (String, String)) =
-                    map.next_entry()?.expect("Malformed ScalarValue");
-                Ok(match k.as_str() {
-                    "Signed" => {
-                        let ty = match ty.as_str() {
-                            "Isize" => IntTy::Isize,
-                            "I8" => IntTy::I8,
-                            "I16" => IntTy::I16,
-                            "I32" => IntTy::I32,
-                            "I64" => IntTy::I64,
-                            "I128" => IntTy::I128,
-                            _ => {
-                                return Err(A::Error::custom(format!(
-                                    "{ty} is not a valid type for a ScalarValue"
-                                )));
-                            }
-                        };
-                        let i = i.parse().unwrap();
-                        ScalarValue::Signed(ty, i)
-                    }
-                    "Unsigned" => {
-                        let ty = match ty.as_str() {
-                            "Usize" => UIntTy::Usize,
-                            "U8" => UIntTy::U8,
-                            "U16" => UIntTy::U16,
-                            "U32" => UIntTy::U32,
-                            "U64" => UIntTy::U64,
-                            "U128" => UIntTy::U128,
-                            _ => {
-                                return Err(A::Error::custom(format!(
-                                    "{ty} is not a valid type for a ScalarValue"
-                                )));
-                            }
-                        };
-                        let i = i.parse().unwrap();
-                        ScalarValue::Unsigned(ty, i)
-                    }
-                    _ => {
-                        return Err(A::Error::custom(format!(
-                            "{k} is not a valid type for a ScalarValue"
-                        )));
-                    }
-                })
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                v.parse()
+                    .map_err(|_| E::custom("Could not parse 128 bit integer!"))
             }
         }
-        deserializer.deserialize_map(Visitor)
+        deserializer.deserialize_str(Visitor { _val: PhantomData })
     }
 }
 
@@ -305,15 +256,15 @@ mod test {
     #[test]
     fn test_big_endian_scalars() -> ScalarResult<()> {
         let u128 = 0x12345678901234567890123456789012u128;
-        let ne_bytes = u128.to_ne_bytes();
+        let le_bytes = u128.to_le_bytes();
 
-        let ne_scalar = ScalarValue::from_bytes(IntegerTy::Unsigned(UIntTy::U128), ne_bytes);
-        assert_eq!(ne_scalar, ScalarValue::Unsigned(UIntTy::U128, u128));
+        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Unsigned(UIntTy::U128), le_bytes);
+        assert_eq!(le_scalar, ScalarValue::Unsigned(UIntTy::U128, u128));
 
         let i64 = 0x1234567890123456i64;
-        let ne_bytes = (i64 as i128).to_ne_bytes();
-        let ne_scalar = ScalarValue::from_bytes(IntegerTy::Signed(IntTy::I64), ne_bytes);
-        assert_eq!(ne_scalar, ScalarValue::Signed(IntTy::I64, i64 as i128));
+        let le_bytes = (i64 as i128).to_le_bytes();
+        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Signed(IntTy::I64), le_bytes);
+        assert_eq!(le_scalar, ScalarValue::Signed(IntTy::I64, i64 as i128));
 
         Ok(())
     }

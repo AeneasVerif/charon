@@ -48,8 +48,6 @@ pub enum Literal {
 }
 
 /// A scalar value.
-// We encode it as `{ value: ??; int_ty: IntegerTy; }` in json and on the ocaml side. We therefore
-// use a custom (de)serializer.
 #[derive(
     Debug,
     PartialEq,
@@ -63,13 +61,23 @@ pub enum Literal {
     Hash,
     PartialOrd,
     Ord,
+    Serialize,
+    Deserialize,
     Drive,
     DriveMut,
 )]
 #[drive(skip)]
+#[charon::variants_suffix("Scalar")]
 pub enum ScalarValue {
-    Unsigned(UIntTy, u128),
-    Signed(IntTy, i128),
+    Unsigned(
+        UIntTy,
+        #[serde(with = "crate::ast::values_utils::scalar_value_ser_de")] u128,
+    ),
+
+    Signed(
+        IntTy,
+        #[serde(with = "crate::ast::values_utils::scalar_value_ser_de")] i128,
+    ),
 }
 
 /// This is simlar to the Scalar value above. However, instead of storing

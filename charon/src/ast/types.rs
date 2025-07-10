@@ -503,7 +503,6 @@ pub struct Field {
     Ord,
     PartialOrd,
 )]
-#[charon::rename("IntType")]
 pub enum IntTy {
     Isize,
     I8,
@@ -529,7 +528,6 @@ pub enum IntTy {
     Ord,
     PartialOrd,
 )]
-#[charon::rename("UIntType")]
 pub enum UIntTy {
     Usize,
     U8,
@@ -676,8 +674,8 @@ pub struct TypeDeclRef {
 #[charon::rename("LiteralType")]
 #[charon::variants_prefix("T")]
 pub enum LiteralTy {
-    Integer(IntTy),
-    UnsignedInteger(UIntTy),
+    Int(IntTy),
+    UInt(UIntTy),
     Float(FloatTy),
     Bool,
     Char,

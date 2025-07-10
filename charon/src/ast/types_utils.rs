@@ -448,8 +448,8 @@ impl IntegerTy {
 impl LiteralTy {
     pub fn to_integer_ty(&self) -> Option<IntegerTy> {
         match self {
-            Self::Integer(int_ty) => Some(IntegerTy::Signed(*int_ty)),
-            Self::UnsignedInteger(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
+            Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),
+            Self::UInt(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
             _ => None,
         }
     }
@@ -560,17 +560,17 @@ impl Ty {
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(kind) => kind.is_integer(),
+            TyKind::Literal(kind) => kind.is_int() || kind.is_uint(),
             _ => false,
         }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
-        matches!(self.kind(), TyKind::Literal(LiteralTy::UnsignedInteger(_)))
+        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(_)))
     }
 
     pub fn is_signed_scalar(&self) -> bool {
-        matches!(self.kind(), TyKind::Literal(LiteralTy::Integer(_)))
+        matches!(self.kind(), TyKind::Literal(LiteralTy::Int(_)))
     }
 
     /// Return true if the type is Box

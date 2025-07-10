@@ -40,6 +40,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn translate_hax_int_ty(int_ty: &hax::IntTy) -> IntTy {
+        match int_ty {
+            hax::IntTy::Isize => IntTy::Isize,
+            hax::IntTy::I8 => IntTy::I8,
+            hax::IntTy::I16 => IntTy::I16,
+            hax::IntTy::I32 => IntTy::I32,
+            hax::IntTy::I64 => IntTy::I64,
+            hax::IntTy::I128 => IntTy::I128,
+        }
+    }
+
+    pub(crate) fn translate_hax_uint_ty(uint_ty: &hax::UintTy) -> UIntTy {
+        use hax::UintTy;
+        match uint_ty {
+            UintTy::Usize => UIntTy::Usize,
+            UintTy::U8 => UIntTy::U8,
+            UintTy::U16 => UIntTy::U16,
+            UintTy::U32 => UIntTy::U32,
+            UintTy::U64 => UIntTy::U64,
+            UintTy::U128 => UIntTy::U128,
+        }
+    }
+
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/
@@ -64,24 +87,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
-            hax::TyKind::Int(int_ty) => TyKind::Literal(LiteralTy::Integer(match int_ty {
-                hax::IntTy::Isize => IntTy::Isize,
-                hax::IntTy::I8 => IntTy::I8,
-                hax::IntTy::I16 => IntTy::I16,
-                hax::IntTy::I32 => IntTy::I32,
-                hax::IntTy::I64 => IntTy::I64,
-                hax::IntTy::I128 => IntTy::I128,
-            })),
-            hax::TyKind::Uint(int_ty) => {
-                use hax::UintTy;
-                TyKind::Literal(LiteralTy::UnsignedInteger(match int_ty {
-                    UintTy::Usize => UIntTy::Usize,
-                    UintTy::U8 => UIntTy::U8,
-                    UintTy::U16 => UIntTy::U16,
-                    UintTy::U32 => UIntTy::U32,
-                    UintTy::U64 => UIntTy::U64,
-                    UintTy::U128 => UIntTy::U128,
-                }))
+            hax::TyKind::Int(int_ty) => {
+                TyKind::Literal(LiteralTy::Int(Self::translate_hax_int_ty(int_ty)))
+            }
+            hax::TyKind::Uint(uint_ty) => {
+                TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
             }
             hax::TyKind::Float(float_ty) => {
                 use hax::FloatTy;

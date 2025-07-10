@@ -908,8 +908,8 @@ impl Display for Literal {
 impl Display for LiteralTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LiteralTy::Integer(ty) => write!(f, "{ty}"),
-            LiteralTy::UnsignedInteger(ty) => write!(f, "{ty}"),
+            LiteralTy::Int(ty) => write!(f, "{ty}"),
+            LiteralTy::UInt(ty) => write!(f, "{ty}"),
             LiteralTy::Float(ty) => write!(f, "{ty}"),
             LiteralTy::Char => write!(f, "char"),
             LiteralTy::Bool => write!(f, "bool"),

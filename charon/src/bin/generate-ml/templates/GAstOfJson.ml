@@ -26,6 +26,12 @@ type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
 let path_buf_of_json = string_of_json
-let target_ptr_size = ref 0
+
+let big_int_of_json _ (js : json) : (big_int, string) result =
+    combine_error_msgs js __FUNCTION__
+      (match js with
+      | `Int i -> Ok (Z.of_int i)
+      | `String is -> Ok (Z.of_string is)
+      | _ -> Error "")
 
 (* __REPLACE0__ *)

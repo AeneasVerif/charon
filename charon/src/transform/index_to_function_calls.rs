@@ -114,7 +114,7 @@ impl<'a> IndexVisitor<'a> {
         if from_end {
             // `storage_live(len_var)`
             // `len_var = len(p)`
-            let usize_ty = TyKind::Literal(LiteralTy::UnsignedInteger(UIntTy::Usize)).into_ty();
+            let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
             let len_var = self.fresh_var(None, usize_ty.clone());
             let kind = RawStatement::Assign(
                 len_var.clone(),

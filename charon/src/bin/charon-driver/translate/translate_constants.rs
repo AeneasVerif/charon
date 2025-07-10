@@ -22,26 +22,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 use hax::ConstantInt;
                 let scalar = match i {
                     ConstantInt::Int(v, int_type) => {
-                        let ty = match int_type {
-                            hax::IntTy::Isize => IntTy::Isize,
-                            hax::IntTy::I8 => IntTy::I8,
-                            hax::IntTy::I16 => IntTy::I16,
-                            hax::IntTy::I32 => IntTy::I32,
-                            hax::IntTy::I64 => IntTy::I64,
-                            hax::IntTy::I128 => IntTy::I128,
-                        };
+                        let ty = Self::translate_hax_int_ty(int_type);
                         ScalarValue::Signed(ty, *v)
                     }
-                    ConstantInt::Uint(v, int_type) => {
-                        use hax::UintTy;
-                        let ty = match int_type {
-                            UintTy::Usize => UIntTy::Usize,
-                            UintTy::U8 => UIntTy::U8,
-                            UintTy::U16 => UIntTy::U16,
-                            UintTy::U32 => UIntTy::U32,
-                            UintTy::U64 => UIntTy::U64,
-                            UintTy::U128 => UIntTy::U128,
-                        };
+                    ConstantInt::Uint(v, uint_type) => {
+                        let ty = Self::translate_hax_uint_ty(uint_type);
                         ScalarValue::Unsigned(ty, *v)
                     }
                 };

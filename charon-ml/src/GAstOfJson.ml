@@ -102,7 +102,6 @@ and gtranslated_crate_of_json
         let* name = string_of_json ctx name in
         let* options = cli_options_of_json ctx options in
         let* target_information = target_info_of_json ctx target_info in
-        target_ptr_size := target_information.target_pointer_size;
 
         let* declarations =
           list_of_json declaration_group_of_json ctx declarations

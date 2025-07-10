@@ -153,11 +153,19 @@ let ty_as_literal (ty : ty) : literal_type =
   | TLiteral lty -> lty
   | _ -> raise (Failure "Unreachable")
 
-let ty_as_integer (ty : ty) : integer_type =
-  match ty_as_literal ty with
-  | TInteger ty -> Signed ty
-  | TUnsignedInteger ty -> Unsigned ty
+let literal_as_integer (literal : literal_type) : integer_type =
+  match literal with
+  | TInt ty -> Signed ty
+  | TUInt ty -> Unsigned ty
   | _ -> raise (Failure "Unreachable")
+
+let ty_as_integer (ty : ty) : integer_type =
+  literal_as_integer (ty_as_literal ty)
+
+let integer_as_literal (int_ty : integer_type) : literal_type =
+  match int_ty with
+  | Signed int_ty -> TInt int_ty
+  | Unsigned int_ty -> TUInt int_ty
 
 let const_generic_as_literal (cg : const_generic) : Values.literal =
   match cg with
@@ -232,7 +240,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
 let mk_unit_ty : ty = TAdt { id = TTuple; generics = empty_generic_args }
 
 (** The usize type *)
-let mk_usize_ty : ty = TLiteral (TUnsignedInteger Usize)
+let mk_usize_ty : ty = TLiteral (TUInt Usize)
 
 let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with
@@ -353,7 +361,7 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
       match variants with
       | [] -> None
       | hd_variant :: _ -> (
-          let discr_ty = hd_variant.discriminant.int_ty in
+          let discr_ty = Scalars.get_ty hd_variant.discriminant in
           let rec find_mapi f i = function
             | [] -> None
             | v :: tl ->
@@ -363,11 +371,13 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
 
           match discr_layout.encoding with
           | Direct -> begin
-              assert (discr_layout.tag_ty = tag.int_ty);
+              assert (discr_layout.tag_ty = Scalars.get_ty tag);
               let discr =
-                if Scalars.check_int_in_range ptr_size discr_ty tag.value then
-                  Some { tag with int_ty = discr_ty }
-                else None
+                match
+                  Scalars.mk_scalar ptr_size discr_ty (Scalars.get_val tag)
+                with
+                | Ok sv -> Some sv
+                | Error _ -> None
               in
               find_mapi (fun i v -> Some v.discriminant = discr) 0 variants
             end
