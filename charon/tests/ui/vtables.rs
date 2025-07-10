@@ -362,12 +362,17 @@ fn test_pretty_formatter<T: Display<Output = String>>(formatter: &dyn PrettyForm
     println!("Pretty formatted: {}", pretty_result);
 }
 
+fn cast_dyn<T: std::fmt::Debug>(x: &T) -> &dyn std::fmt::Debug { x }
+
 fn main() {
     // Test basic display functionality
     test_basic_display();
     test_pretty_display();
     test_drawable_inheritance();
     test_borrowing_formatter();
+
+    let dbg = cast_dyn(&"Hello, world!");
+    println!("Cast dyn: {:?}", dbg);
     
     // Test async renderer
     let async_renderer = Box::new(SimpleAsyncRenderer::new("Template"));
