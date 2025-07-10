@@ -75,9 +75,6 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
-    /// (For method declarations only) the clause id corresponding to the explicit `Self` clause.
-    /// If `None` then we're in a trait declaration and should use `TraitRefKind::Self` instead.
-    pub self_clause_id: Option<TraitClauseId>,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -171,7 +168,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             binding_levels: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
-            self_clause_id: Default::default(),
         }
     }
 
