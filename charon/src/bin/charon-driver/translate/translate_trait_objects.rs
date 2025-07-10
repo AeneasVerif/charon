@@ -209,16 +209,13 @@ impl ItemTransCtx<'_, '_> {
             let generics = trait_ref.generics.clone();
             let def_id = &pred.trait_ref.def_id;
             let id = self.translate_type_id(Span::dummy(), def_id)?;
-            let vtbl_st = TypeDeclRef {
-                id: id,
-                generics: generics,
-            };
+            let vtbl_struct = TypeDeclRef { id, generics };
             let field = Field {
                 span: Span::dummy(),
                 attr_info: dummy_public_attr_info(),
                 name: Some(format!("super_trait_{idx}").into()),
                 ty: Ty::new(TyKind::RawPtr(
-                    Ty::new(TyKind::Adt(vtbl_st)),
+                    Ty::new(TyKind::Adt(vtbl_struct)),
                     RefKind::Shared,
                 )),
             };
@@ -241,16 +238,16 @@ impl ItemTransCtx<'_, '_> {
             .try_collect()?;
         for (item_name, _, hax_def) in &items {
             match &hax_def.kind {
-                hax::FullDefKind::AssocFn { .. } => {
+                hax::FullDefKind::AssocFn { sig,.. } => {
                     let field = Field {
                         span: Span::dummy(),
                         attr_info: dummy_public_attr_info(),
                         name: Some(item_name.to_string().into()),
-                        ty: shim_ty
+                        ty: shim_ty,
                     };
                     fields.push(field);
                 }
-                _ => { }
+                _ => {}
             }
         }
         Ok(())
