@@ -60,6 +60,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             })
             .collect::<Vec<_>>();
         if all_ex_trait_ref.len() <= 1 {
+            // Also, check that the first one is the potentially unique one.
+            if all_ex_trait_ref.len() == 1 {
+                match &preds[0].skip_binder {
+                    ExistentialPredicate::Trait(..) => { } // ok
+                    _ => raise_error!(self, span, "Expected an ExistentialTraitRef at the beginning of the predicates list, found: {:?}", preds[0]),
+                }
+            }
             return Ok(());
         }
         // prepare to print
