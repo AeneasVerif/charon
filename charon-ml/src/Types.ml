@@ -10,7 +10,11 @@ type trait_db_var = trait_clause_id de_bruijn_var [@@deriving show]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
-let all_int_types = List.append all_signed_int_types all_unsigned_int_types
+
+let all_int_types =
+  List.append
+    (List.map (fun i -> Signed i) all_signed_int_types)
+    (List.map (fun u -> Unsigned u) all_unsigned_int_types)
 
 (** The variant id for [Option::None] *)
 let option_none_id = VariantId.of_int 0

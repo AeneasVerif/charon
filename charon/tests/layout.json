@@ -38,7 +38,9 @@
     "align": 1,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U8",
+      "tag_ty": {
+        "Unsigned": "U8"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -70,7 +72,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -118,7 +122,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 1
@@ -247,7 +253,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -294,7 +302,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 8,
-      "tag_ty": "Isize",
+      "tag_ty": {
+        "Signed": "Isize"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 1
@@ -334,7 +344,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 0
@@ -377,7 +389,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "I32",
+      "tag_ty": {
+        "Signed": "I32"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -423,7 +437,9 @@
     "align": 1,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "I8",
+      "tag_ty": {
+        "Signed": "I8"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -465,7 +481,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 2
@@ -506,7 +524,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "Isize",
+      "tag_ty": {
+        "Signed": "Isize"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 1

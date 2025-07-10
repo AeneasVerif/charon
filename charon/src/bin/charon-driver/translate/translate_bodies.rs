@@ -307,7 +307,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         min_length: _,
                     } => {
                         let offset = Operand::Const(Box::new(
-                            ScalarValue::from_uint(ptr_size, IntegerTy::Usize, offset as u128)
+                            ScalarValue::from_uint(ptr_size, UIntTy::Usize, offset as u128)
                                 .unwrap()
                                 .to_constant(),
                         ));
@@ -321,12 +321,12 @@ impl BodyTransCtx<'_, '_, '_> {
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
                         let from = Operand::Const(Box::new(
-                            ScalarValue::from_uint(ptr_size, IntegerTy::Usize, from as u128)
+                            ScalarValue::from_uint(ptr_size, UIntTy::Usize, from as u128)
                                 .unwrap()
                                 .to_constant(),
                         ));
                         let to = Operand::Const(Box::new(
-                            ScalarValue::from_uint(ptr_size, IntegerTy::Usize, to as u128)
+                            ScalarValue::from_uint(ptr_size, UIntTy::Usize, to as u128)
                                 .unwrap()
                                 .to_constant(),
                         ));
@@ -593,7 +593,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         let cg = ConstGeneric::Value(Literal::Scalar(
                             ScalarValue::from_uint(
                                 ptr_size,
-                                IntegerTy::Usize,
+                                UIntTy::Usize,
                                 operands_t.len() as u128,
                             )
                             .unwrap(),
@@ -911,13 +911,34 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(ScalarValue, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_bytes(int_ty, v.data_le_bytes);
+                        let v = ScalarValue::from_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes);
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
-                Ok(SwitchTargets::SwitchInt(int_ty, targets, otherwise))
+                Ok(SwitchTargets::SwitchInt(
+                    IntegerTy::Signed(int_ty),
+                    targets,
+                    otherwise,
+                ))
+            }
+            LiteralTy::UnsignedInteger(int_ty) => {
+                let targets: Vec<(ScalarValue, BlockId)> = targets
+                    .iter()
+                    .map(|(v, tgt)| {
+                        let v =
+                            ScalarValue::from_bytes(IntegerTy::Unsigned(int_ty), v.data_le_bytes);
+                        let tgt = self.translate_basic_block_id(*tgt);
+                        Ok((v, tgt))
+                    })
+                    .try_collect()?;
+                let otherwise = self.translate_basic_block_id(*otherwise);
+                Ok(SwitchTargets::SwitchInt(
+                    IntegerTy::Unsigned(int_ty),
+                    targets,
+                    otherwise,
+                ))
             }
             _ => raise_error!(self, span, "Can't match on type {switch_ty}"),
         }

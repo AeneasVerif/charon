@@ -22,26 +22,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 use hax::ConstantInt;
                 let scalar = match i {
                     ConstantInt::Int(v, int_type) => {
-                        use hax::IntTy;
                         let ty = match int_type {
-                            IntTy::Isize => IntegerTy::Isize,
-                            IntTy::I8 => IntegerTy::I8,
-                            IntTy::I16 => IntegerTy::I16,
-                            IntTy::I32 => IntegerTy::I32,
-                            IntTy::I64 => IntegerTy::I64,
-                            IntTy::I128 => IntegerTy::I128,
+                            hax::IntTy::Isize => IntTy::Isize,
+                            hax::IntTy::I8 => IntTy::I8,
+                            hax::IntTy::I16 => IntTy::I16,
+                            hax::IntTy::I32 => IntTy::I32,
+                            hax::IntTy::I64 => IntTy::I64,
+                            hax::IntTy::I128 => IntTy::I128,
                         };
                         ScalarValue::Signed(ty, *v)
                     }
                     ConstantInt::Uint(v, int_type) => {
                         use hax::UintTy;
                         let ty = match int_type {
-                            UintTy::Usize => IntegerTy::Usize,
-                            UintTy::U8 => IntegerTy::U8,
-                            UintTy::U16 => IntegerTy::U16,
-                            UintTy::U32 => IntegerTy::U32,
-                            UintTy::U64 => IntegerTy::U64,
-                            UintTy::U128 => IntegerTy::U128,
+                            UintTy::Usize => UIntTy::Usize,
+                            UintTy::U8 => UIntTy::U8,
+                            UintTy::U16 => UIntTy::U16,
+                            UintTy::U32 => UIntTy::U32,
+                            UintTy::U64 => UIntTy::U64,
+                            UintTy::U128 => UIntTy::U128,
                         };
                         ScalarValue::Unsigned(ty, *v)
                     }

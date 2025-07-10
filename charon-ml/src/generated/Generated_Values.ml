@@ -10,19 +10,8 @@ type float_type = F16 | F32 | F64 | F128
     derive the Eq and Ord traits, which are not implemented for floats *)
 and float_value = { float_value : string; float_ty : float_type }
 
-and integer_type =
-  | Isize
-  | I8
-  | I16
-  | I32
-  | I64
-  | I128
-  | Usize
-  | U8
-  | U16
-  | U32
-  | U64
-  | U128
+and int_type = Isize | I8 | I16 | I32 | I64 | I128
+and integer_type = Signed of int_type | Unsigned of u_int_type
 
 (** A primitive value.
 
@@ -38,7 +27,8 @@ and literal =
 
 (** Types of primitive values. Either an integer, bool, char *)
 and literal_type =
-  | TInteger of integer_type
+  | TInteger of int_type
+  | TUnsignedInteger of u_int_type
   | TFloat of float_type
   | TBool
   | TChar
@@ -51,6 +41,8 @@ and scalar_value = {
   value : big_int;
   int_ty : integer_type;
 }
+
+and u_int_type = Usize | U8 | U16 | U32 | U64 | U128
 [@@deriving
   show,
   eq,

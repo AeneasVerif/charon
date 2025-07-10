@@ -503,20 +503,62 @@ pub struct Field {
     Ord,
     PartialOrd,
 )]
-#[charon::rename("IntegerType")]
-pub enum IntegerTy {
+#[charon::rename("IntType")]
+pub enum IntTy {
     Isize,
     I8,
     I16,
     I32,
     I64,
     I128,
+}
+
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    VariantName,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
+#[charon::rename("UIntType")]
+pub enum UIntTy {
     Usize,
     U8,
     U16,
     U32,
     U64,
     U128,
+}
+
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    VariantName,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
+#[charon::rename("IntegerType")]
+pub enum IntegerTy {
+    Signed(IntTy),
+    Unsigned(UIntTy),
 }
 
 #[derive(
@@ -634,7 +676,8 @@ pub struct TypeDeclRef {
 #[charon::rename("LiteralType")]
 #[charon::variants_prefix("T")]
 pub enum LiteralTy {
-    Integer(IntegerTy),
+    Integer(IntTy),
+    UnsignedInteger(UIntTy),
     Float(FloatTy),
     Bool,
     Char,

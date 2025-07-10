@@ -109,7 +109,7 @@ fn transform_constant_expr(
                 .collect_vec();
 
             let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Unsigned(
-                IntegerTy::Usize,
+                UIntTy::Usize,
                 fields.len() as u128,
             )));
             let tref = val.ty.kind().as_adt().unwrap();

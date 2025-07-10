@@ -64,26 +64,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
-            hax::TyKind::Int(int_ty) => {
-                use hax::IntTy;
-                TyKind::Literal(LiteralTy::Integer(match int_ty {
-                    IntTy::Isize => IntegerTy::Isize,
-                    IntTy::I8 => IntegerTy::I8,
-                    IntTy::I16 => IntegerTy::I16,
-                    IntTy::I32 => IntegerTy::I32,
-                    IntTy::I64 => IntegerTy::I64,
-                    IntTy::I128 => IntegerTy::I128,
-                }))
-            }
+            hax::TyKind::Int(int_ty) => TyKind::Literal(LiteralTy::Integer(match int_ty {
+                hax::IntTy::Isize => IntTy::Isize,
+                hax::IntTy::I8 => IntTy::I8,
+                hax::IntTy::I16 => IntTy::I16,
+                hax::IntTy::I32 => IntTy::I32,
+                hax::IntTy::I64 => IntTy::I64,
+                hax::IntTy::I128 => IntTy::I128,
+            })),
             hax::TyKind::Uint(int_ty) => {
                 use hax::UintTy;
-                TyKind::Literal(LiteralTy::Integer(match int_ty {
-                    UintTy::Usize => IntegerTy::Usize,
-                    UintTy::U8 => IntegerTy::U8,
-                    UintTy::U16 => IntegerTy::U16,
-                    UintTy::U32 => IntegerTy::U32,
-                    UintTy::U64 => IntegerTy::U64,
-                    UintTy::U128 => IntegerTy::U128,
+                TyKind::Literal(LiteralTy::UnsignedInteger(match int_ty {
+                    UintTy::Usize => UIntTy::Usize,
+                    UintTy::U8 => UIntTy::U8,
+                    UintTy::U16 => UIntTy::U16,
+                    UintTy::U32 => UIntTy::U32,
+                    UintTy::U64 => UIntTy::U64,
+                    UintTy::U128 => UIntTy::U128,
                 }))
             }
             hax::TyKind::Float(float_ty) => {
@@ -385,21 +382,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
             if signed {
-                match int_ty {
-                    r_abi::Integer::I8 => IntegerTy::I8,
-                    r_abi::Integer::I16 => IntegerTy::I16,
-                    r_abi::Integer::I32 => IntegerTy::I32,
-                    r_abi::Integer::I64 => IntegerTy::I64,
-                    r_abi::Integer::I128 => IntegerTy::I128,
-                }
+                IntegerTy::Signed(match int_ty {
+                    r_abi::Integer::I8 => IntTy::I8,
+                    r_abi::Integer::I16 => IntTy::I16,
+                    r_abi::Integer::I32 => IntTy::I32,
+                    r_abi::Integer::I64 => IntTy::I64,
+                    r_abi::Integer::I128 => IntTy::I128,
+                })
             } else {
-                match int_ty {
-                    r_abi::Integer::I8 => IntegerTy::U8,
-                    r_abi::Integer::I16 => IntegerTy::U16,
-                    r_abi::Integer::I32 => IntegerTy::U32,
-                    r_abi::Integer::I64 => IntegerTy::U64,
-                    r_abi::Integer::I128 => IntegerTy::U128,
-                }
+                IntegerTy::Unsigned(match int_ty {
+                    r_abi::Integer::I8 => UIntTy::U8,
+                    r_abi::Integer::I16 => UIntTy::U16,
+                    r_abi::Integer::I32 => UIntTy::U32,
+                    r_abi::Integer::I64 => UIntTy::U64,
+                    r_abi::Integer::I128 => UIntTy::U128,
+                })
             }
         }
 
@@ -444,7 +441,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         translate_primitive_int(int_ty, signed)
                     }
                     // Try to handle pointer as integers of the same size.
-                    r_abi::Primitive::Pointer(_) => IntegerTy::Isize,
+                    r_abi::Primitive::Pointer(_) => IntegerTy::Signed(IntTy::Isize),
                     r_abi::Primitive::Float(_) => {
                         unreachable!()
                     }
@@ -484,12 +481,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         None
                     } else {
                         tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
-                            .map(|s| {
-                                if tag_ty.is_signed() {
-                                    ScalarValue::from_int(ptr_size, tag_ty, s.to_int(tag_size))
+                            .map(|s| match tag_ty {
+                                IntegerTy::Signed(int_ty) => {
+                                    ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size))
                                         .unwrap()
-                                } else {
-                                    ScalarValue::from_uint(ptr_size, tag_ty, s.to_uint(tag_size))
+                                }
+                                IntegerTy::Unsigned(uint_ty) => {
+                                    ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
                                         .unwrap()
                                 }
                             })
@@ -664,7 +662,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         discr: &hax::DiscriminantValue,
     ) -> Result<ScalarValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
-        let int_ty = *ty.kind().as_literal().unwrap().as_integer().unwrap();
+        let int_ty = ty.kind().as_literal().unwrap().to_integer_ty().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
 }

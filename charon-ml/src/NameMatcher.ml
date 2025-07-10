@@ -391,7 +391,9 @@ let literal_type_to_string (ty : T.literal_type) : string =
       | I16 -> "i16"
       | I32 -> "i32"
       | I64 -> "i64"
-      | I128 -> "i128"
+      | I128 -> "i128")
+  | TUnsignedInteger ty -> (
+      match ty with
       | Usize -> "usize"
       | U8 -> "u8"
       | U16 -> "u16"

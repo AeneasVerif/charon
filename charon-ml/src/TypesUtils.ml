@@ -155,7 +155,8 @@ let ty_as_literal (ty : ty) : literal_type =
 
 let ty_as_integer (ty : ty) : integer_type =
   match ty_as_literal ty with
-  | TInteger ty -> ty
+  | TInteger ty -> Signed ty
+  | TUnsignedInteger ty -> Unsigned ty
   | _ -> raise (Failure "Unreachable")
 
 let const_generic_as_literal (cg : const_generic) : Values.literal =
@@ -168,11 +169,6 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   match id with
   | TraitImpl impl_ref -> (impl_ref.id, impl_ref.generics)
   | _ -> raise (Failure "Unreachable")
-
-let is_signed (int_ty : integer_type) =
-  match int_ty with
-  | Isize | I8 | I16 | I32 | I64 | I128 -> true
-  | Usize | U8 | U16 | U32 | U64 | U128 -> false
 
 (* Make a debruijn variable of index 0 *)
 let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
@@ -236,7 +232,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
 let mk_unit_ty : ty = TAdt { id = TTuple; generics = empty_generic_args }
 
 (** The usize type *)
-let mk_usize_ty : ty = TLiteral (TInteger Usize)
+let mk_usize_ty : ty = TLiteral (TUnsignedInteger Usize)
 
 let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with

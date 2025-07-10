@@ -969,8 +969,8 @@ and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Always" -> Ok Always
     | _ -> Error "")
 
-and integer_type_of_json (ctx : of_json_ctx) (js : json) :
-    (integer_type, string) result =
+and int_type_of_json (ctx : of_json_ctx) (js : json) : (int_type, string) result
+    =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Isize" -> Ok Isize
@@ -979,12 +979,18 @@ and integer_type_of_json (ctx : of_json_ctx) (js : json) :
     | `String "I32" -> Ok I32
     | `String "I64" -> Ok I64
     | `String "I128" -> Ok I128
-    | `String "Usize" -> Ok Usize
-    | `String "U8" -> Ok U8
-    | `String "U16" -> Ok U16
-    | `String "U32" -> Ok U32
-    | `String "U64" -> Ok U64
-    | `String "U128" -> Ok U128
+    | _ -> Error "")
+
+and integer_type_of_json (ctx : of_json_ctx) (js : json) :
+    (integer_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Signed", signed) ] ->
+        let* signed = int_type_of_json ctx signed in
+        Ok (Signed signed)
+    | `Assoc [ ("Unsigned", unsigned) ] ->
+        let* unsigned = u_int_type_of_json ctx unsigned in
+        Ok (Unsigned unsigned)
     | _ -> Error "")
 
 and item_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1106,8 +1112,11 @@ and literal_type_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Integer", integer) ] ->
-        let* integer = integer_type_of_json ctx integer in
+        let* integer = int_type_of_json ctx integer in
         Ok (TInteger integer)
+    | `Assoc [ ("UnsignedInteger", unsigned_integer) ] ->
+        let* unsigned_integer = u_int_type_of_json ctx unsigned_integer in
+        Ok (TUnsignedInteger unsigned_integer)
     | `Assoc [ ("Float", float_) ] ->
         let* float_ = float_type_of_json ctx float_ in
         Ok (TFloat float_)
@@ -1464,7 +1473,7 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
     (scalar_value, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ (_, `List [ ty; bi ]) ] ->
+    | `Assoc [ (polarity, `List [ ty; bi ]) ] ->
         let big_int_of_json (js : json) : (big_int, string) result =
           combine_error_msgs js __FUNCTION__
             (match js with
@@ -1473,7 +1482,7 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
             | _ -> Error "")
         in
         let* value = big_int_of_json bi in
-        let* int_ty = integer_type_of_json ctx ty in
+        let* int_ty = integer_type_of_json ctx (`Assoc [ (polarity, ty) ]) in
         let sv = { value; int_ty } in
         if not (check_scalar_value_in_range !target_ptr_size sv) then
           Error ("Scalar value not in range: " ^ show_scalar_value sv)
@@ -1907,6 +1916,18 @@ and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> TypeVarId.id_of_json ctx x
+    | _ -> Error "")
+
+and u_int_type_of_json (ctx : of_json_ctx) (js : json) :
+    (u_int_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Usize" -> Ok Usize
+    | `String "U8" -> Ok U8
+    | `String "U16" -> Ok U16
+    | `String "U32" -> Ok U32
+    | `String "U64" -> Ok U64
+    | `String "U128" -> Ok U128
     | _ -> Error "")
 
 and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
