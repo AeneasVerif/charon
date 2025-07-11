@@ -262,22 +262,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
-
-            hax::TyKind::Dynamic(preds, region, ..) => {
-                let region = self.translate_region(span, region)?;
-                let preds = preds
-                    .iter()
-                    .map(|binded_pred| {
-                        self.translate_region_binder(span, binded_pred, |ctx, x| {
-                            ctx.translate_existential_predicate(span, x)
-                        })
-                    })
-                    .collect::<Result<_, Error>>()?;
-                // This is a robustness check: the current version of Rustc
-                // accepts at most one existential trait ref in a dyn object.
-                // But things may change in the future
-                self.check_at_most_one_existential_trait_ref(span, &preds)?;
-                TyKind::DynTrait(preds, region)
+            hax::TyKind::Dynamic(self_ty, preds, region) => {
+                let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
+                TyKind::DynTrait(pred)
             }
 
             hax::TyKind::Infer(_) => {

@@ -197,6 +197,7 @@ and binder_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (BKTraitMethod (x_0, x_1))
     | `String "InherentImplBlock" -> Ok BKInherentImplBlock
+    | `String "Dyn" -> Ok BKDyn
     | `String "Other" -> Ok BKOther
     | _ -> Error "")
 
@@ -600,11 +601,13 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ offset; tag_ty; encoding } : discriminant_layout)
     | _ -> Error "")
 
-and existential_predicate_of_json (ctx : of_json_ctx) (js : json) :
-    (existential_predicate, string) result =
+and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
+    (dyn_predicate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Null -> Ok ()
+    | `Assoc [ ("binder", binder) ] ->
+        let* binder = binder_of_json ty_of_json ctx binder in
+        Ok ({ binder } : dyn_predicate)
     | _ -> Error "")
 
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
@@ -1790,7 +1793,7 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (TTraitType (x_0, x_1))
     | `Assoc [ ("DynTrait", dyn_trait) ] ->
-        let* dyn_trait = existential_predicate_of_json ctx dyn_trait in
+        let* dyn_trait = dyn_predicate_of_json ctx dyn_trait in
         Ok (TDynTrait dyn_trait)
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr =

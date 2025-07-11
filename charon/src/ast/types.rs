@@ -229,6 +229,8 @@ pub enum BinderKind {
     TraitMethod(TraitDeclId, TraitItemName),
     /// The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods.
     InherentImplBlock,
+    /// Binder used for `dyn Trait` existential predicates.
+    Dyn,
     /// Some other use of a binder outside the main Charon ast.
     Other,
 }
@@ -314,6 +316,8 @@ pub enum PredicateOrigin {
     // }
     // ```
     TraitItem(TraitItemName),
+    /// Clauses that are part of a `dyn Trait` type.
+    Dyn,
 }
 
 // rustc counts bytes in layouts as u64
@@ -777,13 +781,7 @@ pub enum TyKind {
     /// ```
     TraitType(TraitRef, TraitItemName),
     /// `dyn Trait`
-    ///
-    /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
-    /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
-    ///
-    /// Only the first Predicate is used as the *principal* predicate, i.e. the one that
-    /// corresponds to a vtable. It is uniquely of the `ExistentialTraitRef` type.
-    DynTrait(Vec<RegionBinder<ExistentialPredicate>>, Region),
+    DynTrait(DynPredicate),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
@@ -902,29 +900,14 @@ pub struct FunSig {
     pub output: Ty,
 }
 
-/// A wrapper of TraitDeclRef with `Self` specially being `Ty::ExistentialPlaceholder`
+/// The contents of a `dyn Trait` type.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ExistentialTraitRef(pub TraitDeclRef);
-/// Corresponding to `ty::TermKind` in Rustc
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub enum TyTerm {
-    Ty(Ty),
-    Const(ConstantExpr),
-}
-/// A projection of the form `TraitItemName<GenericArgs> = TyTerm`.
-/// where the `TraitItemName` is the name of the trait item, either a type or a constant
-/// associated to the principle trait (represented by the `ExistentialTraitRef`).
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ExistentialProjection {
-    pub trait_item: TraitItemName,
-    pub generics: Box<GenericArgs>,
-    pub term: TyTerm,
-}
-
-/// A predicate of the form `exists<T> where T: Trait`.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub enum ExistentialPredicate {
-    Trait(ExistentialTraitRef),
-    Projection(ExistentialProjection),
-    AutoTrait(TraitDeclId),
+pub struct DynPredicate {
+    /// This binder binds a single type `T`, which is considered existentially quantified. The
+    /// predicates in the binder apply to `T` and represent the `dyn Trait` constraints.
+    /// E.g. `dyn Iterator<Item=u32> + Send` is represented as `exists<T: Iterator<Item=u32> + Send> T`.
+    ///
+    /// Only the first trait clause may have methods. We use the vtable of this trait in the `dyn
+    /// Trait` pointer metadata.
+    pub binder: Binder<Ty>,
 }

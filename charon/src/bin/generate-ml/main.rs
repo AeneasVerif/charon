@@ -1220,7 +1220,7 @@ fn generate_ml(
                     ancestors: &["ty_base_base"],
                     name: "ty",
                     reduce: false,
-                    extra_types: &[],
+                    extra_types: &["span"],
                 })), &[
                     "TyKind",
                     "TraitImplRef",
@@ -1233,7 +1233,7 @@ fn generate_ml(
                     name: "type_decl",
                     reduce: false,
                     extra_types: &[
-                        "span", "attr_info"
+                        "attr_info"
                     ],
                 })), &[
                     "Binder",

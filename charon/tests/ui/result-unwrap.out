@@ -30,254 +30,6 @@ fn core::char::TAG_THREE_B() -> u8
 
 const core::char::TAG_THREE_B: u8 = core::char::TAG_THREE_B()
 
-fn core::char::TAG_FOUR_B() -> u8
-{
-    let @0: u8; // return
-
-    @0 := const (240 : u8)
-    return
-}
-
-const core::char::TAG_FOUR_B: u8 = core::char::TAG_FOUR_B()
-
-// Full name: core::char::methods::encode_utf8_raw_unchecked
-pub unsafe fn encode_utf8_raw_unchecked(@1: u32, @2: *mut u8)
-{
-    let @0: (); // return
-    let code@1: u32; // arg #1
-    let dst@2: *mut u8; // arg #2
-    let len@3: usize; // local
-    let @4: u8; // anonymous local
-    let @5: u32; // anonymous local
-    let @6: u32; // anonymous local
-    let @7: u8; // anonymous local
-    let @8: u32; // anonymous local
-    let @9: *mut u8; // anonymous local
-    let @10: u8; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: u32; // anonymous local
-    let @13: u8; // anonymous local
-    let @14: u32; // anonymous local
-    let @15: u32; // anonymous local
-    let @16: *mut u8; // anonymous local
-    let @17: u8; // anonymous local
-    let @18: u32; // anonymous local
-    let @19: *mut u8; // anonymous local
-    let @20: u8; // anonymous local
-    let @21: u32; // anonymous local
-    let @22: u32; // anonymous local
-    let @23: u8; // anonymous local
-    let @24: u32; // anonymous local
-    let @25: u32; // anonymous local
-    let @26: *mut u8; // anonymous local
-    let @27: u8; // anonymous local
-    let @28: u32; // anonymous local
-    let @29: u32; // anonymous local
-    let @30: *mut u8; // anonymous local
-    let @31: u8; // anonymous local
-    let @32: u32; // anonymous local
-    let @33: *mut u8; // anonymous local
-    let @34: bool; // anonymous local
-    let @35: bool; // anonymous local
-    let @36: bool; // anonymous local
-    let @37: u8; // anonymous local
-    let @38: u8; // anonymous local
-    let @39: u8; // anonymous local
-    let @40: u8; // anonymous local
-    let @41: u8; // anonymous local
-    let @42: u8; // anonymous local
-    let @43: u8; // anonymous local
-    let @44: u8; // anonymous local
-    let @45: u8; // anonymous local
-
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(@12)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
-    storage_live(@24)
-    storage_live(@25)
-    storage_live(@26)
-    storage_live(@27)
-    storage_live(@28)
-    storage_live(@29)
-    storage_live(@30)
-    storage_live(@31)
-    storage_live(@32)
-    storage_live(@33)
-    storage_live(@37)
-    storage_live(@38)
-    storage_live(@39)
-    storage_live(@40)
-    storage_live(@41)
-    storage_live(@42)
-    storage_live(@43)
-    storage_live(@44)
-    storage_live(@45)
-    storage_live(len@3)
-    storage_live(@34)
-    storage_live(@35)
-    storage_live(@36)
-    @34 := copy (code@1) < const (128 : u32)
-    if move (@34) {
-        len@3 := const (1 : usize)
-        storage_dead(@36)
-        storage_dead(@35)
-        storage_dead(@34)
-        *(dst@2) := cast<u32, u8>(copy (code@1))
-    }
-    else {
-        @35 := copy (code@1) < const (2048 : u32)
-        if move (@35) {
-            len@3 := const (2 : usize)
-            storage_dead(@36)
-            storage_dead(@35)
-            storage_dead(@34)
-            storage_live(@4)
-            storage_live(@5)
-            storage_live(@6)
-            @6 := copy (code@1) wrap.>> const (6 : i32)
-            @5 := move (@6) & const (31 : u32)
-            storage_dead(@6)
-            @4 := cast<u32, u8>(move (@5))
-            storage_dead(@5)
-            @37 := core::char::TAG_TWO_B
-            *(dst@2) := move (@4) | move (@37)
-            storage_dead(@4)
-            storage_live(@7)
-            storage_live(@8)
-            @8 := copy (code@1) & const (63 : u32)
-            @7 := cast<u32, u8>(move (@8))
-            storage_dead(@8)
-            storage_live(@9)
-            @9 := copy (dst@2) offset const (1 : usize)
-            @38 := core::char::TAG_CONT
-            *(@9) := move (@7) | move (@38)
-            storage_dead(@7)
-            storage_dead(@9)
-        }
-        else {
-            @36 := copy (code@1) < const (65536 : u32)
-            if move (@36) {
-                len@3 := const (3 : usize)
-                storage_dead(@36)
-                storage_dead(@35)
-                storage_dead(@34)
-                storage_live(@10)
-                storage_live(@11)
-                storage_live(@12)
-                @12 := copy (code@1) wrap.>> const (12 : i32)
-                @11 := move (@12) & const (15 : u32)
-                storage_dead(@12)
-                @10 := cast<u32, u8>(move (@11))
-                storage_dead(@11)
-                @39 := core::char::TAG_THREE_B
-                *(dst@2) := move (@10) | move (@39)
-                storage_dead(@10)
-                storage_live(@13)
-                storage_live(@14)
-                storage_live(@15)
-                @15 := copy (code@1) wrap.>> const (6 : i32)
-                @14 := move (@15) & const (63 : u32)
-                storage_dead(@15)
-                @13 := cast<u32, u8>(move (@14))
-                storage_dead(@14)
-                storage_live(@16)
-                @16 := copy (dst@2) offset const (1 : usize)
-                @40 := core::char::TAG_CONT
-                *(@16) := move (@13) | move (@40)
-                storage_dead(@13)
-                storage_dead(@16)
-                storage_live(@17)
-                storage_live(@18)
-                @18 := copy (code@1) & const (63 : u32)
-                @17 := cast<u32, u8>(move (@18))
-                storage_dead(@18)
-                storage_live(@19)
-                @19 := copy (dst@2) offset const (2 : usize)
-                @41 := core::char::TAG_CONT
-                *(@19) := move (@17) | move (@41)
-                storage_dead(@17)
-                storage_dead(@19)
-            }
-            else {
-                len@3 := const (4 : usize)
-                storage_dead(@36)
-                storage_dead(@35)
-                storage_dead(@34)
-                storage_live(@20)
-                storage_live(@21)
-                storage_live(@22)
-                @22 := copy (code@1) wrap.>> const (18 : i32)
-                @21 := move (@22) & const (7 : u32)
-                storage_dead(@22)
-                @20 := cast<u32, u8>(move (@21))
-                storage_dead(@21)
-                @42 := core::char::TAG_FOUR_B
-                *(dst@2) := move (@20) | move (@42)
-                storage_dead(@20)
-                storage_live(@23)
-                storage_live(@24)
-                storage_live(@25)
-                @25 := copy (code@1) wrap.>> const (12 : i32)
-                @24 := move (@25) & const (63 : u32)
-                storage_dead(@25)
-                @23 := cast<u32, u8>(move (@24))
-                storage_dead(@24)
-                storage_live(@26)
-                @26 := copy (dst@2) offset const (1 : usize)
-                @43 := core::char::TAG_CONT
-                *(@26) := move (@23) | move (@43)
-                storage_dead(@23)
-                storage_dead(@26)
-                storage_live(@27)
-                storage_live(@28)
-                storage_live(@29)
-                @29 := copy (code@1) wrap.>> const (6 : i32)
-                @28 := move (@29) & const (63 : u32)
-                storage_dead(@29)
-                @27 := cast<u32, u8>(move (@28))
-                storage_dead(@28)
-                storage_live(@30)
-                @30 := copy (dst@2) offset const (2 : usize)
-                @44 := core::char::TAG_CONT
-                *(@30) := move (@27) | move (@44)
-                storage_dead(@27)
-                storage_dead(@30)
-                storage_live(@31)
-                storage_live(@32)
-                @32 := copy (code@1) & const (63 : u32)
-                @31 := cast<u32, u8>(move (@32))
-                storage_dead(@32)
-                storage_live(@33)
-                @33 := copy (dst@2) offset const (3 : usize)
-                @45 := core::char::TAG_CONT
-                *(@33) := move (@31) | move (@45)
-                storage_dead(@31)
-                storage_dead(@33)
-            }
-        }
-    }
-    storage_dead(len@3)
-    @0 := ()
-    return
-}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -1190,7 +942,7 @@ pub fn {impl core::fmt::Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &
     storage_live(@8)
     storage_live(@3)
     storage_live(@4)
-    @4 := copy (((*(f@2)).options).flags)
+    @4 := copy (((*(f@2)).0).flags)
     @7 := core::fmt::flags::DEBUG_LOWER_HEX_FLAG
     @3 := move (@4) & move (@7)
     storage_dead(@4)
@@ -1206,7 +958,7 @@ pub fn {impl core::fmt::Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
-    @6 := copy (((*(f@2)).options).flags)
+    @6 := copy (((*(f@2)).0).flags)
     @8 := core::fmt::flags::DEBUG_UPPER_HEX_FLAG
     @5 := move (@6) & move (@8)
     storage_dead(@6)
@@ -1239,7 +991,7 @@ where
     [@TraitClause0]: Drop<Self>,
 
 // Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists(TODO) + '_1))) -> !
+fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_1))) -> !
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
@@ -1251,7 +1003,7 @@ where
     let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e@2: E; // local
     let @3: !; // anonymous local
-    let @4: &'_ ((dyn exists(TODO) + '_)); // anonymous local
+    let @4: &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)); // anonymous local
     let @5: &'_ (E); // anonymous local
 
     storage_live(e@2)
@@ -1266,7 +1018,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ ((dyn exists(TODO) + '_))>(copy (@5))
+            @4 := unsize_cast<&'_ (E), &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), @TraitClause2>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }
