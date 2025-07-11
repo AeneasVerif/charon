@@ -16,7 +16,6 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 use tracing::field;
 
@@ -74,139 +73,6 @@ fn common_vtable_entries() -> Vector<FieldId, Field> {
 }
 
 impl ItemTransCtx<'_, '_> {
-    pub(crate) fn translate_existential_predicate_trait(
-        &mut self,
-        span: Span,
-        tref: &hax::ExistentialTraitRef,
-    ) -> Result<ExistentialTraitRef, Error> {
-        // Here, we need to trigger the enqueue of the vtable struct
-        let _ = self.register_vtable_as_type_decl_id(span, &tref.def_id);
-        Ok(ExistentialTraitRef(
-            self.translate_trait_decl_ref_from_ex_trait_ref(span, &tref.def_id, &tref.args)?,
-        ))
-    }
-
-    fn translate_ex_generics(
-        &mut self,
-        span: Span,
-        args: &[hax::GenericArg],
-    ) -> Result<Box<GenericArgs>, Error> {
-        let mut generics = Box::new(self.translate_generic_args(span, args, &[])?);
-        generics.types.insert_and_shift_ids(
-            TypeVarId::from_usize(0),
-            Ty::new(TyKind::ExistentialPlaceholder),
-        );
-        Ok(generics)
-    }
-
-    /// An existential trait reference is represented separately as an `DefId`` with its args
-    fn translate_trait_decl_ref_from_ex_trait_ref(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-        args: &[hax::GenericArg],
-    ) -> Result<TraitDeclRef, Error> {
-        Ok(TraitDeclRef {
-            id: self.register_trait_decl_id(span, def_id),
-            generics: self.translate_ex_generics(span, args)?,
-        })
-    }
-
-    pub(crate) fn translate_existential_predicate_projection(
-        &mut self,
-        span: Span,
-        proj: &hax::ExistentialProjection,
-    ) -> Result<ExistentialProjection, Error> {
-        let args = self.translate_ex_generics(span, &proj.args)?;
-        let name = self.t_ctx.translate_trait_item_name(&proj.def_id)?;
-        let term = match &proj.term {
-            hax_frontend_exporter::Term::Ty(ty) => TyTerm::Ty(self.translate_ty(span, ty)?),
-            hax_frontend_exporter::Term::Const(decorated) => {
-                TyTerm::Const(self.translate_constant_expr_to_constant_expr(span, decorated)?)
-            }
-        };
-        Ok(ExistentialProjection {
-            trait_item: name,
-            generics: args,
-            term,
-        })
-    }
-
-    /// Simply gets the trait decl id for the DefId of the auto trait.
-    pub(crate) fn translate_existential_predicate_auto_trait(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-    ) -> Result<TraitDeclId, Error> {
-        Ok(self.register_trait_decl_id(span, def_id))
-    }
-
-    pub(crate) fn translate_existential_predicate(
-        &mut self,
-        span: Span,
-        pred: &hax::ExistentialPredicate,
-    ) -> Result<ExistentialPredicate, Error> {
-        Ok(match pred {
-            hax::ExistentialPredicate::Trait(tref) => {
-                ExistentialPredicate::Trait(self.translate_existential_predicate_trait(span, tref)?)
-            }
-            hax::ExistentialPredicate::Projection(proj) => ExistentialPredicate::Projection(
-                self.translate_existential_predicate_projection(span, proj)?,
-            ),
-            hax::ExistentialPredicate::AutoTrait(def_id) => ExistentialPredicate::AutoTrait(
-                self.translate_existential_predicate_auto_trait(span, def_id)?,
-            ),
-        })
-    }
-
-    // /// Returns the list of methods in the vtable for the given trait.
-    // /// Just the methods! Ignoring `Vacant` and `TraitVPtr`.
-    // /// Also, the types of the methods are already for the Shim functions,
-    // /// i.e. the receiver of the functions are turned to the corresponding erased version:
-    // /// - `&self` becomes `*()`
-    // /// - `&mut self` becomes `*mut ()`
-    // /// - `self : Box<Self>` becomes `Box<()>`
-    // /// - `self : Arc<Self>` becomes `Arc<()>`
-    // /// - `self : Rc<Self>` becomes `Rc<()>`
-    // /// - `self : Pin<P>` becomes `Pin<P'>` where `P'` is recursively translated for the erased type.
-    // /// See, e.g.,
-    // ///     https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility
-    // /// for more details
-    // fn lookup_vtable_method_list(&self, trait_def_id: &hax::DefId) -> Vec<(String, Ty)> {
-    //     // perform a DFS ourselves to find the methods in the vtable
-    //     // as we only have the `hax::DefId` of the trait, but no `TraitRef` to call Rustc
-    //     let mut vec = Vec::new();
-    //     let call_back = |trait_ref: &rustc_middle::ty::TraitRef| {
-    //         vec.append(&mut self.lookup_vtable_methods_of_one_trait_segment(trait_ref));
-    //     };
-    //     self.prepare_trait_segments(trait_def_id, call_back);
-    //     vec
-    // }
-
-    // /// Call `rustc_trait_selection::traits::vtable::prepare_vtable_segments`
-    // /// to get the correct order of the trait segments
-    // /// The `TraitRef` to be supplied to the `call_back` is from the dummy object
-    // /// the generic args might need to be substituted by the bounded generics
-    // fn prepare_trait_segments(
-    //     &self,
-    //     trait_def_id: &hax::DefId,
-    //     mut call_back: impl FnMut(&rustc_middle::ty::TraitRef),
-    // ) {
-    //     let tcx = self.t_ctx.tcx;
-    //     let rid = trait_def_id.as_rust_def_id().unwrap();
-    //     let dummy = rustc_middle::ty::TraitRef::identity(tcx, rid);
-    //     use rustc_trait_selection::traits::vtable::*;
-    //     prepare_vtable_segments(tcx, dummy, |segment| -> std::ops::ControlFlow<()> {
-    //         match segment {
-    //             VtblSegment::MetadataDSA => Continue(()),
-    //             VtblSegment::TraitOwnEntries { trait_ref, .. } => {
-    //                 call_back(&trait_ref);
-    //                 Continue(())
-    //             }
-    //         }
-    //     });
-    // }
-
     fn add_parent_trait_vtable_ptrs(
         &mut self,
         fields: &mut Vector<FieldId, Field>,
@@ -270,8 +136,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-
-impl ItemTransCtx<'_, '_> {
     pub fn check_at_most_one_pred_has_methods(
         &mut self,
         span: Span,
@@ -301,8 +165,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-
-    pub(crate) fn translate_vtale_struct(
+    pub(crate) fn translate_vtable_struct(
         mut self,
         typ_id: TypeDeclId,
         item_meta: ItemMeta,
@@ -384,6 +247,7 @@ impl ItemTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         todo!()
+    }
 
     pub fn translate_existential_predicates(
         &mut self,

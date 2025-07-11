@@ -42,53 +42,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    fn check_at_most_one_existential_trait_ref(
-        &self,
-        span: Span,
-        preds: &Vec<RegionBinder<ExistentialPredicate>>,
-    ) -> Result<(), Error> {
-        let all_ex_trait_ref = preds
-            .iter()
-            .filter_map(|binded_pred| {
-                if let ExistentialPredicate::Trait(trait_ref) = &binded_pred.skip_binder {
-                    Some(trait_ref)
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
-        if all_ex_trait_ref.len() <= 1 {
-            // Also, check that the first one is the potentially unique one.
-            if all_ex_trait_ref.len() == 1 {
-                match &preds[0].skip_binder {
-                    ExistentialPredicate::Trait(..) => {} // ok
-                    _ => raise_error!(
-                        self,
-                        span,
-                        "Expected an ExistentialTraitRef at the beginning of the predicates list, found: {:?}",
-                        preds[0]
-                    ),
-                }
-            }
-            return Ok(());
-        }
-        // prepare to print
-        // all: Trait1 + Trait 2 + ...
-        let fmt = &self.into_fmt();
-        let all = all_ex_trait_ref
-            .iter()
-            .map(|x| x.with_ctx(fmt))
-            .format(" + ");
-        let str = format!(
-            "dyn multiple traits is not supported as per Rustc 1.90.0. I.e., (dyn {all}).
-            Consider the workaround by defining:
-            `trait Multiple : {all} {{}}`,
-            `impl <T : {all}> Multiple for T {{}}`
-            using `dyn Multiple` instead.",
-        );
-        raise_error!(self, span, "{}", str);
-    }
-
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/

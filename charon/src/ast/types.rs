@@ -796,10 +796,6 @@ pub enum TyKind {
     /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
     /// we need to bind them here.
     FnDef(RegionBinder<FnPtr>),
-    /// Fake type used in `dyn Trait` predicates: such a predicate has the `Self` type
-    /// existentially quantified. In order for generics to stay consistent, we use this placeholder to
-    /// represent the existentially quantified type.
-    ExistentialPlaceholder,
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
