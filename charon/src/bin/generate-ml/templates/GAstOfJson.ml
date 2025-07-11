@@ -23,9 +23,8 @@ module FileId = IdGen ()
 let log = Logging.llbc_of_json_logger
 
 type id_to_file_map = file FileId.Map.t
-type of_json_ctx = id_to_file_map
+type of_json_ctx = id_to_file_map * target_info option
 
 let path_buf_of_json = string_of_json
-let target_ptr_size = ref 0
 
 (* __REPLACE0__ *)

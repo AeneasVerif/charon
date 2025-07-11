@@ -13,18 +13,14 @@ pub enum ScalarError {
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
 
-macro_rules! from_ne_bytes {
+macro_rules! from_le_bytes {
     ($m:ident, $b:ident, [$(($i_ty: ty, $i:ident, $s:ident, $n_ty:ty, $t:ty)),*]) => {
         match $m {
             $(
                 IntegerTy::$s(<$i_ty>::$i) => {
                     let n = size_of::<$n_ty>();
-                    let b: [u8; _] = if cfg!(target_endian = "big"){
-                        $b[16-n..16].try_into().unwrap()
-                    } else {
-                        $b[0..n].try_into().unwrap()
-                    };
-                    ScalarValue::$s(<$i_ty>::$i, <$n_ty>::from_ne_bytes(b) as $t)
+                    let b: [u8; _] = $b[0..n].try_into().unwrap();
+                    ScalarValue::$s(<$i_ty>::$i, <$n_ty>::from_le_bytes(b) as $t)
                 }
             )*
         }
@@ -155,12 +151,12 @@ impl ScalarValue {
     pub fn to_bits(&self) -> u128 {
         match *self {
             ScalarValue::Unsigned(_, v) => v,
-            ScalarValue::Signed(_, v) => u128::from_be_bytes(v.to_ne_bytes()),
+            ScalarValue::Signed(_, v) => u128::from_le_bytes(v.to_le_bytes()),
         }
     }
 
-    pub fn from_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
-        from_ne_bytes!(
+    pub fn from_le_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
+        from_le_bytes!(
             ty,
             bytes,
             [
@@ -181,13 +177,13 @@ impl ScalarValue {
     }
 
     pub fn from_bits(ty: IntegerTy, bits: u128) -> Self {
-        let bytes = bits.to_ne_bytes();
-        Self::from_bytes(ty, bytes)
+        let bytes = bits.to_le_bytes();
+        Self::from_le_bytes(ty, bytes)
     }
 
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
-    /// bits (see [ScalarValue::from_bytes]).
+    /// bits (see [ScalarValue::from_le_bytes]).
     pub fn from_int(ptr_size: ByteCount, ty: IntTy, v: i128) -> ScalarResult<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ptr_size, ty, v) {
             Err(ScalarError::OutOfBounds)
@@ -198,8 +194,8 @@ impl ScalarValue {
 
     pub fn to_constant(self) -> ConstantExpr {
         let literal_ty = match self {
-            ScalarValue::Signed(int_ty, _) => LiteralTy::Integer(int_ty),
-            ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UnsignedInteger(uint_ty),
+            ScalarValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
+            ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
         ConstantExpr {
             value: RawConstantExpr::Literal(Literal::Scalar(self)),
@@ -305,15 +301,15 @@ mod test {
     #[test]
     fn test_big_endian_scalars() -> ScalarResult<()> {
         let u128 = 0x12345678901234567890123456789012u128;
-        let ne_bytes = u128.to_ne_bytes();
+        let le_bytes = u128.to_le_bytes();
 
-        let ne_scalar = ScalarValue::from_bytes(IntegerTy::Unsigned(UIntTy::U128), ne_bytes);
-        assert_eq!(ne_scalar, ScalarValue::Unsigned(UIntTy::U128, u128));
+        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Unsigned(UIntTy::U128), le_bytes);
+        assert_eq!(le_scalar, ScalarValue::Unsigned(UIntTy::U128, u128));
 
         let i64 = 0x1234567890123456i64;
-        let ne_bytes = (i64 as i128).to_ne_bytes();
-        let ne_scalar = ScalarValue::from_bytes(IntegerTy::Signed(IntTy::I64), ne_bytes);
-        assert_eq!(ne_scalar, ScalarValue::Signed(IntTy::I64, i64 as i128));
+        let le_bytes = (i64 as i128).to_le_bytes();
+        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Signed(IntTy::I64), le_bytes);
+        assert_eq!(le_scalar, ScalarValue::Signed(IntTy::I64, i64 as i128));
 
         Ok(())
     }

@@ -904,11 +904,12 @@ impl BodyTransCtx<'_, '_, '_> {
                 let then_block = self.translate_basic_block_id(*target);
                 Ok(SwitchTargets::If(if_block, then_block))
             }
-            LiteralTy::Integer(int_ty) => {
+            LiteralTy::Int(int_ty) => {
                 let targets: Vec<(ScalarValue, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes);
+                        let v =
+                            ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes);
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
@@ -920,12 +921,14 @@ impl BodyTransCtx<'_, '_, '_> {
                     otherwise,
                 ))
             }
-            LiteralTy::UnsignedInteger(int_ty) => {
+            LiteralTy::UInt(int_ty) => {
                 let targets: Vec<(ScalarValue, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v =
-                            ScalarValue::from_bytes(IntegerTy::Unsigned(int_ty), v.data_le_bytes);
+                        let v = ScalarValue::from_le_bytes(
+                            IntegerTy::Unsigned(int_ty),
+                            v.data_le_bytes,
+                        );
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })

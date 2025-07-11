@@ -384,7 +384,7 @@ let literal_type_to_string (ty : T.literal_type) : string =
   match ty with
   | TBool -> "bool"
   | TChar -> "char"
-  | TInteger ty -> (
+  | TInt ty -> (
       match ty with
       | Isize -> "isize"
       | I8 -> "i8"
@@ -392,7 +392,7 @@ let literal_type_to_string (ty : T.literal_type) : string =
       | I32 -> "i32"
       | I64 -> "i64"
       | I128 -> "i128")
-  | TUnsignedInteger ty -> (
+  | TUInt ty -> (
       match ty with
       | Usize -> "usize"
       | U8 -> "u8"

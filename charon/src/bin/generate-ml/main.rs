@@ -175,8 +175,8 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
         TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
-        TyKind::Literal(LiteralTy::UnsignedInteger(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Int(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::UInt(_)) => "int_of_json".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut expr = Vec::new();
@@ -219,8 +219,8 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
         TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
-        TyKind::Literal(LiteralTy::UnsignedInteger(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::Int(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::UInt(_)) => "int".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut args = tref
@@ -1029,10 +1029,10 @@ fn generate_ml(
             indoc!(
                 "
                 (* Note that we use unbounded integers everywhere.
-                   We then harcode the boundaries for the different types.
+                   We then hardcode the boundaries for the different types.
                  *)
-                | SignedScalar of big_int * int_type
-                | UnsignedScalar of big_int * u_int_type
+                | SignedScalar of int_ty * big_int
+                | UnsignedScalar of u_int_ty * big_int
                 "
             ),
         ),
@@ -1060,7 +1060,7 @@ fn generate_ml(
                 r#"
                 | json ->
                     let* file_id = FileId.id_of_json ctx json in
-                    let file = FileId.Map.find file_id ctx in
+                    let file = FileId.Map.find file_id (fst ctx) in
                     Ok file
                 "#,
             ),
@@ -1081,7 +1081,9 @@ fn generate_ml(
                     in
                     let* value = big_int_of_json bi in
                     let* int_ty = integer_type_of_json ctx (`Assoc [ (polarity, ty) ]) in
-                    match mk_scalar !target_ptr_size int_ty value with
+                    match
+                      mk_scalar (Option.get (snd ctx)).target_pointer_size int_ty value
+                    with
                     | Ok sv -> Ok sv
                     | Error _ ->
                         Error

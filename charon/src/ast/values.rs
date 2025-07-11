@@ -48,8 +48,8 @@ pub enum Literal {
 }
 
 /// A scalar value.
-// We encode it as `{ value: ??; int_ty: IntegerTy; }` in json and on the ocaml side. We therefore
-// use a custom (de)serializer.
+// The OCaml and json representations are essentially the same, just a little more streamlined.
+// It uses a custom de-/serializer for this reason.
 #[derive(
     Debug,
     PartialEq,
@@ -67,6 +67,7 @@ pub enum Literal {
     DriveMut,
 )]
 #[drive(skip)]
+#[charon::variants_suffix("Scalar")]
 pub enum ScalarValue {
     Unsigned(UIntTy, u128),
     Signed(IntTy, i128),

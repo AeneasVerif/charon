@@ -25,8 +25,8 @@ let float_type_to_string = function
 
 let literal_type_to_string (ty : literal_type) : string =
   match ty with
-  | TInteger ity -> integer_type_to_string (Signed ity)
-  | TUnsignedInteger uty -> integer_type_to_string (Unsigned uty)
+  | TInt ity -> integer_type_to_string (Signed ity)
+  | TUInt uty -> integer_type_to_string (Unsigned uty)
   | TFloat fty -> float_type_to_string fty
   | TBool -> "bool"
   | TChar -> "char"

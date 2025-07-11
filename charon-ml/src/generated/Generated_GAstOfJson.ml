@@ -22,10 +22,9 @@ module FileId = IdGen ()
 let log = Logging.llbc_of_json_logger
 
 type id_to_file_map = file FileId.Map.t
-type of_json_ctx = id_to_file_map
+type of_json_ctx = id_to_file_map * target_info option
 
 let path_buf_of_json = string_of_json
-let target_ptr_size = ref 0
 
 let rec ___ = ()
 
@@ -661,7 +660,7 @@ and file_id_of_json (ctx : of_json_ctx) (js : json) : (file_id, string) result =
     (match js with
     | json ->
         let* file_id = FileId.id_of_json ctx json in
-        let file = FileId.Map.find file_id ctx in
+        let file = FileId.Map.find file_id (fst ctx) in
         Ok file
     | _ -> Error "")
 
@@ -969,8 +968,7 @@ and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Always" -> Ok Always
     | _ -> Error "")
 
-and int_type_of_json (ctx : of_json_ctx) (js : json) : (int_type, string) result
-    =
+and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Isize" -> Ok Isize
@@ -986,10 +984,10 @@ and integer_type_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Signed", signed) ] ->
-        let* signed = int_type_of_json ctx signed in
+        let* signed = int_ty_of_json ctx signed in
         Ok (Signed signed)
     | `Assoc [ ("Unsigned", unsigned) ] ->
-        let* unsigned = u_int_type_of_json ctx unsigned in
+        let* unsigned = u_int_ty_of_json ctx unsigned in
         Ok (Unsigned unsigned)
     | _ -> Error "")
 
@@ -1111,12 +1109,12 @@ and literal_type_of_json (ctx : of_json_ctx) (js : json) :
     (literal_type, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Integer", integer) ] ->
-        let* integer = int_type_of_json ctx integer in
-        Ok (TInteger integer)
-    | `Assoc [ ("UnsignedInteger", unsigned_integer) ] ->
-        let* unsigned_integer = u_int_type_of_json ctx unsigned_integer in
-        Ok (TUnsignedInteger unsigned_integer)
+    | `Assoc [ ("Int", int) ] ->
+        let* int = int_ty_of_json ctx int in
+        Ok (TInt int)
+    | `Assoc [ ("UInt", u_int) ] ->
+        let* u_int = u_int_ty_of_json ctx u_int in
+        Ok (TUInt u_int)
     | `Assoc [ ("Float", float_) ] ->
         let* float_ = float_type_of_json ctx float_ in
         Ok (TFloat float_)
@@ -1484,7 +1482,9 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* value = big_int_of_json bi in
         let* int_ty = integer_type_of_json ctx (`Assoc [ (polarity, ty) ]) in
-        match mk_scalar !target_ptr_size int_ty value with
+        match
+          mk_scalar (Option.get (snd ctx)).target_pointer_size int_ty value
+        with
         | Ok sv -> Ok sv
         | Error _ ->
             Error
@@ -1922,8 +1922,8 @@ and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> TypeVarId.id_of_json ctx x
     | _ -> Error "")
 
-and u_int_type_of_json (ctx : of_json_ctx) (js : json) :
-    (u_int_type, string) result =
+and u_int_ty_of_json (ctx : of_json_ctx) (js : json) : (u_int_ty, string) result
+    =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Usize" -> Ok Usize

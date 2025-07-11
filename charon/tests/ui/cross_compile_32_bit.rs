@@ -1,4 +1,7 @@
-//@ rustc-args=--target i686-unknown-linux-gnu
+//@ skip
+
+// To run, first install target i686-unknown-linux-gnu with `rustup target add i686-unknown-linux-gnu`
+// /*@ rustc-args=--target i686-unknown-linux-gnu*/
 
 use std::ptr::NonNull;
 

@@ -1,4 +1,7 @@
-//@ rustc-args=--target armebv7r-none-eabi
+//@ skip
+
+// To run, first install target armebv7r-none-eabi with `rustup target add armebv7r-none-eabi`
+// /*@ rustc-args=--target armebv7r-none-eabi*/
 
 #![no_std]
 

@@ -7,5 +7,5 @@ let literal_as_scalar (v : literal) : scalar_value =
 
 let literal_type_is_integer (t : literal_type) : bool =
   match t with
-  | TInteger _ -> true
+  | TInt _ -> true
   | _ -> false

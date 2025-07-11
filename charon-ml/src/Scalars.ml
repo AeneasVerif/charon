@@ -95,12 +95,12 @@ let check_int_in_range ptr_size (int_ty : integer_type) (i : big_int) : bool =
 
 let get_val (scalar : scalar_value) =
   match scalar with
-  | SignedScalar (v, _) | UnsignedScalar (v, _) -> v
+  | SignedScalar (_, v) | UnsignedScalar (_, v) -> v
 
 let get_ty (scalar : scalar_value) =
   match scalar with
-  | SignedScalar (_, int_ty) -> Signed int_ty
-  | UnsignedScalar (_, uint_ty) -> Unsigned uint_ty
+  | SignedScalar (int_ty, _) -> Signed int_ty
+  | UnsignedScalar (uint_ty, _) -> Unsigned uint_ty
 
 (** Check that a scalar value is correct (the integer value it contains is in
     range) *)
@@ -113,8 +113,8 @@ let mk_scalar ptr_size (int_ty : integer_type) (i : big_int) :
   if check_int_in_range ptr_size int_ty i then
     Ok
       (match int_ty with
-      | Signed int_ty -> SignedScalar (i, int_ty)
-      | Unsigned uint_ty -> UnsignedScalar (i, uint_ty))
+      | Signed int_ty -> SignedScalar (int_ty, i)
+      | Unsigned uint_ty -> UnsignedScalar (uint_ty, i))
   else Error ()
 
 let integer_type_is_signed (int_ty : integer_type) : bool =
