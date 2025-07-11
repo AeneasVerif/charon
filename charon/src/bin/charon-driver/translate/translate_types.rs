@@ -214,10 +214,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
-                // TODO: we don't translate the predicates yet because our machinery can't handle
-                // it.
-                TyKind::DynTrait(ExistentialPredicate)
+            hax::TyKind::Dynamic(self_ty, preds, region) => {
+                let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
+                TyKind::DynTrait(pred)
             }
 
             hax::TyKind::Infer(_) => {

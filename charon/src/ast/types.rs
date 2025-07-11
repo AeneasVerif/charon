@@ -229,6 +229,8 @@ pub enum BinderKind {
     TraitMethod(TraitDeclId, TraitItemName),
     /// The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods.
     InherentImplBlock,
+    /// Binder used for `dyn Trait` existential predicates.
+    Dyn,
     /// Some other use of a binder outside the main Charon ast.
     Other,
 }
@@ -272,12 +274,6 @@ pub struct GenericParams {
     pub trait_type_constraints: Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
-/// A predicate of the form `exists<T> where T: Trait`.
-///
-/// TODO: store something useful here
-#[derive(Debug, Default, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ExistentialPredicate;
-
 /// Where a given predicate came from.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PredicateOrigin {
@@ -320,6 +316,8 @@ pub enum PredicateOrigin {
     // }
     // ```
     TraitItem(TraitItemName),
+    /// Clauses that are part of a `dyn Trait` type.
+    Dyn,
 }
 
 // rustc counts bytes in layouts as u64
@@ -783,12 +781,7 @@ pub enum TyKind {
     /// ```
     TraitType(TraitRef, TraitItemName),
     /// `dyn Trait`
-    ///
-    /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
-    /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
-    ///
-    /// TODO: we don't translate this properly yet.
-    DynTrait(ExistentialPredicate),
+    DynTrait(DynPredicate),
     /// Function pointer type. This is a literal pointer to a region of memory that
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
@@ -901,4 +894,16 @@ pub struct FunSig {
     pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
+}
+
+/// The contents of a `dyn Trait` type.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct DynPredicate {
+    /// This binder binds a single type `T`, which is considered existentially quantified. The
+    /// predicates in the binder apply to `T` and represent the `dyn Trait` constraints.
+    /// E.g. `dyn Iterator<Item=u32> + Send` is represented as `exists<T: Iterator<Item=u32> + Send> T`.
+    ///
+    /// Only the first trait clause may have methods. We use the vtable of this trait in the `dyn
+    /// Trait` pointer metadata.
+    pub binder: Binder<Ty>,
 }

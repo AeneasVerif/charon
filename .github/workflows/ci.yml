@@ -82,6 +82,7 @@ jobs:
           CHARON: ${{needs.select-dep-versions.outputs.charon}}
           AENEAS: ${{needs.select-dep-versions.outputs.aeneas}}
         run: |
+          echo 'Using the aeneas commit selected by `select-dep-versions`'
           nix flake update --refresh \
               charon aeneas \
               --override-input charon github:aeneasverif/charon/$CHARON \
@@ -99,6 +100,7 @@ jobs:
           CHARON: ${{needs.select-dep-versions.outputs.charon}}
           EURYDICE: ${{needs.select-dep-versions.outputs.eurydice}}
         run: |
+          echo 'Using the eurydice commit selected by `select-dep-versions`'
           nix flake update --refresh \
               charon eurydice \
               --override-input charon github:aeneasverif/charon/$CHARON \
@@ -117,6 +119,7 @@ jobs:
           EURYDICE: ${{needs.select-dep-versions.outputs.eurydice}}
           LIBCRUX: ${{needs.select-dep-versions.outputs.libcrux}}
         run: |
+          echo 'Using the eurydice and libcrux commits selected by `select-dep-versions`'
           nix flake update --refresh \
               charon eurydice \
               --override-input charon github:aeneasverif/charon/$CHARON \

@@ -27,12 +27,6 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -169,14 +163,14 @@ fn foo()
     let @9: Rc<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]; // anonymous local
     let @10: Array<i32, 2 : usize>; // anonymous local
     let string@11: String; // local
-    let @12: &'_ (dyn (exists(TODO))); // anonymous local
+    let @12: &'_ ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)); // anonymous local
     let @13: &'_ (String); // anonymous local
     let @14: &'_ (String); // anonymous local
-    let @15: alloc::boxed::Box<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>]; // anonymous local
+    let @15: alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]; // anonymous local
     let @16: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>]; // anonymous local
     let @17: String; // anonymous local
     let @18: &'_ (String); // anonymous local
-    let @19: Rc<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>]; // anonymous local
+    let @19: Rc<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]; // anonymous local
     let @20: Rc<String>[MetaSized<String>, Sized<Global>]; // anonymous local
     let @21: String; // anonymous local
     let @22: &'_ (String); // anonymous local
@@ -221,7 +215,7 @@ fn foo()
     storage_live(@14)
     @14 := &string@11
     @13 := &*(@14)
-    @12 := unsize_cast<&'_ (String), &'_ (dyn (exists(TODO))), {impl Display for String}>(move (@13))
+    @12 := unsize_cast<&'_ (String), &'_ ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)), {impl Display for String}>(move (@13))
     storage_dead(@13)
     storage_dead(@14)
     storage_dead(@12)
@@ -233,11 +227,11 @@ fn foo()
     @17 := {impl Clone for String}::clone<'_>(move (@18))
     storage_dead(@18)
     @16 := @BoxNew<String>[Sized<String>](move (@17))
-    @15 := unsize_cast<alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>], alloc::boxed::Box<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>], {impl Display for String}>(move (@16))
+    @15 := unsize_cast<alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>], alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>], {impl Display for String}>(move (@16))
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[MetaSized<String>, Sized<Global>]] @16
     storage_dead(@17)
     storage_dead(@16)
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<dyn (exists(TODO)), Global>[MetaSized<dyn (exists(TODO))>, Sized<Global>]] @15
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_), Global>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]] @15
     storage_dead(@15)
     storage_live(@19)
     storage_live(@20)
@@ -247,11 +241,11 @@ fn foo()
     @21 := {impl Clone for String}::clone<'_>(move (@22))
     storage_dead(@22)
     @20 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, Sized<Global>]}::new<String>[Sized<String>](move (@21))
-    @19 := unsize_cast<Rc<String>[MetaSized<String>, Sized<Global>], Rc<dyn (exists(TODO))>[MetaSized<dyn (exists(TODO))>, Sized<Global>]>(move (@20))
+    @19 := unsize_cast<Rc<String>[MetaSized<String>, Sized<Global>], Rc<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]>(move (@20))
     drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<String, Global>[MetaSized<String>, Sized<Global>]] @20
     storage_dead(@21)
     storage_dead(@20)
-    drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<dyn (exists(TODO)), Global>[MetaSized<dyn (exists(TODO))>, Sized<Global>]] @19
+    drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_), Global>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]] @19
     storage_dead(@19)
     @0 := ()
     drop[{impl Drop for String}] string@11

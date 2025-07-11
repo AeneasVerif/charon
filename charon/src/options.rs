@@ -305,6 +305,7 @@ impl CliOpts {
                 Preset::Tests => {
                     self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
+                    self.exclude.push("core::fmt::Formatter".to_owned());
                 }
             }
         }

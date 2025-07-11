@@ -30,16 +30,6 @@ fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
 
 const core::fmt::flags::DEBUG_UPPER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_UPPER_HEX_FLAG()
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub struct Formatter<'a>
-where
-    'a : 'a,
-{
-  options: FormattingOptions,
-  buf: &'a mut (dyn (exists(TODO))),
-}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -140,7 +130,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     storage_live(@8)
     storage_live(@3)
     storage_live(@4)
-    @4 := copy (((*(f@2)).options).flags)
+    @4 := copy (((*(f@2)).0).flags)
     @7 := core::fmt::flags::DEBUG_LOWER_HEX_FLAG
     @3 := move (@4) & move (@7)
     storage_dead(@4)
@@ -156,7 +146,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
-    @6 := copy (((*(f@2)).options).flags)
+    @6 := copy (((*(f@2)).0).flags)
     @8 := core::fmt::flags::DEBUG_UPPER_HEX_FLAG
     @5 := move (@6) & move (@8)
     storage_dead(@6)
@@ -197,7 +187,7 @@ where
     [@TraitClause0]: Drop<Self>,
 
 // Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(TODO)))) -> !
+fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_1))) -> !
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
@@ -209,7 +199,7 @@ where
     let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e@2: E; // local
     let @3: !; // anonymous local
-    let @4: &'_ (dyn (exists(TODO))); // anonymous local
+    let @4: &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)); // anonymous local
     let @5: &'_ (E); // anonymous local
 
     storage_live(e@2)
@@ -224,7 +214,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO))), @TraitClause2>(copy (@5))
+            @4 := unsize_cast<&'_ (E), &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), @TraitClause2>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }

@@ -250,12 +250,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         mut id: usize,
     ) -> Result<ClauseDbVar, Error> {
-        if self.self_clause_id.is_some() {
-            // We added an extra first clause which hax doesn't know about, so we adapt the index
-            // accordingly.
-            // TODO: more robust tracking of clause ids between hax and charon.
-            id += 1;
-        }
         // The clause indices returned by hax count clauses in order, starting from the parentmost.
         // While adding clauses to a binding level we already need to translate types and clauses,
         // so the innermost item binder may not have all the clauses yet. Hence for that binder we

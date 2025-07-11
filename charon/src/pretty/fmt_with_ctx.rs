@@ -348,9 +348,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for ExistentialPredicate {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "exists(TODO)")
+impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let ctx = &ctx.push_binder(Cow::Borrowed(&self.binder.params));
+        let ty = self.binder.skip_binder.with_ctx(ctx);
+        let clauses = self.binder.params.formatted_clauses(ctx).format(" + ");
+        write!(f, "exists<{ty}> {clauses}")
     }
 }
 
@@ -1759,7 +1762,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::TraitType(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
-            TyKind::DynTrait(pred) => write!(f, "dyn ({})", pred.with_ctx(ctx)),
+            TyKind::DynTrait(pred) => {
+                write!(f, "(dyn {})", pred.with_ctx(ctx))
+            }
             TyKind::FnPtr(io) => {
                 write!(f, "{}", io.with_ctx(ctx))
             }
