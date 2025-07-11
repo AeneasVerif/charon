@@ -493,7 +493,7 @@ impl ItemTransCtx<'_, '_> {
                 .unwrap();
             Ok(Some(TypeDeclRef {
                 id: TypeId::Adt(vtable_id),
-                generics: Box::new(self.innermost_binder().params.identity_args()),
+                generics: Box::new(self.outermost_binder().params.identity_args()),
             }))
         } else {
             Ok(None)
