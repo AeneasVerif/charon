@@ -406,6 +406,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     type_defaults,
                     type_clauses,
                     methods,
+                    ..
                 } = d;
                 // Visit the traits referenced in the generics
                 let _ = generics.drive(&mut graph);

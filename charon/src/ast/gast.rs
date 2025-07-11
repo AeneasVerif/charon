@@ -127,6 +127,11 @@ pub enum ItemKind {
         #[drive(skip)]
         reuses_default: bool,
     },
+    /// This is a virtual table struct for a trait
+    VTable {
+        /// which trait is this VTable for
+        trait_decl_ref: TraitDeclRef,
+    },
 }
 
 /// A function definition
@@ -279,6 +284,9 @@ pub struct TraitDecl {
     /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
     /// provides a full list of arguments to the pointed-to function.
     pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The virtual table struct for this trait, if it has one.
+    /// It is guaranteed that the trait has a vtable iff it is dyn-compatible
+    pub vtable: Option<TypeDeclRef>,
 }
 
 /// A trait **implementation**.

@@ -1,7 +1,9 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::{BaseState, HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
@@ -213,7 +215,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
-
             hax::TyKind::Dynamic(self_ty, preds, region) => {
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
                 TyKind::DynTrait(pred)

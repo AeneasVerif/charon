@@ -84,20 +84,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     ctx.translate_trait_predicate(span, trait_pred)
                 })?;
-                let location = match location {
-                    PredicateLocation::Base => &mut self.innermost_generics_mut().trait_clauses,
-                    PredicateLocation::Parent => &mut self.parent_trait_clauses,
-                    PredicateLocation::Item(item_name) => self
-                        .item_trait_clauses
-                        .entry(item_name.clone())
-                        .or_default(),
-                };
-                location.push_with(|clause_id| TraitClause {
+                let clause = |clause_id| TraitClause {
                     clause_id,
                     origin,
                     span: Some(span),
                     trait_: pred,
-                });
+                };
+                match location {
+                    PredicateLocation::Parent => {
+                        self.parent_trait_clauses
+                            .push_with(|clause_id| (trait_pred.clone(), clause(clause_id)));
+                    }
+                    _ => {
+                        let location = match location {
+                            PredicateLocation::Base => {
+                                &mut self.innermost_generics_mut().trait_clauses
+                            }
+                            PredicateLocation::Item(item_name) => self
+                                .item_trait_clauses
+                                .entry(item_name.clone())
+                                .or_default(),
+                            PredicateLocation::Parent => unreachable!(),
+                        };
+                        location.push_with(|clause_id| clause(clause_id));
+                    }
+                };
             }
             ClauseKind::RegionOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {

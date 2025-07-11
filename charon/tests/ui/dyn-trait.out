@@ -38,9 +38,8 @@ where
   Err(E),
 }
 
-// Full name: core::fmt::Display
 #[lang_item("Display")]
-pub trait Display<Self>
+pub trait core::fmt::Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
@@ -48,7 +47,72 @@ pub trait Display<Self>
 // Full name: core::fmt::Display::fmt
 pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
-    [@TraitClause0]: Display<Self>,
+    [@TraitClause0]: core::fmt::Display<Self>,
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    type Output
+    fn call_once = call_once<Self, Args>[Self]
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
+}
+
+#[lang_item("r#fn")]
+pub trait core::ops::function::Fn<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    fn call<'_0> = call<'_0_0, Self, Args>[Self]
+}
+
+// Full name: core::ops::function::Fn::call
+pub fn call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+where
+    [@TraitClause0]: core::ops::function::Fn<Self, Args>,
+
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -141,13 +205,13 @@ where
 pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 (T)) -> String
 where
     [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Display<T>,
+    [@TraitClause1]: core::fmt::Display<T>,
 
 // Full name: alloc::string::{impl ToString for T}
 impl<T> ToString for T
 where
     [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Display<T>,
+    [@TraitClause1]: core::fmt::Display<T>,
 {
     parent_clause0 = @TraitClause0
     fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
@@ -157,7 +221,7 @@ where
 fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : 'static)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Display<T>,
+    [@TraitClause1]: core::fmt::Display<T>,
     T : 'static,
 
 // Full name: test_crate::destruct
