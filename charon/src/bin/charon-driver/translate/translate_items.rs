@@ -470,6 +470,36 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    /// Given a trait id, return the vtable struct reference for this trait.
+    fn get_vtable_struct_ref(
+        &mut self,
+        span: Span,
+        trait_id: &hax::DefId,
+    ) -> Result<Option<TypeDeclRef>, Error> {
+        let rid = trait_id.as_rust_def_id().unwrap();
+        // judge if it is dyn-compatible
+        if self.t_ctx.tcx.is_dyn_compatible(rid) {
+            // register the id and no enqueue it
+            let vtable_id = *self
+                .register_id_no_enqueue(
+                    span,
+                    TransItemSource {
+                        def_id: trait_id.clone(),
+                        kind: TransItemSourceKind::VTable,
+                    },
+                )
+                .unwrap()
+                .as_type()
+                .unwrap();
+            Ok(Some(TypeDeclRef {
+                id: TypeId::Adt(vtable_id),
+                generics: Box::new(self.innermost_binder().params.identity_args()),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_decl(
         mut self,
@@ -488,6 +518,8 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
+        let vtable = self.get_vtable_struct_ref(span, &def.def_id)?;
+
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
             return Ok(TraitDecl {
@@ -501,6 +533,7 @@ impl ItemTransCtx<'_, '_> {
                 types: Default::default(),
                 type_defaults: Default::default(),
                 methods: Default::default(),
+                vtable,
             });
         }
 
@@ -669,6 +702,7 @@ impl ItemTransCtx<'_, '_> {
             types,
             type_defaults,
             methods,
+            vtable,
         })
     }
 

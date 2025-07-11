@@ -73,6 +73,8 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         tref: &hax::ExistentialTraitRef,
     ) -> Result<ExistentialTraitRef, Error> {
+        // Here, we need to trigger the enqueue of the vtable struct
+        let _ = self.register_vtable_as_type_decl_id(span, &tref.def_id);
         Ok(ExistentialTraitRef(
             self.translate_trait_decl_ref_from_ex_trait_ref(span, &tref.def_id, &tref.args)?,
         ))
@@ -224,6 +226,14 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
+    /// Get the shim type for the given method.
+    /// The shim type is the type of the function that is used in the vtable.
+    /// FIXME: add required parameters and implement
+    fn get_shim_ty(&self) -> Result<Ty, Error> {
+        // the shim type is always a raw pointer to unit
+        todo!()
+    }
+
     fn add_vtable_methods_from_trait_items(
         &mut self,
         fields: &mut Vector<FieldId, Field>,
@@ -238,7 +248,8 @@ impl ItemTransCtx<'_, '_> {
             .try_collect()?;
         for (item_name, _, hax_def) in &items {
             match &hax_def.kind {
-                hax::FullDefKind::AssocFn { sig,.. } => {
+                hax::FullDefKind::AssocFn { sig, .. } => {
+                    let shim_ty = self.get_shim_ty()?;
                     let field = Field {
                         span: Span::dummy(),
                         attr_info: dummy_public_attr_info(),
