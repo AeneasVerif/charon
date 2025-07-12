@@ -63,7 +63,7 @@ and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
-and de_bruijn_id = int
+and de_bruijn_id = big_int
 
 (** Type-level variable.
 
@@ -647,7 +647,7 @@ and disambiguator = (Disambiguator.id[@visitors.opaque])
 (** Layout of the discriminant. Describes the offset of the discriminant field
     as well as its encoding as [tag] in memory. *)
 and discriminant_layout = {
-  offset : int;  (** The offset of the discriminant in bytes. *)
+  offset : big_int;  (** The offset of the discriminant in bytes. *)
   tag_ty : integer_type;  (** The representation type of the discriminant. *)
   encoding : tag_encoding;  (** How the tag is encoding in memory. *)
 }
@@ -747,8 +747,8 @@ and item_meta = {
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size : int option;  (** The size of the type in bytes. *)
-  align : int option;  (** The alignment, in bytes. *)
+  size : big_int option;  (** The size of the type in bytes. *)
+  align : big_int option;  (** The alignment, in bytes. *)
   discriminant_layout : discriminant_layout option;
       (** The discriminant's layout, if any. Only relevant for types with
           multiple variants. *)
@@ -905,7 +905,7 @@ and variant_id = (VariantId.id[@visitors.opaque])
 
     Maps fields to their offset within the layout. *)
 and variant_layout = {
-  field_offsets : int list;  (** The offset of each field. *)
+  field_offsets : big_int list;  (** The offset of each field. *)
   uninhabited : bool;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)

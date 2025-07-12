@@ -7,6 +7,7 @@
     running `make generate-ml` in the crate root. The code-generation code is in
     `charon/src/bin/generate-ml`. *)
 
+open BigInt
 open Types
 open Meta
 open Expressions
@@ -72,7 +73,7 @@ and local = {
 
 (** The local variables of a body. *)
 and locals = {
-  arg_count : int;
+  arg_count : big_int;
       (** The number of local variables used for the input arguments. *)
   locals : local list;
       (** The local variables. We always have, in the following order:

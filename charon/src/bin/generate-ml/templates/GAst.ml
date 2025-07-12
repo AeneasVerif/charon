@@ -8,6 +8,7 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 
+open BigInt
 open Types
 open Meta
 open Expressions

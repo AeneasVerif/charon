@@ -26,6 +26,13 @@ type of_json_ctx = id_to_file_map
 
 let path_buf_of_json = string_of_json
 
+let big_int_of_json _ (js : json) : (big_int, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Int i -> Ok (Z.of_int i)
+    | `String is -> Ok (Z.of_string is)
+    | _ -> Error "")
+
 let rec ___ = ()
 
 and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -527,7 +534,7 @@ and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
     (de_bruijn_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> int_of_json ctx x
+    | x -> big_int_of_json ctx x
     | _ -> Error "")
 
 and de_bruijn_var_of_json :
@@ -595,7 +602,7 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("offset", offset); ("tag_ty", tag_ty); ("encoding", encoding) ]
       ->
-        let* offset = int_of_json ctx offset in
+        let* offset = big_int_of_json ctx offset in
         let* tag_ty = integer_type_of_json ctx tag_ty in
         let* encoding = tag_encoding_of_json ctx encoding in
         Ok ({ offset; tag_ty; encoding } : discriminant_layout)
@@ -639,7 +646,7 @@ and field_proj_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = option_of_json variant_id_of_json ctx x_1 in
         Ok (ProjAdt (x_0, x_1))
     | `Assoc [ ("Tuple", tuple) ] ->
-        let* tuple = int_of_json ctx tuple in
+        let* tuple = big_int_of_json ctx tuple in
         Ok (ProjTuple tuple)
     | _ -> Error "")
 
@@ -968,8 +975,7 @@ and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Always" -> Ok Always
     | _ -> Error "")
 
-and integer_type_of_json (ctx : of_json_ctx) (js : json) :
-    (integer_type, string) result =
+and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Isize" -> Ok Isize
@@ -978,12 +984,18 @@ and integer_type_of_json (ctx : of_json_ctx) (js : json) :
     | `String "I32" -> Ok I32
     | `String "I64" -> Ok I64
     | `String "I128" -> Ok I128
-    | `String "Usize" -> Ok Usize
-    | `String "U8" -> Ok U8
-    | `String "U16" -> Ok U16
-    | `String "U32" -> Ok U32
-    | `String "U64" -> Ok U64
-    | `String "U128" -> Ok U128
+    | _ -> Error "")
+
+and integer_type_of_json (ctx : of_json_ctx) (js : json) :
+    (integer_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Signed", signed) ] ->
+        let* signed = int_ty_of_json ctx signed in
+        Ok (Signed signed)
+    | `Assoc [ ("Unsigned", unsigned) ] ->
+        let* unsigned = u_int_ty_of_json ctx unsigned in
+        Ok (Unsigned unsigned)
     | _ -> Error "")
 
 and item_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1062,8 +1074,8 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
         ] ->
-        let* size = option_of_json int_of_json ctx size in
-        let* align = option_of_json int_of_json ctx align in
+        let* size = option_of_json big_int_of_json ctx size in
+        let* align = option_of_json big_int_of_json ctx align in
         let* discriminant_layout =
           option_of_json discriminant_layout_of_json ctx discriminant_layout
         in
@@ -1104,9 +1116,12 @@ and literal_type_of_json (ctx : of_json_ctx) (js : json) :
     (literal_type, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Integer", integer) ] ->
-        let* integer = integer_type_of_json ctx integer in
-        Ok (TInteger integer)
+    | `Assoc [ ("Int", int) ] ->
+        let* int = int_ty_of_json ctx int in
+        Ok (TInt int)
+    | `Assoc [ ("UInt", u_int) ] ->
+        let* u_int = u_int_ty_of_json ctx u_int in
+        Ok (TUInt u_int)
     | `Assoc [ ("Float", float_) ] ->
         let* float_ = float_type_of_json ctx float_ in
         Ok (TFloat float_)
@@ -1118,8 +1133,8 @@ and loc_of_json (ctx : of_json_ctx) (js : json) : (loc, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("line", line); ("col", col) ] ->
-        let* line = int_of_json ctx line in
-        let* col = int_of_json ctx col in
+        let* line = big_int_of_json ctx line in
+        let* col = big_int_of_json ctx col in
         Ok ({ line; col } : loc)
     | _ -> Error "")
 
@@ -1144,7 +1159,7 @@ and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("arg_count", arg_count); ("locals", locals) ] ->
-        let* arg_count = int_of_json ctx arg_count in
+        let* arg_count = big_int_of_json ctx arg_count in
         let* locals =
           vector_of_json local_id_of_json local_of_json ctx locals
         in
@@ -1174,7 +1189,9 @@ and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
     | `String "AlignOf" -> Ok AlignOf
     | `Assoc [ ("OffsetOf", offset_of) ] ->
         let* offset_of =
-          list_of_json (pair_of_json int_of_json field_id_of_json) ctx offset_of
+          list_of_json
+            (pair_of_json big_int_of_json field_id_of_json)
+            ctx offset_of
         in
         Ok (OffsetOf offset_of)
     | `String "UbChecks" -> Ok UbChecks
@@ -1464,20 +1481,14 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
     (scalar_value, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ (ty, bi) ] ->
-        let big_int_of_json (js : json) : (big_int, string) result =
-          combine_error_msgs js __FUNCTION__
-            (match js with
-            | `Int i -> Ok (Z.of_int i)
-            | `String is -> Ok (Z.of_string is)
-            | _ -> Error "")
-        in
-        let* value = big_int_of_json bi in
-        let* int_ty = integer_type_of_json ctx (`String ty) in
-        let sv = { value; int_ty } in
-        if not (check_scalar_value_in_range sv) then
-          raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
-        Ok sv
+    | `Assoc [ ("Unsigned", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = u_int_ty_of_json ctx x_0 in
+        let* x_1 = big_int_of_json ctx x_1 in
+        Ok (UnsignedScalar (x_0, x_1))
+    | `Assoc [ ("Signed", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = int_ty_of_json ctx x_0 in
+        let* x_1 = big_int_of_json ctx x_1 in
+        Ok (SignedScalar (x_0, x_1))
     | _ -> Error "")
 
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
@@ -1510,7 +1521,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
         ] ->
-        let* target_pointer_size = int_of_json ctx target_pointer_size in
+        let* target_pointer_size = big_int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
         Ok ({ target_pointer_size; is_little_endian } : target_info)
     | _ -> Error "")
@@ -1910,6 +1921,18 @@ and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> TypeVarId.id_of_json ctx x
     | _ -> Error "")
 
+and u_int_ty_of_json (ctx : of_json_ctx) (js : json) : (u_int_ty, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Usize" -> Ok Usize
+    | `String "U8" -> Ok U8
+    | `String "U16" -> Ok U16
+    | `String "U32" -> Ok U32
+    | `String "U64" -> Ok U64
+    | `String "U128" -> Ok U128
+    | _ -> Error "")
+
 and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1981,7 +2004,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
           ("tag", tag);
         ] ->
         let* field_offsets =
-          vector_of_json field_id_of_json int_of_json ctx field_offsets
+          vector_of_json field_id_of_json big_int_of_json ctx field_offsets
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* tag = option_of_json scalar_value_of_json ctx tag in

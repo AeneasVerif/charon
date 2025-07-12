@@ -1,12 +1,12 @@
 open Meta
 
 let loc_min (l0 : loc) (l1 : loc) : loc =
-  if l0.line = l1.line then { line = l0.line; col = Int.min l0.col l1.col }
+  if l0.line = l1.line then { line = l0.line; col = Z.min l0.col l1.col }
   else if l0.line < l1.line then l0
   else l1
 
 let loc_max (l0 : loc) (l1 : loc) : loc =
-  if l0.line = l1.line then { line = l0.line; col = Int.max l0.col l1.col }
+  if l0.line = l1.line then { line = l0.line; col = Z.max l0.col l1.col }
   else if l0.line > l1.line then l0
   else l1
 

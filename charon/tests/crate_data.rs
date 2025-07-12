@@ -378,11 +378,17 @@ fn discriminants() -> anyhow::Result<()> {
     }
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[0]),
-        vec![ScalarValue::Isize(0), ScalarValue::Isize(1)]
+        vec![
+            ScalarValue::Signed(IntTy::Isize, 0),
+            ScalarValue::Signed(IntTy::Isize, 1)
+        ]
     );
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[1]),
-        vec![ScalarValue::U32(3), ScalarValue::U32(42)]
+        vec![
+            ScalarValue::Unsigned(UIntTy::U32, 3),
+            ScalarValue::Unsigned(UIntTy::U32, 42)
+        ]
     );
     Ok(())
 }

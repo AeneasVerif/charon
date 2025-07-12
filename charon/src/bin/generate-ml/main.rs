@@ -175,7 +175,16 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
         TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            IntTy::I128 | IntTy::Isize | IntTy::I64 => "big_int_of_json".to_string(),
+            _ => "int_of_json".to_string(),
+        },
+        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            UIntTy::U128 | UIntTy::Usize | UIntTy::U64 => "big_int_of_json".to_string(),
+            _ => "int_of_json".to_string(),
+        },
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut expr = Vec::new();
@@ -218,7 +227,16 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
         TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            IntTy::I128 | IntTy::Isize | IntTy::I64 => "big_int".to_string(),
+            _ => "int".to_string(),
+        },
+        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            UIntTy::U128 | UIntTy::Usize | UIntTy::U64 => "big_int".to_string(),
+            _ => "int".to_string(),
+        },
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut args = tref
@@ -1020,19 +1038,6 @@ fn generate_ml(
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file.
         ("FileId", "file"),
-        // Hand-written because the rust version is an enum with custom (de)serialization
-        // functions.
-        (
-            "ScalarValue",
-            indoc!(
-                "
-                (* Note that we use unbounded integers everywhere.
-                   We then harcode the boundaries for the different types.
-                 *)
-                { value : big_int; int_ty : integer_type }
-                "
-            ),
-        ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(region_id, string option) indexed_var"),
@@ -1064,11 +1069,11 @@ fn generate_ml(
         ),
         // Hand-written because the rust version is an enum with custom (de)serialization
         // functions.
-        (
+        /* (
             "ScalarValue",
             indoc!(
                 r#"
-                | `Assoc [ (ty, bi) ] ->
+                `Assoc [ (polarity, `List [ ty; bi ]) ] -> (
                     let big_int_of_json (js : json) : (big_int, string) result =
                       combine_error_msgs js __FUNCTION__
                         (match js with
@@ -1077,14 +1082,18 @@ fn generate_ml(
                         | _ -> Error "")
                     in
                     let* value = big_int_of_json bi in
-                    let* int_ty = integer_type_of_json ctx (`String ty) in
-                    let sv = { value; int_ty } in
-                    if not (check_scalar_value_in_range sv) then
-                      raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
-                    Ok sv
+                    let* int_ty = integer_type_of_json ctx (`Assoc [ (polarity, ty) ]) in
+                    match
+                      mk_scalar (Option.get (snd ctx)).target_pointer_size int_ty value
+                    with
+                    | Ok sv -> Ok sv
+                    | Error _ ->
+                        Error
+                          ("Scalar value not in range: " ^ show_big_int value ^ " for "
+                         ^ show_integer_type int_ty))
                 "#
             ),
-        ),
+        ), */
     ];
     // Types for which we don't want to generate a type at all.
     let dont_generate_ty = &[

@@ -144,14 +144,18 @@ and constant_expr = { value : raw_constant_expr; ty : ty }
 
 and field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
-  | ProjTuple of int
+  | ProjTuple of big_int
       (** If we project from a tuple, the projection kind gives the arity of the
           tuple. *)
 
 and local_id = (LocalId.id[@visitors.opaque])
 
 (** Nullary operation *)
-and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
+and nullop =
+  | SizeOf
+  | AlignOf
+  | OffsetOf of (big_int * field_id) list
+  | UbChecks
 
 and operand =
   | Copy of place

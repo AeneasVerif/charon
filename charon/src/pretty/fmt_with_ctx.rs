@@ -827,21 +827,37 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     }
 }
 
+impl Display for IntTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            IntTy::Isize => write!(f, "isize"),
+            IntTy::I8 => write!(f, "i8"),
+            IntTy::I16 => write!(f, "i16"),
+            IntTy::I32 => write!(f, "i32"),
+            IntTy::I64 => write!(f, "i64"),
+            IntTy::I128 => write!(f, "i128"),
+        }
+    }
+}
+
+impl Display for UIntTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            UIntTy::Usize => write!(f, "usize"),
+            UIntTy::U8 => write!(f, "u8"),
+            UIntTy::U16 => write!(f, "u16"),
+            UIntTy::U32 => write!(f, "u32"),
+            UIntTy::U64 => write!(f, "u64"),
+            UIntTy::U128 => write!(f, "u128"),
+        }
+    }
+}
+
 impl Display for IntegerTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         match self {
-            IntegerTy::Isize => write!(f, "isize"),
-            IntegerTy::I8 => write!(f, "i8"),
-            IntegerTy::I16 => write!(f, "i16"),
-            IntegerTy::I32 => write!(f, "i32"),
-            IntegerTy::I64 => write!(f, "i64"),
-            IntegerTy::I128 => write!(f, "i128"),
-            IntegerTy::Usize => write!(f, "usize"),
-            IntegerTy::U8 => write!(f, "u8"),
-            IntegerTy::U16 => write!(f, "u16"),
-            IntegerTy::U32 => write!(f, "u32"),
-            IntegerTy::U64 => write!(f, "u64"),
-            IntegerTy::U128 => write!(f, "u128"),
+            IntegerTy::Signed(int_ty) => write!(f, "{int_ty}"),
+            IntegerTy::Unsigned(uint_ty) => write!(f, "{uint_ty}"),
         }
     }
 }
@@ -892,7 +908,8 @@ impl Display for Literal {
 impl Display for LiteralTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LiteralTy::Integer(ty) => write!(f, "{ty}"),
+            LiteralTy::Int(ty) => write!(f, "{ty}"),
+            LiteralTy::UInt(ty) => write!(f, "{ty}"),
             LiteralTy::Float(ty) => write!(f, "{ty}"),
             LiteralTy::Char => write!(f, "char"),
             LiteralTy::Bool => write!(f, "bool"),
@@ -1264,18 +1281,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
 impl Display for ScalarValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         match self {
-            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
-            ScalarValue::I8(v) => write!(f, "{v} : i8"),
-            ScalarValue::I16(v) => write!(f, "{v} : i16"),
-            ScalarValue::I32(v) => write!(f, "{v} : i32"),
-            ScalarValue::I64(v) => write!(f, "{v} : i64"),
-            ScalarValue::I128(v) => write!(f, "{v} : i128"),
-            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
-            ScalarValue::U8(v) => write!(f, "{v} : u8"),
-            ScalarValue::U16(v) => write!(f, "{v} : u16"),
-            ScalarValue::U32(v) => write!(f, "{v} : u32"),
-            ScalarValue::U64(v) => write!(f, "{v} : u64"),
-            ScalarValue::U128(v) => write!(f, "{v} : u128"),
+            ScalarValue::Signed(ty, v) => write!(f, "{v} : {}", ty),
+            ScalarValue::Unsigned(ty, v) => write!(f, "{v} : {}", ty),
         }
     }
 }

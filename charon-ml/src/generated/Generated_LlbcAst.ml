@@ -46,11 +46,11 @@ and raw_statement =
       (** Panic also handles "unreachable". We keep the name of the panicking
           function that was called. *)
   | Return
-  | Break of int
+  | Break of big_int
       (** Break to outer loops. The [usize] gives the index of the outer loop to
           break to: * 0: break to first outer loop (the current loop) * 1: break
           to second outer loop * ... *)
-  | Continue of int
+  | Continue of big_int
       (** Continue to outer loops. The [usize] gives the index of the outer loop
           to continue to: * 0: continue to first outer loop (the current loop) *
           1: continue to second outer loop * ... *)

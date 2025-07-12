@@ -95,7 +95,7 @@ let lookup_var_in_env (env : 'a fmt_env)
   else
     let dbid, varid =
       match var with
-      | Bound (dbid, varid) -> (dbid, varid)
+      | Bound (dbid, varid) -> (Z.to_int dbid, varid)
       | Free varid ->
           let len = List.length env.generics in
           let dbid = len - 1 in

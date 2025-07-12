@@ -43,8 +43,8 @@ module Ast = struct
     | Abort UndefinedBehavior -> indent ^ "undefined_behavior"
     | Abort UnwindTerminate -> indent ^ "unwind_terminate"
     | Return -> indent ^ "return"
-    | Break i -> indent ^ "break " ^ string_of_int i
-    | Continue i -> indent ^ "continue " ^ string_of_int i
+    | Break i -> indent ^ "break " ^ Z.to_string i
+    | Continue i -> indent ^ "continue " ^ Z.to_string i
     | Nop -> indent ^ "nop"
     | Switch switch -> (
         match switch with

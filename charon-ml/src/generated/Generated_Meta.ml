@@ -7,6 +7,8 @@
     definitions by running `make generate-ml` in the crate root. The
     code-generation code is in `charon/src/bin/generate-ml`. *)
 
+open BigInt
+
 type path_buf = string [@@deriving show, ord, eq]
 
 (** Information about the attributes and visibility of an item, field or
@@ -81,8 +83,8 @@ and inline_attr =
   | Always  (** [#[inline(always)]] *)
 
 and loc = {
-  line : int;  (** The (1-based) line number. *)
-  col : int;  (** The (0-based) column offset. *)
+  line : big_int;  (** The (1-based) line number. *)
+  col : big_int;  (** The (0-based) column offset. *)
 }
 
 (** A general attribute. *)
