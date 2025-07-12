@@ -175,8 +175,16 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
         TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Int(_)) => "int_of_json".to_string(),
-        TyKind::Literal(LiteralTy::UInt(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            IntTy::I128 | IntTy::Isize | IntTy::I64 => "big_int_of_json".to_string(),
+            _ => "int_of_json".to_string(),
+        },
+        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            UIntTy::U128 | UIntTy::Usize | UIntTy::U64 => "big_int_of_json".to_string(),
+            _ => "int_of_json".to_string(),
+        },
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut expr = Vec::new();
@@ -219,8 +227,16 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
         TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
-        TyKind::Literal(LiteralTy::Int(_)) => "int".to_string(),
-        TyKind::Literal(LiteralTy::UInt(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            IntTy::I128 | IntTy::Isize | IntTy::I64 => "big_int".to_string(),
+            _ => "int".to_string(),
+        },
+        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            // Since OCaml ints are only 63 bits, translate everything that could be too large to big_int
+            UIntTy::U128 | UIntTy::Usize | UIntTy::U64 => "big_int".to_string(),
+            _ => "int".to_string(),
+        },
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut args = tref
@@ -1022,20 +1038,6 @@ fn generate_ml(
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file.
         ("FileId", "file"),
-        // Hand-written because the rust version is an enum with custom (de)serialization
-        // functions.
-        (
-            "ScalarValue",
-            indoc!(
-                "
-                (* Note that we use unbounded integers everywhere.
-                   We then hardcode the boundaries for the different types.
-                 *)
-                | SignedScalar of int_ty * big_int
-                | UnsignedScalar of u_int_ty * big_int
-                "
-            ),
-        ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(region_id, string option) indexed_var"),
@@ -1060,14 +1062,14 @@ fn generate_ml(
                 r#"
                 | json ->
                     let* file_id = FileId.id_of_json ctx json in
-                    let file = FileId.Map.find file_id (fst ctx) in
+                    let file = FileId.Map.find file_id ctx in
                     Ok file
                 "#,
             ),
         ),
         // Hand-written because the rust version is an enum with custom (de)serialization
         // functions.
-        (
+        /* (
             "ScalarValue",
             indoc!(
                 r#"
@@ -1091,7 +1093,7 @@ fn generate_ml(
                          ^ show_integer_type int_ty))
                 "#
             ),
-        ),
+        ), */
     ];
     // Types for which we don't want to generate a type at all.
     let dont_generate_ty = &[

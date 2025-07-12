@@ -48,8 +48,6 @@ pub enum Literal {
 }
 
 /// A scalar value.
-// The OCaml and json representations are essentially the same, just a little more streamlined.
-// It uses a custom de-/serializer for this reason.
 #[derive(
     Debug,
     PartialEq,
@@ -63,13 +61,17 @@ pub enum Literal {
     Hash,
     PartialOrd,
     Ord,
+    Serialize,
+    Deserialize,
     Drive,
     DriveMut,
 )]
 #[drive(skip)]
 #[charon::variants_suffix("Scalar")]
 pub enum ScalarValue {
+    #[serde(with = "crate::ast::values_utils::scalar_value_ser_de")]
     Unsigned(UIntTy, u128),
+    #[serde(with = "crate::ast::values_utils::scalar_value_ser_de")]
     Signed(IntTy, i128),
 }
 

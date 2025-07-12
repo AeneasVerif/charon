@@ -88,8 +88,8 @@ let run_tests (folder : string) : unit =
                             | None -> () (* Must be the untagged variant *)
                             | Some tag ->
                                 let roundtrip_var_id =
-                                  TypesUtils.get_variant_from_tag ptr_size
-                                    ty_decl tag
+                                  TypesUtils.get_variant_from_tag
+                                    (Z.to_int ptr_size) ty_decl tag
                                 in
                                 assert_eq roundtrip_var_id (Some var_id)
                                   (name ^ " with tag: "

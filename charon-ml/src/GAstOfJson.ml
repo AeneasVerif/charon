@@ -65,7 +65,7 @@ and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
      let* files =
-       list_of_json (option_of_json file_of_json) (FileId.Map.empty, None) js
+       list_of_json (option_of_json file_of_json) FileId.Map.empty js
      in
      let files_with_ids =
        List.filter_map
@@ -75,7 +75,7 @@ and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
            | Some file -> Some (i, file))
          (List.mapi (fun i file -> (FileId.of_int i, file)) files)
      in
-     Ok (FileId.Map.of_list files_with_ids, None))
+     Ok (FileId.Map.of_list files_with_ids))
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
@@ -102,7 +102,6 @@ and gtranslated_crate_of_json
         let* name = string_of_json ctx name in
         let* options = cli_options_of_json ctx options in
         let* target_information = target_info_of_json ctx target_info in
-        let ctx = (fst ctx, Some target_information) in
 
         let* declarations =
           list_of_json declaration_group_of_json ctx declarations

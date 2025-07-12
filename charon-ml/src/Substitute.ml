@@ -98,7 +98,7 @@ let subst_free_vars (subst : single_binder_subst) : subst =
 *)
 let subst_at_binder_zero (subst : single_binder_subst) : subst =
   let subst_if_zero subst nosubst = function
-    | Bound (0, id) -> subst id
+    | Bound (dbid, id) when dbid = Z.zero -> subst id
     | var -> nosubst var
   in
   {
@@ -113,8 +113,9 @@ let subst_at_binder_zero (subst : single_binder_subst) : subst =
     variables to remove the current binder level. *)
 let subst_remove_binder_zero (subst : single_binder_subst) : subst =
   let subst_remove_zero subst nosubst = function
-    | Bound (0, id) -> subst id
-    | Bound (dbid, varid) when dbid > 0 -> nosubst (Bound (dbid - 1, varid))
+    | Bound (dbid, id) when dbid = Z.zero -> subst id
+    | Bound (dbid, varid) when Z.(dbid > zero) ->
+        nosubst (Bound (Z.(dbid - one), varid))
     | var -> nosubst var
   in
   {
@@ -129,7 +130,7 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
 let st_shift_visitor =
   object (self)
     inherit [_] map_statement
-    method! visit_de_bruijn_id delta dbid = dbid + delta
+    method! visit_de_bruijn_id delta dbid = Z.(dbid + delta)
   end
 
 (* Shift the the substitution under one binder. *)
@@ -140,17 +141,19 @@ let shift_subst (subst : subst) : subst =
   {
     r_subst =
       compose
-        (st_shift_visitor#visit_region 1)
+        (st_shift_visitor#visit_region Z.one)
         (compose subst.r_subst decr_db_var);
     ty_subst =
-      compose (st_shift_visitor#visit_ty 1) (compose subst.ty_subst decr_db_var);
+      compose
+        (st_shift_visitor#visit_ty Z.one)
+        (compose subst.ty_subst decr_db_var);
     cg_subst =
       compose
-        (st_shift_visitor#visit_const_generic 1)
+        (st_shift_visitor#visit_const_generic Z.one)
         (compose subst.cg_subst decr_db_var);
     tr_subst =
       compose
-        (st_shift_visitor#visit_trait_instance_id 1)
+        (st_shift_visitor#visit_trait_instance_id Z.one)
         (compose subst.tr_subst decr_db_var);
     tr_self = subst.tr_self;
   }

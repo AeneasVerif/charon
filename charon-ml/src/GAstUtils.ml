@@ -36,7 +36,7 @@ let list_ordered_ancestor_region_groups (regions_hierarchy : region_var_groups)
 
 let locals_get_input_vars (locals : locals) : local list =
   let args = List.tl locals.locals in
-  Collections.List.prefix locals.arg_count args
+  Collections.List.prefix (Z.to_int locals.arg_count) args
 
 let fun_body_get_input_vars (fbody : 'body gexpr_body) : local list =
   locals_get_input_vars fbody.locals

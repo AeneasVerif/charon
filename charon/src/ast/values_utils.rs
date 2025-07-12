@@ -1,6 +1,5 @@
 //! Implementations for [crate::values]
 use crate::ast::*;
-use serde::{Deserialize, Serialize, Serializer, ser::SerializeTupleVariant};
 
 #[derive(Debug, Clone)]
 pub enum ScalarError {
@@ -155,6 +154,10 @@ impl ScalarValue {
         }
     }
 
+    /// Translates little endian bytes into a corresponding `ScalarValue`.
+    /// This needs to do the round-trip to the correct integer type to guarantee
+    /// that the values are correctly sign-extended (e.g. if the bytes encode -1i8, taking all 16 bytes
+    /// would lead to the value 255i128 instead of -1i128).
     pub fn from_le_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
         from_le_bytes!(
             ty,
@@ -205,92 +208,61 @@ impl ScalarValue {
 }
 
 /// Custom serializer that stores integers as strings to avoid overflow.
-impl Serialize for ScalarValue {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+pub(crate) mod scalar_value_ser_de {
+    use std::{marker::PhantomData, str::FromStr};
+
+    use serde::{
+        de::{Deserialize, Deserializer, Error},
+        ser::SerializeTuple,
+    };
+
+    pub fn serialize<S, T, V>(ty: &T, val: &V, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer,
+        S: serde::ser::Serializer,
+        V: ToString,
+        T: serde::ser::Serialize,
     {
-        let enum_name = "ScalarValue";
-        let variant_name = self.variant_name();
-        let (variant_index, _variant_arity) = self.variant_index_arity();
-        let mut tv =
-            serializer.serialize_tuple_variant(enum_name, variant_index, variant_name, 2)?;
-        match self {
-            ScalarValue::Signed(ty, i) => {
-                tv.serialize_field(ty)?;
-                tv.serialize_field(&i.to_string())?;
-            }
-            ScalarValue::Unsigned(ty, i) => {
-                tv.serialize_field(ty)?;
-                tv.serialize_field(&i.to_string())?;
-            }
-        };
+        let mut tv = serializer.serialize_tuple(2)?;
+        tv.serialize_element(ty)?;
+        tv.serialize_element(&val.to_string())?;
         tv.end()
     }
-}
 
-impl<'de> Deserialize<'de> for ScalarValue {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    pub fn deserialize<'de, D, T, V>(deserializer: D) -> Result<(T, V), D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: Deserializer<'de>,
+        T: Deserialize<'de>,
+        V: FromStr,
     {
-        struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = ScalarValue;
+        struct Visitor<T, V> {
+            _ty: PhantomData<T>,
+            _val: PhantomData<V>,
+        }
+        impl<'de, T, V> serde::de::Visitor<'de> for Visitor<T, V>
+        where
+            T: Deserialize<'de>,
+            V: FromStr,
+        {
+            type Value = (T, V);
             fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "ScalarValue")
+                write!(f, "ScalarValue variant fields")
             }
-            fn visit_map<A: serde::de::MapAccess<'de>>(
-                self,
-                mut map: A,
-            ) -> Result<Self::Value, A::Error> {
-                use serde::de::Error;
-                let (k, (ty, i)): (String, (String, String)) =
-                    map.next_entry()?.expect("Malformed ScalarValue");
-                Ok(match k.as_str() {
-                    "Signed" => {
-                        let ty = match ty.as_str() {
-                            "Isize" => IntTy::Isize,
-                            "I8" => IntTy::I8,
-                            "I16" => IntTy::I16,
-                            "I32" => IntTy::I32,
-                            "I64" => IntTy::I64,
-                            "I128" => IntTy::I128,
-                            _ => {
-                                return Err(A::Error::custom(format!(
-                                    "{ty} is not a valid type for a ScalarValue"
-                                )));
-                            }
-                        };
-                        let i = i.parse().unwrap();
-                        ScalarValue::Signed(ty, i)
-                    }
-                    "Unsigned" => {
-                        let ty = match ty.as_str() {
-                            "Usize" => UIntTy::Usize,
-                            "U8" => UIntTy::U8,
-                            "U16" => UIntTy::U16,
-                            "U32" => UIntTy::U32,
-                            "U64" => UIntTy::U64,
-                            "U128" => UIntTy::U128,
-                            _ => {
-                                return Err(A::Error::custom(format!(
-                                    "{ty} is not a valid type for a ScalarValue"
-                                )));
-                            }
-                        };
-                        let i = i.parse().unwrap();
-                        ScalarValue::Unsigned(ty, i)
-                    }
-                    _ => {
-                        return Err(A::Error::custom(format!(
-                            "{k} is not a valid type for a ScalarValue"
-                        )));
-                    }
-                })
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let ty: T = seq.next_element()?.ok_or(A::Error::custom("type"))?;
+                let v_str: String = seq
+                    .next_element()?
+                    .ok_or(A::Error::custom("value string"))?;
+                let v = v_str.parse().map_err(|_| A::Error::custom("value"))?;
+                Ok((ty, v))
             }
         }
-        deserializer.deserialize_map(Visitor)
+        deserializer.deserialize_seq(Visitor {
+            _ty: PhantomData,
+            _val: PhantomData,
+        })
     }
 }
 

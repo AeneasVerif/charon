@@ -326,7 +326,7 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
     | RVar var ->
         let dbid, varid =
           match var with
-          | Bound (dbid, varid) -> (dbid, varid)
+          | Bound (dbid, varid) -> (Z.to_int dbid, varid)
           | Free varid -> (List.length m.rmap.bound_regions - 1, varid)
         in
         begin
@@ -802,7 +802,7 @@ let lookup_var_in_maps (m : constraints)
     'a option =
   let dbid, varid =
     match var with
-    | Bound (dbid, varid) -> (dbid, varid)
+    | Bound (dbid, varid) -> (Z.to_int dbid, varid)
     | Free varid -> (List.length m - 1, varid)
   in
   match List.nth_opt m dbid with

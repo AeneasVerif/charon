@@ -35,11 +35,8 @@ and literal_type =
 
 (** A scalar value. *)
 and scalar_value =
-  (* Note that we use unbounded integers everywhere.
-   We then hardcode the boundaries for the different types.
- *)
-  | SignedScalar of int_ty * big_int
   | UnsignedScalar of u_int_ty * big_int
+  | SignedScalar of int_ty * big_int
 
 and u_int_ty = Usize | U8 | U16 | U32 | U64 | U128
 [@@deriving

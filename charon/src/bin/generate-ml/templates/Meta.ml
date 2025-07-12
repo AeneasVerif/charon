@@ -8,6 +8,8 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 
+open BigInt
+
 type path_buf = string
 [@@deriving show, ord, eq]
 

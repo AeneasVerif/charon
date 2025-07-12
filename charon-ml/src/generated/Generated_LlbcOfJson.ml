@@ -2,6 +2,7 @@ open OfJsonBasic
 open Types
 open LlbcAst
 open GAstOfJson
+open BigInt
 
 let rec ___ = ()
 
@@ -55,10 +56,10 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Abort abort)
     | `String "Return" -> Ok Return
     | `Assoc [ ("Break", break) ] ->
-        let* break = int_of_json ctx break in
+        let* break = big_int_of_json ctx break in
         Ok (Break break)
     | `Assoc [ ("Continue", continue) ] ->
-        let* continue = int_of_json ctx continue in
+        let* continue = big_int_of_json ctx continue in
         Ok (Continue continue)
     | `String "Nop" -> Ok Nop
     | `Assoc [ ("Switch", switch) ] ->

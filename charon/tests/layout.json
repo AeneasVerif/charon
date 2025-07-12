@@ -553,5 +553,39 @@
         "tag": null
       }
     ]
+  },
+  "test_crate::MaxBitsDiscr": {
+    "size": 16,
+    "align": 16,
+    "discriminant_layout": {
+      "offset": 0,
+      "tag_ty": {
+        "Unsigned": "U128"
+      },
+      "encoding": "Direct"
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tag": {
+          "Unsigned": [
+            "U128",
+            "42"
+          ]
+        }
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tag": {
+          "Unsigned": [
+            "U128",
+            "18446744073709551615"
+          ]
+        }
+      }
+    ]
   }
 }
