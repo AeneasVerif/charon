@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
@@ -10,15 +9,14 @@ pub trait Drop<Self>
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: test_crate::Idx
-trait Idx<Self>
+trait test_crate::Idx<Self>
 
 // Full name: test_crate::IndexVec
 pub struct IndexVec<I>
 where
-    [@TraitClause1]: Idx<I>,
+    [@TraitClause1]: test_crate::Idx<I>,
 {
   i: I,
 }
@@ -26,7 +24,7 @@ where
 // Full name: test_crate::Vector
 pub struct Vector<I>
 where
-    [@TraitClause1]: Idx<I>,
+    [@TraitClause1]: test_crate::Idx<I>,
 {
   vector: IndexVec<I>[@TraitClause1],
 }
@@ -38,7 +36,7 @@ fn foo<T>(@1: T)
     let _x@1: T; // arg #1
 
     @0 := ()
-    drop[Drop<T>] _x@1
+    drop[core::ops::drop::Drop<T>] _x@1
     @0 := ()
     return
 }

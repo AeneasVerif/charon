@@ -73,7 +73,26 @@ fn common_vtable_entries() -> Vector<FieldId, Field> {
     ret
 }
 
+/// Remove the first `Self` type variable from the generic parameters.
+fn remove_self_from_params(params: &mut GenericParams) {
+    params.types.remove_and_shift_ids(TypeVarId::ZERO);
+    params.types.iter_mut().for_each(|ty| {
+        ty.index -= 1;
+    });
+}
+
 impl ItemTransCtx<'_, '_> {
+    /// Given the trait id, register the vtable of it and returns the vtable struct id
+    pub fn translate_vtable_trait_id_as_type_id(
+        &mut self,
+        span: Span,
+        trait_id: &hax::DefId,
+    ) -> Result<TypeId, Error> {
+        // The vtable type is a type decl, so we register it as such.
+        let id = self.register_vtable_as_type_decl_id(span, trait_id);
+        Ok(TypeId::Adt(id))
+    }
+
     fn add_parent_trait_vtable_ptrs(
         &mut self,
         fields: &mut Vector<FieldId, Field>,
@@ -81,9 +100,12 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<(), Error> {
         for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
             let trait_ref = &clause.trait_.skip_binder;
-            let generics = trait_ref.generics.clone();
+            // FIXME: Why the generics here is WRONG?
+            let mut generics = trait_ref.generics.clone();
+            // remove the `Self` type argument from the generics
+            generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             let def_id = &pred.trait_ref.def_id;
-            let id = self.translate_type_id(Span::dummy(), def_id)?;
+            let id = self.translate_vtable_trait_id_as_type_id(Span::dummy(), def_id)?;
             let vtbl_struct = TypeDeclRef { id, generics };
             let field = Field {
                 span: Span::dummy(),
@@ -167,7 +189,8 @@ impl ItemTransCtx<'_, '_> {
         }
         let mut ty = in_ty.clone();
         ty.visit_vars(&mut SelfVisitor(target_ty));
-        ty
+        // ty
+        unit_raw_ptr(true)
     }
 
     fn add_vtable_methods_from_trait_items(
@@ -269,6 +292,12 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
+    /// the true layout of the vtable:
+    /// [ drop_func : *mut () -> (),
+    ///   self_ty_size : usize,
+    ///   self_ty_align : usize,
+    ///   ...  -- the super trait vtables
+    ///   ...  -- the method list ]
     pub(crate) fn translate_vtable_struct(
         mut self,
         typ_id: TypeDeclId,
@@ -277,10 +306,14 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TypeDecl, Error> {
         // start by getting the generic environment ready
         self.translate_def_generics(Span::dummy(), trait_full_def)?;
+        // remove the `Self` type variable from the generic parameters
+        remove_self_from_params(&mut self.the_only_binder_mut().params);
         let mut fields = common_vtable_entries();
+
         // translate the super pointers
         let parent_clauses = mem::take(&mut self.parent_trait_clauses);
         self.add_parent_trait_vtable_ptrs(&mut fields, &parent_clauses)?;
+
         // if it is a trait definition, we need to add the methods
         if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
             self.add_vtable_methods_from_trait_items(
@@ -295,14 +328,8 @@ impl ItemTransCtx<'_, '_> {
         // take out the required stuff before consuming `self`
         let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
         let trait_id = self.register_trait_decl_id(Span::dummy(), &trait_full_def.def_id);
+        // consumes `self` to get the generics
         let generics = self.into_generics();
-        // the true layout of the vtable:
-        // [ drop_func : *mut () -> (),
-        //   self_ty_size : usize,
-        //   self_ty_align : usize,
-        //   ...  -- the super trait vtables
-        //   ...  -- the method list ]
-        // We IGNORE the vacant placeholder & upcast-ptr here!
         let ptr_align = ptr_size;
         let layout = Layout {
             // everything is of the same size as a pointer
@@ -312,20 +339,11 @@ impl ItemTransCtx<'_, '_> {
             uninhabited: false,
             variant_layouts: Vector::new(),
         };
-        // for (method_name, method_ty) in method_list {
-        //     let field = Field {
-        //         span: Span::dummy(),
-        //         attr_info: dummy_public_attr_info(),
-        //         name: Some(method_name),
-        //         ty: method_ty,
-        //     };
-        //     fields.push(field);
-        // }
-        // let generics = self.into_generics();
         let trait_decl_ref = TraitDeclRef {
             id: trait_id,
             generics: Box::new(generics.identity_args()),
         };
+
         Ok(TypeDecl {
             def_id: typ_id,
             item_meta: item_meta,
@@ -346,7 +364,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        todo!()
+        Err(Error { span: item_meta.span, msg: String::from("TODO") })
     }
 
     pub(crate) fn translate_vtable_instance_body(
@@ -355,7 +373,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        todo!()
+        Err(Error { span: item_meta.span, msg: String::from("TODO") })
     }
 
     pub fn translate_existential_predicates(

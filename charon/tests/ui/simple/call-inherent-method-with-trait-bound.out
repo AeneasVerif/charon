@@ -1,38 +1,35 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: test_crate::Trait
-pub trait Trait<Self, Self_Type>
+pub trait test_crate::Trait<Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
 }
 
-// Full name: test_crate::{impl Trait<()> for ()}
-impl Trait<()> for () {
-    parent_clause0 = MetaSized<()>
+// Full name: test_crate::{impl test_crate::Trait<()> for ()}
+impl test_crate::Trait<()> for () {
+    parent_clause0 = core::marker::MetaSized<()>
     parent_clause1 = Sized<()>
 }
 
@@ -44,18 +41,18 @@ where
   S,
 }
 
-// Full name: test_crate::HashMap::{impl Drop for HashMap<S>[@TraitClause0]}::drop
-fn {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0, S>(@1: &'_0 mut (HashMap<S>[@TraitClause0]))
+// Full name: test_crate::HashMap::{impl core::ops::drop::Drop for HashMap<S>[@TraitClause0]}::drop
+fn {impl core::ops::drop::Drop for HashMap<S>[@TraitClause0]}::drop<'_0, S>(@1: &'_0 mut (HashMap<S>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<S>,
 
-// Full name: test_crate::HashMap::{impl Drop for HashMap<S>[@TraitClause0]}
-impl<S> Drop for HashMap<S>[@TraitClause0]
+// Full name: test_crate::HashMap::{impl core::ops::drop::Drop for HashMap<S>[@TraitClause0]}
+impl<S> core::ops::drop::Drop for HashMap<S>[@TraitClause0]
 where
     [@TraitClause0]: Sized<S>,
 {
-    parent_clause0 = MetaSized<HashMap<S>[@TraitClause0]>
-    fn drop<'_0> = {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0_0, S>[@TraitClause0]
+    parent_clause0 = core::marker::MetaSized<HashMap<S>[@TraitClause0]>
+    fn drop<'_0> = {impl core::ops::drop::Drop for HashMap<S>[@TraitClause0]}::drop<'_0_0, S>[@TraitClause0]
 }
 
 // Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
@@ -63,15 +60,15 @@ pub fn get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: Sized<S>,
     [@TraitClause1]: Sized<Q>,
-    [@TraitClause2]: Trait<Q, Clause2_Type>,
+    [@TraitClause2]: test_crate::Trait<Q, Clause2_Type>,
 {
     let @0: (); // return
     let _x@1: HashMap<S>[@TraitClause0]; // arg #1
     let _k@2: Q; // arg #2
 
     @0 := ()
-    drop[Drop<Q>] _k@2
-    drop[{impl Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
+    drop[core::ops::drop::Drop<Q>] _k@2
+    drop[{impl core::ops::drop::Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     @0 := ()
     return
 }
@@ -81,15 +78,15 @@ pub fn top_level_get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: Sized<S>,
     [@TraitClause1]: Sized<Q>,
-    [@TraitClause2]: Trait<Q, Clause2_Type>,
+    [@TraitClause2]: test_crate::Trait<Q, Clause2_Type>,
 {
     let @0: (); // return
     let _x@1: HashMap<S>[@TraitClause0]; // arg #1
     let _k@2: Q; // arg #2
 
     @0 := ()
-    drop[Drop<Q>] _k@2
-    drop[{impl Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
+    drop[core::ops::drop::Drop<Q>] _k@2
+    drop[{impl core::ops::drop::Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     @0 := ()
     return
 }
@@ -108,7 +105,7 @@ pub fn test1(@1: HashMap<()>[Sized<()>])
     @3 := move (map@1)
     storage_live(@4)
     @4 := ()
-    @2 := top_level_get<(), (), ()>[Sized<()>, Sized<()>, {impl Trait<()> for ()}](move (@3), move (@4))
+    @2 := top_level_get<(), (), ()>[Sized<()>, Sized<()>, {impl test_crate::Trait<()> for ()}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)
@@ -131,7 +128,7 @@ pub fn test2(@1: HashMap<()>[Sized<()>])
     @3 := move (map@1)
     storage_live(@4)
     @4 := ()
-    @2 := get<(), (), ()>[Sized<()>, Sized<()>, {impl Trait<()> for ()}](move (@3), move (@4))
+    @2 := get<(), (), ()>[Sized<()>, Sized<()>, {impl test_crate::Trait<()> for ()}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)

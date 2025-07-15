@@ -1,62 +1,56 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
 }
 
-// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
+pub trait core::ops::function::FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
 }
 
-// Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
-pub trait Fn<Self, Args>
+pub trait core::ops::function::Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = call<'_0_0, Self, Args>[Self]
 }
 
@@ -110,13 +104,13 @@ fn test_crate::takes_closure::<test_crate::foo::<'_, u32>>(@1: test_crate::foo::
     @5 := &@6
     @4 := &*(@5)
     @3 := (move (@4))
-    @0 := for<'_0> Fn<test_crate::foo::<'_, u32>, (&'_0_0 (u32))>::call<'_, test_crate::foo::<'_, u32>, (&'_ (u32))>(move (@2), move (@3))
+    @0 := for<'_0> core::ops::function::Fn<test_crate::foo::<'_, u32>, (&'_0_0 (u32))>::call<'_, test_crate::foo::<'_, u32>, (&'_ (u32))>(move (@2), move (@3))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)
     storage_dead(@6)
     storage_dead(@5)
-    drop[Drop<test_crate::foo::<'_, u32>>] c@1
+    drop[core::ops::drop::Drop<test_crate::foo::<'_, u32>>] c@1
     @0 := ()
     return
 }

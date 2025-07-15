@@ -1,14 +1,13 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: core::clone::Clone
@@ -28,15 +27,14 @@ where
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: test_crate::Foo
@@ -60,7 +58,7 @@ impl Clone for Foo {
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
-    parent_clause0 = MetaSized<Foo>
+    parent_clause0 = core::marker::MetaSized<Foo>
     parent_clause1 = {impl Clone for Foo}
 }
 
@@ -105,10 +103,9 @@ where
     return
 }
 
-// Full name: test_crate::Trait
-trait Trait<Self>
+trait test_crate::Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Ty>
     parent_clause2 : [@TraitClause2]: Copy<Self::Ty>
     type Ty
@@ -118,7 +115,7 @@ trait Trait<Self>
 fn copy_assoc_ty<T>(@1: @TraitClause1::Ty)
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Trait<T>,
+    [@TraitClause1]: test_crate::Trait<T>,
 {
     let @0: (); // return
     let x@1: @TraitClause1::Ty; // arg #1

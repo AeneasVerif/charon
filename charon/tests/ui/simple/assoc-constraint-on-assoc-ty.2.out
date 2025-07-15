@@ -1,37 +1,34 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: test_crate::Trait
-trait Trait<Self, Self_Assoc>
+trait test_crate::Trait<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
 }
 
-// Full name: test_crate::IntoIterator
-trait IntoIterator<Self, Self_IntoIter>
+trait test_crate::IntoIterator<Self, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
-    parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
+    parent_clause2 : [@TraitClause2]: test_crate::Trait<Self_IntoIter, ()>
 }
 
 // Full name: test_crate::foo
 fn foo<I, Clause1_IntoIter, Clause2_Assoc>()
 where
     [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I, Clause1_IntoIter>,
-    [@TraitClause2]: Trait<Clause1_IntoIter, Clause2_Assoc>,
+    [@TraitClause1]: test_crate::IntoIterator<I, Clause1_IntoIter>,
+    [@TraitClause2]: test_crate::Trait<Clause1_IntoIter, Clause2_Assoc>,
 {
     let @0: (); // return
 

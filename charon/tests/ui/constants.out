@@ -1,32 +1,30 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 pub fn core::num::{u32}::MAX() -> u32
 
 pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 pub fn test_crate::X0() -> u32
 {
@@ -200,9 +198,9 @@ where
     storage_live(@2)
     @2 := move (value@1)
     @0 := Wrap { value: move (@2) }
-    drop[Drop<T>] @2
+    drop[core::ops::drop::Drop<T>] @2
     storage_dead(@2)
-    drop[Drop<T>] value@1
+    drop[core::ops::drop::Drop<T>] value@1
     return
 }
 

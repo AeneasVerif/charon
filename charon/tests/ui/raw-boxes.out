@@ -80,15 +80,14 @@ pub struct Layout {
   align: Alignment,
 }
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: core::option::Option
@@ -101,11 +100,10 @@ where
   Some(T),
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: core::clone::Clone
@@ -114,14 +112,14 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    fn clone_from<'_0, '_1, [@TraitClause0]: core::marker::Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
 }
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
@@ -147,17 +145,16 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
     return
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
 pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 where
-    [@TraitClause0]: Destruct<usize>,
+    [@TraitClause0]: core::marker::Destruct<usize>,
 {
     let @0: (); // return
     let self@1: &'_ mut (usize); // arg #1
@@ -166,7 +163,7 @@ where
 
     storage_live(@3)
     @3 := {impl Clone for usize}::clone<'_>(move (source@2))
-    drop[Drop<usize>] *(self@1)
+    drop[core::ops::drop::Drop<usize>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -177,28 +174,14 @@ where
 impl Clone for usize {
     parent_clause0 = Sized<usize>
     fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    fn clone_from<'_0, '_1, [@TraitClause0]: core::marker::Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
 }
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {
-    parent_clause0 = MetaSized<usize>
+    parent_clause0 = core::marker::MetaSized<usize>
     parent_clause1 = {impl Clone for usize}
 }
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Error
-pub struct Error {}
 
 // Full name: core::fmt::rt::Count
 #[lang_item("format_count")]
@@ -234,16 +217,23 @@ where
   Err(E),
 }
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
 
-pub trait core::fmt::Write<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn write_str<'_0, '_1> = write_str<'_0_0, '_0_1, Self>[Self]
-    fn write_char<'_0> = write_char<'_0_0, Self>[Self]
-    fn write_fmt<'_0, '_1> = write_fmt<'_0_0, '_0_1, Self>[Self]
+// Full name: core::fmt::rt::ArgumentType
+enum ArgumentType<'a> {
+  Placeholder(value: NonNull<()>, formatter: fn<'_0, '_1>(NonNull<()>, &'_0_0 mut (Formatter<'_0_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
+  Count(u16),
+}
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub struct Argument<'a> {
+  ty: ArgumentType<'a>,
 }
 
 // Full name: core::fmt::Arguments
@@ -255,28 +245,6 @@ where
   pieces: &'a (Slice<&'static (Str)>),
   fmt: Option<&'a (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>],
   args: &'a (Slice<Argument<'a>>),
-}
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub struct Argument<'a> {
-  ty: ArgumentType<'a>,
-}
-
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub struct Formatter<'a>
-where
-    'a : 'a,
-{
-  options: FormattingOptions,
-  buf: &'a mut ((dyn exists(TODO) + 'a)),
-}
-
-// Full name: core::fmt::rt::ArgumentType
-enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: fn<'_0, '_1>(NonNull<()>, &'_0_0 mut (Formatter<'_0_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
-  Count(u16),
 }
 
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
@@ -694,10 +662,9 @@ fn is_size_align_valid(@1: usize, @2: usize) -> bool
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
-// Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub trait core::alloc::Allocator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn allocate<'_0> = core::alloc::Allocator::allocate<'_0_0, Self>[Self]
     fn allocate_zeroed<'_0> = core::alloc::Allocator::allocate_zeroed<'_0_0, Self>[Self]
     fn deallocate<'_0> = core::alloc::Allocator::deallocate<'_0_0, Self>[Self]
@@ -709,7 +676,7 @@ pub trait Allocator<Self>
 
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -854,7 +821,7 @@ where
 
 pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -945,7 +912,7 @@ where
 
 pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout)
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
@@ -1009,7 +976,8 @@ pub fn panic_nounwind(@1: &'static (Str)) -> !
     @2 := panic_nounwind_fmt<'_>(move (@3), const (false))
 }
 
-fn core::ub_checks::maybe_is_nonoverlapping::runtime(@1: *const (), @2: *const (), @3: usize, @4: usize) -> bool
+// Full name: core::ub_checks::maybe_is_nonoverlapping::runtime
+fn runtime(@1: *const (), @2: *const (), @3: usize, @4: usize) -> bool
 {
     let @0: bool; // return
     let src@1: *const (); // arg #1
@@ -1262,7 +1230,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 if copy (is_zst@13) {
                                     storage_dead(@29)
                                     storage_dead(is_zst@13)
-                                    @6 := core::ub_checks::maybe_is_nonoverlapping::runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
+                                    @6 := runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
                                     storage_dead(@11)
                                     storage_dead(@8)
                                     storage_dead(zero_size@7)
@@ -1296,7 +1264,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     storage_dead(@29)
                                     if move (@11) {
                                         storage_dead(is_zst@13)
-                                        @6 := core::ub_checks::maybe_is_nonoverlapping::runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
+                                        @6 := runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
                                         storage_dead(@11)
                                         storage_dead(@8)
                                         storage_dead(zero_size@7)
@@ -1413,7 +1381,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     if copy (is_zst@13) {
                                         storage_dead(@29)
                                         storage_dead(is_zst@13)
-                                        @6 := core::ub_checks::maybe_is_nonoverlapping::runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
+                                        @6 := runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
                                         storage_dead(@11)
                                         storage_dead(@8)
                                         storage_dead(zero_size@7)
@@ -1447,7 +1415,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_dead(@29)
                                         if move (@11) {
                                             storage_dead(is_zst@13)
-                                            @6 := core::ub_checks::maybe_is_nonoverlapping::runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
+                                            @6 := runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
                                             storage_dead(@11)
                                             storage_dead(@8)
                                             storage_dead(zero_size@7)
@@ -1645,7 +1613,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     if copy (is_zst@13) {
                         storage_dead(@29)
                         storage_dead(is_zst@13)
-                        @6 := core::ub_checks::maybe_is_nonoverlapping::runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
+                        @6 := runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
                         storage_dead(@11)
                         storage_dead(@8)
                         storage_dead(zero_size@7)
@@ -1665,7 +1633,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                         storage_dead(@29)
                         if move (@11) {
                             storage_dead(is_zst@13)
-                            @6 := core::ub_checks::maybe_is_nonoverlapping::runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
+                            @6 := runtime(move (src@1), move (ptr@12), move (size@3), move (count@5))
                             storage_dead(@11)
                             storage_dead(@8)
                             storage_dead(zero_size@7)
@@ -1723,7 +1691,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
 
 pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -1817,7 +1785,7 @@ where
 
 pub unsafe fn core::alloc::Allocator::grow_zeroed<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -1911,7 +1879,7 @@ where
 
 pub unsafe fn core::alloc::Allocator::shrink<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -2006,7 +1974,7 @@ where
 // Full name: core::alloc::Allocator::by_ref
 pub fn by_ref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self)
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
     [@TraitClause1]: Sized<Self>,
 {
     let @0: &'_ (Self); // return
@@ -2014,542 +1982,6 @@ where
 
     @0 := copy (self@1)
     return
-}
-
-fn core::char::TAG_TWO_B() -> u8
-{
-    let @0: u8; // return
-
-    @0 := const (192 : u8)
-    return
-}
-
-const core::char::TAG_TWO_B: u8 = core::char::TAG_TWO_B()
-
-fn core::char::TAG_CONT() -> u8
-{
-    let @0: u8; // return
-
-    @0 := const (128 : u8)
-    return
-}
-
-const core::char::TAG_CONT: u8 = core::char::TAG_CONT()
-
-fn core::char::TAG_THREE_B() -> u8
-{
-    let @0: u8; // return
-
-    @0 := const (224 : u8)
-    return
-}
-
-const core::char::TAG_THREE_B: u8 = core::char::TAG_THREE_B()
-
-fn core::char::TAG_FOUR_B() -> u8
-{
-    let @0: u8; // return
-
-    @0 := const (240 : u8)
-    return
-}
-
-const core::char::TAG_FOUR_B: u8 = core::char::TAG_FOUR_B()
-
-// Full name: core::char::methods::encode_utf8_raw_unchecked
-pub unsafe fn encode_utf8_raw_unchecked(@1: u32, @2: *mut u8)
-{
-    let @0: (); // return
-    let code@1: u32; // arg #1
-    let dst@2: *mut u8; // arg #2
-    let len@3: usize; // local
-    let @4: u8; // anonymous local
-    let @5: u32; // anonymous local
-    let @6: u32; // anonymous local
-    let @7: u8; // anonymous local
-    let @8: u32; // anonymous local
-    let @9: *mut u8; // anonymous local
-    let @10: u8; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: u32; // anonymous local
-    let @13: u8; // anonymous local
-    let @14: u32; // anonymous local
-    let @15: u32; // anonymous local
-    let @16: *mut u8; // anonymous local
-    let @17: u8; // anonymous local
-    let @18: u32; // anonymous local
-    let @19: *mut u8; // anonymous local
-    let @20: u8; // anonymous local
-    let @21: u32; // anonymous local
-    let @22: u32; // anonymous local
-    let @23: u8; // anonymous local
-    let @24: u32; // anonymous local
-    let @25: u32; // anonymous local
-    let @26: *mut u8; // anonymous local
-    let @27: u8; // anonymous local
-    let @28: u32; // anonymous local
-    let @29: u32; // anonymous local
-    let @30: *mut u8; // anonymous local
-    let @31: u8; // anonymous local
-    let @32: u32; // anonymous local
-    let @33: *mut u8; // anonymous local
-    let @34: bool; // anonymous local
-    let @35: bool; // anonymous local
-    let @36: bool; // anonymous local
-    let @37: u8; // anonymous local
-    let @38: u8; // anonymous local
-    let @39: u8; // anonymous local
-    let @40: u8; // anonymous local
-    let @41: u8; // anonymous local
-    let @42: u8; // anonymous local
-    let @43: u8; // anonymous local
-    let @44: u8; // anonymous local
-    let @45: u8; // anonymous local
-
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(@12)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
-    storage_live(@24)
-    storage_live(@25)
-    storage_live(@26)
-    storage_live(@27)
-    storage_live(@28)
-    storage_live(@29)
-    storage_live(@30)
-    storage_live(@31)
-    storage_live(@32)
-    storage_live(@33)
-    storage_live(@37)
-    storage_live(@38)
-    storage_live(@39)
-    storage_live(@40)
-    storage_live(@41)
-    storage_live(@42)
-    storage_live(@43)
-    storage_live(@44)
-    storage_live(@45)
-    storage_live(len@3)
-    storage_live(@34)
-    storage_live(@35)
-    storage_live(@36)
-    @34 := copy (code@1) < const (128 : u32)
-    if move (@34) {
-        len@3 := const (1 : usize)
-        storage_dead(@36)
-        storage_dead(@35)
-        storage_dead(@34)
-        *(dst@2) := cast<u32, u8>(copy (code@1))
-    }
-    else {
-        @35 := copy (code@1) < const (2048 : u32)
-        if move (@35) {
-            len@3 := const (2 : usize)
-            storage_dead(@36)
-            storage_dead(@35)
-            storage_dead(@34)
-            storage_live(@4)
-            storage_live(@5)
-            storage_live(@6)
-            @6 := copy (code@1) wrap.>> const (6 : i32)
-            @5 := move (@6) & const (31 : u32)
-            storage_dead(@6)
-            @4 := cast<u32, u8>(move (@5))
-            storage_dead(@5)
-            @37 := core::char::TAG_TWO_B
-            *(dst@2) := move (@4) | move (@37)
-            storage_dead(@4)
-            storage_live(@7)
-            storage_live(@8)
-            @8 := copy (code@1) & const (63 : u32)
-            @7 := cast<u32, u8>(move (@8))
-            storage_dead(@8)
-            storage_live(@9)
-            @9 := copy (dst@2) offset const (1 : usize)
-            @38 := core::char::TAG_CONT
-            *(@9) := move (@7) | move (@38)
-            storage_dead(@7)
-            storage_dead(@9)
-        }
-        else {
-            @36 := copy (code@1) < const (65536 : u32)
-            if move (@36) {
-                len@3 := const (3 : usize)
-                storage_dead(@36)
-                storage_dead(@35)
-                storage_dead(@34)
-                storage_live(@10)
-                storage_live(@11)
-                storage_live(@12)
-                @12 := copy (code@1) wrap.>> const (12 : i32)
-                @11 := move (@12) & const (15 : u32)
-                storage_dead(@12)
-                @10 := cast<u32, u8>(move (@11))
-                storage_dead(@11)
-                @39 := core::char::TAG_THREE_B
-                *(dst@2) := move (@10) | move (@39)
-                storage_dead(@10)
-                storage_live(@13)
-                storage_live(@14)
-                storage_live(@15)
-                @15 := copy (code@1) wrap.>> const (6 : i32)
-                @14 := move (@15) & const (63 : u32)
-                storage_dead(@15)
-                @13 := cast<u32, u8>(move (@14))
-                storage_dead(@14)
-                storage_live(@16)
-                @16 := copy (dst@2) offset const (1 : usize)
-                @40 := core::char::TAG_CONT
-                *(@16) := move (@13) | move (@40)
-                storage_dead(@13)
-                storage_dead(@16)
-                storage_live(@17)
-                storage_live(@18)
-                @18 := copy (code@1) & const (63 : u32)
-                @17 := cast<u32, u8>(move (@18))
-                storage_dead(@18)
-                storage_live(@19)
-                @19 := copy (dst@2) offset const (2 : usize)
-                @41 := core::char::TAG_CONT
-                *(@19) := move (@17) | move (@41)
-                storage_dead(@17)
-                storage_dead(@19)
-            }
-            else {
-                len@3 := const (4 : usize)
-                storage_dead(@36)
-                storage_dead(@35)
-                storage_dead(@34)
-                storage_live(@20)
-                storage_live(@21)
-                storage_live(@22)
-                @22 := copy (code@1) wrap.>> const (18 : i32)
-                @21 := move (@22) & const (7 : u32)
-                storage_dead(@22)
-                @20 := cast<u32, u8>(move (@21))
-                storage_dead(@21)
-                @42 := core::char::TAG_FOUR_B
-                *(dst@2) := move (@20) | move (@42)
-                storage_dead(@20)
-                storage_live(@23)
-                storage_live(@24)
-                storage_live(@25)
-                @25 := copy (code@1) wrap.>> const (12 : i32)
-                @24 := move (@25) & const (63 : u32)
-                storage_dead(@25)
-                @23 := cast<u32, u8>(move (@24))
-                storage_dead(@24)
-                storage_live(@26)
-                @26 := copy (dst@2) offset const (1 : usize)
-                @43 := core::char::TAG_CONT
-                *(@26) := move (@23) | move (@43)
-                storage_dead(@23)
-                storage_dead(@26)
-                storage_live(@27)
-                storage_live(@28)
-                storage_live(@29)
-                @29 := copy (code@1) wrap.>> const (6 : i32)
-                @28 := move (@29) & const (63 : u32)
-                storage_dead(@29)
-                @27 := cast<u32, u8>(move (@28))
-                storage_dead(@28)
-                storage_live(@30)
-                @30 := copy (dst@2) offset const (2 : usize)
-                @44 := core::char::TAG_CONT
-                *(@30) := move (@27) | move (@44)
-                storage_dead(@27)
-                storage_dead(@30)
-                storage_live(@31)
-                storage_live(@32)
-                @32 := copy (code@1) & const (63 : u32)
-                @31 := cast<u32, u8>(move (@32))
-                storage_dead(@32)
-                storage_live(@33)
-                @33 := copy (dst@2) offset const (3 : usize)
-                @45 := core::char::TAG_CONT
-                *(@33) := move (@31) | move (@45)
-                storage_dead(@31)
-                storage_dead(@33)
-            }
-        }
-    }
-    storage_dead(len@3)
-    @0 := ()
-    return
-}
-
-fn core::slice::raw::from_raw_parts_mut::precondition_check(@1: *mut (), @2: usize, @3: usize, @4: usize)
-{
-    let @0: (); // return
-    let data@1: *mut (); // arg #1
-    let size@2: usize; // arg #2
-    let align@3: usize; // arg #3
-    let len@4: usize; // arg #4
-    let @5: bool; // anonymous local
-    let ptr@6: *const (); // local
-    let @7: bool; // anonymous local
-    let @8: !; // anonymous local
-    let @9: Arguments<'_>; // anonymous local
-    let pieces@10: &'_ (Array<&'_ (Str), 1 : usize>); // local
-    let @11: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @12: bool; // anonymous local
-    let @13: Arguments<'_>; // anonymous local
-    let @14: usize; // anonymous local
-    let @15: usize; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: u32; // anonymous local
-    let @18: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @19: &'_ (Slice<Argument<'_>>); // anonymous local
-    let max_len@20: usize; // local
-    let @21: bool; // anonymous local
-    let @22: usize; // anonymous local
-    let @23: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @24: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @25: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @26: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @27: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @28: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @29: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(pieces@10)
-    storage_live(@12)
-    storage_live(@13)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(max_len@20)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@25)
-    storage_live(@26)
-    storage_live(@27)
-    storage_live(@28)
-    storage_live(@29)
-    storage_live(@5)
-    storage_live(ptr@6)
-    ptr@6 := cast<*mut (), *const ()>(copy (data@1))
-    storage_live(@15)
-    storage_live(@17)
-    @17 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@3))
-    switch move (@17) {
-        1 : u32 => {
-        },
-        _ => {
-            storage_dead(@17)
-            storage_live(@13)
-            storage_live(@18)
-            @25 := core::ptr::const_ptr::{*const T}::is_aligned_to::{promoted_const}<()>
-            @18 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@25))
-            storage_live(@19)
-            @26 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-            @19 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@26))
-            @27 := Option::None {  }
-            @13 := Arguments { pieces: move (@18), fmt: move (@27), args: move (@19) }
-            storage_dead(@19)
-            storage_dead(@18)
-            panic(core::panicking::panic_fmt)
-        },
-    }
-    storage_dead(@17)
-    storage_live(@14)
-    @15 := transmute<*mut (), usize>(copy (data@1))
-    storage_live(@16)
-    @16 := copy (align@3) wrap.- const (1 : usize)
-    @14 := copy (@15) & move (@16)
-    storage_dead(@16)
-    switch move (@14) {
-        0 : usize => {
-            storage_dead(@14)
-            storage_live(@12)
-            @12 := copy (@15) == const (0 : usize)
-            @5 := ~(move (@12))
-            storage_dead(@12)
-            storage_dead(@15)
-            if move (@5) {
-                storage_dead(ptr@6)
-                storage_live(@7)
-                storage_live(@21)
-                storage_live(max_len@20)
-                @21 := copy (size@2) == const (0 : usize)
-                switch copy (size@2) {
-                    0 : usize => {
-                        max_len@20 := const (18446744073709551615 : usize)
-                    },
-                    _ => {
-                        assert(copy (@21) == false)
-                        max_len@20 := const (9223372036854775807 : usize) ub./ copy (size@2)
-                    },
-                }
-                storage_live(@22)
-                @22 := copy (max_len@20)
-                @7 := copy (len@4) <= move (@22)
-                storage_dead(@22)
-                storage_dead(max_len@20)
-                storage_dead(@21)
-                if move (@7) {
-                    storage_dead(@7)
-                    storage_dead(@5)
-                    @0 := ()
-                    return
-                }
-                else {
-                }
-            }
-            else {
-                storage_dead(ptr@6)
-            }
-        },
-        _ => {
-            storage_dead(@14)
-            storage_dead(@15)
-            storage_dead(ptr@6)
-        },
-    }
-    storage_live(@9)
-    storage_live(@11)
-    @11 := [const ("unsafe precondition(s) violated: slice::from_raw_parts_mut requires the pointer to be aligned and non-null, and the total size of the slice not to exceed `isize::MAX`\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@10 := &@11
-    storage_live(@23)
-    @23 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@10))
-    storage_live(@24)
-    @28 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-    @24 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@28))
-    @29 := Option::None {  }
-    @9 := Arguments { pieces: move (@23), fmt: move (@29), args: move (@24) }
-    storage_dead(@24)
-    storage_dead(@23)
-    @8 := panic_nounwind_fmt<'_>(move (@9), const (false))
-}
-
-fn core::char::methods::encode_utf8_raw::do_panic::runtime(@1: u32, @2: usize, @3: usize) -> !
-
-// Full name: core::char::methods::encode_utf8_raw
-pub fn encode_utf8_raw<'_0>(@1: u32, @2: &'_0 mut (Slice<u8>)) -> &'_0 mut (Slice<u8>)
-{
-    let @0: &'_ mut (Slice<u8>); // return
-    let code@1: u32; // arg #1
-    let dst@2: &'_ mut (Slice<u8>); // arg #2
-    let len@3: usize; // local
-    let @4: bool; // anonymous local
-    let dst_len@5: usize; // local
-    let @6: usize; // anonymous local
-    let @7: !; // anonymous local
-    let len@8: usize; // local
-    let @9: (); // anonymous local
-    let @10: *mut u8; // anonymous local
-    let data@11: *mut u8; // local
-    let len@12: usize; // local
-    let @13: bool; // anonymous local
-    let @14: bool; // anonymous local
-    let @15: bool; // anonymous local
-    let @16: *mut Slice<u8>; // anonymous local
-    let @17: *mut Slice<u8>; // anonymous local
-    let @18: (); // anonymous local
-    let @19: *mut (); // anonymous local
-    let @20: *mut Slice<u8>; // anonymous local
-    let @21: bool; // anonymous local
-
-    storage_live(dst_len@5)
-    storage_live(@7)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(data@11)
-    storage_live(len@12)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
-    storage_live(@21)
-    storage_live(len@3)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    @13 := copy (code@1) < const (128 : u32)
-    if move (@13) {
-        len@3 := const (1 : usize)
-    }
-    else {
-        @14 := copy (code@1) < const (2048 : u32)
-        if move (@14) {
-            len@3 := const (2 : usize)
-        }
-        else {
-            @15 := copy (code@1) < const (65536 : u32)
-            if move (@15) {
-                len@3 := const (3 : usize)
-            }
-            else {
-                len@3 := const (4 : usize)
-            }
-        }
-    }
-    storage_dead(@15)
-    storage_dead(@14)
-    storage_dead(@13)
-    storage_live(@4)
-    dst_len@5 := ptr_metadata(copy (dst@2))
-    storage_live(@6)
-    @6 := copy (len@3)
-    @4 := copy (dst_len@5) < move (@6)
-    if move (@4) {
-    }
-    else {
-        storage_dead(@6)
-        storage_dead(@4)
-        storage_live(@10)
-        storage_live(@16)
-        @16 := &raw mut *(dst@2)
-        @10 := cast<*mut Slice<u8>, *mut u8>(move (@16))
-        storage_dead(@16)
-        @9 := encode_utf8_raw_unchecked(move (code@1), move (@10))
-        storage_dead(@10)
-        storage_live(data@11)
-        @17 := &raw mut *(dst@2)
-        data@11 := cast<*mut Slice<u8>, *mut u8>(copy (@17))
-        storage_live(len@12)
-        len@12 := copy (len@3)
-        storage_live(@21)
-        @21 := ub_checks<bool>
-        if copy (@21) {
-            storage_live(@19)
-            @19 := cast<*mut Slice<u8>, *mut ()>(copy (@17))
-            @18 := core::slice::raw::from_raw_parts_mut::precondition_check(move (@19), const (1 : usize), const (1 : usize), copy (len@12))
-            storage_dead(@19)
-        }
-        else {
-        }
-        storage_live(@20)
-        @20 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@11), copy (len@12))
-        @0 := &mut *(@20)
-        storage_dead(@20)
-        storage_dead(@21)
-        storage_dead(len@12)
-        storage_dead(data@11)
-        storage_dead(len@3)
-        return
-    }
-    storage_dead(@6)
-    storage_live(len@8)
-    len@8 := copy (len@3)
-    @7 := core::char::methods::encode_utf8_raw::do_panic::runtime(move (code@1), move (len@8), move (dst_len@5))
 }
 
 #[lang_item("clone_fn")]
@@ -2561,7 +1993,7 @@ where
 pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
-    [@TraitClause1]: Destruct<Self>,
+    [@TraitClause1]: core::marker::Destruct<Self>,
 {
     let @0: (); // return
     let self@1: &'_ mut (Self); // arg #1
@@ -2570,315 +2002,17 @@ where
 
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop[Drop<Self>] *(self@1)
+    drop[core::ops::drop::Drop<Self>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
     return
-}
-
-// Full name: core::clone::impls::{impl Clone for bool}::clone
-pub fn {impl Clone for bool}::clone<'_0>(@1: &'_0 (bool)) -> bool
-{
-    let @0: bool; // return
-    let self@1: &'_ (bool); // arg #1
-
-    @0 := copy (*(self@1))
-    return
-}
-
-pub fn core::clone::impls::{impl Clone for bool}::clone_from<'_0, '_1>(@1: &'_0 mut (bool), @2: &'_1 (bool))
-where
-    [@TraitClause0]: Destruct<bool>,
-{
-    let @0: (); // return
-    let self@1: &'_ mut (bool); // arg #1
-    let source@2: &'_ (bool); // arg #2
-    let @3: bool; // anonymous local
-
-    storage_live(@3)
-    @3 := {impl Clone for bool}::clone<'_>(move (source@2))
-    drop[Drop<bool>] *(self@1)
-    *(self@1) := move (@3)
-    storage_dead(@3)
-    @0 := ()
-    return
-}
-
-// Full name: core::clone::impls::{impl Clone for bool}
-impl Clone for bool {
-    parent_clause0 = Sized<bool>
-    fn clone<'_0> = {impl Clone for bool}::clone<'_0_0>
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<bool>> = core::clone::impls::{impl Clone for bool}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
-}
-
-// Full name: core::fmt::Write::write_str
-pub fn write_str<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Str)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: core::fmt::Write<Self>,
-
-// Full name: core::fmt::Write::write_char
-pub fn write_char<'_0, Self>(@1: &'_0 mut (Self), @2: char) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: core::fmt::Write<Self>,
-{
-    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
-    let self@1: &'_ mut (Self); // arg #1
-    let c@2: char; // arg #2
-    let @3: &'_ (Str); // anonymous local
-    let dst@4: &'_ mut (Slice<u8>); // local
-    let @5: &'_ mut (Array<u8, 4 : usize>); // anonymous local
-    let @6: Array<u8, 4 : usize>; // anonymous local
-    let v@7: &'_ mut (Slice<u8>); // local
-    let @8: u32; // anonymous local
-    let @9: *mut Str; // anonymous local
-    let @10: *mut Slice<u8>; // anonymous local
-
-    storage_live(@5)
-    storage_live(@9)
-    storage_live(@3)
-    storage_live(dst@4)
-    storage_live(@6)
-    @6 := @ArrayRepeat<'_, u8, 4 : usize>(const (0 : u8))
-    @5 := &mut @6
-    dst@4 := @ArrayToSliceMut<'_, u8, 4 : usize>(copy (@5))
-    storage_live(v@7)
-    storage_live(@8)
-    @8 := cast<char, u32>(copy (c@2))
-    v@7 := encode_utf8_raw<'_>(move (@8), move (dst@4))
-    storage_dead(@8)
-    storage_live(@10)
-    @10 := &raw mut *(v@7)
-    @9 := cast<*mut Slice<u8>, *mut Str>(move (@10))
-    storage_dead(@10)
-    storage_dead(v@7)
-    @3 := &*(@9)
-    storage_dead(dst@4)
-    @0 := @TraitClause0::write_str<'_, '_>(move (self@1), move (@3))
-    storage_dead(@6)
-    storage_dead(@3)
-    return
-}
-
-// Full name: core::intrinsics::is_val_statically_known
-pub fn is_val_statically_known<T>(@1: T) -> bool
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
-{
-    let @0: bool; // return
-    let _arg@1: T; // arg #1
-
-    @0 := const (false)
-    return
-}
-
-// Full name: core::marker::{impl Copy for bool}
-impl Copy for bool {
-    parent_clause0 = MetaSized<bool>
-    parent_clause1 = {impl Clone for bool}
-}
-
-// Full name: core::fmt::write
-pub fn write<'_0, '_1>(@1: &'_0 mut ((dyn exists(TODO) + '_0)), @2: Arguments<'_1>) -> Result<(), Error>[Sized<()>, Sized<Error>]
-
-// Full name: core::fmt::Write::write_fmt::{impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt
-fn {impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt<'_0, '_1, W>(@1: &'_0 mut (W), @2: Arguments<'_1>) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: MetaSized<W>,
-    [@TraitClause1]: core::fmt::Write<W>,
-{
-    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
-    let self@1: &'_ mut (W); // arg #1
-    let args@2: Arguments<'_>; // arg #2
-    let @3: Option<&'_ (Str)>[Sized<&'_ (Str)>]; // anonymous local
-    let self@4: &'_ (Arguments<'_>); // local
-    let s@5: &'_ (Str); // local
-    let @6: &'_ mut (W); // anonymous local
-    let @7: &'_ mut ((dyn exists(TODO) + '_)); // anonymous local
-    let @8: &'_ mut (&'_ mut (W)); // anonymous local
-    let s@9: Option<&'_ (Str)>[Sized<&'_ (Str)>]; // local
-    let @10: bool; // anonymous local
-    let @11: bool; // anonymous local
-    let self@12: &'_ (Option<&'_ (Str)>[Sized<&'_ (Str)>]); // local
-    let @13: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @14: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @15: usize; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: usize; // anonymous local
-    let s@18: &'_ (&'_ (Str)); // local
-    let @19: &'_ (Str); // anonymous local
-    let @20: isize; // anonymous local
-    let @21: Option<&'_ (Str)>[Sized<&'_ (Str)>]; // anonymous local
-    let @22: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @23: &'_ (&'_ (Str)); // anonymous local
-    let @24: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @25: &'_ (&'_ (Str)); // anonymous local
-
-    storage_live(s@5)
-    storage_live(@6)
-    storage_live(@8)
-    storage_live(s@18)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
-    storage_live(@24)
-    storage_live(@25)
-    storage_live(@3)
-    storage_live(self@4)
-    self@4 := &args@2
-    storage_live(s@9)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@19)
-    @13 := copy ((args@2).pieces)
-    @14 := copy ((args@2).args)
-    @17 := len(*(@13))
-    switch move (@17) {
-        0 : usize => {
-            @15 := len(*(@14))
-            switch move (@15) {
-                0 : usize => {
-                    s@9 := Option::Some { 0: const ("") }
-                },
-                _ => {
-                    @21 := Option::None {  }
-                    s@9 := move (@21)
-                },
-            }
-        },
-        _ => {
-            switch move (@17) {
-                1 : usize => {
-                    @16 := len(*(@14))
-                    switch move (@16) {
-                        0 : usize => {
-                            storage_live(s@18)
-                            storage_live(@24)
-                            @24 := &*(@13)
-                            storage_live(@25)
-                            @25 := @SliceIndexShared<'_, &'_ (Str)>(move (@24), const (0 : usize))
-                            s@18 := &*(@25)
-                            storage_live(@22)
-                            @22 := &*(@13)
-                            storage_live(@23)
-                            @23 := @SliceIndexShared<'_, &'_ (Str)>(move (@22), const (0 : usize))
-                            @19 := copy (*(@23))
-                            s@9 := Option::Some { 0: copy (@19) }
-                            storage_dead(s@18)
-                        },
-                        _ => {
-                            @21 := Option::None {  }
-                            s@9 := move (@21)
-                        },
-                    }
-                },
-                _ => {
-                    @21 := Option::None {  }
-                    s@9 := move (@21)
-                },
-            }
-        },
-    }
-    storage_dead(@19)
-    storage_dead(@17)
-    storage_dead(@16)
-    storage_dead(@15)
-    storage_dead(@14)
-    storage_dead(@13)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(self@12)
-    self@12 := &s@9
-    storage_live(@20)
-    match s@9 {
-        Option::None => {
-            @20 := const (0 : isize)
-        },
-        Option::Some => {
-            @20 := const (1 : isize)
-        },
-    }
-    @11 := copy (@20) == const (1 : isize)
-    storage_dead(@20)
-    storage_dead(self@12)
-    @10 := is_val_statically_known<bool>[Sized<bool>, {impl Copy for bool}](move (@11))
-    if move (@10) {
-        storage_dead(@11)
-        @3 := copy (s@9)
-        storage_dead(@10)
-        storage_dead(s@9)
-        storage_dead(self@4)
-        match @3 {
-            Option::Some => {
-                s@5 := copy ((@3 as variant Option::Some).0)
-                storage_live(@6)
-                @6 := copy (self@1)
-                @0 := @TraitClause1::write_str<'_, '_>(move (@6), move (s@5))
-                storage_dead(@6)
-                storage_dead(@3)
-                return
-            },
-            Option::None => {
-            },
-        }
-    }
-    else {
-        storage_dead(@11)
-        storage_dead(@10)
-        storage_dead(s@9)
-        storage_dead(self@4)
-    }
-    storage_dead(@3)
-    storage_live(@7)
-    @8 := &mut self@1
-    @7 := unsize_cast<&'_ mut (&'_ mut (W)), &'_ mut ((dyn exists(TODO) + '_))>(copy (@8))
-    @0 := write<'_, '_>(move (@7), copy (args@2))
-    storage_dead(@7)
-    return
-}
-
-// Full name: core::fmt::Write::write_fmt
-pub fn write_fmt<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: Arguments<'_1>) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: core::fmt::Write<Self>,
-{
-    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
-    let self@1: &'_ mut (Self); // arg #1
-    let args@2: Arguments<'_>; // arg #2
-
-    @0 := {impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt<'_, '_, Self>[@TraitClause0::parent_clause0, @TraitClause0](move (self@1), move (args@2))
-    return
-}
-
-// Full name: core::fmt::Write::write_fmt::SpecWriteFmt
-trait SpecWriteFmt<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn spec_write_fmt<'_0> = core::fmt::Write::write_fmt::SpecWriteFmt::spec_write_fmt<'_0_0, Self>[Self]
-}
-
-fn core::fmt::Write::write_fmt::SpecWriteFmt::spec_write_fmt<'_0, Self>(@1: Self, @2: Arguments<'_0>) -> Result<(), Error>[Sized<()>, Sized<Error>]
-where
-    [@TraitClause0]: SpecWriteFmt<Self>,
-
-// Full name: core::fmt::Write::write_fmt::{impl SpecWriteFmt for &'_0 mut (W)}
-impl<'_0, W> SpecWriteFmt for &'_0 mut (W)
-where
-    [@TraitClause0]: MetaSized<W>,
-    [@TraitClause1]: core::fmt::Write<W>,
-{
-    parent_clause0 = MetaSized<&'_ mut (W)>
-    fn spec_write_fmt<'_0> = {impl SpecWriteFmt for &'_0 mut (W)}::spec_write_fmt<'_0, '_0_0, W>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: core::intrinsics::size_of_val
 pub unsafe fn size_of_val<T>(@1: *const T) -> usize
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
     let @0: usize; // return
     let ptr@1: *const T; // arg #1
@@ -2889,7 +2023,7 @@ where
 // Full name: core::intrinsics::align_of_val
 pub unsafe fn align_of_val<T>(@1: *const T) -> usize
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
     let @0: usize; // return
     let ptr@1: *const T; // arg #1
@@ -2901,7 +2035,7 @@ where
 #[lang_item("manually_drop")]
 pub struct ManuallyDrop<T>
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
   value: T,
 }
@@ -2923,7 +2057,7 @@ pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInne
 
 pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
 where
-    [@TraitClause0]: Destruct<NonZeroUsizeInner>,
+    [@TraitClause0]: core::marker::Destruct<NonZeroUsizeInner>,
 {
     let @0: (); // return
     let self@1: &'_ mut (NonZeroUsizeInner); // arg #1
@@ -2932,7 +2066,7 @@ where
 
     storage_live(@3)
     @3 := {impl Clone for NonZeroUsizeInner}::clone<'_>(move (source@2))
-    drop[Drop<NonZeroUsizeInner>] *(self@1)
+    drop[core::ops::drop::Drop<NonZeroUsizeInner>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -2943,19 +2077,18 @@ where
 impl Clone for NonZeroUsizeInner {
     parent_clause0 = Sized<NonZeroUsizeInner>
     fn clone<'_0> = {impl Clone for NonZeroUsizeInner}::clone<'_0_0>
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    fn clone_from<'_0, '_1, [@TraitClause0]: core::marker::Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
 }
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroUsizeInner}
 impl Copy for NonZeroUsizeInner {
-    parent_clause0 = MetaSized<NonZeroUsizeInner>
+    parent_clause0 = core::marker::MetaSized<NonZeroUsizeInner>
     parent_clause1 = {impl Clone for NonZeroUsizeInner}
 }
 
-// Full name: core::num::nonzero::private::Sealed
-pub trait Sealed<Self>
+pub trait core::num::nonzero::private::Sealed<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
@@ -2963,22 +2096,22 @@ pub trait ZeroablePrimitive<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Copy<Self>
-    parent_clause2 : [@TraitClause2]: Sealed<Self>
+    parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
     parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
     parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
     type NonZeroInner
 }
 
-// Full name: core::num::nonzero::{impl Sealed for usize}
-impl Sealed for usize {
-    parent_clause0 = MetaSized<usize>
+// Full name: core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}
+impl core::num::nonzero::private::Sealed for usize {
+    parent_clause0 = core::marker::MetaSized<usize>
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
 impl ZeroablePrimitive for usize {
     parent_clause0 = Sized<usize>
     parent_clause1 = {impl Copy for usize}
-    parent_clause2 = {impl Sealed for usize}
+    parent_clause2 = {impl core::num::nonzero::private::Sealed for usize}
     parent_clause3 = Sized<NonZeroUsizeInner>
     parent_clause4 = {impl Copy for NonZeroUsizeInner}
     type NonZeroInner = NonZeroUsizeInner
@@ -2996,7 +2129,7 @@ where
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
@@ -4804,8 +3937,8 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::allocate
+pub fn {impl core::alloc::Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -4815,8 +3948,8 @@ pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout)
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate_zeroed
-pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::allocate_zeroed
+pub fn {impl core::alloc::Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -4826,8 +3959,8 @@ pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: 
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
-pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::deallocate
+pub unsafe fn {impl core::alloc::Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
 {
     let @0: (); // return
     let self@1: &'_ (Global); // arg #1
@@ -5103,8 +4236,8 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::grow
-pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::grow
+pub unsafe fn {impl core::alloc::Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -5116,8 +4249,8 @@ pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonN
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::grow_zeroed
-pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::grow_zeroed
+pub unsafe fn {impl core::alloc::Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -5129,8 +4262,8 @@ pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::shrink
-pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::shrink
+pub unsafe fn {impl core::alloc::Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -6595,7 +5728,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     return
 }
 
-pub fn alloc::alloc::{impl Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
+pub fn alloc::alloc::{impl core::alloc::Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
 where
     [@TraitClause0]: Sized<Global>,
 {
@@ -6606,16 +5739,16 @@ where
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}
-impl Allocator for Global {
-    parent_clause0 = MetaSized<Global>
-    fn allocate<'_0> = {impl Allocator for Global}::allocate<'_0_0>
-    fn allocate_zeroed<'_0> = {impl Allocator for Global}::allocate_zeroed<'_0_0>
-    fn deallocate<'_0> = {impl Allocator for Global}::deallocate<'_0_0>
-    fn grow<'_0> = {impl Allocator for Global}::grow<'_0_0>
-    fn grow_zeroed<'_0> = {impl Allocator for Global}::grow_zeroed<'_0_0>
-    fn shrink<'_0> = {impl Allocator for Global}::shrink<'_0_0>
-    fn by_ref<'_0, [@TraitClause0]: Sized<Global>> = alloc::alloc::{impl Allocator for Global}::by_ref<'_0_0>[@TraitClause0_0]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}
+impl core::alloc::Allocator for Global {
+    parent_clause0 = core::marker::MetaSized<Global>
+    fn allocate<'_0> = {impl core::alloc::Allocator for Global}::allocate<'_0_0>
+    fn allocate_zeroed<'_0> = {impl core::alloc::Allocator for Global}::allocate_zeroed<'_0_0>
+    fn deallocate<'_0> = {impl core::alloc::Allocator for Global}::deallocate<'_0_0>
+    fn grow<'_0> = {impl core::alloc::Allocator for Global}::grow<'_0_0>
+    fn grow_zeroed<'_0> = {impl core::alloc::Allocator for Global}::grow_zeroed<'_0_0>
+    fn shrink<'_0> = {impl core::alloc::Allocator for Global}::shrink<'_0_0>
+    fn by_ref<'_0, [@TraitClause0]: Sized<Global>> = alloc::alloc::{impl core::alloc::Allocator for Global}::by_ref<'_0_0>[@TraitClause0_0]
 }
 
 // Full name: alloc::alloc::handle_alloc_error::ct_error
@@ -6722,20 +5855,20 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
 #[lang_item("owned_box")]
 pub struct Box<T, A>
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
 {
   Unique<T>,
   A,
 }
 
 #[lang_item("box_new")]
-pub fn alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]
+pub fn alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]; // return
+    let @0: Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // return
     let x@1: T; // arg #1
     let @2: usize; // anonymous local
     let @3: usize; // anonymous local
@@ -6755,12 +5888,12 @@ where
     return
 }
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]}::from_raw
-pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]
+// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::from_raw
+pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
-    let @0: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // return
+    let @0: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // return
     let raw@1: *mut T; // arg #1
     let @2: Unique<T>; // anonymous local
     let @3: NonNull<T>; // anonymous local
@@ -6801,15 +5934,15 @@ where
     return
 }
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]}::into_raw
-pub fn into_raw<T>(@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]) -> *mut T
+// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::into_raw
+pub fn into_raw<T>(@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]) -> *mut T
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
     let @0: *mut T; // return
-    let b@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // arg #1
-    let @2: ManuallyDrop<Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]>[MetaSized<Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]>]; // anonymous local
-    let @3: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let b@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // arg #1
+    let @2: ManuallyDrop<Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]>[core::marker::MetaSized<Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]>]; // anonymous local
+    let @3: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // anonymous local
     let @4: *const T; // anonymous local
 
     storage_live(@3)
@@ -6826,9 +5959,9 @@ where
 // Full name: alloc::boxed::{Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::leak
 pub fn leak<'a, T, A>(@1: Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]) -> &'a mut (T)
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
     A : 'a,
 {
     let @0: &'_ mut (T); // return
@@ -6849,12 +5982,12 @@ where
     return
 }
 
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
-pub fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(@1: &'_0 mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]))
+// Full name: alloc::boxed::{impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
+pub fn {impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(@1: &'_0 mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]))
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
 {
     let @0: (); // return
     let self@1: &'_ mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]); // arg #1
@@ -6929,56 +6062,56 @@ where
     return
 }
 
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
-impl<T, A> Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+// Full name: alloc::boxed::{impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
+impl<T, A> core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
 {
-    parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
-    fn drop<'_0> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    parent_clause0 = core::marker::MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
+    fn drop<'_0> = {impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: test_crate::foo
 unsafe fn foo()
 {
     let @0: (); // return
-    let b@1: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // local
+    let b@1: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // local
     let p@2: *mut i32; // local
-    let @3: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let @3: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // anonymous local
     let @4: &'_ mut (i32); // anonymous local
-    let @5: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
-    let b@6: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // local
+    let @5: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // anonymous local
+    let b@6: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // local
     let @7: *mut i32; // anonymous local
     let i@8: i32; // local
     let @9: *const i32; // anonymous local
 
     storage_live(@9)
     storage_live(b@1)
-    b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
+    b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
     storage_live(p@2)
     storage_live(@3)
     @3 := move (b@1)
-    p@2 := into_raw<i32>[MetaSized<i32>](move (@3))
+    p@2 := into_raw<i32>[core::marker::MetaSized<i32>](move (@3))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
-    @4 := leak<'_, i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}](move (@5))
+    @5 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
+    @4 := leak<'_, i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(b@6)
     storage_live(@7)
     @7 := copy (p@2)
-    b@6 := from_raw<i32>[MetaSized<i32>](move (@7))
+    b@6 := from_raw<i32>[core::marker::MetaSized<i32>](move (@7))
     storage_dead(@7)
     storage_live(i@8)
     @9 := transmute<NonNull<i32>, *const i32>(copy (((b@6).0).pointer))
     i@8 := copy (*(@9))
     @0 := ()
     storage_dead(i@8)
-    drop[{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]] b@6
+    drop[{impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]] b@6
     storage_dead(b@6)
     storage_dead(p@2)
     storage_dead(b@1)

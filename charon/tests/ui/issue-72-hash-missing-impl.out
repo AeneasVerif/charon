@@ -1,48 +1,46 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: test_crate::Hasher
-pub trait Hasher<Self>
+pub trait test_crate::Hasher<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: test_crate::DefaultHasher
 pub struct DefaultHasher {}
 
-// Full name: test_crate::{impl Hasher for DefaultHasher}
-impl Hasher for DefaultHasher {
-    parent_clause0 = MetaSized<DefaultHasher>
+// Full name: test_crate::{impl test_crate::Hasher for DefaultHasher}
+impl test_crate::Hasher for DefaultHasher {
+    parent_clause0 = core::marker::MetaSized<DefaultHasher>
 }
 
 // Full name: test_crate::Hash
 pub trait Hash<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 pub fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
+    [@TraitClause2]: test_crate::Hasher<H>,
 
 // Full name: test_crate::{impl Hash for u32}::hash
 pub fn {impl Hash for u32}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
     [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: Hasher<H>,
+    [@TraitClause1]: test_crate::Hasher<H>,
 {
     let @0: (); // return
     let self@1: &'_ (u32); // arg #1
@@ -55,8 +53,8 @@ where
 
 // Full name: test_crate::{impl Hash for u32}
 impl Hash for u32 {
-    parent_clause0 = MetaSized<u32>
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = {impl Hash for u32}::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
+    parent_clause0 = core::marker::MetaSized<u32>
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = {impl Hash for u32}::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: test_crate::main
@@ -81,7 +79,7 @@ fn main()
     storage_live(@6)
     @6 := &mut hasher@1
     @5 := &two-phase-mut *(@6)
-    @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[Sized<DefaultHasher>, {impl Hasher for DefaultHasher}](move (@3), move (@5))
+    @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[Sized<DefaultHasher>, {impl test_crate::Hasher for DefaultHasher}](move (@3), move (@5))
     storage_dead(@5)
     storage_dead(@3)
     storage_dead(@6)

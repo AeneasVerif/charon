@@ -1,43 +1,41 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::arith::Add
 #[lang_item("add")]
-pub trait Add<Self, Rhs>
+pub trait core::ops::arith::Add<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Rhs>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
 }
 
-// Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}::add
-pub fn {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
+// Full name: core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}::add
+pub fn {impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
 
-// Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}
-impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {
-    parent_clause0 = MetaSized<&'_ (u32)>
+// Full name: core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}
+impl<'_0, '_1> core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32) {
+    parent_clause0 = core::marker::MetaSized<&'_ (u32)>
     parent_clause1 = Sized<&'_ (u32)>
     parent_clause2 = Sized<u32>
     type Output = u32
-    fn add = {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>
+    fn add = {impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>
 }
 
 #[lang_item("add")]
 pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
 where
-    [@TraitClause0]: Add<Self, Rhs>,
+    [@TraitClause0]: core::ops::arith::Add<Self, Rhs>,
 
 // Full name: test_crate::six
 fn six() -> u32
@@ -86,7 +84,7 @@ fn six() -> u32
     @5 := copy (x@1)
     storage_live(@6)
     @6 := copy (y@3)
-    @0 := {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_, '_>(move (@5), move (@6))
+    @0 := {impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}::add<'_, '_>(move (@5), move (@6))
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(y@3)

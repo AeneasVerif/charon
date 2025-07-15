@@ -1,86 +1,80 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
-// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
+pub trait core::ops::function::FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
 }
 
-// Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
-pub trait Fn<Self, Args>
+pub trait core::ops::function::Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
-    [@TraitClause0]: Fn<Self, Args>,
+    [@TraitClause0]: core::ops::function::Fn<Self, Args>,
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
-    [@TraitClause0]: FnMut<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnMut<Self, Args>,
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnOnce<Self, Args>,
 
 // Full name: test_crate::Thing
 trait Thing<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn foo = foo<Self>[Self]
@@ -92,8 +86,8 @@ where
     [@TraitClause0]: Thing<Self>,
 {}
 
-// Full name: test_crate::Thing::foo::{impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call
-fn {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_0, Self>(@1: &'_0 (closure<Self>[@TraitClause0]), @2: (@TraitClause0::Item))
+// Full name: test_crate::Thing::foo::{impl core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call
+fn {impl core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_0, Self>(@1: &'_0 (closure<Self>[@TraitClause0]), @2: (@TraitClause0::Item))
 where
     [@TraitClause0]: Thing<Self>,
 {
@@ -105,7 +99,7 @@ where
     storage_live(@3)
     @3 := move ((tupled_args@2).0)
     @0 := ()
-    drop[Drop<@TraitClause0::Item>] @3
+    drop[core::ops::drop::Drop<@TraitClause0::Item>] @3
     @0 := ()
     return
 }
@@ -130,19 +124,19 @@ where
     storage_live(@5)
     @5 := move (i@1)
     @4 := (move (@5))
-    @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@2), move (@4))
-    drop[Drop<@TraitClause0::Item>] @5
+    @0 := {impl core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@2), move (@4))
+    drop[core::ops::drop::Drop<@TraitClause0::Item>] @5
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@2)
     storage_dead(@3)
-    drop[Drop<@TraitClause0::Item>] i@1
+    drop[core::ops::drop::Drop<@TraitClause0::Item>] i@1
     @0 := ()
     return
 }
 
-// Full name: test_crate::Thing::foo::{impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut
-fn {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0, Self>(@1: &'_0 mut (closure<Self>[@TraitClause0]), @2: (@TraitClause0::Item))
+// Full name: test_crate::Thing::foo::{impl core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut
+fn {impl core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0, Self>(@1: &'_0 mut (closure<Self>[@TraitClause0]), @2: (@TraitClause0::Item))
 where
     [@TraitClause0]: Thing<Self>,
 {
@@ -153,13 +147,13 @@ where
 
     storage_live(@3)
     @3 := &*(state@1)
-    @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@3), move (args@2))
+    @0 := {impl core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@3), move (args@2))
     @0 := ()
     return
 }
 
-// Full name: test_crate::Thing::foo::{impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once
-fn {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>(@1: closure<Self>[@TraitClause0], @2: (@TraitClause0::Item))
+// Full name: test_crate::Thing::foo::{impl core::ops::function::FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once
+fn {impl core::ops::function::FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>(@1: closure<Self>[@TraitClause0], @2: (@TraitClause0::Item))
 where
     [@TraitClause0]: Thing<Self>,
 {
@@ -170,47 +164,47 @@ where
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
-    drop[Drop<closure<Self>[@TraitClause0]>] @1
+    @0 := {impl core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
+    drop[core::ops::drop::Drop<closure<Self>[@TraitClause0]>] @1
     @0 := ()
     return
 }
 
-// Full name: test_crate::Thing::foo::{impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}
-impl<Self> FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
+// Full name: test_crate::Thing::foo::{impl core::ops::function::FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}
+impl<Self> core::ops::function::FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
+    parent_clause0 = core::marker::MetaSized<closure<Self>[@TraitClause0]>
     parent_clause1 = Sized<(@TraitClause0::Item)>
-    parent_clause2 = Tuple<(@TraitClause0::Item)>
+    parent_clause2 = core::marker::Tuple<(@TraitClause0::Item)>
     parent_clause3 = Sized<()>
     type Output = ()
-    fn call_once = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>[@TraitClause0]
+    fn call_once = {impl core::ops::function::FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>[@TraitClause0]
 }
 
-// Full name: test_crate::Thing::foo::{impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}
-impl<Self> FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
+// Full name: test_crate::Thing::foo::{impl core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}
+impl<Self> core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
-    parent_clause1 = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
+    parent_clause0 = core::marker::MetaSized<closure<Self>[@TraitClause0]>
+    parent_clause1 = {impl core::ops::function::FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
     parent_clause2 = Sized<(@TraitClause0::Item)>
-    parent_clause3 = Tuple<(@TraitClause0::Item)>
-    fn call_mut<'_0> = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0_0, Self>[@TraitClause0]
+    parent_clause3 = core::marker::Tuple<(@TraitClause0::Item)>
+    fn call_mut<'_0> = {impl core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0_0, Self>[@TraitClause0]
 }
 
-// Full name: test_crate::Thing::foo::{impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}
-impl<Self> Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
+// Full name: test_crate::Thing::foo::{impl core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}
+impl<Self> core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
-    parent_clause1 = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
+    parent_clause0 = core::marker::MetaSized<closure<Self>[@TraitClause0]>
+    parent_clause1 = {impl core::ops::function::FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
     parent_clause2 = Sized<(@TraitClause0::Item)>
-    parent_clause3 = Tuple<(@TraitClause0::Item)>
-    fn call<'_0> = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_0_0, Self>[@TraitClause0]
+    parent_clause3 = core::marker::Tuple<(@TraitClause0::Item)>
+    fn call<'_0> = {impl core::ops::function::Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_0_0, Self>[@TraitClause0]
 }
 
 

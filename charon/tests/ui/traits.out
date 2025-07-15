@@ -1,80 +1,74 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
-// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
+pub trait core::ops::function::FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
 }
 
-// Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
-pub trait Fn<Self, Args>
+pub trait core::ops::function::Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
-    [@TraitClause0]: Fn<Self, Args>,
+    [@TraitClause0]: core::ops::function::Fn<Self, Args>,
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
-    [@TraitClause0]: FnMut<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnMut<Self, Args>,
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnOnce<Self, Args>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -86,18 +80,18 @@ where
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}::drop
-fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+// Full name: core::option::Option::{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}::drop
+fn {impl core::ops::drop::Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}
-impl<T> Drop for Option<T>[@TraitClause0]
+// Full name: core::option::Option::{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}
+impl<T> core::ops::drop::Drop for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
-    fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    parent_clause0 = core::marker::MetaSized<Option<T>[@TraitClause0]>
+    fn drop<'_0> = {impl core::ops::drop::Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: core::result::Result
@@ -115,22 +109,21 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: test_crate::BoolTrait
-pub trait BoolTrait<Self>
+pub trait test_crate::BoolTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
     fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
-    [@TraitClause0]: BoolTrait<Self>,
+    [@TraitClause0]: test_crate::BoolTrait<Self>,
 
 // Full name: test_crate::BoolTrait::ret_true
 pub fn ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
-    [@TraitClause0]: BoolTrait<Self>,
+    [@TraitClause0]: test_crate::BoolTrait<Self>,
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
@@ -139,8 +132,8 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for bool}::get_bool
-pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+// Full name: test_crate::{impl test_crate::BoolTrait for bool}::get_bool
+pub fn {impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -149,7 +142,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
     return
 }
 
-pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -158,11 +151,11 @@ pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> 
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for bool}
-impl BoolTrait for bool {
-    parent_clause0 = MetaSized<bool>
-    fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
-    fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
+// Full name: test_crate::{impl test_crate::BoolTrait for bool}
+impl test_crate::BoolTrait for bool {
+    parent_clause0 = core::marker::MetaSized<bool>
+    fn get_bool<'_0> = {impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
+    fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
 }
 
 // Full name: test_crate::test_bool_trait_bool
@@ -178,12 +171,12 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
+    @2 := {impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
-        @0 := test_crate::{impl BoolTrait for bool}::ret_true<'_>(move (@4))
+        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
     }
     else {
@@ -194,8 +187,8 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::get_bool
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+// Full name: test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::get_bool
+pub fn {impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -214,7 +207,7 @@ where
     return
 }
 
-pub fn test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -225,14 +218,14 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}
-impl<T> BoolTrait for Option<T>[@TraitClause0]
+// Full name: test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}
+impl<T> test_crate::BoolTrait for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
-    fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0]
-    fn ret_true<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_0, T>[@TraitClause0]
+    parent_clause0 = core::marker::MetaSized<Option<T>[@TraitClause0]>
+    fn get_bool<'_0> = {impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0]
+    fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -250,12 +243,12 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (@3))
+    @2 := {impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
-        @0 := test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
+        @0 := test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
         storage_dead(@4)
     }
     else {
@@ -263,7 +256,7 @@ where
         @0 := const (false)
     }
     storage_dead(@2)
-    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    drop[{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -271,7 +264,7 @@ where
 pub fn test_bool_trait<T>(@1: T) -> bool
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: BoolTrait<T>,
+    [@TraitClause1]: test_crate::BoolTrait<T>,
 {
     let @0: bool; // return
     let x@1: T; // arg #1
@@ -281,23 +274,22 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<T>] x@1
+    drop[core::ops::drop::Drop<T>] x@1
     return
 }
 
-// Full name: test_crate::ToU64
-pub trait ToU64<Self>
+pub trait test_crate::ToU64<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn to_u64 = test_crate::ToU64::to_u64<Self>[Self]
 }
 
 pub fn test_crate::ToU64::to_u64<Self>(@1: Self) -> u64
 where
-    [@TraitClause0]: ToU64<Self>,
+    [@TraitClause0]: test_crate::ToU64<Self>,
 
-// Full name: test_crate::{impl ToU64 for u64}::to_u64
-pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
+// Full name: test_crate::{impl test_crate::ToU64 for u64}::to_u64
+pub fn {impl test_crate::ToU64 for u64}::to_u64(@1: u64) -> u64
 {
     let @0: u64; // return
     let self@1: u64; // arg #1
@@ -306,17 +298,17 @@ pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
     return
 }
 
-// Full name: test_crate::{impl ToU64 for u64}
-impl ToU64 for u64 {
-    parent_clause0 = MetaSized<u64>
-    fn to_u64 = {impl ToU64 for u64}::to_u64
+// Full name: test_crate::{impl test_crate::ToU64 for u64}
+impl test_crate::ToU64 for u64 {
+    parent_clause0 = core::marker::MetaSized<u64>
+    fn to_u64 = {impl test_crate::ToU64 for u64}::to_u64
 }
 
-// Full name: test_crate::{impl ToU64 for (A, A)}::to_u64
-pub fn {impl ToU64 for (A, A)}::to_u64<A>(@1: (A, A)) -> u64
+// Full name: test_crate::{impl test_crate::ToU64 for (A, A)}::to_u64
+pub fn {impl test_crate::ToU64 for (A, A)}::to_u64<A>(@1: (A, A)) -> u64
 where
     [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: ToU64<A>,
+    [@TraitClause1]: test_crate::ToU64<A>,
 {
     let @0: u64; // return
     let self@1: (A, A); // arg #1
@@ -341,24 +333,24 @@ where
     @0 := move (@6)
     storage_dead(@4)
     storage_dead(@2)
-    drop[Drop<(A, A)>] self@1
+    drop[core::ops::drop::Drop<(A, A)>] self@1
     return
 }
 
-// Full name: test_crate::{impl ToU64 for (A, A)}
-impl<A> ToU64 for (A, A)
+// Full name: test_crate::{impl test_crate::ToU64 for (A, A)}
+impl<A> test_crate::ToU64 for (A, A)
 where
     [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: ToU64<A>,
+    [@TraitClause1]: test_crate::ToU64<A>,
 {
-    parent_clause0 = MetaSized<(A, A)>
-    fn to_u64 = {impl ToU64 for (A, A)}::to_u64<A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = core::marker::MetaSized<(A, A)>
+    fn to_u64 = {impl test_crate::ToU64 for (A, A)}::to_u64<A>[@TraitClause0, @TraitClause1]
 }
 
 pub fn test_crate::f<T>(@1: (T, T)) -> u64
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToU64<T>,
+    [@TraitClause1]: test_crate::ToU64<T>,
 {
     let @0: u64; // return
     let x@1: (T, T); // arg #1
@@ -366,9 +358,9 @@ where
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
+    @0 := {impl test_crate::ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[Drop<(T, T)>] x@1
+    drop[core::ops::drop::Drop<(T, T)>] x@1
     return
 }
 
@@ -376,7 +368,7 @@ where
 pub fn g<T>(@1: (T, T)) -> u64
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToU64<(T, T)>,
+    [@TraitClause1]: test_crate::ToU64<(T, T)>,
 {
     let @0: u64; // return
     let x@1: (T, T); // arg #1
@@ -386,7 +378,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[Drop<(T, T)>] x@1
+    drop[core::ops::drop::Drop<(T, T)>] x@1
     return
 }
 
@@ -399,7 +391,7 @@ pub fn h0(@1: u64) -> u64
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := {impl ToU64 for u64}::to_u64(move (@2))
+    @0 := {impl test_crate::ToU64 for u64}::to_u64(move (@2))
     storage_dead(@2)
     return
 }
@@ -412,25 +404,25 @@ where
   x: T,
 }
 
-// Full name: test_crate::Wrapper::{impl Drop for Wrapper<T>[@TraitClause0]}::drop
-fn {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Wrapper<T>[@TraitClause0]))
+// Full name: test_crate::Wrapper::{impl core::ops::drop::Drop for Wrapper<T>[@TraitClause0]}::drop
+fn {impl core::ops::drop::Drop for Wrapper<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Wrapper<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: test_crate::Wrapper::{impl Drop for Wrapper<T>[@TraitClause0]}
-impl<T> Drop for Wrapper<T>[@TraitClause0]
+// Full name: test_crate::Wrapper::{impl core::ops::drop::Drop for Wrapper<T>[@TraitClause0]}
+impl<T> core::ops::drop::Drop for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
-    fn drop<'_0> = {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    parent_clause0 = core::marker::MetaSized<Wrapper<T>[@TraitClause0]>
+    fn drop<'_0> = {impl core::ops::drop::Drop for Wrapper<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
 }
 
-// Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64
-pub fn {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>(@1: Wrapper<T>[@TraitClause0]) -> u64
+// Full name: test_crate::{impl test_crate::ToU64 for Wrapper<T>[@TraitClause0]}::to_u64
+pub fn {impl test_crate::ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>(@1: Wrapper<T>[@TraitClause0]) -> u64
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToU64<T>,
+    [@TraitClause1]: test_crate::ToU64<T>,
 {
     let @0: u64; // return
     let self@1: Wrapper<T>[@TraitClause0]; // arg #1
@@ -440,18 +432,18 @@ where
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
+    drop[{impl core::ops::drop::Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
     return
 }
 
-// Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}
-impl<T> ToU64 for Wrapper<T>[@TraitClause0]
+// Full name: test_crate::{impl test_crate::ToU64 for Wrapper<T>[@TraitClause0]}
+impl<T> test_crate::ToU64 for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToU64<T>,
+    [@TraitClause1]: test_crate::ToU64<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
-    fn to_u64 = {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = core::marker::MetaSized<Wrapper<T>[@TraitClause0]>
+    fn to_u64 = {impl test_crate::ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::h1
@@ -463,7 +455,7 @@ pub fn h1(@1: Wrapper<u64>[Sized<u64>]) -> u64
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[Sized<u64>, {impl ToU64 for u64}](move (@2))
+    @0 := {impl test_crate::ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[Sized<u64>, {impl test_crate::ToU64 for u64}](move (@2))
     storage_dead(@2)
     return
 }
@@ -472,7 +464,7 @@ pub fn h1(@1: Wrapper<u64>[Sized<u64>]) -> u64
 pub fn h2<T>(@1: Wrapper<T>[@TraitClause0]) -> u64
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToU64<T>,
+    [@TraitClause1]: test_crate::ToU64<T>,
 {
     let @0: u64; // return
     let x@1: Wrapper<T>[@TraitClause0]; // arg #1
@@ -480,26 +472,25 @@ where
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
+    @0 := {impl test_crate::ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    drop[{impl core::ops::drop::Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
-// Full name: test_crate::ToType
-pub trait ToType<Self, T>
+pub trait test_crate::ToType<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn to_type = test_crate::ToType::to_type<Self, T>[Self]
 }
 
 pub fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
 where
-    [@TraitClause0]: ToType<Self, T>,
+    [@TraitClause0]: test_crate::ToType<Self, T>,
 
-// Full name: test_crate::{impl ToType<bool> for u64}::to_type
-pub fn {impl ToType<bool> for u64}::to_type(@1: u64) -> bool
+// Full name: test_crate::{impl test_crate::ToType<bool> for u64}::to_type
+pub fn {impl test_crate::ToType<bool> for u64}::to_type(@1: u64) -> bool
 {
     let @0: bool; // return
     let self@1: u64; // arg #1
@@ -512,25 +503,24 @@ pub fn {impl ToType<bool> for u64}::to_type(@1: u64) -> bool
     return
 }
 
-// Full name: test_crate::{impl ToType<bool> for u64}
-impl ToType<bool> for u64 {
-    parent_clause0 = MetaSized<u64>
+// Full name: test_crate::{impl test_crate::ToType<bool> for u64}
+impl test_crate::ToType<bool> for u64 {
+    parent_clause0 = core::marker::MetaSized<u64>
     parent_clause1 = Sized<bool>
-    fn to_type = {impl ToType<bool> for u64}::to_type
+    fn to_type = {impl test_crate::ToType<bool> for u64}::to_type
 }
 
-// Full name: test_crate::OfType
-pub trait OfType<Self>
+pub trait test_crate::OfType<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn of_type<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: ToType<T, Self>, [@TraitClause2]: Sized<Self>> = test_crate::OfType::of_type<Self, T>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    fn of_type<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: test_crate::ToType<T, Self>, [@TraitClause2]: Sized<Self>> = test_crate::OfType::of_type<Self, T>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
 }
 
 pub fn test_crate::OfType::of_type<Self, T>(@1: T) -> Self
 where
-    [@TraitClause0]: OfType<Self>,
+    [@TraitClause0]: test_crate::OfType<Self>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: ToType<T, Self>,
+    [@TraitClause2]: test_crate::ToType<T, Self>,
     [@TraitClause3]: Sized<Self>,
 
 // Full name: test_crate::h3
@@ -538,8 +528,8 @@ pub fn h3<T1, T2>(@1: T2) -> T1
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
-    [@TraitClause2]: OfType<T1>,
-    [@TraitClause3]: ToType<T2, T1>,
+    [@TraitClause2]: test_crate::OfType<T1>,
+    [@TraitClause3]: test_crate::ToType<T2, T1>,
 {
     let @0: T1; // return
     let y@1: T2; // arg #1
@@ -549,16 +539,16 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Drop<T2>] y@1
+    drop[core::ops::drop::Drop<T2>] y@1
     return
 }
 
 // Full name: test_crate::OfTypeBis
 pub trait OfTypeBis<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: ToType<T, Self>
+    parent_clause2 : [@TraitClause2]: test_crate::ToType<T, Self>
     parent_clause3 : [@TraitClause3]: Sized<Self>
     fn of_type<[@TraitClause0]: Sized<Self>> = test_crate::OfTypeBis::of_type<Self, T>[Self, @TraitClause0_0]
 }
@@ -574,7 +564,7 @@ where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
     [@TraitClause2]: OfTypeBis<T1, T2>,
-    [@TraitClause3]: ToType<T2, T1>,
+    [@TraitClause3]: test_crate::ToType<T2, T1>,
 {
     let @0: T1; // return
     let y@1: T2; // arg #1
@@ -584,7 +574,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Drop<T2>] y@1
+    drop[core::ops::drop::Drop<T2>] y@1
     return
 }
 
@@ -601,8 +591,8 @@ struct TestType1 {
   u64,
 }
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}::test
-fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait for TestType1}::test
+fn {impl test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (TestType1); // arg #1
@@ -618,7 +608,7 @@ fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
 pub fn test_crate::{TestType<T>[@TraitClause0]}::test<'_0, T>(@1: &'_0 (TestType<T>[@TraitClause0]), @2: T) -> bool
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToU64<T>,
+    [@TraitClause1]: test_crate::ToU64<T>,
 {
     let @0: bool; // return
     let self@1: &'_ (TestType<T>[@TraitClause0]); // arg #1
@@ -651,7 +641,7 @@ where
         storage_dead(@7)
         storage_live(@8)
         @8 := &y@5
-        @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
+        @0 := {impl test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait for TestType1}::test<'_>(move (@8))
         storage_dead(@8)
     }
     else {
@@ -661,25 +651,24 @@ where
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop[Drop<T>] x@2
+    drop[core::ops::drop::Drop<T>] x@2
     return
 }
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait
-trait TestTrait<Self>
+trait test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn test<'_0> = test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0_0, Self>[Self]
 }
 
 fn test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
-    [@TraitClause0]: TestTrait<Self>,
+    [@TraitClause0]: test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait<Self>,
 
-// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}
-impl TestTrait for TestType1 {
-    parent_clause0 = MetaSized<TestType1>
-    fn test<'_0> = {impl TestTrait for TestType1}::test<'_0_0>
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait for TestType1}
+impl test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait for TestType1 {
+    parent_clause0 = core::marker::MetaSized<TestType1>
+    fn test<'_0> = {impl test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait for TestType1}::test<'_0_0>
 }
 
 // Full name: test_crate::BoolWrapper
@@ -687,11 +676,11 @@ pub struct BoolWrapper {
   bool,
 }
 
-// Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type
-pub fn {impl ToType<T> for BoolWrapper}::to_type<T>(@1: BoolWrapper) -> T
+// Full name: test_crate::{impl test_crate::ToType<T> for BoolWrapper}::to_type
+pub fn {impl test_crate::ToType<T> for BoolWrapper}::to_type<T>(@1: BoolWrapper) -> T
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToType<bool, T>,
+    [@TraitClause1]: test_crate::ToType<bool, T>,
 {
     let @0: T; // return
     let self@1: BoolWrapper; // arg #1
@@ -704,24 +693,24 @@ where
     return
 }
 
-// Full name: test_crate::{impl ToType<T> for BoolWrapper}
-impl<T> ToType<T> for BoolWrapper
+// Full name: test_crate::{impl test_crate::ToType<T> for BoolWrapper}
+impl<T> test_crate::ToType<T> for BoolWrapper
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ToType<bool, T>,
+    [@TraitClause1]: test_crate::ToType<bool, T>,
 {
-    parent_clause0 = MetaSized<BoolWrapper>
+    parent_clause0 = core::marker::MetaSized<BoolWrapper>
     parent_clause1 = @TraitClause0
-    fn to_type = {impl ToType<T> for BoolWrapper}::to_type<T>[@TraitClause0, @TraitClause1]
+    fn to_type = {impl test_crate::ToType<T> for BoolWrapper}::to_type<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::WithConstTy
 pub trait WithConstTy<Self, const LEN : usize>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::V>
     parent_clause2 : [@TraitClause2]: Sized<Self::W>
-    parent_clause3 : [@TraitClause3]: ToU64<Self::W>
+    parent_clause3 : [@TraitClause3]: test_crate::ToU64<Self::W>
     const LEN1 : usize
     const LEN2 : usize
     type V
@@ -774,10 +763,10 @@ pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), 
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}
 impl WithConstTy<32 : usize> for bool {
-    parent_clause0 = MetaSized<bool>
+    parent_clause0 = core::marker::MetaSized<bool>
     parent_clause1 = Sized<u8>
     parent_clause2 = Sized<u64>
-    parent_clause3 = {impl ToU64 for u64}
+    parent_clause3 = {impl test_crate::ToU64 for u64}
     const LEN1 = {impl WithConstTy<32 : usize> for bool}::LEN1
     const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}]
     type V = u8
@@ -807,7 +796,7 @@ where
     let @1: @TraitClause1::W; // arg #1
 
     @0 := ()
-    drop[Drop<@TraitClause1::W>] @1
+    drop[core::ops::drop::Drop<@TraitClause1::W>] @1
     @0 := ()
     return
 }
@@ -826,7 +815,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
     storage_dead(@2)
-    drop[Drop<@TraitClause1::W>] x@1
+    drop[core::ops::drop::Drop<@TraitClause1::W>] x@1
     return
 }
 
@@ -859,10 +848,9 @@ where
     return
 }
 
-// Full name: test_crate::ParentTrait0
-pub trait ParentTrait0<Self>
+pub trait test_crate::ParentTrait0<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::W>
     type W
     fn get_name<'_0> = get_name<'_0_0, Self>[Self]
@@ -872,31 +860,29 @@ pub trait ParentTrait0<Self>
 // Full name: test_crate::ParentTrait0::get_name
 pub fn get_name<'_0, Self>(@1: &'_0 (Self)) -> String
 where
-    [@TraitClause0]: ParentTrait0<Self>,
+    [@TraitClause0]: test_crate::ParentTrait0<Self>,
 
 pub fn test_crate::ParentTrait0::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
 where
-    [@TraitClause0]: ParentTrait0<Self>,
+    [@TraitClause0]: test_crate::ParentTrait0<Self>,
 
-// Full name: test_crate::ParentTrait1
-pub trait ParentTrait1<Self>
+pub trait test_crate::ParentTrait1<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: test_crate::ChildTrait
-pub trait ChildTrait<Self>
+pub trait test_crate::ChildTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: ParentTrait0<Self>
-    parent_clause2 : [@TraitClause2]: ParentTrait1<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: test_crate::ParentTrait0<Self>
+    parent_clause2 : [@TraitClause2]: test_crate::ParentTrait1<Self>
 }
 
 // Full name: test_crate::test_child_trait1
 pub fn test_child_trait1<'_0, T>(@1: &'_0 (T)) -> String
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ChildTrait<T>,
+    [@TraitClause1]: test_crate::ChildTrait<T>,
 {
     let @0: String; // return
     let x@1: &'_ (T); // arg #1
@@ -913,7 +899,7 @@ where
 pub fn test_child_trait2<'_0, T>(@1: &'_0 (T)) -> @TraitClause1::parent_clause1::W
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ChildTrait<T>,
+    [@TraitClause1]: test_crate::ChildTrait<T>,
 {
     let @0: @TraitClause1::parent_clause1::W; // return
     let x@1: &'_ (T); // arg #1
@@ -931,8 +917,8 @@ pub fn order1<T, U>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: ParentTrait0<T>,
-    [@TraitClause3]: ParentTrait0<U>,
+    [@TraitClause2]: test_crate::ParentTrait0<T>,
+    [@TraitClause3]: test_crate::ParentTrait0<U>,
     @TraitClause2::W = @TraitClause3::W,
 {
     let @0: (); // return
@@ -942,41 +928,38 @@ where
     return
 }
 
-// Full name: test_crate::ChildTrait1
-pub trait ChildTrait1<Self>
+pub trait test_crate::ChildTrait1<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: ParentTrait1<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: test_crate::ParentTrait1<Self>
 }
 
-// Full name: test_crate::{impl ParentTrait1 for usize}
-impl ParentTrait1 for usize {
-    parent_clause0 = MetaSized<usize>
+// Full name: test_crate::{impl test_crate::ParentTrait1 for usize}
+impl test_crate::ParentTrait1 for usize {
+    parent_clause0 = core::marker::MetaSized<usize>
 }
 
-// Full name: test_crate::{impl ChildTrait1 for usize}
-impl ChildTrait1 for usize {
-    parent_clause0 = MetaSized<usize>
-    parent_clause1 = {impl ParentTrait1 for usize}
+// Full name: test_crate::{impl test_crate::ChildTrait1 for usize}
+impl test_crate::ChildTrait1 for usize {
+    parent_clause0 = core::marker::MetaSized<usize>
+    parent_clause1 = {impl test_crate::ParentTrait1 for usize}
 }
 
-// Full name: test_crate::Iterator
-pub trait Iterator<Self>
+pub trait test_crate::Iterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
 }
 
-// Full name: test_crate::IntoIterator
-pub trait IntoIterator<Self>
+pub trait test_crate::IntoIterator<Self>
 where
     Self::parent_clause3::Item = Self::Item,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
-    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
+    parent_clause3 : [@TraitClause3]: test_crate::Iterator<Self::IntoIter>
     type Item
     type IntoIter
     fn into_iter = into_iter<Self>[Self]
@@ -985,46 +968,43 @@ where
 // Full name: test_crate::IntoIterator::into_iter
 pub fn into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
 where
-    [@TraitClause0]: IntoIterator<Self>,
+    [@TraitClause0]: test_crate::IntoIterator<Self>,
 
-// Full name: test_crate::FromResidual
-trait FromResidual<Self, T>
+trait test_crate::FromResidual<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
 }
 
 // Full name: test_crate::Try
 trait Try<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FromResidual<Self, Self::Residual>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: test_crate::FromResidual<Self, Self::Residual>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Residual
 }
 
-// Full name: test_crate::WithTarget
-pub trait WithTarget<Self>
+pub trait test_crate::WithTarget<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Target>
     type Target
 }
 
-// Full name: test_crate::ParentTrait2
-pub trait ParentTrait2<Self>
+pub trait test_crate::ParentTrait2<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::U>
-    parent_clause2 : [@TraitClause2]: WithTarget<Self::U>
+    parent_clause2 : [@TraitClause2]: test_crate::WithTarget<Self::U>
     type U
 }
 
 // Full name: test_crate::ChildTrait2
 pub trait ChildTrait2<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: ParentTrait2<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: test_crate::ParentTrait2<Self>
     fn convert = test_crate::ChildTrait2::convert<Self>[Self]
 }
 
@@ -1032,18 +1012,18 @@ pub fn test_crate::ChildTrait2::convert<Self>(@1: @TraitClause0::parent_clause1:
 where
     [@TraitClause0]: ChildTrait2<Self>,
 
-// Full name: test_crate::{impl WithTarget for u32}
-impl WithTarget for u32 {
-    parent_clause0 = MetaSized<u32>
+// Full name: test_crate::{impl test_crate::WithTarget for u32}
+impl test_crate::WithTarget for u32 {
+    parent_clause0 = core::marker::MetaSized<u32>
     parent_clause1 = Sized<u32>
     type Target = u32
 }
 
-// Full name: test_crate::{impl ParentTrait2 for u32}
-impl ParentTrait2 for u32 {
-    parent_clause0 = MetaSized<u32>
+// Full name: test_crate::{impl test_crate::ParentTrait2 for u32}
+impl test_crate::ParentTrait2 for u32 {
+    parent_clause0 = core::marker::MetaSized<u32>
     parent_clause1 = Sized<u32>
-    parent_clause2 = {impl WithTarget for u32}
+    parent_clause2 = {impl test_crate::WithTarget for u32}
     type U = u32
 }
 
@@ -1059,15 +1039,14 @@ pub fn {impl ChildTrait2 for u32}::convert(@1: u32) -> u32
 
 // Full name: test_crate::{impl ChildTrait2 for u32}
 impl ChildTrait2 for u32 {
-    parent_clause0 = MetaSized<u32>
-    parent_clause1 = {impl ParentTrait2 for u32}
+    parent_clause0 = core::marker::MetaSized<u32>
+    parent_clause1 = {impl test_crate::ParentTrait2 for u32}
     fn convert = {impl ChildTrait2 for u32}::convert
 }
 
-// Full name: test_crate::CFnOnce
-pub trait CFnOnce<Self, Args>
+pub trait test_crate::CFnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
@@ -1076,38 +1055,35 @@ pub trait CFnOnce<Self, Args>
 
 pub fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
-    [@TraitClause0]: CFnOnce<Self, Args>,
+    [@TraitClause0]: test_crate::CFnOnce<Self, Args>,
 
-// Full name: test_crate::CFnMut
-pub trait CFnMut<Self, Args>
+pub trait test_crate::CFnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: CFnOnce<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: test_crate::CFnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     fn call_mut<'_0> = test_crate::CFnMut::call_mut<'_0_0, Self, Args>[Self]
 }
 
 pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
-    [@TraitClause0]: CFnMut<Self, Args>,
+    [@TraitClause0]: test_crate::CFnMut<Self, Args>,
 
-// Full name: test_crate::CFn
-pub trait CFn<Self, Args>
+pub trait test_crate::CFn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: CFnMut<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: test_crate::CFnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     fn call<'_0> = test_crate::CFn::call<'_0_0, Self, Args>[Self]
 }
 
 pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
-    [@TraitClause0]: CFn<Self, Args>,
+    [@TraitClause0]: test_crate::CFn<Self, Args>,
 
-// Full name: test_crate::GetTrait
-pub trait GetTrait<Self>
+pub trait test_crate::GetTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::W>
     type W
     fn get_w<'_0> = test_crate::GetTrait::get_w<'_0_0, Self>[Self]
@@ -1115,13 +1091,13 @@ pub trait GetTrait<Self>
 
 pub fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
 where
-    [@TraitClause0]: GetTrait<Self>,
+    [@TraitClause0]: test_crate::GetTrait<Self>,
 
 // Full name: test_crate::test_get_trait
 pub fn test_get_trait<'_0, T>(@1: &'_0 (T)) -> @TraitClause1::W
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: GetTrait<T>,
+    [@TraitClause1]: test_crate::GetTrait<T>,
 {
     let @0: @TraitClause1::W; // return
     let x@1: &'_ (T); // arg #1
@@ -1137,7 +1113,7 @@ where
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     const LEN : usize
 }
 
@@ -1163,7 +1139,7 @@ impl<T, const N : usize> Trait for Array<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Array<T, const N : usize>>
+    parent_clause0 = core::marker::MetaSized<Array<T, const N : usize>>
     const LEN = {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>[@TraitClause0]
 }
 
@@ -1192,7 +1168,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = core::marker::MetaSized<Wrapper<T>[@TraitClause0]>
     const LEN = {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
 }
 
@@ -1269,20 +1245,19 @@ where
     return
 }
 
-// Full name: test_crate::RecursiveImpl
-trait RecursiveImpl<Self>
+trait test_crate::RecursiveImpl<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
-    parent_clause2 : [@TraitClause2]: RecursiveImpl<Self::Item>
+    parent_clause2 : [@TraitClause2]: test_crate::RecursiveImpl<Self::Item>
     type Item
 }
 
-// Full name: test_crate::{impl RecursiveImpl for ()}
-impl RecursiveImpl for () {
-    parent_clause0 = MetaSized<()>
+// Full name: test_crate::{impl test_crate::RecursiveImpl for ()}
+impl test_crate::RecursiveImpl for () {
+    parent_clause0 = core::marker::MetaSized<()>
     parent_clause1 = Sized<()>
-    parent_clause2 = {impl RecursiveImpl for ()}
+    parent_clause2 = {impl test_crate::RecursiveImpl for ()}
     type Item = ()
 }
 
@@ -1298,14 +1273,14 @@ pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[Sized<(bool, &'a (
 pub fn test_crate::call<'a, F>(@1: F)
 where
     [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Fn<F, (&'a (()))>,
+    [@TraitClause1]: core::ops::function::Fn<F, (&'a (()))>,
     @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a (()))>[Sized<(bool, &'_ (()))>],
 {
     let @0: (); // return
     let @1: F; // arg #1
 
     @0 := ()
-    drop[Drop<F>] @1
+    drop[core::ops::drop::Drop<F>] @1
     @0 := ()
     return
 }
@@ -1317,17 +1292,16 @@ pub fn flibidi()
     let @1: (); // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::call<'_, for<'a> flabada<'a>>[Sized<for<'a> flabada<'a>>, Fn<for<'a> flabada<'a>, (&'_ (()))>](const (flabada<'_>))
+    @1 := test_crate::call<'_, for<'a> flabada<'a>>[Sized<for<'a> flabada<'a>>, core::ops::function::Fn<for<'a> flabada<'a>, (&'_ (()))>](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     @0 := ()
     return
 }
 
-// Full name: test_crate::assoc_ty_trait_ref::SliceIndex
-trait SliceIndex<Self>
+trait test_crate::assoc_ty_trait_ref::SliceIndex<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Output>
     type Output
 }
@@ -1336,7 +1310,7 @@ trait SliceIndex<Self>
 fn index<I>() -> @TraitClause1::Output
 where
     [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: SliceIndex<I>,
+    [@TraitClause1]: test_crate::assoc_ty_trait_ref::SliceIndex<I>,
 {
     let @0: @TraitClause1::Output; // return
 

@@ -1,44 +1,41 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::Send
 #[lang_item("Send")]
-pub trait Send<Self>
+pub trait core::marker::Send<Self>
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: test_crate::foo
 fn foo<M>(@1: M)
 where
     [@TraitClause0]: Sized<M>,
-    [@TraitClause1]: Send<M>,
+    [@TraitClause1]: core::marker::Send<M>,
 {
     let @0: (); // return
     let _msg@1: M; // arg #1
 
     @0 := ()
-    drop[Drop<M>] _msg@1
+    drop[core::ops::drop::Drop<M>] _msg@1
     @0 := ()
     return
 }
@@ -53,7 +50,7 @@ fn main()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
-    @1 := foo<()>[Sized<()>, Send<()>](move (@2))
+    @1 := foo<()>[Sized<()>, core::marker::Send<()>](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

@@ -1,21 +1,19 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: test_crate::NotCopy
@@ -24,21 +22,19 @@ struct NotCopy {}
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<NotCopy>(@1: NotCopy)
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
@@ -49,8 +45,8 @@ struct closure {
   NotCopy,
 }
 
-// Full name: test_crate::main::{impl FnOnce<(u8)> for closure}::call_once
-fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
+// Full name: test_crate::main::{impl core::ops::function::FnOnce<(u8)> for closure}::call_once
+fn {impl core::ops::function::FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
 {
     let @0: u8; // return
     let @1: closure; // arg #1
@@ -78,17 +74,17 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce<(u8)> for closure}
-impl FnOnce<(u8)> for closure {
-    parent_clause0 = MetaSized<closure>
+// Full name: test_crate::main::{impl core::ops::function::FnOnce<(u8)> for closure}
+impl core::ops::function::FnOnce<(u8)> for closure {
+    parent_clause0 = core::marker::MetaSized<closure>
     parent_clause1 = Sized<(u8)>
-    parent_clause2 = Tuple<(u8)>
+    parent_clause2 = core::marker::Tuple<(u8)>
     parent_clause3 = Sized<u8>
     type Output = u8
-    fn call_once = {impl FnOnce<(u8)> for closure}::call_once
+    fn call_once = {impl core::ops::function::FnOnce<(u8)> for closure}::call_once
 }
 
-fn test_crate::main::{impl FnOnce<(u8)> for closure}::call_once::<>(@1: closure, @2: (u8)) -> u8
+fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for closure}::call_once::<>(@1: closure, @2: (u8)) -> u8
 {
     let @0: u8; // return
     let @1: closure; // arg #1
@@ -127,10 +123,10 @@ fn test_crate::apply_to_zero_once::<closure>(@1: closure) -> u8
     @2 := move (f@1)
     storage_live(@3)
     @3 := (const (0 : u8))
-    @0 := {impl FnOnce<(u8)> for closure}::call_once(move (@2), move (@3))
+    @0 := {impl core::ops::function::FnOnce<(u8)> for closure}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Drop<closure>] f@1
+    drop[core::ops::drop::Drop<closure>] f@1
     return
 }
 

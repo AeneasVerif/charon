@@ -1,14 +1,13 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: core::clone::Clone
@@ -43,40 +42,36 @@ impl<'_0, T> Clone for &'_0 (T) {
     fn clone<'_0> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_0, T>
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
@@ -84,12 +79,11 @@ pub trait FnOnce<Self, Args>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnOnce<Self, Args>,
 
-// Full name: test_crate::Foo
-pub trait Foo<Self>
+pub trait test_crate::Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Type>
     parent_clause2 : [@TraitClause2]: Clone<Self::Type>
     type Type
@@ -98,10 +92,10 @@ pub trait Foo<Self>
 
 pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Type)
 where
-    [@TraitClause0]: Foo<Self>,
+    [@TraitClause0]: test_crate::Foo<Self>,
 
-// Full name: test_crate::{impl Foo for ()}::get_ty
-pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
+// Full name: test_crate::{impl test_crate::Foo for ()}::get_ty
+pub fn {impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
 {
     let @0: &'_ (u32); // return
     let self@1: &'_ (()); // arg #1
@@ -118,13 +112,13 @@ pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
     return
 }
 
-// Full name: test_crate::{impl Foo for ()}
-impl Foo for () {
-    parent_clause0 = MetaSized<()>
+// Full name: test_crate::{impl test_crate::Foo for ()}
+impl test_crate::Foo for () {
+    parent_clause0 = core::marker::MetaSized<()>
     parent_clause1 = Sized<u32>
     parent_clause2 = {impl Clone for u32}
     type Type = u32
-    fn get_ty<'_0> = {impl Foo for ()}::get_ty<'_0_0>
+    fn get_ty<'_0> = {impl test_crate::Foo for ()}::get_ty<'_0_0>
 }
 
 // Full name: test_crate::mk_foo
@@ -154,16 +148,16 @@ fn use_foo()
     storage_live(@4)
     storage_live(@5)
     @5 := &foo@1
-    @4 := {impl Foo for ()}::get_ty<'_>(move (@5))
+    @4 := {impl test_crate::Foo for ()}::get_ty<'_>(move (@5))
     @3 := &*(@4)
     storage_dead(@5)
     @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Drop<u32>] @2
+    drop[core::ops::drop::Drop<u32>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop[Drop<()>] foo@1
+    drop[core::ops::drop::Drop<()>] foo@1
     storage_dead(foo@1)
     @0 := ()
     return
@@ -172,9 +166,9 @@ fn use_foo()
 // Full name: test_crate::RPITIT
 pub trait RPITIT<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::>
-    parent_clause2 : [@TraitClause2]: Foo<Self::>
+    parent_clause2 : [@TraitClause2]: test_crate::Foo<Self::>
     type 
     fn make_foo = test_crate::RPITIT::make_foo<Self>[Self]
 }
@@ -202,9 +196,9 @@ pub fn {impl RPITIT for ()}::make_foo()
 
 // Full name: test_crate::{impl RPITIT for ()}
 impl RPITIT for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = core::marker::MetaSized<()>
     parent_clause1 = Sized<()>
-    parent_clause2 = {impl Foo for ()}
+    parent_clause2 = {impl test_crate::Foo for ()}
     type  = ()
     fn make_foo = {impl RPITIT for ()}::make_foo
 }
@@ -234,11 +228,11 @@ where
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Drop<@TraitClause1::parent_clause2::Type>] @2
+    drop[core::ops::drop::Drop<@TraitClause1::parent_clause2::Type>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop[Drop<@TraitClause1::>] foo@1
+    drop[core::ops::drop::Drop<@TraitClause1::>] foo@1
     storage_dead(foo@1)
     @0 := ()
     return
@@ -270,8 +264,8 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once
-fn {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 (U))) -> WrapClone<&'_0 (U)>[Sized<&'_0 (U)>, {impl Clone for &'_0 (T)}<'_, U>]
+// Full name: test_crate::wrap::{impl core::ops::function::FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once
+fn {impl core::ops::function::FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 (U))) -> WrapClone<&'_0 (U)>[Sized<&'_0 (U)>, {impl Clone for &'_0 (T)}<'_, U>]
 where
     [@TraitClause0]: Sized<U>,
 {
@@ -290,17 +284,17 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}
-impl<'_0, U> FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]
+// Full name: test_crate::wrap::{impl core::ops::function::FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}
+impl<'_0, U> core::ops::function::FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]
 where
     [@TraitClause0]: Sized<U>,
 {
-    parent_clause0 = MetaSized<closure<U>[@TraitClause0]>
+    parent_clause0 = core::marker::MetaSized<closure<U>[@TraitClause0]>
     parent_clause1 = Sized<(&'_ (U))>
-    parent_clause2 = Tuple<(&'_ (U))>
+    parent_clause2 = core::marker::Tuple<(&'_ (U))>
     parent_clause3 = Sized<WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]>
     type Output = WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]
-    fn call_once = {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
+    fn call_once = {impl core::ops::function::FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
 }
 
 // Full name: test_crate::use_wrap
@@ -328,7 +322,7 @@ pub fn use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_, u32>[Sized<u32>](move (@3), move (@4))
+    @2 := {impl core::ops::function::FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_, u32>[Sized<u32>](move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)
@@ -336,7 +330,7 @@ pub fn use_wrap()
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
-    drop[Drop<closure<u32>[Sized<u32>]>] f@1
+    drop[core::ops::drop::Drop<closure<u32>[Sized<u32>]>] f@1
     storage_dead(f@1)
     @0 := ()
     return

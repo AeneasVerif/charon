@@ -1,14 +1,13 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
 // Full name: core::clone::Clone
@@ -25,9 +24,8 @@ pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
@@ -36,13 +34,13 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
 }
 
 // Full name: core::cmp::Ordering
@@ -63,11 +61,10 @@ where
   Some(T),
 }
 
-// Full name: core::cmp::PartialOrd
 #[lang_item("partial_ord")]
-pub trait PartialOrd<Self, Rhs>
+pub trait core::cmp::PartialOrd<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
@@ -76,7 +73,7 @@ pub trait PartialOrd<Self, Rhs>
 pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
-    parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
+    parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>[Self]
 }
 
@@ -90,7 +87,7 @@ where
 #[lang_item("cmp_partialord_cmp")]
 pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
 where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
+    [@TraitClause0]: core::cmp::PartialOrd<Self, Rhs>,
 
 // Full name: core::fmt::Error
 pub struct Error {}
@@ -106,9 +103,8 @@ where
   Err(E),
 }
 
-// Full name: core::fmt::Debug
 #[lang_item("Debug")]
-pub trait Debug<Self>
+pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
@@ -116,12 +112,11 @@ pub trait Debug<Self>
 // Full name: core::fmt::Debug::fmt
 pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
-    [@TraitClause0]: Debug<Self>,
+    [@TraitClause0]: core::fmt::Debug<Self>,
 
-// Full name: core::hash::Hasher
-pub trait Hasher<Self>
+pub trait core::hash::Hasher<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn finish<'_0> = finish<'_0_0, Self>[Self]
     fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
 }
@@ -130,7 +125,7 @@ pub trait Hasher<Self>
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::hash::Hash::hash
@@ -138,67 +133,61 @@ pub fn hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
+    [@TraitClause2]: core::hash::Hasher<H>,
 
 // Full name: core::hash::Hasher::finish
 pub fn finish<'_0, Self>(@1: &'_0 (Self)) -> u64
 where
-    [@TraitClause0]: Hasher<Self>,
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 // Full name: core::hash::Hasher::write
 pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
 where
-    [@TraitClause0]: Hasher<Self>,
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
-// Full name: core::marker::Send
 #[lang_item("Send")]
-pub trait Send<Self>
+pub trait core::marker::Send<Self>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
 }
 
-// Full name: core::marker::Sync
 #[lang_item("sync")]
-pub trait Sync<Self>
+pub trait core::marker::Sync<Self>
 
-// Full name: core::marker::Freeze
 #[lang_item("freeze")]
-pub trait Freeze<Self>
+pub trait core::marker::Freeze<Self>
 
-// Full name: core::marker::Unpin
 #[lang_item("unpin")]
-pub trait Unpin<Self>
+pub trait core::marker::Unpin<Self>
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
 }
 
-// Full name: core::ptr::metadata::Pointee
 #[lang_item("pointee_trait")]
-pub trait Pointee<Self>
+pub trait core::ptr::metadata::Pointee<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self::Metadata>
-    parent_clause1 : [@TraitClause1]: Debug<Self::Metadata>
+    parent_clause1 : [@TraitClause1]: core::fmt::Debug<Self::Metadata>
     parent_clause2 : [@TraitClause2]: Copy<Self::Metadata>
-    parent_clause3 : [@TraitClause3]: Send<Self::Metadata>
-    parent_clause4 : [@TraitClause4]: Sync<Self::Metadata>
+    parent_clause3 : [@TraitClause3]: core::marker::Send<Self::Metadata>
+    parent_clause4 : [@TraitClause4]: core::marker::Sync<Self::Metadata>
     parent_clause5 : [@TraitClause5]: Ord<Self::Metadata>
     parent_clause6 : [@TraitClause6]: Hash<Self::Metadata>
-    parent_clause7 : [@TraitClause7]: Unpin<Self::Metadata>
-    parent_clause8 : [@TraitClause8]: Freeze<Self::Metadata>
+    parent_clause7 : [@TraitClause7]: core::marker::Unpin<Self::Metadata>
+    parent_clause8 : [@TraitClause8]: core::marker::Freeze<Self::Metadata>
     type Metadata
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::to_raw_parts
-pub fn to_raw_parts<T>(@1: *const T) -> (*const (), Pointee<T>::Metadata)
+pub fn to_raw_parts<T>(@1: *const T) -> (*const (), core::ptr::metadata::Pointee<T>::Metadata)
 
 // Full name: test_crate::empty_metadata
 fn empty_metadata()
