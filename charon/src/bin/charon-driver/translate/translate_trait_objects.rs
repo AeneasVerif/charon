@@ -9,6 +9,7 @@ use crate::translate::{translate_generics::BindingLevel, translate_predicates::P
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use hax_frontend_exporter as hax;
+use petgraph::matrix_graph::Zero;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
@@ -98,16 +99,81 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-    /// Get the shim type for the given method.
-    /// The shim type is the type of the function that is used in the vtable.
-    /// FIXME: add required parameters and implement
-    fn get_shim_ty(&self) -> Result<Ty, Error> {
-        // the shim type is always a raw pointer to unit
-        todo!()
+    /// `fn func(&self, ...)` ==> `fn func(&dyn Trait, ...)`
+    /// Given the `&self` receiver as the `in_ty`, we convert it to the shim type.
+    ///
+    /// Specifically, we should every occurence of `Self` in the type to the shim type:
+    /// `dyn Trait<'a, ..., T, ..., const N, ..., AssocTy=?, ...>`.
+    /// But the `AssocTy` should be yet-to-qualify, and we ignore them here.
+    ///
+    /// This is because the receiver can not only be `&self` but also `&mut self`, `Box<Self>`, etc.
+    fn convert_to_shim_ty(&mut self, span: Span, trait_id: &hax::DefId, in_ty: &Ty) -> Ty {
+        // Firstly, create the correct `dyn Trait<'a, ..., T, ..., const N = ?, ...>` type.
+        // Add a new binding level for the existentially quantified type.
+        self.binding_levels.push(BindingLevel::new(true));
+
+        // Add the existentially quantified type.
+        let ty_id = self
+            .innermost_binder_mut()
+            .params
+            .types
+            .push_with(|idx| TypeVar {
+                index: idx,
+                name: String::from("_"),
+            });
+        let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
+
+        let mut params = self.binding_levels.pop().unwrap().params;
+
+        // the trait decl ref: `Trait<'a, ..., T, ..., const N = ?, ...>`
+        let trait_decl_ref = TraitDeclRef {
+            id: self.register_trait_decl_id(span, trait_id),
+            // the param should be the identity args of the `trait` decl itself
+            generics: Box::new(self.outermost_binder().params.identity_args()),
+        };
+        // add constraint: `T : Trait<'a, ..., T, ..., const N = ?, ...>`
+        params.trait_clauses.push_with(|idx| TraitClause {
+            clause_id: idx,
+            span: Some(span),
+            origin: PredicateOrigin::Dyn,
+            trait_: RegionBinder {
+                regions: Vector::new(),
+                skip_binder: trait_decl_ref,
+            },
+        });
+        let binder = Binder {
+            params: params,
+            skip_binder: ty,
+            kind: BinderKind::Dyn,
+        };
+        // target type: `dyn Trait<'a, ..., T, ..., const N = ?, ...>`
+        // But no `AssocTy` is specified here
+        let target_ty = Ty::new(TyKind::DynTrait(DynPredicate { binder }));
+
+        // Then, replace every `Self` in the type with the target type
+        #[derive(Clone)]
+        struct SelfVisitor(Ty);
+        impl VarsVisitor for SelfVisitor {
+            fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
+                let SelfVisitor(target_ty) = self.clone();
+                // if the var refers to Bound(0), it refers to `Self`
+                // Otherwise, when it is referring something else, it can be unchanged
+                if let DeBruijnVar::Bound(DeBruijnId::ZERO, _) = v {
+                    Some(target_ty)
+                } else {
+                    None
+                }
+            }
+        }
+        let mut ty = in_ty.clone();
+        ty.visit_vars(&mut SelfVisitor(target_ty));
+        ty
     }
 
     fn add_vtable_methods_from_trait_items(
         &mut self,
+        span: Span,
+        trait_id: &hax::DefId,
         fields: &mut Vector<FieldId, Field>,
         items: &Vec<(hax::AssocItem, std::sync::Arc<hax::FullDef>)>,
     ) -> Result<(), Error> {
@@ -118,10 +184,48 @@ impl ItemTransCtx<'_, '_> {
                 Ok((name, item, def.clone()))
             })
             .try_collect()?;
-        for (item_name, _, hax_def) in &items {
+        for (item_name, item, hax_def) in &items {
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { sig, .. } => {
-                    let shim_ty = self.get_shim_ty()?;
+                    // see if this function should be added -- it should be `vtable-safe`
+                    // prepare the inquiry context
+                    use rustc_trait_selection::traits::is_vtable_safe_method;
+                    let tcx = self.t_ctx.tcx;
+                    let func_def_id = &item.def_id;
+                    let item = tcx.associated_item(func_def_id.as_rust_def_id().unwrap());
+                    if !is_vtable_safe_method(tcx, trait_id.as_rust_def_id().unwrap(), item) {
+                        continue;
+                    }
+
+                    // else, it is `vtable-safe`, then we should translate it
+                    // to prepare the shim type environment
+                    let func_def = self.hax_def(func_def_id)?;
+                    let trait_decl_id = self.register_trait_decl_id(span, trait_id);
+                    let binder_kind = BinderKind::TraitMethod(trait_decl_id, item_name.clone());
+
+                    // prepare the shim type
+                    let shim_ty = self
+                        .translate_binder_for_def(span, binder_kind, &func_def, |tcx| {
+                            let sig = &sig.value;
+                            let mut in_tys: Vec<Ty> = sig
+                                .inputs
+                                .iter()
+                                .map(|ty| tcx.translate_ty(span, ty))
+                                .try_collect()?;
+                            // take out the first element of `in_tys` and modify it to the shim type
+                            in_tys[0] = tcx.convert_to_shim_ty(span, trait_id, &in_tys[0]);
+                            let out_ty = tcx.translate_ty(span, &sig.output)?;
+                            // it is safe to take only the region binder here
+                            // as Rustc guarantees that only generic Region is allowed
+                            // by dyn-compatibility
+                            let ty = Ty::new(TyKind::FnPtr(RegionBinder {
+                                regions: tcx.innermost_binder().params.regions.clone(),
+                                skip_binder: (in_tys, out_ty),
+                            }));
+                            Ok(ty)
+                        })?
+                        .skip_binder;
+
                     let field = Field {
                         span: Span::dummy(),
                         attr_info: dummy_public_attr_info(),
@@ -179,7 +283,12 @@ impl ItemTransCtx<'_, '_> {
         self.add_parent_trait_vtable_ptrs(&mut fields, &parent_clauses)?;
         // if it is a trait definition, we need to add the methods
         if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
-            self.add_vtable_methods_from_trait_items(&mut fields, items)?;
+            self.add_vtable_methods_from_trait_items(
+                item_meta.span,
+                trait_full_def.def_id(),
+                &mut fields,
+                items,
+            )?;
         }
         // else, it should be a trait alias, which should not have any methods in its vtable
 
