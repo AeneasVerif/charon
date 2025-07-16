@@ -4,6 +4,7 @@
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq<Rhs>
 }
 
 // Full name: core::cmp::Eq
@@ -11,6 +12,7 @@ pub trait core::cmp::PartialEq<Self, Rhs>
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}
@@ -33,6 +35,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("drop")]
@@ -40,6 +43,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 fn test_crate::do_test::<bool>(@1: bool, @2: bool)

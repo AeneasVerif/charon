@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -16,6 +17,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -28,6 +30,7 @@ where
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -40,6 +43,7 @@ where
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}::eq
@@ -81,6 +85,7 @@ where
 pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Debug
 }
 
 // Full name: core::fmt::Debug::fmt
@@ -93,6 +98,7 @@ pub trait core::hash::Hasher<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn finish<'_0> = finish<'_0_0, Self>[Self]
     fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
+    vtable: core::hash::Hasher
 }
 
 // Full name: core::hash::Hash
@@ -100,6 +106,7 @@ pub trait core::hash::Hasher<Self>
 pub trait Hash<Self>
 {
     fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: core::hash::Hash::hash
@@ -125,6 +132,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("Send")]
@@ -151,6 +159,7 @@ pub trait core::marker::DiscriminantKind<Self>
     parent_clause9 : [@TraitClause9]: core::marker::Sync<Self::Discriminant>
     parent_clause10 : [@TraitClause10]: core::marker::Unpin<Self::Discriminant>
     type Discriminant
+    vtable: core::marker::DiscriminantKind
 }
 
 // Full name: core::intrinsics::discriminant_value
@@ -162,12 +171,14 @@ where
 pub trait core::marker::StructuralPartialEq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::StructuralPartialEq
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
 // Full name: test_crate::Enum

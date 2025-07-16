@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -28,6 +29,7 @@ pub trait test_crate::MyTryFrom<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn from<[@TraitClause0]: Sized<Self>> = test_crate::MyTryFrom::from<Self, T>[Self, @TraitClause0_0]
+    vtable: test_crate::MyTryFrom<T>
 }
 
 pub fn test_crate::MyTryFrom::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause2]

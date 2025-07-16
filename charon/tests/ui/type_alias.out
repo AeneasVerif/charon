@@ -9,6 +9,7 @@ pub trait core::borrow::Borrow<Self, Borrowed>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::MetaSized<Borrowed>
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
+    vtable: core::borrow::Borrow<Borrowed>
 }
 
 pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
@@ -20,6 +21,7 @@ where
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -28,6 +30,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -40,6 +43,7 @@ where
 pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
 // Full name: alloc::alloc::Global
@@ -55,6 +59,7 @@ pub trait ToOwned<Self>
     parent_clause2 : [@TraitClause2]: core::borrow::Borrow<Self::Owned, Self>
     type Owned
     fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("to_owned_method")]

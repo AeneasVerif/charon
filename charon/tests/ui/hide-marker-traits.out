@@ -4,6 +4,7 @@
 pub trait core::ops::drop::Drop<Self>
 {
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop

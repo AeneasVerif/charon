@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -19,6 +20,7 @@ trait Trait<Self>
     const CONST3 : usize
     fn method1 = test_crate::Trait::method1<Self>[Self]
     fn method2 = test_crate::Trait::method2<Self>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::CONST1<Self>() -> usize

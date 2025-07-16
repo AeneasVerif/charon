@@ -4,8 +4,8 @@ struct core::cmp::PartialEq::{vtable}<Rhs> {
   drop_func: fn(*mut ()),
   self_ty_size: usize,
   self_ty_align: usize,
-  eq: fn<'_0, '_1>(*mut (), &'_0_1 (missing(@Type1_1))) -> bool,
-  ne: fn<'_0, '_1>(*mut (), &'_0_1 (missing(@Type1_1))) -> bool,
+  eq: fn<'_0, '_1>(&'_0_0 (Rhs), &'_0_1 (missing(@Type1_1))) -> bool,
+  ne: fn<'_0, '_1>(&'_0_0 (Rhs), &'_0_1 (missing(@Type1_1))) -> bool,
 }
 
 // Full name: core::cmp::PartialEq
@@ -13,6 +13,7 @@ struct core::cmp::PartialEq::{vtable}<Rhs> {
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::PartialEq::eq
@@ -33,6 +34,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -50,7 +52,7 @@ struct core::fmt::Display::{vtable} {
   drop_func: fn(*mut ()),
   self_ty_size: usize,
   self_ty_align: usize,
-  fmt: fn<'_0, '_1, '_2>(*mut (), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
+  fmt: fn<'_0, '_1, '_2>(&'_0_0 (missing(@Type1_0)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
 }
 
 // Full name: core::fmt::Display
@@ -58,6 +60,7 @@ struct core::fmt::Display::{vtable} {
 pub trait Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Display::{vtable}
 }
 
 // Full name: core::fmt::Display::fmt
@@ -90,6 +93,7 @@ struct core::marker::Tuple::{vtable} {
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::function::FnOnce
@@ -102,6 +106,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce::{vtable}<Args>
 }
 
 struct core::ops::function::FnOnce::{vtable}<Args> {
@@ -111,7 +116,7 @@ struct core::ops::function::FnOnce::{vtable}<Args> {
   super_trait_0: *const core::marker::MetaSized::{vtable},
   super_trait_1: *const core::marker::Sized::{vtable},
   super_trait_2: *const core::marker::Tuple::{vtable},
-  call_once: fn(*mut (), missing(@Type1_1)) -> missing(@TraitClause0_0)::Output,
+  call_once: fn(Args, missing(@Type1_1)) -> missing(@TraitClause0_0)::Output,
 }
 
 // Full name: core::ops::function::FnMut
@@ -123,6 +128,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
+    vtable: core::ops::function::FnMut::{vtable}<Args>
 }
 
 struct core::ops::function::FnMut::{vtable}<Args> {
@@ -133,7 +139,7 @@ struct core::ops::function::FnMut::{vtable}<Args> {
   super_trait_1: *const core::ops::function::FnOnce::{vtable}<missing(@Type1_1)>,
   super_trait_2: *const core::marker::Sized::{vtable},
   super_trait_3: *const core::marker::Tuple::{vtable},
-  call_mut: fn<'_0>(*mut (), missing(@Type1_1)) -> missing(@TraitClause0_0)::parent_clause1::Output,
+  call_mut: fn<'_0>(&'_0_0 mut (Args), missing(@Type1_1)) -> missing(@TraitClause0_0)::parent_clause1::Output,
 }
 
 // Full name: core::ops::function::Fn
@@ -145,6 +151,7 @@ pub trait Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = call<'_0_0, Self, Args>[Self]
+    vtable: core::ops::function::Fn::{vtable}<Args>
 }
 
 struct core::ops::function::Fn::{vtable}<Args> {
@@ -155,7 +162,7 @@ struct core::ops::function::Fn::{vtable}<Args> {
   super_trait_1: *const core::ops::function::FnMut::{vtable}<missing(@Type1_1)>,
   super_trait_2: *const core::marker::Sized::{vtable},
   super_trait_3: *const core::marker::Tuple::{vtable},
-  call: fn<'_0>(*mut (), missing(@Type1_1)) -> missing(@TraitClause0_0)::parent_clause1::parent_clause1::Output,
+  call: fn<'_0>(&'_0_0 (Args), missing(@Type1_1)) -> missing(@TraitClause0_0)::parent_clause1::parent_clause1::Output,
 }
 
 // Full name: core::ops::function::Fn::call
@@ -196,6 +203,7 @@ pub trait alloc::string::ToString<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
+    vtable: alloc::string::ToString
 }
 
 #[lang_item("to_string_method")]

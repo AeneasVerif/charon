@@ -8,12 +8,14 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 trait test_crate::Trait<Self, Self_Assoc>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    vtable: test_crate::Trait
 }
 
 trait test_crate::IntoIterator<Self, Self_IntoIter>
@@ -21,6 +23,7 @@ trait test_crate::IntoIterator<Self, Self_IntoIter>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
     parent_clause2 : [@TraitClause2]: test_crate::Trait<Self_IntoIter, ()>
+    vtable: test_crate::IntoIterator
 }
 
 trait test_crate::IntoIntoIterator<Self, Self_IntoIntoIter, Self_Clause2_IntoIter>
@@ -28,6 +31,7 @@ trait test_crate::IntoIntoIterator<Self, Self_IntoIntoIter, Self_Clause2_IntoIte
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIntoIter>
     parent_clause2 : [@TraitClause2]: test_crate::IntoIterator<Self_IntoIntoIter, Self_Clause2_IntoIter>
+    vtable: test_crate::IntoIntoIterator
 }
 
 // Full name: test_crate::foo

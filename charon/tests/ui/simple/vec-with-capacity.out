@@ -12,6 +12,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::PhantomData
@@ -25,6 +26,7 @@ pub trait SizedTypeProperties<Self>
     const IS_ZST : bool
     const LAYOUT : Layout
     const MAX_SLICE_LEN : usize
+    non-dyn-compatible
 }
 
 pub fn core::mem::SizedTypeProperties::IS_ZST<Self>() -> bool
@@ -70,6 +72,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))

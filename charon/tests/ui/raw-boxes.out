@@ -88,6 +88,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -104,6 +105,7 @@ where
 pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
 // Full name: core::clone::Clone
@@ -113,6 +115,7 @@ pub trait Clone<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
     fn clone_from<'_0, '_1, [@TraitClause0]: core::marker::Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Copy
@@ -121,6 +124,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::intrinsics::ctpop
@@ -150,6 +154,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
@@ -672,6 +677,7 @@ pub trait core::alloc::Allocator<Self>
     fn grow_zeroed<'_0> = core::alloc::Allocator::grow_zeroed<'_0_0, Self>[Self]
     fn shrink<'_0> = core::alloc::Allocator::shrink<'_0_0, Self>[Self]
     fn by_ref<'_0, [@TraitClause0]: Sized<Self>> = by_ref<'_0_0, Self>[Self, @TraitClause0_0]
+    vtable: core::alloc::Allocator
 }
 
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
@@ -2089,6 +2095,7 @@ impl Copy for NonZeroUsizeInner {
 pub trait core::num::nonzero::private::Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::num::nonzero::private::Sealed
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
@@ -2100,6 +2107,7 @@ pub trait ZeroablePrimitive<Self>
     parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
     parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
     type NonZeroInner
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}

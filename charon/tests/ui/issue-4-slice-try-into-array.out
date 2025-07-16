@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -28,6 +29,7 @@ pub struct Error {}
 pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Debug
 }
 
 // Full name: core::array::TryFromSliceError
@@ -50,6 +52,7 @@ pub trait TryFrom<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -58,6 +61,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Copy
@@ -66,6 +70,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from
@@ -110,6 +115,7 @@ pub trait TryInto<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn try_into = core::convert::TryInto::try_into<Self, T>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> Result<T, @TraitClause0::Error>[@TraitClause0::parent_clause1, @TraitClause0::parent_clause2]
@@ -156,6 +162,7 @@ impl Copy for u8 {
 pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap

@@ -8,12 +8,14 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 pub trait test_crate::Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn method<'_0> = test_crate::Trait::method<'_0_0, Self>[Self]
+    vtable: test_crate::Trait
 }
 
 pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))

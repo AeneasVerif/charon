@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -16,6 +17,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -46,12 +48,14 @@ impl<'_0, T> Clone for &'_0 (T) {
 pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Tuple
 }
 
 #[lang_item("drop")]
@@ -59,6 +63,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -75,6 +80,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce<Args>
 }
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -88,6 +94,7 @@ pub trait test_crate::Foo<Self>
     parent_clause2 : [@TraitClause2]: Clone<Self::Type>
     type Type
     fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>[Self]
+    vtable: test_crate::Foo
 }
 
 pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Type)
@@ -171,6 +178,7 @@ pub trait RPITIT<Self>
     parent_clause2 : [@TraitClause2]: test_crate::Foo<Self::>
     type 
     fn make_foo = test_crate::RPITIT::make_foo<Self>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::RPITIT::make_foo<Self>()

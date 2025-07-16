@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("drop")]
@@ -15,6 +16,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -26,6 +28,7 @@ pub trait test_crate::IntoIterator<Self, Self_Item>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    vtable: test_crate::IntoIterator
 }
 
 // Full name: test_crate::FromIterator
@@ -34,6 +37,7 @@ pub trait FromIterator<Self, A>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
     fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: test_crate::IntoIterator<T, A>> = test_crate::FromIterator::from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 pub fn test_crate::FromIterator::from_iter<Self, A, T>(@1: T) -> Self

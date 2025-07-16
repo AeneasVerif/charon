@@ -39,6 +39,7 @@ pub trait test_crate::foo::Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn defaulted<'_0> = defaulted<'_0_0, Self>[Self]
+    vtable: test_crate::foo::Trait
 }
 
 // Full name: test_crate::foo::Trait::defaulted

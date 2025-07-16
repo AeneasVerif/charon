@@ -8,12 +8,14 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 pub trait test_crate::HasOutput<Self, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Output>
+    vtable: test_crate::HasOutput
 }
 
 // Full name: test_crate::{impl test_crate::HasOutput<()> for ()}
@@ -26,6 +28,7 @@ pub trait test_crate::HasOutput2<Self, Self_Clause1_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: test_crate::HasOutput<Self, Self_Clause1_Output>
+    vtable: test_crate::HasOutput2
 }
 
 // Full name: test_crate::{impl test_crate::HasOutput2<()> for ()}

@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::V
@@ -38,6 +39,7 @@ trait HasLen<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     const LEN : usize
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl HasLen for Array<(), const N : usize>}::LEN
@@ -121,6 +123,7 @@ pub trait HasDefaultLen<Self, const M : usize>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     const LEN : usize
+    non-dyn-compatible
 }
 
 pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
@@ -177,6 +180,7 @@ trait AlsoHasLen<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: HasLen<Self>
     const ALSO_LEN : usize
+    non-dyn-compatible
 }
 
 fn test_crate::AlsoHasLen::ALSO_LEN<Self>() -> usize

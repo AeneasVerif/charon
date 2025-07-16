@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("index")]
@@ -18,6 +19,7 @@ pub trait core::ops::index::Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: core::marker::MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+    vtable: core::ops::index::Index<Idx>
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -51,6 +53,7 @@ where
 pub trait core::slice::index::private_slice_index::Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::slice::index::private_slice_index::Sealed
 }
 
 #[lang_item("SliceIndex")]
@@ -67,6 +70,7 @@ pub trait core::slice::index::SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
+    vtable: core::slice::index::SliceIndex<T>
 }
 
 // Full name: core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
@@ -187,6 +191,7 @@ trait Trait<Self, T>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, T, U>()

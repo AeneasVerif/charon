@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::convert::Into
@@ -17,6 +18,7 @@ pub trait Into<Self, T>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn into = core::convert::Into::into<Self, T>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
@@ -30,6 +32,7 @@ pub trait From<Self, T>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn from = core::convert::From::from<Self, T>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("from_fn")]

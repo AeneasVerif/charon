@@ -3,12 +3,14 @@
 trait test_crate::HasAssoc<Self>
 {
     type Assoc
+    vtable: test_crate::HasAssoc
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
     fn default_method<T, [@TraitClause1]: test_crate::HasAssoc<T>> = default_method<Self, T>[Self, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait::default_method

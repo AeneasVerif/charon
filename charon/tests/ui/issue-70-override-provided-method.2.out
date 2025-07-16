@@ -9,6 +9,7 @@ trait test_crate::Trait<Self>
     fn required<'_0> = test_crate::Trait::required<'_0_0, Self>[Self]
     fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>[Self]
     fn provided2<'_0> = provided2<'_0_0, Self>[Self]
+    vtable: test_crate::Trait
 }
 
 fn test_crate::Trait::required<'_0, Self>(@1: &'_0 (Self))

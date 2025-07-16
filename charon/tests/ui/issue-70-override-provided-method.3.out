@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -16,6 +17,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -27,6 +29,7 @@ where
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq<Rhs>
 }
 
 // Full name: core::cmp::PartialEq::eq
@@ -41,12 +44,14 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
 #[lang_item("drop")]
@@ -54,6 +59,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -95,6 +101,7 @@ trait GenericTrait<Self, T>
     parent_clause2 : [@TraitClause2]: Clone<T>
     fn other_method = test_crate::GenericTrait::other_method<Self, T>[Self]
     fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: core::cmp::PartialEq<U, T>> = test_crate::GenericTrait::provided<Self, T, U>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 fn test_crate::GenericTrait::other_method<Self, T>()

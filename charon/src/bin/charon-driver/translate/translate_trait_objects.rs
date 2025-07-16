@@ -98,10 +98,11 @@ impl ItemTransCtx<'_, '_> {
         fields: &mut Vector<FieldId, Field>,
         parent_clauses: &Vector<TraitClauseId, (hax::TraitPredicate, TraitClause)>,
     ) -> Result<(), Error> {
+        trace!("Adding parent trait vtable pointers for: {}", parent_clauses.iter().map(|(_, c)| c.with_ctx(&self.into_fmt()).to_string()).join(", "));
         for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
-            let trait_ref = &clause.trait_.skip_binder;
-            // FIXME: Why the generics here is WRONG?
-            let mut generics = trait_ref.generics.clone();
+            let poly_trait_ref = &clause.trait_;
+            // BUG: the `skip_binder` is WRONG -- it loses the newly binded regions
+            let mut generics = poly_trait_ref.skip_binder.generics.clone();
             // remove the `Self` type argument from the generics
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             let def_id = &pred.trait_ref.def_id;
@@ -130,6 +131,10 @@ impl ItemTransCtx<'_, '_> {
     ///
     /// This is because the receiver can not only be `&self` but also `&mut self`, `Box<Self>`, etc.
     fn convert_to_shim_ty(&mut self, span: Span, trait_id: &hax::DefId, in_ty: &Ty) -> Ty {
+        trace!(
+            "Converting into shim type for: `{}`",
+            in_ty.with_ctx(&self.into_fmt())
+        );
         // Firstly, create the correct `dyn Trait<'a, ..., T, ..., const N = ?, ...>` type.
         // Add a new binding level for the existentially quantified type.
         self.binding_levels.push(BindingLevel::new(true));
@@ -171,6 +176,10 @@ impl ItemTransCtx<'_, '_> {
         // target type: `dyn Trait<'a, ..., T, ..., const N = ?, ...>`
         // But no `AssocTy` is specified here
         let target_ty = Ty::new(TyKind::DynTrait(DynPredicate { binder }));
+        trace!(
+            "Target shim type: `{}`",
+            target_ty.with_ctx(&self.into_fmt())
+        );
 
         // Then, replace every `Self` in the type with the target type
         #[derive(Clone)]
@@ -189,8 +198,9 @@ impl ItemTransCtx<'_, '_> {
         }
         let mut ty = in_ty.clone();
         ty.visit_vars(&mut SelfVisitor(target_ty));
-        // ty
-        unit_raw_ptr(true)
+        trace!("Converted shim type: `{}`", ty.with_ctx(&self.into_fmt()));
+        ty
+        // unit_raw_ptr(true)
     }
 
     fn add_vtable_methods_from_trait_items(
@@ -306,8 +316,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TypeDecl, Error> {
         // start by getting the generic environment ready
         self.translate_def_generics(Span::dummy(), trait_full_def)?;
-        // remove the `Self` type variable from the generic parameters
-        remove_self_from_params(&mut self.the_only_binder_mut().params);
         let mut fields = common_vtable_entries();
 
         // translate the super pointers
@@ -329,7 +337,9 @@ impl ItemTransCtx<'_, '_> {
         let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
         let trait_id = self.register_trait_decl_id(Span::dummy(), &trait_full_def.def_id);
         // consumes `self` to get the generics
-        let generics = self.into_generics();
+        let mut generics = self.into_generics();
+        // remove the `Self` type variable from the generic parameters
+        remove_self_from_params(&mut generics);
         let ptr_align = ptr_size;
         let layout = Layout {
             // everything is of the same size as a pointer
@@ -364,7 +374,10 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        Err(Error { span: item_meta.span, msg: String::from("TODO") })
+        Err(Error {
+            span: item_meta.span,
+            msg: String::from("TODO"),
+        })
     }
 
     pub(crate) fn translate_vtable_instance_body(
@@ -373,7 +386,10 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        Err(Error { span: item_meta.span, msg: String::from("TODO") })
+        Err(Error {
+            span: item_meta.span,
+            msg: String::from("TODO"),
+        })
     }
 
     pub fn translate_existential_predicates(

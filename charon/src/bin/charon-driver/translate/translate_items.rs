@@ -491,9 +491,12 @@ impl ItemTransCtx<'_, '_> {
                 .unwrap()
                 .as_type()
                 .unwrap();
+            let mut args = self.outermost_binder().params.identity_args();
+            // Remove the `Self` type variable from the generic parameters
+            args.types.remove_and_shift_ids(TypeVarId::ZERO);
             Ok(Some(TypeDeclRef {
                 id: TypeId::Adt(vtable_id),
-                generics: Box::new(self.outermost_binder().params.identity_args()),
+                generics: Box::new(args),
             }))
         } else {
             Ok(None)

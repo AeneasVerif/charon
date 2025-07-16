@@ -8,6 +8,7 @@ pub trait core::marker::MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -24,6 +25,7 @@ pub trait test_crate::FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<R>
+    vtable: test_crate::FromResidual<R>
 }
 
 pub trait test_crate::Try<Self>
@@ -32,6 +34,7 @@ pub trait test_crate::Try<Self>
     parent_clause1 : [@TraitClause1]: test_crate::FromResidual<Self, ()>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Residual
+    vtable: test_crate::Try
 }
 
 // Full name: test_crate::{impl test_crate::FromResidual<()> for Option<T>[@TraitClause0]}
