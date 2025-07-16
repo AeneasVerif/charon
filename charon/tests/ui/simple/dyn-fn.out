@@ -66,16 +66,6 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args>
 }
 
-struct core::ops::function::FnOnce::{vtable}<Args> {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const core::marker::Sized::{vtable},
-  super_trait_2: *const core::marker::Tuple::{vtable},
-  call_once: fn(Args, missing(@Type1_1)) -> missing(@TraitClause0_0)::Output,
-}
-
 // Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
@@ -88,17 +78,6 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args>
 }
 
-struct core::ops::function::FnMut::{vtable}<Args> {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const core::ops::function::FnOnce::{vtable}<missing(@Type1_1)>,
-  super_trait_2: *const core::marker::Sized::{vtable},
-  super_trait_3: *const core::marker::Tuple::{vtable},
-  call_mut: fn<'_0>(&'_0_0 mut (Args), missing(@Type1_1)) -> missing(@TraitClause0_0)::parent_clause1::Output,
-}
-
 // Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
 pub trait Fn<Self, Args>
@@ -109,17 +88,6 @@ pub trait Fn<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args>
-}
-
-struct core::ops::function::Fn::{vtable}<Args> {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const core::ops::function::FnMut::{vtable}<missing(@Type1_1)>,
-  super_trait_2: *const core::marker::Sized::{vtable},
-  super_trait_3: *const core::marker::Tuple::{vtable},
-  call: fn<'_0>(&'_0_0 (Args), missing(@Type1_1)) -> missing(@TraitClause0_0)::parent_clause1::parent_clause1::Output,
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output

@@ -55,6 +55,37 @@ fn size_field() -> Field {
     }
 }
 
+/// Shift the bounded type variables in the given type by the specified distance.
+/// It can be positive or negative
+fn shift_bounded_ty_vars(ty: &mut Ty, db_distance : isize, distance: isize) {
+    struct SelfVisitor(isize,isize);
+    impl VarsVisitor for SelfVisitor {
+        fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
+            let SelfVisitor(db_shift, shift) = self;
+            if let DeBruijnVar::Bound(db_id, idx) = v {
+                let DeBruijnId {index: id} = db_id;
+                let db_id =
+                    DeBruijnId {
+                        index: if *db_shift < 0 {
+                            id - (-*db_shift as usize)
+                        } else {
+                            id + (*db_shift as usize)
+                        }
+                    };
+                let idx = if *shift < 0 {
+                    idx - TypeVarId::from_raw(-*shift as usize)
+                } else {
+                    idx + TypeVarId::from_raw(*shift as usize)
+                };
+                Some(Ty::new(TyKind::TypeVar(DeBruijnVar::Bound(db_id, idx))))
+            } else {
+                None
+            }
+        }
+    }
+    ty.visit_vars(&mut SelfVisitor(db_distance, distance));
+}
+
 /// Field: `self_ty_align: usize`
 fn align_field() -> Field {
     Field {
@@ -105,6 +136,9 @@ impl ItemTransCtx<'_, '_> {
             let mut generics = poly_trait_ref.skip_binder.generics.clone();
             // remove the `Self` type argument from the generics
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+            // Also skip the poly binder
+            // It is guanranteed by Rustc that the reference to `Self` can only appear in the first position
+            generics.types.iter_mut().for_each(|ty| shift_bounded_ty_vars(ty,-1, -1));
             let def_id = &pred.trait_ref.def_id;
             let id = self.translate_vtable_trait_id_as_type_id(Span::dummy(), def_id)?;
             let vtbl_struct = TypeDeclRef { id, generics };
@@ -146,17 +180,32 @@ impl ItemTransCtx<'_, '_> {
             .types
             .push_with(|idx| TypeVar {
                 index: idx,
-                name: String::from("_"),
+                name: String::from("_dyn"),
             });
         let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
 
         let mut params = self.binding_levels.pop().unwrap().params;
 
         // the trait decl ref: `Trait<'a, ..., T, ..., const N = ?, ...>`
+        // the param should be the identity args of the `trait` decl itself
+        let mut args = self.outermost_binder().params.identity_args();
+        // The DB shifting level should be: binding_levels.len() - 1 to refer to the top here
+        // But as the reference is behind a `RegionBinder`, we need to shift it by `+ 1`
+        // Also, the predicate itself is within a level, hence, it is shifted by `+ 1` as well.
+        // So, the final shift is `binding_levels.len() + 1` = `binding_levels.len() - 1 + 1 + 1`
+        let levels = self.binding_levels.len() + 1;
+        // the args should refer to the top level binder, with the sole exception that
+        // the `Self` type variable should refer to the `_dyn` above
+        let _ = args.visit_db_id(|db_id| {*db_id = DeBruijnId {
+                index: db_id.index + levels,
+            };
+            Continue::<()>(())
+        });
+        // shift the first `Self` type variable to refer to the `_dyn` above
+        shift_bounded_ty_vars(&mut args.types[0], 1 - (levels as isize), 0);
         let trait_decl_ref = TraitDeclRef {
             id: self.register_trait_decl_id(span, trait_id),
-            // the param should be the identity args of the `trait` decl itself
-            generics: Box::new(self.outermost_binder().params.identity_args()),
+            generics: Box::new(args),
         };
         // add constraint: `T : Trait<'a, ..., T, ..., const N = ?, ...>`
         params.trait_clauses.push_with(|idx| TraitClause {
@@ -189,7 +238,7 @@ impl ItemTransCtx<'_, '_> {
                 let SelfVisitor(target_ty) = self.clone();
                 // if the var refers to Bound(0), it refers to `Self`
                 // Otherwise, when it is referring something else, it can be unchanged
-                if let DeBruijnVar::Bound(DeBruijnId::ZERO, _) = v {
+                if let DeBruijnVar::Bound(_, TypeVarId::ZERO) = v {
                     Some(target_ty)
                 } else {
                     None
@@ -247,7 +296,9 @@ impl ItemTransCtx<'_, '_> {
                                 .try_collect()?;
                             // take out the first element of `in_tys` and modify it to the shim type
                             in_tys[0] = tcx.convert_to_shim_ty(span, trait_id, &in_tys[0]);
-                            let out_ty = tcx.translate_ty(span, &sig.output)?;
+                            in_tys.iter_mut().for_each(|ty| shift_bounded_ty_vars(ty,0, -1));
+                            let mut out_ty = tcx.translate_ty(span, &sig.output)?;
+                            shift_bounded_ty_vars(&mut out_ty, 0, -1);
                             // it is safe to take only the region binder here
                             // as Rustc guarantees that only generic Region is allowed
                             // by dyn-compatibility

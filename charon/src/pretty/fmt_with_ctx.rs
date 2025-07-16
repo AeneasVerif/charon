@@ -1044,6 +1044,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitDeclRef {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<TypeDeclRef> {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.fmt_as_for(ctx))
+    }
+}
+
 impl Display for RawAttribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         write!(f, "{}", self.path)?;

@@ -25,15 +25,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct test_crate::Super::{vtable}<T> {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const core::marker::Sized::{vtable},
-  super_method: fn<'_0>(&'_0_0 (T), missing(@Type1_1)) -> i32,
-}
-
 // Full name: test_crate::Super
 trait Super<Self, T>
 {
@@ -43,19 +34,18 @@ trait Super<Self, T>
     vtable: test_crate::Super::{vtable}<T>
 }
 
-fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
-where
-    [@TraitClause0]: Super<Self, T>,
-
-struct test_crate::Checkable::{vtable}<T> {
+struct test_crate::Super::{vtable}<T> {
   drop_func: fn(*mut ()),
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const test_crate::Super::{vtable}<missing(@Type1_1)>,
-  super_trait_2: *const core::marker::Sized::{vtable},
-  check: fn<'_0>(&'_0_0 (T)) -> bool,
+  super_trait_1: *const core::marker::Sized::{vtable},
+  super_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T>)), T) -> i32,
 }
+
+fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
+where
+    [@TraitClause0]: Super<Self, T>,
 
 // Full name: test_crate::Checkable
 trait Checkable<Self, T>
@@ -65,6 +55,16 @@ trait Checkable<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<T>
     fn check<'_0> = test_crate::Checkable::check<'_0_0, Self, T>[Self]
     vtable: test_crate::Checkable::{vtable}<T>
+}
+
+struct test_crate::Checkable::{vtable}<T> {
+  drop_func: fn(*mut ()),
+  self_ty_size: usize,
+  self_ty_align: usize,
+  super_trait_0: *const core::marker::MetaSized::{vtable},
+  super_trait_1: *const test_crate::Super::{vtable}<T>,
+  super_trait_2: *const core::marker::Sized::{vtable},
+  check: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, T>))) -> bool,
 }
 
 fn test_crate::Checkable::check<'_0, Self, T>(@1: &'_0 (Self)) -> bool
