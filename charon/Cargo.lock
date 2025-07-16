@@ -29,7 +29,7 @@ dependencies = [
 [[package]]
 name = "annotate-snippets"
 version = "0.11.5"
-source = "git+https://github.com/rust-lang/annotate-snippets-rs#a78e165de1e2bc65bf261f5770bdcfa172a9654a"
+source = "git+https://github.com/rust-lang/annotate-snippets-rs#2ef10ac70b828260f358f4a8767835ab67f11a3d"
 dependencies = [
  "anstyle",
  "unicode-width",
