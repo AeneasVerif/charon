@@ -275,15 +275,9 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TyAlias { ty, .. } => {
                 // Don't error on missing trait refs.
                 self.error_on_impl_expr_error = false;
-                // We only translate crate-local type aliases so the `unwrap` is ok.
-                let ty = ty.as_ref().unwrap();
                 self.translate_ty(span, ty).map(TypeDeclKind::Alias)
             }
-            hax::FullDefKind::Struct { def, .. }
-            | hax::FullDefKind::Enum { def, .. }
-            | hax::FullDefKind::Union { def, .. } => {
-                self.translate_adt_def(trans_id, span, &item_meta, def)
-            }
+            hax::FullDefKind::Adt { .. } => self.translate_adt_def(trans_id, span, &item_meta, def),
             hax::FullDefKind::Closure { args, .. } => {
                 self.translate_closure_adt(trans_id, span, &args)
             }
@@ -336,9 +330,6 @@ impl ItemTransCtx<'_, '_> {
             def.kind(),
             hax::FullDefKind::Const { .. }
                 | hax::FullDefKind::AssocConst { .. }
-                | hax::FullDefKind::AnonConst { .. }
-                | hax::FullDefKind::InlineConst { .. }
-                | hax::FullDefKind::PromotedConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
         let is_global_initializer =
@@ -417,9 +408,6 @@ impl ItemTransCtx<'_, '_> {
         let ty = match &def.kind {
             hax::FullDefKind::Const { ty, .. }
             | hax::FullDefKind::AssocConst { ty, .. }
-            | hax::FullDefKind::AnonConst { ty, .. }
-            | hax::FullDefKind::InlineConst { ty, .. }
-            | hax::FullDefKind::PromotedConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
@@ -427,12 +415,12 @@ impl ItemTransCtx<'_, '_> {
 
         let global_kind = match &def.kind {
             hax::FullDefKind::Static { .. } => GlobalKind::Static,
-            hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
-                GlobalKind::NamedConst
+            hax::FullDefKind::Const {
+                kind: hax::ConstKind::TopLevel,
+                ..
             }
-            hax::FullDefKind::AnonConst { .. }
-            | hax::FullDefKind::InlineConst { .. }
-            | hax::FullDefKind::PromotedConst { .. } => GlobalKind::AnonConst,
+            | hax::FullDefKind::AssocConst { .. } => GlobalKind::NamedConst,
+            hax::FullDefKind::Const { .. } => GlobalKind::AnonConst,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 

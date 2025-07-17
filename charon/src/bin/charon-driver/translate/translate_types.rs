@@ -517,9 +517,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         def_span: Span,
         item_meta: &ItemMeta,
-        adt: &hax::AdtDef,
+        def: &hax::FullDef,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
+        let hax::FullDefKind::Adt {
+            adt_kind, variants, ..
+        } = def.kind()
+        else {
+            unreachable!()
+        };
 
         if item_meta.opacity.is_opaque() {
             return Ok(TypeDeclKind::Opaque);
@@ -531,12 +537,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let contents_are_public = match adt.adt_kind {
+        let contents_are_public = match adt_kind {
             AdtKind::Enum => true,
             AdtKind::Struct | AdtKind::Union => {
                 // Check the unique variant
-                error_assert!(self, def_span, adt.variants.len() == 1);
-                adt.variants[0]
+                error_assert!(self, def_span, variants.len() == 1);
+                variants[0]
                     .fields
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
@@ -552,8 +558,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // The type is transparent: explore the variants
-        let mut variants: Vector<VariantId, Variant> = Default::default();
-        for (i, var_def) in adt.variants.iter().enumerate() {
+        let mut translated_variants: Vector<VariantId, Variant> = Default::default();
+        for (i, var_def) in variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
             let mut fields: Vector<FieldId, Field> = Default::default();
@@ -629,14 +635,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     variant.attr_info.rename = Some(format!("{prefix}{name}{suffix}"));
                 }
             }
-            variants.push(variant);
+            translated_variants.push(variant);
         }
 
         // Register the type
-        let type_def_kind: TypeDeclKind = match adt.adt_kind {
-            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
-            AdtKind::Enum => TypeDeclKind::Enum(variants),
-            AdtKind::Union => TypeDeclKind::Union(variants[0].fields.clone()),
+        let type_def_kind: TypeDeclKind = match adt_kind {
+            AdtKind::Struct => TypeDeclKind::Struct(translated_variants[0].fields.clone()),
+            AdtKind::Enum => TypeDeclKind::Enum(translated_variants),
+            AdtKind::Union => TypeDeclKind::Union(translated_variants[0].fields.clone()),
         };
 
         Ok(type_def_kind)

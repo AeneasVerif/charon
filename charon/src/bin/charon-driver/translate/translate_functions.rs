@@ -48,9 +48,6 @@ impl ItemTransCtx<'_, '_> {
             }
             hax::FullDefKind::Const { ty, .. }
             | hax::FullDefKind::AssocConst { ty, .. }
-            | hax::FullDefKind::AnonConst { ty, .. }
-            | hax::FullDefKind::InlineConst { ty, .. }
-            | hax::FullDefKind::PromotedConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => {
                 let sig = hax::TyFnSig {
                     inputs: vec![],

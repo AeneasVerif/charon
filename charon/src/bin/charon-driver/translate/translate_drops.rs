@@ -10,10 +10,8 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         def: &hax::FullDef,
     ) -> Result<Result<Body, Opaque>, Error> {
-        let (hax::FullDefKind::Struct { drop_glue, .. }
-        | hax::FullDefKind::Enum { drop_glue, .. }
-        | hax::FullDefKind::Union { drop_glue, .. }
-        | hax::FullDefKind::Closure { drop_glue, .. }) = def.kind()
+        let (hax::FullDefKind::Adt { drop_glue, .. } | hax::FullDefKind::Closure { drop_glue, .. }) =
+            def.kind()
         else {
             panic!("Unexpected def adt: {def:?}")
         };
