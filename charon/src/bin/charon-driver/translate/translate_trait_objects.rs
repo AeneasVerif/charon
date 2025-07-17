@@ -249,7 +249,7 @@ impl ItemTransCtx<'_, '_> {
         ty.visit_vars(&mut SelfVisitor(target_ty));
         trace!("Converted shim type: `{}`", ty.with_ctx(&self.into_fmt()));
         ty
-        // unit_raw_ptr(true)
+        // unit_raw_ptr(true)  // maybe this one is simpler?
     }
 
     fn add_vtable_methods_from_trait_items(
@@ -419,15 +419,47 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    /// E.g.,
+    /// global <T..., VT...>
+    ///     trait::{vtable_instance}::<ImplTy<T...>> : 
+    ///         trait::{vtable}<VT...> = trait::{vtable}<VT...> {
+    ///     drop_func: &ignore / &<ImplTy<T...> as Drop>::drop,
+    ///     size: size_of(<ImplTy<T...>>),
+    ///     align: align_of(<ImplTy<T...>>),
+    ///     super_trait_0: &SuperTrait0<VT...>::{vtable_instance}::<ImplTy<T...>>,
+    ///     super_trait_1: &SuperTrait1<VT...>::{vtable_instance}::<ImplTy<T...>>,
+    ///     ...
+    ///     method_0: &<ImplTy<T...> as Trait>::method_0::{shim},
+    ///     method_1: &<ImplTy<T...> as Trait>::method_1::{shim},
+    ///     ...
+    /// }
     pub(crate) fn translate_vtable_instance(
         mut self,
         glob_id: GlobalDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        trait_impl_def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        Err(Error {
-            span: item_meta.span,
-            msg: String::from("TODO"),
+        // prepare the generic environment
+        self.translate_def_generics(item_meta.span, trait_impl_def)?;
+        let init = self.register_vtable_instance_body_as_fun_decl_id(item_meta.span, &trait_impl_def.def_id);
+        
+        let trait_ref = match trait_impl_def.kind() {
+            hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
+            _ => unreachable!(),
+        };
+        let vtable_struct_ref = self
+            .get_vtable_struct_ref(item_meta.span, &trait_ref.def_id)?.unwrap();
+        let trait_decl_ref = self.translate_trait_decl_ref(item_meta.span, trait_ref)?;
+
+        Ok(GlobalDecl {
+            def_id: glob_id,
+            item_meta,
+            generics: self.into_generics(),
+            kind: ItemKind::VTable { trait_decl_ref },
+            // it should be static to have its own address
+            global_kind: GlobalKind::Static,
+            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
+            init,
         })
     }
 
@@ -435,7 +467,19 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         init_func_id: FunDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        trait_impl_def: &hax::FullDef,
+    ) -> Result<FunDecl, Error> {
+        Err(Error {
+            span: item_meta.span,
+            msg: String::from("TODO"),
+        })
+    }
+
+    pub(crate) fn translate_vtable_shim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_func_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         Err(Error {
             span: item_meta.span,

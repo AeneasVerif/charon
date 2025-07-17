@@ -156,6 +156,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_vtable_instance_body(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::VTableShim => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
     }
@@ -471,7 +478,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Given a trait id, return the vtable struct reference for this trait.
-    fn get_vtable_struct_ref(
+    pub fn get_vtable_struct_ref(
         &mut self,
         span: Span,
         trait_id: &hax::DefId,

@@ -106,7 +106,7 @@ stack backtrace:
   47: charon_driver::translate::translate_items::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item
              at ./src/bin/charon-driver/translate/translate_items.rs:19:14
   48: charon_driver::translate::translate_crate::translate
-             at ./src/bin/charon-driver/translate/translate_crate.rs:696:17
+             at ./src/bin/charon-driver/translate/translate_crate.rs:742:17
   49: <charon_driver::driver::CharonCallbacks as rustc_driver_impl::Callbacks>::after_expansion
              at ./src/bin/charon-driver/driver.rs:157:29
   50: rustc_interface::passes::create_and_enter_global_ctxt::<core::option::Option<rustc_interface::queries::Linker>, rustc_driver_impl::run_compiler::{closure#0}::{closure#2}>

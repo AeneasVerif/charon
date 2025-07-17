@@ -361,6 +361,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "{vtable_instance}".into(),
                     Disambiguator::ZERO,
                 ));
+                // name.name.push()
             }
             TransItemSourceKind::VTableInstanceBody => {
                 name.name.push(PathElem::Ident(

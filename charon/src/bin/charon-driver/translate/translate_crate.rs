@@ -57,11 +57,14 @@ pub enum TransItemSourceKind {
     DropGlueMethod,
     /// The virtual table struct (ADT), associated DefId should refer to the trait-decl itself.
     VTable,
-    /// The virtual table global instance for a specific type, corresponding to TraitRef.
-    /// The associated DefId is essentially meaningless
+    /// The virtual table global instance for a specific type, the DefId refers to an impl
     VTableInstance,
     /// The init body of the `VTableInstance`, as per the practice of `Global`
+    /// The DefId refers to the trait impl.
     VTableInstanceBody,
+    /// The shim for the vtable, used to call the appropriate method
+    /// The DefId refers to the correct implementation function.
+    VTableShim,
 }
 
 impl TransItemSource {
@@ -81,7 +84,7 @@ impl TransItemSource {
         match self.kind {
             Global | TraitDecl | TraitImpl | InherentImpl | Module | Fun | Type => false,
             ClosureTraitImpl(..) | ClosureMethod(..) | ClosureAsFnCast | DropGlueImpl
-            | DropGlueMethod | VTable | VTableInstance | VTableInstanceBody => true,
+            | DropGlueMethod | VTable | VTableInstance | VTableInstanceBody | VTableShim => true,
         }
     }
 
@@ -175,7 +178,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
                     Fun | ClosureMethod(..) | ClosureAsFnCast | DropGlueMethod
-                    | VTableInstanceBody => {
+                    | VTableInstanceBody | VTableShim => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                     InherentImpl | Module => return None,
@@ -303,6 +306,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> FunDeclId {
         *self
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::ClosureAsFnCast)
+            .unwrap()
+            .as_fun()
+            .unwrap()
+    }
+
+    pub(crate) fn register_vtable_instance_as_global_decl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: &hax::DefId,
+    ) -> GlobalDeclId {
+        // Register the vtable instance as a global decl.
+        *self
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::VTableInstance)
+            .unwrap()
+            .as_global()
+            .unwrap()
+    }
+
+    pub(crate) fn register_vtable_instance_body_as_fun_decl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: &hax::DefId,
+    ) -> FunDeclId {
+        *self
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::VTableInstanceBody)
             .unwrap()
             .as_fun()
             .unwrap()
@@ -567,6 +595,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_closure_as_fun_decl_id(&src, id)
+    }
+
+    pub(crate) fn register_vtable_instance_as_global_decl_id(
+        &mut self,
+        span: Span,
+        def_id: &hax::DefId,
+    ) -> GlobalDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_vtable_instance_as_global_decl_id(&src, def_id)
+    }
+
+    pub(crate) fn register_vtable_instance_body_as_fun_decl_id(
+        &mut self,
+        span: Span,
+        id: &hax::DefId,
+    ) -> FunDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_vtable_instance_body_as_fun_decl_id(&src, id)
     }
 
     pub(crate) fn register_vtable_as_type_decl_id(
