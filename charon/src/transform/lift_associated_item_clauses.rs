@@ -47,20 +47,19 @@ impl TransformPass for Transform {
             use TraitRefKind::*;
             match trkind {
                 ItemClause(..) => take_mut::take(trkind, |trkind| {
-                    let ItemClause(trait_ref, trait_decl, item_name, item_clause_id) = trkind
-                    else {
+                    let ItemClause(tref, item_name, item_clause_id) = trkind else {
                         unreachable!()
                     };
                     let new_id = (|| {
                         let new_id = *trait_item_clause_ids
-                            .get(trait_decl)?
+                            .get(tref.trait_decl_ref.skip_binder.id)?
                             .get(&item_name)?
                             .get(item_clause_id)?;
                         Some(new_id)
                     })();
                     match new_id {
-                        Some(new_id) => ParentClause(trait_ref, trait_decl, new_id),
-                        None => ItemClause(trait_ref, trait_decl, item_name, item_clause_id),
+                        Some(new_id) => ParentClause(tref, new_id),
+                        None => ItemClause(tref, item_name, item_clause_id),
                     }
                 }),
                 BuiltinOrAuto {

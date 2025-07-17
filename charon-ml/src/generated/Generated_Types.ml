@@ -435,15 +435,8 @@ and trait_instance_id =
                                ^^^^^^^
                                Clause(0)
           ]} *)
-  | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
+  | ParentClause of trait_ref * trait_clause_id
       (** A parent clause
-
-          Remark: the [TraitDeclId] gives the trait declaration which is
-          implemented by the instance id from which we take the parent clause
-          (see example below). It is not necessary and included for convenience.
-
-          Remark: Ideally we should store a full [TraitRef] instead, but hax
-          does not give us enough information to get the right generic args.
 
           Example:
           {@rust[
@@ -458,11 +451,9 @@ and trait_instance_id =
             fn g<T : Bar>(x : T) {
               x.f()
               ^^^^^
-              Parent(Clause(0), Bar, 1)::f(x)
-                                     ^
-                                     parent clause 1 of clause 0
-                                ^^^
-                         clause 0 implements Bar
+              Parent(Clause(0), 1)::f(x)
+                                ^
+                                parent clause 1 of clause 0
             }
           ]} *)
   | Self

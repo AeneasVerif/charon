@@ -333,8 +333,8 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
   | BuiltinOrAuto (trait, _, _) ->
       region_binder_to_string trait_decl_ref_to_string env trait
   | Clause id -> trait_db_var_to_string env id
-  | ParentClause (inst_id, _decl_id, clause_id) ->
-      let inst_id = trait_instance_id_to_string env inst_id in
+  | ParentClause (tref, clause_id) ->
+      let inst_id = trait_instance_id_to_string env tref.trait_id in
       let clause_id = trait_clause_id_to_string env clause_id in
       "parent(" ^ inst_id ^ ")::" ^ clause_id
   | Dyn trait ->

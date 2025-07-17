@@ -713,7 +713,9 @@ impl ItemTransCtx<'_, '_> {
                     ) -> ControlFlow<Self::Break> {
                         match kind {
                             TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
-                            TraitRefKind::ParentClause(box TraitRefKind::SelfId, _, clause_id) => {
+                            TraitRefKind::ParentClause(sub, clause_id)
+                                if matches!(sub.kind, TraitRefKind::SelfId) =>
+                            {
                                 *kind = TraitRefKind::Clause(DeBruijnVar::bound(
                                     self.binder_depth,
                                     *clause_id,

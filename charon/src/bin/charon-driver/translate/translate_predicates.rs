@@ -51,6 +51,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    pub(crate) fn translate_poly_trait_predicate(
+        &mut self,
+        span: Span,
+        bound_trait_ref: &hax::Binder<hax::TraitPredicate>,
+    ) -> Result<PolyTraitDeclRef, Error> {
+        self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
+            ctx.translate_trait_predicate(span, trait_ref)
+        })
+    }
+
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
@@ -214,7 +224,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_ref, path,
                 );
                 // If we are refering to a trait clause, we need to find the relevant one.
-                let mut trait_id = match &impl_source.r#impl {
+                let mut tref_kind = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
                         let var = self.lookup_clause_var(span, *index)?;
@@ -223,12 +233,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     _ => unreachable!(),
                 };
 
-                let mut current_trait_decl_id =
-                    self.register_trait_decl_id(span, &trait_ref.hax_skip_binder_ref().def_id);
+                let mut current_pred = self.translate_poly_trait_ref(span, trait_ref)?;
 
                 // Apply the path
                 for path_elem in path {
                     use hax::ImplExprPathChunk::*;
+                    let trait_ref = Box::new(TraitRef {
+                        kind: tref_kind,
+                        trait_decl_ref: current_pred,
+                    });
                     match path_elem {
                         AssocItem {
                             item,
@@ -246,37 +259,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                     trait_decl_ref.with_ctx(&self.into_fmt())
                                 )
                             }
-                            trait_id = TraitRefKind::ItemClause(
-                                Box::new(trait_id),
-                                current_trait_decl_id,
+                            tref_kind = TraitRefKind::ItemClause(
+                                trait_ref,
                                 name,
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self.register_trait_decl_id(
-                                span,
-                                &predicate.hax_skip_binder_ref().trait_ref.def_id,
-                            );
+                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
                         }
                         Parent {
                             predicate, index, ..
                         } => {
-                            trait_id = TraitRefKind::ParentClause(
-                                Box::new(trait_id),
-                                current_trait_decl_id,
-                                TraitClauseId::new(*index),
-                            );
-                            current_trait_decl_id = self.register_trait_decl_id(
-                                span,
-                                &predicate.hax_skip_binder_ref().trait_ref.def_id,
-                            );
+                            tref_kind =
+                                TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index));
+                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
                         }
                     }
                 }
 
-                // Ignore the arguments: we forbid using universal quantifiers
-                // on the trait clauses for now.
                 TraitRef {
-                    kind: trait_id,
+                    kind: tref_kind,
                     trait_decl_ref,
                 }
             }

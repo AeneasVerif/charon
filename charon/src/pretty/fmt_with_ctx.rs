@@ -1652,16 +1652,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TraitRefKind::SelfId => write!(f, "Self"),
-            TraitRefKind::ParentClause(id, _decl_id, clause_id) => {
-                let id = id.with_ctx(ctx);
-                write!(f, "{id}::parent_clause{clause_id}")
+            TraitRefKind::ParentClause(sub, clause_id) => {
+                let sub = sub.with_ctx(ctx);
+                write!(f, "{sub}::parent_clause{clause_id}")
             }
-            TraitRefKind::ItemClause(id, _decl_id, type_name, clause_id) => {
-                let id = id.with_ctx(ctx);
+            TraitRefKind::ItemClause(sub, type_name, clause_id) => {
+                let sub = sub.with_ctx(ctx);
                 // Using on purpose `to_pretty_string` instead of `with_ctx`: the clause is local
                 // to the associated type, so it should not be referenced in the current context.
                 let clause = clause_id.to_pretty_string();
-                write!(f, "({id}::{type_name}::[{clause}])")
+                write!(f, "({sub}::{type_name}::[{clause}])")
             }
             TraitRefKind::TraitImpl(impl_ref) => {
                 write!(f, "{}", impl_ref.with_ctx(ctx))
