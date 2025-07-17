@@ -10,7 +10,6 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use std::mem;
 use std::ops::ControlFlow;
-use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
@@ -151,8 +150,8 @@ impl ItemTransCtx<'_, '_> {
         }
         match def.kind() {
             hax::FullDefKind::InherentImpl { items, .. } => {
-                for (_, item_def) in items {
-                    self.t_ctx.enqueue_item(item_def.def_id());
+                for assoc in items {
+                    self.t_ctx.enqueue_item(&assoc.def_id);
                 }
             }
             hax::FullDefKind::Mod { items, .. } => {
@@ -217,7 +216,7 @@ impl ItemTransCtx<'_, '_> {
                     // Ensure we translate the corresponding decl signature.
                     // FIXME(self_clause): also ensure we translate associated globals
                     // consistently; to do once we have clearer `Self` clause handling.
-                    let _ = self.register_fun_decl_id(span, implemented_trait_item);
+                    let _ = self.register_fun_decl_id(span, &implemented_trait_item.def_id);
                 }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitImpl {
@@ -485,11 +484,11 @@ impl ItemTransCtx<'_, '_> {
                 self.translate_trait_predicate(span, self_predicate)?,
             ),
         };
-        let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
+        let items: Vec<(TraitItemName, &hax::AssocItem)> = items
             .iter()
-            .map(|(item, def)| {
-                let name = self.t_ctx.translate_trait_item_name(def.def_id())?;
-                Ok((name, item, def.clone()))
+            .map(|item| {
+                let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
+                Ok((name, item))
             })
             .try_collect()?;
 
@@ -501,10 +500,11 @@ impl ItemTransCtx<'_, '_> {
         let mut type_clauses = Vec::new();
         let mut type_defaults = IndexMap::new();
         let mut methods = Vec::new();
-        for (item_name, hax_item, hax_def) in &items {
+        for (item_name, hax_item) in &items {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
-            match &hax_def.kind {
+            let hax_def = self.hax_def(item_def_id)?;
+            match hax_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
                     let fun_def = self.hax_def(item_def_id)?;
                     let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
@@ -792,8 +792,8 @@ impl ItemTransCtx<'_, '_> {
             use hax::ImplAssocItemValue::*;
             let name = self
                 .t_ctx
-                .translate_trait_item_name(impl_item.decl_def.def_id())?;
-            let item_def = impl_item.def(); // The impl item or the corresponding trait default.
+                .translate_trait_item_name(&impl_item.decl_def_id)?;
+            let item_def = self.hax_def(impl_item.def_id())?; // The impl item or the corresponding trait default.
             let item_span = self.def_span(item_def.def_id());
             let item_def_id = item_def.def_id();
             match item_def.kind() {

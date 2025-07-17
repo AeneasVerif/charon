@@ -415,7 +415,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Also add the predicates on associated types.
                 // FIXME(gat): don't skip GATs.
                 // FIXME: don't mix up implied and required predicates.
-                for (_item, item_def) in items {
+                for assoc in items {
+                    let item_def = self.hax_def(&assoc.def_id)?;
                     if let hax::FullDefKind::AssocTy {
                         param_env,
                         implied_predicates,

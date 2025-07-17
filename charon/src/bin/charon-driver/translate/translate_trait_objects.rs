@@ -18,7 +18,7 @@ impl ItemTransCtx<'_, '_> {
                 let has_methods = match trait_def.kind() {
                     hax::FullDefKind::Trait { items, .. } => items
                         .iter()
-                        .any(|(assoc, _)| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
+                        .any(|assoc| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
                     hax::FullDefKind::TraitAlias { .. } => false,
                     _ => unreachable!(),
                 };
