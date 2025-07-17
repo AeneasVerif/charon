@@ -223,18 +223,6 @@ impl SubstVisitor<'_> {
 }
 
 impl VisitAstMut for SubstVisitor<'_> {
-    fn exit_rvalue(&mut self, rval: &mut Rvalue) {
-        if let Rvalue::Discriminant(place, id) = rval
-            && let Some(tref) = place.ty.as_adt()
-            && let TypeId::Adt(new_enum_id) = tref.id
-        {
-            // Small trick; the discriminant doesn't carry the information on the
-            // generics of the enum, since it's irrelevant, but we need it to do
-            // the substitution, so we look at the type of the place we read from
-            *id = new_enum_id;
-        }
-    }
-
     fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
             AggregateKind::Adt(tref, _, _) => self.subst_use_ty(tref),

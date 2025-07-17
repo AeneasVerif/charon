@@ -1429,10 +1429,9 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* x_0 = nullop_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
         Ok (NullaryOp (x_0, x_1))
-    | `Assoc [ ("Discriminant", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = place_of_json ctx x_0 in
-        let* x_1 = type_decl_id_of_json ctx x_1 in
-        Ok (Discriminant (x_0, x_1))
+    | `Assoc [ ("Discriminant", discriminant) ] ->
+        let* discriminant = place_of_json ctx discriminant in
+        Ok (Discriminant discriminant)
     | `Assoc [ ("Aggregate", `List [ x_0; x_1 ]) ] ->
         let* x_0 = aggregate_kind_of_json ctx x_0 in
         let* x_1 = list_of_json operand_of_json ctx x_1 in

@@ -1190,7 +1190,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::NullaryOp(op, ty) => {
                 write!(f, "{}<{}>", op.with_ctx(ctx), ty.with_ctx(ctx))
             }
-            Rvalue::Discriminant(p, _) => {
+            Rvalue::Discriminant(p) => {
                 write!(f, "@discriminant({})", p.with_ctx(ctx),)
             }
             Rvalue::Aggregate(kind, ops) => {
