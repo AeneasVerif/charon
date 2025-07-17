@@ -222,26 +222,12 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
     storage_live(__self_discr@3)
     storage_live(@4)
     @4 := &*(self@1)
-    match *(@4) {
-        Enum::Some => {
-            __self_discr@3 := const (0 : isize)
-        },
-        Enum::None => {
-            __self_discr@3 := const (1 : isize)
-        },
-    }
+    __self_discr@3 := @discriminant(*(@4))
     storage_dead(@4)
     storage_live(__arg1_discr@5)
     storage_live(@6)
     @6 := &*(other@2)
-    match *(@6) {
-        Enum::Some => {
-            __arg1_discr@5 := const (0 : isize)
-        },
-        Enum::None => {
-            __arg1_discr@5 := const (1 : isize)
-        },
-    }
+    __arg1_discr@5 := @discriminant(*(@6))
     storage_dead(@6)
     storage_live(@7)
     storage_live(@8)
