@@ -23,6 +23,17 @@ impl <T : Clone> Modifiable<T> for i32 {
         arg.clone()
     }
 }
+trait NoParam {
+    fn dummy(&self);
+}
+impl NoParam for i32 {
+    fn dummy(&self) {
+        assert!(*self > 0);
+    }
+}
+fn to_dyn_obj<T: NoParam>(arg: &T) -> &dyn NoParam {
+    arg
+}
 fn modify_trait_object<T : Clone>(arg: &T) -> T {
     let x : &mut dyn Modifiable<T> = &mut 199;
     x.modify(arg)
