@@ -54,7 +54,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        let def = self.hax_def(item_src.as_def_id())?;
+        // TODO(mono): carry optional generic args in `TransItemSource`
+        let def = self.poly_hax_def(item_src.as_def_id())?;
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
 
         // Initialize the item translation context
@@ -216,7 +217,7 @@ impl ItemTransCtx<'_, '_> {
                     // Ensure we translate the corresponding decl signature.
                     // FIXME(self_clause): also ensure we translate associated globals
                     // consistently; to do once we have clearer `Self` clause handling.
-                    let _ = self.register_fun_decl_id(span, &implemented_trait_item.def_id);
+                    let _ = self.translate_fun_id(span, implemented_trait_item);
                 }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitImpl {
@@ -331,8 +332,8 @@ impl ItemTransCtx<'_, '_> {
                 | hax::FullDefKind::AssocConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
-        let is_global_initializer =
-            is_global_initializer.then(|| self.register_global_decl_id(span, def.def_id()));
+        let is_global_initializer = is_global_initializer
+            .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
         let body = if item_meta.opacity.with_private_contents().is_opaque()
             || is_trait_method_decl_without_default
@@ -349,7 +350,7 @@ impl ItemTransCtx<'_, '_> {
         {
             let body = self.build_ctor_body(
                 span,
-                &signature,
+                def,
                 adt_def_id,
                 ctor_of,
                 *variant_id,
@@ -423,7 +424,7 @@ impl ItemTransCtx<'_, '_> {
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 
-        let initializer = self.register_fun_decl_id(span, def.def_id());
+        let initializer = self.register_item(span, def.this(), TransItemSourceKind::Fun);
 
         Ok(GlobalDecl {
             def_id,
@@ -503,10 +504,12 @@ impl ItemTransCtx<'_, '_> {
         for (item_name, hax_item) in &items {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
-            let hax_def = self.hax_def(item_def_id)?;
+            let hax_def = self.poly_hax_def(item_def_id)?;
+            // TODO(mono): in --mono mode, skip if generic and use parent args if not; in not-mono
+            // mode, use polymorphic item
             match hax_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_def = self.hax_def(item_def_id)?;
+                    let fun_def = hax_def;
                     let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
                     let mut fn_ref = self.translate_binder_for_def(
                         item_span,
@@ -520,13 +523,15 @@ impl ItemTransCtx<'_, '_> {
                             // `remove_unused_methods` pass.
                             // FIXME: this triggers the translation of traits used in the method
                             // clauses, despite the fact that we may end up not needing them.
+                            let fn_src =
+                                TransItemSource::polymorphic(item_def_id, TransItemSourceKind::Fun);
                             let fun_id = if bt_ctx.t_ctx.options.translate_all_methods
                                 || item_meta.opacity.is_transparent()
                                 || !hax_item.has_value
                             {
-                                bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                                bt_ctx.register_and_enqueue(item_span, fn_src)
                             } else {
-                                bt_ctx.register_fun_decl_id_no_enqueue(item_span, item_def_id)
+                                bt_ctx.register_no_enqueue(item_span, &fn_src)
                             };
 
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
@@ -586,7 +591,11 @@ impl ItemTransCtx<'_, '_> {
                     if hax_item.has_value {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
-                        let id = self.register_global_decl_id(item_span, item_def_id);
+                        let id = self.register_and_enqueue_poly(
+                            item_span,
+                            item_def_id,
+                            TransItemSourceKind::Global,
+                        );
                         let mut generics = self.the_only_binder().params.identity_args();
                         generics.trait_refs.push(self_trait_ref.clone());
                         let gref = GlobalDeclRef {
@@ -665,7 +674,7 @@ impl ItemTransCtx<'_, '_> {
             assert!(self.innermost_generics_mut().trait_clauses.is_empty());
             let clauses = mem::take(&mut self.parent_trait_clauses);
             self.innermost_generics_mut().trait_clauses = clauses;
-            let trait_id = self.register_trait_decl_id(span, def.def_id());
+            let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
             let mut generics = self.the_only_binder().params.identity_args();
             // Do the inverse operation: the trait considers the clauses as implied.
             let parent_trait_refs = mem::take(&mut generics.trait_refs);
@@ -793,14 +802,15 @@ impl ItemTransCtx<'_, '_> {
             let name = self
                 .t_ctx
                 .translate_trait_item_name(&impl_item.decl_def_id)?;
-            let item_def = self.hax_def(impl_item.def_id())?; // The impl item or the corresponding trait default.
+            let item_def = self.poly_hax_def(impl_item.def_id())?; // The impl item or the corresponding trait default.
             let item_span = self.def_span(item_def.def_id());
             let item_def_id = item_def.def_id();
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
                     match &impl_item.value {
                         Provided { is_override, .. } => {
-                            let fun_def = self.hax_def(item_def_id)?;
+                            // TODO(mono): skip if generic
+                            let fun_def = self.poly_hax_def(item_def_id)?;
                             let binder_kind = BinderKind::TraitMethod(trait_id, name.clone());
                             let fn_ref = self.translate_binder_for_def(
                                 item_span,
@@ -813,14 +823,17 @@ impl ItemTransCtx<'_, '_> {
                                     // We insert the `Binder<FunDeclRef>` unconditionally here, and
                                     // remove the ones that correspond to untranslated functions in
                                     // the `remove_unused_methods` pass.
+                                    let fn_src = TransItemSource::polymorphic(
+                                        item_def_id,
+                                        TransItemSourceKind::Fun,
+                                    );
                                     let fun_id = if bt_ctx.t_ctx.options.translate_all_methods
                                         || item_meta.opacity.is_transparent()
                                         || !*is_override
                                     {
-                                        bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                                        bt_ctx.register_and_enqueue(item_span, fn_src)
                                     } else {
-                                        bt_ctx
-                                            .register_fun_decl_id_no_enqueue(item_span, item_def_id)
+                                        bt_ctx.register_no_enqueue(item_span, &fn_src)
                                     };
 
                                     // TODO: there's probably a cleaner way to write this
@@ -850,7 +863,11 @@ impl ItemTransCtx<'_, '_> {
                     }
                 }
                 hax::FullDefKind::AssocConst { .. } => {
-                    let id = self.register_global_decl_id(item_span, item_def_id);
+                    let id = self.register_and_enqueue_poly(
+                        item_span,
+                        item_def_id,
+                        TransItemSourceKind::Global,
+                    );
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {

@@ -1,4 +1,4 @@
-use crate::translate::translate_bodies::BodyTransCtx;
+use crate::translate::{translate_bodies::BodyTransCtx, translate_crate::TransItemSourceKind};
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
@@ -37,7 +37,6 @@ impl ItemTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let drop_impl_id = self.register_drop_trait_impl_id(span, def.def_id());
 
         self.translate_def_generics(span, def)?;
 
@@ -48,6 +47,7 @@ impl ItemTransCtx<'_, '_> {
         };
         let implemented_trait = self.translate_trait_predicate(span, &drop_impl.trait_pred)?;
         let self_ty = implemented_trait.generics.types[0].clone();
+        let drop_impl_id = self.register_item(span, def.this(), TransItemSourceKind::DropGlueImpl);
         let impl_ref = TraitImplRef {
             id: drop_impl_id,
             generics: Box::new(self.the_only_binder().params.identity_args()),
@@ -117,7 +117,7 @@ impl ItemTransCtx<'_, '_> {
         let drop_trait = implemented_trait.id;
 
         // Construct the method reference.
-        let method_id = self.register_drop_method_id(span, def.def_id());
+        let method_id = self.register_item(span, def.this(), TransItemSourceKind::DropGlueMethod);
         let method_name = TraitItemName("drop".to_owned());
         let method_binder = {
             let mut method_params = GenericParams::empty();

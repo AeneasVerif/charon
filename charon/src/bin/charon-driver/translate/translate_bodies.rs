@@ -970,8 +970,8 @@ impl BodyTransCtx<'_, '_, '_> {
         let fn_operand = match fun {
             hax::FunOperand::Static(item) => {
                 trace!("func: {:?}", item.def_id);
-                let fun_def = self.hax_def(&item.def_id)?;
-                let fun_src = TransItemSource::new(item.def_id.clone(), TransItemSourceKind::Fun);
+                let fun_def = self.poly_hax_def(&item.def_id)?;
+                let fun_src = TransItemSource::polymorphic(&item.def_id, TransItemSourceKind::Fun);
                 let name = self.t_ctx.translate_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];

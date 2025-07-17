@@ -42,6 +42,7 @@ use std::mem;
 
 use crate::translate::translate_bodies::BodyTransCtx;
 
+use super::translate_crate::TransItemSourceKind;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::Vector;
@@ -167,7 +168,7 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         closure: &hax::ClosureArgs,
     ) -> Result<RegionBinder<FunDeclRef>, Error> {
-        let id = self.register_closure_as_fun_decl_id(span, &closure.item.def_id);
+        let id = self.register_item(span, &closure.item, TransItemSourceKind::ClosureAsFnCast);
         let TypeDeclRef { generics, .. } = self.translate_closure_type_ref(span, closure)?;
         self.translate_region_binder(span, &closure.fn_sig, |ctx, _| {
             let mut generics = generics.move_under_binder();
@@ -191,7 +192,11 @@ impl ItemTransCtx<'_, '_> {
         closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<TraitImplRef>, Error> {
-        let impl_id = self.register_closure_trait_impl_id(span, &closure.item.def_id, target_kind);
+        let impl_id = self.register_item(
+            span,
+            &closure.item,
+            TransItemSourceKind::ClosureTraitImpl(target_kind),
+        );
         let adt_ref = self.translate_closure_type_ref(span, closure)?;
         let impl_ref = TraitImplRef {
             id: impl_id,
@@ -455,12 +460,16 @@ impl ItemTransCtx<'_, '_> {
             //   self.call(reborrow, args)
             // }
             (FnMut, Fn) => {
-                let fun_id = self.register_closure_method_decl_id(span, def.def_id(), closure_kind);
+                let fun_id: FunDeclId = self.register_item(
+                    span,
+                    def.this(),
+                    TransItemSourceKind::ClosureMethod(closure_kind),
+                );
                 let impl_ref = self.translate_closure_impl_ref(span, args, closure_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
                 // TODO: can we ask hax for the trait ref?
                 let fn_op = FnOperand::Regular(FnPtr {
-                    func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
+                    func: Box::new(fun_id.into()),
                     generics: Box::new(impl_ref.generics.concat(&GenericArgs {
                         regions: vec![Region::Erased].into(),
                         ..GenericArgs::empty()
@@ -630,7 +639,11 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // Construct the `call_*` method reference.
-        let call_fn_id = self.register_closure_method_decl_id(span, def.def_id(), target_kind);
+        let call_fn_id = self.register_item(
+            span,
+            def.this(),
+            TransItemSourceKind::ClosureMethod(target_kind),
+        );
         let call_fn_name = TraitItemName(target_kind.method_name().to_string());
         let call_fn_binder = {
             let mut method_params = GenericParams::empty();
@@ -724,11 +737,14 @@ impl ItemTransCtx<'_, '_> {
                     terminator: Terminator::new(span, terminator),
                 }
             };
-            let fun_id =
-                self.register_closure_method_decl_id(span, def.def_id(), ClosureKind::FnOnce);
+            let fun_id: FunDeclId = self.register_item(
+                span,
+                def.this(),
+                TransItemSourceKind::ClosureMethod(ClosureKind::FnOnce),
+            );
             let impl_ref = self.translate_closure_impl_ref(span, closure, ClosureKind::FnOnce)?;
             let fn_op = FnOperand::Regular(FnPtr {
-                func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
+                func: Box::new(fun_id.into()),
                 generics: impl_ref.generics.clone(),
             });
 

@@ -17,7 +17,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    DepSource, ErrorCtx, Level, error_assert, raise_error, register_error,
+    error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
 };
 
 /// Translation context used while translating the crate data into our representation.
@@ -116,7 +116,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
     }
 
-    pub fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+    /// Return the definition for this item. This uses the polymorphic or monomorphic definition
+    /// depending on user choice.
+    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
+        self.poly_hax_def(&item.def_id)
+    }
+
+    /// Return the polymorphic definition for this item.
+    pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
         let span = self.def_span(def_id);
         // Hax takes care of caching the translation.
         let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
@@ -167,8 +174,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.span_err(span, msg, level)
     }
 
-    pub(crate) fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
-        self.t_ctx.hax_def(def_id)
+    pub(crate) fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
+        self.t_ctx.hax_def(item)
+    }
+
+    pub(crate) fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+        self.t_ctx.poly_hax_def(def_id)
     }
 }
 

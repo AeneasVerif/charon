@@ -1,3 +1,5 @@
+use crate::translate::translate_crate::TransItemSourceKind;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
@@ -291,8 +293,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 types,
                 ..
             } => {
-                let trait_def_id = &impl_source.r#trait.hax_skip_binder_ref().def_id;
-                let trait_def = self.hax_def(trait_def_id)?;
+                let tref = &impl_source.r#trait;
+                let trait_def = self.hax_def(&tref.hax_skip_binder_ref())?;
                 let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
                     "fn_once" => Some(ClosureKind::FnOnce),
                     "fn_mut" => Some(ClosureKind::FnMut),
@@ -317,7 +319,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     TraitRefKind::TraitImpl(binder.erase())
                 } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
-                    let impl_id = self.register_trait_impl_id(span, trait_def_id);
+                    let impl_id = self.register_item(
+                        span,
+                        tref.hax_skip_binder_ref(),
+                        TransItemSourceKind::TraitImpl,
+                    );
                     let mut generics = trait_decl_ref.clone().erase().generics;
                     assert!(
                         generics.trait_refs.is_empty(),

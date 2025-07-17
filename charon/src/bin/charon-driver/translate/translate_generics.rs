@@ -349,7 +349,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | Ctor { .. }
             | Variant { .. } => {
                 let parent_def_id = def.def_id().parent.as_ref().unwrap();
-                let parent_def = self.hax_def(parent_def_id)?;
+                let parent_def = self.poly_hax_def(parent_def_id)?;
                 self.push_generics_for_def(span, &parent_def, true)?;
             }
             _ => {}
@@ -362,7 +362,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// use `push_generics_for_def` to get the full list.
     fn push_generics_for_def_without_parents(
         &mut self,
-        span: Span,
+        _span: Span,
         def: &hax::FullDef,
         include_late_bound: bool,
         include_assoc_ty_clauses: bool,
@@ -385,7 +385,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     PredicateOrigin::WhereClauseOnImpl
                 }
                 FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
-                    let _ = self.register_trait_decl_id(span, def.def_id());
                     PredicateOrigin::WhereClauseOnTrait
                 }
                 _ => panic!("Unexpected def: {def:?}"),
@@ -416,7 +415,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // FIXME(gat): don't skip GATs.
                 // FIXME: don't mix up implied and required predicates.
                 for assoc in items {
-                    let item_def = self.hax_def(&assoc.def_id)?;
+                    let item_def = self.poly_hax_def(&assoc.def_id)?;
                     if let hax::FullDefKind::AssocTy {
                         param_env,
                         implied_predicates,

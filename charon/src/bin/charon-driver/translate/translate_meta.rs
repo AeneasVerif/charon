@@ -180,7 +180,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
             DefPathItem::Impl => {
-                let full_def = self.hax_def(def_id)?;
+                let full_def = self.poly_hax_def(def_id)?;
                 // Two cases, depending on whether the impl block is
                 // a "regular" impl block (`impl Foo { ... }`) or a trait
                 // implementation (`impl Bar for Foo { ... }`).
@@ -191,7 +191,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = ItemTransCtx::new(
-                            TransItemSource::new(def_id.clone(), TransItemSourceKind::InherentImpl),
+                            TransItemSource::polymorphic(def_id, TransItemSourceKind::InherentImpl),
                             None,
                             self,
                         );
@@ -205,7 +205,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                     // Trait implementation
                     hax::FullDefKind::TraitImpl { .. } => {
-                        let impl_id = self.register_trait_impl_id(&None, def_id);
+                        // TODO(mono): should we try to monomorphize names?
+                        let impl_id = {
+                            let item_src = TransItemSource::polymorphic(
+                                def_id,
+                                TransItemSourceKind::TraitImpl,
+                            );
+                            self.register_and_enqueue(&None, item_src).unwrap()
+                        };
                         ImplElem::Trait(impl_id)
                     }
                     _ => unreachable!(),
@@ -316,17 +323,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | TransItemSourceKind::ClosureMethod(..)
             | TransItemSourceKind::DropGlueImpl
             | TransItemSourceKind::DropGlueMethod => {
-                let impl_id = match src.kind {
-                    TransItemSourceKind::ClosureTraitImpl(kind)
-                    | TransItemSourceKind::ClosureMethod(kind) => {
-                        let _ = name.name.pop(); // Pop the `{closure}`
-                        self.register_closure_trait_impl_id(&None, def_id, kind)
-                    }
-                    TransItemSourceKind::DropGlueImpl | TransItemSourceKind::DropGlueMethod => {
-                        self.register_drop_trait_impl_id(&None, def_id)
-                    }
+                if let TransItemSourceKind::ClosureTraitImpl(_)
+                | TransItemSourceKind::ClosureMethod(_) = src.kind
+                {
+                    let _ = name.name.pop(); // Pop the `{closure}`
+                }
+                let impl_src = match src.kind {
+                    TransItemSourceKind::ClosureTraitImpl(..)
+                    | TransItemSourceKind::DropGlueImpl => src.clone(),
+                    TransItemSourceKind::ClosureMethod(..)
+                    | TransItemSourceKind::DropGlueMethod => src.parent().unwrap(),
                     _ => unreachable!(),
                 };
+                let impl_id = self.register_and_enqueue(&None, impl_src).unwrap();
 
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
 
@@ -345,7 +354,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 }
             }
             TransItemSourceKind::TraitImpl if matches!(def_id.kind, hax::DefKind::TraitAlias) => {
-                let impl_id = self.register_trait_impl_id(&None, def_id);
+                let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
             TransItemSourceKind::ClosureAsFnCast => {
@@ -362,7 +371,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         &mut self,
         def_id: &hax::DefId,
     ) -> Result<TraitItemName, Error> {
-        let def = self.hax_def(def_id)?;
+        let def = self.poly_hax_def(def_id)?;
         let assoc = match def.kind() {
             hax::FullDefKind::AssocTy {
                 associated_item, ..
@@ -474,11 +483,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
-        def.def_id().parent.as_ref().is_some_and(|parent| {
-            self.hax_def(parent).is_ok_and(|parent_def| {
-                matches!(parent_def.kind(), hax::FullDefKind::ForeignMod { .. })
-            })
-        })
+        def.def_id()
+            .parent
+            .as_ref()
+            .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod { .. }))
     }
 
     /// Compute the meta information for a Rust item.
