@@ -60,7 +60,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
-        match item_src.kind {
+        match &item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
                 bt_ctx.register_module(item_meta, &def);
             }
@@ -104,14 +104,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?;
+                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, *kind)?;
                 self.translated.trait_impls.set_slot(id, closure_trait_impl);
             }
             TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
+                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::ClosureAsFnCast => {
@@ -133,6 +133,34 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTable => {
+                let Some(AnyTransId::Type(id)) = trans_id else {
+                    unreachable!()
+                };
+                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
+                self.translated.type_decls.set_slot(id, ty_decl);
+            }
+            TransItemSourceKind::VTableInstance => {
+                let Some(AnyTransId::Global(id)) = trans_id else {
+                    unreachable!()
+                };
+                let global_decl = bt_ctx.translate_vtable_instance(id, item_meta, &def)?;
+                self.translated.global_decls.set_slot(id, global_decl);
+            }
+            TransItemSourceKind::VTableInstanceBody => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_instance_body(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableShim => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -437,6 +465,39 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    /// Given a trait id, return the vtable struct reference for this trait.
+    pub fn get_vtable_struct_ref(
+        &mut self,
+        span: Span,
+        trait_id: &hax::DefId,
+    ) -> Result<Option<TypeDeclRef>, Error> {
+        let rid = trait_id.as_rust_def_id().unwrap();
+        // judge if it is dyn-compatible
+        if self.t_ctx.tcx.is_dyn_compatible(rid) {
+            // register the id and no enqueue it
+            let vtable_id = *self
+                .register_id_no_enqueue(
+                    span,
+                    TransItemSource {
+                        def_id: trait_id.clone(),
+                        kind: TransItemSourceKind::VTable,
+                    },
+                )
+                .unwrap()
+                .as_type()
+                .unwrap();
+            let mut args = self.outermost_binder().params.identity_args();
+            // Remove the `Self` type variable from the generic parameters
+            args.types.remove_and_shift_ids(TypeVarId::ZERO);
+            Ok(Some(TypeDeclRef {
+                id: TypeId::Adt(vtable_id),
+                generics: Box::new(args),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_decl(
         mut self,
@@ -455,12 +516,14 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
+        let vtable = self.get_vtable_struct_ref(span, &def.def_id)?;
+
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
             return Ok(TraitDecl {
                 def_id,
                 item_meta,
-                parent_clauses: mem::take(&mut self.parent_trait_clauses),
+                parent_clauses: into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses)),
                 generics: self.into_generics(),
                 type_clauses: Default::default(),
                 consts: Default::default(),
@@ -468,6 +531,7 @@ impl ItemTransCtx<'_, '_> {
                 types: Default::default(),
                 type_defaults: Default::default(),
                 methods: Default::default(),
+                vtable,
             });
         }
 
@@ -628,7 +692,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitDecl {
             def_id,
             item_meta,
-            parent_clauses: mem::take(&mut self.parent_trait_clauses),
+            parent_clauses: into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses)),
             generics: self.into_generics(),
             type_clauses,
             consts,
@@ -636,6 +700,7 @@ impl ItemTransCtx<'_, '_> {
             types,
             type_defaults,
             methods,
+            vtable,
         })
     }
 
@@ -663,7 +728,7 @@ impl ItemTransCtx<'_, '_> {
             // `translate_def_generics` registers the clauses as implied clauses, but we want them
             // as required clauses for the impl.
             assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-            let clauses = mem::take(&mut self.parent_trait_clauses);
+            let clauses = into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses));
             self.innermost_generics_mut().trait_clauses = clauses;
             let trait_id = self.register_trait_decl_id(span, def.def_id());
             let mut generics = self.the_only_binder().params.identity_args();

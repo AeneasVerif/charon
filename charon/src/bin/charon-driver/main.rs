@@ -21,6 +21,7 @@ extern crate rustc_middle;
 extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_target;
+extern crate rustc_trait_selection;
 
 #[macro_use]
 extern crate charon_lib;

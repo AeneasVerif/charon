@@ -1,25 +1,26 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     const CONST1 : usize
     const CONST2 : usize
     const CONST3 : usize
     fn method1 = test_crate::Trait::method1<Self>[Self]
     fn method2 = test_crate::Trait::method2<Self>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::CONST1<Self>() -> usize
@@ -145,7 +146,7 @@ fn test_crate::{impl Trait for ()}::method2()
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = core::marker::MetaSized<()>
     const CONST1 = {impl Trait for ()}::CONST1
     const CONST2 = {impl Trait for ()}::CONST2
     const CONST3 = {impl Trait for ()}::CONST3
@@ -186,7 +187,7 @@ fn {impl Trait for u8}::method2()
 
 // Full name: test_crate::{impl Trait for u8}
 impl Trait for u8 {
-    parent_clause0 = MetaSized<u8>
+    parent_clause0 = core::marker::MetaSized<u8>
     const CONST1 = test_crate::Trait::CONST1<u8>[{impl Trait for u8}]
     const CONST2 = {impl Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>[{impl Trait for u8}]

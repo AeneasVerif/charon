@@ -1,48 +1,49 @@
 # Final ULLBC before serialization:
 
-// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq<Rhs>
 }
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
-impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}
+impl core::cmp::PartialEq<bool> for bool {
+    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
 }
 
-pub fn core::cmp::impls::{impl PartialEq<bool> for bool}::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
 
 // Full name: core::cmp::impls::{impl Eq for bool}
 impl Eq for bool {
-    parent_clause0 = {impl PartialEq<bool> for bool}
+    parent_clause0 = {impl core::cmp::PartialEq<bool> for bool}
 }
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 fn test_crate::do_test::<bool>(@1: bool, @2: bool)
@@ -70,8 +71,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb2: {
-        drop[Drop<bool>] expected@2;
-        drop[Drop<bool>] init@1;
+        drop[core::ops::drop::Drop<bool>] expected@2;
+        drop[core::ops::drop::Drop<bool>] init@1;
         unwind_continue;
     }
 
@@ -81,8 +82,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@4);
         storage_dead(@3);
         @0 := ();
-        drop[Drop<bool>] expected@2;
-        drop[Drop<bool>] init@1;
+        drop[core::ops::drop::Drop<bool>] expected@2;
+        drop[core::ops::drop::Drop<bool>] init@1;
         @0 := ();
         return;
     }

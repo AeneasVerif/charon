@@ -1044,6 +1044,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitDeclRef {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<TypeDeclRef> {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.fmt_as_for(ctx))
+    }
+}
+
 impl Display for RawAttribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         write!(f, "{}", self.path)?;
@@ -1553,6 +1559,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
                 writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
             }
+            if let Some(vtb_ref) = &self.vtable {
+                writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
+            } else {
+                writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
+            }
             write!(f, "}}")?;
         }
         Ok(())
@@ -1775,6 +1786,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 };
                 write!(f, "{value}",)
             }
+            // To make sure this is not definable as ADT or so
+            // TyKind::ExistentialPlaceholder => write!(f, "_"),
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }
     }

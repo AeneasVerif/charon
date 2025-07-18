@@ -1,32 +1,32 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
-// Full name: test_crate::BoolTrait
-pub trait BoolTrait<Self>
+pub trait test_crate::BoolTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
     fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
+    vtable: test_crate::BoolTrait
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
-    [@TraitClause0]: BoolTrait<Self>,
+    [@TraitClause0]: test_crate::BoolTrait<Self>,
 
 // Full name: test_crate::BoolTrait::ret_true
 pub fn ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
-    [@TraitClause0]: BoolTrait<Self>,
+    [@TraitClause0]: test_crate::BoolTrait<Self>,
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
@@ -35,8 +35,8 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for bool}::get_bool
-pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+// Full name: test_crate::{impl test_crate::BoolTrait for bool}::get_bool
+pub fn {impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -45,7 +45,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
     return
 }
 
-pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -54,11 +54,11 @@ pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> 
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for bool}
-impl BoolTrait for bool {
-    parent_clause0 = MetaSized<bool>
-    fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
-    fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
+// Full name: test_crate::{impl test_crate::BoolTrait for bool}
+impl test_crate::BoolTrait for bool {
+    parent_clause0 = core::marker::MetaSized<bool>
+    fn get_bool<'_0> = {impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
+    fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
 }
 
 // Full name: test_crate::test_bool_trait
@@ -76,12 +76,12 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
+    @2 := {impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
-        @0 := test_crate::{impl BoolTrait for bool}::ret_true<'_>(move (@4))
+        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
     }
     else {

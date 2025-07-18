@@ -1,11 +1,27 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::{BaseState, HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
+
+/// A helper function to extract the trait ids from the predicates.
+fn take_preds_trait_ids(preds: &hax::GenericPredicates) -> Vec<hax::DefId> {
+    preds
+        .predicates
+        .iter()
+        .filter_map(|(clause, _)| match clause.kind.hax_skip_binder_ref() {
+            hax::ClauseKind::Trait(trait_predicate) => {
+                Some(trait_predicate.trait_ref.def_id.clone())
+            }
+            _ => None,
+        })
+        .collect()
+}
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     // Translate a region
@@ -213,9 +229,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
-
             hax::TyKind::Dynamic(self_ty, preds, region) => {
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
+                // enqueue to translate the vtable
+                let trait_ids = take_preds_trait_ids(preds);
+                assert!(
+                    trait_ids.len() == 1,
+                    "Expected exactly one trait in dynamic type, got: {trait_ids:?}"
+                );
+                let _ = self.register_vtable_as_type_decl_id(Span::dummy(), &trait_ids[0].clone());
+                // return
                 TyKind::DynTrait(pred)
             }
 

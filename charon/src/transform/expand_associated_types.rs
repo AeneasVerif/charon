@@ -1177,7 +1177,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
     }
     fn enter_item_kind(&mut self, kind: &mut ItemKind) {
         match kind {
-            ItemKind::TopLevel | ItemKind::Closure { .. } => {}
+            ItemKind::TopLevel | ItemKind::Closure { .. } | ItemKind::VTable { .. } => {}
             // Inside method declarations, the implicit `Self` clause is the first clause.
             ItemKind::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,

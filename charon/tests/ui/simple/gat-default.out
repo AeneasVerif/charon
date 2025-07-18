@@ -13,7 +13,105 @@ error: Item `test_crate::Collection` caused errors; ignoring.
 
 thread 'rustc' panicked at /rustc-dev/a2d45f73c70d9dec57140c9412f83586eda895f8/compiler/rustc_type_ir/src/binder.rs:764:9:
 type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: <rustc_type_ir::binder::ArgFolder<rustc_middle::ty::context::TyCtxt>>::type_param_out_of_range
+   3: rustc_type_ir::binder::ArgFolder<I>::ty_for_param
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_type_ir/src/binder.rs:742:26
+   4: <rustc_type_ir::binder::ArgFolder<I> as rustc_type_ir::fold::TypeFolder<I>>::fold_ty
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_type_ir/src/binder.rs:713:34
+   5: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::fold_with
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:373:16
+   6: <rustc_middle::ty::generic_args::GenericArg as rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt>>::fold_with
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_middle/src/ty/generic_args.rs:353:44
+   7: rustc_middle::ty::generic_args::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for &rustc_middle::ty::list::RawList<(),rustc_middle::ty::generic_args::GenericArg>>::fold_with
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_middle/src/ty/generic_args.rs:638:38
+   8: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeSuperFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::super_fold_with
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:439:53
+   9: <rustc_type_ir::binder::ArgFolder<I> as rustc_type_ir::fold::TypeFolder<I>>::fold_ty
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_type_ir/src/binder.rs:714:20
+  10: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::fold_with
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:373:16
+  11: rustc_type_ir::binder::EarlyBinder<I,T>::instantiate
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_type_ir/src/binder.rs:637:20
+  12: hax_frontend_exporter::types::new::full_def::translate_full_def_kind::{{closure}}
+             at /Users/ssyram/.cargo/git/checkouts/hax-c5ea2928c640208b/d30960b/frontend/exporter/src/types/new/full_def.rs:555:50
+  13: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:28
+  14: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:21
+  15: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:21
+  16: <core::slice::iter::Iter<T> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:255:27
+  17: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:19
+  18: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:19
+  19: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:19
+  20: core::iter::traits::iterator::Iterator::for_each
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:827:14
+  21: alloc::vec::Vec<T,A>::extend_trusted
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3666:26
+  22: <alloc::vec::Vec<T,A> as alloc::vec::spec_extend::SpecExtend<T,I>>::spec_extend
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_extend.rs:29:14
+  23: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:62:16
+  24: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter::SpecFromIter<T,I>>::from_iter
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:34:9
+  25: <alloc::vec::Vec<T> as core::iter::traits::collect::FromIterator<T>>::from_iter
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3525:9
+  26: core::iter::traits::iterator::Iterator::collect
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:2027:9
+  27: hax_frontend_exporter::types::new::full_def::translate_full_def_kind
+             at /Users/ssyram/.cargo/git/checkouts/hax-c5ea2928c640208b/d30960b/frontend/exporter/src/types/new/full_def.rs:576:26
+  28: hax_frontend_exporter::types::new::full_def::translate_full_def
+             at /Users/ssyram/.cargo/git/checkouts/hax-c5ea2928c640208b/d30960b/frontend/exporter/src/types/new/full_def.rs:56:20
+  29: hax_frontend_exporter::types::new::full_def::<impl hax_frontend_exporter::types::def_id::DefId>::full_def
+             at /Users/ssyram/.cargo/git/checkouts/hax-c5ea2928c640208b/d30960b/frontend/exporter/src/types/new/full_def.rs:151:28
+  30: charon_driver::translate::translate_ctx::TranslateCtx::hax_def::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:129:49
+  31: std::panicking::catch_unwind::do_call
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  32: ___rust_try
+  33: std::panicking::catch_unwind
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  34: std::panic::catch_unwind
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  35: charon_driver::translate::translate_ctx::TranslateCtx::hax_def
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:129:9
+  36: charon_driver::translate::translate_meta::<impl charon_driver::translate::translate_ctx::TranslateCtx>::path_elem_for_def
+             at ./src/bin/charon-driver/translate/translate_meta.rs:183:37
+  37: charon_driver::translate::translate_meta::<impl charon_driver::translate::translate_ctx::TranslateCtx>::def_id_to_name
+             at ./src/bin/charon-driver/translate/translate_meta.rs:301:39
+  38: charon_driver::translate::translate_meta::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_name
+             at ./src/bin/charon-driver/translate/translate_meta.rs:313:29
+  39: charon_driver::translate::translate_items::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item_aux
+             at ./src/bin/charon-driver/translate/translate_items.rs:49:25
+  40: charon_driver::translate::translate_items::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item::{{closure}}::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_items.rs:25:54
+  41: std::panicking::catch_unwind::do_call
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  42: ___rust_try
+  43: std::panicking::catch_unwind
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  44: std::panic::catch_unwind
+             at /Users/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  45: charon_driver::translate::translate_items::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_items.rs:25:17
+  46: charon_driver::translate::translate_ctx::TranslateCtx::with_def_id
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:154:19
+  47: charon_driver::translate::translate_items::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item
+             at ./src/bin/charon-driver/translate/translate_items.rs:19:14
+  48: charon_driver::translate::translate_crate::translate
+             at ./src/bin/charon-driver/translate/translate_crate.rs:742:17
+  49: <charon_driver::driver::CharonCallbacks as rustc_driver_impl::Callbacks>::after_expansion
+             at ./src/bin/charon-driver/driver.rs:157:29
+  50: rustc_interface::passes::create_and_enter_global_ctxt::<core::option::Option<rustc_interface::queries::Linker>, rustc_driver_impl::run_compiler::{closure#0}::{closure#2}>
+  51: rustc_interface::interface::run_compiler::<(), rustc_driver_impl::run_compiler::{closure#0}>::{closure#1}
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
 error: Hax panicked when translating `test_crate::{impl#0}`.
  --> tests/ui/simple/gat-default.rs:9:1
   |
