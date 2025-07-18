@@ -5,7 +5,7 @@ use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::Vector;
 use charon_lib::options::TranslateOptions;
-use hax_frontend_exporter::{self as hax, DefId, SInto};
+use hax_frontend_exporter::{self as hax, SInto};
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -124,14 +124,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
     }
 
-    pub(crate) fn get_lang_item(&self, item: rustc_hir::LangItem) -> DefId {
-        self.tcx
-            .lang_items()
-            .get(item)
-            .unwrap()
-            .sinto(&self.hax_state)
-    }
-
     pub(crate) fn with_def_id<F, T>(
         &mut self,
         def_id: &hax::DefId,
@@ -177,10 +169,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
         self.t_ctx.hax_def(def_id)
-    }
-
-    pub(crate) fn get_lang_item(&self, item: rustc_hir::LangItem) -> DefId {
-        self.t_ctx.get_lang_item(item)
     }
 }
 

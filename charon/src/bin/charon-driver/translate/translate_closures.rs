@@ -233,32 +233,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(impl_ref)
     }
 
-    /// Translate a trait reference to the chosen closure impl.
-    pub fn translate_closure_trait_ref(
-        &mut self,
-        span: Span,
-        args: &hax::ClosureArgs,
-        target_kind: ClosureKind,
-    ) -> Result<TraitDeclRef, Error> {
-        // TODO: how much can we ask hax for this?
-        let fn_trait = match target_kind {
-            ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
-            ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
-            ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
-        };
-        let trait_id = self.register_trait_decl_id(span, &fn_trait);
-
-        let state_ty = self.get_closure_state_ty(span, args)?;
-        // The input tuple type and output type of the signature.
-        let (inputs, _) = self.translate_closure_info(span, args)?.signature.erase();
-        let input_tuple = Ty::mk_tuple(inputs);
-
-        Ok(TraitDeclRef {
-            id: trait_id,
-            generics: Box::new(GenericArgs::new_types([state_ty, input_tuple].into())),
-        })
-    }
-
     pub fn get_closure_state_ty(
         &mut self,
         span: Span,
@@ -555,7 +529,14 @@ impl ItemTransCtx<'_, '_> {
         target_kind: ClosureKind,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let hax::FullDefKind::Closure { args, .. } = &def.kind else {
+        let hax::FullDefKind::Closure {
+            args,
+            fn_once_impl,
+            fn_mut_impl,
+            fn_impl,
+            ..
+        } = &def.kind
+        else {
             unreachable!()
         };
 
@@ -567,8 +548,15 @@ impl ItemTransCtx<'_, '_> {
         self.innermost_binder_mut()
             .push_params_from_binder(args.fn_sig.rebind(()))?;
 
+        // Hax gives us trait-related information for the impl we're building.
+        let vimpl = match target_kind {
+            ClosureKind::FnOnce => fn_once_impl,
+            ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
+            ClosureKind::Fn => fn_impl.as_ref().unwrap(),
+        };
+        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
+
         let impl_ref = self.translate_closure_impl_ref(span, args, target_kind)?;
-        let implemented_trait = self.translate_closure_trait_ref(span, args, target_kind)?;
         let kind = ItemKind::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
@@ -627,7 +615,7 @@ impl ItemTransCtx<'_, '_> {
             ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
             ClosureKind::Fn => fn_impl.as_ref().unwrap(),
         };
-        let implemented_trait = self.translate_trait_ref(span, &vimpl.trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let fn_trait = implemented_trait.id;
 
         let mut parent_trait_refs =
