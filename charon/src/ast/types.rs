@@ -110,9 +110,9 @@ pub enum TraitRefKind {
     /// the information we may need from one.
     BuiltinOrAuto {
         trait_decl_ref: PolyTraitDeclRef,
-        /// The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
-        /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
-        /// FnOnce`.
+        /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
+        /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
+        /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
         parent_trait_refs: Vector<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
         types: Vec<(TraitItemName, Ty, Vector<TraitClauseId, TraitRef>)>,

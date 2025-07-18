@@ -470,9 +470,10 @@ and trait_instance_id =
 
           Fields:
           - [trait_decl_ref]
-          - [parent_trait_refs]: The [ImplExpr]s required to satisfy the implied
-            predicates on the trait declaration. E.g. since [FnMut: FnOnce], a
-            built-in [T: FnMut] impl would have an [ImplExpr] for [T: FnOnce].
+          - [parent_trait_refs]: Exactly like the same field on [TraitImpl]: the
+            [TraitRef]s required to satisfy the implied predicates on the trait
+            declaration. E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl
+            would have a [TraitRef] for [T: FnOnce].
           - [types]: The values of the associated types for this trait. *)
   | Dyn of trait_decl_ref region_binder
       (** The automatically-generated implementation for [dyn Trait]. *)
