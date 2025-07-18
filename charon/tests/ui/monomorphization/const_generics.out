@@ -1,24 +1,24 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
+// Full name: core::marker::MetaSized::<i32>
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait MetaSized::<i32>
 
-// Full name: core::marker::Sized
+// Full name: core::marker::Sized::<i32>
 #[lang_item("sized")]
-pub trait Sized<Self>
+pub trait Sized::<i32>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-}
-
-// Full name: test_crate::Foo::<bool>
-struct Foo::<bool> {
-  value: bool,
+    parent_clause0 : [@TraitClause0]: MetaSized::<i32>
 }
 
 // Full name: test_crate::Foo::<i32>
 struct Foo::<i32> {
   value: i32,
+}
+
+// Full name: test_crate::Foo::<bool>
+struct Foo::<bool> {
+  value: bool,
 }
 
 // Full name: test_crate::FooInt
@@ -29,6 +29,9 @@ fn FooInt() -> Foo::<i32>
     @0 := Foo::<i32> { value: const (0 : i32) }
     return
 }
+
+// Full name: test_crate::FooInt
+static FooInt: Foo::<i32> = FooInt()
 
 // Full name: test_crate::FooBool
 fn FooBool() -> Foo::<bool>

@@ -108,6 +108,9 @@ where
 
     /// Remove the value from this slot, shifting other ids as needed.
     pub fn remove_and_shift_ids(&mut self, id: I) -> Option<T> {
+        if id.index() >= self.slot_count() {
+            return None;
+        }
         if self.vector[id].is_some() {
             self.elem_count -= 1;
         }

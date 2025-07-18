@@ -293,7 +293,8 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     let @7: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @8: &'_ (Slice<Argument<'_>>); // anonymous local
     let @9: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @10: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @10: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @11: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -303,12 +304,15 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
     storage_live(@6)
     @6 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@1))
     switch move (@6) {
         1 : u32 => {
         },
         _ => {
+            @10 := []
+            @9 := &@10
             storage_dead(@6)
             storage_live(@3)
             storage_live(@5)
@@ -317,10 +321,9 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
             storage_live(@7)
             @7 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@4))
             storage_live(@8)
-            @9 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
             @8 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@9))
-            @10 := Option::None {  }
-            @3 := Arguments { pieces: move (@7), fmt: move (@10), args: move (@8) }
+            @11 := Option::None {  }
+            @3 := Arguments { pieces: move (@7), fmt: move (@11), args: move (@8) }
             storage_dead(@8)
             storage_dead(@7)
             @2 := panic_nounwind_fmt<'_>(move (@3), const (false))
@@ -526,10 +529,13 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     let @17: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @18: &'_ (Slice<Argument<'_>>); // anonymous local
     let @19: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @20: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @21: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @22: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @23: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @20: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @21: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @22: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @23: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @24: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @25: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @26: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
     storage_live(pieces@7)
@@ -542,6 +548,9 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@21)
     storage_live(@22)
     storage_live(@23)
+    storage_live(@24)
+    storage_live(@25)
+    storage_live(@26)
     storage_live(@4)
     storage_live(@12)
     storage_live(@14)
@@ -550,16 +559,18 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
         1 : u32 => {
         },
         _ => {
+            @20 := [const ("is_aligned_to: align is not a power-of-two")]
+            @19 := &@20
+            @22 := []
+            @21 := &@22
             storage_dead(@14)
             storage_live(@10)
             storage_live(@15)
-            @19 := core::ptr::const_ptr::{*const T}::is_aligned_to::{promoted_const}<()>
             @15 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@19))
             storage_live(@16)
-            @20 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-            @16 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@20))
-            @21 := Option::None {  }
-            @10 := Arguments { pieces: move (@15), fmt: move (@21), args: move (@16) }
+            @16 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@21))
+            @25 := Option::None {  }
+            @10 := Arguments { pieces: move (@15), fmt: move (@25), args: move (@16) }
             storage_dead(@16)
             storage_dead(@15)
             panic(core::panicking::panic_fmt)
@@ -601,6 +612,8 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
             storage_dead(@12)
         },
     }
+    @24 := []
+    @23 := &@24
     storage_live(@6)
     storage_live(@8)
     @8 := [const ("unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -608,10 +621,9 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@17)
     @17 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@7))
     storage_live(@18)
-    @22 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-    @18 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@22))
-    @23 := Option::None {  }
-    @6 := Arguments { pieces: move (@17), fmt: move (@23), args: move (@18) }
+    @18 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@23))
+    @26 := Option::None {  }
+    @6 := Arguments { pieces: move (@17), fmt: move (@26), args: move (@18) }
     storage_dead(@18)
     storage_dead(@17)
     @5 := panic_nounwind_fmt<'_>(move (@6), const (false))
@@ -742,17 +754,20 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
     let @2: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @3: &'_ (Slice<Argument<'_>>); // anonymous local
     let @4: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @5: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @5: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @6: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
+    storage_live(@6)
+    @5 := []
+    @4 := &@5
     storage_live(@2)
     @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
     storage_live(@3)
-    @4 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, const N : usize>
     @3 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@4))
-    @5 := Option::None {  }
-    @0 := Arguments { pieces: move (@2), fmt: move (@5), args: move (@3) }
+    @6 := Option::None {  }
+    @0 := Arguments { pieces: move (@2), fmt: move (@6), args: move (@3) }
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -923,12 +938,15 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     let @36: Array<&'_ (Str), 1 : usize>; // anonymous local
     let @37: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @38: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @39: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @40: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @41: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @42: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @39: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @40: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @41: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @42: Array<&'_ (Str), 1 : usize>; // anonymous local
     let @43: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @44: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @44: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @45: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @46: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @47: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@11)
     storage_live(ptr@12)
@@ -957,6 +975,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_live(@42)
     storage_live(@43)
     storage_live(@44)
+    storage_live(@45)
+    storage_live(@46)
+    storage_live(@47)
     storage_live(@6)
     storage_live(zero_size@7)
     switch copy (count@5) {
@@ -986,8 +1007,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     @24 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@35))
                     storage_live(@25)
                     @25 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@37))
-                    @39 := Option::None {  }
-                    @19 := Arguments { pieces: move (@24), fmt: move (@39), args: move (@25) }
+                    @45 := Option::None {  }
+                    @19 := Arguments { pieces: move (@24), fmt: move (@45), args: move (@25) }
                     storage_dead(@25)
                     storage_dead(@24)
                     panic(core::panicking::panic_fmt)
@@ -1016,16 +1037,18 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             1 : u32 => {
                             },
                             _ => {
+                                @42 := [const ("is_aligned_to: align is not a power-of-two")]
+                                @41 := &@42
+                                @44 := []
+                                @43 := &@44
                                 storage_dead(@30)
                                 storage_live(@27)
                                 storage_live(@31)
-                                @42 := core::ptr::const_ptr::{*const T}::is_aligned_to::{promoted_const}<()>
-                                @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@42))
+                                @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@41))
                                 storage_live(@32)
-                                @43 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
                                 @32 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@43))
-                                @44 := Option::None {  }
-                                @27 := Arguments { pieces: move (@31), fmt: move (@44), args: move (@32) }
+                                @47 := Option::None {  }
+                                @27 := Arguments { pieces: move (@31), fmt: move (@47), args: move (@32) }
                                 storage_dead(@32)
                                 storage_dead(@31)
                                 panic(core::panicking::panic_fmt)
@@ -1051,6 +1074,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         return
                                     }
                                     else {
+                                        @40 := []
+                                        @39 := &@40
                                         storage_live(@15)
                                         storage_live(@17)
                                         @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1058,10 +1083,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_live(@33)
                                         @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                         storage_live(@34)
-                                        @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                        @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                        @41 := Option::None {  }
-                                        @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                        @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                        @46 := Option::None {  }
+                                        @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                         storage_dead(@34)
                                         storage_dead(@33)
                                         @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1085,6 +1109,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             return
                                         }
                                         else {
+                                            @40 := []
+                                            @39 := &@40
                                             storage_live(@15)
                                             storage_live(@17)
                                             @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1092,10 +1118,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             storage_live(@33)
                                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                             storage_live(@34)
-                                            @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                            @41 := Option::None {  }
-                                            @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                            @46 := Option::None {  }
+                                            @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                             storage_dead(@34)
                                             storage_dead(@33)
                                             @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1106,6 +1131,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_dead(@11)
                                         storage_dead(@8)
                                         storage_dead(zero_size@7)
+                                        @40 := []
+                                        @39 := &@40
                                         storage_live(@15)
                                         storage_live(@17)
                                         @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1113,10 +1140,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_live(@33)
                                         @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                         storage_live(@34)
-                                        @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                        @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                        @41 := Option::None {  }
-                                        @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                        @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                        @46 := Option::None {  }
+                                        @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                         storage_dead(@34)
                                         storage_dead(@33)
                                         @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1130,6 +1156,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 storage_dead(@11)
                                 storage_dead(@8)
                                 storage_dead(zero_size@7)
+                                @40 := []
+                                @39 := &@40
                                 storage_live(@15)
                                 storage_live(@17)
                                 @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1137,10 +1165,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 storage_live(@33)
                                 @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                 storage_live(@34)
-                                @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                @41 := Option::None {  }
-                                @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                @46 := Option::None {  }
+                                @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                 storage_dead(@34)
                                 storage_dead(@33)
                                 @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1167,16 +1194,18 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 1 : u32 => {
                                 },
                                 _ => {
+                                    @42 := [const ("is_aligned_to: align is not a power-of-two")]
+                                    @41 := &@42
+                                    @44 := []
+                                    @43 := &@44
                                     storage_dead(@30)
                                     storage_live(@27)
                                     storage_live(@31)
-                                    @42 := core::ptr::const_ptr::{*const T}::is_aligned_to::{promoted_const}<()>
-                                    @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@42))
+                                    @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@41))
                                     storage_live(@32)
-                                    @43 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
                                     @32 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@43))
-                                    @44 := Option::None {  }
-                                    @27 := Arguments { pieces: move (@31), fmt: move (@44), args: move (@32) }
+                                    @47 := Option::None {  }
+                                    @27 := Arguments { pieces: move (@31), fmt: move (@47), args: move (@32) }
                                     storage_dead(@32)
                                     storage_dead(@31)
                                     panic(core::panicking::panic_fmt)
@@ -1202,6 +1231,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             return
                                         }
                                         else {
+                                            @40 := []
+                                            @39 := &@40
                                             storage_live(@15)
                                             storage_live(@17)
                                             @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1209,10 +1240,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             storage_live(@33)
                                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                             storage_live(@34)
-                                            @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                            @41 := Option::None {  }
-                                            @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                            @46 := Option::None {  }
+                                            @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                             storage_dead(@34)
                                             storage_dead(@33)
                                             @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1236,6 +1266,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                                 return
                                             }
                                             else {
+                                                @40 := []
+                                                @39 := &@40
                                                 storage_live(@15)
                                                 storage_live(@17)
                                                 @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1243,10 +1275,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                                 storage_live(@33)
                                                 @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                                 storage_live(@34)
-                                                @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                                @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                                @41 := Option::None {  }
-                                                @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                                @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                                @46 := Option::None {  }
+                                                @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                                 storage_dead(@34)
                                                 storage_dead(@33)
                                                 @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1257,6 +1288,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             storage_dead(@11)
                                             storage_dead(@8)
                                             storage_dead(zero_size@7)
+                                            @40 := []
+                                            @39 := &@40
                                             storage_live(@15)
                                             storage_live(@17)
                                             @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1264,10 +1297,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             storage_live(@33)
                                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                             storage_live(@34)
-                                            @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                            @41 := Option::None {  }
-                                            @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                            @46 := Option::None {  }
+                                            @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                             storage_dead(@34)
                                             storage_dead(@33)
                                             @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1281,6 +1313,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     storage_dead(@11)
                                     storage_dead(@8)
                                     storage_dead(zero_size@7)
+                                    @40 := []
+                                    @39 := &@40
                                     storage_live(@15)
                                     storage_live(@17)
                                     @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1288,10 +1322,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     storage_live(@33)
                                     @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                     storage_live(@34)
-                                    @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                                    @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                                    @41 := Option::None {  }
-                                    @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                                    @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                    @46 := Option::None {  }
+                                    @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                     storage_dead(@34)
                                     storage_dead(@33)
                                     @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1304,6 +1337,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             storage_dead(@11)
                             storage_dead(@8)
                             storage_dead(zero_size@7)
+                            @40 := []
+                            @39 := &@40
                             storage_live(@15)
                             storage_live(@17)
                             @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1311,10 +1346,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             storage_live(@33)
                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                             storage_live(@34)
-                            @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                            @41 := Option::None {  }
-                            @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                            @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                            @46 := Option::None {  }
+                            @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                             storage_dead(@34)
                             storage_dead(@33)
                             @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1329,6 +1363,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     storage_dead(@11)
                     storage_dead(@8)
                     storage_dead(zero_size@7)
+                    @40 := []
+                    @39 := &@40
                     storage_live(@15)
                     storage_live(@17)
                     @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1336,10 +1372,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     storage_live(@33)
                     @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                     storage_live(@34)
-                    @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-                    @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-                    @41 := Option::None {  }
-                    @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+                    @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                    @46 := Option::None {  }
+                    @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                     storage_dead(@34)
                     storage_dead(@33)
                     @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1370,8 +1405,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             @24 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@35))
             storage_live(@25)
             @25 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@37))
-            @39 := Option::None {  }
-            @19 := Arguments { pieces: move (@24), fmt: move (@39), args: move (@25) }
+            @45 := Option::None {  }
+            @19 := Arguments { pieces: move (@24), fmt: move (@45), args: move (@25) }
             storage_dead(@25)
             storage_dead(@24)
             panic(core::panicking::panic_fmt)
@@ -1399,16 +1434,18 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                 1 : u32 => {
                 },
                 _ => {
+                    @42 := [const ("is_aligned_to: align is not a power-of-two")]
+                    @41 := &@42
+                    @44 := []
+                    @43 := &@44
                     storage_dead(@30)
                     storage_live(@27)
                     storage_live(@31)
-                    @42 := core::ptr::const_ptr::{*const T}::is_aligned_to::{promoted_const}<()>
-                    @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@42))
+                    @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@41))
                     storage_live(@32)
-                    @43 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
                     @32 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@43))
-                    @44 := Option::None {  }
-                    @27 := Arguments { pieces: move (@31), fmt: move (@44), args: move (@32) }
+                    @47 := Option::None {  }
+                    @27 := Arguments { pieces: move (@31), fmt: move (@47), args: move (@32) }
                     storage_dead(@32)
                     storage_dead(@31)
                     panic(core::panicking::panic_fmt)
@@ -1484,6 +1521,8 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             storage_dead(zero_size@7)
         },
     }
+    @40 := []
+    @39 := &@40
     storage_live(@15)
     storage_live(@17)
     @17 := [const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -1491,10 +1530,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_live(@33)
     @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
     storage_live(@34)
-    @40 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
-    @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@40))
-    @41 := Option::None {  }
-    @15 := Arguments { pieces: move (@33), fmt: move (@41), args: move (@34) }
+    @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+    @46 := Option::None {  }
+    @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
     storage_dead(@34)
     storage_dead(@33)
     @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
@@ -1962,12 +2000,14 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     let @7: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @8: &'_ (Slice<Argument<'_>>); // anonymous local
     let @9: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @10: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @10: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @11: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@2)
     storage_live(pieces@4)
     storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
     storage_live(@6)
     @6 := transmute<*mut (), usize>(copy (ptr@1))
     switch move (@6) {
@@ -1979,6 +2019,8 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
             return
         },
     }
+    @10 := []
+    @9 := &@10
     storage_dead(@6)
     storage_live(@3)
     storage_live(@5)
@@ -1987,10 +2029,9 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     storage_live(@7)
     @7 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@4))
     storage_live(@8)
-    @9 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
     @8 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@9))
-    @10 := Option::None {  }
-    @3 := Arguments { pieces: move (@7), fmt: move (@10), args: move (@8) }
+    @11 := Option::None {  }
+    @3 := Arguments { pieces: move (@7), fmt: move (@11), args: move (@8) }
     storage_dead(@8)
     storage_dead(@7)
     @2 := panic_nounwind_fmt<'_>(move (@3), const (false))
@@ -2007,7 +2048,8 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     let @6: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @7: &'_ (Slice<Argument<'_>>); // anonymous local
     let @8: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @9: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @9: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @10: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -2017,9 +2059,12 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
+    storage_live(@10)
     if copy (cond@1) {
     }
     else {
+        @9 := []
+        @8 := &@9
         storage_live(@3)
         storage_live(@5)
         @5 := [const ("unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -2027,10 +2072,9 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
         storage_live(@6)
         @6 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@4))
         storage_live(@7)
-        @8 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
         @7 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@8))
-        @9 := Option::None {  }
-        @3 := Arguments { pieces: move (@6), fmt: move (@9), args: move (@7) }
+        @10 := Option::None {  }
+        @3 := Arguments { pieces: move (@6), fmt: move (@10), args: move (@7) }
         storage_dead(@7)
         storage_dead(@6)
         @2 := panic_nounwind_fmt<'_>(move (@3), const (false))
@@ -2052,7 +2096,8 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     let @8: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @9: &'_ (Slice<Argument<'_>>); // anonymous local
     let @10: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @11: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @11: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @12: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
@@ -2062,11 +2107,14 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
+    storage_live(@12)
     storage_live(@3)
     @3 := is_size_align_valid(move (size@1), move (align@2))
     if move (@3) {
     }
     else {
+        @11 := []
+        @10 := &@11
         storage_live(@5)
         storage_live(@7)
         @7 := [const ("unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -2074,10 +2122,9 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
         storage_live(@8)
         @8 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@6))
         storage_live(@9)
-        @10 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
         @9 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@10))
-        @11 := Option::None {  }
-        @5 := Arguments { pieces: move (@8), fmt: move (@11), args: move (@9) }
+        @12 := Option::None {  }
+        @5 := Arguments { pieces: move (@8), fmt: move (@12), args: move (@9) }
         storage_dead(@9)
         storage_dead(@8)
         @4 := panic_nounwind_fmt<'_>(move (@5), const (false))

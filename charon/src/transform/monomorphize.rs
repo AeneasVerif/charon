@@ -359,7 +359,7 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Check the option which instructs to ignore this pass
-        if !ctx.options.monomorphize {
+        if !ctx.options.monomorphize_as_pass {
             return;
         }
 
@@ -519,18 +519,14 @@ impl TransformPass for Transform {
                 if id != &new_mono {
                     trace!(" - From {:?}", ctx.translated.get_item(id.clone()));
                     trace!(" - To {:?}", ctx.translated.get_item(new_mono.clone()));
-                    let item = ctx.translated.get_item(new_mono).unwrap();
-                    let item_name = item.item_meta().name.clone();
-                    if let Some(short_name) = ctx.translated.short_names.get(id) {
-                        let mut short_name = short_name.clone();
-                        // Add the `Monomorphized` path element.
-                        short_name.name.push(item_name.name.last().unwrap().clone());
-                        ctx.translated.short_names.insert(new_mono, short_name);
-                    }
-                    ctx.translated.item_names.insert(new_mono, item_name);
                 }
                 *mono = OptionHint::Some(new_mono);
                 data.worklist.push(new_mono);
+
+                let item = ctx.translated.get_item(new_mono).unwrap();
+                ctx.translated
+                    .item_names
+                    .insert(new_mono, item.item_meta().name.clone());
             }
 
             // 3. Substitute all generics with the monomorphized versions

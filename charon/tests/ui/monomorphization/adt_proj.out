@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
+// Full name: core::marker::MetaSized::<u32>
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait MetaSized::<u32>
 
-// Full name: core::marker::Sized
+// Full name: core::marker::Sized::<u32>
 #[lang_item("sized")]
-pub trait Sized<Self>
+pub trait Sized::<u32>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized::<u32>
 }
 
 // Full name: core::result::Result::<u32, u32>

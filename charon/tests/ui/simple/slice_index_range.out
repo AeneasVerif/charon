@@ -558,13 +558,15 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     let @10: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @11: &'_ (Slice<Argument<'_>>); // anonymous local
     let @12: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @13: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @13: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @14: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
     storage_live(@6)
     storage_live(pieces@8)
     storage_live(@12)
     storage_live(@13)
+    storage_live(@14)
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -581,6 +583,8 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     }
     else {
     }
+    @13 := []
+    @12 := &@13
     storage_live(@7)
     storage_live(@9)
     @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -588,10 +592,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
-    @12 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
-    @13 := Option::None {  }
-    @7 := Arguments { pieces: move (@10), fmt: move (@13), args: move (@11) }
+    @14 := Option::None {  }
+    @7 := Arguments { pieces: move (@10), fmt: move (@14), args: move (@11) }
     storage_dead(@11)
     storage_dead(@10)
     @6 := panic_nounwind_fmt<'_>(move (@7), const (false))
@@ -670,13 +673,15 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     let @10: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @11: &'_ (Slice<Argument<'_>>); // anonymous local
     let @12: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @13: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @13: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @14: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
     storage_live(@6)
     storage_live(pieces@8)
     storage_live(@12)
     storage_live(@13)
+    storage_live(@14)
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -693,6 +698,8 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     }
     else {
     }
+    @13 := []
+    @12 := &@13
     storage_live(@7)
     storage_live(@9)
     @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
@@ -700,10 +707,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
-    @12 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
-    @13 := Option::None {  }
-    @7 := Arguments { pieces: move (@10), fmt: move (@13), args: move (@11) }
+    @14 := Option::None {  }
+    @7 := Arguments { pieces: move (@10), fmt: move (@14), args: move (@11) }
     storage_dead(@11)
     storage_dead(@10)
     @6 := panic_nounwind_fmt<'_>(move (@7), const (false))

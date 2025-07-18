@@ -1,49 +1,66 @@
 # Final ULLBC before serialization:
 
-// Full name: core::cmp::PartialEq
+// Full name: core::cmp::PartialEq::<bool, bool>
 #[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
+pub trait PartialEq::<bool, bool>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne::<bool, bool><'_0_0, '_0_1>
 }
 
-// Full name: core::cmp::Eq
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
+#[lang_item("cmp_partialeq_ne")]
+pub fn core::cmp::PartialEq::ne::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
+// Full name: core::cmp::Eq::<bool>
 #[lang_item("Eq")]
-pub trait Eq<Self>
+pub trait Eq::<bool>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: PartialEq::<bool, bool>
+    fn assert_receiver_is_total_eq<'_0> = assert_receiver_is_total_eq::<bool><'_0_0>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
-impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::Eq::assert_receiver_is_total_eq::<bool>
+pub fn assert_receiver_is_total_eq::<bool><'_0>(@1: &'_0 (bool))
+
+// Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
+pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
+// Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
+impl PartialEq::<bool, bool> {
+    fn eq<'_0, '_1> = {impl PartialEq::<bool, bool>}::eq<'_0_0, '_0_1>
 }
 
-pub fn core::cmp::impls::{impl PartialEq<bool> for bool}::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
+pub fn core::cmp::impls::{impl Eq::<bool>}::<bool><'_0>(@1: &'_0 (bool))
 
-// Full name: core::cmp::impls::{impl Eq for bool}
-impl Eq for bool {
-    parent_clause0 = {impl PartialEq<bool> for bool}
+// Full name: core::cmp::impls::{impl Eq::<bool>}
+impl Eq::<bool> {
+    parent_clause0 = {impl PartialEq::<bool, bool>}
+    fn assert_receiver_is_total_eq<'_0> = core::cmp::impls::{impl Eq::<bool>}::<bool><'_0_0>
 }
 
-// Full name: core::marker::MetaSized
+// Full name: core::marker::MetaSized::<bool>
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait MetaSized::<bool>
 
-// Full name: core::marker::Sized
+// Full name: core::marker::Sized::<bool>
 #[lang_item("sized")]
-pub trait Sized<Self>
+pub trait Sized::<bool>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
 }
 
-// Full name: core::ops::drop::Drop
+// Full name: core::ops::drop::Drop::<bool>
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait Drop::<bool>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    fn drop<'_0> = drop::<bool><'_0_0>
 }
+
+// Full name: core::ops::drop::Drop::drop::<bool>
+pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))
 
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(@1: bool, @2: bool)
@@ -63,7 +80,7 @@ fn do_test::<bool>(@1: bool, @2: bool)
         @5 := &expected@2;
         storage_live(@6);
         @6 := &init@1;
-        @4 := {impl Eq for bool}::parent_clause0::eq(move (@5), move (@6)) -> bb1 (unwind: bb2);
+        @4 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -71,8 +88,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb2: {
-        drop[Drop<bool>] expected@2;
-        drop[Drop<bool>] init@1;
+        drop[Drop::<bool>] expected@2;
+        drop[Drop::<bool>] init@1;
         unwind_continue;
     }
 
@@ -82,8 +99,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@4);
         storage_dead(@3);
         @0 := ();
-        drop[Drop<bool>] expected@2;
-        drop[Drop<bool>] init@1;
+        drop[Drop::<bool>] expected@2;
+        drop[Drop::<bool>] init@1;
         @0 := ();
         return;
     }

@@ -96,6 +96,7 @@
           # To run `cargo outdated` and `cargo udeps`
           LD_LIBRARY_PATH =
             pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib pkgs.openssl pkgs.curl pkgs.zlib ];
+          OCAMLRUNPARAM = "b"; # Get backtrace on ocaml exception
 
           packages = [
             pkgs.ocamlPackages.ocaml

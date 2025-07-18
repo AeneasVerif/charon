@@ -18,7 +18,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use hax_frontend_exporter::{self as hax, SInto};
+use hax_frontend_exporter::{self as hax, BaseState, SInto};
 use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_middle::ty::TyCtxt;
@@ -30,8 +30,16 @@ use std::path::PathBuf;
 /// `FunDecl` one (for its initializer function).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TransItemSource {
-    pub def_id: hax::DefId,
+    pub item: RustcItem,
     pub kind: TransItemSourceKind,
+}
+
+/// Refers to a rustc item. Can be either the polymorphic version of the item, or a
+/// monomorphization of it.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum RustcItem {
+    Poly(hax::DefId),
+    Mono(hax::ItemRef),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
@@ -58,27 +66,37 @@ pub enum TransItemSourceKind {
 }
 
 impl TransItemSource {
-    /// Refers to the given item. Depending on `--monomorphize`, this will eventually choose
-    /// between the monomorphic and polymorphic versions of the item.
-    // TODO(mono): store args in `TransItemSource`.
-    pub fn from_item(item: &hax::ItemRef, kind: TransItemSourceKind) -> Self {
-        Self {
-            def_id: item.def_id.clone(),
-            kind,
+    pub fn new(item: RustcItem, kind: TransItemSourceKind) -> Self {
+        if let RustcItem::Mono(item) = &item {
+            if item.has_param {
+                panic!("Item is not monomorphic: {item:?}")
+            }
+        }
+        Self { item, kind }
+    }
+
+    /// Refers to the given item. Depending on `monomorphize`, this chooses between the monomorphic
+    /// and polymorphic versions of the item.
+    pub fn from_item(item: &hax::ItemRef, kind: TransItemSourceKind, monomorphize: bool) -> Self {
+        if monomorphize {
+            Self::monomorphic(item, kind)
+        } else {
+            Self::polymorphic(&item.def_id, kind)
         }
     }
 
-    /// Refers to the polymorphic version of this item, regardless of whether charon is in
-    /// `--monomorphize` mode or not. Should be used with care; prefer `from_item`.
+    /// Refers to the polymorphic version of this item.
     pub fn polymorphic(def_id: &hax::DefId, kind: TransItemSourceKind) -> Self {
-        Self {
-            def_id: def_id.clone(),
-            kind,
-        }
+        Self::new(RustcItem::Poly(def_id.clone()), kind)
     }
 
-    pub fn as_def_id(&self) -> &hax::DefId {
-        &self.def_id
+    /// Refers to the monomorphic version of this item.
+    pub fn monomorphic(item: &hax::ItemRef, kind: TransItemSourceKind) -> Self {
+        Self::new(RustcItem::Mono(item.clone()), kind)
+    }
+
+    pub fn def_id(&self) -> &hax::DefId {
+        self.item.def_id()
     }
 
     /// Keep the same def_id but change the kind.
@@ -112,7 +130,16 @@ impl TransItemSource {
 
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord + '_ {
-        (self.def_id.index, &self.kind)
+        (self.def_id().index, &self.kind)
+    }
+}
+
+impl RustcItem {
+    pub fn def_id(&self) -> &hax::DefId {
+        match self {
+            RustcItem::Poly(def_id) => def_id,
+            RustcItem::Mono(item_ref) => &item_ref.def_id,
+        }
     }
 }
 
@@ -175,14 +202,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Add this item to the queue of items to translate. Each translated item will then
     /// recursively register the items it refers to. We call this on the crate root and end up
     /// exploring the whole crate.
-    /// TODO(mono): In monomorphic mode, we skip items with non-trivial generics here.
     #[tracing::instrument(skip(self))]
-    pub fn enqueue_item(&mut self, def_id: &hax::DefId) {
-        if let Some(kind) = self.base_kind_for_item(def_id) {
-            // TODO(mono): In monomorphic mode, skip items with non-trivial generics
-            let item_src = TransItemSource::polymorphic(def_id, kind);
-            let _: Option<AnyTransId> = self.register_and_enqueue(&None, item_src);
-        }
+    pub fn enqueue_module_item(&mut self, def_id: &hax::DefId) {
+        let Some(kind) = self.base_kind_for_item(def_id) else {
+            return;
+        };
+        let item_src = if self.options.monomorphize_with_hax
+            && let Ok(def) = self.poly_hax_def(def_id)
+            && !def.has_any_generics()
+        {
+            // Monomorphize this item and the items it depends on.
+            TransItemSource::monomorphic(def.this(), kind)
+        } else {
+            TransItemSource::polymorphic(def_id, kind)
+        };
+        let _: Option<AnyTransId> = self.register_and_enqueue(&None, item_src);
     }
 
     pub(crate) fn register_id_no_enqueue<T: TryFrom<AnyTransId>>(
@@ -210,7 +244,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 self.id_map.insert(src.clone(), trans_id);
                 self.reverse_id_map.insert(trans_id, src.clone());
                 // Store the name early so the name matcher can identify paths.
-                if let Ok(name) = self.def_id_to_name(src.as_def_id()) {
+                if let Ok(name) = self.translate_name(src) {
                     self.translated.item_names.insert(trans_id, name);
                 }
                 trans_id
@@ -218,7 +252,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         };
         self.errors
             .borrow_mut()
-            .register_dep_source(dep_src, item_id, src.as_def_id().is_local);
+            .register_dep_source(dep_src, item_id, src.def_id().is_local);
         item_id.try_into().ok()
     }
 
@@ -247,7 +281,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
-            span: self.item_src.as_def_id().is_local.then_some(span),
+            span: self.item_src.def_id().is_local.then_some(span),
         })
     }
 
@@ -270,19 +304,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_id_no_enqueue(&dep_src, src).unwrap()
     }
 
-    /// Register this id and enqueue it for translation.
-    // TODO(mono): This function is problematic for monomorphization. Prefer `register_item` if at
-    // all possible.
-    pub(crate) fn register_and_enqueue_poly<T: TryFrom<AnyTransId>>(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-        kind: TransItemSourceKind,
-    ) -> T {
-        let item_src = TransItemSource::polymorphic(def_id, kind);
-        self.register_and_enqueue(span, item_src)
-    }
-
     /// Register this item and enqueue it for translation.
     pub(crate) fn register_item<T: TryFrom<AnyTransId>>(
         &mut self,
@@ -290,16 +311,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> T {
-        self.register_and_enqueue(span, TransItemSource::from_item(item, kind))
+        let item = if self.monomorphize() && item.has_param {
+            let state = self
+                .t_ctx
+                .hax_state
+                .with_owner_id(self.item_src.def_id().underlying_rust_def_id());
+            item.erase(&state)
+        } else {
+            item.clone()
+        };
+        self.register_and_enqueue(
+            span,
+            TransItemSource::from_item(&item, kind, self.monomorphize()),
+        )
     }
 
-    /// Translate the generics for this item.
+    /// Translate the generics for this item. In `--monomorphize` mode, returns empty generics.
     pub(crate) fn translate_item_generics(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<GenericArgs, Error> {
-        self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
+        if self.monomorphize() {
+            Ok(GenericArgs::empty())
+        } else {
+            self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
+        }
     }
 
     /// Translate a type def id
@@ -308,7 +345,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TypeId, Error> {
-        Ok(match self.recognize_builtin_type(&item.def_id)? {
+        Ok(match self.recognize_builtin_type(item)? {
             Some(id) => TypeId::Builtin(id),
             None => TypeId::Adt(self.register_item(span, item, TransItemSourceKind::Type)),
         })
@@ -348,7 +385,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
     ) -> Result<RegionBinder<FnPtr>, Error> {
         let fun_id = self.translate_fun_id(span, item)?;
-        let late_bound = match self.poly_hax_def(&item.def_id)?.kind() {
+        let late_bound = match self.hax_def(item)?.kind() {
             hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
                 Some(sig.as_ref().rebind(()))
             }
@@ -473,7 +510,7 @@ pub fn translate<'tcx, 'ctx>(
 
     if options.start_from.is_empty() {
         // Recursively register all the items in the crate, starting from the crate root.
-        ctx.enqueue_item(&crate_def_id);
+        ctx.enqueue_module_item(&crate_def_id);
     } else {
         // Start translating from the selected items.
         for path in options.start_from.iter() {
@@ -483,7 +520,7 @@ pub fn translate<'tcx, 'ctx>(
                 Ok(resolved) => {
                     for def_id in resolved {
                         let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                        ctx.enqueue_item(&def_id);
+                        ctx.enqueue_module_item(&def_id);
                     }
                 }
                 Err(path) => {

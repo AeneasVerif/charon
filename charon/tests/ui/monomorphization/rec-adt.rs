@@ -1,4 +1,5 @@
 //@ charon-args=--monomorphize
+//@ charon-args=--start-from=crate::main
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 

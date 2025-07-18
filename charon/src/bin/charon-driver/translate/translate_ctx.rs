@@ -1,5 +1,5 @@
 //! The translation contexts.
-use super::translate_crate::TransItemSource;
+use super::translate_crate::{RustcItem, TransItemSource};
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
@@ -17,7 +17,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
+    DepSource, ErrorCtx, Level, error_assert, raise_error, register_error,
 };
 
 /// Translation context used while translating the crate data into our representation.
@@ -49,7 +49,7 @@ pub struct TranslateCtx<'tcx> {
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
     /// Cache the names to compute them only once each.
-    pub cached_names: HashMap<hax::DefId, Name>,
+    pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
 }
@@ -116,19 +116,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
     }
 
-    /// Return the definition for this item. This uses the polymorphic or monomorphic definition
-    /// depending on user choice.
-    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
-        self.poly_hax_def(&item.def_id)
+    /// Return the polymorphic definition for this item. Use with care, prefer `hax_def` whenever
+    /// possible.
+    ///
+    /// Used for computing names, for associated items, and for various checks.
+    pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+        self.hax_def_for_item(&RustcItem::Poly(def_id.clone()))
     }
 
-    /// Return the polymorphic definition for this item.
-    pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+    /// Return the definition for this item. This uses the polymorphic or monomorphic definition
+    /// depending on user choice.
+    pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef>, Error> {
+        let def_id = item.def_id();
         let span = self.def_span(def_id);
         // Hax takes care of caching the translation.
         let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
-        std::panic::catch_unwind(move || def_id.full_def(*unwind_safe_s))
-            .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
+        std::panic::catch_unwind(move || match item {
+            RustcItem::Poly(def_id) => def_id.full_def(*unwind_safe_s),
+            RustcItem::Mono(item_ref) => item_ref.instantiated_full_def(*unwind_safe_s),
+        })
+        .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
     }
 
     pub(crate) fn with_def_id<F, T>(
@@ -170,12 +177,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
+    /// Whether to monomorphize items we encounter.
+    pub fn monomorphize(&self) -> bool {
+        matches!(self.item_src.item, RustcItem::Mono(..))
+    }
+
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.t_ctx.span_err(span, msg, level)
     }
 
-    pub(crate) fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
-        self.t_ctx.hax_def(item)
+    /// Return the definition for this item. This uses the polymorphic or monomorphic definition
+    /// depending on user choice.
+    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
+        let item = if self.monomorphize() {
+            RustcItem::Mono(item.clone())
+        } else {
+            RustcItem::Poly(item.def_id.clone())
+        };
+        self.t_ctx.hax_def_for_item(&item)
     }
 
     pub(crate) fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {

@@ -331,28 +331,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
         is_parent: bool,
     ) -> Result<(), Error> {
-        use hax::FullDefKind::*;
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested).
-        match def.kind() {
-            AssocTy { .. }
-            | AssocFn { .. }
-            | AssocConst { .. }
-            | Const {
-                kind:
-                    hax::ConstKind::AnonConst
-                    | hax::ConstKind::InlineConst
-                    | hax::ConstKind::PromotedConst,
-                ..
-            }
-            | Closure { .. }
-            | Ctor { .. }
-            | Variant { .. } => {
-                let parent_def_id = def.def_id().parent.as_ref().unwrap();
-                let parent_def = self.poly_hax_def(parent_def_id)?;
-                self.push_generics_for_def(span, &parent_def, true)?;
-            }
-            _ => {}
+        if let Some(parent_item) = def.typing_parent(&self.t_ctx.hax_state) {
+            let parent_def = self.hax_def(&parent_item)?;
+            self.push_generics_for_def(span, &parent_def, true)?;
         }
         self.push_generics_for_def_without_parents(span, def, !is_parent, !is_parent)?;
         Ok(())
@@ -410,6 +393,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             if let hax::FullDefKind::Trait { items, .. } = &def.kind
                 && include_assoc_ty_clauses
+                && !self.monomorphize()
             {
                 // Also add the predicates on associated types.
                 // FIXME(gat): don't skip GATs.
@@ -420,7 +404,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         param_env,
                         implied_predicates,
                         ..
-                    } = &item_def.kind
+                    } = item_def.kind()
                         && param_env.generics.params.is_empty()
                     {
                         let name = self.t_ctx.translate_trait_item_name(item_def.def_id())?;

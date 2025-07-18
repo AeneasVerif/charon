@@ -145,7 +145,7 @@ impl ItemTransCtx<'_, '_> {
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
         let bound_tref = self.translate_closure_bound_type_ref(span, closure)?;
-        let tref = if self.item_src.as_def_id() == &closure.item.def_id {
+        let tref = if self.item_src.def_id() == &closure.item.def_id {
             // We have fresh upvar regions in scope.
             bound_tref.apply(
                 self.outermost_binder()
@@ -223,7 +223,7 @@ impl ItemTransCtx<'_, '_> {
         target_kind: ClosureKind,
     ) -> Result<TraitImplRef, Error> {
         let bound_impl_ref = self.translate_closure_bound_impl_ref(span, closure, target_kind)?;
-        let impl_ref = if self.item_src.as_def_id() == &closure.item.def_id {
+        let impl_ref = if self.item_src.def_id() == &closure.item.def_id {
             // We have fresh regions in scope.
             bound_impl_ref.apply(
                 self.outermost_binder()
@@ -634,8 +634,10 @@ impl ItemTransCtx<'_, '_> {
             // The associated type, if any, is `Output`.
             let output = self.translate_ty(span, output)?;
             types.push((TraitItemName("Output".into()), output.clone()));
-            let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
-            parent_trait_refs.extend(trait_refs);
+            if !self.monomorphize() {
+                let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                parent_trait_refs.extend(trait_refs);
+            }
         }
 
         // Construct the `call_*` method reference.
