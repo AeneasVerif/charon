@@ -289,19 +289,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Translate generic args for an item with late bound variables.
-    pub fn translate_generic_args_with_late_bound(
+    /// Append the given late bound variables to the provided generics.
+    pub fn append_late_bound_to_generics(
         &mut self,
         span: Span,
-        substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplExpr],
+        generics: GenericArgs,
         late_bound: Option<hax::Binder<()>>,
     ) -> Result<RegionBinder<GenericArgs>, Error> {
         let late_bound = late_bound.unwrap_or(hax::Binder {
             value: (),
             bound_vars: vec![],
         });
-        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         self.translate_region_binder(span, &late_bound, |ctx, _| {
             Ok(generics
                 .move_under_binder()
