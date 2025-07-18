@@ -58,14 +58,7 @@ where
 
     storage_live(@2)
     @2 := &*(opt@1)
-    match *(@2) {
-        Option::None => {
-            @0 := const (0 : isize)
-        },
-        Option::Some => {
-            @0 := const (1 : isize)
-        },
-    }
+    @0 := @discriminant(*(@2))
     storage_dead(@2)
     return
 }

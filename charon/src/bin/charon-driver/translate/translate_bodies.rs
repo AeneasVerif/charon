@@ -537,11 +537,13 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             hax::Rvalue::Discriminant(place) => {
                 let place = self.translate_place(span, place)?;
-                if let TyKind::Adt(tref) = place.ty().kind()
-                    && let TypeId::Adt(adt_id) = tref.id
+                // We should always know the enum type; it can't be a generic.
+                if !place
+                    .ty()
+                    .kind()
+                    .as_adt()
+                    .is_some_and(|tref| tref.id.is_adt())
                 {
-                    Ok(Rvalue::Discriminant(place, adt_id))
-                } else {
                     raise_error!(
                         self,
                         span,
@@ -549,6 +551,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         place.ty().with_ctx(&self.into_fmt())
                     )
                 }
+                Ok(Rvalue::Discriminant(place))
             }
             hax::Rvalue::Aggregate(aggregate_kind, operands) => {
                 // It seems this instruction is not present in certain passes:

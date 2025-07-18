@@ -583,12 +583,11 @@ pub enum Rvalue {
     UnaryOp(UnOp, Operand),
     /// Nullary operation (e.g. `size_of`)
     NullaryOp(NullOp, Ty),
-    /// Discriminant (for enumerations).
-    /// Note that discriminant values have type isize. We also store the identifier
-    /// of the type from which we read the discriminant.
+    /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
+    /// an enum.
     ///
     /// This case is filtered in [crate::transform::remove_read_discriminant]
-    Discriminant(Place, TypeDeclId),
+    Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
     /// l = List::Cons { value:x, tail:tl };

@@ -14,25 +14,6 @@ use std::collections::{HashMap, HashSet};
 
 use super::ctx::LlbcPass;
 
-/// Generate `match _y { 0 => { _x = 0 }, 1 => { _x = 1; }, .. }`.
-fn generate_discr_assignment(
-    span: Span,
-    variants: &Vector<VariantId, Variant>,
-    scrutinee: &Place,
-    dest: &Place,
-) -> RawStatement {
-    let targets = variants
-        .iter_indexed_values()
-        .map(|(id, variant)| {
-            let discr_value =
-                Rvalue::Use(Operand::Const(Box::new(variant.discriminant.to_constant())));
-            let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
-            (vec![id], statement.into_block())
-        })
-        .collect();
-    RawStatement::Switch(Switch::Match(scrutinee.clone(), targets, None))
-}
-
 pub struct Transform;
 impl Transform {
     fn update_block(
@@ -46,22 +27,27 @@ impl Transform {
             match suffix {
                 [
                     Statement {
-                        content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
-                        span: span1,
+                        content: RawStatement::Assign(dest, Rvalue::Discriminant(p)),
                         ..
                     },
                     rest @ ..,
                 ] => {
                     // The destination should be a variable
                     assert!(dest.is_local());
+                    let TyKind::Adt(tdecl_ref) = p.ty().kind() else {
+                        continue;
+                    };
+                    let TypeId::Adt(adt_id) = tdecl_ref.id else {
+                        continue;
+                    };
 
                     // Lookup the type of the scrutinee
-                    let tkind = ctx.translated.type_decls.get(*adt_id).map(|x| &x.kind);
+                    let tkind = ctx.translated.type_decls.get(adt_id).map(|x| &x.kind);
                     let Some(TypeDeclKind::Enum(variants)) = tkind else {
                         match tkind {
                             // This can happen if the type was declared as invisible or opaque.
                             None | Some(TypeDeclKind::Opaque) => {
-                                let name = ctx.translated.item_name(*adt_id).unwrap();
+                                let name = ctx.translated.item_name(adt_id).unwrap();
                                 register_error!(
                                     ctx,
                                     block.span,
@@ -150,10 +136,8 @@ impl Transform {
                         }
                         _ => {
                             // The discriminant read is not followed by a `SwitchInt`. This can happen
-                            // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
-                            // = 0 }, 1 => { _x = 1; }, .. }`.
-                            block.statements[i].content =
-                                generate_discr_assignment(*span1, variants, p, dest)
+                            // in optimized MIR.
+                            continue;
                         }
                     }
                 }
@@ -162,7 +146,6 @@ impl Transform {
                 [
                     Statement {
                         content: RawStatement::Call(call),
-                        span: span1,
                         ..
                     },
                     ..,
@@ -175,7 +158,7 @@ impl Transform {
                         && let ty = &fn_ptr.generics.types[0]
                         && let TyKind::Adt(ty_ref) = ty.kind()
                         && let TypeId::Adt(type_id) = ty_ref.id
-                        && let Some(TypeDeclKind::Enum(variants)) =
+                        && let Some(TypeDeclKind::Enum(_)) =
                             ctx.translated.type_decls.get(type_id).map(|x| &x.kind)
                         // passing it a reference.
                         && let Operand::Move(p) = &call.args[0]
@@ -183,7 +166,7 @@ impl Transform {
                 {
                     let p = p.clone().project(ProjectionElem::Deref, sub_ty.clone());
                     block.statements[i].content =
-                        generate_discr_assignment(*span1, variants, &p, &call.dest)
+                        RawStatement::Assign(call.dest.clone(), Rvalue::Discriminant(p.clone()))
                 }
                 _ => {}
             }

@@ -277,10 +277,9 @@ and rvalue =
           binops) *)
   | UnaryOp of unop * operand  (** Unary operation (e.g. not, neg) *)
   | NullaryOp of nullop * ty  (** Nullary operation (e.g. [size_of]) *)
-  | Discriminant of place * type_decl_id
-      (** Discriminant (for enumerations). Note that discriminant values have
-          type isize. We also store the identifier of the type from which we
-          read the discriminant.
+  | Discriminant of place
+      (** Discriminant read. Reads the discriminant value of an enum. The place
+          must have the type of an enum.
 
           This case is filtered in [crate::transform::remove_read_discriminant]
       *)
