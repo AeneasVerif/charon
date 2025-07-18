@@ -338,13 +338,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             AssocTy { .. }
             | AssocFn { .. }
             | AssocConst { .. }
-            | AnonConst { .. }
-            | InlineConst { .. }
-            | PromotedConst { .. }
+            | Const {
+                kind:
+                    hax::ConstKind::AnonConst
+                    | hax::ConstKind::InlineConst
+                    | hax::ConstKind::PromotedConst,
+                ..
+            }
             | Closure { .. }
             | Ctor { .. }
             | Variant { .. } => {
-                let parent_def_id = def.parent.as_ref().unwrap();
+                let parent_def_id = def.def_id().parent.as_ref().unwrap();
                 let parent_def = self.hax_def(parent_def_id)?;
                 self.push_generics_for_def(span, &parent_def, true)?;
             }
@@ -369,18 +373,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.push_generic_params(&param_env.generics)?;
             // Add the predicates.
             let origin = match &def.kind {
-                FullDefKind::Struct { .. }
-                | FullDefKind::Union { .. }
-                | FullDefKind::Enum { .. }
+                FullDefKind::Adt { .. }
                 | FullDefKind::TyAlias { .. }
                 | FullDefKind::AssocTy { .. } => PredicateOrigin::WhereClauseOnType,
                 FullDefKind::Fn { .. }
                 | FullDefKind::AssocFn { .. }
                 | FullDefKind::Const { .. }
                 | FullDefKind::AssocConst { .. }
-                | FullDefKind::AnonConst { .. }
-                | FullDefKind::InlineConst { .. }
-                | FullDefKind::PromotedConst { .. }
                 | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
                 FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
                     PredicateOrigin::WhereClauseOnImpl

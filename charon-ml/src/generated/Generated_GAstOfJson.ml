@@ -1707,11 +1707,10 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
           de_bruijn_var_of_json trait_clause_id_of_json ctx clause
         in
         Ok (Clause clause)
-    | `Assoc [ ("ParentClause", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = box_of_json trait_instance_id_of_json ctx x_0 in
-        let* x_1 = trait_decl_id_of_json ctx x_1 in
-        let* x_2 = trait_clause_id_of_json ctx x_2 in
-        Ok (ParentClause (x_0, x_1, x_2))
+    | `Assoc [ ("ParentClause", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = box_of_json trait_ref_of_json ctx x_0 in
+        let* x_1 = trait_clause_id_of_json ctx x_1 in
+        Ok (ParentClause (x_0, x_1))
     | `String "SelfId" -> Ok Self
     | `Assoc
         [

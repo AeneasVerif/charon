@@ -125,6 +125,20 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
+(** Move a whole expression under one level of binder. *)
+let move_under_binder_subst : subst =
+  let shift = function
+    | Bound (dbid, var) -> Bound (dbid + 1, var)
+    | Free _ as var -> var
+  in
+  {
+    r_subst = compose empty_subst.r_subst shift;
+    ty_subst = compose empty_subst.ty_subst shift;
+    cg_subst = compose empty_subst.cg_subst shift;
+    tr_subst = compose empty_subst.tr_subst shift;
+    tr_self = empty_subst.tr_self;
+  }
+
 (** Visitor that shifts all bound variables by the given delta *)
 let st_shift_visitor =
   object (self)
@@ -680,4 +694,13 @@ let bound_identity_args (params : generic_params) : generic_args =
           let trait_id = s.tr_sb_subst clause.clause_id in
           { trait_id; trait_decl_ref = clause.trait })
         params.trait_clauses;
+  }
+
+(* Bind the predicate with no higher-kinded regions to make it into a poly predicate. *)
+let trait_decl_ref_to_poly_trait_decl_ref (pred : trait_decl_ref) :
+    trait_decl_ref region_binder =
+  {
+    binder_value =
+      st_substitute_visitor#visit_trait_decl_ref move_under_binder_subst pred;
+    binder_regions = [];
   }

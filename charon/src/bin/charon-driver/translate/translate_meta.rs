@@ -474,7 +474,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
-        def.parent.as_ref().is_some_and(|parent| {
+        def.def_id().parent.as_ref().is_some_and(|parent| {
             self.hax_def(parent).is_ok_and(|parent_def| {
                 matches!(parent_def.kind(), hax::FullDefKind::ForeignMod { .. })
             })

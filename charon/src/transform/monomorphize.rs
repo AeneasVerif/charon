@@ -52,17 +52,17 @@ impl TranslatedCrate {
     // FIXME(Nadrieril): implement type&tref normalization and use that instead
     fn find_trait_impl_and_gargs(
         self: &Self,
-        kind: &TraitRefKind,
+        tref: &TraitRef,
     ) -> Option<(&TraitImpl, GenericArgs)> {
-        match kind {
+        match &tref.kind {
             TraitRefKind::TraitImpl(impl_ref) => {
                 let trait_impl = self.trait_impls.get(impl_ref.id)?;
                 Some((trait_impl, impl_ref.generics.as_ref().clone()))
             }
-            TraitRefKind::ParentClause(p, _, clause) => {
+            TraitRefKind::ParentClause(p, clause) => {
                 let (trait_impl, _) = self.find_trait_impl_and_gargs(p)?;
                 let t_ref = trait_impl.parent_trait_refs.get(*clause)?;
-                self.find_trait_impl_and_gargs(&t_ref.kind)
+                self.find_trait_impl_and_gargs(t_ref)
             }
             _ => None,
         }
@@ -150,8 +150,7 @@ impl VisitAst for UsageVisitor<'_> {
                 self.found_use_fn(&id, &fn_ptr.generics)
             }
             FunIdOrTraitMethodRef::Trait(t_ref, name, id) => {
-                let Some((trait_impl, impl_gargs)) =
-                    self.krate.find_trait_impl_and_gargs(&t_ref.kind)
+                let Some((trait_impl, impl_gargs)) = self.krate.find_trait_impl_and_gargs(t_ref)
                 else {
                     return;
                 };

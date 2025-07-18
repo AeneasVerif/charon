@@ -58,13 +58,6 @@ pub enum TraitRefKind {
 
     /// A parent clause
     ///
-    /// Remark: the [TraitDeclId] gives the trait declaration which is
-    /// implemented by the instance id from which we take the parent clause
-    /// (see example below). It is not necessary and included for convenience.
-    ///
-    /// Remark: Ideally we should store a full `TraitRef` instead, but hax does not give us enough
-    /// information to get the right generic args.
-    ///
     /// Example:
     /// ```text
     /// trait Foo1 {}
@@ -78,21 +71,15 @@ pub enum TraitRefKind {
     /// fn g<T : Bar>(x : T) {
     ///   x.f()
     ///   ^^^^^
-    ///   Parent(Clause(0), Bar, 1)::f(x)
-    ///                          ^
-    ///                          parent clause 1 of clause 0
-    ///                     ^^^
-    ///              clause 0 implements Bar
+    ///   Parent(Clause(0), 1)::f(x)
+    ///                     ^
+    ///                     parent clause 1 of clause 0
     /// }
     /// ```
-    ParentClause(Box<TraitRefKind>, TraitDeclId, TraitClauseId),
+    ParentClause(Box<TraitRef>, TraitClauseId),
 
     /// A clause defined on an associated type. This variant is only used during translation; after
     /// the `lift_associated_item_clauses` pass, clauses on items become `ParentClause`s.
-    ///
-    /// Remark: the [TraitDeclId] gives the trait declaration which is
-    /// implemented by the trait implementation from which we take the item
-    /// (see below). It is not necessary and provided for convenience.
     ///
     /// Example:
     /// ```text
@@ -105,15 +92,13 @@ pub enum TraitRefKind {
     /// fn f<T : Foo>(x : T::W) {
     ///   x.bar1();
     ///   ^^^^^^^
-    ///   ItemClause(Clause(0), Foo, W, 1)
-    ///                              ^^^^
-    ///                              clause 1 from item W (from local clause 0)
-    ///                         ^^^
-    ///                local clause 0 implements Foo
+    ///   ItemClause(Clause(0), W, 1)
+    ///                         ^^^^
+    ///                         clause 1 from item W (from local clause 0)
     /// }
     /// ```
     #[charon::opaque]
-    ItemClause(Box<TraitRefKind>, TraitDeclId, TraitItemName, TraitClauseId),
+    ItemClause(Box<TraitRef>, TraitItemName, TraitClauseId),
 
     /// The implicit `Self: Trait` clause. Present inside trait declarations, including trait
     /// method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
@@ -125,9 +110,9 @@ pub enum TraitRefKind {
     /// the information we may need from one.
     BuiltinOrAuto {
         trait_decl_ref: PolyTraitDeclRef,
-        /// The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
-        /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
-        /// FnOnce`.
+        /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
+        /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
+        /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
         parent_trait_refs: Vector<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
         types: Vec<(TraitItemName, Ty, Vector<TraitClauseId, TraitRef>)>,
