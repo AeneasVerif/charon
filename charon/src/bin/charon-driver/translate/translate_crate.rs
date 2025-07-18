@@ -172,12 +172,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 // Add the id to the queue of declarations to translate
                 self.id_map.insert(src.clone(), trans_id);
                 self.reverse_id_map.insert(trans_id, src.clone());
-                // Store the name early so the name matcher can identify paths. We can't to it for
-                // trait impls because they register themselves when computing their name.
-                if !matches!(src.kind, TraitImpl) {
-                    if let Ok(name) = self.def_id_to_name(src.as_def_id()) {
-                        self.translated.item_names.insert(trans_id, name);
-                    }
+                // Store the name early so the name matcher can identify paths.
+                if let Ok(name) = self.def_id_to_name(src.as_def_id()) {
+                    self.translated.item_names.insert(trans_id, name);
                 }
                 trans_id
             }
