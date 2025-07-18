@@ -498,7 +498,10 @@ impl BodyTransCtx<'_, '_, '_> {
                                     }
                                     // TODO: more ways of registering vtable instance?
                                     _ => {
-                                        trace!("impl_expr not triggering registering vtable: {:?}", impl_expr);
+                                        trace!(
+                                            "impl_expr not triggering registering vtable: {:?}",
+                                            impl_expr
+                                        );
                                     }
                                 };
                                 UnsizingMetadata::VTablePtr(tref)

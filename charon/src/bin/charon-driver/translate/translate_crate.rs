@@ -603,7 +603,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def_id: &hax::DefId,
     ) -> GlobalDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_vtable_instance_as_global_decl_id(&src, def_id)
+        self.t_ctx
+            .register_vtable_instance_as_global_decl_id(&src, def_id)
     }
 
     pub(crate) fn register_vtable_instance_body_as_fun_decl_id(
@@ -612,7 +613,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         id: &hax::DefId,
     ) -> FunDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_vtable_instance_body_as_fun_decl_id(&src, id)
+        self.t_ctx
+            .register_vtable_instance_body_as_fun_decl_id(&src, id)
     }
 
     pub(crate) fn register_vtable_as_type_decl_id(

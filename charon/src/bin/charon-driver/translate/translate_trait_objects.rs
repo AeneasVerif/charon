@@ -57,21 +57,20 @@ fn size_field() -> Field {
 
 /// Shift the bounded type variables in the given type by the specified distance.
 /// It can be positive or negative
-fn shift_bounded_ty_vars(ty: &mut Ty, db_distance : isize, distance: isize) {
-    struct SelfVisitor(isize,isize);
+fn shift_bounded_ty_vars(ty: &mut Ty, db_distance: isize, distance: isize) {
+    struct SelfVisitor(isize, isize);
     impl VarsVisitor for SelfVisitor {
         fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
             let SelfVisitor(db_shift, shift) = self;
             if let DeBruijnVar::Bound(db_id, idx) = v {
-                let DeBruijnId {index: id} = db_id;
-                let db_id =
-                    DeBruijnId {
-                        index: if *db_shift < 0 {
-                            id - (-*db_shift as usize)
-                        } else {
-                            id + (*db_shift as usize)
-                        }
-                    };
+                let DeBruijnId { index: id } = db_id;
+                let db_id = DeBruijnId {
+                    index: if *db_shift < 0 {
+                        id - (-*db_shift as usize)
+                    } else {
+                        id + (*db_shift as usize)
+                    },
+                };
                 let idx = if *shift < 0 {
                     idx - TypeVarId::from_raw(-*shift as usize)
                 } else {
@@ -129,7 +128,13 @@ impl ItemTransCtx<'_, '_> {
         fields: &mut Vector<FieldId, Field>,
         parent_clauses: &Vector<TraitClauseId, (hax::TraitPredicate, TraitClause)>,
     ) -> Result<(), Error> {
-        trace!("Adding parent trait vtable pointers for: {}", parent_clauses.iter().map(|(_, c)| c.with_ctx(&self.into_fmt()).to_string()).join(", "));
+        trace!(
+            "Adding parent trait vtable pointers for: {}",
+            parent_clauses
+                .iter()
+                .map(|(_, c)| c.with_ctx(&self.into_fmt()).to_string())
+                .join(", ")
+        );
         for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
             let poly_trait_ref = &clause.trait_;
             // BUG: the `skip_binder` is WRONG -- it loses the newly binded regions
@@ -138,7 +143,10 @@ impl ItemTransCtx<'_, '_> {
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             // Also skip the poly binder
             // It is guanranteed by Rustc that the reference to `Self` can only appear in the first position
-            generics.types.iter_mut().for_each(|ty| shift_bounded_ty_vars(ty,-1, -1));
+            generics
+                .types
+                .iter_mut()
+                .for_each(|ty| shift_bounded_ty_vars(ty, -1, -1));
             let def_id = &pred.trait_ref.def_id;
             let id = self.translate_vtable_trait_id_as_type_id(Span::dummy(), def_id)?;
             let vtbl_struct = TypeDeclRef { id, generics };
@@ -196,7 +204,8 @@ impl ItemTransCtx<'_, '_> {
         let levels = self.binding_levels.len() + 1;
         // the args should refer to the top level binder, with the sole exception that
         // the `Self` type variable should refer to the `_dyn` above
-        let _ = args.visit_db_id(|db_id| {*db_id = DeBruijnId {
+        let _ = args.visit_db_id(|db_id| {
+            *db_id = DeBruijnId {
                 index: db_id.index + levels,
             };
             Continue::<()>(())
@@ -296,7 +305,9 @@ impl ItemTransCtx<'_, '_> {
                                 .try_collect()?;
                             // take out the first element of `in_tys` and modify it to the shim type
                             in_tys[0] = tcx.convert_to_shim_ty(span, trait_id, &in_tys[0]);
-                            in_tys.iter_mut().for_each(|ty| shift_bounded_ty_vars(ty,0, -1));
+                            in_tys
+                                .iter_mut()
+                                .for_each(|ty| shift_bounded_ty_vars(ty, 0, -1));
                             let mut out_ty = tcx.translate_ty(span, &sig.output)?;
                             shift_bounded_ty_vars(&mut out_ty, 0, -1);
                             // it is safe to take only the region binder here
@@ -421,7 +432,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// E.g.,
     /// global <T..., VT...>
-    ///     trait::{vtable_instance}::<ImplTy<T...>> : 
+    ///     trait::{vtable_instance}::<ImplTy<T...>> :
     ///         trait::{vtable}<VT...> = trait::{vtable}<VT...> {
     ///     drop_func: &ignore / &<ImplTy<T...> as Drop>::drop,
     ///     size: size_of(<ImplTy<T...>>),
@@ -441,15 +452,10 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<GlobalDecl, Error> {
         // prepare the generic environment
         self.translate_def_generics(item_meta.span, trait_impl_def)?;
-        let init = self.register_vtable_instance_body_as_fun_decl_id(item_meta.span, &trait_impl_def.def_id);
-        
-        let trait_ref = match trait_impl_def.kind() {
-            hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
-            _ => unreachable!(),
-        };
-        let vtable_struct_ref = self
-            .get_vtable_struct_ref(item_meta.span, &trait_ref.def_id)?.unwrap();
-        let trait_decl_ref = self.translate_trait_decl_ref(item_meta.span, trait_ref)?;
+        let init = self
+            .register_vtable_instance_body_as_fun_decl_id(item_meta.span, &trait_impl_def.def_id);
+
+        let (_, vtable_struct_ref, trait_decl_ref) = self.get_vtable_instance_info(trait_impl_def);
 
         Ok(GlobalDecl {
             def_id: glob_id,
@@ -463,15 +469,63 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    /// Local helper function to get the vtable struct reference and trait declaration reference
+    fn get_vtable_instance_info<'a>(
+        &mut self,
+        trait_impl_def: &'a hax::FullDef,
+    ) -> (&'a hax::TraitRef, TypeDeclRef, TraitDeclRef) {
+        let trait_ref = match trait_impl_def.kind() {
+            hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
+            _ => unreachable!(),
+        };
+        let vtable_struct_ref = self
+            .get_vtable_struct_ref(Span::dummy(), &trait_ref.def_id)
+            .unwrap()
+            .unwrap();
+        let trait_decl_ref = self
+            .translate_trait_decl_ref(Span::dummy(), trait_ref)
+            .unwrap();
+        (trait_ref, vtable_struct_ref, trait_decl_ref)
+    }
+
     pub(crate) fn translate_vtable_instance_body(
         mut self,
         init_func_id: FunDeclId,
         item_meta: ItemMeta,
         trait_impl_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        Err(Error {
-            span: item_meta.span,
-            msg: String::from("TODO"),
+        // prepare the generic environment
+        self.translate_def_generics(item_meta.span, trait_impl_def)?;
+
+        let (trait_ref, vtable_struct_ref, trait_decl_ref) =
+            self.get_vtable_instance_info(trait_impl_def);
+        let glob_def_id =
+            self.register_vtable_instance_as_global_decl_id(item_meta.span, &trait_impl_def.def_id);
+
+        // signature: `() -> VTable`
+        let sig = FunSig {
+            is_unsafe: true,
+            generics: self.the_only_binder().params.clone(),
+            inputs: vec![Ty::mk_unit()],
+            output: Ty::new(TyKind::Adt(vtable_struct_ref)),
+        };
+
+        let body = match trait_impl_def.kind() {
+            hax::FullDefKind::TraitImpl { .. } => {
+                todo!()
+            },
+            _ => {
+                panic!("Unexpected trait impl definition kind: {:?}", trait_impl_def.kind());
+            }
+        };
+
+        Ok(FunDecl {
+            def_id: init_func_id,
+            item_meta: item_meta,
+            signature: sig,
+            kind: ItemKind::VTable { trait_decl_ref },
+            is_global_initializer: Some(glob_def_id),
+            body,
         })
     }
 
