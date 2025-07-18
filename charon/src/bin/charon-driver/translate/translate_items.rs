@@ -152,7 +152,7 @@ impl ItemTransCtx<'_, '_> {
         match def.kind() {
             hax::FullDefKind::InherentImpl { items, .. } => {
                 for (_, item_def) in items {
-                    self.t_ctx.enqueue_item(&item_def.def_id);
+                    self.t_ctx.enqueue_item(item_def.def_id());
                 }
             }
             hax::FullDefKind::Mod { items, .. } => {
@@ -311,7 +311,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        trace!("About to translate function:\n{:?}", def.def_id);
+        trace!("About to translate function:\n{:?}", def.def_id());
         let span = item_meta.span;
 
         // Translate the function signature
@@ -333,7 +333,7 @@ impl ItemTransCtx<'_, '_> {
                 | hax::FullDefKind::Static { .. }
         );
         let is_global_initializer =
-            is_global_initializer.then(|| self.register_global_decl_id(span, &def.def_id));
+            is_global_initializer.then(|| self.register_global_decl_id(span, def.def_id()));
 
         let body = if item_meta.opacity.with_private_contents().is_opaque()
             || is_trait_method_decl_without_default
@@ -389,7 +389,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        trace!("About to translate global:\n{:?}", def.def_id);
+        trace!("About to translate global:\n{:?}", def.def_id());
         let span = item_meta.span;
 
         // Translate the generics and predicates - globals *can* have generics
@@ -424,7 +424,7 @@ impl ItemTransCtx<'_, '_> {
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 
-        let initializer = self.register_fun_decl_id(span, &def.def_id);
+        let initializer = self.register_fun_decl_id(span, def.def_id());
 
         Ok(GlobalDecl {
             def_id,
@@ -444,7 +444,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
-        trace!("About to translate trait decl:\n{:?}", def.def_id);
+        trace!("About to translate trait decl:\n{:?}", def.def_id());
         trace!("Trait decl id:\n{:?}", def_id);
 
         let span = item_meta.span;
@@ -646,7 +646,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
-        trace!("About to translate trait impl:\n{:?}", def.def_id);
+        trace!("About to translate trait impl:\n{:?}", def.def_id());
         trace!("Trait impl id:\n{:?}", def_id);
 
         let span = item_meta.span;
@@ -777,7 +777,8 @@ impl ItemTransCtx<'_, '_> {
                 .format("\n");
             trace!(
                 "Trait impl: {:?}\n- parent_trait_refs:\n{}",
-                def.def_id, refs
+                def.def_id(),
+                refs
             );
         }
 
@@ -793,8 +794,8 @@ impl ItemTransCtx<'_, '_> {
                 .t_ctx
                 .translate_trait_item_name(impl_item.decl_def.def_id())?;
             let item_def = impl_item.def(); // The impl item or the corresponding trait default.
-            let item_span = self.def_span(&item_def.def_id);
-            let item_def_id = &item_def.def_id;
+            let item_span = self.def_span(item_def.def_id());
+            let item_def_id = item_def.def_id();
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
                     match &impl_item.value {

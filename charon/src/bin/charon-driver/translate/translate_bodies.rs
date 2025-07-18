@@ -1108,7 +1108,7 @@ impl BodyTransCtx<'_, '_, '_> {
         def: &hax::FullDef,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Retrieve the body
-        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
+        let Some(body) = self.t_ctx.get_mir(def.def_id(), span)? else {
             return Ok(Err(Opaque));
         };
         self.translate_body(span, &body, &def.source_text)

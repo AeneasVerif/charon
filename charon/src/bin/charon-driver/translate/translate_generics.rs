@@ -385,7 +385,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     PredicateOrigin::WhereClauseOnImpl
                 }
                 FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
-                    let _ = self.register_trait_decl_id(span, &def.def_id);
+                    let _ = self.register_trait_decl_id(span, def.def_id());
                     PredicateOrigin::WhereClauseOnTrait
                 }
                 _ => panic!("Unexpected def: {def:?}"),

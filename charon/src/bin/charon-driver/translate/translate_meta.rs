@@ -494,7 +494,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
-        let is_local = def.def_id.is_local;
+        let is_local = def.def_id().is_local;
         let (attr_info, lang_item) = if item_src.is_derived_item() {
             (AttrInfo::default(), None)
         } else {

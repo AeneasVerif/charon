@@ -65,7 +65,7 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Translate the signature
-        trace!("signature of {:?}:\n{:?}", def.def_id, signature.value);
+        trace!("signature of {:?}:\n{:?}", def.def_id(), signature.value);
         let inputs: Vec<Ty> = signature
             .value
             .inputs

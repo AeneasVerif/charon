@@ -134,7 +134,7 @@ impl ItemTransCtx<'_, '_> {
         let drop_trait = implemented_trait.id;
 
         // Construct the method reference.
-        let method_id = self.register_drop_method_id(span, &def.def_id);
+        let method_id = self.register_drop_method_id(span, def.def_id());
         let method_name = TraitItemName("drop".to_owned());
         let method_binder = {
             let mut method_params = GenericParams::empty();

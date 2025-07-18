@@ -322,7 +322,8 @@ impl ItemTransCtx<'_, '_> {
         let signature = &args.fn_sig;
         trace!(
             "signature of closure {:?}:\n{:?}",
-            def.def_id, signature.value,
+            def.def_id(),
+            signature.value,
         );
 
         let is_unsafe = match signature.value.safety {
@@ -558,7 +559,7 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
-        trace!("About to translate closure:\n{:?}", def.def_id);
+        trace!("About to translate closure:\n{:?}", def.def_id());
 
         self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
@@ -641,7 +642,7 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // Construct the `call_*` method reference.
-        let call_fn_id = self.register_closure_method_decl_id(span, &def.def_id, target_kind);
+        let call_fn_id = self.register_closure_method_decl_id(span, def.def_id(), target_kind);
         let call_fn_name = TraitItemName(target_kind.method_name().to_string());
         let call_fn_binder = {
             let mut method_params = GenericParams::empty();
@@ -698,7 +699,7 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
-        trace!("About to translate closure as fn:\n{:?}", def.def_id);
+        trace!("About to translate closure as fn:\n{:?}", def.def_id());
 
         assert!(
             closure.upvar_tys.is_empty(),
