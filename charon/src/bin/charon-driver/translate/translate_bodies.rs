@@ -889,6 +889,25 @@ impl BodyTransCtx<'_, '_, '_> {
                 let then_block = self.translate_basic_block_id(*target);
                 Ok(SwitchTargets::If(if_block, then_block))
             }
+            LiteralTy::Char => {
+                let targets: Vec<(ScalarValue, BlockId)> = targets
+                    .iter()
+                    .map(|(v, tgt)| {
+                        let v = ScalarValue::from_le_bytes(
+                            charon_lib::ast::IntegerTy::I32,
+                            v.data_le_bytes,
+                        );
+                        let tgt = self.translate_basic_block_id(*tgt);
+                        Ok((v, tgt))
+                    })
+                    .try_collect()?;
+                let otherwise = self.translate_basic_block_id(*otherwise);
+                Ok(SwitchTargets::SwitchInt(
+                    charon_lib::ast::IntegerTy::I32,
+                    targets,
+                    otherwise,
+                ))
+            }
             LiteralTy::Integer(int_ty) => {
                 let targets: Vec<(ScalarValue, BlockId)> = targets
                     .iter()
