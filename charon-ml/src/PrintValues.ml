@@ -4,18 +4,18 @@ open Values
 open Types
 
 let integer_type_to_string = function
-  | Isize -> "isize"
-  | I8 -> "i8"
-  | I16 -> "i16"
-  | I32 -> "i32"
-  | I64 -> "i64"
-  | I128 -> "i128"
-  | Usize -> "usize"
-  | U8 -> "u8"
-  | U16 -> "u16"
-  | U32 -> "u32"
-  | U64 -> "u64"
-  | U128 -> "u128"
+  | Signed Isize -> "isize"
+  | Signed I8 -> "i8"
+  | Signed I16 -> "i16"
+  | Signed I32 -> "i32"
+  | Signed I64 -> "i64"
+  | Signed I128 -> "i128"
+  | Unsigned Usize -> "usize"
+  | Unsigned U8 -> "u8"
+  | Unsigned U16 -> "u16"
+  | Unsigned U32 -> "u32"
+  | Unsigned U64 -> "u64"
+  | Unsigned U128 -> "u128"
 
 let float_type_to_string = function
   | F16 -> "f16"
@@ -25,7 +25,8 @@ let float_type_to_string = function
 
 let literal_type_to_string (ty : literal_type) : string =
   match ty with
-  | TInteger ity -> integer_type_to_string ity
+  | TInt ity -> integer_type_to_string (Signed ity)
+  | TUInt uty -> integer_type_to_string (Unsigned uty)
   | TFloat fty -> float_type_to_string fty
   | TBool -> "bool"
   | TChar -> "char"
@@ -33,7 +34,9 @@ let literal_type_to_string (ty : literal_type) : string =
 let big_int_to_string (bi : big_int) : string = Z.to_string bi
 
 let scalar_value_to_string (sv : scalar_value) : string =
-  big_int_to_string sv.value ^ ": " ^ integer_type_to_string sv.int_ty
+  big_int_to_string (Scalars.get_val sv)
+  ^ ": "
+  ^ integer_type_to_string (Scalars.get_ty sv)
 
 let float_value_to_string (fv : float_value) : string =
   fv.float_value ^ ": " ^ float_type_to_string fv.float_ty

@@ -38,7 +38,9 @@
     "align": 1,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U8",
+      "tag_ty": {
+        "Unsigned": "U8"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -47,14 +49,20 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U8": "0"
+          "Unsigned": [
+            "U8",
+            "0"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U8": "1"
+          "Unsigned": [
+            "U8",
+            "1"
+          ]
         }
       }
     ]
@@ -64,7 +72,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -73,7 +83,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "0"
+          "Unsigned": [
+            "U32",
+            "0"
+          ]
         }
       },
       {
@@ -83,7 +96,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "U32": "1"
+          "Unsigned": [
+            "U32",
+            "1"
+          ]
         }
       },
       {
@@ -93,7 +109,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "U32": "2"
+          "Unsigned": [
+            "U32",
+            "2"
+          ]
         }
       }
     ]
@@ -103,7 +122,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 1
@@ -116,7 +137,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "0"
+          "Unsigned": [
+            "U32",
+            "0"
+          ]
         }
       },
       {
@@ -229,7 +253,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -248,7 +274,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "U32": "1"
+          "Unsigned": [
+            "U32",
+            "1"
+          ]
         }
       }
     ]
@@ -273,7 +302,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 8,
-      "tag_ty": "Isize",
+      "tag_ty": {
+        "Signed": "Isize"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 1
@@ -286,7 +317,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "Isize": "0"
+          "Signed": [
+            "Isize",
+            "0"
+          ]
         }
       },
       {
@@ -310,7 +344,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 0
@@ -330,14 +366,20 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "1114112"
+          "Unsigned": [
+            "U32",
+            "1114112"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "1114113"
+          "Unsigned": [
+            "U32",
+            "1114113"
+          ]
         }
       }
     ]
@@ -347,7 +389,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "I32",
+      "tag_ty": {
+        "Signed": "I32"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -358,7 +402,10 @@
         ],
         "uninhabited": false,
         "tag": {
-          "I32": "12"
+          "Signed": [
+            "I32",
+            "12"
+          ]
         }
       },
       {
@@ -367,14 +414,20 @@
         ],
         "uninhabited": false,
         "tag": {
-          "I32": "43"
+          "Signed": [
+            "I32",
+            "43"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I32": "123456"
+          "Signed": [
+            "I32",
+            "123456"
+          ]
         }
       }
     ]
@@ -384,7 +437,9 @@
     "align": 1,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "I8",
+      "tag_ty": {
+        "Signed": "I8"
+      },
       "encoding": "Direct"
     },
     "uninhabited": false,
@@ -393,21 +448,30 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I8": "-1"
+          "Signed": [
+            "I8",
+            "-1"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I8": "0"
+          "Signed": [
+            "I8",
+            "0"
+          ]
         }
       },
       {
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "I8": "1"
+          "Signed": [
+            "I8",
+            "1"
+          ]
         }
       }
     ]
@@ -417,7 +481,9 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "U32",
+      "tag_ty": {
+        "Unsigned": "U32"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 2
@@ -430,7 +496,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "U32": "0"
+          "Unsigned": [
+            "U32",
+            "0"
+          ]
         }
       },
       {
@@ -455,7 +524,9 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "tag_ty": "Isize",
+      "tag_ty": {
+        "Signed": "Isize"
+      },
       "encoding": {
         "Niche": {
           "untagged_variant": 1
@@ -468,7 +539,10 @@
         "field_offsets": [],
         "uninhabited": false,
         "tag": {
-          "Isize": "0"
+          "Signed": [
+            "Isize",
+            "0"
+          ]
         }
       },
       {
@@ -477,6 +551,40 @@
         ],
         "uninhabited": false,
         "tag": null
+      }
+    ]
+  },
+  "test_crate::MaxBitsDiscr": {
+    "size": 16,
+    "align": 16,
+    "discriminant_layout": {
+      "offset": 0,
+      "tag_ty": {
+        "Unsigned": "U128"
+      },
+      "encoding": "Direct"
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tag": {
+          "Unsigned": [
+            "U128",
+            "42"
+          ]
+        }
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tag": {
+          "Unsigned": [
+            "U128",
+            "18446744073709551615"
+          ]
+        }
       }
     ]
   }

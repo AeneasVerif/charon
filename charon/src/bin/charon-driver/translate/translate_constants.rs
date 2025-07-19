@@ -22,26 +22,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 use hax::ConstantInt;
                 let scalar = match i {
                     ConstantInt::Int(v, int_type) => {
-                        use hax::IntTy;
-                        match int_type {
-                            IntTy::Isize => ScalarValue::Isize(*v as i64),
-                            IntTy::I8 => ScalarValue::I8(*v as i8),
-                            IntTy::I16 => ScalarValue::I16(*v as i16),
-                            IntTy::I32 => ScalarValue::I32(*v as i32),
-                            IntTy::I64 => ScalarValue::I64(*v as i64),
-                            IntTy::I128 => ScalarValue::I128(*v),
-                        }
+                        let ty = Self::translate_hax_int_ty(int_type);
+                        ScalarValue::Signed(ty, *v)
                     }
-                    ConstantInt::Uint(v, int_type) => {
-                        use hax::UintTy;
-                        match int_type {
-                            UintTy::Usize => ScalarValue::Usize(*v as u64),
-                            UintTy::U8 => ScalarValue::U8(*v as u8),
-                            UintTy::U16 => ScalarValue::U16(*v as u16),
-                            UintTy::U32 => ScalarValue::U32(*v as u32),
-                            UintTy::U64 => ScalarValue::U64(*v as u64),
-                            UintTy::U128 => ScalarValue::U128(*v),
-                        }
+                    ConstantInt::Uint(v, uint_type) => {
+                        let ty = Self::translate_hax_uint_ty(uint_type);
+                        ScalarValue::Unsigned(ty, *v)
                     }
                 };
                 Literal::Scalar(scalar)

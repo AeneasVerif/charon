@@ -344,11 +344,11 @@ pub enum BuiltinFunId {
     BoxNew,
     /// Cast an array as a slice.
     ///
-    /// Converted from [UnOp::ArrayToSlice]
+    /// Converted from `UnOp::ArrayToSlice`
     ArrayToSliceShared,
     /// Cast an array as a slice.
     ///
-    /// Converted from [UnOp::ArrayToSlice]
+    /// Converted from `UnOp::ArrayToSlice`
     ArrayToSliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
