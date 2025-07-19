@@ -107,7 +107,8 @@ struct Foo {
   field1: u32,
 }
 
-fn test_crate::C() -> u32
+// Full name: test_crate::C
+fn C() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -125,7 +126,8 @@ fn test_crate::C() -> u32
     return
 }
 
-const test_crate::C: u32 = test_crate::C()
+// Full name: test_crate::C
+const C: u32 = C()
 
 // Full name: test_crate::Test2
 type Test2 = u32

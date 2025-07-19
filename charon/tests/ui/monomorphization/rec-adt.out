@@ -11,32 +11,37 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
+// Full name: core::ptr::non_null::NonNull::<Node::<u8>>
 #[lang_item("NonNull")]
-pub opaque type core::ptr::non_null::NonNull::<test_crate::Node::<u8>>
+pub opaque type NonNull::<Node<u8>[Sized<u8>]>
 
+// Full name: core::option::Option::<NonNull::<Node<u8>[Sized<u8>]>>
 #[lang_item("Option")]
-pub enum core::option::Option::<core::ptr::non_null::NonNull::<Node<u8>[Sized<u8>]>> {
+pub enum Option::<NonNull<Node<u8>[Sized<u8>]>> {
   None,
-  Some(core::ptr::non_null::NonNull::<Node<u8>[Sized<u8>]>),
+  Some(NonNull::<Node<u8>[Sized<u8>]>),
 }
 
-pub struct test_crate::LinkedList::<u8> {
-  head: core::option::Option::<NonNull<Node<u8>[Sized<u8>]>>,
+// Full name: test_crate::LinkedList::<u8>
+pub struct LinkedList::<u8> {
+  head: Option::<NonNull<Node<u8>[Sized<u8>]>>,
 }
 
-struct test_crate::Node::<u8> {
-  next: core::option::Option::<NonNull<Node<u8>[Sized<u8>]>>,
+// Full name: test_crate::Node::<u8>
+struct Node::<u8> {
+  next: Option::<NonNull<Node<u8>[Sized<u8>]>>,
   element: u8,
 }
 
-fn test_crate::{LinkedList<T>[@TraitClause0]}::new::<u8>() -> test_crate::LinkedList::<u8>
+// Full name: test_crate::{LinkedList<T>[@TraitClause0]}::new::<u8>
+fn new::<u8>() -> LinkedList::<u8>
 {
-    let @0: test_crate::LinkedList::<u8>; // return
-    let @1: core::option::Option::<NonNull<Node<u8>[Sized<u8>]>>; // anonymous local
+    let @0: LinkedList::<u8>; // return
+    let @1: Option::<NonNull<Node<u8>[Sized<u8>]>>; // anonymous local
 
     storage_live(@1)
-    @1 := core::option::Option::<NonNull<Node<u8>[Sized<u8>]>>::None {  }
-    @0 := test_crate::LinkedList::<u8> { head: move (@1) }
+    @1 := Option::<NonNull<Node<u8>[Sized<u8>]>>::None {  }
+    @0 := LinkedList::<u8> { head: move (@1) }
     storage_dead(@1)
     return
 }
@@ -45,10 +50,10 @@ fn test_crate::{LinkedList<T>[@TraitClause0]}::new::<u8>() -> test_crate::Linked
 fn main()
 {
     let @0: (); // return
-    let list@1: test_crate::LinkedList::<u8>; // local
+    let list@1: LinkedList::<u8>; // local
 
     storage_live(list@1)
-    list@1 := test_crate::{LinkedList<T>[@TraitClause0]}::new::<u8>()
+    list@1 := new::<u8>()
     @0 := ()
     storage_dead(list@1)
     @0 := ()

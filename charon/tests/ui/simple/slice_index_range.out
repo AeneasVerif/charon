@@ -126,7 +126,8 @@ fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
     panic(core::panicking::panic_fmt)
 }
 
-pub fn core::num::{usize}::MAX() -> usize
+// Full name: core::num::{usize}::MAX
+pub fn MAX() -> usize
 {
     let @0: usize; // return
 
@@ -134,7 +135,8 @@ pub fn core::num::{usize}::MAX() -> usize
     return
 }
 
-pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+// Full name: core::num::{usize}::MAX
+pub const MAX: usize = MAX()
 
 // Full name: core::ops::index::Index
 #[lang_item("index")]
@@ -992,7 +994,7 @@ where
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @20 := core::num::{usize}::MAX
+    @20 := MAX
     @3 := copy (self@4) == move (@20)
     if move (@3) {
         @21 := Option::None {  }
@@ -1112,7 +1114,7 @@ where
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @20 := core::num::{usize}::MAX
+    @20 := MAX
     @3 := copy (self@4) == move (@20)
     if move (@3) {
         @21 := Option::None {  }
@@ -1346,7 +1348,7 @@ where
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @13 := core::num::{usize}::MAX
+    @13 := MAX
     @3 := copy (self@4) == move (@13)
     if move (@3) {
     }
@@ -1413,7 +1415,7 @@ where
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @13 := core::num::{usize}::MAX
+    @13 := MAX
     @3 := copy (self@4) == move (@13)
     if move (@3) {
     }

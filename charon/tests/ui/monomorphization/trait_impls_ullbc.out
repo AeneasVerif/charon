@@ -45,7 +45,8 @@ pub trait Drop<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
-fn test_crate::do_test::<bool>(@1: bool, @2: bool)
+// Full name: test_crate::do_test::<bool>
+fn do_test::<bool>(@1: bool, @2: bool)
 {
     let @0: (); // return
     let init@1: bool; // arg #1
@@ -102,7 +103,7 @@ fn main()
 
     bb0: {
         storage_live(@1);
-        @1 := test_crate::do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
+        @1 := do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
     }
 
     bb1: {

@@ -1903,7 +1903,8 @@ pub fn f3() -> u32
     return
 }
 
-pub fn test_crate::SZ() -> usize
+// Full name: test_crate::SZ
+pub fn SZ() -> usize
 {
     let @0: usize; // return
 
@@ -1911,7 +1912,8 @@ pub fn test_crate::SZ() -> usize
     return
 }
 
-pub const test_crate::SZ: usize = test_crate::SZ()
+// Full name: test_crate::SZ
+pub const SZ: usize = SZ()
 
 // Full name: test_crate::f5
 pub fn f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32

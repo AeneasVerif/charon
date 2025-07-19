@@ -1,13 +1,16 @@
 # Final LLBC before serialization:
 
-pub fn core::num::{usize}::MAX() -> usize
+// Full name: core::num::{usize}::MAX
+pub fn MAX() -> usize
 
-pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+// Full name: core::num::{usize}::MAX
+pub const MAX: usize = MAX()
 
 // Full name: core::num::{u128}::to_ne_bytes
 pub fn to_ne_bytes(@1: u128) -> Array<u8, 16 : usize>
 
-fn test_crate::S() -> Array<u8, 16 : usize>
+// Full name: test_crate::S
+fn S() -> Array<u8, 16 : usize>
 {
     let @0: Array<u8, 16 : usize>; // return
 
@@ -15,7 +18,8 @@ fn test_crate::S() -> Array<u8, 16 : usize>
     return
 }
 
-const test_crate::S: Array<u8, 16 : usize> = test_crate::S()
+// Full name: test_crate::S
+const S: Array<u8, 16 : usize> = S()
 
 // Full name: test_crate::HasBEDiscr
 enum HasBEDiscr {
@@ -42,7 +46,7 @@ fn main()
     storage_live(x@1)
     x@1 := const (52 : usize)
     storage_live(y@2)
-    @9 := core::num::{usize}::MAX
+    @9 := MAX
     y@2 := move (@9)
     storage_live(z@3)
     storage_live(@4)

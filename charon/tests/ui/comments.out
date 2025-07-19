@@ -469,7 +469,8 @@ fn foo()
     return
 }
 
-fn test_crate::CONSTANT() -> u32
+// Full name: test_crate::CONSTANT
+fn CONSTANT() -> u32
 {
     let @0: u32; // return
 
@@ -477,7 +478,8 @@ fn test_crate::CONSTANT() -> u32
     return
 }
 
-const test_crate::CONSTANT: u32 = test_crate::CONSTANT()
+// Full name: test_crate::CONSTANT
+const CONSTANT: u32 = CONSTANT()
 
 // Full name: test_crate::thing
 pub fn thing()
@@ -495,7 +497,7 @@ pub fn thing()
     storage_live(x@1)
     storage_live(@2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    @6 := test_crate::CONSTANT
+    @6 := CONSTANT
     @2 := move (@6) panic.>> const (3 : i32)
     @3 := copy (@2) panic.+ const (12 : u32)
     x@1 := move (@3)

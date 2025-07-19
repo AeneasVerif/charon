@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::SLICE() -> Array<(), 4 : usize>
+// Full name: test_crate::SLICE
+fn SLICE() -> Array<(), 4 : usize>
 {
     let @0: Array<(), 4 : usize>; // return
     let @1: (); // anonymous local
@@ -12,7 +13,8 @@ fn test_crate::SLICE() -> Array<(), 4 : usize>
     return
 }
 
-static test_crate::SLICE: Array<(), 4 : usize> = test_crate::SLICE()
+// Full name: test_crate::SLICE
+static SLICE: Array<(), 4 : usize> = SLICE()
 
 // Full name: test_crate::four
 fn four() -> usize
@@ -26,7 +28,8 @@ fn four() -> usize
     return
 }
 
-fn test_crate::BAR() -> Array<(), 42 : usize>
+// Full name: test_crate::BAR
+fn BAR() -> Array<(), 42 : usize>
 {
     let @0: Array<(), 42 : usize>; // return
     let @1: (); // anonymous local
@@ -38,9 +41,11 @@ fn test_crate::BAR() -> Array<(), 42 : usize>
     return
 }
 
-const test_crate::BAR: Array<(), 42 : usize> = test_crate::BAR()
+// Full name: test_crate::BAR
+const BAR: Array<(), 42 : usize> = BAR()
 
-fn test_crate::FOO() -> usize
+// Full name: test_crate::FOO
+fn FOO() -> usize
 {
     let @0: usize; // return
 
@@ -48,7 +53,8 @@ fn test_crate::FOO() -> usize
     return
 }
 
-const test_crate::FOO: usize = test_crate::FOO()
+// Full name: test_crate::FOO
+const FOO: usize = FOO()
 
 
 
