@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +17,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -29,29 +30,30 @@ where
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: test_crate::Trait
 trait Trait<Self>
@@ -59,6 +61,7 @@ trait Trait<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn method1 = test_crate::Trait::method1<Self>[Self]
     fn method2<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method2<Self, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method1<Self>(@1: Self, @2: &'static (u32)) -> bool
@@ -92,7 +95,7 @@ where
     let _other@2: T; // arg #2
 
     @0 := ()
-    drop[Drop<T>] _other@2
+    drop[core::ops::drop::Drop<T>] _other@2
     @0 := ()
     return
 }
@@ -110,6 +113,7 @@ trait MyCompare<Self, Other>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Other>
     fn compare = test_crate::MyCompare::compare<Self, Other>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
@@ -195,8 +199,9 @@ fn main()
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
@@ -216,7 +221,7 @@ fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = core::marker::MetaSized<()>
     fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
 }
 

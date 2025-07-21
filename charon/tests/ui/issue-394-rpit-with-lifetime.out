@@ -1,44 +1,44 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Tuple
 }
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce<Args>
 }
 
-// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
+pub trait core::ops::function::FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::ops::function::FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    vtable: core::ops::function::FnMut<Args>
 }
 
 // Full name: core::option::Option
@@ -61,35 +61,35 @@ pub fn from_fn<T, F>(@1: F) -> FromFn<F>[@TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnMut<F, ()>,
+    [@TraitClause2]: core::ops::function::FnMut<F, ()>,
     @TraitClause2::parent_clause1::Output = Option<T>[@TraitClause0],
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
-    [@TraitClause0]: FnMut<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnMut<Self, Args>,
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnOnce<Self, Args>,
 
 // Full name: test_crate::sparse_transitions::closure
 struct closure<'a> {}
 
-// Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'_>}::call_mut
-fn {impl FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>), @2: ()) -> Option<u8>[Sized<u8>]
+// Full name: test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for closure<'_>}::call_mut
+fn {impl core::ops::function::FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>), @2: ()) -> Option<u8>[Sized<u8>]
 {
     let @0: Option<u8>[Sized<u8>]; // return
     let @1: &'_ mut (closure<'_>); // arg #1
@@ -99,8 +99,8 @@ fn {impl FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>
     return
 }
 
-// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'_>}::call_once
-fn {impl FnOnce<()> for closure<'_>}::call_once<'a>(@1: closure<'_>, @2: ()) -> Option<u8>[Sized<u8>]
+// Full name: test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for closure<'_>}::call_once
+fn {impl core::ops::function::FnOnce<()> for closure<'_>}::call_once<'a>(@1: closure<'_>, @2: ()) -> Option<u8>[Sized<u8>]
 {
     let @0: Option<u8>[Sized<u8>]; // return
     let @1: closure<'_>; // arg #1
@@ -109,28 +109,28 @@ fn {impl FnOnce<()> for closure<'_>}::call_once<'a>(@1: closure<'_>, @2: ()) -> 
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := {impl FnMut<()> for closure<'_>}::call_mut<'_, '_>(move (@3), move (@2))
-    drop[Drop<closure<'_>>] @1
+    @0 := {impl core::ops::function::FnMut<()> for closure<'_>}::call_mut<'_, '_>(move (@3), move (@2))
+    drop[core::ops::drop::Drop<closure<'_>>] @1
     return
 }
 
-// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'_>}
-impl<'a> FnOnce<()> for closure<'_> {
-    parent_clause0 = MetaSized<closure<'_>>
+// Full name: test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for closure<'_>}
+impl<'a> core::ops::function::FnOnce<()> for closure<'_> {
+    parent_clause0 = core::marker::MetaSized<closure<'_>>
     parent_clause1 = Sized<()>
-    parent_clause2 = Tuple<()>
+    parent_clause2 = core::marker::Tuple<()>
     parent_clause3 = Sized<Option<u8>[Sized<u8>]>
     type Output = Option<u8>[Sized<u8>]
-    fn call_once = {impl FnOnce<()> for closure<'_>}::call_once<'a>
+    fn call_once = {impl core::ops::function::FnOnce<()> for closure<'_>}::call_once<'a>
 }
 
-// Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'_>}
-impl<'a> FnMut<()> for closure<'_> {
-    parent_clause0 = MetaSized<closure<'_>>
-    parent_clause1 = {impl FnOnce<()> for closure<'_>}<'_>
+// Full name: test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for closure<'_>}
+impl<'a> core::ops::function::FnMut<()> for closure<'_> {
+    parent_clause0 = core::marker::MetaSized<closure<'_>>
+    parent_clause1 = {impl core::ops::function::FnOnce<()> for closure<'_>}<'_>
     parent_clause2 = Sized<()>
-    parent_clause3 = Tuple<()>
-    fn call_mut<'_0> = {impl FnMut<()> for closure<'_>}::call_mut<'a, '_0_0>
+    parent_clause3 = core::marker::Tuple<()>
+    fn call_mut<'_0> = {impl core::ops::function::FnMut<()> for closure<'_>}::call_mut<'a, '_0_0>
 }
 
 // Full name: test_crate::sparse_transitions
@@ -141,7 +141,7 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[Sized<closure<'_>>]
 
     storage_live(@1)
     @1 := closure {  }
-    @0 := from_fn<u8, closure<'_>>[Sized<u8>, Sized<closure<'_>>, {impl FnMut<()> for closure<'_>}<'_>](move (@1))
+    @0 := from_fn<u8, closure<'_>>[Sized<u8>, Sized<closure<'_>>, {impl core::ops::function::FnMut<()> for closure<'_>}<'_>](move (@1))
     storage_dead(@1)
     return
 }

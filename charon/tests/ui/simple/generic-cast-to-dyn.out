@@ -15,6 +15,24 @@ where
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn type_id<'_0> = type_id<'_0_0, Self>[Self]
+    vtable: core::any::Any::{vtable}
+}
+
+struct core::marker::MetaSized::{vtable} {
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn>)),
+  self_ty_size: usize,
+  self_ty_align: usize,
+}
+
+struct core::any::Any::{vtable}
+where
+    missing(@Type1_0) : 'static,
+{
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Any<_dyn>)),
+  self_ty_size: usize,
+  self_ty_align: usize,
+  super_trait_0: *const core::marker::MetaSized::{vtable},
+  type_id: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn>))) -> TypeId,
 }
 
 // Full name: core::any::Any::type_id
@@ -28,6 +46,7 @@ where
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo

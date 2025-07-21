@@ -1,39 +1,39 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
-fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+// Full name: alloc::alloc::Global::{impl core::ops::drop::Drop for Global}::drop
+fn {impl core::ops::drop::Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
 
-// Full name: alloc::alloc::Global::{impl Drop for Global}
-impl Drop for Global {
-    parent_clause0 = MetaSized<Global>
-    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+// Full name: alloc::alloc::Global::{impl core::ops::drop::Drop for Global}
+impl core::ops::drop::Drop for Global {
+    parent_clause0 = core::marker::MetaSized<Global>
+    fn drop<'_0> = {impl core::ops::drop::Drop for Global}::drop<'_0_0>
 }
 
 // Full name: alloc::vec::Vec
@@ -42,37 +42,37 @@ pub opaque type Vec<T>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
-    [@TraitClause3]: Drop<T>,
-    [@TraitClause4]: Drop<type_error("removed allocator parameter")>,
+    [@TraitClause3]: core::ops::drop::Drop<T>,
+    [@TraitClause4]: core::ops::drop::Drop<type_error("removed allocator parameter")>,
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub struct String {
-  vec: Vec<u8>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}],
+  vec: Vec<u8>[Sized<u8>, Sized<Global>, core::ops::drop::Drop<u8>, {impl core::ops::drop::Drop for Global}],
 }
 
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop
-pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]))
+// Full name: alloc::vec::{impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop
+pub fn {impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause3]: Drop<T>,
-    [@TraitClause4]: Drop<A>,
+    [@TraitClause3]: core::ops::drop::Drop<T>,
+    [@TraitClause4]: core::ops::drop::Drop<A>,
 
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
-impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+// Full name: alloc::vec::{impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
+impl<T, A> core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause3]: Drop<T>,
-    [@TraitClause4]: Drop<A>,
+    [@TraitClause3]: core::ops::drop::Drop<T>,
+    [@TraitClause4]: core::ops::drop::Drop<A>,
 {
-    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
-    fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    parent_clause0 = core::marker::MetaSized<Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
+    fn drop<'_0> = {impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
 }
 
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+// Full name: alloc::string::String::{impl core::ops::drop::Drop for String}::drop
+fn {impl core::ops::drop::Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 {
     let @0: (); // return
     let @1: *mut String; // arg #1
@@ -80,15 +80,15 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
     storage_live(@2)
     @2 := &mut *(@1)
-    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}]] (*(@2)).vec
+    drop[{impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[Sized<u8>, Sized<Global>, core::ops::drop::Drop<u8>, {impl core::ops::drop::Drop for Global}]] (*(@2)).vec
     @0 := ()
     return
 }
 
-// Full name: alloc::string::String::{impl Drop for String}
-impl Drop for String {
-    parent_clause0 = MetaSized<String>
-    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+// Full name: alloc::string::String::{impl core::ops::drop::Drop for String}
+impl core::ops::drop::Drop for String {
+    parent_clause0 = core::marker::MetaSized<String>
+    fn drop<'_0> = {impl core::ops::drop::Drop for String}::drop<'_0_0>
 }
 
 // Full name: alloc::string::{String}::new
@@ -102,7 +102,7 @@ fn use_string(@1: String)
     let @1: String; // arg #1
 
     @0 := ()
-    drop[{impl Drop for String}] @1
+    drop[{impl core::ops::drop::Drop for String}] @1
     @0 := ()
     return
 }
@@ -116,7 +116,7 @@ fn main()
     storage_live(_s@1)
     _s@1 := new()
     @0 := ()
-    drop[{impl Drop for String}] _s@1
+    drop[{impl core::ops::drop::Drop for String}] _s@1
     storage_dead(_s@1)
     @0 := ()
     return

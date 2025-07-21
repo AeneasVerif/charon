@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +17,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -33,24 +34,24 @@ impl Clone for u8 {
     fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
 }
 
-// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}::eq
-pub fn {impl PartialEq<bool> for bool}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+// Full name: core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}::eq
+pub fn {impl core::cmp::PartialEq<bool> for bool}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
-impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}
+impl core::cmp::PartialEq<bool> for bool {
+    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
 }
 
 // Full name: core::default::Default
@@ -59,6 +60,7 @@ pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn default = core::default::Default::default<Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("default_fn")]
@@ -75,25 +77,25 @@ impl Default for bool {
     fn default = {impl Default for bool}::default
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    vtable: core::marker::Destruct
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop
 }
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -119,7 +121,7 @@ where
     storage_live(@1)
     @1 := @TraitClause1::default()
     @0 := Struct { 0: move (@1) }
-    drop[Drop<A>] @1
+    drop[core::ops::drop::Drop<A>] @1
     storage_dead(@1)
     return
 }
@@ -137,10 +139,11 @@ where
 // Full name: test_crate::Trait
 trait Trait<Self, B, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<B>
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
     fn method<C, [@TraitClause0]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, B, C, Clause0_Item>()
@@ -154,7 +157,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Sized<B>,
     [@TraitClause2]: Clone<A>,
-    [@TraitClause3]: PartialEq<B, bool>,
+    [@TraitClause3]: core::cmp::PartialEq<B, bool>,
     [@TraitClause4]: Sized<C>,
 {
     let @0: (); // return
@@ -170,9 +173,9 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Sized<B>,
     [@TraitClause2]: Clone<A>,
-    [@TraitClause3]: PartialEq<B, bool>,
+    [@TraitClause3]: core::cmp::PartialEq<B, bool>,
 {
-    parent_clause0 = MetaSized<Struct<A>[@TraitClause0]>
+    parent_clause0 = core::marker::MetaSized<Struct<A>[@TraitClause0]>
     parent_clause1 = @TraitClause1
     parent_clause2 = Sized<(A, B)>
     fn method<C, [@TraitClause0]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
@@ -191,7 +194,7 @@ fn main()
     storage_live(_y@2)
     _y@2 := {impl Default for Struct<A>[@TraitClause0]}::default<bool>[Sized<bool>, {impl Default for bool}]()
     storage_live(@3)
-    @3 := {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[Sized<u8>, Sized<bool>, {impl Clone for u8}, {impl PartialEq<bool> for bool}, Sized<String>]()
+    @3 := {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[Sized<u8>, Sized<bool>, {impl Clone for u8}, {impl core::cmp::PartialEq<bool> for bool}, Sized<String>]()
     storage_dead(@3)
     @0 := ()
     storage_dead(_y@2)
