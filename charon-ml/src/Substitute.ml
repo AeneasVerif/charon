@@ -98,7 +98,7 @@ let subst_free_vars (subst : single_binder_subst) : subst =
 *)
 let subst_at_binder_zero (subst : single_binder_subst) : subst =
   let subst_if_zero subst nosubst = function
-    | Bound (0, id) -> subst id
+    | Bound (dbid, id) when dbid = 0 -> subst id
     | var -> nosubst var
   in
   {
@@ -113,7 +113,7 @@ let subst_at_binder_zero (subst : single_binder_subst) : subst =
     variables to remove the current binder level. *)
 let subst_remove_binder_zero (subst : single_binder_subst) : subst =
   let subst_remove_zero subst nosubst = function
-    | Bound (0, id) -> subst id
+    | Bound (dbid, id) when dbid = 0 -> subst id
     | Bound (dbid, varid) when dbid > 0 -> nosubst (Bound (dbid - 1, varid))
     | var -> nosubst var
   in
@@ -123,6 +123,20 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
     cg_subst = subst_remove_zero subst.cg_sb_subst empty_subst.cg_subst;
     tr_subst = subst_remove_zero subst.tr_sb_subst empty_subst.tr_subst;
     tr_self = subst.tr_sb_self;
+  }
+
+(** Move a whole expression under one level of binder. *)
+let move_under_binder_subst : subst =
+  let shift = function
+    | Bound (dbid, var) -> Bound (dbid + 1, var)
+    | Free _ as var -> var
+  in
+  {
+    r_subst = compose empty_subst.r_subst shift;
+    ty_subst = compose empty_subst.ty_subst shift;
+    cg_subst = compose empty_subst.cg_subst shift;
+    tr_subst = compose empty_subst.tr_subst shift;
+    tr_self = empty_subst.tr_self;
   }
 
 (** Visitor that shifts all bound variables by the given delta *)
@@ -680,4 +694,13 @@ let bound_identity_args (params : generic_params) : generic_args =
           let trait_id = s.tr_sb_subst clause.clause_id in
           { trait_id; trait_decl_ref = clause.trait })
         params.trait_clauses;
+  }
+
+(* Bind the predicate with no higher-kinded regions to make it into a poly predicate. *)
+let trait_decl_ref_to_poly_trait_decl_ref (pred : trait_decl_ref) :
+    trait_decl_ref region_binder =
+  {
+    binder_value =
+      st_substitute_visitor#visit_trait_decl_ref move_under_binder_subst pred;
+    binder_regions = [];
   }

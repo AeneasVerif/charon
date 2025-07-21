@@ -216,7 +216,7 @@ mod trait_ref_path {
                     base: BaseClause::Local(*id),
                     parent_path: vec![],
                 }),
-                TraitRefKind::ParentClause(tref, _, id) => {
+                TraitRefKind::ParentClause(tref, id) => {
                     let mut path = tref.to_path()?;
                     path.parent_path.push(*id);
                     Some(path)
@@ -962,9 +962,9 @@ impl UpdateItemBody<'_> {
                 let path = path.on_tref(&tref.to_path().unwrap());
                 self.lookup_type_replacement(&path)
             }
-            TraitRefKind::ParentClause(parent, _, clause_id) => {
+            TraitRefKind::ParentClause(parent, clause_id) => {
                 let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id));
-                self.lookup_path_on_trait_ref(&path, parent)
+                self.lookup_path_on_trait_ref(&path, &parent.kind)
             }
             TraitRefKind::ItemClause(..) => {
                 register_error!(
@@ -1157,9 +1157,15 @@ impl VisitAstMut for UpdateItemBody<'_> {
         self.process_trait_decl_ref(&mut timpl.impl_trait, TraitRefKind::SelfId);
     }
     fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
+        let self_tref = TraitRef {
+            kind: TraitRefKind::SelfId,
+            trait_decl_ref: RegionBinder::empty(TraitDeclRef {
+                id: tdecl.def_id,
+                generics: Box::new(tdecl.generics.identity_args()),
+            }),
+        };
         for (clause_id, clause) in tdecl.parent_clauses.iter_mut_indexed() {
-            let self_path =
-                TraitRefKind::ParentClause(Box::new(TraitRefKind::SelfId), tdecl.def_id, clause_id);
+            let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }
     }

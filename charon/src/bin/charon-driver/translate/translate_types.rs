@@ -56,6 +56,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn translate_hax_int_ty(int_ty: &hax::IntTy) -> IntTy {
+        match int_ty {
+            hax::IntTy::Isize => IntTy::Isize,
+            hax::IntTy::I8 => IntTy::I8,
+            hax::IntTy::I16 => IntTy::I16,
+            hax::IntTy::I32 => IntTy::I32,
+            hax::IntTy::I64 => IntTy::I64,
+            hax::IntTy::I128 => IntTy::I128,
+        }
+    }
+
+    pub(crate) fn translate_hax_uint_ty(uint_ty: &hax::UintTy) -> UIntTy {
+        use hax::UintTy;
+        match uint_ty {
+            UintTy::Usize => UIntTy::Usize,
+            UintTy::U8 => UIntTy::U8,
+            UintTy::U16 => UIntTy::U16,
+            UintTy::U32 => UIntTy::U32,
+            UintTy::U64 => UIntTy::U64,
+            UintTy::U128 => UIntTy::U128,
+        }
+    }
+
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/
@@ -81,26 +104,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
             hax::TyKind::Int(int_ty) => {
-                use hax::IntTy;
-                TyKind::Literal(LiteralTy::Integer(match int_ty {
-                    IntTy::Isize => IntegerTy::Isize,
-                    IntTy::I8 => IntegerTy::I8,
-                    IntTy::I16 => IntegerTy::I16,
-                    IntTy::I32 => IntegerTy::I32,
-                    IntTy::I64 => IntegerTy::I64,
-                    IntTy::I128 => IntegerTy::I128,
-                }))
+                TyKind::Literal(LiteralTy::Int(Self::translate_hax_int_ty(int_ty)))
             }
-            hax::TyKind::Uint(int_ty) => {
-                use hax::UintTy;
-                TyKind::Literal(LiteralTy::Integer(match int_ty {
-                    UintTy::Usize => IntegerTy::Usize,
-                    UintTy::U8 => IntegerTy::U8,
-                    UintTy::U16 => IntegerTy::U16,
-                    UintTy::U32 => IntegerTy::U32,
-                    UintTy::U64 => IntegerTy::U64,
-                    UintTy::U128 => IntegerTy::U128,
-                }))
+            hax::TyKind::Uint(uint_ty) => {
+                TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
             }
             hax::TyKind::Float(float_ty) => {
                 use hax::FloatTy;
@@ -408,21 +415,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
             if signed {
-                match int_ty {
-                    r_abi::Integer::I8 => IntegerTy::I8,
-                    r_abi::Integer::I16 => IntegerTy::I16,
-                    r_abi::Integer::I32 => IntegerTy::I32,
-                    r_abi::Integer::I64 => IntegerTy::I64,
-                    r_abi::Integer::I128 => IntegerTy::I128,
-                }
+                IntegerTy::Signed(match int_ty {
+                    r_abi::Integer::I8 => IntTy::I8,
+                    r_abi::Integer::I16 => IntTy::I16,
+                    r_abi::Integer::I32 => IntTy::I32,
+                    r_abi::Integer::I64 => IntTy::I64,
+                    r_abi::Integer::I128 => IntTy::I128,
+                })
             } else {
-                match int_ty {
-                    r_abi::Integer::I8 => IntegerTy::U8,
-                    r_abi::Integer::I16 => IntegerTy::U16,
-                    r_abi::Integer::I32 => IntegerTy::U32,
-                    r_abi::Integer::I64 => IntegerTy::U64,
-                    r_abi::Integer::I128 => IntegerTy::U128,
-                }
+                IntegerTy::Unsigned(match int_ty {
+                    r_abi::Integer::I8 => UIntTy::U8,
+                    r_abi::Integer::I16 => UIntTy::U16,
+                    r_abi::Integer::I32 => UIntTy::U32,
+                    r_abi::Integer::I64 => UIntTy::U64,
+                    r_abi::Integer::I128 => UIntTy::U128,
+                })
             }
         }
 
@@ -467,7 +474,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         translate_primitive_int(int_ty, signed)
                     }
                     // Try to handle pointer as integers of the same size.
-                    r_abi::Primitive::Pointer(_) => IntegerTy::Isize,
+                    r_abi::Primitive::Pointer(_) => IntegerTy::Signed(IntTy::Isize),
                     r_abi::Primitive::Float(_) => {
                         unreachable!()
                     }
@@ -499,13 +506,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .as_ref()
                     .expect("No discriminant layout for enum?")
                     .tag_ty;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
 
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let tag = if variant_layout.is_uninhabited() {
                         None
                     } else {
                         tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
-                            .map(|s| ScalarValue::from_bits(tag_ty, s.to_bits(s.size())))
+                            .map(|s| match tag_ty {
+                                IntegerTy::Signed(int_ty) => {
+                                    ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size))
+                                        .unwrap()
+                                }
+                                IntegerTy::Unsigned(uint_ty) => {
+                                    ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
+                                        .unwrap()
+                                }
+                            })
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tag));
                 }
@@ -540,9 +558,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         def_span: Span,
         item_meta: &ItemMeta,
-        adt: &hax::AdtDef,
+        def: &hax::FullDef,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
+        let hax::FullDefKind::Adt {
+            adt_kind, variants, ..
+        } = def.kind()
+        else {
+            unreachable!()
+        };
 
         if item_meta.opacity.is_opaque() {
             return Ok(TypeDeclKind::Opaque);
@@ -554,12 +578,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let contents_are_public = match adt.adt_kind {
+        let contents_are_public = match adt_kind {
             AdtKind::Enum => true,
             AdtKind::Struct | AdtKind::Union => {
                 // Check the unique variant
-                error_assert!(self, def_span, adt.variants.len() == 1);
-                adt.variants[0]
+                error_assert!(self, def_span, variants.len() == 1);
+                variants[0]
                     .fields
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
@@ -575,8 +599,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // The type is transparent: explore the variants
-        let mut variants: Vector<VariantId, Variant> = Default::default();
-        for (i, var_def) in adt.variants.iter().enumerate() {
+        let mut translated_variants: Vector<VariantId, Variant> = Default::default();
+        for (i, var_def) in variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
             let mut fields: Vector<FieldId, Field> = Default::default();
@@ -652,14 +676,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     variant.attr_info.rename = Some(format!("{prefix}{name}{suffix}"));
                 }
             }
-            variants.push(variant);
+            translated_variants.push(variant);
         }
 
         // Register the type
-        let type_def_kind: TypeDeclKind = match adt.adt_kind {
-            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
-            AdtKind::Enum => TypeDeclKind::Enum(variants),
-            AdtKind::Union => TypeDeclKind::Union(variants[0].fields.clone()),
+        let type_def_kind: TypeDeclKind = match adt_kind {
+            AdtKind::Struct => TypeDeclKind::Struct(translated_variants[0].fields.clone()),
+            AdtKind::Enum => TypeDeclKind::Enum(translated_variants),
+            AdtKind::Union => TypeDeclKind::Union(translated_variants[0].fields.clone()),
         };
 
         Ok(type_def_kind)
@@ -671,7 +695,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         discr: &hax::DiscriminantValue,
     ) -> Result<ScalarValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
-        let int_ty = *ty.kind().as_literal().unwrap().as_integer().unwrap();
+        let int_ty = ty.kind().as_literal().unwrap().to_integer_ty().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
 }

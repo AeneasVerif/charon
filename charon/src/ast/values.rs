@@ -1,6 +1,6 @@
 //! Contains definitions for variables and constant values.
 
-use crate::ast::FloatTy;
+use crate::ast::{FloatTy, IntTy, UIntTy};
 use core::hash::Hash;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -48,8 +48,6 @@ pub enum Literal {
 }
 
 /// A scalar value.
-// We encode it as `{ value: ??; int_ty: IntegerTy; }` in json and on the ocaml side. We therefore
-// use a custom (de)serializer.
 #[derive(
     Debug,
     PartialEq,
@@ -63,25 +61,23 @@ pub enum Literal {
     Hash,
     PartialOrd,
     Ord,
+    Serialize,
+    Deserialize,
     Drive,
     DriveMut,
 )]
 #[drive(skip)]
+#[charon::variants_suffix("Scalar")]
 pub enum ScalarValue {
-    /// Using i64 to be safe
-    Isize(i64),
-    I8(i8),
-    I16(i16),
-    I32(i32),
-    I64(i64),
-    I128(i128),
-    /// Using u64 to be safe
-    Usize(u64),
-    U8(u8),
-    U16(u16),
-    U32(u32),
-    U64(u64),
-    U128(u128),
+    Unsigned(
+        UIntTy,
+        #[serde(with = "crate::ast::values_utils::scalar_value_ser_de")] u128,
+    ),
+
+    Signed(
+        IntTy,
+        #[serde(with = "crate::ast::values_utils::scalar_value_ser_de")] i128,
+    ),
 }
 
 /// This is simlar to the Scalar value above. However, instead of storing

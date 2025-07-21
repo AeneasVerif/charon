@@ -164,7 +164,7 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   | BinaryOp (binop, op1, op2) ->
       operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string env op2
-  | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
+  | Discriminant p -> "discriminant(" ^ place_to_string env p ^ ")"
   | Len (place, ty, const_generics) ->
       let const_generics =
         match const_generics with

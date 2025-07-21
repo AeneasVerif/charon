@@ -413,31 +413,44 @@ impl GenericArgs {
 }
 
 impl IntegerTy {
-    pub fn is_signed(&self) -> bool {
-        matches!(
-            self,
-            IntegerTy::Isize
-                | IntegerTy::I8
-                | IntegerTy::I16
-                | IntegerTy::I32
-                | IntegerTy::I64
-                | IntegerTy::I128
-        )
-    }
-
-    pub fn is_unsigned(&self) -> bool {
-        !(self.is_signed())
-    }
-
     pub fn to_unsigned(&self) -> Self {
         match self {
-            IntegerTy::Isize => IntegerTy::Usize,
-            IntegerTy::I8 => IntegerTy::U8,
-            IntegerTy::I16 => IntegerTy::U16,
-            IntegerTy::I32 => IntegerTy::U32,
-            IntegerTy::I64 => IntegerTy::U64,
-            IntegerTy::I128 => IntegerTy::U128,
+            IntegerTy::Signed(IntTy::Isize) => IntegerTy::Unsigned(UIntTy::Usize),
+            IntegerTy::Signed(IntTy::I8) => IntegerTy::Unsigned(UIntTy::U8),
+            IntegerTy::Signed(IntTy::I16) => IntegerTy::Unsigned(UIntTy::U16),
+            IntegerTy::Signed(IntTy::I32) => IntegerTy::Unsigned(UIntTy::U32),
+            IntegerTy::Signed(IntTy::I64) => IntegerTy::Unsigned(UIntTy::U64),
+            IntegerTy::Signed(IntTy::I128) => IntegerTy::Unsigned(UIntTy::U128),
             _ => *self,
+        }
+    }
+
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            IntegerTy::Signed(IntTy::Isize) => ptr_size as usize,
+            IntegerTy::Signed(IntTy::I8) => size_of::<i8>(),
+            IntegerTy::Signed(IntTy::I16) => size_of::<i16>(),
+            IntegerTy::Signed(IntTy::I32) => size_of::<i32>(),
+            IntegerTy::Signed(IntTy::I64) => size_of::<i64>(),
+            IntegerTy::Signed(IntTy::I128) => size_of::<i128>(),
+            IntegerTy::Unsigned(UIntTy::Usize) => ptr_size as usize,
+            IntegerTy::Unsigned(UIntTy::U8) => size_of::<u8>(),
+            IntegerTy::Unsigned(UIntTy::U16) => size_of::<u16>(),
+            IntegerTy::Unsigned(UIntTy::U32) => size_of::<u32>(),
+            IntegerTy::Unsigned(UIntTy::U64) => size_of::<u64>(),
+            IntegerTy::Unsigned(UIntTy::U128) => size_of::<u128>(),
+        }
+    }
+}
+
+impl LiteralTy {
+    pub fn to_integer_ty(&self) -> Option<IntegerTy> {
+        match self {
+            Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),
+            Self::UInt(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
+            _ => None,
         }
     }
 }
@@ -547,23 +560,17 @@ impl Ty {
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(kind) => kind.is_integer(),
+            TyKind::Literal(kind) => kind.is_int() || kind.is_uint(),
             _ => false,
         }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Literal(LiteralTy::Integer(kind)) => kind.is_unsigned(),
-            _ => false,
-        }
+        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(_)))
     }
 
     pub fn is_signed_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Literal(LiteralTy::Integer(kind)) => kind.is_signed(),
-            _ => false,
-        }
+        matches!(self.kind(), TyKind::Literal(LiteralTy::Int(_)))
     }
 
     /// Return true if the type is Box
