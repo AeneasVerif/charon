@@ -729,7 +729,8 @@ pub trait WithConstTy<Self, const LEN : usize>
     fn f<'_0, '_1> = test_crate::WithConstTy::f<'_0_0, '_0_1, Self, const LEN : usize>[Self]
 }
 
-pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
+// Full name: test_crate::WithConstTy::LEN2
+pub fn LEN2<Self, const LEN : usize>() -> usize
 where
     [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
 {
@@ -739,17 +740,18 @@ where
     return
 }
 
-pub const test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize
+// Full name: test_crate::WithConstTy::LEN2
+pub const LEN2<Self, const LEN : usize>: usize
 where
     [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
- = test_crate::WithConstTy::LEN2()
+ = LEN2()
 
 pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 (Array<u8, const LEN : usize>))
 where
     [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
-pub fn {impl WithConstTy<32 : usize> for bool}::LEN1() -> usize
+pub fn LEN1() -> usize
 {
     let @0: usize; // return
 
@@ -758,7 +760,7 @@ pub fn {impl WithConstTy<32 : usize> for bool}::LEN1() -> usize
 }
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
-pub const {impl WithConstTy<32 : usize> for bool}::LEN1: usize = {impl WithConstTy<32 : usize> for bool}::LEN1()
+pub const LEN1: usize = LEN1()
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
 pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
@@ -778,8 +780,8 @@ impl WithConstTy<32 : usize> for bool {
     parent_clause1 = Sized<u8>
     parent_clause2 = Sized<u64>
     parent_clause3 = {impl ToU64 for u64}
-    const LEN1 = {impl WithConstTy<32 : usize> for bool}::LEN1
-    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}]
+    const LEN1 = LEN1
+    const LEN2 = LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}]
     type V = u8
     type W = u64
     fn f<'_0, '_1> = {impl WithConstTy<32 : usize> for bool}::f<'_0_0, '_0_1>
@@ -1218,7 +1220,8 @@ where
   y: U,
 }
 
-pub fn test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
+// Full name: test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO
+pub fn FOO<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -1230,12 +1233,13 @@ where
     return
 }
 
-pub const test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<T, U>: Result<T, i32>[@TraitClause0, Sized<i32>]
+// Full name: test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO
+pub const FOO<T, U>: Result<T, i32>[@TraitClause0, Sized<i32>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<T>,
- = test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO()
+ = FOO()
 
 // Full name: test_crate::use_foo1
 pub fn use_foo1<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
@@ -1248,7 +1252,7 @@ where
     let @1: Result<T, i32>[@TraitClause0, Sized<i32>]; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+    @1 := FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
     @0 := move (@1)
     return
 }
@@ -1264,7 +1268,7 @@ where
     let @1: Result<U, i32>[@TraitClause1, Sized<i32>]; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
+    @1 := FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
     @0 := move (@1)
     return
 }

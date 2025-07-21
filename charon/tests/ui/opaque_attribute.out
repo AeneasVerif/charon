@@ -98,9 +98,11 @@ where
 // Full name: test_crate::Test
 opaque type Test
 
-fn test_crate::SIX_SIX_SIX() -> u32
+// Full name: test_crate::SIX_SIX_SIX
+fn SIX_SIX_SIX() -> u32
 
-const test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
+// Full name: test_crate::SIX_SIX_SIX
+const SIX_SIX_SIX: u32 = SIX_SIX_SIX()
 
 // Full name: test_crate::Test2
 opaque type Test2

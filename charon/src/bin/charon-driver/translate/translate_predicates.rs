@@ -1,3 +1,5 @@
+use crate::translate::translate_crate::TransItemSourceKind;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
@@ -286,10 +288,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 trait_decl_ref,
             },
             ImplExprAtom::Builtin {
-                impl_exprs, types, ..
+                trait_data,
+                impl_exprs,
+                types,
+                ..
             } => {
-                let trait_def_id = &impl_source.r#trait.hax_skip_binder_ref().def_id;
-                let trait_def = self.hax_def(trait_def_id)?;
+                let tref = &impl_source.r#trait;
+                let trait_def = self.hax_def(&tref.hax_skip_binder_ref())?;
                 let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
                     "fn_once" => Some(ClosureKind::FnOnce),
                     "fn_mut" => Some(ClosureKind::FnMut),
@@ -314,7 +319,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     TraitRefKind::TraitImpl(binder.erase())
                 } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
-                    let impl_id = self.register_trait_impl_id(span, trait_def_id);
+                    let impl_id = self.register_item(
+                        span,
+                        tref.hax_skip_binder_ref(),
+                        TransItemSourceKind::TraitImpl,
+                    );
                     let mut generics = trait_decl_ref.clone().erase().generics;
                     assert!(
                         generics.trait_refs.is_empty(),
@@ -325,6 +334,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         id: impl_id,
                         generics,
                     })
+                } else if let hax::BuiltinTraitData::Drop(DropData::Glue { ty, .. }) = trait_data
+                    && let hax::TyKind::Adt(item) = ty.kind()
+                {
+                    let impl_ref = self.translate_drop_trait_impl_ref(span, item)?;
+                    TraitRefKind::TraitImpl(impl_ref)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types
@@ -344,33 +358,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 TraitRef {
                     kind,
-                    trait_decl_ref,
-                }
-            }
-            ImplExprAtom::Drop(DropData::Glue { ty, .. })
-                if let hax::TyKind::Adt(item) = ty.kind() =>
-            {
-                let impl_ref = self.translate_drop_trait_impl_ref(span, item)?;
-                TraitRef {
-                    kind: TraitRefKind::TraitImpl(impl_ref),
-                    trait_decl_ref,
-                }
-            }
-            ImplExprAtom::Drop(..) => {
-                let meta_sized_trait = self.get_lang_item(rustc_hir::LangItem::MetaSized);
-                let meta_sized_trait = self.register_trait_decl_id(span, &meta_sized_trait);
-                let self_ty = trait_decl_ref.clone().erase().generics.types[0].clone();
-                TraitRef {
-                    kind: TraitRefKind::BuiltinOrAuto {
-                        trait_decl_ref: trait_decl_ref.clone(),
-                        parent_trait_refs: [TraitRef::new_builtin(
-                            meta_sized_trait,
-                            self_ty,
-                            Default::default(),
-                        )]
-                        .into(),
-                        types: vec![],
-                    },
                     trait_decl_ref,
                 }
             }

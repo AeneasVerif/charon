@@ -30,13 +30,17 @@ pub fn align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 
-pub fn core::f32::{f32}::MAX() -> f32
+// Full name: core::f32::{f32}::MAX
+pub fn MAX() -> f32
 
-pub const core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
+// Full name: core::f32::{f32}::MAX
+pub const MAX: f32 = MAX()
 
-pub fn core::f64::{f64}::MIN() -> f64
+// Full name: core::f64::{f64}::MIN
+pub fn MIN() -> f64
 
-pub const core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
+// Full name: core::f64::{f64}::MIN
+pub const MIN: f64 = MIN()
 
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
@@ -174,11 +178,11 @@ fn literal_casts()
     @3 := cast<u64, f64>(const (0 : u64))
     storage_dead(@3)
     storage_live(@4)
-    @6 := core::f64::{f64}::MIN
+    @6 := MIN
     @4 := cast<f64, u64>(move (@6))
     storage_dead(@4)
     storage_live(@5)
-    @7 := core::f32::{f32}::MAX
+    @7 := MAX
     @5 := cast<f32, f64>(move (@7))
     storage_dead(@5)
     @0 := ()
@@ -444,7 +448,8 @@ fn boxes()
     return
 }
 
-fn test_crate::STEAL() -> Array<(), 1 : usize>
+// Full name: test_crate::STEAL
+fn STEAL() -> Array<(), 1 : usize>
 {
     let @0: Array<(), 1 : usize>; // return
     let @1: (); // anonymous local
@@ -456,7 +461,8 @@ fn test_crate::STEAL() -> Array<(), 1 : usize>
     return
 }
 
-static test_crate::STEAL: Array<(), 1 : usize> = test_crate::STEAL()
+// Full name: test_crate::STEAL
+static STEAL: Array<(), 1 : usize> = STEAL()
 
 // Full name: test_crate::transmute
 fn transmute(@1: Array<u32, 2 : usize>) -> u64
@@ -473,7 +479,8 @@ fn transmute(@1: Array<u32, 2 : usize>) -> u64
     return
 }
 
-fn test_crate::STEAL2() -> Array<(), 13 : usize>
+// Full name: test_crate::STEAL2
+fn STEAL2() -> Array<(), 13 : usize>
 {
     let @0: Array<(), 13 : usize>; // return
     let @1: (); // anonymous local
@@ -485,7 +492,8 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
     return
 }
 
-static test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
+// Full name: test_crate::STEAL2
+static STEAL2: Array<(), 13 : usize> = STEAL2()
 
 // Full name: test_crate::nullary_ops::Struct
 struct Struct<T>

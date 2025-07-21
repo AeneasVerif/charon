@@ -125,7 +125,8 @@ pub struct UsizeNoHighBit {
   usize,
 }
 
-pub fn core::num::{usize}::MAX() -> usize
+// Full name: core::num::{usize}::MAX
+pub fn MAX() -> usize
 {
     let @0: usize; // return
 
@@ -133,7 +134,8 @@ pub fn core::num::{usize}::MAX() -> usize
     return
 }
 
-pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+// Full name: core::num::{usize}::MAX
+pub const MAX: usize = MAX()
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -364,7 +366,7 @@ fn max() -> usize
     let @1: usize; // anonymous local
 
     storage_live(@1)
-    @1 := core::num::{usize}::MAX
+    @1 := MAX
     @0 := move (@1)
     return
 }

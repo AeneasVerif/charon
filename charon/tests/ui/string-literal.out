@@ -98,7 +98,8 @@ where
     fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-fn test_crate::FOO() -> &'static (Str)
+// Full name: test_crate::FOO
+fn FOO() -> &'static (Str)
 {
     let @0: &'_ (Str); // return
 
@@ -106,9 +107,11 @@ fn test_crate::FOO() -> &'static (Str)
     return
 }
 
-static test_crate::FOO: &'static (Str) = test_crate::FOO()
+// Full name: test_crate::FOO
+static FOO: &'static (Str) = FOO()
 
-fn test_crate::BAR() -> &'static (Slice<u8>)
+// Full name: test_crate::BAR
+fn BAR() -> &'static (Slice<u8>)
 {
     let @0: &'_ (Slice<u8>); // return
     let @1: &'_ (Array<u8, 5 : usize>); // anonymous local
@@ -130,7 +133,8 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
     return
 }
 
-static test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
+// Full name: test_crate::BAR
+static BAR: &'static (Slice<u8>) = BAR()
 
 // Full name: test_crate::main
 fn main()

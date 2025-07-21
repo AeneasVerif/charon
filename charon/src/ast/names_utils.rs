@@ -2,7 +2,7 @@
 //!
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
-use crate::names::*;
+use crate::ast::*;
 
 impl PathElem {
     fn equals_ident(&self, id: &str) -> bool {
@@ -28,6 +28,11 @@ impl Name {
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.name.len()
+    }
+
+    /// If this item comes from monomorphization, return the arguments used.
+    pub fn mono_args(&self) -> Option<&GenericArgs> {
+        Some(self.name.last()?.as_monomorphized()?.as_ref())
     }
 
     /// Compare the name to a constant array.

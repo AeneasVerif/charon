@@ -37,7 +37,7 @@ fn charon_pretty_print() -> Result<()> {
             ensure!(std::fs::exists(llbc)?, "{llbc} doesn't exist!");
 
             charon(&["pretty-print", llbc], ".", |stdout, _| {
-                let search = "pub fn arrays::";
+                let search = "pub fn index_array_shared";
                 ensure!(
                     stdout.contains(search),
                     "Output of pretty-printing {llbc} is:\n{stdout:?}\nIt doesn't contain {search:?}."

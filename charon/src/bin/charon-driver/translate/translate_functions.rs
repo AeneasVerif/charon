@@ -65,7 +65,7 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Translate the signature
-        trace!("signature of {:?}:\n{:?}", def.def_id, signature.value);
+        trace!("signature of {:?}:\n{:?}", def.def_id(), signature.value);
         let inputs: Vec<Ty> = signature
             .value
             .inputs
@@ -98,14 +98,17 @@ impl ItemTransCtx<'_, '_> {
     pub(crate) fn build_ctor_body(
         &mut self,
         span: Span,
-        signature: &FunSig,
+        def: &hax::FullDef,
         adt_def_id: &hax::DefId,
         ctor_of: &hax::CtorOf,
         variant_id: usize,
         fields: &hax::IndexVec<hax::FieldIdx, hax::FieldDef>,
         output_ty: &hax::Ty,
     ) -> Result<Body, Error> {
-        let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
+        let tref = self.translate_type_decl_ref(
+            span,
+            &def.this().with_def_id(&self.t_ctx.hax_state, adt_def_id),
+        )?;
         let output_ty = self.translate_ty(span, output_ty)?;
         let mut locals = Locals {
             arg_count: fields.len(),
@@ -124,7 +127,6 @@ impl ItemTransCtx<'_, '_> {
             hax::CtorOf::Struct => None,
             hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
         };
-        let tref = TypeDeclRef::new(TypeId::Adt(adt_decl_id), signature.generics.identity_args());
         let st_kind = RawStatement::Assign(
             locals.return_place(),
             Rvalue::Aggregate(AggregateKind::Adt(tref, variant, None), args),
@@ -146,9 +148,9 @@ impl ItemTransCtx<'_, '_> {
     /// Checks whether the given id corresponds to a built-in type.
     pub(crate) fn recognize_builtin_fun(
         &mut self,
-        def_id: &hax::DefId,
+        item: &hax::ItemRef,
     ) -> Result<Option<BuiltinFunId>, Error> {
-        let def = self.t_ctx.hax_def(def_id)?;
+        let def = self.hax_def(item)?;
         let fun_id =
             if def.diagnostic_item.as_deref() == Some("box_new") && !self.t_ctx.options.raw_boxes {
                 Some(BuiltinFunId::BoxNew)

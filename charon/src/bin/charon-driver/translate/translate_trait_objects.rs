@@ -14,11 +14,11 @@ impl ItemTransCtx<'_, '_> {
         for (clause, _) in preds.predicates.iter().skip(1) {
             if let hax::ClauseKind::Trait(trait_predicate) = clause.kind.hax_skip_binder_ref() {
                 let trait_def_id = &trait_predicate.trait_ref.def_id;
-                let trait_def = self.hax_def(trait_def_id)?;
+                let trait_def = self.poly_hax_def(trait_def_id)?;
                 let has_methods = match trait_def.kind() {
                     hax::FullDefKind::Trait { items, .. } => items
                         .iter()
-                        .any(|(assoc, _)| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
+                        .any(|assoc| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
                     hax::FullDefKind::TraitAlias { .. } => false,
                     _ => unreachable!(),
                 };

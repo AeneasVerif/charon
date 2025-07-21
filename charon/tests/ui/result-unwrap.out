@@ -10,7 +10,8 @@ pub struct FormattingOptions {
   precision: u16,
 }
 
-fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
+// Full name: core::fmt::flags::DEBUG_LOWER_HEX_FLAG
+fn DEBUG_LOWER_HEX_FLAG() -> u32
 {
     let @0: u32; // return
 
@@ -18,9 +19,11 @@ fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
     return
 }
 
-const core::fmt::flags::DEBUG_LOWER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_LOWER_HEX_FLAG()
+// Full name: core::fmt::flags::DEBUG_LOWER_HEX_FLAG
+const DEBUG_LOWER_HEX_FLAG: u32 = DEBUG_LOWER_HEX_FLAG()
 
-fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
+// Full name: core::fmt::flags::DEBUG_UPPER_HEX_FLAG
+fn DEBUG_UPPER_HEX_FLAG() -> u32
 {
     let @0: u32; // return
 
@@ -28,7 +31,8 @@ fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
     return
 }
 
-const core::fmt::flags::DEBUG_UPPER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_UPPER_HEX_FLAG()
+// Full name: core::fmt::flags::DEBUG_UPPER_HEX_FLAG
+const DEBUG_UPPER_HEX_FLAG: u32 = DEBUG_UPPER_HEX_FLAG()
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -131,7 +135,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     storage_live(@3)
     storage_live(@4)
     @4 := copy (((*(f@2)).0).flags)
-    @7 := core::fmt::flags::DEBUG_LOWER_HEX_FLAG
+    @7 := DEBUG_LOWER_HEX_FLAG
     @3 := move (@4) & move (@7)
     storage_dead(@4)
     switch move (@3) {
@@ -147,7 +151,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     storage_live(@5)
     storage_live(@6)
     @6 := copy (((*(f@2)).0).flags)
-    @8 := core::fmt::flags::DEBUG_UPPER_HEX_FLAG
+    @8 := DEBUG_UPPER_HEX_FLAG
     @5 := move (@6) & move (@8)
     storage_dead(@6)
     switch move (@5) {

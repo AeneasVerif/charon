@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::DISGUISED_INT() -> *const ()
+// Full name: test_crate::DISGUISED_INT
+fn DISGUISED_INT() -> *const ()
 {
     let @0: *const (); // return
     let @1: *const (); // anonymous local
@@ -12,7 +13,8 @@ fn test_crate::DISGUISED_INT() -> *const ()
     return
 }
 
-const test_crate::DISGUISED_INT: *const () = test_crate::DISGUISED_INT()
+// Full name: test_crate::DISGUISED_INT
+const DISGUISED_INT: *const () = DISGUISED_INT()
 
 // Full name: test_crate::bar
 pub fn bar()

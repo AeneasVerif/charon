@@ -1,8 +1,10 @@
 # Final LLBC before serialization:
 
-pub fn foreign_constant_aux::CONSTANT() -> u8
+// Full name: foreign_constant_aux::CONSTANT
+pub fn CONSTANT() -> u8
 
-pub const foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
+// Full name: foreign_constant_aux::CONSTANT
+pub const CONSTANT: u8 = CONSTANT()
 
 // Full name: test_crate::foo
 fn foo() -> u8
@@ -11,7 +13,7 @@ fn foo() -> u8
     let @1: u8; // anonymous local
 
     storage_live(@1)
-    @1 := foreign_constant_aux::CONSTANT
+    @1 := CONSTANT
     @0 := move (@1)
     return
 }

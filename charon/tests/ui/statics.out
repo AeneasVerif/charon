@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::constant::CONST() -> usize
+// Full name: test_crate::constant::CONST
+fn CONST() -> usize
 {
     let @0: usize; // return
 
@@ -8,7 +9,8 @@ fn test_crate::constant::CONST() -> usize
     return
 }
 
-const test_crate::constant::CONST: usize = test_crate::constant::CONST()
+// Full name: test_crate::constant::CONST
+const CONST: usize = CONST()
 
 // Full name: test_crate::constant
 fn constant()
@@ -27,16 +29,16 @@ fn constant()
     storage_live(@7)
     storage_live(@8)
     storage_live(_val@1)
-    @6 := test_crate::constant::CONST
+    @6 := CONST
     _val@1 := move (@6)
     storage_live(_ref@2)
     storage_live(@3)
-    @7 := test_crate::constant::CONST
+    @7 := CONST
     @3 := move (@7)
     _ref@2 := &@3
     storage_live(_ref_mut@4)
     storage_live(@5)
-    @8 := test_crate::constant::CONST
+    @8 := CONST
     @5 := move (@8)
     _ref_mut@4 := &mut @5
     @0 := ()
@@ -49,7 +51,8 @@ fn constant()
     return
 }
 
-fn test_crate::shared_static::SHARED_STATIC() -> usize
+// Full name: test_crate::shared_static::SHARED_STATIC
+fn SHARED_STATIC() -> usize
 {
     let @0: usize; // return
 
@@ -57,7 +60,8 @@ fn test_crate::shared_static::SHARED_STATIC() -> usize
     return
 }
 
-static test_crate::shared_static::SHARED_STATIC: usize = test_crate::shared_static::SHARED_STATIC()
+// Full name: test_crate::shared_static::SHARED_STATIC
+static SHARED_STATIC: usize = SHARED_STATIC()
 
 // Full name: test_crate::shared_static
 fn shared_static()
@@ -78,18 +82,18 @@ fn shared_static()
     storage_live(@9)
     storage_live(_val@1)
     storage_live(@2)
-    @7 := &test_crate::shared_static::SHARED_STATIC
+    @7 := &SHARED_STATIC
     @2 := move (@7)
     _val@1 := copy (*(@2))
     storage_dead(@2)
     storage_live(_ref@3)
     storage_live(@4)
-    @8 := &test_crate::shared_static::SHARED_STATIC
+    @8 := &SHARED_STATIC
     @4 := move (@8)
     _ref@3 := &*(@4)
     storage_live(_ptr@5)
     storage_live(@6)
-    @9 := &test_crate::shared_static::SHARED_STATIC
+    @9 := &SHARED_STATIC
     @6 := move (@9)
     _ptr@5 := &raw const *(@6)
     @0 := ()
@@ -102,7 +106,8 @@ fn shared_static()
     return
 }
 
-fn test_crate::mut_static::MUT_STATIC() -> usize
+// Full name: test_crate::mut_static::MUT_STATIC
+fn MUT_STATIC() -> usize
 {
     let @0: usize; // return
 
@@ -110,7 +115,8 @@ fn test_crate::mut_static::MUT_STATIC() -> usize
     return
 }
 
-static test_crate::mut_static::MUT_STATIC: usize = test_crate::mut_static::MUT_STATIC()
+// Full name: test_crate::mut_static::MUT_STATIC
+static MUT_STATIC: usize = MUT_STATIC()
 
 // Full name: test_crate::mut_static
 fn mut_static()
@@ -139,28 +145,28 @@ fn mut_static()
     storage_live(@15)
     storage_live(_val@1)
     storage_live(@2)
-    @11 := &raw mut test_crate::mut_static::MUT_STATIC
+    @11 := &raw mut MUT_STATIC
     @2 := move (@11)
     _val@1 := copy (*(@2))
     storage_dead(@2)
     storage_live(_ref@3)
     storage_live(@4)
-    @12 := &raw mut test_crate::mut_static::MUT_STATIC
+    @12 := &raw mut MUT_STATIC
     @4 := move (@12)
     _ref@3 := &*(@4)
     storage_live(_ref_mut@5)
     storage_live(@6)
-    @13 := &raw mut test_crate::mut_static::MUT_STATIC
+    @13 := &raw mut MUT_STATIC
     @6 := move (@13)
     _ref_mut@5 := &mut *(@6)
     storage_live(_ptr@7)
     storage_live(@8)
-    @14 := &raw mut test_crate::mut_static::MUT_STATIC
+    @14 := &raw mut MUT_STATIC
     @8 := move (@14)
     _ptr@7 := &raw const *(@8)
     storage_live(_ptr_mut@9)
     storage_live(@10)
-    @15 := &raw mut test_crate::mut_static::MUT_STATIC
+    @15 := &raw mut MUT_STATIC
     @10 := move (@15)
     _ptr_mut@9 := &raw mut *(@10)
     @0 := ()
@@ -180,7 +186,8 @@ fn mut_static()
 // Full name: test_crate::non_copy_static::Foo
 struct Foo {}
 
-fn test_crate::non_copy_static::FOO() -> Foo
+// Full name: test_crate::non_copy_static::FOO
+fn FOO() -> Foo
 {
     let @0: Foo; // return
 
@@ -188,7 +195,8 @@ fn test_crate::non_copy_static::FOO() -> Foo
     return
 }
 
-static test_crate::non_copy_static::FOO: Foo = test_crate::non_copy_static::FOO()
+// Full name: test_crate::non_copy_static::FOO
+static FOO: Foo = FOO()
 
 // Full name: test_crate::non_copy_static::{Foo}::method
 fn method<'_0>(@1: &'_0 (Foo))
@@ -212,7 +220,7 @@ fn non_copy_static()
     storage_live(@3)
     storage_live(@1)
     storage_live(@2)
-    @3 := &test_crate::non_copy_static::FOO
+    @3 := &FOO
     @2 := move (@3)
     @1 := &*(@2)
     @0 := method<'_>(move (@1))

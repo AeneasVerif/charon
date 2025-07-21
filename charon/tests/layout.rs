@@ -129,7 +129,7 @@ fn type_layout() -> anyhow::Result<()> {
             First,
             Second(&'a T),
         }
-            
+
         enum GenericButFixedSize<'a, T: Sized> {
             First,
             Second(&'a T),
@@ -141,6 +141,7 @@ fn type_layout() -> anyhow::Result<()> {
             Second = 18446744073709551615,
         }
         "#,
+        &[],
     )?;
 
     // Check whether niche discriminant computations are correct, i.e. reversible.

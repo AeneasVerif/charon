@@ -1,4 +1,7 @@
 //@ charon-args=--monomorphize
+//@ charon-args=--start-from=crate::main
+//@ charon-args=--start-from=crate::FooInt
+//@ charon-args=--start-from=crate::FooBool
 // Ensures monomorphization handles globals with generics
 
 struct Foo<T> {

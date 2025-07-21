@@ -1,8 +1,10 @@
 # Final LLBC before serialization:
 
-pub fn core::num::{usize}::MAX() -> usize
+// Full name: core::num::{usize}::MAX
+pub fn MAX() -> usize
 
-pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+// Full name: core::num::{usize}::MAX
+pub const MAX: usize = MAX()
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
@@ -37,7 +39,7 @@ fn main()
     storage_live(x@1)
     x@1 := const (52 : usize)
     storage_live(y@2)
-    @10 := core::num::{usize}::MAX
+    @10 := MAX
     y@2 := move (@10)
     storage_live(z@3)
     storage_live(@4)

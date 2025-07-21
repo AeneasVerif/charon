@@ -11,9 +11,11 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
 }
 
-pub fn core::num::{u32}::MAX() -> u32
+// Full name: core::num::{u32}::MAX
+pub fn MAX() -> u32
 
-pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
+// Full name: core::num::{u32}::MAX
+pub const MAX: u32 = MAX()
 
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
@@ -28,7 +30,8 @@ pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
-pub fn test_crate::X0() -> u32
+// Full name: test_crate::X0
+pub fn X0() -> u32
 {
     let @0: u32; // return
 
@@ -36,22 +39,26 @@ pub fn test_crate::X0() -> u32
     return
 }
 
-pub const test_crate::X0: u32 = test_crate::X0()
+// Full name: test_crate::X0
+pub const X0: u32 = X0()
 
-pub fn test_crate::X1() -> u32
+// Full name: test_crate::X1
+pub fn X1() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
 
     storage_live(@1)
-    @1 := core::num::{u32}::MAX
+    @1 := MAX
     @0 := move (@1)
     return
 }
 
-pub const test_crate::X1: u32 = test_crate::X1()
+// Full name: test_crate::X1
+pub const X1: u32 = X1()
 
-pub fn test_crate::X2() -> u32
+// Full name: test_crate::X2
+pub fn X2() -> u32
 {
     let @0: u32; // return
     let x@1: u32; // local
@@ -63,7 +70,8 @@ pub fn test_crate::X2() -> u32
     return
 }
 
-pub const test_crate::X2: u32 = test_crate::X2()
+// Full name: test_crate::X2
+pub const X2: u32 = X2()
 
 // Full name: test_crate::incr
 pub fn incr(@1: u32) -> u32
@@ -82,7 +90,8 @@ pub fn incr(@1: u32) -> u32
     return
 }
 
-pub fn test_crate::X3() -> u32
+// Full name: test_crate::X3
+pub fn X3() -> u32
 {
     let @0: u32; // return
 
@@ -90,7 +99,8 @@ pub fn test_crate::X3() -> u32
     return
 }
 
-pub const test_crate::X3: u32 = test_crate::X3()
+// Full name: test_crate::X3
+pub const X3: u32 = X3()
 
 // Full name: test_crate::mk_pair0
 pub fn mk_pair0(@1: u32, @2: u32) -> (u32, u32)
@@ -140,7 +150,8 @@ pub fn mk_pair1(@1: u32, @2: u32) -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
     return
 }
 
-pub fn test_crate::P0() -> (u32, u32)
+// Full name: test_crate::P0
+pub fn P0() -> (u32, u32)
 {
     let @0: (u32, u32); // return
 
@@ -148,9 +159,11 @@ pub fn test_crate::P0() -> (u32, u32)
     return
 }
 
-pub const test_crate::P0: (u32, u32) = test_crate::P0()
+// Full name: test_crate::P0
+pub const P0: (u32, u32) = P0()
 
-pub fn test_crate::P1() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+// Full name: test_crate::P1
+pub fn P1() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
 {
     let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
 
@@ -158,9 +171,11 @@ pub fn test_crate::P1() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
     return
 }
 
-pub const test_crate::P1: Pair<u32, u32>[Sized<u32>, Sized<u32>] = test_crate::P1()
+// Full name: test_crate::P1
+pub const P1: Pair<u32, u32>[Sized<u32>, Sized<u32>] = P1()
 
-pub fn test_crate::P2() -> (u32, u32)
+// Full name: test_crate::P2
+pub fn P2() -> (u32, u32)
 {
     let @0: (u32, u32); // return
 
@@ -168,9 +183,11 @@ pub fn test_crate::P2() -> (u32, u32)
     return
 }
 
-pub const test_crate::P2: (u32, u32) = test_crate::P2()
+// Full name: test_crate::P2
+pub const P2: (u32, u32) = P2()
 
-pub fn test_crate::P3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+// Full name: test_crate::P3
+pub fn P3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
 {
     let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
 
@@ -178,7 +195,8 @@ pub fn test_crate::P3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
     return
 }
 
-pub const test_crate::P3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = test_crate::P3()
+// Full name: test_crate::P3
+pub const P3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = P3()
 
 // Full name: test_crate::Wrap
 pub struct Wrap<T>
@@ -206,7 +224,8 @@ where
     return
 }
 
-pub fn test_crate::Y() -> Wrap<i32>[Sized<i32>]
+// Full name: test_crate::Y
+pub fn Y() -> Wrap<i32>[Sized<i32>]
 {
     let @0: Wrap<i32>[Sized<i32>]; // return
 
@@ -214,7 +233,8 @@ pub fn test_crate::Y() -> Wrap<i32>[Sized<i32>]
     return
 }
 
-pub const test_crate::Y: Wrap<i32>[Sized<i32>] = test_crate::Y()
+// Full name: test_crate::Y
+pub const Y: Wrap<i32>[Sized<i32>] = Y()
 
 // Full name: test_crate::unwrap_y
 pub fn unwrap_y() -> i32
@@ -225,14 +245,15 @@ pub fn unwrap_y() -> i32
 
     storage_live(@2)
     storage_live(@1)
-    @2 := test_crate::Y
+    @2 := Y
     @1 := move (@2)
     @0 := copy ((@1).value)
     storage_dead(@1)
     return
 }
 
-pub fn test_crate::YVAL() -> i32
+// Full name: test_crate::YVAL
+pub fn YVAL() -> i32
 {
     let @0: i32; // return
 
@@ -240,9 +261,11 @@ pub fn test_crate::YVAL() -> i32
     return
 }
 
-pub const test_crate::YVAL: i32 = test_crate::YVAL()
+// Full name: test_crate::YVAL
+pub const YVAL: i32 = YVAL()
 
-fn test_crate::get_z1::Z1() -> i32
+// Full name: test_crate::get_z1::Z1
+fn Z1() -> i32
 {
     let @0: i32; // return
 
@@ -250,7 +273,8 @@ fn test_crate::get_z1::Z1() -> i32
     return
 }
 
-const test_crate::get_z1::Z1: i32 = test_crate::get_z1::Z1()
+// Full name: test_crate::get_z1::Z1
+const Z1: i32 = Z1()
 
 // Full name: test_crate::get_z1
 pub fn get_z1() -> i32
@@ -259,7 +283,7 @@ pub fn get_z1() -> i32
     let @1: i32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::get_z1::Z1
+    @1 := Z1
     @0 := move (@1)
     return
 }
@@ -286,7 +310,8 @@ pub fn add(@1: i32, @2: i32) -> i32
     return
 }
 
-pub fn test_crate::Q1() -> i32
+// Full name: test_crate::Q1
+pub fn Q1() -> i32
 {
     let @0: i32; // return
 
@@ -294,33 +319,38 @@ pub fn test_crate::Q1() -> i32
     return
 }
 
-pub const test_crate::Q1: i32 = test_crate::Q1()
+// Full name: test_crate::Q1
+pub const Q1: i32 = Q1()
 
-pub fn test_crate::Q2() -> i32
+// Full name: test_crate::Q2
+pub fn Q2() -> i32
 {
     let @0: i32; // return
     let @1: i32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::Q1
+    @1 := Q1
     @0 := move (@1)
     return
 }
 
-pub const test_crate::Q2: i32 = test_crate::Q2()
+// Full name: test_crate::Q2
+pub const Q2: i32 = Q2()
 
-pub fn test_crate::Q3() -> i32
+// Full name: test_crate::Q3
+pub fn Q3() -> i32
 {
     let @0: i32; // return
     let @1: i32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::Q2
+    @1 := Q2
     @0 := add(move (@1), const (3 : i32))
     return
 }
 
-pub const test_crate::Q3: i32 = test_crate::Q3()
+// Full name: test_crate::Q3
+pub const Q3: i32 = Q3()
 
 // Full name: test_crate::get_z2
 pub fn get_z2() -> i32
@@ -336,16 +366,17 @@ pub fn get_z2() -> i32
     storage_live(@1)
     storage_live(@2)
     @2 := get_z1()
-    @3 := test_crate::Q3
+    @3 := Q3
     @1 := add(move (@2), move (@3))
     storage_dead(@2)
-    @4 := test_crate::Q1
+    @4 := Q1
     @0 := add(move (@4), move (@1))
     storage_dead(@1)
     return
 }
 
-pub fn test_crate::S1() -> u32
+// Full name: test_crate::S1
+pub fn S1() -> u32
 {
     let @0: u32; // return
 
@@ -353,9 +384,11 @@ pub fn test_crate::S1() -> u32
     return
 }
 
-pub static test_crate::S1: u32 = test_crate::S1()
+// Full name: test_crate::S1
+pub static S1: u32 = S1()
 
-pub fn test_crate::S2() -> u32
+// Full name: test_crate::S2
+pub fn S2() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -365,7 +398,7 @@ pub fn test_crate::S2() -> u32
     storage_live(@3)
     storage_live(@1)
     storage_live(@2)
-    @3 := &test_crate::S1
+    @3 := &S1
     @2 := move (@3)
     @1 := copy (*(@2))
     @0 := incr(move (@1))
@@ -374,22 +407,26 @@ pub fn test_crate::S2() -> u32
     return
 }
 
-pub static test_crate::S2: u32 = test_crate::S2()
+// Full name: test_crate::S2
+pub static S2: u32 = S2()
 
-pub fn test_crate::S3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+// Full name: test_crate::S3
+pub fn S3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
 {
     let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
     let @1: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::P3
+    @1 := P3
     @0 := move (@1)
     return
 }
 
-pub static test_crate::S3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = test_crate::S3()
+// Full name: test_crate::S3
+pub static S3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = S3()
 
-pub fn test_crate::S4() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+// Full name: test_crate::S4
+pub fn S4() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
 {
     let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
 
@@ -397,7 +434,8 @@ pub fn test_crate::S4() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
     return
 }
 
-pub static test_crate::S4: Pair<u32, u32>[Sized<u32>, Sized<u32>] = test_crate::S4()
+// Full name: test_crate::S4
+pub static S4: Pair<u32, u32>[Sized<u32>, Sized<u32>] = S4()
 
 // Full name: test_crate::V
 pub struct V<T, const N : usize>
@@ -407,7 +445,8 @@ where
   x: Array<T, const N : usize>,
 }
 
-pub fn test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>() -> usize
+// Full name: test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN
+pub fn LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -417,10 +456,11 @@ where
     return
 }
 
-pub const test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>: usize
+// Full name: test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN
+pub const LEN<T, const N : usize>: usize
 where
     [@TraitClause0]: Sized<T>,
- = test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN()
+ = LEN()
 
 // Full name: test_crate::use_v
 pub fn use_v<T, const N : usize>() -> usize
@@ -431,7 +471,7 @@ where
     let @1: usize; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>[@TraitClause0]
+    @1 := LEN<T, const N : usize>[@TraitClause0]
     @0 := move (@1)
     return
 }
