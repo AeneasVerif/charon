@@ -428,8 +428,11 @@ impl ItemTransCtx<'_, '_> {
         // if it is a trait definition, we need to add the methods
         if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
             self.add_vtable_methods_from_trait_items(span, trait_def_id, &mut fields, items)?;
+        } else {
+            // else, it should be a trait alias, which should not have any methods in its vtable
+            // assert here for robustness
+            assert!(matches!(trait_full_def.kind(), hax::FullDefKind::TraitAlias { .. }));
         }
-        // else, it should be a trait alias, which should not have any methods in its vtable
 
         Ok(fields)
     }
