@@ -80,13 +80,6 @@ struct core::marker::MetaSized::{vtable} {
   self_ty_align: usize,
 }
 
-struct core::marker::Sized::{vtable} {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-}
-
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
@@ -191,7 +184,6 @@ struct test_crate::Super::{vtable}<T> {
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const core::marker::Sized::{vtable},
   super_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T>)), T) -> i32,
 }
 
@@ -215,7 +207,6 @@ struct test_crate::Checkable::{vtable}<T> {
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
   super_trait_1: *const test_crate::Super::{vtable}<T>,
-  super_trait_2: *const core::marker::Sized::{vtable},
   check: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, T>))) -> bool,
 }
 
@@ -292,7 +283,6 @@ struct test_crate::Modifiable::{vtable}<T> {
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
-  super_trait_1: *const core::marker::Sized::{vtable},
   modify: fn<'_0, '_1>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T>)), &'_0_1 (T)) -> T,
 }
 

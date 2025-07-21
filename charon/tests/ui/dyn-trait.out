@@ -74,26 +74,11 @@ struct core::marker::MetaSized::{vtable} {
   self_ty_align: usize,
 }
 
-struct core::marker::Sized::{vtable} {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-}
-
-struct core::marker::Tuple::{vtable} {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-}
-
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    vtable: core::marker::Tuple
 }
 
 // Full name: core::ops::function::FnOnce
@@ -102,7 +87,7 @@ pub trait FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
@@ -116,7 +101,7 @@ pub trait FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args>
 }
@@ -128,7 +113,7 @@ pub trait Fn<Self, Args>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = call<'_0_0, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args>
 }

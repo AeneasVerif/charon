@@ -1,18 +1,5 @@
 # Final LLBC before serialization:
 
-struct core::marker::MetaSized::{vtable} {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-}
-
-struct core::marker::Sized::{vtable} {
-  drop_func: fn(*mut ()),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -25,19 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct core::marker::Tuple::{vtable} {
+struct core::marker::MetaSized::{vtable} {
   drop_func: fn(*mut ()),
   self_ty_size: usize,
   self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    vtable: core::marker::Tuple
 }
 
 #[lang_item("drop")]
@@ -59,7 +44,7 @@ pub trait FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
@@ -73,7 +58,7 @@ pub trait FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args>
 }
@@ -85,7 +70,7 @@ pub trait Fn<Self, Args>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args>
 }
@@ -200,7 +185,7 @@ fn {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>(@1: closure, @2: (
 impl<'_0> FnOnce<(&'_ mut (u32))> for closure {
     parent_clause0 = MetaSized<closure>
     parent_clause1 = Sized<(&'_ mut (u32))>
-    parent_clause2 = Tuple<(&'_ mut (u32))>
+    parent_clause2 = core::marker::Tuple<(&'_ mut (u32))>
     parent_clause3 = Sized<bool>
     type Output = bool
     fn call_once = {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>
@@ -211,7 +196,7 @@ impl<'_0> FnMut<(&'_ mut (u32))> for closure {
     parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnOnce<(&'_ mut (u32))> for closure}<'_0>
     parent_clause2 = Sized<(&'_ mut (u32))>
-    parent_clause3 = Tuple<(&'_ mut (u32))>
+    parent_clause3 = core::marker::Tuple<(&'_ mut (u32))>
     fn call_mut<'_0> = {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_0_0>
 }
 
@@ -220,7 +205,7 @@ impl<'_0> Fn<(&'_ mut (u32))> for closure {
     parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnMut<(&'_ mut (u32))> for closure}<'_0>
     parent_clause2 = Sized<(&'_ mut (u32))>
-    parent_clause3 = Tuple<(&'_ mut (u32))>
+    parent_clause3 = core::marker::Tuple<(&'_ mut (u32))>
     fn call<'_0> = {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '_0_0>
 }
 

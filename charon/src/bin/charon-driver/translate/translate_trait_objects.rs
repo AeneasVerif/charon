@@ -45,13 +45,17 @@ fn drop_func_field() -> Field {
     }
 }
 
+fn usize_ty() -> Ty {
+    Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+}
+
 /// Field: `self_ty_size: usize`
 fn size_field() -> Field {
     Field {
         span: Span::dummy(),
         attr_info: dummy_public_attr_info(),
         name: Some("self_ty_size".into()),
-        ty: Ty::new(TyKind::Literal(LiteralTy::Integer(IntegerTy::Usize))),
+        ty: usize_ty(),
     }
 }
 
@@ -91,7 +95,7 @@ fn align_field() -> Field {
         span: Span::dummy(),
         attr_info: dummy_public_attr_info(),
         name: Some("self_ty_align".into()),
-        ty: Ty::new(TyKind::Literal(LiteralTy::Integer(IntegerTy::Usize))),
+        ty: usize_ty(),
     }
 }
 
@@ -123,6 +127,25 @@ impl ItemTransCtx<'_, '_> {
         Ok(TypeId::Adt(id))
     }
 
+    fn is_for_self(&self, poly_trait_ref: &RegionBinder<TraitDeclRef>) -> bool {
+        // If the trait reference is not pointing to `Self`, it is not a super trait
+        let types = &poly_trait_ref.skip_binder.generics.types;
+        if types.is_empty() {
+            return false;
+        }
+        // The outermost type variable should be where `Self` is
+        // The level should be binding_levels.len() - 1, but there is one more level
+        // of the `RegionBinder`, so we need to increase it by 1.
+        let out_most_level = self.binding_levels.len();
+        match types[0].kind() {
+            TyKind::TypeVar(DeBruijnVar::Bound(lv, TypeVarId::ZERO)) => lv.index == out_most_level,
+            TyKind::TypeVar(DeBruijnVar::Free(TypeVarId::ZERO)) => true,
+            // If it is a type variable, it should be bound to `Self`
+            TyKind::TypeVar(DeBruijnVar::Bound(_, _)) => false,
+            _ => false,
+        }
+    }
+
     fn add_parent_trait_vtable_ptrs(
         &mut self,
         fields: &mut Vector<FieldId, Field>,
@@ -137,7 +160,15 @@ impl ItemTransCtx<'_, '_> {
         );
         for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
             let poly_trait_ref = &clause.trait_;
-            // BUG: the `skip_binder` is WRONG -- it loses the newly binded regions
+            // If the trait reference is not pointing to `Self`, it is not a super trait, skip it
+            if !self.is_for_self(poly_trait_ref) {
+                trace!(
+                    "Skipping non-self trait reference: {}",
+                    poly_trait_ref.with_ctx(&self.into_fmt())
+                );
+                continue;
+            }
+            // FIXME: is it correct to use `skip_binder`? -- it might lose the newly binded regions
             let mut generics = poly_trait_ref.skip_binder.generics.clone();
             // remove the `Self` type argument from the generics
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
