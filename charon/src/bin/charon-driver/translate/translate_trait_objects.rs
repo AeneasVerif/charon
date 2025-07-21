@@ -47,7 +47,9 @@ fn size_field() -> Field {
 }
 
 /// Shift the bounded type variables in the given type by the specified distance.
-/// It can be positive or negative
+/// It can be positive or negative, for both the DB level & id at the same level
+///
+/// Note: it only shifts those bounded outside, the internally bounded variables are left intact
 fn shift_bounded_ty_vars(ty: &mut Ty, db_distance: isize, distance: isize) {
     struct SelfVisitor(isize, isize);
     impl VarsVisitor for SelfVisitor {
@@ -128,7 +130,15 @@ impl ItemTransCtx<'_, '_> {
     /// Field: `drop_func: *mut dyn Trait<'a, ..., T, ...> -> ()`
     fn drop_func_field(&mut self, trait_id: &hax::DefId) -> Field {
         // *mut Self
-        let ptr_self = Ty::new(TyKind::RawPtr(Ty::new(TyKind::TypeVar(DeBruijnVar::Bound(DeBruijnId { index: self.binding_levels.len() - 1 }, TypeVarId::ZERO))), RefKind::Mut));
+        let ptr_self = Ty::new(TyKind::RawPtr(
+            Ty::new(TyKind::TypeVar(DeBruijnVar::Bound(
+                DeBruijnId {
+                    index: self.binding_levels.len() - 1,
+                },
+                TypeVarId::ZERO,
+            ))),
+            RefKind::Mut,
+        ));
         // *mut dyn Trait<'a, ..., T, ...>
         let mut shim_ty = self.convert_to_shim_ty(Span::dummy(), trait_id, &ptr_self);
         // to shift the bounds --- remove `Self` & shift DB for `RegionBinder`
@@ -285,7 +295,8 @@ impl ItemTransCtx<'_, '_> {
             fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
                 let SelfVisitor(self_level, target_ty) = self.clone();
                 if let DeBruijnVar::Bound(lv, TypeVarId::ZERO) = v
-                    && lv.index == self_level {
+                    && lv.index == self_level
+                {
                     Some(target_ty)
                 } else {
                     None
@@ -402,6 +413,27 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
+    fn gen_vtable_struct_fields(
+        &mut self,
+        span: Span,
+        trait_full_def: &hax::FullDef,
+    ) -> Result<Vector<FieldId, Field>, Error> {
+        let trait_def_id = trait_full_def.def_id();
+        let mut fields = self.common_vtable_entries(&trait_def_id);
+
+        // translate the super pointers
+        let parent_clauses = mem::take(&mut self.parent_trait_clauses);
+        self.add_parent_trait_vtable_ptrs(&mut fields, &parent_clauses)?;
+
+        // if it is a trait definition, we need to add the methods
+        if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
+            self.add_vtable_methods_from_trait_items(span, trait_def_id, &mut fields, items)?;
+        }
+        // else, it should be a trait alias, which should not have any methods in its vtable
+
+        Ok(fields)
+    }
+
     /// the true layout of the vtable:
     /// [ drop_func : *mut () -> (),
     ///   self_ty_size : usize,
@@ -416,23 +448,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TypeDecl, Error> {
         // start by getting the generic environment ready
         self.translate_def_generics(Span::dummy(), trait_full_def)?;
-        let trait_def_id = trait_full_def.def_id();
-        let mut fields = self.common_vtable_entries(&trait_def_id);
-
-        // translate the super pointers
-        let parent_clauses = mem::take(&mut self.parent_trait_clauses);
-        self.add_parent_trait_vtable_ptrs(&mut fields, &parent_clauses)?;
-
-        // if it is a trait definition, we need to add the methods
-        if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
-            self.add_vtable_methods_from_trait_items(
-                item_meta.span,
-                trait_def_id,
-                &mut fields,
-                items,
-            )?;
-        }
-        // else, it should be a trait alias, which should not have any methods in its vtable
+        let fields = self.gen_vtable_struct_fields(item_meta.span, trait_full_def)?;
 
         // take out the required stuff before consuming `self`
         let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
@@ -527,6 +543,32 @@ impl ItemTransCtx<'_, '_> {
         (trait_ref, vtable_struct_ref, trait_decl_ref)
     }
 
+    /// Generate the body of the vtable instance function.
+    /// let ret@0 : VTable;
+    /// ret@0 = VTable { ... };
+    /// return;
+    fn gen_vtable_instance_func_body(
+        &mut self,
+        vtable_struct_ref: TypeDeclRef,
+    ) -> Result<Body, Error> {
+        let mut locals = Vector::new();
+        let ret_local = locals.push_with(|idx| Local {
+            index: idx,
+            name: Some("ret".into()),
+            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
+        });
+        // Generate the body of the vtable instance function.
+        Ok(Body::Structured(GExprBody {
+            span: Span::dummy(),
+            locals: Locals {
+                arg_count: 0,
+                locals: locals,
+            },
+            comments: Vec::new(),
+            body: todo!(),
+        }))
+    }
+
     pub(crate) fn translate_vtable_instance_body(
         mut self,
         init_func_id: FunDeclId,
@@ -546,15 +588,19 @@ impl ItemTransCtx<'_, '_> {
             is_unsafe: true,
             generics: self.the_only_binder().params.clone(),
             inputs: vec![Ty::mk_unit()],
-            output: Ty::new(TyKind::Adt(vtable_struct_ref)),
+            output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
 
         let body = match trait_impl_def.kind() {
             hax::FullDefKind::TraitImpl { .. } => {
-                todo!()
+                let body = self.gen_vtable_instance_func_body(vtable_struct_ref)?;
+                Ok(body)
             },
             _ => {
-                panic!("Unexpected trait impl definition kind: {:?}", trait_impl_def.kind());
+                panic!(
+                    "Unexpected trait impl definition kind: {:?}",
+                    trait_impl_def.kind()
+                );
             }
         };
 

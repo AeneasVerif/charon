@@ -38,10 +38,34 @@ fn modify_trait_object<T : Clone>(arg: &T) -> T {
     let x : &mut dyn Modifiable<T> = &mut 199;
     x.modify(arg)
 }
+trait BaseOn<T> {
+    fn operate_on(&self, t : &T);
+}
+trait Both32And64 : BaseOn<i32> + BaseOn<i64> {
+    fn both_operate(&self, t32: &i32, t64: &i64) {
+        self.operate_on(t32);
+        self.operate_on(t64);
+    }
+}
+impl BaseOn<i32> for i32 {
+    fn operate_on(&self, t: &i32) {
+        assert!(*self > *t);
+    }
+}
+impl BaseOn<i64> for i32 {
+    fn operate_on(&self, t: &i64) {
+        assert!(*self as i64 > *t);
+    }
+}
+impl Both32And64 for i32 { }
 fn main() {
     let x : &dyn Checkable<i32> = &42;
     assert!(x.check());
     let y : &mut dyn Modifiable<i32> = &mut 99;
     assert!(!modify_trait_object(&"Hello".to_string()).is_empty());
     assert_eq!(y.modify(&mut 100), 100);
+    let z : &dyn NoParam = to_dyn_obj(&42);
+    z.dummy();
+    let a : &dyn Both32And64 = &42;
+    a.both_operate(&100, &200);
 }

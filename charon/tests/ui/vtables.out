@@ -446,6 +446,216 @@ where
     return
 }
 
+// Full name: test_crate::BaseOn
+trait BaseOn<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn operate_on<'_0, '_1> = test_crate::BaseOn::operate_on<'_0_0, '_0_1, Self, T>[Self]
+    vtable: test_crate::BaseOn::{vtable}<T>
+}
+
+struct test_crate::BaseOn::{vtable}<T> {
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, T>)),
+  self_ty_size: usize,
+  self_ty_align: usize,
+  super_trait_0: *const core::marker::MetaSized::{vtable},
+  operate_on: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, T>)), &'_0_1 (T)),
+}
+
+fn test_crate::BaseOn::operate_on<'_0, '_1, Self, T>(@1: &'_0 (Self), @2: &'_1 (T))
+where
+    [@TraitClause0]: BaseOn<Self, T>,
+
+// Full name: test_crate::Both32And64
+trait Both32And64<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: BaseOn<Self, i32>
+    parent_clause2 : [@TraitClause2]: BaseOn<Self, i64>
+    fn both_operate<'_0, '_1, '_2> = both_operate<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: test_crate::Both32And64::{vtable}
+}
+
+struct test_crate::Both32And64::{vtable} {
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>)),
+  self_ty_size: usize,
+  self_ty_align: usize,
+  super_trait_0: *const core::marker::MetaSized::{vtable},
+  super_trait_1: *const test_crate::BaseOn::{vtable}<i32>,
+  super_trait_2: *const test_crate::BaseOn::{vtable}<i64>,
+  both_operate: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>)), &'_0_1 (i32), &'_0_2 (i64)),
+}
+
+// Full name: test_crate::Both32And64::both_operate
+fn both_operate<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 (i32), @3: &'_2 (i64))
+where
+    [@TraitClause0]: Both32And64<Self>,
+{
+    let @0: (); // return
+    let self@1: &'_ (Self); // arg #1
+    let t32@2: &'_ (i32); // arg #2
+    let t64@3: &'_ (i64); // arg #3
+    let @4: (); // anonymous local
+    let @5: &'_ (Self); // anonymous local
+    let @6: &'_ (i32); // anonymous local
+    let @7: (); // anonymous local
+    let @8: &'_ (Self); // anonymous local
+    let @9: &'_ (i64); // anonymous local
+
+    storage_live(@4)
+    storage_live(@5)
+    @5 := &*(self@1)
+    storage_live(@6)
+    @6 := &*(t32@2)
+    @4 := @TraitClause0::parent_clause1::operate_on<'_, '_>(move (@5), move (@6))
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_live(@7)
+    storage_live(@8)
+    @8 := &*(self@1)
+    storage_live(@9)
+    @9 := &*(t64@3)
+    @7 := @TraitClause0::parent_clause2::operate_on<'_, '_>(move (@8), move (@9))
+    storage_dead(@9)
+    storage_dead(@8)
+    storage_dead(@7)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i32> for i32}::operate_on
+fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32))
+{
+    let @0: (); // return
+    let self@1: &'_ (i32); // arg #1
+    let t@2: &'_ (i32); // arg #2
+    let @3: (); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: i32; // anonymous local
+    let @6: i32; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := copy (*(self@1))
+    storage_live(@6)
+    @6 := copy (*(t@2))
+    @4 := move (@5) > move (@6)
+    if move (@4) {
+    }
+    else {
+        storage_dead(@6)
+        storage_dead(@5)
+        panic(core::panicking::panic)
+    }
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@3)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i32> for i32}
+impl BaseOn<i32> for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = Sized<i32>
+    fn operate_on<'_0, '_1> = {impl BaseOn<i32> for i32}::operate_on<'_0_0, '_0_1>
+}
+
+// Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on
+fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i64))
+{
+    let @0: (); // return
+    let self@1: &'_ (i32); // arg #1
+    let t@2: &'_ (i64); // arg #2
+    let @3: (); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: i64; // anonymous local
+    let @6: i32; // anonymous local
+    let @7: i64; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    @6 := copy (*(self@1))
+    @5 := cast<i32, i64>(move (@6))
+    storage_dead(@6)
+    storage_live(@7)
+    @7 := copy (*(t@2))
+    @4 := move (@5) > move (@7)
+    if move (@4) {
+    }
+    else {
+        storage_dead(@7)
+        storage_dead(@5)
+        panic(core::panicking::panic)
+    }
+    storage_dead(@7)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@3)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i64> for i32}
+impl BaseOn<i64> for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = Sized<i64>
+    fn operate_on<'_0, '_1> = {impl BaseOn<i64> for i32}::operate_on<'_0_0, '_0_1>
+}
+
+fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
+{
+    let @0: (); // return
+    let self@1: &'_ (i32); // arg #1
+    let t32@2: &'_ (i32); // arg #2
+    let t64@3: &'_ (i64); // arg #3
+    let @4: (); // anonymous local
+    let @5: &'_ (i32); // anonymous local
+    let @6: &'_ (i32); // anonymous local
+    let @7: (); // anonymous local
+    let @8: &'_ (i32); // anonymous local
+    let @9: &'_ (i64); // anonymous local
+
+    storage_live(@4)
+    storage_live(@5)
+    @5 := &*(self@1)
+    storage_live(@6)
+    @6 := &*(t32@2)
+    @4 := {impl Both32And64 for i32}::parent_clause1::operate_on<'_, '_>(move (@5), move (@6))
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_live(@7)
+    storage_live(@8)
+    @8 := &*(self@1)
+    storage_live(@9)
+    @9 := &*(t64@3)
+    @7 := {impl Both32And64 for i32}::parent_clause2::operate_on<'_, '_>(move (@8), move (@9))
+    storage_dead(@9)
+    storage_dead(@8)
+    storage_dead(@7)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Both32And64 for i32}
+impl Both32And64 for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = {impl BaseOn<i32> for i32}
+    parent_clause2 = {impl BaseOn<i64> for i32}
+    fn both_operate<'_0, '_1, '_2> = test_crate::{impl Both32And64 for i32}::both_operate<'_0_0, '_0_1, '_0_2>
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -492,6 +702,26 @@ fn main()
     let @40: &'_ (i32); // anonymous local
     let @41: &'_ (i32); // anonymous local
     let @42: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let z@43: &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // local
+    let @44: &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // anonymous local
+    let @45: &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // anonymous local
+    let @46: &'_ (i32); // anonymous local
+    let @47: &'_ (i32); // anonymous local
+    let @48: i32; // anonymous local
+    let @49: (); // anonymous local
+    let @50: &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // anonymous local
+    let a@51: &'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)); // local
+    let @52: &'_ (i32); // anonymous local
+    let @53: &'_ (i32); // anonymous local
+    let @54: i32; // anonymous local
+    let @55: (); // anonymous local
+    let @56: &'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)); // anonymous local
+    let @57: &'_ (i32); // anonymous local
+    let @58: &'_ (i32); // anonymous local
+    let @59: i32; // anonymous local
+    let @60: &'_ (i64); // anonymous local
+    let @61: &'_ (i64); // anonymous local
+    let @62: i64; // anonymous local
 
     storage_live(@21)
     storage_live(@22)
@@ -515,6 +745,26 @@ fn main()
     storage_live(@40)
     storage_live(@41)
     storage_live(@42)
+    storage_live(z@43)
+    storage_live(@44)
+    storage_live(@45)
+    storage_live(@46)
+    storage_live(@47)
+    storage_live(@48)
+    storage_live(@49)
+    storage_live(@50)
+    storage_live(a@51)
+    storage_live(@52)
+    storage_live(@53)
+    storage_live(@54)
+    storage_live(@55)
+    storage_live(@56)
+    storage_live(@57)
+    storage_live(@58)
+    storage_live(@59)
+    storage_live(@60)
+    storage_live(@61)
+    storage_live(@62)
     storage_live(x@1)
     storage_live(@2)
     storage_live(@3)
@@ -645,7 +895,67 @@ fn main()
         storage_dead(@24)
         storage_dead(@22)
         storage_dead(@21)
+        storage_live(z@43)
+        storage_live(@44)
+        storage_live(@45)
+        storage_live(@46)
+        storage_live(@47)
+        storage_live(@48)
+        @48 := const (42 : i32)
+        @47 := &@48
+        @46 := &*(@47)
+        @45 := to_dyn_obj<'_, i32>[Sized<i32>, {impl NoParam for i32}](move (@46))
+        @44 := &*(@45)
+        z@43 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>>(move (@44))
+        storage_dead(@46)
+        storage_dead(@44)
+        storage_dead(@48)
+        storage_dead(@47)
+        storage_dead(@45)
+        storage_live(@49)
+        storage_live(@50)
+        @50 := &*(z@43)
+        @49 := NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>::dummy<'_>(move (@50))
+        storage_dead(@50)
+        storage_dead(@49)
+        storage_live(a@51)
+        storage_live(@52)
+        storage_live(@53)
+        storage_live(@54)
+        @54 := const (42 : i32)
+        @53 := &@54
+        @52 := &*(@53)
+        a@51 := unsize_cast<&'_ (i32), &'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)), {impl Both32And64 for i32}>(move (@52))
+        storage_dead(@52)
+        storage_dead(@53)
+        storage_live(@55)
+        storage_live(@56)
+        @56 := &*(a@51)
+        storage_live(@57)
+        storage_live(@58)
+        storage_live(@59)
+        @59 := const (100 : i32)
+        @58 := &@59
+        @57 := &*(@58)
+        storage_live(@60)
+        storage_live(@61)
+        storage_live(@62)
+        @62 := const (200 : i64)
+        @61 := &@62
+        @60 := &*(@61)
+        @55 := Both32And64<(dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)>::both_operate<'_, '_, '_>(move (@56), move (@57), move (@60))
+        storage_dead(@60)
+        storage_dead(@57)
+        storage_dead(@56)
+        storage_dead(@62)
+        storage_dead(@61)
+        storage_dead(@59)
+        storage_dead(@58)
+        storage_dead(@55)
         @0 := ()
+        storage_dead(@54)
+        storage_dead(a@51)
+        storage_dead(z@43)
         storage_dead(@11)
         storage_dead(y@8)
         storage_dead(@4)
