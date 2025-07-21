@@ -9,7 +9,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 struct core::cmp::PartialEq::{vtable}<Rhs> {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs>)),
   self_ty_size: usize,
   self_ty_align: usize,
   eq: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs>)), &'_0_1 (Rhs)) -> bool,
@@ -57,7 +57,7 @@ pub trait Display<Self>
 }
 
 struct core::fmt::Display::{vtable} {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn>)),
   self_ty_size: usize,
   self_ty_align: usize,
   fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn>)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
@@ -69,7 +69,7 @@ where
     [@TraitClause0]: Display<Self>,
 
 struct core::marker::MetaSized::{vtable} {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn>)),
   self_ty_size: usize,
   self_ty_align: usize,
 }

@@ -75,7 +75,7 @@ impl core::fmt::Display for Str {
 }
 
 struct core::marker::MetaSized::{vtable} {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn>)),
   self_ty_size: usize,
   self_ty_align: usize,
 }
@@ -180,7 +180,7 @@ trait Super<Self, T>
 }
 
 struct test_crate::Super::{vtable}<T> {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T>)),
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
@@ -202,7 +202,7 @@ trait Checkable<Self, T>
 }
 
 struct test_crate::Checkable::{vtable}<T> {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, T>)),
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
@@ -279,7 +279,7 @@ trait Modifiable<Self, T>
 }
 
 struct test_crate::Modifiable::{vtable}<T> {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T>)),
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},
@@ -339,7 +339,7 @@ trait NoParam<Self>
 }
 
 struct test_crate::NoParam::{vtable} {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn>)),
   self_ty_size: usize,
   self_ty_align: usize,
   super_trait_0: *const core::marker::MetaSized::{vtable},

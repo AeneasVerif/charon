@@ -49,7 +49,7 @@ pub trait Display<Self>
 
 // Full name: core::fmt::Display::{vtable}
 struct {vtable} {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn>)),
   self_ty_size: usize,
   self_ty_align: usize,
   fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn>)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],

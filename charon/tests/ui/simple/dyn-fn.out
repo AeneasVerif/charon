@@ -13,7 +13,7 @@ pub trait Sized<Self>
 }
 
 struct core::marker::MetaSized::{vtable} {
-  drop_func: fn(*mut ()),
+  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn>)),
   self_ty_size: usize,
   self_ty_align: usize,
 }

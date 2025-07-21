@@ -32,19 +32,6 @@ fn dummy_public_attr_info() -> AttrInfo {
     }
 }
 
-/// Field: `drop_func: *mut () -> ()`
-fn drop_func_field() -> Field {
-    Field {
-        span: Span::dummy(),
-        attr_info: dummy_public_attr_info(),
-        name: Some("drop_func".into()),
-        ty: Ty::new(TyKind::FnPtr(RegionBinder {
-            regions: Vector::new(),
-            skip_binder: (Vec::from([unit_raw_ptr(true)]), Ty::mk_unit()),
-        })),
-    }
-}
-
 fn usize_ty() -> Ty {
     Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
 }
@@ -99,14 +86,6 @@ fn align_field() -> Field {
     }
 }
 
-fn common_vtable_entries() -> Vector<FieldId, Field> {
-    let mut ret = Vector::new();
-    ret.push(drop_func_field());
-    ret.push(size_field());
-    ret.push(align_field());
-    ret
-}
-
 /// Remove the first `Self` type variable from the generic parameters.
 fn remove_self_from_params(params: &mut GenericParams) {
     params.types.remove_and_shift_ids(TypeVarId::ZERO);
@@ -146,6 +125,33 @@ impl ItemTransCtx<'_, '_> {
         }
     }
 
+    /// Field: `drop_func: *mut dyn Trait<'a, ..., T, ...> -> ()`
+    fn drop_func_field(&mut self, trait_id: &hax::DefId) -> Field {
+        // *mut Self
+        let ptr_self = Ty::new(TyKind::RawPtr(Ty::new(TyKind::TypeVar(DeBruijnVar::Bound(DeBruijnId { index: self.binding_levels.len() - 1 }, TypeVarId::ZERO))), RefKind::Mut));
+        // *mut dyn Trait<'a, ..., T, ...>
+        let mut shim_ty = self.convert_to_shim_ty(Span::dummy(), trait_id, &ptr_self);
+        // to shift the bounds --- remove `Self` & shift DB for `RegionBinder`
+        shift_bounded_ty_vars(&mut shim_ty, 1, -1);
+        Field {
+            span: Span::dummy(),
+            attr_info: dummy_public_attr_info(),
+            name: Some("drop_func".into()),
+            ty: Ty::new(TyKind::FnPtr(RegionBinder {
+                regions: Vector::new(),
+                skip_binder: (Vec::from([shim_ty]), Ty::mk_unit()),
+            })),
+        }
+    }
+
+    fn common_vtable_entries(&mut self, trait_id: &hax::DefId) -> Vector<FieldId, Field> {
+        let mut ret = Vector::new();
+        ret.push(self.drop_func_field(trait_id));
+        ret.push(size_field());
+        ret.push(align_field());
+        ret
+    }
+
     fn add_parent_trait_vtable_ptrs(
         &mut self,
         fields: &mut Vector<FieldId, Field>,
@@ -160,7 +166,8 @@ impl ItemTransCtx<'_, '_> {
         );
         for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
             let poly_trait_ref = &clause.trait_;
-            // If the trait reference is not pointing to `Self`, it is not a super trait, skip it
+            // The trait reference is pointing to `Self` iff it is a super trait
+            // If it is not a super trait, skip it
             if !self.is_for_self(poly_trait_ref) {
                 trace!(
                     "Skipping non-self trait reference: {}",
@@ -269,16 +276,16 @@ impl ItemTransCtx<'_, '_> {
             "Target shim type: `{}`",
             target_ty.with_ctx(&self.into_fmt())
         );
+        let self_level = self.binding_levels.len() - 1;
 
         // Then, replace every `Self` in the type with the target type
         #[derive(Clone)]
-        struct SelfVisitor(Ty);
+        struct SelfVisitor(usize, Ty);
         impl VarsVisitor for SelfVisitor {
             fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
-                let SelfVisitor(target_ty) = self.clone();
-                // if the var refers to Bound(0), it refers to `Self`
-                // Otherwise, when it is referring something else, it can be unchanged
-                if let DeBruijnVar::Bound(_, TypeVarId::ZERO) = v {
+                let SelfVisitor(self_level, target_ty) = self.clone();
+                if let DeBruijnVar::Bound(lv, TypeVarId::ZERO) = v
+                    && lv.index == self_level {
                     Some(target_ty)
                 } else {
                     None
@@ -286,7 +293,7 @@ impl ItemTransCtx<'_, '_> {
             }
         }
         let mut ty = in_ty.clone();
-        ty.visit_vars(&mut SelfVisitor(target_ty));
+        ty.visit_vars(&mut SelfVisitor(self_level, target_ty));
         trace!("Converted shim type: `{}`", ty.with_ctx(&self.into_fmt()));
         ty
         // unit_raw_ptr(true)  // maybe this one is simpler?
@@ -409,7 +416,8 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TypeDecl, Error> {
         // start by getting the generic environment ready
         self.translate_def_generics(Span::dummy(), trait_full_def)?;
-        let mut fields = common_vtable_entries();
+        let trait_def_id = trait_full_def.def_id();
+        let mut fields = self.common_vtable_entries(&trait_def_id);
 
         // translate the super pointers
         let parent_clauses = mem::take(&mut self.parent_trait_clauses);
@@ -419,7 +427,7 @@ impl ItemTransCtx<'_, '_> {
         if let hax::FullDefKind::Trait { items, .. } = &trait_full_def.kind() {
             self.add_vtable_methods_from_trait_items(
                 item_meta.span,
-                trait_full_def.def_id(),
+                trait_def_id,
                 &mut fields,
                 items,
             )?;
