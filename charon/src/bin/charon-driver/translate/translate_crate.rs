@@ -364,19 +364,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         )
     }
 
-    /// Translate the generics for this item. In `--monomorphize` mode, returns empty generics.
-    fn translate_item_generics(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-    ) -> Result<GenericArgs, Error> {
-        if self.monomorphize() {
-            Ok(GenericArgs::empty())
-        } else {
-            self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
-        }
-    }
-
     /// Register this item and enqueue it for translation.
     pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
         &mut self,
@@ -385,7 +372,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         let id: AnyTransId = self.register_item(span, item, kind);
-        let generics = self.translate_item_generics(span, item)?;
+        let generics = if self.monomorphize() {
+            Ok(GenericArgs::empty())
+        } else {
+            self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
+        }?;
         let item = ItemRef {
             id,
             generics: Box::new(generics),
@@ -401,7 +392,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<TypeDeclRef, Error> {
         match self.recognize_builtin_type(item)? {
             Some(id) => {
-                let generics = self.translate_item_generics(span, item)?;
+                let generics =
+                    self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
                 Ok(TypeDeclRef {
                     id: TypeId::Builtin(id),
                     generics: Box::new(generics),
@@ -419,7 +411,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<MaybeBuiltinFunDeclRef, Error> {
         match self.recognize_builtin_fun(item)? {
             Some(id) => {
-                let generics = self.translate_item_generics(span, item)?;
+                let generics =
+                    self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
                 Ok(MaybeBuiltinFunDeclRef {
                     id: FunId::Builtin(id),
                     generics: Box::new(generics),
