@@ -216,7 +216,8 @@ impl ItemTransCtx<'_, '_> {
                     // Ensure we translate the corresponding decl signature.
                     // FIXME(self_clause): also ensure we translate associated globals
                     // consistently; to do once we have clearer `Self` clause handling.
-                    let _ = self.translate_fun_id(span, implemented_trait_item);
+                    let _: FunDeclId =
+                        self.register_item(span, implemented_trait_item, TransItemSourceKind::Fun);
                 }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitImpl {

@@ -280,6 +280,40 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
+pub struct ItemRef<Id> {
+    id: Id,
+    generics: BoxedArgs,
+}
+
+// Implement `ItemRef<_>` -> `FooDeclRef` conversions.
+macro_rules! convert_item_ref {
+    ($item_ref_ty:ident($id:ident)) => {
+        impl TryFrom<ItemRef<AnyTransId>> for $item_ref_ty {
+            type Error = ();
+            fn try_from(item: ItemRef<AnyTransId>) -> Result<Self, ()> {
+                Ok($item_ref_ty {
+                    id: item.id.try_into()?,
+                    generics: item.generics,
+                })
+            }
+        }
+        impl From<ItemRef<$id>> for $item_ref_ty {
+            fn from(item: ItemRef<$id>) -> Self {
+                $item_ref_ty {
+                    id: item.id,
+                    generics: item.generics,
+                }
+            }
+        }
+    };
+}
+convert_item_ref!(TypeDeclRef(TypeId));
+convert_item_ref!(FunDeclRef(FunDeclId));
+convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
+convert_item_ref!(GlobalDeclRef(GlobalDeclId));
+convert_item_ref!(TraitDeclRef(TraitDeclId));
+convert_item_ref!(TraitImplRef(TraitImplId));
+
 // Id and item reference registration.
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
@@ -331,7 +365,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Translate the generics for this item. In `--monomorphize` mode, returns empty generics.
-    pub(crate) fn translate_item_generics(
+    fn translate_item_generics(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -343,41 +377,56 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Translate a type def id
-    pub(crate) fn translate_type_id(
+    /// Register this item and enqueue it for translation.
+    pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
-    ) -> Result<TypeId, Error> {
-        Ok(match self.recognize_builtin_type(item)? {
-            Some(id) => TypeId::Builtin(id),
-            None => TypeId::Adt(self.register_item(span, item, TransItemSourceKind::Type)),
-        })
+        kind: TransItemSourceKind,
+    ) -> Result<T, Error> {
+        let id: AnyTransId = self.register_item(span, item, kind);
+        let generics = self.translate_item_generics(span, item)?;
+        let item = ItemRef {
+            id,
+            generics: Box::new(generics),
+        };
+        Ok(item.try_into().ok().unwrap())
     }
 
+    /// Translate a type def id
     pub(crate) fn translate_type_decl_ref(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TypeDeclRef, Error> {
-        let id = self.translate_type_id(span, item)?;
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TypeDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        match self.recognize_builtin_type(item)? {
+            Some(id) => {
+                let generics = self.translate_item_generics(span, item)?;
+                Ok(TypeDeclRef {
+                    id: TypeId::Builtin(id),
+                    generics: Box::new(generics),
+                })
+            }
+            None => self.translate_item(span, item, TransItemSourceKind::Type),
+        }
     }
 
     /// Translate a function def id
-    pub(crate) fn translate_fun_id(
+    pub(crate) fn translate_fun_item(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
-    ) -> Result<FunId, Error> {
-        Ok(match self.recognize_builtin_fun(item)? {
-            Some(id) => FunId::Builtin(id),
-            None => FunId::Regular(self.register_item(span, item, TransItemSourceKind::Fun)),
-        })
+    ) -> Result<MaybeBuiltinFunDeclRef, Error> {
+        match self.recognize_builtin_fun(item)? {
+            Some(id) => {
+                let generics = self.translate_item_generics(span, item)?;
+                Ok(MaybeBuiltinFunDeclRef {
+                    id: FunId::Builtin(id),
+                    generics: Box::new(generics),
+                })
+            }
+            None => self.translate_item(span, item, TransItemSourceKind::Fun),
+        }
     }
 
     /// Auxiliary function to translate function calls and references to functions.
@@ -388,23 +437,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        let fun_id = self.translate_fun_id(span, item)?;
+        let fun_item = self.translate_fun_item(span, item)?;
         let late_bound = match self.hax_def(item)?.kind() {
             hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
                 Some(sig.as_ref().rebind(()))
             }
             _ => None,
         };
-        let generics = self.translate_item_generics(span, item)?;
-        let bound_generics = self.append_late_bound_to_generics(span, generics, late_bound)?;
+        let bound_generics =
+            self.append_late_bound_to_generics(span, *fun_item.generics, late_bound)?;
         let fun_id = match &item.in_trait {
             // Direct function call
-            None => FunIdOrTraitMethodRef::Fun(fun_id),
+            None => FunIdOrTraitMethodRef::Fun(fun_item.id),
             // Trait method
             Some(impl_expr) => {
                 let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
                 let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-                let method_decl_id = *fun_id
+                let method_decl_id = *fun_item
+                    .id
                     .as_regular()
                     .expect("methods are not builtin functions");
                 FunIdOrTraitMethodRef::Trait(trait_ref.move_under_binder(), name, method_decl_id)
@@ -421,12 +471,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<GlobalDeclRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::Global);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(GlobalDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::Global)
     }
 
     pub(crate) fn translate_trait_decl_ref(
@@ -434,12 +479,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitDeclRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::TraitDecl);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TraitDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
 
     pub(crate) fn translate_trait_impl_ref(
@@ -447,12 +487,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitImplRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::TraitImpl);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TraitImplRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::TraitImpl)
     }
 
     pub(crate) fn translate_drop_trait_impl_ref(
@@ -460,12 +495,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitImplRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::DropGlueImpl);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TraitImplRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::DropGlueImpl)
     }
 }
 
