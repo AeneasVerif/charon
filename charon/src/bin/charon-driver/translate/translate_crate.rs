@@ -130,7 +130,11 @@ impl TransItemSource {
 
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord + '_ {
-        (self.def_id().index, &self.kind)
+        let item_id = match &self.item {
+            RustcItem::Poly(_) => None,
+            RustcItem::Mono(item) => Some(item.id()),
+        };
+        (self.def_id().index, &self.kind, item_id)
     }
 }
 

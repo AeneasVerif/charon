@@ -11,6 +11,17 @@ pub trait Sized::<i32>
     parent_clause0 : [@TraitClause0]: MetaSized::<i32>
 }
 
+// Full name: core::marker::MetaSized::<bool>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<bool>
+
+// Full name: core::marker::Sized::<bool>
+#[lang_item("sized")]
+pub trait Sized::<bool>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+}
+
 // Full name: test_crate::Foo::<i32>
 struct Foo::<i32> {
   value: i32,
