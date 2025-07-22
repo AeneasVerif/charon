@@ -645,6 +645,20 @@ impl TypeDeclRef {
     }
 }
 
+impl TraitDeclRef {
+    pub fn self_ty<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a Ty> {
+        match self.generics.types.iter().next() {
+            Some(ty) => return Some(ty),
+            // TODO(mono): A monomorphized trait takes no arguments.
+            None => {
+                let name = krate.item_name(self.id)?;
+                let args = name.name.last()?.as_monomorphized()?;
+                args.types.iter().next()
+            }
+        }
+    }
+}
+
 impl TraitRef {
     pub fn new_builtin(
         trait_id: TraitDeclId,

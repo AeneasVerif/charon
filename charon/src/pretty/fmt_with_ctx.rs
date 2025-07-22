@@ -812,7 +812,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                         // we implement the trait.
                         let ctx = &ctx.set_generics(&timpl.generics);
                         let mut impl_trait = timpl.impl_trait.clone();
-
                         match impl_trait
                             .generics
                             .types
@@ -823,7 +822,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                                 let impl_trait = impl_trait.with_ctx(ctx);
                                 write!(f, "impl {impl_trait} for {self_ty}")?;
                             }
-                            // A monomorphized trait doesn't take arguments.
+                            // TODO(mono): A monomorphized trait doesn't take arguments.
                             None => {
                                 let impl_trait = impl_trait.with_ctx(ctx);
                                 write!(f, "impl {impl_trait}")?;
@@ -1611,7 +1610,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 let impl_trait = impl_trait.with_ctx(ctx);
                 write!(f, "{impl_trait} for {self_ty}")?;
             }
-            // A monomorphized trait doesn't take arguments.
+            // TODO(mono): A monomorphized trait doesn't take arguments.
             None => {
                 let impl_trait = impl_trait.with_ctx(ctx);
                 write!(f, "{impl_trait}")?;

@@ -46,7 +46,10 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
         let implemented_trait = self.translate_trait_predicate(span, &drop_impl.trait_pred)?;
-        let self_ty = implemented_trait.generics.types[0].clone();
+        let self_ty = implemented_trait
+            .self_ty(&self.t_ctx.translated)
+            .unwrap()
+            .clone();
         let drop_impl_id = self.register_item(span, def.this(), TransItemSourceKind::DropGlueImpl);
         let impl_ref = TraitImplRef {
             id: drop_impl_id,
