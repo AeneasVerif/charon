@@ -321,6 +321,8 @@ pub struct TraitImpl {
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
     /// The implemented methods
     pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The virtual table instance for this trait implementation, if it has one.
+    pub vtable_instance: Option<GlobalDeclRef>,
 }
 
 /// A function operand is used in function calls.

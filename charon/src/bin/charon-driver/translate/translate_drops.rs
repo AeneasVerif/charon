@@ -1,7 +1,7 @@
 use crate::translate::translate_bodies::BodyTransCtx;
 
 use super::translate_ctx::*;
-use charon_lib::ast::*;
+use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
 use hax_frontend_exporter as hax;
 
 impl ItemTransCtx<'_, '_> {
@@ -169,6 +169,16 @@ impl ItemTransCtx<'_, '_> {
             .into()
         };
 
+        let vtable_instance = self.get_vtable_instance_ref(
+            span,
+            &self.get_lang_item(rustc_hir::LangItem::Drop),
+            def.def_id(),
+        );  
+        trace!("Get vtable instance done for Drop: {}", match &vtable_instance {
+            Some(vtable) => vtable.with_ctx(&self.into_fmt()).to_string(),
+            None => "None".to_owned(),
+        });
+
         Ok(TraitImpl {
             def_id: impl_id,
             item_meta,
@@ -179,6 +189,7 @@ impl ItemTransCtx<'_, '_> {
             type_clauses: Default::default(),
             consts: Default::default(),
             types: Default::default(),
+            vtable_instance,
         })
     }
 }

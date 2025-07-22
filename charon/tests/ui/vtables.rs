@@ -1,3 +1,4 @@
+#![feature(trait_alias)]
 trait Super<T> {
     fn super_method(&self, arg: T) -> i32;
 }
@@ -58,6 +59,10 @@ impl BaseOn<i64> for i32 {
     }
 }
 impl Both32And64 for i32 { }
+trait Alias = Both32And64;
+fn use_alias(x: &dyn Alias) {
+    x.both_operate(&100, &200);
+}
 fn main() {
     let x : &dyn Checkable<i32> = &42;
     assert!(x.check());

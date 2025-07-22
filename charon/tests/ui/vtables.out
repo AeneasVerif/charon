@@ -656,6 +656,56 @@ impl Both32And64 for i32 {
     fn both_operate<'_0, '_1, '_2> = test_crate::{impl Both32And64 for i32}::both_operate<'_0_0, '_0_1, '_0_2>
 }
 
+trait test_crate::Alias<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Both32And64<Self>
+    vtable: test_crate::Alias
+}
+
+// Full name: test_crate::use_alias
+fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_0)))
+{
+    let @0: (); // return
+    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)); // arg #1
+    let @2: (); // anonymous local
+    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)); // anonymous local
+    let @4: &'_ (i32); // anonymous local
+    let @5: &'_ (i32); // anonymous local
+    let @6: i32; // anonymous local
+    let @7: &'_ (i64); // anonymous local
+    let @8: &'_ (i64); // anonymous local
+    let @9: i64; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := &*(x@1)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    @6 := const (100 : i32)
+    @5 := &@6
+    @4 := &*(@5)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    @9 := const (200 : i64)
+    @8 := &@9
+    @7 := &*(@8)
+    @2 := Both32And64<(dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)>::both_operate<'_, '_, '_>(move (@3), move (@4), move (@7))
+    storage_dead(@7)
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@9)
+    storage_dead(@8)
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@2)
+    @0 := ()
+    @0 := ()
+    return
+}
+
 // Full name: test_crate::main
 fn main()
 {

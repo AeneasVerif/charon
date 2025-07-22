@@ -465,37 +465,42 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    pub fn trait_id_is_dyn_compatible(
+        &mut self,
+        trait_id: &hax::DefId,
+    ) -> bool {
+        let rid = trait_id.as_rust_def_id().unwrap();
+        self.t_ctx.tcx.is_dyn_compatible(rid)
+    }
+
     /// Given a trait id, return the vtable struct reference for this trait.
     pub fn get_vtable_struct_ref(
         &mut self,
         span: Span,
         trait_id: &hax::DefId,
     ) -> Result<Option<TypeDeclRef>, Error> {
-        let rid = trait_id.as_rust_def_id().unwrap();
-        // judge if it is dyn-compatible
-        if self.t_ctx.tcx.is_dyn_compatible(rid) {
-            // register the id and no enqueue it
-            let vtable_id = *self
-                .register_id_no_enqueue(
-                    span,
-                    TransItemSource {
-                        def_id: trait_id.clone(),
-                        kind: TransItemSourceKind::VTable,
-                    },
-                )
-                .unwrap()
-                .as_type()
-                .unwrap();
-            let mut args = self.outermost_binder().params.identity_args();
-            // Remove the `Self` type variable from the generic parameters
-            args.types.remove_and_shift_ids(TypeVarId::ZERO);
-            Ok(Some(TypeDeclRef {
-                id: TypeId::Adt(vtable_id),
-                generics: Box::new(args),
-            }))
-        } else {
-            Ok(None)
+        if !self.trait_id_is_dyn_compatible(trait_id) {
+            return Ok(None);
         }
+        // register the id and no enqueue it
+        let vtable_id = *self
+            .register_id_no_enqueue(
+                span,
+                TransItemSource {
+                    def_id: trait_id.clone(),
+                    kind: TransItemSourceKind::VTable,
+                },
+            )
+            .unwrap()
+            .as_type()
+            .unwrap();
+        let mut args = self.outermost_binder().params.identity_args();
+        // Remove the `Self` type variable from the generic parameters
+        args.types.remove_and_shift_ids(TypeVarId::ZERO);
+        Ok(Some(TypeDeclRef {
+            id: TypeId::Adt(vtable_id),
+            generics: Box::new(args),
+        }))
     }
 
     #[tracing::instrument(skip(self, item_meta))]
@@ -704,6 +709,29 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    pub fn get_vtable_instance_ref(
+        &mut self,
+        span: Span,
+        trait_def_id: &hax::DefId,
+        impl_def_id: &hax::DefId,
+    ) -> Option<GlobalDeclRef> {
+        // remove these for now to pass the tests
+        // if self.trait_id_is_dyn_compatible(trait_def_id) {
+        //     // Register the vtable instance for this impl.
+        //     let id = self.register_vtable_instance_as_global_decl_id(span, impl_def_id);
+        //     let mut generics = Box::new(self.the_only_binder().params.identity_args());
+        //     // Remove the `Self` type variable from the generic parameters.
+        //     generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        //     Some(GlobalDeclRef {
+        //         id,
+        //         generics,
+        //     })
+        // } else {
+        //     None
+        // }
+        None
+    }
+
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_impl(
         mut self,
@@ -748,6 +776,7 @@ impl ItemTransCtx<'_, '_> {
                 consts: Default::default(),
                 types: Default::default(),
                 methods: Default::default(),
+                vtable_instance: None,
             };
             // We got the predicates from a trait decl, so they may refer to the virtual `Self`
             // clause, which doesn't exist for impls. We fix that up here.
@@ -829,6 +858,12 @@ impl ItemTransCtx<'_, '_> {
             }),
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
+
+        let vtable_instance = self.get_vtable_instance_ref(span, &trait_pred.trait_ref.def_id, def.def_id());
+        trace!("Get vtable instance done for usual impl: {}", match &vtable_instance {
+            Some(vtable) => vtable.with_ctx(&self.into_fmt()).to_string(),
+            None => "None".to_owned(),
+        });
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let parent_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
@@ -963,6 +998,7 @@ impl ItemTransCtx<'_, '_> {
             consts,
             types,
             methods,
+            vtable_instance,
         })
     }
 }

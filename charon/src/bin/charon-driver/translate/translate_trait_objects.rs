@@ -553,6 +553,7 @@ impl ItemTransCtx<'_, '_> {
     fn gen_vtable_instance_func_body(
         &mut self,
         vtable_struct_ref: TypeDeclRef,
+        trait_impl_def: &hax::FullDef,
     ) -> Result<Body, Error> {
         let mut locals = Vector::new();
         let ret_local = locals.push_with(|idx| Local {
@@ -560,6 +561,42 @@ impl ItemTransCtx<'_, '_> {
             name: Some("ret".into()),
             ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
         });
+
+        todo!("Triggered generation of vtable instance function body for trait IMPL itself");
+
+        // Generate the body of the vtable instance function.
+        Ok(Body::Structured(GExprBody {
+            span: Span::dummy(),
+            locals: Locals {
+                arg_count: 0,
+                locals: locals,
+            },
+            comments: Vec::new(),
+            body: todo!(),
+        }))
+    }
+
+    /// For alias, there is no need to translate the methods, just the parent traits.
+    fn gen_vtable_instance_func_body_for_alias(
+        &mut self,
+        vtable_struct_ref: TypeDeclRef,
+        trait_impl_def: &hax::FullDef,
+    ) -> Result<Body, Error> {
+        let mut locals = Vector::new();
+        let ret_local = locals.push_with(|idx| Local {
+            index: idx,
+            name: Some("ret".into()),
+            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
+        });
+        let parent_clauses = mem::take(&mut self.parent_trait_clauses);
+        for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
+            if !self.is_for_self(&clause.trait_) {
+                continue; // skip non-self trait references
+            }
+            
+        }
+        todo!("Triggered generation of vtable instance function body for alias");
+
         // Generate the body of the vtable instance function.
         Ok(Body::Structured(GExprBody {
             span: Span::dummy(),
@@ -581,7 +618,7 @@ impl ItemTransCtx<'_, '_> {
         // prepare the generic environment
         self.translate_def_generics(item_meta.span, trait_impl_def)?;
 
-        let (trait_ref, vtable_struct_ref, trait_decl_ref) =
+        let (_, vtable_struct_ref, trait_decl_ref) =
             self.get_vtable_instance_info(trait_impl_def);
         let glob_def_id =
             self.register_vtable_instance_as_global_decl_id(item_meta.span, &trait_impl_def.def_id);
@@ -595,8 +632,12 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let body = match trait_impl_def.kind() {
+            hax::FullDefKind::TraitAlias { param_env, implied_predicates, self_predicate } => {
+                let body = self.gen_vtable_instance_func_body_for_alias(vtable_struct_ref, trait_impl_def)?;
+                Ok(body)
+            }
             hax::FullDefKind::TraitImpl { .. } => {
-                let body = self.gen_vtable_instance_func_body(vtable_struct_ref)?;
+                let body = self.gen_vtable_instance_func_body(vtable_struct_ref, trait_impl_def)?;
                 Ok(body)
             },
             _ => {

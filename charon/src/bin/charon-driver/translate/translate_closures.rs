@@ -681,6 +681,8 @@ impl ItemTransCtx<'_, '_> {
             consts: vec![],
             types,
             methods: vec![(call_fn_name, call_fn_binder)],
+            // There cannot be any reference to this closure as `dyn`
+            vtable_instance: None,
         })
     }
 
