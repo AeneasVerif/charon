@@ -201,34 +201,27 @@ let st_substitute_visitor =
     method! visit_Self (subst : subst) = subst.tr_self
   end
 
-(** Substitute types variables and regions in a type.
-
-    **IMPORTANT**: this doesn't normalize the types. *)
+(** Substitute types variables and regions in a type. *)
 let ty_substitute (subst : subst) (ty : ty) : ty =
   st_substitute_visitor#visit_ty subst ty
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_ref_substitute (subst : subst) (tr : trait_ref) : trait_ref =
   st_substitute_visitor#visit_trait_ref subst tr
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_decl_ref_substitute (subst : subst) (tr : trait_decl_ref) :
     trait_decl_ref =
   st_substitute_visitor#visit_trait_decl_ref subst tr
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_instance_id_substitute (subst : subst) (tr : trait_instance_id) :
     trait_instance_id =
   st_substitute_visitor#visit_trait_instance_id subst tr
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
   st_substitute_visitor#visit_generic_args subst g
 
 (** Substitute the predicates (clauses, outlives predicates, etc) inside these
     generic params. This leaves the list of parameters (regions, types and
-    const_generics) untouched. **IMPORTANT**: this doesn't normalize the types.
-*)
+    const_generics) untouched. *)
 let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     =
   let visitor = st_substitute_visitor in
@@ -368,10 +361,7 @@ let make_subst_from_generics_erase_regions (params : generic_params)
   { subst with r_subst = (fun _ -> RErased) }
 
 (** Instantiate the type variables in an ADT definition, and return, for every
-    variant, the list of the types of its fields.
-
-    **IMPORTANT**: this function doesn't normalize the types, you may want to
-    use the [AssociatedTypes] equivalent instead. *)
+    variant, the list of the types of its fields. *)
 let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     (generics : generic_args) : (VariantId.id option * ty list) list =
   let subst = make_subst_from_generics def.generics generics in
@@ -392,18 +382,24 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     variants_fields
 
 (** Instantiate the type variables in an ADT definition, and return the list of
-    types of the fields for the chosen variant.
-
-    **IMPORTANT**: this function doesn't normalize the types, you may want to
-    use the [AssociatedTypes] equivalent instead. *)
+    types of the fields for the chosen variant. *)
 let type_decl_get_instantiated_field_types (def : type_decl)
     (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
-  (* For now, check that there are no clauses - otherwise we might need
+  (* Check that there are no clauses - otherwise we might need
      to normalize the types *)
   assert (def.generics.trait_clauses = []);
   let subst = make_subst_from_generics def.generics generics in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
+
+(** Same as [type_decl_get_instantiated_field_types], but also erases the
+    regions *)
+let type_decl_get_instantiated_field_etypes (def : type_decl)
+    (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
+  let types =
+    type_decl_get_instantiated_field_types def opt_variant_id generics
+  in
+  List.map erase_regions types
 
 (** Apply a type substitution to a place *)
 let place_substitute (subst : subst) (p : place) : place =
