@@ -11,9 +11,60 @@ pub trait Sized::<u8>
     parent_clause0 : [@TraitClause0]: MetaSized::<u8>
 }
 
+// Full name: core::marker::MetaSized::<char>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<char>
+
+// Full name: core::marker::Sized::<char>
+#[lang_item("sized")]
+pub trait Sized::<char>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<char>
+}
+
+// Full name: core::marker::MetaSized::<u32>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<u32>
+
+// Full name: core::marker::Sized::<u32>
+#[lang_item("sized")]
+pub trait Sized::<u32>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<u32>
+}
+
+// Full name: core::marker::MetaSized::<for<'_0> foo::<u32><'_0_0>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<for<'_0> foo::<u32><'_0_0>>
+
+// Full name: core::marker::Sized::<for<'_0> foo::<u32><'_0_0>>
+#[lang_item("sized")]
+pub trait Sized::<for<'_0> foo::<u32><'_0_0>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<for<'_0> foo::<u32><'_0_0>>
+}
+
 // Full name: core::marker::MetaSized::<(&'_ (u32))>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<(&'_ (u32))>
+
+// Full name: core::marker::Sized::<(&'_ (u32))>
+#[lang_item("sized")]
+pub trait Sized::<(&'_ (u32))>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ (u32))>
+}
+
+// Full name: core::marker::MetaSized::<()>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<()>
+
+// Full name: core::marker::Sized::<()>
+#[lang_item("sized")]
+pub trait Sized::<()>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<()>
+}
 
 // Full name: core::marker::Tuple::<(&'_ (u32))>
 #[lang_item("tuple_trait")]
@@ -74,10 +125,14 @@ pub trait Fn::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     parent_clause1 : [@TraitClause1]: FnMut::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     parent_clause2 : [@TraitClause2]: Sized::<(&'_ (u32))>
     parent_clause3 : [@TraitClause3]: Tuple::<(&'_ (u32))>
+    fn call<'_0> = call::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))><'_0_0>
 }
 
 // Full name: core::ops::function::Fn::call
 pub fn call<'_0>(@1: &'_0 (for<'_0> foo::<u32><'_0_0>), @2: (&'_ (u32)))
+
+// Full name: core::ops::function::Fn::call::<for<'_0> foo::<u32><'_0>, (&'_ (u32))>
+pub fn call::<for<'_0> foo::<u32><'_0>, (&'_ (u32))><'_0>(@1: &'_0 (for<'_0> foo::<u32><'_0_0>), @2: (&'_ (u32)))
 
 // Full name: core::ops::function::FnMut::call_mut::<for<'_0> foo::<u32><'_0>, (&'_ (u32))>
 pub fn call_mut::<for<'_0> foo::<u32><'_0>, (&'_ (u32))><'_0>(@1: &'_0 mut (for<'_0> foo::<u32><'_0_0>), @2: (&'_ (u32)))
@@ -90,6 +145,17 @@ fn foo::<u8><'_0>(@1: &'_0 (u8))
 {
     let @0: (); // return
     let x@1: &'_ (u8); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::foo::<char>
+fn foo::<char><'_0>(@1: &'_0 (char))
+{
+    let @0: (); // return
+    let x@1: &'_ (char); // arg #1
 
     @0 := ()
     @0 := ()

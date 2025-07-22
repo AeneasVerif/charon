@@ -4,11 +4,15 @@
 #[lang_item("eq")]
 pub trait PartialEq::<bool, bool>
 {
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq::<bool, bool><'_0_0, '_0_1>
     fn ne<'_0, '_1> = core::cmp::PartialEq::ne::<bool, bool><'_0_0, '_0_1>
 }
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
 #[lang_item("cmp_partialeq_ne")]
 pub fn core::cmp::PartialEq::ne::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
@@ -27,9 +31,13 @@ pub fn assert_receiver_is_total_eq::<bool><'_0>(@1: &'_0 (bool))
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
 pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
+#[lang_item("cmp_partialeq_ne")]
+pub fn core::cmp::impls::{impl PartialEq::<bool, bool>}::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
 impl PartialEq::<bool, bool> {
     fn eq<'_0, '_1> = {impl PartialEq::<bool, bool>}::eq<'_0_0, '_0_1>
+    fn ne<'_0, '_1> = core::cmp::impls::{impl PartialEq::<bool, bool>}::<bool, bool><'_0_0, '_0_1>
 }
 
 pub fn core::cmp::impls::{impl Eq::<bool>}::<bool><'_0>(@1: &'_0 (bool))

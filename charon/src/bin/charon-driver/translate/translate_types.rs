@@ -73,7 +73,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
     pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
-        trace!("{:?}", ty);
         let cache_key = HashByAddr(ty.inner().clone());
         if let Some(ty) = self
             .innermost_binder()
@@ -83,7 +82,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         {
             return Ok(ty.clone());
         }
+        // Catch the error to avoid a single error stopping the translation of a whole item.
+        let ty = self
+            .translate_ty_inner(span, ty)
+            .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
+        self.innermost_binder_mut()
+            .type_trans_cache
+            .insert(cache_key, ty.clone());
+        Ok(ty)
+    }
 
+    fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
+        trace!("{:?}", ty);
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
@@ -222,6 +232,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
 
             hax::TyKind::Dynamic(self_ty, preds, region) => {
+                if self.monomorphize() {
+                    raise_error!(
+                        self,
+                        span,
+                        "`dyn Trait` is not yet supported with `--monomorphize`; \
+                        use `--monomorphize-conservative` instead"
+                    )
+                }
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
                 TyKind::DynTrait(pred)
             }
@@ -246,11 +264,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 raise_error!(self, span, "Unsupported type: {:?}", s)
             }
         };
-        let ty = kind.into_ty();
-        self.innermost_binder_mut()
-            .type_trans_cache
-            .insert(cache_key, ty.clone());
-        Ok(ty)
+        Ok(kind.into_ty())
     }
 
     /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
