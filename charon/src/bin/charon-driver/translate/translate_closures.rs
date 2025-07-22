@@ -669,6 +669,17 @@ impl ItemTransCtx<'_, '_> {
             )
         };
 
+        // Create the vtable instance for the closure.
+        // `Fn` / `FnOnce` / `FnMut` are all dyn-compatible
+        let vins_id = self.register_vtable_instance_as_global_decl_id(span, &def.def_id);
+        let mut vins_generics = self.the_only_binder().params.identity_args();
+        // Remove `Self` from the vtable instance generics
+        vins_generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        let vtable_instance = Some(GlobalDeclRef {
+            id: vins_id,
+            generics: Box::new(vins_generics),
+        });
+
         let self_generics = self.into_generics();
 
         Ok(TraitImpl {
@@ -681,8 +692,7 @@ impl ItemTransCtx<'_, '_> {
             consts: vec![],
             types,
             methods: vec![(call_fn_name, call_fn_binder)],
-            // There cannot be any reference to this closure as `dyn`
-            vtable_instance: None,
+            vtable_instance,
         })
     }
 

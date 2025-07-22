@@ -8,6 +8,7 @@ use crate::translate::{translate_generics::BindingLevel, translate_predicates::P
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
+use charon_lib::llbc_ast::Block;
 use hax_frontend_exporter as hax;
 use petgraph::matrix_graph::Zero;
 
@@ -431,7 +432,10 @@ impl ItemTransCtx<'_, '_> {
         } else {
             // else, it should be a trait alias, which should not have any methods in its vtable
             // assert here for robustness
-            assert!(matches!(trait_full_def.kind(), hax::FullDefKind::TraitAlias { .. }));
+            assert!(matches!(
+                trait_full_def.kind(),
+                hax::FullDefKind::TraitAlias { .. }
+            ));
         }
 
         Ok(fields)
@@ -546,23 +550,236 @@ impl ItemTransCtx<'_, '_> {
         (trait_ref, vtable_struct_ref, trait_decl_ref)
     }
 
+    fn add_parent_ptr_to_vtable_instance_func_body(
+        &mut self,
+        // The trait predicate for the trait implementation, i.e., the current implemented trait.
+        _trait_pred: &hax::TraitPredicate,
+        // The implied impl expressions for the trait implementation.
+        implied_impl_exprs: &Vec<hax::ImplExpr>,
+        locals: &mut Vector<LocalId, Local>,
+        statements: &mut Vec<llbc_ast::Statement>,
+    ) -> Result<(), Error> {
+        for impl_expr in implied_impl_exprs {
+            match &impl_expr.r#impl {
+                hax::ImplExprAtom::Concrete(item) => {
+                    let poly_trait_ref =
+                        self.translate_poly_trait_ref(Span::dummy(), &impl_expr.r#trait)?;
+                    // It is not for `Self`, so it is not a parent trait impl expression.
+                    if !self.is_for_self(&poly_trait_ref) {
+                        continue;
+                    }
+
+                    // add a pointer to the parent vtable instance, the reference to the item
+                    // get the instance
+                    let parent_vtable_instance_id = self
+                        .register_vtable_instance_as_global_decl_id(Span::dummy(), &item.def_id);
+                    let impl_ref = self.translate_trait_impl_ref(Span::dummy(), item)?;
+                    let mut generics = impl_ref.generics.clone();
+                    // remove the `Self` type argument from the generics
+                    generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+                    let vtable_instance_ref = GlobalDeclRef {
+                        id: parent_vtable_instance_id,
+                        generics,
+                    };
+
+                    // get the struct type
+                    let vtable_struct_id = self.register_vtable_as_type_decl_id(
+                        Span::dummy(),
+                        &impl_expr.r#trait.value.def_id,
+                    );
+                    // otherwise, we are losing the newly binded regions
+                    assert!(poly_trait_ref.regions.is_empty());
+                    let mut generics = poly_trait_ref.skip_binder.generics.clone();
+                    generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+                    // shift to correspond to `skip_binder`
+                    let _ = generics.visit_db_id(|db_id| {
+                        *db_id = DeBruijnId {
+                            index: db_id.index - 1,
+                        };
+                        Continue::<()>(())
+                    });
+                    let vtable_struct_ref = TypeDeclRef {
+                        id: TypeId::Adt(vtable_struct_id),
+                        generics,
+                    };
+
+                    // push new locals
+                    let local = locals.push_with(|idx| Local {
+                        index: idx,
+                        name: Some(format!("parent_vtable_instance_{}", idx)),
+                        ty: Ty::new(TyKind::RawPtr(
+                            Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
+                            RefKind::Shared,
+                        )),
+                    });
+                    // add the assignment statement
+                    let assn: llbc_ast::Statement = llbc_ast::Statement::new(
+                        Span::dummy(),
+                        llbc_ast::RawStatement::Assign(
+                            Place {
+                                kind: PlaceKind::Local(local),
+                                ty: Ty::new(TyKind::RawPtr(
+                                    Ty::new(TyKind::Adt(vtable_struct_ref)),
+                                    RefKind::Shared,
+                                )),
+                            },
+                            Rvalue::GlobalRef(vtable_instance_ref, RefKind::Shared),
+                        ),
+                    );
+                    statements.push(assn);
+                }
+                _ => { /* Do nothing, as they are not parent trait impl expressions. */ }
+            }
+        }
+        Ok(())
+    }
+
+    fn add_vtable_methods_to_vtable_instance_func_body(
+        &mut self,
+        trait_id: &hax::DefId,
+        items: &Vec<hax::ImplAssocItem<hax::MirBody<hax::mir_kinds::Unknown>>>,
+        locals: &mut Vector<LocalId, Local>,
+        statements: &mut Vec<llbc_ast::Statement>,
+    ) -> Result<(), Error> {
+        for item in items {
+            let def = item.def();
+            match def.kind() {
+                hax::FullDefKind::AssocFn { sig, .. } => {
+                    // get the shim type
+                    let func_shim_ty = self.translate_region_binder(Span::dummy(), sig, |bt_ctx, sig| {
+                        
+                        todo!()
+                    })?;
+                    let func_shim_ty = Ty::new(TyKind::FnPtr(func_shim_ty));
+
+                    // get the shim ref
+                    let func_shim_ref = FunDeclRef {
+                        id: todo!(),
+                        generics: todo!(),
+                    };
+
+                    // create a local for the shim
+                    let local = locals.push_with(|idx| Local {
+                        index: idx,
+                        name: Some(format!("method_{}", idx)),
+                        ty: func_shim_ty.clone(),
+                    });
+                    // add the assignment statement:
+                    //   local := &func_shim_ref
+                    statements.push(llbc_ast::Statement::new(
+                        Span::dummy(),
+                        llbc_ast::RawStatement::Assign(
+                            Place {
+                                kind: PlaceKind::Local(local),
+                                ty: func_shim_ty.clone(),
+                            },
+                            Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
+                                value: RawConstantExpr::FnPtr(FnPtr {
+                                    func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(
+                                        func_shim_ref.id,
+                                    ))),
+                                    generics: func_shim_ref.generics,
+                                }),
+                                ty: func_shim_ty,
+                            }))),
+                        ),
+                    ));
+                }
+                _ => { /* Only Assoc-Funcs are required for vtable */ }
+            }
+        }
+        Ok(())
+    }
+
     /// Generate the body of the vtable instance function.
+    /// This is for `impl Trait for T` implementation, it does NOT handle closures.
+    /// ```no_run
     /// let ret@0 : VTable;
     /// ret@0 = VTable { ... };
     /// return;
+    /// ```
     fn gen_vtable_instance_func_body(
         &mut self,
         vtable_struct_ref: TypeDeclRef,
         trait_impl_def: &hax::FullDef,
     ) -> Result<Body, Error> {
         let mut locals = Vector::new();
+        let local_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let ret_local = locals.push_with(|idx| Local {
             index: idx,
             name: Some("ret".into()),
-            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
+            ty: local_ty.clone(),
         });
+        // there are mainly two parts of statements:
+        // the prepration of fields initialisation of ret
+        // the assignment of ret
+        let mut statements = Vec::new();
 
-        todo!("Triggered generation of vtable instance function body for trait IMPL itself");
+        let hax::FullDefKind::TraitImpl {
+            trait_pred,
+            implied_impl_exprs,
+            items,
+            ..
+        } = trait_impl_def.kind()
+        else {
+            unreachable!()
+        };
+
+        self.add_parent_ptr_to_vtable_instance_func_body(
+            trait_pred,
+            implied_impl_exprs,
+            &mut locals,
+            &mut statements,
+        )?;
+
+        let trait_id = &trait_pred.trait_ref.def_id;
+        self.add_vtable_methods_to_vtable_instance_func_body(
+            trait_id,
+            items,
+            &mut locals,
+            &mut statements,
+        )?;
+
+        // assignment to ret
+        let assn: llbc_ast::Statement = {
+            let operands = locals
+                .iter()
+                .filter_map(|local| {
+                    // the return should not be mapped
+                    if local.index.is_zero() {
+                        None
+                    } else {
+                        Some(Operand::Move(Place {
+                            kind: PlaceKind::Local(local.index),
+                            ty: local_ty.clone(),
+                        }))
+                    }
+                })
+                .collect();
+            llbc_ast::Statement::new(
+                Span::dummy(),
+                llbc_ast::RawStatement::Assign(
+                    Place {
+                        kind: PlaceKind::Local(ret_local),
+                        ty: local_ty.clone(),
+                    },
+                    Rvalue::Aggregate(
+                        AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
+                        operands,
+                    ),
+                ),
+            )
+        };
+        statements.push(assn);
+        statements.push(llbc_ast::Statement::new(
+            Span::dummy(),
+            llbc_ast::RawStatement::Return,
+        ));
+
+        let body = Block {
+            span: Span::dummy(),
+            statements,
+        };
 
         // Generate the body of the vtable instance function.
         Ok(Body::Structured(GExprBody {
@@ -572,40 +789,7 @@ impl ItemTransCtx<'_, '_> {
                 locals: locals,
             },
             comments: Vec::new(),
-            body: todo!(),
-        }))
-    }
-
-    /// For alias, there is no need to translate the methods, just the parent traits.
-    fn gen_vtable_instance_func_body_for_alias(
-        &mut self,
-        vtable_struct_ref: TypeDeclRef,
-        trait_impl_def: &hax::FullDef,
-    ) -> Result<Body, Error> {
-        let mut locals = Vector::new();
-        let ret_local = locals.push_with(|idx| Local {
-            index: idx,
-            name: Some("ret".into()),
-            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
-        });
-        let parent_clauses = mem::take(&mut self.parent_trait_clauses);
-        for (idx, (pred, clause)) in parent_clauses.iter_indexed_values() {
-            if !self.is_for_self(&clause.trait_) {
-                continue; // skip non-self trait references
-            }
-            
-        }
-        todo!("Triggered generation of vtable instance function body for alias");
-
-        // Generate the body of the vtable instance function.
-        Ok(Body::Structured(GExprBody {
-            span: Span::dummy(),
-            locals: Locals {
-                arg_count: 0,
-                locals: locals,
-            },
-            comments: Vec::new(),
-            body: todo!(),
+            body: body,
         }))
     }
 
@@ -613,15 +797,15 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         init_func_id: FunDeclId,
         item_meta: ItemMeta,
-        trait_impl_def: &hax::FullDef,
+        // This can be either a trait impl or a closure definition.
+        def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         // prepare the generic environment
-        self.translate_def_generics(item_meta.span, trait_impl_def)?;
+        self.translate_def_generics(item_meta.span, def)?;
 
-        let (_, vtable_struct_ref, trait_decl_ref) =
-            self.get_vtable_instance_info(trait_impl_def);
+        let (_, vtable_struct_ref, trait_decl_ref) = self.get_vtable_instance_info(def);
         let glob_def_id =
-            self.register_vtable_instance_as_global_decl_id(item_meta.span, &trait_impl_def.def_id);
+            self.register_vtable_instance_as_global_decl_id(item_meta.span, &def.def_id);
 
         // signature: `() -> VTable`
         let sig = FunSig {
@@ -631,19 +815,18 @@ impl ItemTransCtx<'_, '_> {
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
 
-        let body = match trait_impl_def.kind() {
-            hax::FullDefKind::TraitAlias { param_env, implied_predicates, self_predicate } => {
-                let body = self.gen_vtable_instance_func_body_for_alias(vtable_struct_ref, trait_impl_def)?;
+        let body = match def.kind() {
+            hax::FullDefKind::TraitImpl { .. } => {
+                let body = self.gen_vtable_instance_func_body(vtable_struct_ref, def)?;
                 Ok(body)
             }
-            hax::FullDefKind::TraitImpl { .. } => {
-                let body = self.gen_vtable_instance_func_body(vtable_struct_ref, trait_impl_def)?;
-                Ok(body)
-            },
+            hax::FullDefKind::Closure { .. } => {
+                todo!("Handle closure vtable instance translation");
+            }
             _ => {
                 panic!(
                     "Unexpected trait impl definition kind: {:?}",
-                    trait_impl_def.kind()
+                    def.kind()
                 );
             }
         };

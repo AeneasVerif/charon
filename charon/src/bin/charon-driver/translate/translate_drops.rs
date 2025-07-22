@@ -173,11 +173,14 @@ impl ItemTransCtx<'_, '_> {
             span,
             &self.get_lang_item(rustc_hir::LangItem::Drop),
             def.def_id(),
-        );  
-        trace!("Get vtable instance done for Drop: {}", match &vtable_instance {
-            Some(vtable) => vtable.with_ctx(&self.into_fmt()).to_string(),
-            None => "None".to_owned(),
-        });
+        );
+        trace!(
+            "Get vtable instance done for Drop: {}",
+            match &vtable_instance {
+                Some(vtable) => vtable.with_ctx(&self.into_fmt()).to_string(),
+                None => "None".to_owned(),
+            }
+        );
 
         Ok(TraitImpl {
             def_id: impl_id,

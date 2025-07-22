@@ -57,10 +57,10 @@ pub enum TransItemSourceKind {
     DropGlueMethod,
     /// The virtual table struct (ADT), associated DefId should refer to the trait-decl itself.
     VTable,
-    /// The virtual table global instance for a specific type, the DefId refers to an impl
+    /// The virtual table global instance for a specific type, the DefId refers to an impl or closure.
     VTableInstance,
     /// The init body of the `VTableInstance`, as per the practice of `Global`
-    /// The DefId refers to the trait impl.
+    /// The DefId refers to the trait impl or closure.
     VTableInstanceBody,
     /// The shim for the vtable, used to call the appropriate method
     /// The DefId refers to the correct implementation function.
