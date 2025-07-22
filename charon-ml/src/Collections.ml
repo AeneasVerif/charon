@@ -123,6 +123,47 @@ module List = struct
             match mmap f tl with
             | None -> None
             | Some tl -> Some (hd :: tl)))
+
+  let rec map3 (f : 'a -> 'b -> 'c -> 'd) (l0 : 'a list) (l1 : 'b list)
+      (l2 : 'c list) : 'd list =
+    match (l0, l1, l2) with
+    | [], [], [] -> []
+    | a :: l0, b :: l1, c :: l3 -> f a b c :: map3 f l0 l1 l2
+    | _ ->
+        raise
+          (Invalid_argument "List.combine3 expects lists of the same length")
+
+  let rec combine3 (l0 : 'a list) (l1 : 'b list) (l2 : 'c list) :
+      ('a * 'b * 'c) list =
+    match (l0, l1, l2) with
+    | [], [], [] -> []
+    | a :: l0, b :: l1, c :: l3 -> (a, b, c) :: combine3 l0 l1 l2
+    | _ ->
+        raise
+          (Invalid_argument "List.combine3 expects lists of the same length")
+
+  let rec split3 (l : ('a * 'b * 'c) list) : 'a list * 'b list * 'c list =
+    match l with
+    | [] -> ([], [], [])
+    | (a, b, c) :: l ->
+        let l0, l1, l2 = split3 l in
+        (a :: l0, b :: l1, c :: l2)
+
+  let rec split4 (l : ('a * 'b * 'c * 'd) list) :
+      'a list * 'b list * 'c list * 'd list =
+    match l with
+    | [] -> ([], [], [], [])
+    | (a, b, c, d) :: l ->
+        let l0, l1, l2, l3 = split4 l in
+        (a :: l0, b :: l1, c :: l2, d :: l3)
+
+  let rec split5 (l : ('a * 'b * 'c * 'd * 'e) list) :
+      'a list * 'b list * 'c list * 'd list * 'e list =
+    match l with
+    | [] -> ([], [], [], [], [])
+    | (a, b, c, d, e) :: l ->
+        let l0, l1, l2, l3, l4 = split5 l in
+        (a :: l0, b :: l1, c :: l2, d :: l3, e :: l4)
 end
 
 module type OrderedType = sig
