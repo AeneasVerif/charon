@@ -222,6 +222,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
 
             hax::TyKind::Dynamic(self_ty, preds, region) => {
+                if self.monomorphize() {
+                    raise_error!(
+                        self,
+                        span,
+                        "`dyn Trait` is not supported with `--monomorphize`; use `--monomorphize-conservative`"
+                    )
+                }
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
                 TyKind::DynTrait(pred)
             }

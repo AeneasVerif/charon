@@ -1,14 +1,7 @@
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_crate.rs:72:17:
-Item is not monomorphic: ItemRef { contents: Node { id: Id { id: 141 }, value: ItemRefContents { def_id: core::fmt::Display, generic_args: [Type(Ty { kind: Node { id: Id { id: 18 }, value: Param(ParamTy { index: 1, name: "_dyn" }) } })], impl_exprs: [], in_trait: None, has_param: true } } }
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting body.
-  --> tests/ui/monomorphization/dyn-trait.rs:10:1
+error: `dyn Trait` is not supported with `--monomorphize`; use `--monomorphize-conservative`
+  --> tests/ui/monomorphization/dyn-trait.rs:12:27
    |
-10 | / fn main() {
-11 | |     let str: String = "hello".to_string();
-12 | |     let _ = dyn_to_string(&str);
-13 | | }
-   | |_^
+12 |     let _ = dyn_to_string(&str);
+   |                           ^^^^
 
 ERROR Charon failed to translate this code (1 errors)
