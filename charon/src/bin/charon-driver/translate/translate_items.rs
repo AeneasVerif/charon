@@ -957,4 +957,55 @@ impl ItemTransCtx<'_, '_> {
             methods,
         })
     }
+
+    /// Make a trait impl from a hax `VirtualTraitImpl`. Used for constructing fake trait impls for
+    /// builtin types like `FnOnce`.
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_virtual_trait_impl(
+        &mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        vimpl: &hax::VirtualTraitImpl,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+        let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
+        let hax::FullDefKind::Trait {
+            items: trait_items, ..
+        } = trait_def.kind()
+        else {
+            panic!()
+        };
+
+        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
+        let parent_trait_refs = self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
+
+        let mut types = vec![];
+        let mut type_clauses = vec![];
+        let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
+            hax::AssocKind::Type { .. } => true,
+            _ => false,
+        });
+        for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
+            let name = self.t_ctx.translate_trait_item_name(&assoc.def_id)?;
+            let ty = self.translate_ty(span, ty)?;
+            types.push((name.clone(), ty.clone()));
+            if !self.monomorphize() {
+                let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                type_clauses.push((name.clone(), trait_refs));
+            }
+        }
+
+        let generics = self.the_only_binder().params.clone();
+        Ok(TraitImpl {
+            def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics,
+            parent_trait_refs,
+            type_clauses,
+            consts: vec![],
+            types,
+            methods: vec![],
+        })
+    }
 }

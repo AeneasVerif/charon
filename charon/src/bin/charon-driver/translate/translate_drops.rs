@@ -114,10 +114,7 @@ impl ItemTransCtx<'_, '_> {
         else {
             unreachable!()
         };
-        let implemented_trait = self.translate_trait_predicate(span, &drop_impl.trait_pred)?;
-        let parent_trait_refs =
-            self.translate_trait_impl_exprs(span, &drop_impl.implied_impl_exprs)?;
-        let drop_trait = implemented_trait.id;
+        let mut timpl = self.translate_virtual_trait_impl(impl_id, item_meta, drop_impl)?;
 
         // Construct the method reference.
         let method_id = self.register_item(span, def.this(), TransItemSourceKind::DropGlueMethod);
@@ -134,7 +131,7 @@ impl ItemTransCtx<'_, '_> {
                 .identity_args_at_depth(DeBruijnId::one())
                 .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
             Binder::new(
-                BinderKind::TraitMethod(drop_trait, method_name.clone()),
+                BinderKind::TraitMethod(timpl.impl_trait.id, method_name.clone()),
                 method_params,
                 FunDeclRef {
                     id: method_id,
@@ -142,17 +139,8 @@ impl ItemTransCtx<'_, '_> {
                 },
             )
         };
+        timpl.methods.push((method_name, method_binder));
 
-        Ok(TraitImpl {
-            def_id: impl_id,
-            item_meta,
-            impl_trait: implemented_trait,
-            generics: self.into_generics(),
-            methods: vec![(method_name, method_binder)],
-            parent_trait_refs,
-            type_clauses: Default::default(),
-            consts: Default::default(),
-            types: Default::default(),
-        })
+        Ok(timpl)
     }
 }
