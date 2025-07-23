@@ -142,18 +142,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
-            TransItemSourceKind::VTableInstance => {
+            TransItemSourceKind::VTableInstance(maybe_closure_kind) => {
                 let Some(AnyTransId::Global(id)) = trans_id else {
                     unreachable!()
                 };
-                let global_decl = bt_ctx.translate_vtable_instance(id, item_meta, &def)?;
+                let global_decl =
+                    bt_ctx.translate_vtable_instance(id, item_meta, &def, *maybe_closure_kind)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            TransItemSourceKind::VTableInstanceBody => {
+            TransItemSourceKind::VTableInstanceBody(maybe_closure_kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_instance_body(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_vtable_instance_body(
+                    id,
+                    item_meta,
+                    &def,
+                    *maybe_closure_kind,
+                )?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTableShim => {
@@ -711,12 +717,18 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         trait_def_id: &hax::DefId,
+        implemented_trait_args: &Box<GenericArgs>,
         impl_def_id: &hax::DefId,
+        maybe_closure_kind: Option<ClosureKind>,
     ) -> Option<GlobalDeclRef> {
         if self.trait_id_is_dyn_compatible(trait_def_id) {
             // Register the vtable instance for this impl.
-            let id = self.register_vtable_instance_as_global_decl_id(span, impl_def_id);
-            let mut generics = Box::new(self.the_only_binder().params.identity_args());
+            let id = self.register_vtable_instance_as_global_decl_id(
+                span,
+                impl_def_id,
+                maybe_closure_kind,
+            );
+            let mut generics = implemented_trait_args.clone();
             // Remove the `Self` type variable from the generic parameters.
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             Some(GlobalDeclRef { id, generics })
@@ -852,8 +864,13 @@ impl ItemTransCtx<'_, '_> {
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
 
-        let vtable_instance =
-            self.get_vtable_instance_ref(span, &trait_pred.trait_ref.def_id, def.def_id());
+        let vtable_instance = self.get_vtable_instance_ref(
+            span,
+            &trait_pred.trait_ref.def_id,
+            &implemented_trait.generics,
+            def.def_id(),
+            None,
+        );
         trace!(
             "Get vtable instance done for usual impl: {}",
             match &vtable_instance {

@@ -669,16 +669,17 @@ impl ItemTransCtx<'_, '_> {
             )
         };
 
-        // Create the vtable instance for the closure.
-        // `Fn` / `FnOnce` / `FnMut` are all dyn-compatible
-        let vins_id = self.register_vtable_instance_as_global_decl_id(span, &def.def_id);
-        let mut vins_generics = self.the_only_binder().params.identity_args();
-        // Remove `Self` from the vtable instance generics
-        vins_generics.types.remove_and_shift_ids(TypeVarId::ZERO);
-        let vtable_instance = Some(GlobalDeclRef {
-            id: vins_id,
-            generics: Box::new(vins_generics),
-        });
+        // FIXME: add this later
+        // // Create the vtable instance for the closure.
+        // // `Fn` / `FnOnce` / `FnMut` are all dyn-compatible
+        // let vins_id = self.register_vtable_instance_as_global_decl_id(span, &def.def_id, Some(target_kind));
+        // let mut vins_generics = implemented_trait.generics.clone();
+        // // Remove `Self` from the vtable instance generics
+        // vins_generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        // let vtable_instance = Some(GlobalDeclRef {
+        //     id: vins_id,
+        //     generics: vins_generics,
+        // });
 
         let self_generics = self.into_generics();
 
@@ -692,7 +693,8 @@ impl ItemTransCtx<'_, '_> {
             consts: vec![],
             types,
             methods: vec![(call_fn_name, call_fn_binder)],
-            vtable_instance,
+            // FIXME: not triggering for now --- the impl is going on
+            vtable_instance: None,
         })
     }
 

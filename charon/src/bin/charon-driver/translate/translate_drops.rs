@@ -172,7 +172,9 @@ impl ItemTransCtx<'_, '_> {
         let vtable_instance = self.get_vtable_instance_ref(
             span,
             &self.get_lang_item(rustc_hir::LangItem::Drop),
+            &implemented_trait.generics,
             def.def_id(),
+            None,
         );
         trace!(
             "Get vtable instance done for Drop: {}",

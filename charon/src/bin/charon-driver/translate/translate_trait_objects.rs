@@ -9,7 +9,7 @@ use crate::translate::{translate_generics::BindingLevel, translate_predicates::P
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::llbc_ast::Block;
-use hax_frontend_exporter as hax;
+use hax_frontend_exporter::{self as hax};
 use petgraph::matrix_graph::Zero;
 
 use super::translate_ctx::*;
@@ -60,12 +60,14 @@ fn shift_bounded_ty_vars(ty: &mut Ty, db_distance: isize, distance: isize) {
                 let DeBruijnId { index: id } = db_id;
                 let db_id = DeBruijnId {
                     index: if *db_shift < 0 {
+                        assert!(db_shift.abs() as usize <= id);
                         id - (-*db_shift as usize)
                     } else {
                         id + (*db_shift as usize)
                     },
                 };
                 let idx = if *shift < 0 {
+                    assert!(shift.abs() as usize <= idx);
                     idx - TypeVarId::from_raw(-*shift as usize)
                 } else {
                     idx + TypeVarId::from_raw(*shift as usize)
@@ -77,6 +79,15 @@ fn shift_bounded_ty_vars(ty: &mut Ty, db_distance: isize, distance: isize) {
         }
     }
     ty.visit_vars(&mut SelfVisitor(db_distance, distance));
+}
+
+fn shift_db_vars<T: TyVisitable, F: Fn(usize) -> usize>(ty: &mut T, f: F) {
+    let _ = ty.visit_db_id(|db_id| {
+        *db_id = DeBruijnId {
+            index: f(db_id.index),
+        };
+        Continue::<()>(())
+    });
 }
 
 /// Field: `self_ty_align: usize`
@@ -129,7 +140,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Field: `drop_func: *mut dyn Trait<'a, ..., T, ...> -> ()`
-    fn drop_func_field(&mut self, trait_id: &hax::DefId) -> Field {
+    fn drop_func_field(&mut self, tref: TraitDeclRef) -> Field {
         // *mut Self
         let ptr_self = Ty::new(TyKind::RawPtr(
             Ty::new(TyKind::TypeVar(DeBruijnVar::Bound(
@@ -141,9 +152,10 @@ impl ItemTransCtx<'_, '_> {
             RefKind::Mut,
         ));
         // *mut dyn Trait<'a, ..., T, ...>
-        let mut shim_ty = self.convert_to_shim_ty(Span::dummy(), trait_id, &ptr_self);
+        let mut shim_ty = self.receiver_ty_to_shim_ty(Span::dummy(), tref, &ptr_self);
         // to shift the bounds --- remove `Self` & shift DB for `RegionBinder`
-        shift_bounded_ty_vars(&mut shim_ty, 1, -1);
+        shift_db_vars(&mut shim_ty, |v| v + 1);
+        self.ty_shift_for_removed_self(&mut shim_ty);
         Field {
             span: Span::dummy(),
             attr_info: dummy_public_attr_info(),
@@ -155,9 +167,9 @@ impl ItemTransCtx<'_, '_> {
         }
     }
 
-    fn common_vtable_entries(&mut self, trait_id: &hax::DefId) -> Vector<FieldId, Field> {
+    fn common_vtable_entries(&mut self, tref: TraitDeclRef) -> Vector<FieldId, Field> {
         let mut ret = Vector::new();
-        ret.push(self.drop_func_field(trait_id));
+        ret.push(self.drop_func_field(tref));
         ret.push(size_field());
         ret.push(align_field());
         ret
@@ -188,6 +200,8 @@ impl ItemTransCtx<'_, '_> {
             }
             // FIXME: is it correct to use `skip_binder`? -- it might lose the newly binded regions
             let mut generics = poly_trait_ref.skip_binder.generics.clone();
+            // So that generics correspond to the `skip_binder`
+            shift_db_vars(&mut generics, |v| v - 1);
             // remove the `Self` type argument from the generics
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             // Also skip the poly binder
@@ -195,7 +209,7 @@ impl ItemTransCtx<'_, '_> {
             generics
                 .types
                 .iter_mut()
-                .for_each(|ty| shift_bounded_ty_vars(ty, -1, -1));
+                .for_each(|ty| self.ty_shift_for_removed_self(ty));
             let def_id = &pred.trait_ref.def_id;
             let id = self.translate_vtable_trait_id_as_type_id(Span::dummy(), def_id)?;
             let vtbl_struct = TypeDeclRef { id, generics };
@@ -221,7 +235,10 @@ impl ItemTransCtx<'_, '_> {
     /// But the `AssocTy` should be yet-to-qualify, and we ignore them here.
     ///
     /// This is because the receiver can not only be `&self` but also `&mut self`, `Box<Self>`, etc.
-    fn convert_to_shim_ty(&mut self, span: Span, trait_id: &hax::DefId, in_ty: &Ty) -> Ty {
+    ///
+    /// NOTE: the converted shim type will continue to keep the current generic environment
+    /// To remove `Self`, note to call `self.ty_shift_for_removed_self`
+    fn receiver_ty_to_shim_ty(&mut self, span: Span, tref: TraitDeclRef, in_ty: &Ty) -> Ty {
         trace!(
             "Converting into shim type for: `{}`",
             in_ty.with_ctx(&self.into_fmt())
@@ -244,8 +261,7 @@ impl ItemTransCtx<'_, '_> {
         let mut params = self.binding_levels.pop().unwrap().params;
 
         // the trait decl ref: `Trait<'a, ..., T, ..., const N = ?, ...>`
-        // the param should be the identity args of the `trait` decl itself
-        let mut args = self.outermost_binder().params.identity_args();
+        let mut args = tref.generics;
         // The DB shifting level should be: binding_levels.len() - 1 to refer to the top here
         // But as the reference is behind a `RegionBinder`, we need to shift it by `+ 1`
         // Also, the predicate itself is within a level, hence, it is shifted by `+ 1` as well.
@@ -253,17 +269,10 @@ impl ItemTransCtx<'_, '_> {
         let levels = self.binding_levels.len() + 1;
         // the args should refer to the top level binder, with the sole exception that
         // the `Self` type variable should refer to the `_dyn` above
-        let _ = args.visit_db_id(|db_id| {
-            *db_id = DeBruijnId {
-                index: db_id.index + levels,
-            };
-            Continue::<()>(())
-        });
-        // shift the first `Self` type variable to refer to the `_dyn` above
-        shift_bounded_ty_vars(&mut args.types[0], 1 - (levels as isize), 0);
+        shift_db_vars(&mut args, |id| id + levels);
         let trait_decl_ref = TraitDeclRef {
-            id: self.register_trait_decl_id(span, trait_id),
-            generics: Box::new(args),
+            id: tref.id,
+            generics: args,
         };
         // add constraint: `T : Trait<'a, ..., T, ..., const N = ?, ...>`
         params.trait_clauses.push_with(|idx| TraitClause {
@@ -287,8 +296,8 @@ impl ItemTransCtx<'_, '_> {
             "Target shim type: `{}`",
             target_ty.with_ctx(&self.into_fmt())
         );
-        let self_level = self.binding_levels.len() - 1;
 
+        let self_level = self.binding_levels.len() - 1;
         // Then, replace every `Self` in the type with the target type
         #[derive(Clone)]
         struct SelfVisitor(usize, Ty);
@@ -308,7 +317,65 @@ impl ItemTransCtx<'_, '_> {
         ty.visit_vars(&mut SelfVisitor(self_level, target_ty));
         trace!("Converted shim type: `{}`", ty.with_ctx(&self.into_fmt()));
         ty
-        // unit_raw_ptr(true)  // maybe this one is simpler?
+    }
+
+    /// When the `Self` type variable is removed, we need to shift the other bounded type variables.
+    /// Namely, for types with sub-part `TBound(outmost, i)`, we need to shift `i` by `-1` as now `Self` is gone.
+    fn ty_shift_for_removed_self(&self, ty: &mut Ty) {
+        let outmost_level = self.binding_levels.len() - 1;
+        struct SelfVisitor(usize);
+        impl VarsVisitor for SelfVisitor {
+            fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
+                let SelfVisitor(outmost_level) = self;
+                if let DeBruijnVar::Bound(lv, i) = v
+                    && lv.index == *outmost_level
+                {
+                    assert!(i > 0);
+                    Some(Ty::new(TyKind::TypeVar(DeBruijnVar::Bound(lv, i - 1))))
+                } else {
+                    None
+                }
+            }
+        }
+        ty.visit_vars(&mut SelfVisitor(outmost_level));
+    }
+
+    /// The hax function signature to its vtable shim type.
+    fn sig_to_shim_ty(
+        &mut self,
+        span: Span,
+        tref: TraitDeclRef,
+        sig: &hax::TyFnSig,
+    ) -> Result<Ty, Error> {
+        let mut in_tys: Vec<Ty> = sig
+            .inputs
+            .iter()
+            .map(|ty| self.translate_ty(span, ty))
+            .try_collect()?;
+        // take out the first element of `in_tys` and modify it to the shim type
+        in_tys[0] = self.receiver_ty_to_shim_ty(span, tref, &in_tys[0]);
+        trace!(
+            "Obtained shim type: {}",
+            in_tys[0].with_ctx(&self.into_fmt())
+        );
+        in_tys.iter_mut().for_each(|ty| {
+            trace!(
+                "To shift for removed self for fun sig in-type: {}\nIts original type is: {:?}",
+                ty.with_ctx(&self.into_fmt()),
+                ty
+            );
+            self.ty_shift_for_removed_self(ty)
+        });
+        let mut out_ty = self.translate_ty(span, &sig.output)?;
+        self.ty_shift_for_removed_self(&mut out_ty);
+        // it is safe to take only the region binder here
+        // as Rustc guarantees that only generic Region is allowed
+        // by dyn-compatibility
+        let ty = Ty::new(TyKind::FnPtr(RegionBinder {
+            regions: self.innermost_binder().params.regions.clone(),
+            skip_binder: (in_tys, out_ty),
+        }));
+        Ok(ty)
     }
 
     fn add_vtable_methods_from_trait_items(
@@ -348,26 +415,12 @@ impl ItemTransCtx<'_, '_> {
                     let shim_ty = self
                         .translate_binder_for_def(span, binder_kind, &func_def, |tcx| {
                             let sig = &sig.value;
-                            let mut in_tys: Vec<Ty> = sig
-                                .inputs
-                                .iter()
-                                .map(|ty| tcx.translate_ty(span, ty))
-                                .try_collect()?;
-                            // take out the first element of `in_tys` and modify it to the shim type
-                            in_tys[0] = tcx.convert_to_shim_ty(span, trait_id, &in_tys[0]);
-                            in_tys
-                                .iter_mut()
-                                .for_each(|ty| shift_bounded_ty_vars(ty, 0, -1));
-                            let mut out_ty = tcx.translate_ty(span, &sig.output)?;
-                            shift_bounded_ty_vars(&mut out_ty, 0, -1);
-                            // it is safe to take only the region binder here
-                            // as Rustc guarantees that only generic Region is allowed
-                            // by dyn-compatibility
-                            let ty = Ty::new(TyKind::FnPtr(RegionBinder {
-                                regions: tcx.innermost_binder().params.regions.clone(),
-                                skip_binder: (in_tys, out_ty),
-                            }));
-                            Ok(ty)
+                            let args = tcx.outermost_binder().params.identity_args();
+                            let tref = TraitDeclRef {
+                                id: trait_decl_id,
+                                generics: Box::new(args),
+                            };
+                            tcx.sig_to_shim_ty(span, tref, sig)
                         })?
                         .skip_binder;
 
@@ -420,7 +473,12 @@ impl ItemTransCtx<'_, '_> {
         trait_full_def: &hax::FullDef,
     ) -> Result<Vector<FieldId, Field>, Error> {
         let trait_def_id = trait_full_def.def_id();
-        let mut fields = self.common_vtable_entries(&trait_def_id);
+        let trait_args = self.outermost_binder().params.identity_args();
+        let tref = TraitDeclRef {
+            id: self.register_trait_decl_id(span, &trait_def_id),
+            generics: Box::new(trait_args),
+        };
+        let mut fields = self.common_vtable_entries(tref);
 
         // translate the super pointers
         let parent_clauses = mem::take(&mut self.parent_trait_clauses);
@@ -511,13 +569,18 @@ impl ItemTransCtx<'_, '_> {
         glob_id: GlobalDeclId,
         item_meta: ItemMeta,
         trait_impl_def: &hax::FullDef,
+        maybe_target_kind: Option<ClosureKind>,
     ) -> Result<GlobalDecl, Error> {
         // prepare the generic environment
         self.translate_def_generics(item_meta.span, trait_impl_def)?;
-        let init = self
-            .register_vtable_instance_body_as_fun_decl_id(item_meta.span, &trait_impl_def.def_id);
+        let init = self.register_vtable_instance_body_as_fun_decl_id(
+            item_meta.span,
+            &trait_impl_def.def_id,
+            maybe_target_kind,
+        );
 
-        let (_, vtable_struct_ref, trait_decl_ref) = self.get_vtable_instance_info(trait_impl_def);
+        let (vtable_struct_ref, trait_decl_ref) =
+            self.get_vtable_instance_info(item_meta.span, trait_impl_def, maybe_target_kind)?;
 
         Ok(GlobalDecl {
             def_id: glob_id,
@@ -532,22 +595,41 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Local helper function to get the vtable struct reference and trait declaration reference
+    /// Should be called after the generic environment is set up
     fn get_vtable_instance_info<'a>(
         &mut self,
+        span: Span,
         trait_impl_def: &'a hax::FullDef,
-    ) -> (&'a hax::TraitRef, TypeDeclRef, TraitDeclRef) {
-        let trait_ref = match trait_impl_def.kind() {
+        maybe_target_kind: Option<ClosureKind>,
+    ) -> Result<(TypeDeclRef, TraitDeclRef), Error> {
+        let implemented_trait = match trait_impl_def.kind() {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
+            hax::FullDefKind::Closure {
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
+            } => {
+                // It is guaranteed that the `maybe_target_kind` is `Some` here
+                let vimpl = match maybe_target_kind.unwrap() {
+                    ClosureKind::FnOnce => fn_once_impl,
+                    ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
+                    ClosureKind::Fn => fn_impl.as_ref().unwrap(),
+                };
+                &vimpl.trait_pred.trait_ref
+            }
             _ => unreachable!(),
         };
-        let vtable_struct_ref = self
-            .get_vtable_struct_ref(Span::dummy(), &trait_ref.def_id)
-            .unwrap()
-            .unwrap();
-        let trait_decl_ref = self
-            .translate_trait_decl_ref(Span::dummy(), trait_ref)
-            .unwrap();
-        (trait_ref, vtable_struct_ref, trait_decl_ref)
+        let vtable_id = self.register_vtable_as_type_decl_id(span, &implemented_trait.def_id);
+        let tref = self.translate_trait_ref(span, implemented_trait)?;
+        let mut generics = tref.generics.clone();
+        // remove the `Self` type argument from the generics
+        generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        let vtable_struct_ref = TypeDeclRef {
+            id: TypeId::Adt(vtable_id),
+            generics,
+        };
+        Ok((vtable_struct_ref, tref))
     }
 
     fn add_parent_ptr_to_vtable_instance_func_body(
@@ -572,7 +654,12 @@ impl ItemTransCtx<'_, '_> {
                     // add a pointer to the parent vtable instance, the reference to the item
                     // get the instance
                     let parent_vtable_instance_id = self
-                        .register_vtable_instance_as_global_decl_id(Span::dummy(), &item.def_id);
+                        .register_vtable_instance_as_global_decl_id(
+                            Span::dummy(),
+                            &item.def_id,
+                            // it is already a `Concrete` impl expression, so no target kind is needed
+                            None,
+                        );
                     let impl_ref = self.translate_trait_impl_ref(Span::dummy(), item)?;
                     let mut generics = impl_ref.generics.clone();
                     // remove the `Self` type argument from the generics
@@ -634,40 +721,52 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
+    /// This function combines each level of Generic parameters' identity arguments
+    /// into a single `GenericArgs` object, the order is from the outermost to the innermost.
+    pub fn combined_identity_args(&self) -> GenericArgs {
+        let mut args = GenericArgs::empty();
+        for (level, binding) in self.binding_levels.iter_enumerated().rev() {
+            args = args.concat(&binding.params.identity_args_at_depth(level));
+        }
+        args
+    }
+
     fn add_vtable_methods_to_vtable_instance_func_body(
         &mut self,
-        trait_id: &hax::DefId,
+        tref: &TraitDeclRef,
         items: &Vec<hax::ImplAssocItem<hax::MirBody<hax::mir_kinds::Unknown>>>,
         locals: &mut Vector<LocalId, Local>,
         statements: &mut Vec<llbc_ast::Statement>,
     ) -> Result<(), Error> {
         for item in items {
             let def = item.def();
+            let item_span = self.def_span(&def.def_id);
             match def.kind() {
                 hax::FullDefKind::AssocFn { sig, .. } => {
-                    // get the shim type
-                    let func_shim_ty = self.translate_region_binder(Span::dummy(), sig, |bt_ctx, sig| {
-                        
-                        todo!()
-                    })?;
-                    let func_shim_ty = Ty::new(TyKind::FnPtr(func_shim_ty));
+                    // get the shim type, Rustc guarantees that the latest level of binder can only be `RegionBinder`
+                    let func_shim_ty = self
+                        .translate_region_binder(item_span, sig, |bt_ctx, sig| {
+                            bt_ctx.sig_to_shim_ty(item_span, tref.clone(), sig)
+                        })?
+                        .skip_binder;
 
                     // get the shim ref
                     let func_shim_ref = FunDeclRef {
-                        id: todo!(),
-                        generics: todo!(),
+                        id: self.register_vtable_func_shim(item_span, &def.def_id),
+                        generics: Box::new(self.combined_identity_args()),
                     };
 
                     // create a local for the shim
+                    let method_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                     let local = locals.push_with(|idx| Local {
                         index: idx,
-                        name: Some(format!("method_{}", idx)),
+                        name: Some(method_name.to_string()),
                         ty: func_shim_ty.clone(),
                     });
                     // add the assignment statement:
                     //   local := &func_shim_ref
                     statements.push(llbc_ast::Statement::new(
-                        Span::dummy(),
+                        item_span,
                         llbc_ast::RawStatement::Assign(
                             Place {
                                 kind: PlaceKind::Local(local),
@@ -732,9 +831,14 @@ impl ItemTransCtx<'_, '_> {
             &mut statements,
         )?;
 
-        let trait_id = &trait_pred.trait_ref.def_id;
+        let impl_span = self.def_span(&trait_impl_def.def_id);
+        let implemented_tref = self.translate_trait_ref(impl_span, &trait_pred.trait_ref)?;
+        trace!(
+            "For vtable instance, implemented trait: {}",
+            implemented_tref.with_ctx(&self.into_fmt())
+        );
         self.add_vtable_methods_to_vtable_instance_func_body(
-            trait_id,
+            &implemented_tref,
             items,
             &mut locals,
             &mut statements,
@@ -799,13 +903,20 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         // This can be either a trait impl or a closure definition.
         def: &hax::FullDef,
+        maybe_target_kind: Option<ClosureKind>,
     ) -> Result<FunDecl, Error> {
         // prepare the generic environment
         self.translate_def_generics(item_meta.span, def)?;
 
-        let (_, vtable_struct_ref, trait_decl_ref) = self.get_vtable_instance_info(def);
-        let glob_def_id =
-            self.register_vtable_instance_as_global_decl_id(item_meta.span, &def.def_id);
+        let def_span = self.def_span(&def.def_id);
+
+        let (vtable_struct_ref, trait_decl_ref) =
+            self.get_vtable_instance_info(def_span, def, maybe_target_kind)?;
+        let glob_def_id = self.register_vtable_instance_as_global_decl_id(
+            item_meta.span,
+            &def.def_id,
+            maybe_target_kind,
+        );
 
         // signature: `() -> VTable`
         let sig = FunSig {
@@ -824,10 +935,7 @@ impl ItemTransCtx<'_, '_> {
                 todo!("Handle closure vtable instance translation");
             }
             _ => {
-                panic!(
-                    "Unexpected trait impl definition kind: {:?}",
-                    def.kind()
-                );
+                panic!("Unexpected trait impl definition kind: {:?}", def.kind());
             }
         };
 
