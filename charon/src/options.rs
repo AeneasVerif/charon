@@ -24,7 +24,7 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(Debug, Default, Clone, clap::Args, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, clap::Args, PartialEq, Eq, Serialize, Deserialize)]
 #[clap(name = "Charon")]
 #[charon::rename("cli_options")]
 pub struct CliOpts {
