@@ -10,11 +10,8 @@ pub const CONSTANT: u8 = CONSTANT()
 fn foo() -> u8
 {
     let @0: u8; // return
-    let @1: u8; // anonymous local
 
-    storage_live(@1)
-    @1 := CONSTANT
-    @0 := move (@1)
+    @0 := copy (CONSTANT)
     return
 }
 

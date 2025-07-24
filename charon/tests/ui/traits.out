@@ -1296,11 +1296,8 @@ where
     [@TraitClause2]: Trait<T>,
 {
     let @0: Result<T, i32>[@TraitClause0, Sized<i32>]; // return
-    let @1: Result<T, i32>[@TraitClause0, Sized<i32>]; // anonymous local
 
-    storage_live(@1)
-    @1 := FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
-    @0 := move (@1)
+    @0 := copy (FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2])
     return
 }
 
@@ -1312,11 +1309,8 @@ where
     [@TraitClause2]: Trait<U>,
 {
     let @0: Result<U, i32>[@TraitClause1, Sized<i32>]; // return
-    let @1: Result<U, i32>[@TraitClause1, Sized<i32>]; // anonymous local
 
-    storage_live(@1)
-    @1 := FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
-    @0 := move (@1)
+    @0 := copy (FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2])
     return
 }
 

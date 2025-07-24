@@ -10,6 +10,13 @@ impl Place {
         }
     }
 
+    pub fn new_global(global: GlobalDeclRef, ty: Ty) -> Place {
+        Place {
+            kind: PlaceKind::Global(global),
+            ty,
+        }
+    }
+
     pub fn ty(&self) -> &Ty {
         &self.ty
     }
@@ -29,13 +36,14 @@ impl Place {
     }
 
     #[deprecated(note = "use `local_id` instead")]
-    pub fn var_id(&self) -> LocalId {
+    pub fn var_id(&self) -> Option<LocalId> {
         self.local_id()
     }
-    pub fn local_id(&self) -> LocalId {
+    pub fn local_id(&self) -> Option<LocalId> {
         match &self.kind {
-            PlaceKind::Local(var_id) => *var_id,
+            PlaceKind::Local(var_id) => Some(*var_id),
             PlaceKind::Projection(subplace, _) => subplace.local_id(),
+            PlaceKind::Global(_) => None,
         }
     }
 

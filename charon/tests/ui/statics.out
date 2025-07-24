@@ -21,25 +21,16 @@ fn constant()
     let @3: usize; // anonymous local
     let _ref_mut@4: &'_ mut (usize); // local
     let @5: usize; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: usize; // anonymous local
-    let @8: usize; // anonymous local
 
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
     storage_live(_val@1)
-    @6 := CONST
-    _val@1 := move (@6)
+    _val@1 := copy (CONST)
     storage_live(_ref@2)
     storage_live(@3)
-    @7 := CONST
-    @3 := move (@7)
+    @3 := copy (CONST)
     _ref@2 := &@3
     storage_live(_ref_mut@4)
     storage_live(@5)
-    @8 := CONST
-    @5 := move (@8)
+    @5 := copy (CONST)
     _ref_mut@4 := &mut @5
     @0 := ()
     storage_dead(@5)

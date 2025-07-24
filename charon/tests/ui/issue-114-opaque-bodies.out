@@ -369,11 +369,8 @@ fn vec(@1: Vec<u32>[Sized<u32>, Sized<Global>])
 fn max() -> usize
 {
     let @0: usize; // return
-    let @1: usize; // anonymous local
 
-    storage_live(@1)
-    @1 := MAX
-    @0 := move (@1)
+    @0 := copy (MAX)
     return
 }
 
