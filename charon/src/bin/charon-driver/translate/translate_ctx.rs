@@ -1,5 +1,6 @@
 //! The translation contexts.
-use super::translate_crate::{RustcItem, TransItemSource};
+use super::translate_crate::RustcItem;
+pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSourceKind};
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};

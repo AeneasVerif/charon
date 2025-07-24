@@ -195,7 +195,7 @@ impl ItemTransCtx<'_, '_> {
         let impl_id = self.register_item(
             span,
             &closure.item,
-            TransItemSourceKind::ClosureTraitImpl(target_kind),
+            TransItemSourceKind::TraitImpl(TraitImplSource::Closure(target_kind)),
         );
         let adt_ref = self.translate_closure_type_ref(span, closure)?;
         let impl_ref = TraitImplRef {

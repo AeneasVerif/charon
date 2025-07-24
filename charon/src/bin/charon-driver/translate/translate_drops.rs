@@ -50,7 +50,11 @@ impl ItemTransCtx<'_, '_> {
             .self_ty(&self.t_ctx.translated)
             .unwrap()
             .clone();
-        let drop_impl_id = self.register_item(span, def.this(), TransItemSourceKind::DropGlueImpl);
+        let drop_impl_id = self.register_item(
+            span,
+            def.this(),
+            TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue),
+        );
         let impl_ref = TraitImplRef {
             id: drop_impl_id,
             generics: Box::new(self.the_only_binder().params.identity_args()),

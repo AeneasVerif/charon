@@ -59,7 +59,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
-        match item_src.kind {
+        match &item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
                 bt_ctx.register_module(item_meta, &def);
             }
@@ -91,22 +91,22 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            TransItemSourceKind::TraitImpl => {
+            TransItemSourceKind::TraitImpl(kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
-                let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
+                let trait_impl = match kind {
+                    TraitImplSource::Normal | TraitImplSource::TraitAlias => {
+                        bt_ctx.translate_trait_impl(id, item_meta, &def)?
+                    }
+                    &TraitImplSource::Closure(kind) => {
+                        bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
+                    }
+                    TraitImplSource::DropGlue => bt_ctx.translate_drop_impl(id, item_meta, &def)?,
+                };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            TransItemSourceKind::ClosureTraitImpl(kind) => {
-                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
-                let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?;
-                self.translated.trait_impls.set_slot(id, closure_trait_impl);
-            }
-            TransItemSourceKind::ClosureMethod(kind) => {
+            &TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
@@ -119,13 +119,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 };
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
-            }
-            TransItemSourceKind::DropGlueImpl => {
-                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
-                let timpl = bt_ctx.translate_drop_impl(id, item_meta, &def)?;
-                self.translated.trait_impls.set_slot(id, timpl);
             }
             TransItemSourceKind::DropGlueMethod => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
@@ -210,7 +203,8 @@ impl ItemTransCtx<'_, '_> {
                 overrides_default,
                 ..
             } => {
-                let impl_ref = self.translate_trait_impl_ref(span, impl_)?;
+                let impl_ref =
+                    self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // Ensure we translate the corresponding decl signature.

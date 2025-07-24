@@ -42,27 +42,38 @@ pub enum RustcItem {
     Mono(hax::ItemRef),
 }
 
+/// The kind of a [`TransItemSource`].
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
-    TraitImpl,
+    TraitImpl(TraitImplSource),
     Fun,
     Type,
     /// We don't translate these as proper items, but we translate them a bit in names.
     InherentImpl,
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
-    /// An impl of the appropriate `Fn*` trait for the given closure type.
-    ClosureTraitImpl(ClosureKind),
-    /// The `call_*` method of the appropriate `Fn*` trait.
+    /// The `call_*` method of the appropriate `TraitImplSource::Closure` impl.
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// A fictitious trait impl corresponding to the drop glue code for the given ADT.
-    DropGlueImpl,
-    /// The `drop` method for the impl above.
+    /// The `drop` method of a `TraitImplSource::DropGlue` trait impl.
     DropGlueMethod,
+}
+
+/// The kind of a [`TransItemSourceKind::TraitImpl`].
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+pub enum TraitImplSource {
+    /// A user-written trait impl with a `DefId`.
+    Normal,
+    /// The blanket impl we generate for a trait alias. The `DefId` is that of the trait alias.
+    TraitAlias,
+    /// An impl of the appropriate `Fn*` trait for a closure. The `DefId` is that of the closure.
+    Closure(ClosureKind),
+    /// A fictitious `impl Drop for T` that contains the drop glue code for the given ADT. The
+    /// `DefId` is that of the ADT.
+    DropGlue,
 }
 
 impl TransItemSource {
@@ -110,8 +121,12 @@ impl TransItemSource {
     /// not attempt to generally compute the parent of an item.
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
-            TransItemSourceKind::ClosureMethod(kind) => TransItemSourceKind::ClosureTraitImpl(kind),
-            TransItemSourceKind::DropGlueMethod => TransItemSourceKind::DropGlueImpl,
+            TransItemSourceKind::ClosureMethod(kind) => {
+                TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
+            }
+            TransItemSourceKind::DropGlueMethod => {
+                TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue)
+            }
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -122,9 +137,14 @@ impl TransItemSource {
     pub(crate) fn is_derived_item(&self) -> bool {
         use TransItemSourceKind::*;
         match self.kind {
-            Global | TraitDecl | TraitImpl | InherentImpl | Module | Fun | Type => false,
-            ClosureTraitImpl(..) | ClosureMethod(..) | ClosureAsFnCast | DropGlueImpl
-            | DropGlueMethod => true,
+            Global
+            | TraitDecl
+            | TraitImpl(TraitImplSource::Normal)
+            | InherentImpl
+            | Module
+            | Fun
+            | Type => false,
+            _ => true,
         }
     }
 
@@ -171,7 +191,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             Fn { .. } | AssocFn { .. } => TransItemSourceKind::Fun,
             Const { .. } | Static { .. } | AssocConst { .. } => TransItemSourceKind::Global,
             Trait { .. } | TraitAlias { .. } => TransItemSourceKind::TraitDecl,
-            Impl { of_trait: true } => TransItemSourceKind::TraitImpl,
+            Impl { of_trait: true } => TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
             Impl { of_trait: false } => TransItemSourceKind::InherentImpl,
             Mod { .. } | ForeignMod { .. } => TransItemSourceKind::Module,
 
@@ -235,7 +255,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let trans_id = match src.kind {
                     Type => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
                     TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
-                    TraitImpl | ClosureTraitImpl(..) | DropGlueImpl => {
+                    TraitImpl(..) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
                     Global => AnyTransId::Global(self.translated.global_decls.reserve_slot()),
@@ -479,16 +499,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         item: &hax::ItemRef,
+        kind: TraitImplSource,
     ) -> Result<TraitImplRef, Error> {
-        self.translate_item(span, item, TransItemSourceKind::TraitImpl)
-    }
-
-    pub(crate) fn translate_drop_trait_impl_ref(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-    ) -> Result<TraitImplRef, Error> {
-        self.translate_item(span, item, TransItemSourceKind::DropGlueImpl)
+        self.translate_item(span, item, TransItemSourceKind::TraitImpl(kind))
     }
 }
 

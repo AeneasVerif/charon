@@ -1,5 +1,3 @@
-use crate::translate::translate_crate::TransItemSourceKind;
-
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
@@ -206,7 +204,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let trait_ref = match &impl_source.r#impl {
             ImplExprAtom::Concrete(item) => {
-                let impl_ref = self.translate_trait_impl_ref(span, item)?;
+                let impl_ref =
+                    self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_ref),
                     trait_decl_ref,
@@ -322,7 +321,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let impl_id = self.register_item(
                         span,
                         tref.hax_skip_binder_ref(),
-                        TransItemSourceKind::TraitImpl,
+                        TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
                     );
                     let mut generics = trait_decl_ref.clone().erase().generics;
                     assert!(
@@ -337,7 +336,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else if let hax::BuiltinTraitData::Drop(DropData::Glue { ty, .. }) = trait_data
                     && let hax::TyKind::Adt(item) = ty.kind()
                 {
-                    let impl_ref = self.translate_drop_trait_impl_ref(span, item)?;
+                    let impl_ref =
+                        self.translate_trait_impl_ref(span, item, TraitImplSource::DropGlue)?;
                     TraitRefKind::TraitImpl(impl_ref)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
