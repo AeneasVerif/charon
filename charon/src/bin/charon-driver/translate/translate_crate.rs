@@ -18,7 +18,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use hax_frontend_exporter::{self as hax, BaseState, SInto};
+use hax_frontend_exporter::{self as hax, SInto};
 use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_middle::ty::TyCtxt;
@@ -370,11 +370,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> T {
         let item = if self.monomorphize() && item.has_param {
-            let state = self
-                .t_ctx
-                .hax_state
-                .with_owner_id(self.item_src.def_id().underlying_rust_def_id());
-            item.erase(&state)
+            item.erase(&self.hax_state_with_id())
         } else {
             item.clone()
         };

@@ -187,6 +187,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.span_err(span, msg, level)
     }
 
+    pub fn hax_state(&self) -> &hax::StateWithBase<'tcx> {
+        &self.t_ctx.hax_state
+    }
+
+    pub fn hax_state_with_id(&self) -> hax::StateWithOwner<'tcx> {
+        use hax::BaseState;
+        let def_id = self.item_src.def_id().underlying_rust_def_id();
+        self.t_ctx.hax_state.clone().with_owner_id(def_id)
+    }
+
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice.
     pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {

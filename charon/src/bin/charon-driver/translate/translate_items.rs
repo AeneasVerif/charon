@@ -512,7 +512,7 @@ impl ItemTransCtx<'_, '_> {
                 if poly_item_def.has_own_generics() {
                     continue;
                 } else {
-                    let item = def.this().with_def_id(&self.t_ctx.hax_state, item_def_id);
+                    let item = def.this().with_def_id(self.hax_state(), item_def_id);
                     let item_def = self.hax_def(&item)?;
                     let item_src = TransItemSource::monomorphic(&item, trans_kind);
                     (item_src, item_def)
@@ -738,13 +738,11 @@ impl ItemTransCtx<'_, '_> {
                 } else {
                     let item = match &impl_item.value {
                         // Real item: we reuse the impl arguments to get a reference to the item.
-                        Provided { def_id, .. } => {
-                            def.this().with_def_id(&self.t_ctx.hax_state, def_id)
-                        }
+                        Provided { def_id, .. } => def.this().with_def_id(self.hax_state(), def_id),
                         // Defaulted item: we use the implemented trait arguments.
                         _ => trait_pred
                             .trait_ref
-                            .with_def_id(&self.t_ctx.hax_state, &impl_item.decl_def_id),
+                            .with_def_id(self.hax_state(), &impl_item.decl_def_id),
                     };
                     let item_def = self.hax_def(&item)?;
                     let item_src = TransItemSource::monomorphic(&item, trans_kind);
