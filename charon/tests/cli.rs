@@ -198,6 +198,15 @@ fn charon_rustc() -> Result<()> {
 }
 
 #[test]
+fn put_options_after_subcommand() -> Result<()> {
+    let path = "tests/cargo/workspace/crate1/src/lib.rs";
+    let args = &["--print-llbc", "rustc", "--", "--crate-type=lib", path];
+    let output = Command::cargo_bin("charon")?.args(args).output()?;
+    assert!(!output.status.success());
+    Ok(())
+}
+
+#[test]
 fn charon_rust_target() -> Result<()> {
     let target = "riscv64gc-unknown-none-elf";
 
