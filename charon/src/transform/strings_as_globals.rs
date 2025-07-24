@@ -117,20 +117,10 @@ fn fun_decl_for_string(str: &String, id: FunDeclId, global: GlobalDeclId) -> Fun
     let statements = vec![
         RawStatement::Assign(
             arr.clone(),
-            Rvalue::Aggregate(
-                AggregateKind::Array(u8_ty.clone(), len_const.clone()),
-                str_bytes
-                    .iter()
-                    .map(|byte| {
-                        Operand::Const(Box::new(ConstantExpr {
-                            value: RawConstantExpr::Literal(Literal::Scalar(
-                                ScalarValue::Unsigned(UIntTy::U8, *byte as u128),
-                            )),
-                            ty: u8_ty.clone(),
-                        }))
-                    })
-                    .collect(),
-            ),
+            Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
+                value: RawConstantExpr::RawMemory(str.clone().into_bytes()),
+                ty: arr.ty.clone(),
+            }))),
         ),
         RawStatement::Assign(arr_ref.clone(), Rvalue::Ref(arr, BorrowKind::Shared)),
         RawStatement::Assign(

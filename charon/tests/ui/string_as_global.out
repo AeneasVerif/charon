@@ -108,7 +108,7 @@ pub fn string_constant::<"Hello">() -> &'static (Str)
     storage_live(arr@1)
     storage_live(arr_ref@2)
     storage_live(slice@3)
-    arr@1 := [const (72 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
+    arr@1 := const (RawMemory([72, 101, 108, 108, 111]))
     arr_ref@2 := &arr@1
     slice@3 := @ArrayToSliceShared<'_, u8, 5 : usize>(move (arr_ref@2))
     str@0 := transmute<&'_ (Slice<u8>), &'static (Str)>(move (slice@3))
@@ -127,7 +127,7 @@ pub fn string_constant::<"hello">() -> &'static (Str)
     storage_live(arr@1)
     storage_live(arr_ref@2)
     storage_live(slice@3)
-    arr@1 := [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
+    arr@1 := const (RawMemory([104, 101, 108, 108, 111]))
     arr_ref@2 := &arr@1
     slice@3 := @ArrayToSliceShared<'_, u8, 5 : usize>(move (arr_ref@2))
     str@0 := transmute<&'_ (Slice<u8>), &'static (Str)>(move (slice@3))
