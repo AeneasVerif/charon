@@ -52,6 +52,22 @@ note: the error occurred when translating `core::fmt::Display::<type_error("`dyn
   |
 7 |     x.to_string()
   |     -------------
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 483 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+note: the error occurred when translating `core::fmt::Display::fmt::<Str>`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:11:23
+   |
+11 |     let str: String = "hello".to_string();
+   |                       -------------------
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 483 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+note: the error occurred when translating `core::fmt::Display::fmt::<alloc::string::String>`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:12:27
+   |
+12 |     let _ = dyn_to_string(&str);
+   |                           ----
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/core/src/fmt/mod.rs:1028:5
 
@@ -63,6 +79,25 @@ note: the error occurred when translating `core::fmt::Display::fmt::<type_error(
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/core/src/fmt/mod.rs:1028:5
 
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 483 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 583 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+note: the error occurred when translating `core::fmt::{impl core::fmt::Display::<Str>}::fmt`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:11:23
+   |
+11 |     let str: String = "hello".to_string();
+   |                       -------------------
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 483 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+note: the error occurred when translating `core::fmt::Display::fmt`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:11:23
+   |
+11 |     let str: String = "hello".to_string();
+   |                       -------------------
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/core/src/marker.rs:179:1
 
@@ -82,6 +117,22 @@ note: the error occurred when translating `core::marker::MetaSized::<type_error(
   |
 7 |     x.to_string()
   |     -------------
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 649 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+note: the error occurred when translating `alloc::string::{impl core::fmt::Display::<alloc::string::String>}::fmt`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:12:27
+   |
+12 |     let _ = dyn_to_string(&str);
+   |                           ----
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 483 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+ --> /rustc/library/core/src/fmt/mod.rs:562:1
+
+note: the error occurred when translating `core::fmt::Display::fmt`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:12:27
+   |
+12 |     let _ = dyn_to_string(&str);
+   |                           ----
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/alloc/src/string.rs:2780:1
 
@@ -160,4 +211,4 @@ note: the error occurred when translating `alloc::string::ToString::to_string`, 
   |
 7 |     x.to_string()
   |     -------------
-ERROR Charon failed to translate this code (30 errors)
+ERROR Charon failed to translate this code (37 errors)

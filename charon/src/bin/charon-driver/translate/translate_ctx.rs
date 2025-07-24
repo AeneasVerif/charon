@@ -130,6 +130,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef>, Error> {
         let def_id = item.def_id();
         let span = self.def_span(def_id);
+        if let RustcItem::Mono(item_ref) = item
+            && item_ref.has_param
+        {
+            raise_error!(self, span, "Item is not monomorphic: {item:?}")
+        }
         // Hax takes care of caching the translation.
         let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
         std::panic::catch_unwind(move || match item {

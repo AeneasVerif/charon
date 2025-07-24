@@ -293,7 +293,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ..
             } => {
                 let tref = &impl_source.r#trait;
-                let trait_def = self.hax_def(&tref.hax_skip_binder_ref())?;
+                let trait_def =
+                    self.hax_def(&tref.hax_skip_binder_ref().erase(&self.hax_state_with_id()))?;
                 let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
                     "fn_once" => Some(ClosureKind::FnOnce),
                     "fn_mut" => Some(ClosureKind::FnMut),
