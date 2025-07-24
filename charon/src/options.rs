@@ -85,7 +85,7 @@ pub struct CliOpts {
     /// translated as normal. To only translate a particular call graph, use `--start-from`. This
     /// uses a different mechanism than `--monomorphize-conservative` which should be a lot more
     /// complete, but doesn't currently support `dyn Trait`.
-    #[clap(long)]
+    #[clap(long, visible_alias = "mono")]
     #[serde(default)]
     pub monomorphize: bool,
     /// Monomorphize the code, replacing generics with their concrete types. This is less complete
