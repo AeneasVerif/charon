@@ -250,6 +250,13 @@ pub struct CliOpts {
     #[serde(default)]
     pub raw_boxes: bool,
 
+    #[clap(
+        long = "string-globals",
+        help = "Convert string literals to globals containing the actual data."
+    )]
+    #[serde(default)]
+    pub strings_as_globals: bool,
+
     /// Named builtin sets of options. Currently used only for dependent projects, eveentually
     /// should be replaced with semantically-meaningful presets.
     #[clap(long = "preset")]
@@ -420,6 +427,8 @@ pub struct TranslateOptions {
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
     pub remove_associated_types: Vec<NamePattern>,
+    /// Convert all string literals to globals, containing the actual data.
+    pub strings_as_globals: bool,
 }
 
 impl TranslateOptions {
@@ -502,6 +511,7 @@ impl TranslateOptions {
             raw_boxes: options.raw_boxes,
             remove_associated_types,
             translate_all_methods: options.translate_all_methods,
+            strings_as_globals: options.strings_as_globals,
         }
     }
 
