@@ -96,8 +96,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let trait_impl = match kind {
-                    TraitImplSource::Normal | TraitImplSource::TraitAlias => {
-                        bt_ctx.translate_trait_impl(id, item_meta, &def)?
+                    TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
+                    TraitImplSource::TraitAlias => {
+                        bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
                     }
                     &TraitImplSource::Closure(kind) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
@@ -669,96 +670,6 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
 
-        if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
-            // Generate a blanket impl for this trait, as in:
-            //   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
-            // becomes:
-            //   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
-            //   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
-
-            // `translate_def_generics` registers the clauses as implied clauses, but we want them
-            // as required clauses for the impl.
-            assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-            let clauses = mem::take(&mut self.parent_trait_clauses);
-            self.innermost_generics_mut().trait_clauses = clauses;
-            let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
-            let mut generics = self.the_only_binder().params.identity_args();
-            // Do the inverse operation: the trait considers the clauses as implied.
-            let parent_trait_refs = mem::take(&mut generics.trait_refs);
-            let implemented_trait = TraitDeclRef {
-                id: trait_id,
-                generics: Box::new(generics),
-            };
-            let mut timpl = TraitImpl {
-                def_id,
-                item_meta,
-                impl_trait: implemented_trait,
-                generics: self.the_only_binder().params.clone(),
-                parent_trait_refs,
-                type_clauses: Default::default(),
-                consts: Default::default(),
-                types: Default::default(),
-                methods: Default::default(),
-            };
-            // We got the predicates from a trait decl, so they may refer to the virtual `Self`
-            // clause, which doesn't exist for impls. We fix that up here.
-            {
-                struct FixSelfVisitor {
-                    binder_depth: DeBruijnId,
-                }
-                struct UnhandledSelf;
-                impl Visitor for FixSelfVisitor {
-                    type Break = UnhandledSelf;
-                }
-                impl VisitAstMut for FixSelfVisitor {
-                    fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                        self.binder_depth = self.binder_depth.incr()
-                    }
-                    fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                        self.binder_depth = self.binder_depth.decr()
-                    }
-                    fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                        self.binder_depth = self.binder_depth.incr()
-                    }
-                    fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                        self.binder_depth = self.binder_depth.decr()
-                    }
-                    fn visit_trait_ref_kind(
-                        &mut self,
-                        kind: &mut TraitRefKind,
-                    ) -> ControlFlow<Self::Break> {
-                        match kind {
-                            TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
-                            TraitRefKind::ParentClause(sub, clause_id)
-                                if matches!(sub.kind, TraitRefKind::SelfId) =>
-                            {
-                                *kind = TraitRefKind::Clause(DeBruijnVar::bound(
-                                    self.binder_depth,
-                                    *clause_id,
-                                ))
-                            }
-                            _ => (),
-                        }
-                        self.visit_inner(kind)
-                    }
-                }
-                match timpl.drive_mut(&mut FixSelfVisitor {
-                    binder_depth: DeBruijnId::zero(),
-                }) {
-                    ControlFlow::Continue(()) => {}
-                    ControlFlow::Break(UnhandledSelf) => {
-                        register_error!(
-                            self,
-                            span,
-                            "Found `Self` clause we can't handle \
-                             in a trait alias blanket impl."
-                        );
-                    }
-                }
-            };
-            return Ok(timpl);
-        }
-
         let hax::FullDefKind::TraitImpl {
             trait_pred,
             implied_impl_exprs,
@@ -950,6 +861,107 @@ impl ItemTransCtx<'_, '_> {
             types,
             methods,
         })
+    }
+
+    /// Generate a blanket impl for this trait, as in:
+    ///   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// becomes:
+    ///   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
+    ///   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_trait_alias_blanket_impl(
+        mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+
+        self.translate_def_generics(span, def)?;
+
+        let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
+
+        // `translate_def_generics` registers the clauses as implied clauses, but we want them
+        // as required clauses for the impl.
+        assert!(self.innermost_generics_mut().trait_clauses.is_empty());
+        self.innermost_generics_mut().trait_clauses = mem::take(&mut self.parent_trait_clauses);
+        let mut generics = self.the_only_binder().params.identity_args();
+        // Do the inverse operation: the trait considers the clauses as implied.
+        let parent_trait_refs = mem::take(&mut generics.trait_refs);
+        let implemented_trait = TraitDeclRef {
+            id: trait_id,
+            generics: Box::new(generics),
+        };
+
+        let mut timpl = TraitImpl {
+            def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics: self.the_only_binder().params.clone(),
+            parent_trait_refs,
+            type_clauses: Default::default(),
+            consts: Default::default(),
+            types: Default::default(),
+            methods: Default::default(),
+        };
+        // We got the predicates from a trait decl, so they may refer to the virtual `Self`
+        // clause, which doesn't exist for impls. We fix that up here.
+        {
+            struct FixSelfVisitor {
+                binder_depth: DeBruijnId,
+            }
+            struct UnhandledSelf;
+            impl Visitor for FixSelfVisitor {
+                type Break = UnhandledSelf;
+            }
+            impl VisitAstMut for FixSelfVisitor {
+                fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                    self.binder_depth = self.binder_depth.incr()
+                }
+                fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                    self.binder_depth = self.binder_depth.decr()
+                }
+                fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                    self.binder_depth = self.binder_depth.incr()
+                }
+                fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                    self.binder_depth = self.binder_depth.decr()
+                }
+                fn visit_trait_ref_kind(
+                    &mut self,
+                    kind: &mut TraitRefKind,
+                ) -> ControlFlow<Self::Break> {
+                    match kind {
+                        TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
+                        TraitRefKind::ParentClause(sub, clause_id)
+                            if matches!(sub.kind, TraitRefKind::SelfId) =>
+                        {
+                            *kind = TraitRefKind::Clause(DeBruijnVar::bound(
+                                self.binder_depth,
+                                *clause_id,
+                            ))
+                        }
+                        _ => (),
+                    }
+                    self.visit_inner(kind)
+                }
+            }
+            match timpl.drive_mut(&mut FixSelfVisitor {
+                binder_depth: DeBruijnId::zero(),
+            }) {
+                ControlFlow::Continue(()) => {}
+                ControlFlow::Break(UnhandledSelf) => {
+                    register_error!(
+                        self,
+                        span,
+                        "Found `Self` clause we can't handle \
+                         in a trait alias blanket impl."
+                    );
+                }
+            }
+        };
+
+        Ok(timpl)
     }
 
     /// Make a trait impl from a hax `VirtualTraitImpl`. Used for constructing fake trait impls for
