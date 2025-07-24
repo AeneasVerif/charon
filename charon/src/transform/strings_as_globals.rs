@@ -231,6 +231,14 @@ impl UllbcPass for Transform {
             let fun_id = ctx.translated.fun_decls.reserve_slot();
             let global = global_decl_for_string(&str, *id, fun_id);
             let fun = fun_decl_for_string(&str, fun_id, *id);
+
+            ctx.translated
+                .item_names
+                .insert(AnyTransId::Global(*id), global.item_meta.name.clone());
+            ctx.translated
+                .item_names
+                .insert(AnyTransId::Fun(fun_id), fun.item_meta.name.clone());
+
             ctx.translated.global_decls.set_slot(*id, global);
             ctx.translated.fun_decls.set_slot(fun_id, fun);
         }

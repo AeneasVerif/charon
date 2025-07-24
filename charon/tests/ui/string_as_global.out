@@ -115,7 +115,7 @@ pub fn string_constant::<"Hello">() -> &'static (Str)
     return
 }
 
-pub static string_constant::<"Hello">: &'static (Str) = @Fun9()
+pub static string_constant::<"Hello">: &'static (Str) = string_constant::<"Hello">()
 
 pub fn string_constant::<"hello">() -> &'static (Str)
 {
@@ -134,7 +134,7 @@ pub fn string_constant::<"hello">() -> &'static (Str)
     return
 }
 
-pub static string_constant::<"hello">: &'static (Str) = @Fun10()
+pub static string_constant::<"hello">: &'static (Str) = string_constant::<"hello">()
 
 // Full name: test_crate::FOO
 fn FOO() -> &'static (Str)
@@ -143,7 +143,7 @@ fn FOO() -> &'static (Str)
     let @1: &'_ (Str); // anonymous local
 
     storage_live(@1)
-    @1 := @Global3
+    @1 := string_constant::<"hello">
     @0 := move (@1)
     return
 }
@@ -190,7 +190,7 @@ fn main()
     storage_live(_s@1)
     storage_live(@2)
     storage_live(@3)
-    @4 := @Global2
+    @4 := string_constant::<"Hello">
     @3 := move (@4)
     @2 := &*(@3)
     _s@1 := {impl ToString for T}::to_string<'_, Str>[MetaSized<Str>, {impl Display for Str}](move (@2))
