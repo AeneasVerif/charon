@@ -1,11 +1,22 @@
 # Final LLBC before serialization:
 
+// Full name: core::any::TypeId
+pub opaque type TypeId
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::any::TypeId
-pub opaque type TypeId
+struct core::any::Any::{vtable}
+where
+    (dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_) : 'static,
+{
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)),
+  method_type_id: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_))) -> TypeId,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
 
 // Full name: core::any::Any
 #[lang_item("Any")]

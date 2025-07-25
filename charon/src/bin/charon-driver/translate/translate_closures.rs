@@ -78,15 +78,7 @@ impl ItemTransCtx<'_, '_> {
         } else {
             None
         };
-        let signature = self.translate_region_binder(span, &args.fn_sig, |ctx, sig| {
-            let inputs = sig
-                .inputs
-                .iter()
-                .map(|x| ctx.translate_ty(span, x))
-                .try_collect()?;
-            let output = ctx.translate_ty(span, &sig.output)?;
-            Ok((inputs, output))
-        })?;
+        let signature = self.translate_fun_sig(span, &args.fn_sig)?;
         Ok(ClosureInfo {
             kind,
             fn_once_impl,

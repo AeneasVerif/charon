@@ -209,6 +209,9 @@ type trait_decl = {
           The binder contains the type parameters specific to the method. The
           [FunDeclRef] then provides a full list of arguments to the pointed-to
           function. *)
+  vtable : type_decl_ref option;
+      (** The virtual table struct for this trait, if it has one. It is
+          guaranteed that the trait has a vtable iff it is dyn-compatible. *)
 }
 [@@deriving
   show,
@@ -256,6 +259,9 @@ type trait_impl = {
       (** The associated types declared in the trait. *)
   methods : (trait_item_name * fun_decl_ref binder) list;
       (** The implemented methods *)
+  vtable : global_decl_ref option;
+      (** The virtual table instance for this trait implementation. This is
+          [Some] iff the trait is dyn-compatible. *)
 }
 [@@deriving
   show,

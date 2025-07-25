@@ -412,6 +412,47 @@ impl GenericArgs {
     }
 }
 
+impl IntTy {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            IntTy::Isize => ptr_size as usize,
+            IntTy::I8 => size_of::<i8>(),
+            IntTy::I16 => size_of::<i16>(),
+            IntTy::I32 => size_of::<i32>(),
+            IntTy::I64 => size_of::<i64>(),
+            IntTy::I128 => size_of::<i128>(),
+        }
+    }
+}
+impl UIntTy {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            UIntTy::Usize => ptr_size as usize,
+            UIntTy::U8 => size_of::<u8>(),
+            UIntTy::U16 => size_of::<u16>(),
+            UIntTy::U32 => size_of::<u32>(),
+            UIntTy::U64 => size_of::<u64>(),
+            UIntTy::U128 => size_of::<u128>(),
+        }
+    }
+}
+impl FloatTy {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self) -> usize {
+        match self {
+            FloatTy::F16 => size_of::<u16>(),
+            FloatTy::F32 => size_of::<u32>(),
+            FloatTy::F64 => size_of::<u64>(),
+            FloatTy::F128 => size_of::<u128>(),
+        }
+    }
+}
+
 impl IntegerTy {
     pub fn to_unsigned(&self) -> Self {
         match self {
@@ -429,18 +470,8 @@ impl IntegerTy {
     /// Must not be used for host types from rustc.
     pub fn target_size(&self, ptr_size: ByteCount) -> usize {
         match self {
-            IntegerTy::Signed(IntTy::Isize) => ptr_size as usize,
-            IntegerTy::Signed(IntTy::I8) => size_of::<i8>(),
-            IntegerTy::Signed(IntTy::I16) => size_of::<i16>(),
-            IntegerTy::Signed(IntTy::I32) => size_of::<i32>(),
-            IntegerTy::Signed(IntTy::I64) => size_of::<i64>(),
-            IntegerTy::Signed(IntTy::I128) => size_of::<i128>(),
-            IntegerTy::Unsigned(UIntTy::Usize) => ptr_size as usize,
-            IntegerTy::Unsigned(UIntTy::U8) => size_of::<u8>(),
-            IntegerTy::Unsigned(UIntTy::U16) => size_of::<u16>(),
-            IntegerTy::Unsigned(UIntTy::U32) => size_of::<u32>(),
-            IntegerTy::Unsigned(UIntTy::U64) => size_of::<u64>(),
-            IntegerTy::Unsigned(UIntTy::U128) => size_of::<u128>(),
+            IntegerTy::Signed(ty) => ty.target_size(ptr_size),
+            IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
         }
     }
 }
@@ -451,6 +482,18 @@ impl LiteralTy {
             Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),
             Self::UInt(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
             _ => None,
+        }
+    }
+
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
+            LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
+            LiteralTy::Float(float_ty) => float_ty.target_size(),
+            LiteralTy::Char => 4,
+            LiteralTy::Bool => 1,
         }
     }
 }

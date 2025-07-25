@@ -38,6 +38,13 @@ where
   Err(E),
 }
 
+struct core::fmt::Display::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)),
+  method_fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
+}
+
 // Full name: core::fmt::Display
 #[lang_item("Display")]
 pub trait Display<Self>
@@ -142,6 +149,18 @@ impl Clone for String {
 
 // Full name: alloc::string::{impl Display for String}::fmt
 pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+
+// Full name: alloc::string::{impl Display for String}::{vtable}
+fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
+{
+    let ret@0: core::fmt::Display::{vtable}; // return
+
+    ret@0 := core::fmt::Display::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_fmt: const ({impl Display for String}::fmt) }
+    return
+}
+
+// Full name: alloc::string::{impl Display for String}::{vtable}
+static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()
 
 // Full name: alloc::string::{impl Display for String}
 impl Display for String {

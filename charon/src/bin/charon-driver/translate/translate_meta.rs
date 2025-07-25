@@ -356,6 +356,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 name.name
                     .push(PathElem::Ident("as_fn".into(), Disambiguator::ZERO));
             }
+            TransItemSourceKind::VTable
+            | TransItemSourceKind::VTableInstance(..)
+            | TransItemSourceKind::VTableInstanceInitializer(..) => {
+                name.name
+                    .push(PathElem::Ident("{vtable}".into(), Disambiguator::ZERO));
+            }
             _ => {}
         }
         Ok(name)
