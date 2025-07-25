@@ -352,20 +352,9 @@ impl ItemTransCtx<'_, '_> {
         let mut dyn_self = self.translate_ty(span, dyn_self)?;
         // First construct fields that use the real method signatures (which may use the `Self`
         // type). We fixup the types and generics below.
-        let mut fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
-
-        // let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
-        // let ptr_align = ptr_size;
-        // let layout = Layout {
-        //     // everything is of the same size as a pointer
-        //     size: Some((fields.iter().count() as u64) * ptr_size),
-        //     align: Some(ptr_align as u64),
-        //     discriminant_layout: None,
-        //     uninhabited: false,
-        //     // TODO
-        //     variant_layouts: Vector::new(),
-        // };
-        //
+        let fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
+        let mut kind = TypeDeclKind::Struct(fields);
+        let layout = self.generate_naive_layout(span, &kind)?;
 
         // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
         // from the generic parameters.
@@ -373,7 +362,7 @@ impl ItemTransCtx<'_, '_> {
         {
             dyn_self = dynify(dyn_self, None);
             generics = dynify(generics, Some(dyn_self.clone()));
-            fields = dynify(fields, Some(dyn_self.clone()));
+            kind = dynify(kind, Some(dyn_self.clone()));
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             generics.types.iter_mut().for_each(|ty| {
                 ty.index -= 1;
@@ -391,9 +380,8 @@ impl ItemTransCtx<'_, '_> {
             src: ItemKind::VTableTy {
                 dyn_predicate: dyn_predicate.clone(),
             },
-            kind: TypeDeclKind::Struct(fields),
-            // TODO: construct a reasonable layout
-            layout: None,
+            kind,
+            layout: Some(layout),
             ptr_metadata: None,
         })
     }

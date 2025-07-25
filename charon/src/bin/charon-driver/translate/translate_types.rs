@@ -555,6 +555,48 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// Generate a naive layout for this type.
+    pub fn generate_naive_layout(&self, span: Span, ty: &TypeDeclKind) -> Result<Layout, Error> {
+        match ty {
+            TypeDeclKind::Struct(fields) => {
+                let mut size = 0;
+                let mut align = 0;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let field_offsets = fields.map_ref(|field| {
+                    let offset = size;
+                    let size_of_ty = match field.ty.kind() {
+                        TyKind::Literal(literal_ty) => literal_ty.target_size(ptr_size) as u64,
+                        // This is a lie, the pointers could be fat...
+                        TyKind::Ref(..) | TyKind::RawPtr(..) | TyKind::FnPtr(..) => ptr_size,
+                        _ => panic!("Unsupported type for `generate_naive_layout`: {ty:?}"),
+                    };
+                    size += size_of_ty;
+                    // For these types, align == size is good enough.
+                    align = std::cmp::max(align, size);
+                    offset
+                });
+
+                Ok(Layout {
+                    size: Some(size),
+                    align: Some(align),
+                    discriminant_layout: None,
+                    uninhabited: false,
+                    variant_layouts: [VariantLayout {
+                        field_offsets,
+                        tag: None,
+                        uninhabited: false,
+                    }]
+                    .into(),
+                })
+            }
+            _ => raise_error!(
+                self,
+                span,
+                "`generate_naive_layout` only supports structs at the moment"
+            ),
+        }
+    }
+
     /// Translate the body of a type declaration.
     ///
     /// Note that the type may be external, in which case we translate the body
