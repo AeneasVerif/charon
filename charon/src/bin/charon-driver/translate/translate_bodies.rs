@@ -501,6 +501,25 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             hax::UnsizingMetadata::VTablePtr(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                                match &impl_expr.r#impl {
+                                    hax::ImplExprAtom::Concrete(tref) => {
+                                        // Ensure the vtable type is translated.
+                                        let _: GlobalDeclId = self.register_item(
+                                            span,
+                                            tref,
+                                            TransItemSourceKind::VTableInstance(
+                                                TraitImplSource::Normal,
+                                            ),
+                                        );
+                                    }
+                                    // TODO(dyn): more ways of registering vtable instance?
+                                    _ => {
+                                        trace!(
+                                            "impl_expr not triggering registering vtable: {:?}",
+                                            impl_expr
+                                        )
+                                    }
+                                };
                                 UnsizingMetadata::VTablePtr(tref)
                             }
                             hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,

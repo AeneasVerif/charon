@@ -143,13 +143,42 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::VTable => {
+                let Some(AnyTransId::Type(id)) = trans_id else {
+                    unreachable!()
+                };
+                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
+                self.translated.type_decls.set_slot(id, ty_decl);
+            }
+            TransItemSourceKind::VTableInstance(impl_kind) => {
+                let Some(AnyTransId::Global(id)) = trans_id else {
+                    unreachable!()
+                };
+                let global_decl =
+                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
+                self.translated.global_decls.set_slot(id, global_decl);
+            }
+            TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl =
+                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableMethod => {
+                // let Some(AnyTransId::Fun(id)) = trans_id else {
+                //     unreachable!()
+                // };
+                // let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
+                // self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
     }
 
     /// While translating an item you may need the contents of another. Use this to retreive the
     /// translated version of this item. Use with care as this could create cycles.
-    #[expect(dead_code)]
     pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
         // We have to call `get_item` a few times because we're running into the classic `Polonius`
         // problem case.
@@ -483,6 +512,8 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
+        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
+
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
             return Ok(TraitDecl {
@@ -496,6 +527,7 @@ impl ItemTransCtx<'_, '_> {
                 types: Default::default(),
                 type_defaults: Default::default(),
                 methods: Default::default(),
+                vtable,
             });
         }
 
@@ -686,6 +718,7 @@ impl ItemTransCtx<'_, '_> {
             types,
             type_defaults,
             methods,
+            vtable,
         })
     }
 
@@ -724,6 +757,8 @@ impl ItemTransCtx<'_, '_> {
             }),
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
+
+        let vtable = self.translate_vtable_instance_ref(span, &trait_pred.trait_ref, def.this())?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let parent_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
@@ -891,6 +926,7 @@ impl ItemTransCtx<'_, '_> {
             consts,
             types,
             methods,
+            vtable,
         })
     }
 
@@ -915,7 +951,8 @@ impl ItemTransCtx<'_, '_> {
         // `translate_def_generics` registers the clauses as implied clauses, but we want them
         // as required clauses for the impl.
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-        self.innermost_generics_mut().trait_clauses = mem::take(&mut self.parent_trait_clauses);
+        let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
+        self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
         let parent_trait_refs = mem::take(&mut generics.trait_refs);
@@ -934,6 +971,8 @@ impl ItemTransCtx<'_, '_> {
             consts: Default::default(),
             types: Default::default(),
             methods: Default::default(),
+            // TODO(dyn)
+            vtable: None,
         };
         // We got the predicates from a trait decl, so they may refer to the virtual `Self`
         // clause, which doesn't exist for impls. We fix that up here.
@@ -1043,6 +1082,8 @@ impl ItemTransCtx<'_, '_> {
             consts: vec![],
             types,
             methods: vec![],
+            // TODO(dyn): generate vtable instances for builtin traits
+            vtable: None,
         })
     }
 }

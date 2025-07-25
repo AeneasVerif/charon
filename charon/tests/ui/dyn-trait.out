@@ -1,5 +1,13 @@
 # Final LLBC before serialization:
 
+struct core::cmp::PartialEq::{vtable}<Rhs> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_)),
+  method_eq: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_)), &'_0_1 (Rhs)) -> bool,
+  method_ne: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_)), &'_0_1 (Rhs)) -> bool,
+}
+
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
@@ -36,6 +44,13 @@ where
 {
   Ok(T),
   Err(E),
+}
+
+struct core::fmt::Display::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)),
+  method_fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
 }
 
 // Full name: core::fmt::Display

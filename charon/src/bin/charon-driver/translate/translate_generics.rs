@@ -462,6 +462,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Translate the generics and predicates of this item and its parents.
+    /// This adds generic parameters and predicates to the current environment (as a binder in `self.binding_levels`).
+    /// This is necessary to translate types that depend on these generics (such as `Ty` and `TraitRef`).
+    /// The constructed `GenericParams` can be recovered at the end using `self.into_generics()` and stored in the translated item.
     pub(crate) fn translate_def_generics(
         &mut self,
         span: Span,

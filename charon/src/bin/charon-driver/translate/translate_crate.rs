@@ -60,10 +60,20 @@ pub enum TransItemSourceKind {
     ClosureAsFnCast,
     /// The `drop` method of a `TraitImplSource::DropGlue` trait impl.
     DropGlueMethod,
+    /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
+    VTable,
+    /// The static vtable value for a specific impl.
+    VTableInstance(TraitImplSource),
+    /// The initializer function of the `VTableInstance`.
+    VTableInstanceInitializer(TraitImplSource),
+    /// Shim function to store a method in a vtable; give a method with `self: Ptr<Self>` argument,
+    /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
+    /// implementation.
+    VTableMethod,
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
 pub enum TraitImplSource {
     /// A user-written trait impl with a `DefId`.
     Normal,
@@ -118,7 +128,7 @@ impl TransItemSource {
     }
 
     /// For virtual items that have a parent (typically a method impl), return this parent. Does
-    /// not attempt to generally compute the parent of an item.
+    /// not attempt to generally compute the parent of an item. Used to compute names.
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
             TransItemSourceKind::ClosureMethod(kind) => {
@@ -126,6 +136,10 @@ impl TransItemSource {
             }
             TransItemSourceKind::DropGlueMethod => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue)
+            }
+            TransItemSourceKind::VTableInstance(impl_kind)
+            | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+                TransItemSourceKind::TraitImpl(impl_kind)
             }
             _ => return None,
         };
@@ -253,15 +267,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             None => {
                 use TransItemSourceKind::*;
                 let trans_id = match src.kind {
-                    Type => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
+                    Type | VTable => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
                     TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
                     TraitImpl(..) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
-                    Global => AnyTransId::Global(self.translated.global_decls.reserve_slot()),
-                    Fun | ClosureMethod(..) | ClosureAsFnCast | DropGlueMethod => {
-                        AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
+                    Global | VTableInstance(..) => {
+                        AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
+                    Fun
+                    | ClosureMethod(..)
+                    | ClosureAsFnCast
+                    | DropGlueMethod
+                    | VTableInstanceInitializer(..)
+                    | VTableMethod => AnyTransId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -333,6 +352,16 @@ convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
 convert_item_ref!(GlobalDeclRef(GlobalDeclId));
 convert_item_ref!(TraitDeclRef(TraitDeclId));
 convert_item_ref!(TraitImplRef(TraitImplId));
+impl TryFrom<ItemRef<AnyTransId>> for FnPtr {
+    type Error = ();
+    fn try_from(item: ItemRef<AnyTransId>) -> Result<Self, ()> {
+        let id: FunId = item.id.try_into()?;
+        Ok(FnPtr {
+            func: Box::new(id.into()),
+            generics: item.generics,
+        })
+    }
+}
 
 // Id and item reference registration.
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -362,10 +391,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_no_enqueue(&dep_src, src).unwrap()
     }
 
-    /// Register this item and enqueue it for translation.
-    pub(crate) fn register_item<T: TryFrom<AnyTransId>>(
+    /// Register this item and maybe enqueue it for translation.
+    pub(crate) fn register_item_maybe_enqueue<T: TryFrom<AnyTransId>>(
         &mut self,
         span: Span,
+        enqueue: bool,
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> T {
@@ -374,20 +404,44 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             item.clone()
         };
-        self.register_and_enqueue(
-            span,
-            TransItemSource::from_item(&item, kind, self.monomorphize()),
-        )
+        let item_src = TransItemSource::from_item(&item, kind, self.monomorphize());
+        if enqueue {
+            self.register_and_enqueue(span, item_src)
+        } else {
+            self.register_no_enqueue(span, &item_src)
+        }
     }
 
     /// Register this item and enqueue it for translation.
-    pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
+    pub(crate) fn register_item<T: TryFrom<AnyTransId>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
+    ) -> T {
+        self.register_item_maybe_enqueue(span, true, item, kind)
+    }
+
+    /// Register this item without enqueueing it for translation.
+    #[expect(dead_code)]
+    pub(crate) fn register_item_no_enqueue<T: TryFrom<AnyTransId>>(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> T {
+        self.register_item_maybe_enqueue(span, false, item, kind)
+    }
+
+    /// Register this item and maybe enqueue it for translation.
+    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<ItemRef<AnyTransId>>>(
+        &mut self,
+        span: Span,
+        enqueue: bool,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
     ) -> Result<T, Error> {
-        let id: AnyTransId = self.register_item(span, item, kind);
+        let id: AnyTransId = self.register_item_maybe_enqueue(span, enqueue, item, kind);
         let generics = if self.monomorphize() {
             Ok(GenericArgs::empty())
         } else {
@@ -398,6 +452,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             generics: Box::new(generics),
         };
         Ok(item.try_into().ok().unwrap())
+    }
+
+    /// Register this item and enqueue it for translation.
+    pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> Result<T, Error> {
+        self.translate_item_maybe_enqueue(span, true, item, kind)
+    }
+
+    /// Register this item and don't enqueue it for translation.
+    pub(crate) fn translate_item_no_enqueue<T: TryFrom<ItemRef<AnyTransId>>>(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> Result<T, Error> {
+        self.translate_item_maybe_enqueue(span, false, item, kind)
     }
 
     /// Translate a type def id

@@ -211,15 +211,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Arrow(sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
-                let sig = self.translate_region_binder(span, sig, |ctx, sig| {
-                    let inputs = sig
-                        .inputs
-                        .iter()
-                        .map(|x| ctx.translate_ty(span, x))
-                        .try_collect()?;
-                    let output = ctx.translate_ty(span, &sig.output)?;
-                    Ok((inputs, output))
-                })?;
+                let sig = self.translate_fun_sig(span, sig)?;
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
@@ -241,6 +233,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     )
                 }
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
+                if let hax::ClauseKind::Trait(trait_predicate) =
+                    preds.predicates[0].0.kind.hax_skip_binder_ref()
+                {
+                    // TODO(dyn): for now, we consider traits with associated types to not be dyn
+                    // compatible because we don't know how to handle them; for these we skip
+                    // translating the vtable.
+                    if self.trait_is_dyn_compatible(&trait_predicate.trait_ref.def_id)? {
+                        // Ensure the vtable type is translated. The first predicate is the one that
+                        // can have methods, i.e. a vtable.
+                        let _: TypeDeclId = self.register_item(
+                            span,
+                            &trait_predicate.trait_ref,
+                            TransItemSourceKind::VTable,
+                        );
+                    }
+                }
                 TyKind::DynTrait(pred)
             }
 
@@ -265,6 +273,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
         Ok(kind.into_ty())
+    }
+
+    pub fn translate_fun_sig(
+        &mut self,
+        span: Span,
+        sig: &hax::Binder<hax::TyFnSig>,
+    ) -> Result<RegionBinder<(Vec<Ty>, Ty)>, Error> {
+        self.translate_region_binder(span, sig, |ctx, sig| {
+            let inputs = sig
+                .inputs
+                .iter()
+                .map(|x| ctx.translate_ty(span, x))
+                .try_collect()?;
+            let output = ctx.translate_ty(span, &sig.output)?;
+            Ok((inputs, output))
+        })
     }
 
     /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.

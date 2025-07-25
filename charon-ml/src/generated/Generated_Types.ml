@@ -717,6 +717,17 @@ and item_kind =
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
+  | VTableTyItem of dyn_predicate
+      (** This is a vtable struct for a trait.
+
+          Fields:
+          - [dyn_predicate]: The [dyn Trait] predicate implemented by this
+            vtable. *)
+  | VTableInstanceItem of trait_impl_ref
+      (** This is a vtable value for an impl.
+
+          Fields:
+          - [impl_ref] *)
 
 (** Meta information about an item (function, trait decl, trait impl, type decl,
     global). *)
