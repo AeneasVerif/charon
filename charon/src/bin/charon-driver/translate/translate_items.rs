@@ -15,6 +15,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
         let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
+        if let Some(trans_id) = trans_id {
+            if self.translate_stack.contains(&trans_id) {
+                register_error!(
+                    self,
+                    Span::dummy(),
+                    "Cycle detected while translating {def_id:?}! Stack: {:?}",
+                    &self.translate_stack
+                );
+                return;
+            } else {
+                self.translate_stack.push(trans_id);
+            }
+        }
         self.with_def_id(def_id, trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
             // Catch cycles
@@ -36,7 +49,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "Thread panicked when extracting item `{def_id:?}`."
                 ),
             };
-        })
+        });
+        // We must be careful not to early-return from this function to not unbalance the stack.
+        self.translate_stack.pop();
     }
 
     pub(crate) fn translate_item_aux(
@@ -130,6 +145,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
         }
         Ok(())
+    }
+
+    /// While translating an item you may need the contents of another. Use this to retreive the
+    /// translated version of this item. Use with care as this could create cycles.
+    #[expect(dead_code)]
+    pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
+        // We have to call `get_item` a few times because we're running into the classic `Polonius`
+        // problem case.
+        if self.translated.get_item(id).is_none() {
+            let item_source = self.reverse_id_map.get(&id).unwrap().clone();
+            self.translate_item(&item_source);
+            if self.translated.get_item(id).is_none() {
+                let span = self.def_span(item_source.def_id());
+                raise_error!(self, span, "Failed to translate item {id:?}.")
+            }
+        }
+        let item = self.translated.get_item(id);
+        Ok(item.unwrap())
     }
 }
 

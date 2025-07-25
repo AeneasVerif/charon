@@ -539,6 +539,7 @@ pub fn translate<'tcx, 'ctx>(
         file_to_id: Default::default(),
         items_to_translate: Default::default(),
         processed: Default::default(),
+        translate_stack: Default::default(),
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
     };

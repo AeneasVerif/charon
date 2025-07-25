@@ -49,6 +49,8 @@ pub struct TranslateCtx<'tcx> {
     pub items_to_translate: BTreeSet<TransItemSource>,
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
+    /// Stack of the translations currently happening. Used to avoid accidental cycles.
+    pub translate_stack: Vec<AnyTransId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
