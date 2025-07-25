@@ -42,13 +42,16 @@ fn transform_constant_expr(
             // it as a function call, like for globals.
             Operand::Const(val)
         }
-        RawConstantExpr::Global(global_ref) => {
-            Operand::Move(new_var(Rvalue::Global(global_ref), val.ty.clone()))
-        }
+        // Here we use a copy, rather than a move -- moving a global would leave it uninitialized,
+        // which would e.g. make the following code fail:
+        //     const GLOBAL: usize = 0;
+        //     let x = GLOBAL;
+        //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
+        RawConstantExpr::Global(global_ref) => Operand::Copy(Place::new_global(global_ref, val.ty)),
         RawConstantExpr::Ref(bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
-                    Rvalue::GlobalRef(global_ref, RefKind::Shared),
+                    Rvalue::Ref(Place::new_global(global_ref, bval.ty), BorrowKind::Shared),
                     val.ty,
                 )),
                 _ => {
@@ -68,9 +71,10 @@ fn transform_constant_expr(
         }
         RawConstantExpr::Ptr(rk, bval) => {
             match bval.value {
-                RawConstantExpr::Global(global_ref) => {
-                    Operand::Move(new_var(Rvalue::GlobalRef(global_ref, rk), val.ty))
-                }
+                RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
+                    Rvalue::RawPtr(Place::new_global(global_ref, bval.ty), rk),
+                    val.ty,
+                )),
                 _ => {
                     // Recurse on the borrowed value
                     let bval_ty = bval.ty.clone();

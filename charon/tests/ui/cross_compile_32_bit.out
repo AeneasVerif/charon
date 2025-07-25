@@ -32,15 +32,12 @@ fn main()
     let a@7: HasPointerNiche; // local
     let @8: NonNull<usize>; // anonymous local
     let @9: *mut usize; // anonymous local
-    let @10: usize; // anonymous local
 
     storage_live(@6)
-    storage_live(@10)
     storage_live(x@1)
     x@1 := const (52 : usize)
     storage_live(y@2)
-    @10 := MAX
-    y@2 := move (@10)
+    y@2 := copy (MAX)
     storage_live(z@3)
     storage_live(@4)
     @4 := copy (y@2)
