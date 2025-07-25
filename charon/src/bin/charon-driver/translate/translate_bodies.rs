@@ -12,6 +12,7 @@ use std::panic;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use charon_lib::ast::values::Literal::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
@@ -912,35 +913,37 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(SwitchTargets::If(if_block, then_block))
             }
             LiteralTy::Char => {
-                let targets: Vec<(ScalarValue, BlockId)> = targets
+                let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_le_bytes(
-                            charon_lib::ast::IntegerTy::I32,
-                            v.data_le_bytes,
-                        );
+                        let b: [u8; 1] = v.data_le_bytes[0..1].try_into().unwrap();
+                        let v = Char(u8::from_le_bytes(b) as char);
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
-                    charon_lib::ast::IntegerTy::I32,
+                    LiteralTy::Char,
                     targets,
                     otherwise,
                 ))
             }
             LiteralTy::Integer(int_ty) => {
-                let targets: Vec<(ScalarValue, BlockId)> = targets
+                let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
+                        let v = Scalar(ScalarValue::from_le_bytes(int_ty, v.data_le_bytes));
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
-                Ok(SwitchTargets::SwitchInt(int_ty, targets, otherwise))
+                Ok(SwitchTargets::SwitchInt(
+                    LiteralTy::Integer(int_ty),
+                    targets,
+                    otherwise,
+                ))
             }
             _ => raise_error!(self, span, "Can't match on type {switch_ty}"),
         }

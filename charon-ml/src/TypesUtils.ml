@@ -388,7 +388,7 @@ let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
       match variants with
       | [] -> None
       | hd_variant :: _ -> (
-          let discr_ty = hd_variant.discriminant.int_ty in
+          let discr_ty = hd_variant.discriminant in
           let rec find_mapi f i = function
             | [] -> None
             | v :: tl ->
@@ -400,11 +400,17 @@ let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
           | Direct -> begin
               assert (discr_layout.tag_ty = tag.int_ty);
               let discr =
-                if is_in_bounds discr_ty tag.value then
-                  Some { tag with int_ty = discr_ty }
-                else None
+                match discr_ty with
+                | VScalar scalar when is_in_bounds scalar.int_ty tag.value ->
+                    Some { tag with int_ty = scalar.int_ty }
+                | _ -> None
               in
-              find_mapi (fun i v -> Some v.discriminant = discr) 0 variants
+              find_mapi
+                (fun i v ->
+                  match v.discriminant with
+                  | VScalar scalar -> Some scalar = discr
+                  | _ -> false)
+                0 variants
             end
           | Niche untagged_var -> begin
               match

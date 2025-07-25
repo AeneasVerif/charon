@@ -17,6 +17,7 @@ use super::ctx::LlbcPass;
 /// Generate `match _y { 0 => { _x = 0 }, 1 => { _x = 1; }, .. }`.
 fn generate_discr_assignment(
     span: Span,
+    ctx: &TransformCtx,
     variants: &Vector<VariantId, Variant>,
     scrutinee: &Place,
     dest: &Place,
@@ -24,8 +25,9 @@ fn generate_discr_assignment(
     let targets = variants
         .iter_indexed_values()
         .map(|(id, variant)| {
-            let discr_value =
-                Rvalue::Use(Operand::Const(Box::new(variant.discriminant.to_constant())));
+            let discr_value = Rvalue::Use(Operand::Const(Box::new(
+                (variant.discriminant.clone().to_constant(span, ctx)).unwrap(),
+            )));
             let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
             (vec![id], statement.into_block())
         })
@@ -93,9 +95,9 @@ impl Transform {
                         }, ..] => {
                             // Convert between discriminants and variant indices. Remark: the discriminant can
                             // be of any *signed* integer type (`isize`, `i8`, etc.).
-                            let discr_to_id: HashMap<ScalarValue, VariantId> = variants
+                            let discr_to_id: HashMap<Literal, VariantId> = variants
                                 .iter_indexed_values()
-                                .map(|(id, variant)| (variant.discriminant, id))
+                                .map(|(id, variant)| (variant.discriminant.clone(), id))
                                 .collect();
 
                             take_mut::take(switch, |switch| {
@@ -106,7 +108,7 @@ impl Transform {
                                 };
                                 assert!(op_p.is_local() && op_p.local_id() == dest.local_id());
 
-                                let mut covered_discriminants: HashSet<ScalarValue> =
+                                let mut covered_discriminants: HashSet<Literal> =
                                     HashSet::default();
                                 let targets = targets
                                     .into_iter()
@@ -114,7 +116,7 @@ impl Transform {
                                         let targets = v
                                             .into_iter()
                                             .filter_map(|discr| {
-                                                covered_discriminants.insert(discr);
+                                                covered_discriminants.insert(discr.clone());
                                                 discr_to_id.get(&discr).or_else(|| {
                                                     register_error!(
                                                         ctx,
@@ -145,7 +147,7 @@ impl Transform {
                             // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
                             // = 0 }, 1 => { _x = 1; }, .. }`.
                             block.statements[i].content =
-                                generate_discr_assignment(*span1, variants, p, dest)
+                                generate_discr_assignment(*span1, ctx, variants, p, dest)
                         }
                     }
                 }
@@ -173,7 +175,7 @@ impl Transform {
                 {
                     let p = p.clone().project(ProjectionElem::Deref, sub_ty.clone());
                     block.statements[i].content =
-                        generate_discr_assignment(*span1, variants, &p, &call.dest)
+                        generate_discr_assignment(*span1, ctx, variants, &p, &call.dest)
                 }
                 _ => {}
             }

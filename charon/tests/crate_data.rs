@@ -1,10 +1,10 @@
 #![feature(box_patterns)]
 
+use charon_lib::llbc_ast::*;
+use charon_lib::values::Literal::Scalar;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::error::Error;
-
-use charon_lib::llbc_ast::*;
 
 mod util;
 use util::*;
@@ -371,21 +371,21 @@ fn discriminants() -> anyhow::Result<()> {
         }
         "#,
     )?;
-    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<ScalarValue> {
+    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<Literal> {
         ty.kind
             .as_enum()
             .unwrap()
             .iter()
-            .map(|v| v.discriminant)
+            .map(|v| v.discriminant.clone())
             .collect()
     }
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[0]),
-        vec![ScalarValue::Isize(0), ScalarValue::Isize(1)]
+        vec![Scalar(ScalarValue::Isize(0)), Scalar(ScalarValue::Isize(1))]
     );
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[1]),
-        vec![ScalarValue::U32(3), ScalarValue::U32(42)]
+        vec![Scalar(ScalarValue::U32(3)), Scalar(ScalarValue::U32(42))]
     );
     Ok(())
 }
