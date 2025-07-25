@@ -1,5 +1,6 @@
 //! The translation contexts.
-use super::translate_crate::{RustcItem, TransItemSource};
+use super::translate_crate::RustcItem;
+pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSourceKind};
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
@@ -129,6 +130,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef>, Error> {
         let def_id = item.def_id();
         let span = self.def_span(def_id);
+        if let RustcItem::Mono(item_ref) = item
+            && item_ref.has_param
+        {
+            raise_error!(self, span, "Item is not monomorphic: {item:?}")
+        }
         // Hax takes care of caching the translation.
         let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
         std::panic::catch_unwind(move || match item {
@@ -184,6 +190,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.t_ctx.span_err(span, msg, level)
+    }
+
+    pub fn hax_state(&self) -> &hax::StateWithBase<'tcx> {
+        &self.t_ctx.hax_state
+    }
+
+    pub fn hax_state_with_id(&self) -> hax::StateWithOwner<'tcx> {
+        use hax::BaseState;
+        let def_id = self.item_src.def_id().underlying_rust_def_id();
+        self.t_ctx.hax_state.clone().with_owner_id(def_id)
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition

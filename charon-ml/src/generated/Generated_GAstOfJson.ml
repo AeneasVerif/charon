@@ -1285,6 +1285,7 @@ and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
     | `String "OldDefaults" -> Ok OldDefaults
     | `String "Aeneas" -> Ok Aeneas
     | `String "Eurydice" -> Ok Eurydice
+    | `String "Soteria" -> Ok Soteria
     | `String "Tests" -> Ok Tests
     | _ -> Error "")
 

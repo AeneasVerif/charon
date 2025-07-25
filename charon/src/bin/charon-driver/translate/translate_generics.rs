@@ -333,7 +333,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested).
-        if let Some(parent_item) = def.typing_parent(&self.t_ctx.hax_state) {
+        if let Some(parent_item) = def.typing_parent(self.hax_state()) {
             let parent_def = self.hax_def(&parent_item)?;
             self.push_generics_for_def(span, &parent_def, true)?;
         }

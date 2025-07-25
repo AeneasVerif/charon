@@ -1,9 +1,7 @@
 //! Translate information about items: name, attributes, etc.
-use crate::translate::translate_crate::RustcItem;
-use crate::translate::translate_generics::BindingLevel;
-
-use super::translate_crate::{TransItemSource, TransItemSourceKind};
-use super::translate_ctx::{ItemTransCtx, TranslateCtx};
+use super::translate_crate::RustcItem;
+use super::translate_ctx::*;
+use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use hax_frontend_exporter::{self as hax, DefPathItem};
 use itertools::Itertools;
@@ -210,8 +208,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     // Trait implementation
                     hax::FullDefKind::TraitImpl { .. } => {
                         let impl_id = {
-                            let item_src =
-                                TransItemSource::new(item.clone(), TransItemSourceKind::TraitImpl);
+                            let item_src = TransItemSource::new(
+                                item.clone(),
+                                TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
+                            );
                             self.register_and_enqueue(&None, item_src).unwrap()
                         };
                         ImplElem::Trait(impl_id)
@@ -326,15 +326,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Compute the name for an item.
     /// Internal function, use `translate_name`.
     pub fn name_for_src(&mut self, src: &TransItemSource) -> Result<Name, Error> {
-        let def_id = src.def_id();
         let mut name = if let Some(parent) = src.parent() {
             self.name_for_src(&parent)?
         } else {
             self.name_for_item(&src.item)?
         };
-        match src.kind {
-            TransItemSourceKind::ClosureTraitImpl(..) | TransItemSourceKind::DropGlueImpl => {
-                if let TransItemSourceKind::ClosureTraitImpl(_) = src.kind {
+        match &src.kind {
+            TransItemSourceKind::TraitImpl(
+                kind @ (TraitImplSource::Closure(..)
+                | TraitImplSource::DropGlue
+                | TraitImplSource::TraitAlias),
+            ) => {
+                if let TraitImplSource::Closure(..) = kind {
                     let _ = name.name.pop(); // Pop the `{closure}`
                 }
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
@@ -346,13 +349,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
             }
             TransItemSourceKind::DropGlueMethod => {
-                let fn_name = "drop".to_string();
                 name.name
-                    .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
-            }
-            TransItemSourceKind::TraitImpl if matches!(def_id.kind, hax::DefKind::TraitAlias) => {
-                let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
-                name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
+                    .push(PathElem::Ident("drop".to_string(), Disambiguator::ZERO));
             }
             TransItemSourceKind::ClosureAsFnCast => {
                 name.name
@@ -370,7 +368,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
         {
-            let trans_id = self.register_and_enqueue(&None, src.clone()).unwrap();
+            let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
             bt_ctx.binding_levels.push(BindingLevel::new(true));

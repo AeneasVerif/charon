@@ -286,6 +286,7 @@ pub enum Preset {
     OldDefaults,
     Aeneas,
     Eurydice,
+    Soteria,
     Tests,
 }
 
@@ -310,6 +311,13 @@ impl CliOpts {
                 Preset::Eurydice => {
                     self.hide_allocator = true;
                     self.remove_associated_types.push("*".to_owned());
+                }
+                Preset::Soteria => {
+                    self.extract_opaque_bodies = true;
+                    self.monomorphize = true;
+                    self.raw_boxes = true;
+                    self.mir = Some(MirLevel::Elaborated);
+                    self.ullbc = true;
                 }
                 Preset::Tests => {
                     self.hide_allocator = !self.raw_boxes;

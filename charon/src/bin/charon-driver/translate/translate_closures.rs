@@ -195,7 +195,7 @@ impl ItemTransCtx<'_, '_> {
         let impl_id = self.register_item(
             span,
             &closure.item,
-            TransItemSourceKind::ClosureTraitImpl(target_kind),
+            TransItemSourceKind::TraitImpl(TraitImplSource::Closure(target_kind)),
         );
         let adt_ref = self.translate_closure_type_ref(span, closure)?;
         let impl_ref = TraitImplRef {
@@ -624,21 +624,7 @@ impl ItemTransCtx<'_, '_> {
             ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
             ClosureKind::Fn => fn_impl.as_ref().unwrap(),
         };
-        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let fn_trait = implemented_trait.id;
-
-        let mut parent_trait_refs =
-            self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
-        let mut types = vec![];
-        for (output, impl_exprs) in &vimpl.types {
-            // The associated type, if any, is `Output`.
-            let output = self.translate_ty(span, output)?;
-            types.push((TraitItemName("Output".into()), output.clone()));
-            if !self.monomorphize() {
-                let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
-                parent_trait_refs.extend(trait_refs);
-            }
-        }
+        let mut timpl = self.translate_virtual_trait_impl(def_id, item_meta, vimpl)?;
 
         // Construct the `call_*` method reference.
         let call_fn_id = self.register_item(
@@ -664,7 +650,7 @@ impl ItemTransCtx<'_, '_> {
                 .identity_args_at_depth(DeBruijnId::one())
                 .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
             Binder::new(
-                BinderKind::TraitMethod(fn_trait, call_fn_name.clone()),
+                BinderKind::TraitMethod(timpl.impl_trait.id, call_fn_name.clone()),
                 method_params,
                 FunDeclRef {
                     id: call_fn_id,
@@ -672,20 +658,9 @@ impl ItemTransCtx<'_, '_> {
                 },
             )
         };
+        timpl.methods.push((call_fn_name, call_fn_binder));
 
-        let self_generics = self.into_generics();
-
-        Ok(TraitImpl {
-            def_id,
-            item_meta,
-            impl_trait: implemented_trait,
-            generics: self_generics,
-            parent_trait_refs,
-            type_clauses: vec![],
-            consts: vec![],
-            types,
-            methods: vec![(call_fn_name, call_fn_binder)],
-        })
+        Ok(timpl)
     }
 
     /// Given an item that is a non-capturing closure, generate the equivalent function,

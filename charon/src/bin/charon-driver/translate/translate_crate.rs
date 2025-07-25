@@ -18,7 +18,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use hax_frontend_exporter::{self as hax, BaseState, SInto};
+use hax_frontend_exporter::{self as hax, SInto};
 use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_middle::ty::TyCtxt;
@@ -42,27 +42,38 @@ pub enum RustcItem {
     Mono(hax::ItemRef),
 }
 
+/// The kind of a [`TransItemSource`].
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
-    TraitImpl,
+    TraitImpl(TraitImplSource),
     Fun,
     Type,
     /// We don't translate these as proper items, but we translate them a bit in names.
     InherentImpl,
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
-    /// An impl of the appropriate `Fn*` trait for the given closure type.
-    ClosureTraitImpl(ClosureKind),
-    /// The `call_*` method of the appropriate `Fn*` trait.
+    /// The `call_*` method of the appropriate `TraitImplSource::Closure` impl.
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// A fictitious trait impl corresponding to the drop glue code for the given ADT.
-    DropGlueImpl,
-    /// The `drop` method for the impl above.
+    /// The `drop` method of a `TraitImplSource::DropGlue` trait impl.
     DropGlueMethod,
+}
+
+/// The kind of a [`TransItemSourceKind::TraitImpl`].
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+pub enum TraitImplSource {
+    /// A user-written trait impl with a `DefId`.
+    Normal,
+    /// The blanket impl we generate for a trait alias. The `DefId` is that of the trait alias.
+    TraitAlias,
+    /// An impl of the appropriate `Fn*` trait for a closure. The `DefId` is that of the closure.
+    Closure(ClosureKind),
+    /// A fictitious `impl Drop for T` that contains the drop glue code for the given ADT. The
+    /// `DefId` is that of the ADT.
+    DropGlue,
 }
 
 impl TransItemSource {
@@ -110,8 +121,12 @@ impl TransItemSource {
     /// not attempt to generally compute the parent of an item.
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
-            TransItemSourceKind::ClosureMethod(kind) => TransItemSourceKind::ClosureTraitImpl(kind),
-            TransItemSourceKind::DropGlueMethod => TransItemSourceKind::DropGlueImpl,
+            TransItemSourceKind::ClosureMethod(kind) => {
+                TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
+            }
+            TransItemSourceKind::DropGlueMethod => {
+                TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue)
+            }
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -122,9 +137,14 @@ impl TransItemSource {
     pub(crate) fn is_derived_item(&self) -> bool {
         use TransItemSourceKind::*;
         match self.kind {
-            Global | TraitDecl | TraitImpl | InherentImpl | Module | Fun | Type => false,
-            ClosureTraitImpl(..) | ClosureMethod(..) | ClosureAsFnCast | DropGlueImpl
-            | DropGlueMethod => true,
+            Global
+            | TraitDecl
+            | TraitImpl(TraitImplSource::Normal)
+            | InherentImpl
+            | Module
+            | Fun
+            | Type => false,
+            _ => true,
         }
     }
 
@@ -171,7 +191,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             Fn { .. } | AssocFn { .. } => TransItemSourceKind::Fun,
             Const { .. } | Static { .. } | AssocConst { .. } => TransItemSourceKind::Global,
             Trait { .. } | TraitAlias { .. } => TransItemSourceKind::TraitDecl,
-            Impl { of_trait: true } => TransItemSourceKind::TraitImpl,
+            Impl { of_trait: true } => TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
             Impl { of_trait: false } => TransItemSourceKind::InherentImpl,
             Mod { .. } | ForeignMod { .. } => TransItemSourceKind::Module,
 
@@ -223,7 +243,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let _: Option<AnyTransId> = self.register_and_enqueue(&None, item_src);
     }
 
-    pub(crate) fn register_id_no_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_no_enqueue<T: TryFrom<AnyTransId>>(
         &mut self,
         dep_src: &Option<DepSource>,
         src: &TransItemSource,
@@ -235,7 +255,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let trans_id = match src.kind {
                     Type => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
                     TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
-                    TraitImpl | ClosureTraitImpl(..) | DropGlueImpl => {
+                    TraitImpl(..) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
                     Global => AnyTransId::Global(self.translated.global_decls.reserve_slot()),
@@ -266,7 +286,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         dep_src: &Option<DepSource>,
         item_src: TransItemSource,
     ) -> Option<T> {
-        let id = self.register_id_no_enqueue(dep_src, &item_src);
+        let id = self.register_no_enqueue(dep_src, &item_src);
         self.items_to_translate.insert(item_src);
         id
     }
@@ -279,6 +299,40 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 }
+
+pub struct ItemRef<Id> {
+    id: Id,
+    generics: BoxedArgs,
+}
+
+// Implement `ItemRef<_>` -> `FooDeclRef` conversions.
+macro_rules! convert_item_ref {
+    ($item_ref_ty:ident($id:ident)) => {
+        impl TryFrom<ItemRef<AnyTransId>> for $item_ref_ty {
+            type Error = ();
+            fn try_from(item: ItemRef<AnyTransId>) -> Result<Self, ()> {
+                Ok($item_ref_ty {
+                    id: item.id.try_into()?,
+                    generics: item.generics,
+                })
+            }
+        }
+        impl From<ItemRef<$id>> for $item_ref_ty {
+            fn from(item: ItemRef<$id>) -> Self {
+                $item_ref_ty {
+                    id: item.id,
+                    generics: item.generics,
+                }
+            }
+        }
+    };
+}
+convert_item_ref!(TypeDeclRef(TypeId));
+convert_item_ref!(FunDeclRef(FunDeclId));
+convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
+convert_item_ref!(GlobalDeclRef(GlobalDeclId));
+convert_item_ref!(TraitDeclRef(TraitDeclId));
+convert_item_ref!(TraitImplRef(TraitImplId));
 
 // Id and item reference registration.
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -305,7 +359,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         src: &TransItemSource,
     ) -> T {
         let dep_src = self.make_dep_source(span);
-        self.t_ctx.register_id_no_enqueue(&dep_src, src).unwrap()
+        self.t_ctx.register_no_enqueue(&dep_src, src).unwrap()
     }
 
     /// Register this item and enqueue it for translation.
@@ -316,11 +370,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> T {
         let item = if self.monomorphize() && item.has_param {
-            let state = self
-                .t_ctx
-                .hax_state
-                .with_owner_id(self.item_src.def_id().underlying_rust_def_id());
-            item.erase(&state)
+            item.erase(&self.hax_state_with_id())
         } else {
             item.clone()
         };
@@ -330,54 +380,62 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         )
     }
 
-    /// Translate the generics for this item. In `--monomorphize` mode, returns empty generics.
-    pub(crate) fn translate_item_generics(
+    /// Register this item and enqueue it for translation.
+    pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
-    ) -> Result<GenericArgs, Error> {
-        if self.monomorphize() {
+        kind: TransItemSourceKind,
+    ) -> Result<T, Error> {
+        let id: AnyTransId = self.register_item(span, item, kind);
+        let generics = if self.monomorphize() {
             Ok(GenericArgs::empty())
         } else {
             self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
-        }
+        }?;
+        let item = ItemRef {
+            id,
+            generics: Box::new(generics),
+        };
+        Ok(item.try_into().ok().unwrap())
     }
 
     /// Translate a type def id
-    pub(crate) fn translate_type_id(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-    ) -> Result<TypeId, Error> {
-        Ok(match self.recognize_builtin_type(item)? {
-            Some(id) => TypeId::Builtin(id),
-            None => TypeId::Adt(self.register_item(span, item, TransItemSourceKind::Type)),
-        })
-    }
-
     pub(crate) fn translate_type_decl_ref(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TypeDeclRef, Error> {
-        let id = self.translate_type_id(span, item)?;
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TypeDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        match self.recognize_builtin_type(item)? {
+            Some(id) => {
+                let generics =
+                    self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+                Ok(TypeDeclRef {
+                    id: TypeId::Builtin(id),
+                    generics: Box::new(generics),
+                })
+            }
+            None => self.translate_item(span, item, TransItemSourceKind::Type),
+        }
     }
 
     /// Translate a function def id
-    pub(crate) fn translate_fun_id(
+    pub(crate) fn translate_fun_item(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
-    ) -> Result<FunId, Error> {
-        Ok(match self.recognize_builtin_fun(item)? {
-            Some(id) => FunId::Builtin(id),
-            None => FunId::Regular(self.register_item(span, item, TransItemSourceKind::Fun)),
-        })
+    ) -> Result<MaybeBuiltinFunDeclRef, Error> {
+        match self.recognize_builtin_fun(item)? {
+            Some(id) => {
+                let generics =
+                    self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+                Ok(MaybeBuiltinFunDeclRef {
+                    id: FunId::Builtin(id),
+                    generics: Box::new(generics),
+                })
+            }
+            None => self.translate_item(span, item, TransItemSourceKind::Fun),
+        }
     }
 
     /// Auxiliary function to translate function calls and references to functions.
@@ -388,23 +446,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        let fun_id = self.translate_fun_id(span, item)?;
+        let fun_item = self.translate_fun_item(span, item)?;
         let late_bound = match self.hax_def(item)?.kind() {
             hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
                 Some(sig.as_ref().rebind(()))
             }
             _ => None,
         };
-        let generics = self.translate_item_generics(span, item)?;
-        let bound_generics = self.append_late_bound_to_generics(span, generics, late_bound)?;
+        let bound_generics =
+            self.append_late_bound_to_generics(span, *fun_item.generics, late_bound)?;
         let fun_id = match &item.in_trait {
             // Direct function call
-            None => FunIdOrTraitMethodRef::Fun(fun_id),
+            None => FunIdOrTraitMethodRef::Fun(fun_item.id),
             // Trait method
             Some(impl_expr) => {
                 let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
                 let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-                let method_decl_id = *fun_id
+                let method_decl_id = *fun_item
+                    .id
                     .as_regular()
                     .expect("methods are not builtin functions");
                 FunIdOrTraitMethodRef::Trait(trait_ref.move_under_binder(), name, method_decl_id)
@@ -421,12 +480,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<GlobalDeclRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::Global);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(GlobalDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::Global)
     }
 
     pub(crate) fn translate_trait_decl_ref(
@@ -434,38 +488,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitDeclRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::TraitDecl);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TraitDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
 
     pub(crate) fn translate_trait_impl_ref(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
+        kind: TraitImplSource,
     ) -> Result<TraitImplRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::TraitImpl);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TraitImplRef {
-            id,
-            generics: Box::new(generics),
-        })
-    }
-
-    pub(crate) fn translate_drop_trait_impl_ref(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-    ) -> Result<TraitImplRef, Error> {
-        let id = self.register_item(span, item, TransItemSourceKind::DropGlueImpl);
-        let generics = self.translate_item_generics(span, item)?;
-        Ok(TraitImplRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::TraitImpl(kind))
     }
 }
 

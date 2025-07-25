@@ -428,5 +428,6 @@ and preset =
           were made optional and disabled by default. *)
   | Aeneas
   | Eurydice
+  | Soteria
   | Tests
 [@@deriving show]

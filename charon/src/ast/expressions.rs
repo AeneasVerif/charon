@@ -388,9 +388,7 @@ pub struct BuiltinIndexOp {
 /// Reference to a function declaration or builtin function.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct MaybeBuiltinFunDeclRef {
-    #[charon::rename("fun_decl_id")]
     pub id: FunId,
-    #[charon::rename("fun_decl_generics")]
     pub generics: BoxedArgs,
 }
 
