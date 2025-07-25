@@ -43,15 +43,15 @@ use indexmap::IndexMap;
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
         CastKind, ClosureInfo, ClosureKind, ConstGenericVar, ConstGenericVarId,
-        Disambiguator, ExistentialPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
-        FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, Literal, LiteralTy,
+        Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
+        FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::Block, llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, RawConstantExpr,
         RefKind, RegionId, RegionVar, ScalarValue, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets, ullbc_ast::Terminator,
-        UnOp, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata, VTable,
+        UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata, VTable,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),
@@ -73,7 +73,7 @@ use indexmap::IndexMap;
         llbc_statement: llbc_ast::Statement, ullbc_statement: ullbc_ast::Statement,
         AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
-        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl
+        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )
 )]
 pub trait AstVisitable: Any {
@@ -142,7 +142,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
-        TypeDeclRef, FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
+        TypeDeclRef, FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
         TraitRef, LiteralTy, Literal,
     ),

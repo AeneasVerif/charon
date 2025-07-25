@@ -4,7 +4,7 @@
 //! This test requires a feature flag. To run, call `make test-popular-crates`.
 #![feature(path_add_extension)]
 #![cfg(feature = "popular-crates-test")]
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use assert_cmd::prelude::CommandCargoExt;
 use crates_io_api::Version;
 use flate2::read::GzDecoder;

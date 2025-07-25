@@ -1,15 +1,3 @@
-error: Constant parameters of non-literal type are not supported
-  --> tests/ui/unsupported/advanced-const-generics.rs:14:8
-   |
-14 | fn foo<const X: Foo>() -> Foo {
-   |        ^^^^^^^^^^^^
-
-error: Item `test_crate::foo` caused errors; ignoring.
-  --> tests/ui/unsupported/advanced-const-generics.rs:14:1
-   |
-14 | fn foo<const X: Foo>() -> Foo {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 disabled backtrace
 error[E9999]: Supposely unreachable place in the Rust AST. The label is "TranslateUneval".
               This error report happend because some assumption about the Rust AST was broken.
@@ -32,6 +20,27 @@ error[E9999]: Supposely unreachable place in the Rust AST. The label is "Transla
    = note: ⚠️ This is a bug in Hax's frontend.
            Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
+error: Hax panicked when translating `test_crate::bar`.
+  --> tests/ui/unsupported/advanced-const-generics.rs:18:1
+   |
+18 | / fn bar<const N: usize>()
+19 | | where
+20 | |     [(); N + 1]:,
+   | |_________________^
+
+error: Constant parameters of non-literal type are not supported
+  --> tests/ui/unsupported/advanced-const-generics.rs:14:8
+   |
+14 | fn foo<const X: Foo>() -> Foo {
+   |        ^^^^^^^^^^^^
+
+error: Item `test_crate::foo` caused errors; ignoring.
+  --> tests/ui/unsupported/advanced-const-generics.rs:14:1
+   |
+14 | fn foo<const X: Foo>() -> Foo {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+disabled backtrace
 error: Hax panicked when translating `test_crate::bar`.
   --> tests/ui/unsupported/advanced-const-generics.rs:18:1
    |

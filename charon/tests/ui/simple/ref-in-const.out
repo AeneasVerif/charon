@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::SOME_INT() -> &'static (&'static (i32))
+// Full name: test_crate::SOME_INT
+fn SOME_INT() -> &'static (&'static (i32))
 {
     let @0: &'_ (&'_ (i32)); // return
     let @1: &'_ (&'_ (i32)); // anonymous local
@@ -24,7 +25,8 @@ fn test_crate::SOME_INT() -> &'static (&'static (i32))
     return
 }
 
-const test_crate::SOME_INT: &'static (&'static (i32)) = test_crate::SOME_INT()
+// Full name: test_crate::SOME_INT
+const SOME_INT: &'static (&'static (i32)) = SOME_INT()
 
 
 

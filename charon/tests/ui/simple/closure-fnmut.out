@@ -136,7 +136,7 @@ fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for closure<'_0>}
 impl<'_0> FnOnce<(u8)> for closure<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<closure<'_0>>
     parent_clause1 = Sized<(u8)>
     parent_clause2 = Tuple<(u8)>
     parent_clause3 = Sized<u8>
@@ -146,7 +146,7 @@ impl<'_0> FnOnce<(u8)> for closure<'_0> {
 
 // Full name: test_crate::main::{impl FnMut<(u8)> for closure<'_0>}
 impl<'_0> FnMut<(u8)> for closure<'_0> {
-    parent_clause0 = MetaSized<(u8)>
+    parent_clause0 = MetaSized<closure<'_0>>
     parent_clause1 = {impl FnOnce<(u8)> for closure<'_0>}<'_0>
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>

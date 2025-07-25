@@ -11,4 +11,5 @@ pub mod translate_generics;
 pub mod translate_items;
 pub mod translate_meta;
 pub mod translate_predicates;
+pub mod translate_trait_objects;
 pub mod translate_types;

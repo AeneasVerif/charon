@@ -156,14 +156,6 @@ pub enum UnOp {
     PtrMetadata,
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
-    /// Coercion from array (i.e., [T; N]) to slice.
-    ///
-    /// **Remark:** We introduce this unop when translating from MIR, **then transform**
-    /// it to a function call in a micro pass. The type and the scalar value are not
-    /// *necessary* as we can retrieve them from the context, but storing them here is
-    /// very useful. The [RefKind] argument states whethere we operate on a mutable
-    /// or a shared borrow to an array.
-    ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
 /// Nullary operation
@@ -196,10 +188,20 @@ pub enum CastKind {
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
-    Unsize(Ty, Ty),
+    Unsize(Ty, Ty, UnsizingMetadata),
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty, Ty),
+}
+
+#[derive(
+    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+)]
+#[charon::variants_prefix("Meta")]
+pub enum UnsizingMetadata {
+    Length(ConstGeneric),
+    VTablePtr(TraitRef),
+    Unknown,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
@@ -342,11 +344,11 @@ pub enum BuiltinFunId {
     BoxNew,
     /// Cast an array as a slice.
     ///
-    /// Converted from [UnOp::ArrayToSlice]
+    /// Converted from `UnOp::ArrayToSlice`
     ArrayToSliceShared,
     /// Cast an array as a slice.
     ///
-    /// Converted from [UnOp::ArrayToSlice]
+    /// Converted from `UnOp::ArrayToSlice`
     ArrayToSliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
@@ -403,7 +405,9 @@ pub struct TraitMethodRef {
     pub method_decl_id: FunDeclId,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut, Hash,
+)]
 pub enum FunIdOrTraitMethodRef {
     #[charon::rename("FunId")]
     Fun(FunId),
@@ -425,7 +429,7 @@ impl From<FunDeclId> for FunIdOrTraitMethodRef {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash)]
 pub struct FnPtr {
     pub func: Box<FunIdOrTraitMethodRef>,
     pub generics: BoxedArgs,
@@ -579,12 +583,11 @@ pub enum Rvalue {
     UnaryOp(UnOp, Operand),
     /// Nullary operation (e.g. `size_of`)
     NullaryOp(NullOp, Ty),
-    /// Discriminant (for enumerations).
-    /// Note that discriminant values have type isize. We also store the identifier
-    /// of the type from which we read the discriminant.
+    /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
+    /// an enum.
     ///
     /// This case is filtered in [crate::transform::remove_read_discriminant]
-    Discriminant(Place, TypeDeclId),
+    Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
     /// l = List::Cons { value:x, tail:tl };

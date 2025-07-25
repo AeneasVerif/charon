@@ -60,6 +60,7 @@ fn ptr_metadata() -> anyhow::Result<()> {
         y: T,
     }
     "#,
+        &[],
     )?;
     let meta_kinds: IndexMap<String, Option<&PtrMetadata>> = crate_data
         .type_decls

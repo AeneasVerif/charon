@@ -17,10 +17,10 @@ module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
 (* Imports *)
-type builtin_fun_id = Expressions.builtin_fun_id [@@deriving show, ord]
-type fun_id = Expressions.fun_id [@@deriving show, ord]
+type builtin_fun_id = Types.builtin_fun_id [@@deriving show, ord]
+type fun_id = Types.fun_id [@@deriving show, ord]
 
-type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
+type fun_id_or_trait_method_ref = Types.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
@@ -309,8 +309,16 @@ type cli_options = {
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
   monomorphize : bool;
+      (** Monomorphize the items encountered when possible. Generic items found
+          in the crate are translated as normal. To only translate a particular
+          call graph, use [--start-from]. This uses a different mechanism than
+          [--monomorphize-conservative] which should be a lot more complete, but
+          doesn't currently support [dyn Trait]. *)
+  monomorphize_conservative : bool;
       (** Monomorphize the code, replacing generics with their concrete types.
-      *)
+          This is less complete than [--monomorphize] but at least doesn't crash
+          on [dyn Trait]. This will eventually be fully replaced with
+          [--monomorphized]. *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private
           fields. When this flag is on, we don't. *)
@@ -331,6 +339,9 @@ type cli_options = {
   hide_marker_traits : bool;
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
           anywhere they show up. *)
+  hide_allocator : bool;
+      (** Hide the [A] type parameter on standard library containers ([Box],
+          [Vec], etc). *)
   remove_unused_self_clauses : bool;
       (** Trait method declarations take a [Self: Trait] clause as parameter, so
           that they can be reused by multiple trait impls. This however causes

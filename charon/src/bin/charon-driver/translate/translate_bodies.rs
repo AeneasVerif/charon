@@ -222,6 +222,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
                 let subplace = self.translate_place(span, hax_subplace)?;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
                 let place = match kind {
                     hax::ProjectionElem::Deref => subplace.project(ProjectionElem::Deref, ty),
                     hax::ProjectionElem::Field(field_kind) => {
@@ -257,12 +258,12 @@ impl BodyTransCtx<'_, '_, '_> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     TypeId::Builtin(BuiltinTy::Box) => {
-                                        // Some more sanity checks
+                                        // Some sanity checks
                                         assert!(generics.regions.is_empty());
-                                        assert!(generics.types.elem_count() == 1);
+                                        assert!(generics.types.elem_count() == 2);
                                         assert!(generics.const_generics.is_empty());
-                                        assert!(variant_id.is_none());
                                         assert!(field_id == FieldId::ZERO);
+                                        // We pretend this is a deref.
                                         ProjectionElem::Deref
                                     }
                                     _ => raise_error!(self, span, "Unexpected field projection"),
@@ -306,8 +307,11 @@ impl BodyTransCtx<'_, '_, '_> {
                         from_end,
                         min_length: _,
                     } => {
-                        let offset =
-                            Operand::Const(Box::new(ScalarValue::Usize(offset).to_constant()));
+                        let offset = Operand::Const(Box::new(
+                            ScalarValue::from_uint(ptr_size, UIntTy::Usize, offset as u128)
+                                .unwrap()
+                                .to_constant(),
+                        ));
                         subplace.project(
                             ProjectionElem::Index {
                                 offset: Box::new(offset),
@@ -317,8 +321,16 @@ impl BodyTransCtx<'_, '_, '_> {
                         )
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
-                        let from = Operand::Const(Box::new(ScalarValue::Usize(from).to_constant()));
-                        let to = Operand::Const(Box::new(ScalarValue::Usize(to).to_constant()));
+                        let from = Operand::Const(Box::new(
+                            ScalarValue::from_uint(ptr_size, UIntTy::Usize, from as u128)
+                                .unwrap()
+                                .to_constant(),
+                        ));
+                        let to = Operand::Const(Box::new(
+                            ScalarValue::from_uint(ptr_size, UIntTy::Usize, to as u128)
+                                .unwrap()
+                                .to_constant(),
+                        ));
                         subplace.project(
                             ProjectionElem::Subslice {
                                 from: Box::new(from),
@@ -433,30 +445,25 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tgt_ty = self.translate_ty(span, tgt_ty)?;
 
                 // Translate the operand
-                let (operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
+                let (mut operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
 
-                match cast_kind {
+                let cast_kind = match cast_kind {
                     hax::CastKind::IntToInt
                     | hax::CastKind::IntToFloat
                     | hax::CastKind::FloatToInt
                     | hax::CastKind::FloatToFloat => {
                         let tgt_ty = *tgt_ty.kind().as_literal().unwrap();
                         let src_ty = *src_ty.kind().as_literal().unwrap();
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
-                            operand,
-                        ))
+                        CastKind::Scalar(src_ty, tgt_ty)
                     }
                     hax::CastKind::PtrToPtr
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer, ..)
                     | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer, ..)
-                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::DynStar, ..)
                     | hax::CastKind::FnPtrToPtr
                     | hax::CastKind::PointerExposeProvenance
-                    | hax::CastKind::PointerWithExposedProvenance => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::RawPtr(src_ty, tgt_ty)),
-                        operand,
-                    )),
+                    | hax::CastKind::PointerWithExposedProvenance => {
+                        CastKind::RawPtr(src_ty, tgt_ty)
+                    }
                     hax::CastKind::PointerCoercion(
                         hax::PointerCoercion::ClosureFnPointer(_),
                         ..,
@@ -471,58 +478,39 @@ impl BodyTransCtx<'_, '_, '_> {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
                         let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
-                        let fn_ptr: FnPtr = fn_ref.clone().erase().into();
-                        let src_ty = TyKind::FnDef(fn_ref).into_ty();
-                        let operand = Operand::Const(Box::new(ConstantExpr {
+                        let fn_ptr_bound = fn_ref.map(FunDeclRef::into);
+                        let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
+                        let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
+                        operand = Operand::Const(Box::new(ConstantExpr {
                             value: RawConstantExpr::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
                         }));
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                            operand,
-                        ))
+                        CastKind::FnPtr(src_ty, tgt_ty)
                     }
                     hax::CastKind::PointerCoercion(
                         hax::PointerCoercion::UnsafeFnPointer
                         | hax::PointerCoercion::ReifyFnPointer,
                         ..,
-                    ) => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                        operand,
-                    )),
-                    hax::CastKind::Transmute => Ok(Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Transmute(src_ty, tgt_ty)),
-                        operand,
-                    )),
-                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize, ..) => {
-                        let unop = if let (
-                            TyKind::Ref(_, deref!(TyKind::Adt(tref1)), kind1),
-                            TyKind::Ref(_, deref!(TyKind::Adt(tref2)), kind2),
-                        ) = (src_ty.kind(), tgt_ty.kind())
-                            && matches!(tref1.id, TypeId::Builtin(BuiltinTy::Array))
-                            && matches!(tref2.id, TypeId::Builtin(BuiltinTy::Slice))
-                        {
-                            // In MIR terminology, we go from &[T; l] to &[T] which means we
-                            // effectively "unsize" the type, as `l` no longer appears in the
-                            // destination type. At runtime, the converse happens: the length
-                            // materializes into the fat pointer.
-                            assert!(
-                                tref1.generics.types.elem_count() == 1
-                                    && tref1.generics.const_generics.elem_count() == 1
-                            );
-                            assert!(tref1.generics.types[0] == tref2.generics.types[0]);
-                            assert!(kind1 == kind2);
-                            UnOp::ArrayToSlice(
-                                *kind1,
-                                tref1.generics.types[0].clone(),
-                                tref1.generics.const_generics[0].clone(),
-                            )
-                        } else {
-                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone()))
+                    ) => CastKind::FnPtr(src_ty, tgt_ty),
+                    hax::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),
+                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
+                        let meta = match meta {
+                            hax::UnsizingMetadata::Length(len) => {
+                                let len =
+                                    self.translate_constant_expr_to_const_generic(span, len)?;
+                                UnsizingMetadata::Length(len)
+                            }
+                            hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                                UnsizingMetadata::VTablePtr(tref)
+                            }
+                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
-                        Ok(Rvalue::UnaryOp(unop, operand))
+                        CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta)
                     }
-                }
+                };
+                let unop = UnOp::Cast(cast_kind);
+                Ok(Rvalue::UnaryOp(unop, operand))
             }
             hax::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
                 self.translate_binaryop_kind(span, *binop)?,
@@ -562,11 +550,13 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             hax::Rvalue::Discriminant(place) => {
                 let place = self.translate_place(span, place)?;
-                if let TyKind::Adt(tref) = place.ty().kind()
-                    && let TypeId::Adt(adt_id) = tref.id
+                // We should always know the enum type; it can't be a generic.
+                if !place
+                    .ty()
+                    .kind()
+                    .as_adt()
+                    .is_some_and(|tref| tref.id.is_adt())
                 {
-                    Ok(Rvalue::Discriminant(place, adt_id))
-                } else {
                     raise_error!(
                         self,
                         span,
@@ -574,6 +564,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         place.ty().with_ctx(&self.into_fmt())
                     )
                 }
+                Ok(Rvalue::Discriminant(place))
             }
             hax::Rvalue::Aggregate(aggregate_kind, operands) => {
                 // It seems this instruction is not present in certain passes:
@@ -595,13 +586,19 @@ impl BodyTransCtx<'_, '_, '_> {
                     .iter()
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
 
                 match aggregate_kind {
                     hax::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ty(span, ty)?;
-                        let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
-                            operands_t.len() as u64,
-                        )));
+                        let cg = ConstGeneric::Value(Literal::Scalar(
+                            ScalarValue::from_uint(
+                                ptr_size,
+                                UIntTy::Usize,
+                                operands_t.len() as u128,
+                            )
+                            .unwrap(),
+                        ));
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Array(t_ty, cg),
                             operands_t,
@@ -640,8 +637,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     hax::AggregateKind::Closure(closure_args) => {
                         trace!(
                             "Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}",
-                            closure_args.item.def_id,
-                            closure_args.fn_sig
+                            closure_args.item.def_id, closure_args.fn_sig
                         );
                         let tref = self.translate_closure_type_ref(span, closure_args)?;
                         let akind = AggregateKind::Adt(tref, None, None);
@@ -929,18 +925,38 @@ impl BodyTransCtx<'_, '_, '_> {
                     otherwise,
                 ))
             }
-            LiteralTy::Integer(int_ty) => {
+            LiteralTy::Int(int_ty) => {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = Scalar(ScalarValue::from_le_bytes(int_ty, v.data_le_bytes));
+                        let v =
+                            Scalar(ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes));
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
-                    LiteralTy::Integer(int_ty),
+                    IntegerTy::Signed(int_ty),
+                    targets,
+                    otherwise,
+                ))
+            }
+            LiteralTy::UInt(int_ty) => {
+                let targets: Vec<(ScalarValue, BlockId)> = targets
+                    .iter()
+                    .map(|(v, tgt)| {
+                        let v = ScalarValue::from_le_bytes(
+                            IntegerTy::Unsigned(int_ty),
+                            v.data_le_bytes,
+                        );
+                        let tgt = self.translate_basic_block_id(*tgt);
+                        Ok((v, tgt))
+                    })
+                    .try_collect()?;
+                let otherwise = self.translate_basic_block_id(*otherwise);
+                Ok(SwitchTargets::SwitchInt(
+                    IntegerTy::Unsigned(int_ty),
                     targets,
                     otherwise,
                 ))
@@ -972,9 +988,11 @@ impl BodyTransCtx<'_, '_, '_> {
         let fn_operand = match fun {
             hax::FunOperand::Static(item) => {
                 trace!("func: {:?}", item.def_id);
-                let fun_def = self.hax_def(&item.def_id)?;
-                let fun_src = TransItemSource::new(item.def_id.clone(), TransItemSourceKind::Fun);
-                let name = self.t_ctx.translate_name(&fun_src)?;
+                let fun_def = self.hax_def(item)?;
+                let name = self.t_ctx.translate_name(&TransItemSource::polymorphic(
+                    &item.def_id,
+                    TransItemSourceKind::Fun,
+                ))?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
 
@@ -1110,7 +1128,7 @@ impl BodyTransCtx<'_, '_, '_> {
         def: &hax::FullDef,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Retrieve the body
-        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
+        let Some(body) = self.get_mir(def.this(), span)? else {
             return Ok(Err(Opaque));
         };
         self.translate_body(span, &body, &def.source_text)

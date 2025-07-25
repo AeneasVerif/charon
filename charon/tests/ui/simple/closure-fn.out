@@ -231,7 +231,7 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u8, u8)>
+    parent_clause0 = MetaSized<closure<'_0, '_1>>
     parent_clause1 = Sized<(u8, u8)>
     parent_clause2 = Tuple<(u8, u8)>
     parent_clause3 = Sized<u8>
@@ -241,7 +241,7 @@ impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u8, u8)>
+    parent_clause0 = MetaSized<closure<'_0, '_1>>
     parent_clause1 = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = Sized<(u8, u8)>
     parent_clause3 = Tuple<(u8, u8)>
@@ -250,7 +250,7 @@ impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> Fn<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<(u8, u8)>
+    parent_clause0 = MetaSized<closure<'_0, '_1>>
     parent_clause1 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = Sized<(u8, u8)>
     parent_clause3 = Tuple<(u8, u8)>

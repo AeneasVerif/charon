@@ -98,7 +98,7 @@ let subst_free_vars (subst : single_binder_subst) : subst =
 *)
 let subst_at_binder_zero (subst : single_binder_subst) : subst =
   let subst_if_zero subst nosubst = function
-    | Bound (0, id) -> subst id
+    | Bound (dbid, id) when dbid = 0 -> subst id
     | var -> nosubst var
   in
   {
@@ -113,7 +113,7 @@ let subst_at_binder_zero (subst : single_binder_subst) : subst =
     variables to remove the current binder level. *)
 let subst_remove_binder_zero (subst : single_binder_subst) : subst =
   let subst_remove_zero subst nosubst = function
-    | Bound (0, id) -> subst id
+    | Bound (dbid, id) when dbid = 0 -> subst id
     | Bound (dbid, varid) when dbid > 0 -> nosubst (Bound (dbid - 1, varid))
     | var -> nosubst var
   in
@@ -123,6 +123,20 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
     cg_subst = subst_remove_zero subst.cg_sb_subst empty_subst.cg_subst;
     tr_subst = subst_remove_zero subst.tr_sb_subst empty_subst.tr_subst;
     tr_self = subst.tr_sb_self;
+  }
+
+(** Move a whole expression under one level of binder. *)
+let move_under_binder_subst : subst =
+  let shift = function
+    | Bound (dbid, var) -> Bound (dbid + 1, var)
+    | Free _ as var -> var
+  in
+  {
+    r_subst = compose empty_subst.r_subst shift;
+    ty_subst = compose empty_subst.ty_subst shift;
+    cg_subst = compose empty_subst.cg_subst shift;
+    tr_subst = compose empty_subst.tr_subst shift;
+    tr_self = empty_subst.tr_self;
   }
 
 (** Visitor that shifts all bound variables by the given delta *)
@@ -187,34 +201,27 @@ let st_substitute_visitor =
     method! visit_Self (subst : subst) = subst.tr_self
   end
 
-(** Substitute types variables and regions in a type.
-
-    **IMPORTANT**: this doesn't normalize the types. *)
+(** Substitute types variables and regions in a type. *)
 let ty_substitute (subst : subst) (ty : ty) : ty =
   st_substitute_visitor#visit_ty subst ty
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_ref_substitute (subst : subst) (tr : trait_ref) : trait_ref =
   st_substitute_visitor#visit_trait_ref subst tr
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_decl_ref_substitute (subst : subst) (tr : trait_decl_ref) :
     trait_decl_ref =
   st_substitute_visitor#visit_trait_decl_ref subst tr
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_instance_id_substitute (subst : subst) (tr : trait_instance_id) :
     trait_instance_id =
   st_substitute_visitor#visit_trait_instance_id subst tr
 
-(** **IMPORTANT**: this doesn't normalize the types. *)
 let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
   st_substitute_visitor#visit_generic_args subst g
 
 (** Substitute the predicates (clauses, outlives predicates, etc) inside these
     generic params. This leaves the list of parameters (regions, types and
-    const_generics) untouched. **IMPORTANT**: this doesn't normalize the types.
-*)
+    const_generics) untouched. *)
 let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     =
   let visitor = st_substitute_visitor in
@@ -354,10 +361,7 @@ let make_subst_from_generics_erase_regions (params : generic_params)
   { subst with r_subst = (fun _ -> RErased) }
 
 (** Instantiate the type variables in an ADT definition, and return, for every
-    variant, the list of the types of its fields.
-
-    **IMPORTANT**: this function doesn't normalize the types, you may want to
-    use the [AssociatedTypes] equivalent instead. *)
+    variant, the list of the types of its fields. *)
 let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     (generics : generic_args) : (VariantId.id option * ty list) list =
   let subst = make_subst_from_generics def.generics generics in
@@ -378,18 +382,24 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     variants_fields
 
 (** Instantiate the type variables in an ADT definition, and return the list of
-    types of the fields for the chosen variant.
-
-    **IMPORTANT**: this function doesn't normalize the types, you may want to
-    use the [AssociatedTypes] equivalent instead. *)
+    types of the fields for the chosen variant. *)
 let type_decl_get_instantiated_field_types (def : type_decl)
     (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
-  (* For now, check that there are no clauses - otherwise we might need
+  (* Check that there are no clauses - otherwise we might need
      to normalize the types *)
   assert (def.generics.trait_clauses = []);
   let subst = make_subst_from_generics def.generics generics in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
+
+(** Same as [type_decl_get_instantiated_field_types], but also erases the
+    regions *)
+let type_decl_get_instantiated_field_etypes (def : type_decl)
+    (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
+  let types =
+    type_decl_get_instantiated_field_types def opt_variant_id generics
+  in
+  List.map erase_regions types
 
 (** Apply a type substitution to a place *)
 let place_substitute (subst : subst) (p : place) : place =
@@ -630,23 +640,27 @@ let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
   Some s
 
 (* Lookup the signature of a `Ty::FnDef`. *)
-let lookup_fndef_sig (crate : 'a gcrate) (fn_def : fun_decl_ref region_binder) :
+let lookup_fndef_sig (crate : 'a gcrate) (fn_def : fn_ptr region_binder) :
     (ty list * ty) region_binder option =
-  let fun_decl_id = fn_def.binder_value.id in
-  let* fun_decl = LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls in
-  (* Substitute the signature to be valid under the binder. *)
-  let fn_sig =
-    st_substitute_visitor#visit_fun_sig
-      (make_subst_from_generics fun_decl.signature.generics
-         fn_def.binder_value.generics)
-      fun_decl.signature
-  in
-  (* Rebind everything *)
-  Some
-    {
-      binder_regions = fn_def.binder_regions;
-      binder_value = (fn_sig.inputs, fn_sig.output);
-    }
+  match fn_def.binder_value.func with
+  | FunId (FRegular fun_decl_id) ->
+      let* fun_decl =
+        LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls
+      in
+      (* Substitute the signature to be valid under the binder. *)
+      let fn_sig =
+        st_substitute_visitor#visit_fun_sig
+          (make_subst_from_generics fun_decl.signature.generics
+             fn_def.binder_value.generics)
+          fun_decl.signature
+      in
+      (* Rebind everything *)
+      Some
+        {
+          binder_regions = fn_def.binder_regions;
+          binder_value = (fn_sig.inputs, fn_sig.output);
+        }
+  | _ -> None
 
 (* Construct a set of generic arguments in the scope of `params` that matches
    `params` and feeds each required parameter with itself. E.g. given
@@ -676,4 +690,13 @@ let bound_identity_args (params : generic_params) : generic_args =
           let trait_id = s.tr_sb_subst clause.clause_id in
           { trait_id; trait_decl_ref = clause.trait })
         params.trait_clauses;
+  }
+
+(* Bind the predicate with no higher-kinded regions to make it into a poly predicate. *)
+let trait_decl_ref_to_poly_trait_decl_ref (pred : trait_decl_ref) :
+    trait_decl_ref region_binder =
+  {
+    binder_value =
+      st_substitute_visitor#visit_trait_decl_ref move_under_binder_subst pred;
+    binder_regions = [];
   }

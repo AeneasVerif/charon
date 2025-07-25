@@ -116,7 +116,7 @@ fn {impl FnOnce<()> for closure<'_>}::call_once<'a>(@1: closure<'_>, @2: ()) -> 
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'_>}
 impl<'a> FnOnce<()> for closure<'_> {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<closure<'_>>
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
     parent_clause3 = Sized<Option<u8>[Sized<u8>]>
@@ -126,7 +126,7 @@ impl<'a> FnOnce<()> for closure<'_> {
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'_>}
 impl<'a> FnMut<()> for closure<'_> {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<closure<'_>>
     parent_clause1 = {impl FnOnce<()> for closure<'_>}<'_>
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>

@@ -151,7 +151,7 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
 
 // Full name: test_crate::foo::{impl FnOnce<(u32)> for closure}
 impl FnOnce<(u32)> for closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = Sized<(u32)>
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
@@ -161,7 +161,7 @@ impl FnOnce<(u32)> for closure {
 
 // Full name: test_crate::foo::{impl FnMut<(u32)> for closure}
 impl FnMut<(u32)> for closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnOnce<(u32)> for closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
@@ -170,7 +170,7 @@ impl FnMut<(u32)> for closure {
 
 // Full name: test_crate::foo::{impl Fn<(u32)> for closure}
 impl Fn<(u32)> for closure {
-    parent_clause0 = MetaSized<(u32)>
+    parent_clause0 = MetaSized<closure>
     parent_clause1 = {impl FnMut<(u32)> for closure}
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>

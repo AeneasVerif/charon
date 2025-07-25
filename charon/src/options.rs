@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use crate::{
     ast::*,
-    errors::{display_unspanned_error, ErrorCtx},
+    errors::{ErrorCtx, display_unspanned_error},
     name_matcher::NamePattern,
     raise_error, register_error,
 };
@@ -24,7 +24,7 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(Debug, Default, Clone, clap::Args, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, clap::Args, PartialEq, Eq, Serialize, Deserialize)]
 #[clap(name = "Charon")]
 #[charon::rename("cli_options")]
 pub struct CliOpts {
@@ -81,10 +81,19 @@ pub struct CliOpts {
     #[clap(long = "skip-borrowck")]
     #[serde(default)]
     pub skip_borrowck: bool,
-    /// Monomorphize the code, replacing generics with their concrete types.
-    #[clap(long = "monomorphize")]
+    /// Monomorphize the items encountered when possible. Generic items found in the crate are
+    /// translated as normal. To only translate a particular call graph, use `--start-from`. This
+    /// uses a different mechanism than `--monomorphize-conservative` which should be a lot more
+    /// complete, but doesn't currently support `dyn Trait`.
+    #[clap(long, visible_alias = "mono")]
     #[serde(default)]
     pub monomorphize: bool,
+    /// Monomorphize the code, replacing generics with their concrete types. This is less complete
+    /// than `--monomorphize` but at least doesn't crash on `dyn Trait`. This will eventually be
+    /// fully replaced with `--monomorphized`.
+    #[clap(long)]
+    #[serde(default)]
+    pub monomorphize_conservative: bool,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -148,6 +157,10 @@ pub struct CliOpts {
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
+    /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+    #[clap(long)]
+    #[serde(default)]
+    pub hide_allocator: bool,
     /// Trait method declarations take a `Self: Trait` clause as parameter, so that they can be
     /// reused by multiple trait impls. This however causes trait definitions to be mutually
     /// recursive with their method declarations. This flag removes `Self` clauses that aren't used
@@ -280,10 +293,13 @@ impl CliOpts {
     pub fn apply_preset(&mut self) {
         if let Some(preset) = self.preset {
             match preset {
-                Preset::OldDefaults => {}
+                Preset::OldDefaults => {
+                    self.hide_allocator = !self.raw_boxes;
+                }
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
                     self.hide_marker_traits = true;
+                    self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
                     // Hide drop impls because they often involve nested borrows. which aeneas
                     // doesn't handle yet.
@@ -292,10 +308,13 @@ impl CliOpts {
                         .push("{impl core::ops::drop::Drop for _}".to_owned());
                 }
                 Preset::Eurydice => {
+                    self.hide_allocator = true;
                     self.remove_associated_types.push("*".to_owned());
                 }
                 Preset::Tests => {
+                    self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
+                    self.exclude.push("core::fmt::Formatter".to_owned());
                 }
             }
         }
@@ -380,10 +399,14 @@ pub struct TranslateOptions {
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
+    /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+    pub hide_allocator: bool,
     /// Remove unused `Self: Trait` clauses on method declarations.
     pub remove_unused_self_clauses: bool,
-    /// Monomorphize functions.
-    pub monomorphize: bool,
+    /// Monomorphize functions as a post-processing pass.
+    pub monomorphize_as_pass: bool,
+    /// Monomorphize code using hax's instantiation mechanism.
+    pub monomorphize_with_hax: bool,
     /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
     pub no_ops_to_function_calls: bool,
     /// Do not merge the chains of gotos.
@@ -445,7 +468,7 @@ impl TranslateOptions {
                 opacities.push((pat.to_string(), Invisible));
             }
 
-            if !options.raw_boxes {
+            if options.hide_allocator {
                 opacities.push((format!("core::alloc::Allocator"), Invisible));
                 opacities.push((
                     format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
@@ -468,8 +491,10 @@ impl TranslateOptions {
         TranslateOptions {
             mir_level,
             hide_marker_traits: options.hide_marker_traits,
+            hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
-            monomorphize: options.monomorphize,
+            monomorphize_as_pass: options.monomorphize_conservative,
+            monomorphize_with_hax: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
             no_ops_to_function_calls: options.no_ops_to_function_calls,
             print_built_llbc: options.print_built_llbc,

@@ -5,7 +5,7 @@ use hax_frontend_exporter::{self as hax, BaseState, SInto};
 use itertools::Itertools;
 use rustc_ast::Mutability;
 use rustc_hir::def_id::{CrateNum, DefId, LOCAL_CRATE};
-use rustc_middle::ty::{fast_reject::SimplifiedType, FloatTy, IntTy, TyCtxt, UintTy};
+use rustc_middle::ty::{FloatTy, IntTy, TyCtxt, UintTy, fast_reject::SimplifiedType};
 use rustc_span::symbol::Symbol;
 
 fn find_primitive_impls<'tcx>(

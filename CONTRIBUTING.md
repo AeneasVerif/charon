@@ -74,9 +74,15 @@ Charon is structured into two projects:
 - `charon/` contains rust code that builds the `charon` and `charon-driver` binaries. These take rust code and generate a `<name>.llbc` file, which is a json serialization of the extracted crate contents;
 - `charon-ml/` contains an OCaml library that deserializes the `.llbc` files. It mostly follows the structure of the corresponding rust types.
 
-The two projects must be kept in sync. This means that any change to the structure of the json file must be reflected in `charon-ml`.
+Most of `charon-ml` is generated automatically from the Rust definitions. This is done by the
+`generate-ml` binary, which runs `charon` on its own source, then emits OCaml type definitions and
+json deserialization functions. To update the generated code, run `make generate-ml`. In some rare
+cases you will need to update `generate-ml/main.rs` yourself.
 
-Any change to the json serialization must also increment the version in `charon/Cargo.toml`. The `Makefile` scripts will then tell `charon-ml` about the new version number. `charon-ml` must still be updated by hand to reflect the changes.
+Any change to the json serialization must also increment the version in `charon/Cargo.toml`. Both
+Rust and OCaml deserializers check the versions before attempting to deserialize, which greatly
+improves error messages. After incrementing the version number, run `make test`; this will copy that
+version number to `CharonVersoin.ml` which is how `charon-ml` gets informed of it.
 
 #### Tests
 
@@ -95,9 +101,15 @@ Charon runs checks in CI for each pull request. There are two kinds:
 - The `nix` check is the normal Charon CI that builds charon and runs the full test suite;
 - The `aeneas`, `eurydice` and `kyber` checks correspond to projects that use Charon that we endeavor to break as little as possible.
 
-Sometimes breakage is unavoidable however. In this case we can merge changes with these checks not passing. Before that:
-- For `aeneas`, we have to manually fix the issue. This involves making a PR to [Aeneas][] that fixes compilation on a best-effort basis (e.g. adding `raise` branches if there are new enum variants) and bumps their pin of charon (using `make update-charon-pin`). We request that the changes to Aeneas (excepting the pin update) be ready before we merge the changes to Charon.
-- For `eurydice` and `kyber`, we (the maintainers of Charon) will discuss with their maintainers.
+Sometimes breakage is unavoidable however. In this case, we must make fixes for the downstream
+projects too. Once the fix is ready in a PR to aeneas/eurydice/libcrux, add `ci: use
+https://github.com/url/of/the/pr` in the top-level description of the charon PR. In the next CI run,
+CI will run the tests with these PRs' commits. In this way we make sure to only merge a PR in charon
+if we're sure that there's a fix available for the downstream projects.
+
+Our responsibility on the charon side is to keep downstream projects working; we don't have to
+implement the features fully. E.g. if the charon change adds a new operation, the aeneas and
+eurydice changes only need to handle that new case by raising an error.
 
 ## Attribution
 

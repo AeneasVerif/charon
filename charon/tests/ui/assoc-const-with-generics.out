@@ -180,7 +180,8 @@ trait AlsoHasLen<Self>
     const ALSO_LEN : usize
 }
 
-fn test_crate::AlsoHasLen::ALSO_LEN<Self>() -> usize
+// Full name: test_crate::AlsoHasLen::ALSO_LEN
+fn ALSO_LEN<Self>() -> usize
 where
     [@TraitClause0]: AlsoHasLen<Self>,
 {
@@ -193,16 +194,17 @@ where
     return
 }
 
-const test_crate::AlsoHasLen::ALSO_LEN<Self>: usize
+// Full name: test_crate::AlsoHasLen::ALSO_LEN
+const ALSO_LEN<Self>: usize
 where
     [@TraitClause0]: AlsoHasLen<Self>,
- = test_crate::AlsoHasLen::ALSO_LEN()
+ = ALSO_LEN()
 
 // Full name: test_crate::{impl AlsoHasLen for Array<(), const N : usize>}
 impl<const N : usize> AlsoHasLen for Array<(), const N : usize> {
     parent_clause0 = MetaSized<Array<(), const N : usize>>
     parent_clause1 = {impl HasLen for Array<(), const N : usize>}<const N : usize>
-    const ALSO_LEN = test_crate::AlsoHasLen::ALSO_LEN<Array<(), const N : usize>>[{impl AlsoHasLen for Array<(), const N : usize>}<const N : usize>]
+    const ALSO_LEN = ALSO_LEN<Array<(), const N : usize>>[{impl AlsoHasLen for Array<(), const N : usize>}<const N : usize>]
 }
 
 

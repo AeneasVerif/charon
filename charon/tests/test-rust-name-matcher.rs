@@ -32,7 +32,7 @@ fn parse_pattern_attr(a: &Attribute) -> Option<(bool, Pattern)> {
 
 #[test]
 fn test_name_matcher() -> anyhow::Result<()> {
-    let crate_data = util::translate_rust_text(&std::fs::read_to_string(TEST_FILE)?)?;
+    let crate_data = util::translate_rust_text(&std::fs::read_to_string(TEST_FILE)?, &[])?;
     let fmt_ctx = &crate_data.into_fmt();
 
     for item in crate_data.all_items() {

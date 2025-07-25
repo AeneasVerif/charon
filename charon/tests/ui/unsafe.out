@@ -124,12 +124,6 @@ impl Ord for () {
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -313,7 +307,8 @@ impl Trait for () {
     parent_clause0 = MetaSized<()>
 }
 
-fn test_crate::COUNTER() -> usize
+// Full name: test_crate::COUNTER
+fn COUNTER() -> usize
 {
     let @0: usize; // return
 
@@ -321,7 +316,8 @@ fn test_crate::COUNTER() -> usize
     return
 }
 
-static test_crate::COUNTER: usize = test_crate::COUNTER()
+// Full name: test_crate::COUNTER
+static COUNTER: usize = COUNTER()
 
 // Full name: test_crate::access_mutable_static
 fn access_mutable_static()
@@ -334,7 +330,7 @@ fn access_mutable_static()
     storage_live(@2)
     storage_live(@3)
     storage_live(@1)
-    @3 := &raw mut test_crate::COUNTER
+    @3 := &raw mut COUNTER
     @1 := move (@3)
     @2 := copy (*(@1)) panic.+ const (1 : usize)
     *(@1) := move (@2)

@@ -7,6 +7,7 @@ pub mod expand_associated_types;
 pub mod filter_invisible_trait_impls;
 pub mod filter_unreachable_blocks;
 pub mod graphs;
+pub mod hide_allocator_param;
 pub mod hide_marker_traits;
 pub mod index_intermediate_assigns;
 pub mod index_to_function_calls;
@@ -38,9 +39,9 @@ pub mod unbind_item_vars;
 pub mod update_block_indices;
 pub mod utils;
 
+use Pass::*;
 pub use ctx::TransformCtx;
 use ctx::{LlbcPass, TransformPass, UllbcPass};
-use Pass::*;
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
@@ -55,6 +56,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     NonBody(&check_generics::Check("after translation")),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&hide_marker_traits::Transform),
+    // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+    NonBody(&hide_allocator_param::Transform),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&filter_invisible_trait_impls::Transform),
@@ -147,10 +150,10 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     NonBody(&remove_unused_locals::Transform),
     // Insert storage lives for locals that are always allocated at the beginning of the function.
     NonBody(&insert_storage_lives::Transform),
-    // # Micro-pass: remove the useless `StatementKind::Nop`s.
-    NonBody(&remove_nops::Transform),
     // Monomorphize the functions and types.
     NonBody(&monomorphize::Transform),
+    // # Micro-pass: remove the useless `StatementKind::Nop`s.
+    NonBody(&remove_nops::Transform),
     // # Micro-pass: take all the comments found in the original body and assign them to
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.

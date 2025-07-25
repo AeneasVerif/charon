@@ -18,7 +18,8 @@ trait Trait<Self>
     const FOO : usize
 }
 
-fn test_crate::Trait::FOO<Self>() -> usize
+// Full name: test_crate::Trait::FOO
+fn FOO<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
@@ -28,10 +29,11 @@ where
     return
 }
 
-const test_crate::Trait::FOO<Self>: usize
+// Full name: test_crate::Trait::FOO
+const FOO<Self>: usize
 where
     [@TraitClause0]: Trait<Self>,
- = test_crate::Trait::FOO()
+ = FOO()
 
 // Full name: test_crate::{impl Trait for T}
 impl<T> Trait for T
@@ -39,7 +41,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = @TraitClause0::parent_clause0
-    const FOO = test_crate::Trait::FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
+    const FOO = FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
 }
 
 // Full name: test_crate::foo

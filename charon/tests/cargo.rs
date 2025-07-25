@@ -6,7 +6,7 @@ use itertools::Itertools;
 use libtest_mimic::Trial;
 use std::{error::Error, ffi::OsStr, path::PathBuf, process::Command};
 
-use util::{compare_or_overwrite, Action};
+use util::{Action, compare_or_overwrite};
 
 mod util;
 

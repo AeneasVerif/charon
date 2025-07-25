@@ -2,14 +2,11 @@ use super::translate_ctx::*;
 use charon_lib::ast::types::LiteralTy::*;
 use charon_lib::ast::Literal::*;
 use charon_lib::ast::*;
-use charon_lib::builtins;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
-use hax::HasParamEnv;
-use hax::Visibility;
+use hax::{BaseState, HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::HasOwnerIdSetter;
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -45,6 +42,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn translate_hax_int_ty(int_ty: &hax::IntTy) -> IntTy {
+        match int_ty {
+            hax::IntTy::Isize => IntTy::Isize,
+            hax::IntTy::I8 => IntTy::I8,
+            hax::IntTy::I16 => IntTy::I16,
+            hax::IntTy::I32 => IntTy::I32,
+            hax::IntTy::I64 => IntTy::I64,
+            hax::IntTy::I128 => IntTy::I128,
+        }
+    }
+
+    pub(crate) fn translate_hax_uint_ty(uint_ty: &hax::UintTy) -> UIntTy {
+        use hax::UintTy;
+        match uint_ty {
+            UintTy::Usize => UIntTy::Usize,
+            UintTy::U8 => UIntTy::U8,
+            UintTy::U16 => UIntTy::U16,
+            UintTy::U32 => UIntTy::U32,
+            UintTy::U64 => UIntTy::U64,
+            UintTy::U128 => UIntTy::U128,
+        }
+    }
+
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/
@@ -55,7 +75,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
     pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
-        trace!("{:?}", ty);
         let cache_key = HashByAddr(ty.inner().clone());
         if let Some(ty) = self
             .innermost_binder()
@@ -65,31 +84,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         {
             return Ok(ty.clone());
         }
+        // Catch the error to avoid a single error stopping the translation of a whole item.
+        let ty = self
+            .translate_ty_inner(span, ty)
+            .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
+        self.innermost_binder_mut()
+            .type_trans_cache
+            .insert(cache_key, ty.clone());
+        Ok(ty)
+    }
 
+    fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
+        trace!("{:?}", ty);
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
             hax::TyKind::Int(int_ty) => {
-                use hax::IntTy;
-                TyKind::Literal(LiteralTy::Integer(match int_ty {
-                    IntTy::Isize => IntegerTy::Isize,
-                    IntTy::I8 => IntegerTy::I8,
-                    IntTy::I16 => IntegerTy::I16,
-                    IntTy::I32 => IntegerTy::I32,
-                    IntTy::I64 => IntegerTy::I64,
-                    IntTy::I128 => IntegerTy::I128,
-                }))
+                TyKind::Literal(LiteralTy::Int(Self::translate_hax_int_ty(int_ty)))
             }
-            hax::TyKind::Uint(int_ty) => {
-                use hax::UintTy;
-                TyKind::Literal(LiteralTy::Integer(match int_ty {
-                    UintTy::Usize => IntegerTy::Usize,
-                    UintTy::U8 => IntegerTy::U8,
-                    UintTy::U16 => IntegerTy::U16,
-                    UintTy::U32 => IntegerTy::U32,
-                    UintTy::U64 => IntegerTy::U64,
-                    UintTy::U128 => IntegerTy::U128,
-                }))
+            hax::TyKind::Uint(uint_ty) => {
+                TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
             }
             hax::TyKind::Float(float_ty) => {
                 use hax::FloatTy;
@@ -112,7 +126,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     TyKind::TraitType(trait_ref, name)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
-                    return self.translate_ty(span, hidden_ty)
+                    return self.translate_ty(span, hidden_ty);
                 }
                 _ => {
                     raise_error!(self, span, "Unsupported alias type: {:?}", alias.kind)
@@ -120,28 +134,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
 
             hax::TyKind::Adt(item) => {
-                trace!("Adt: {:?}", item.def_id);
-                let mut tref = self.translate_type_decl_ref(span, item)?;
-
-                // Filter the type arguments.
-                // TODO: do this in a micro-pass
-                if let TypeId::Builtin(builtin_ty) = tref.id {
-                    let used_args = builtins::type_to_used_params(builtin_ty);
-                    error_assert!(
-                        self,
-                        span,
-                        tref.generics.types.elem_count() == used_args.len()
-                    );
-                    let types = std::mem::take(&mut tref.generics.types)
-                        .into_iter()
-                        .zip(used_args)
-                        .filter(|(_, used)| *used)
-                        .map(|(ty, _)| ty)
-                        .collect();
-                    tref.generics.types = types;
-                }
-
-                // Return the instantiated ADT
+                let tref = self.translate_type_decl_ref(span, item)?;
                 TyKind::Adt(tref)
             }
             hax::TyKind::Str => {
@@ -232,16 +225,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
-                let fnref: RegionBinder<FnPtr> = self.translate_fn_ptr(span, item)?;
-                let fnref = fnref.map(|fref| FunDeclRef {
-                    id: *fref
-                        .func
-                        .as_fun()
-                        .expect("can't reference method as a function pointer")
-                        .as_regular()
-                        .expect("can't reference builtin function as a function pointer"),
-                    generics: fref.generics,
-                });
+                let fnref = self.translate_fn_ptr(span, item)?;
                 TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {
@@ -249,10 +233,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
-                // TODO: we don't translate the predicates yet because our machinery can't handle
-                // it.
-                TyKind::DynTrait(ExistentialPredicate)
+            hax::TyKind::Dynamic(self_ty, preds, region) => {
+                if self.monomorphize() {
+                    raise_error!(
+                        self,
+                        span,
+                        "`dyn Trait` is not yet supported with `--monomorphize`; \
+                        use `--monomorphize-conservative` instead"
+                    )
+                }
+                let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
+                TyKind::DynTrait(pred)
             }
 
             hax::TyKind::Infer(_) => {
@@ -275,11 +266,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 raise_error!(self, span, "Unsupported type: {:?}", s)
             }
         };
-        let ty = kind.into_ty();
-        self.innermost_binder_mut()
-            .type_trans_cache
-            .insert(cache_key, ty.clone());
-        Ok(ty)
+        Ok(kind.into_ty())
     }
 
     /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
@@ -318,19 +305,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Translate generic args for an item with late bound variables.
-    pub fn translate_generic_args_with_late_bound(
+    /// Append the given late bound variables to the provided generics.
+    pub fn append_late_bound_to_generics(
         &mut self,
         span: Span,
-        substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplExpr],
+        generics: GenericArgs,
         late_bound: Option<hax::Binder<()>>,
     ) -> Result<RegionBinder<GenericArgs>, Error> {
         let late_bound = late_bound.unwrap_or(hax::Binder {
             value: (),
             bound_vars: vec![],
         });
-        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         self.translate_region_binder(span, &late_bound, |ctx, _| {
             Ok(generics
                 .move_under_binder()
@@ -341,9 +326,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Checks whether the given id corresponds to a built-in type.
     pub(crate) fn recognize_builtin_type(
         &mut self,
-        def_id: &hax::DefId,
+        item: &hax::ItemRef,
     ) -> Result<Option<BuiltinTy>, Error> {
-        let def = self.hax_def(def_id)?;
+        let def = self.hax_def(item)?;
         let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
             Some(BuiltinTy::Box)
         } else {
@@ -355,19 +340,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate a Dynamically Sized Type metadata kind.
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
-    pub fn translate_ptr_metadata(&self, def_id: &hax::DefId) -> Option<PtrMetadata> {
+    pub fn translate_ptr_metadata(&self, item: &hax::ItemRef) -> Option<PtrMetadata> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = def_id.as_rust_def_id().unwrap();
-        let ty_env = self
-            .t_ctx
-            .hax_state
-            .clone()
-            .with_owner_id(rdefid)
-            .typing_env();
-        // This `skip_binder` is ok because it's an `EarlyBinder`.
-        let ty = tcx.type_of(rdefid).skip_binder();
+        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let hax_state = &self.t_ctx.hax_state.clone().with_owner_id(rdefid);
+        let ty_env = hax_state.typing_env();
+        let ty = tcx
+            .type_of(rdefid)
+            .instantiate(tcx, item.rustc_args(hax_state));
 
         // call the key method
         match tcx
@@ -394,7 +376,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&self, def_id: &hax::DefId) -> Option<Layout> {
+    pub fn translate_layout(&self, item: &hax::ItemRef) -> Option<Layout> {
         use rustc_abi as r_abi;
         // Panics if the fields layout is not `Arbitrary`.
         fn translate_variant_layout(
@@ -421,34 +403,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
             if signed {
-                match int_ty {
-                    r_abi::Integer::I8 => IntegerTy::I8,
-                    r_abi::Integer::I16 => IntegerTy::I16,
-                    r_abi::Integer::I32 => IntegerTy::I32,
-                    r_abi::Integer::I64 => IntegerTy::I64,
-                    r_abi::Integer::I128 => IntegerTy::I128,
-                }
+                IntegerTy::Signed(match int_ty {
+                    r_abi::Integer::I8 => IntTy::I8,
+                    r_abi::Integer::I16 => IntTy::I16,
+                    r_abi::Integer::I32 => IntTy::I32,
+                    r_abi::Integer::I64 => IntTy::I64,
+                    r_abi::Integer::I128 => IntTy::I128,
+                })
             } else {
-                match int_ty {
-                    r_abi::Integer::I8 => IntegerTy::U8,
-                    r_abi::Integer::I16 => IntegerTy::U16,
-                    r_abi::Integer::I32 => IntegerTy::U32,
-                    r_abi::Integer::I64 => IntegerTy::U64,
-                    r_abi::Integer::I128 => IntegerTy::U128,
-                }
+                IntegerTy::Unsigned(match int_ty {
+                    r_abi::Integer::I8 => UIntTy::U8,
+                    r_abi::Integer::I16 => UIntTy::U16,
+                    r_abi::Integer::I32 => UIntTy::U32,
+                    r_abi::Integer::I64 => UIntTy::U64,
+                    r_abi::Integer::I128 => UIntTy::U128,
+                })
             }
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = def_id.as_rust_def_id().unwrap();
-        let ty_env = self
-            .t_ctx
-            .hax_state
-            .clone()
-            .with_owner_id(rdefid)
-            .typing_env();
-        // This `skip_binder` is ok because it's an `EarlyBinder`.
-        let ty = tcx.type_of(rdefid).skip_binder();
+        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let hax_state = &self.t_ctx.hax_state.clone().with_owner_id(rdefid);
+        let ty_env = hax_state.typing_env();
+        let ty = tcx
+            .type_of(rdefid)
+            .instantiate(tcx, item.rustc_args(hax_state));
         let pseudo_input = ty_env.as_query_input(ty);
 
         // If layout computation returns an error, we return `None`.
@@ -480,7 +459,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         translate_primitive_int(int_ty, signed)
                     }
                     // Try to handle pointer as integers of the same size.
-                    r_abi::Primitive::Pointer(_) => IntegerTy::Isize,
+                    r_abi::Primitive::Pointer(_) => IntegerTy::Signed(IntTy::Isize),
                     r_abi::Primitive::Float(_) => {
                         unreachable!()
                     }
@@ -512,15 +491,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .as_ref()
                     .expect("No discriminant layout for enum?")
                     .tag_ty;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
 
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let tag = if variant_layout.is_uninhabited() {
                         None
                     } else {
                         tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
-                            .map(|s| {
-                                assert_eq!(s.size(), r_abi::Size::from_bytes(tag_ty.size()));
-                                ScalarValue::from_bits(tag_ty, s.to_bits(s.size()))
+                            .map(|s| match tag_ty {
+                                IntegerTy::Signed(int_ty) => {
+                                    ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size))
+                                        .unwrap()
+                                }
+                                IntegerTy::Unsigned(uint_ty) => {
+                                    ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
+                                        .unwrap()
+                                }
                             })
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tag));
@@ -556,9 +543,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         def_span: Span,
         item_meta: &ItemMeta,
-        adt: &hax::AdtDef,
+        def: &hax::FullDef,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
+        let hax::FullDefKind::Adt {
+            adt_kind, variants, ..
+        } = def.kind()
+        else {
+            unreachable!()
+        };
 
         if item_meta.opacity.is_opaque() {
             return Ok(TypeDeclKind::Opaque);
@@ -570,12 +563,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let contents_are_public = match adt.adt_kind {
+        let contents_are_public = match adt_kind {
             AdtKind::Enum => true,
             AdtKind::Struct | AdtKind::Union => {
                 // Check the unique variant
-                error_assert!(self, def_span, adt.variants.len() == 1);
-                adt.variants[0]
+                error_assert!(self, def_span, variants.len() == 1);
+                variants[0]
                     .fields
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
@@ -591,8 +584,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // The type is transparent: explore the variants
-        let mut variants: Vector<VariantId, Variant> = Default::default();
-        for (i, var_def) in adt.variants.iter().enumerate() {
+        let mut translated_variants: Vector<VariantId, Variant> = Default::default();
+        for (i, var_def) in variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
             let mut fields: Vector<FieldId, Field> = Default::default();
@@ -604,7 +597,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, &field_def.ty)?;
-                let field_full_def = self.hax_def(&field_def.did)?;
+                let field_full_def = self.hax_def(
+                    &def.this()
+                        .with_def_id(&self.t_ctx.hax_state, &field_def.did),
+                )?;
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
@@ -635,7 +631,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
             let variant_name = var_def.name.clone();
-            let variant_full_def = self.hax_def(&var_def.def_id)?;
+            let variant_full_def = self.hax_def(
+                &def.this()
+                    .with_def_id(&self.t_ctx.hax_state, &var_def.def_id),
+            )?;
             let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
 
             let mut variant = Variant {
@@ -668,14 +667,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     variant.attr_info.rename = Some(format!("{prefix}{name}{suffix}"));
                 }
             }
-            variants.push(variant);
+            translated_variants.push(variant);
         }
 
         // Register the type
-        let type_def_kind: TypeDeclKind = match adt.adt_kind {
-            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
-            AdtKind::Enum => TypeDeclKind::Enum(variants),
-            AdtKind::Union => TypeDeclKind::Union(variants[0].fields.clone()),
+        let type_def_kind: TypeDeclKind = match adt_kind {
+            AdtKind::Struct => TypeDeclKind::Struct(translated_variants[0].fields.clone()),
+            AdtKind::Enum => TypeDeclKind::Enum(translated_variants),
+            AdtKind::Union => TypeDeclKind::Union(translated_variants[0].fields.clone()),
         };
 
         Ok(type_def_kind)

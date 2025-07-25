@@ -176,7 +176,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(())>
     parent_clause2 = Tuple<(())>
     parent_clause3 = Sized<()>
@@ -189,7 +189,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>
@@ -202,7 +202,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>

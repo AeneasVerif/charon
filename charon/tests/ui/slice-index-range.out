@@ -448,7 +448,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
-    @12 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
+    @12 := {promoted_const}<'_, 1 : usize>
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
     @13 := Option::None {  }
     @7 := Arguments { 0: move (@10), 1: move (@13), 2: move (@11) }
@@ -560,7 +560,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
-    @12 := core::fmt::rt::{Arguments<'a>}::new_const::{promoted_const}<'_, 1 : usize>
+    @12 := {promoted_const}<'_, 1 : usize>
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
     @13 := Option::None {  }
     @7 := Arguments { 0: move (@10), 1: move (@13), 2: move (@11) }

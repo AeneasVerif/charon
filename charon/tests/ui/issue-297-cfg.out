@@ -476,7 +476,8 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     return
 }
 
-fn test_crate::FIELD_MODULUS() -> i16
+// Full name: test_crate::FIELD_MODULUS
+fn FIELD_MODULUS() -> i16
 {
     let @0: i16; // return
 
@@ -484,7 +485,8 @@ fn test_crate::FIELD_MODULUS() -> i16
     return
 }
 
-const test_crate::FIELD_MODULUS: i16 = test_crate::FIELD_MODULUS()
+// Full name: test_crate::FIELD_MODULUS
+const FIELD_MODULUS: i16 = FIELD_MODULUS()
 
 // Full name: test_crate::f2
 fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
@@ -695,7 +697,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@34)
                 storage_live(@35)
                 @35 := copy (d1@23)
-                @48 := test_crate::FIELD_MODULUS
+                @48 := FIELD_MODULUS
                 @34 := move (@35) < move (@48)
                 if move (@34) {
                     storage_dead(@35)
@@ -732,7 +734,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@41)
                 storage_live(@42)
                 @42 := copy (d2@28)
-                @49 := test_crate::FIELD_MODULUS
+                @49 := FIELD_MODULUS
                 @41 := move (@42) < move (@49)
                 if move (@41) {
                     storage_dead(@42)

@@ -170,7 +170,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(())>
     parent_clause2 = Tuple<(())>
     parent_clause3 = Sized<()>
@@ -184,7 +184,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}<F, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>
@@ -197,7 +197,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}<F, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>

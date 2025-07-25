@@ -1,5 +1,4 @@
 open Charon
-open Charon.Expressions
 open Charon.LlbcAst
 open Charon.Meta
 open Logging
@@ -123,7 +122,7 @@ module PatternTest = struct
             TypesUtils.generic_args_of_params decl.item_meta.span
               decl.signature.generics
           in
-          { func = FunId (FRegular decl.def_id); generics }
+          Types.{ func = FunId (FRegular decl.def_id); generics }
       | Some idx ->
           (* Find the nth function call in the function body. *)
           let rec list_stmt_calls (statement : statement) : call list =

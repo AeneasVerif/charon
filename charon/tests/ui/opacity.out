@@ -101,14 +101,7 @@ where
     let @2: isize; // anonymous local
 
     storage_live(@2)
-    match *(self@1) {
-        Option::None => {
-            @2 := const (0 : isize)
-        },
-        Option::Some => {
-            @2 := const (1 : isize)
-        },
-    }
+    @2 := @discriminant(*(self@1))
     @0 := copy (@2) == const (1 : isize)
     return
 }

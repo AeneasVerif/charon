@@ -8,7 +8,7 @@
 //! crate root. Don't forget to format the output code after regenerating.
 #![feature(if_let_guard)]
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
 use convert_case::{Case, Casing};
@@ -175,7 +175,16 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
         TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
+            IntTy::I128 => "big_int_of_json".to_string(),
+            _ => "int_of_json".to_string(),
+        },
+        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
+            UIntTy::U128 => "big_int_of_json".to_string(),
+            _ => "int_of_json".to_string(),
+        },
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut expr = Vec::new();
@@ -191,7 +200,6 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     if first == "vec" {
                         first = "list".to_string();
-                        expr.pop(); // Remove the allocator generic param
                     }
                     expr.insert(0, first + "_of_json");
                 }
@@ -219,7 +227,16 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
         TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
+            IntTy::I128 => "big_int".to_string(),
+            _ => "int".to_string(),
+        },
+        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
+            UIntTy::U128 => "big_int".to_string(),
+            _ => "int".to_string(),
+        },
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(tref) => {
             let mut args = tref
@@ -256,7 +273,6 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     if base_ty == "vec" {
                         base_ty = "list".to_string();
-                        args.pop(); // Remove the allocator generic param
                     }
                     if base_ty == "vector" {
                         base_ty = "list".to_string();
@@ -904,13 +920,13 @@ impl GenerateCodeFor {
                         })
                         .join("\n");
                     if let Some(visitors) = visitors {
-                        let DeriveVisitors {
+                        let &DeriveVisitors {
                             name,
                             mut ancestors,
                             reduce,
                             extra_types,
                         } = visitors;
-                        let varieties: &[_] = if *reduce {
+                        let varieties: &[_] = if reduce {
                             &["iter", "map", "reduce", "mapreduce"]
                         } else {
                             &["iter", "map"]
@@ -923,7 +939,7 @@ impl GenerateCodeFor {
                                 ctx,
                                 &intermediate_visitor_name,
                                 ancestors,
-                                *reduce,
+                                reduce,
                                 extra_types
                                     .iter()
                                     .map(|s| s.to_string())
@@ -932,7 +948,9 @@ impl GenerateCodeFor {
                             );
                             intermediate_visitor_name_slice = [intermediate_visitor_name.as_str()];
                             ancestors = &intermediate_visitor_name_slice;
-                            decls = format!("(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}");
+                            decls = format!(
+                                "(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}"
+                            );
                         }
                         let visitors = varieties
                             .iter()
@@ -986,6 +1004,7 @@ fn main() -> Result<()> {
         let mut cmd = Command::cargo_bin("charon")?;
         cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
+        cmd.arg("--hide-allocator");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
@@ -1019,19 +1038,6 @@ fn generate_ml(
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file.
         ("FileId", "file"),
-        // Hand-written because the rust version is an enum with custom (de)serialization
-        // functions.
-        (
-            "ScalarValue",
-            indoc!(
-                "
-                (* Note that we use unbounded integers everywhere.
-                   We then harcode the boundaries for the different types.
-                 *)
-                { value : big_int; int_ty : integer_type }
-                "
-            ),
-        ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(region_id, string option) indexed_var"),
@@ -1059,29 +1065,6 @@ fn generate_ml(
                     let file = FileId.Map.find file_id ctx in
                     Ok file
                 "#,
-            ),
-        ),
-        // Hand-written because the rust version is an enum with custom (de)serialization
-        // functions.
-        (
-            "ScalarValue",
-            indoc!(
-                r#"
-                | `Assoc [ (ty, bi) ] ->
-                    let big_int_of_json (js : json) : (big_int, string) result =
-                      combine_error_msgs js __FUNCTION__
-                        (match js with
-                        | `Int i -> Ok (Z.of_int i)
-                        | `String is -> Ok (Z.of_string is)
-                        | _ -> Error "")
-                    in
-                    let* value = big_int_of_json bi in
-                    let* int_ty = integer_type_of_json ctx (`String ty) in
-                    let sv = { value; int_ty } in
-                    if not (check_scalar_value_in_range sv) then
-                      raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
-                    Ok sv
-                "#
             ),
         ),
     ];
@@ -1219,7 +1202,7 @@ fn generate_ml(
                     ancestors: &["ty_base_base"],
                     name: "ty",
                     reduce: false,
-                    extra_types: &[],
+                    extra_types: &["span"],
                 })), &[
                     "TyKind",
                     "TraitImplRef",
@@ -1232,7 +1215,7 @@ fn generate_ml(
                     name: "type_decl",
                     reduce: false,
                     extra_types: &[
-                        "span", "attr_info"
+                        "attr_info"
                     ],
                 })), &[
                     "Binder",

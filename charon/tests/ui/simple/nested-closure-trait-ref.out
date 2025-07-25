@@ -159,7 +159,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
     parent_clause3 = Sized<test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]>
@@ -226,10 +226,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
-    parent_clause3 = Sized<T>
+    parent_clause3 = @TraitClause0
     type Output = T
     fn call_once = {impl FnOnce<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
 }
@@ -240,7 +240,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>
@@ -253,7 +253,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = MetaSized<test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnMut<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>

@@ -73,7 +73,7 @@ and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
       ^ ">"
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) | CastTransmute (src, tgt) ->
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
-  | CastUnsize (src, tgt) ->
+  | CastUnsize (src, tgt, _) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
 and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
@@ -89,7 +89,6 @@ and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   | Neg om -> overflow_mode_to_string om ^ ".-"
   | PtrMetadata -> "ptr_metadata"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
-  | ArrayToSlice _ -> "to_slice"
 
 and overflow_mode_to_string (mode : overflow_mode) : string =
   match mode with
@@ -120,37 +119,6 @@ and binop_to_string (binop : binop) : string =
   | MulChecked -> "checked.*"
   | Cmp -> "cmp"
   | Offset -> "offset"
-
-and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
-  match aid with
-  | BoxNew -> "alloc::boxed::Box::new"
-  | ArrayToSliceShared -> "@ArrayToSliceShared"
-  | ArrayToSliceMut -> "@ArrayToSliceMut"
-  | ArrayRepeat -> "@ArrayRepeat"
-  | Index { is_array; mutability; is_range } ->
-      let ty = if is_array then "Array" else "Slice" in
-      let op = if is_range then "SubSlice" else "Index" in
-      let mutability = ref_kind_to_string mutability in
-      "@" ^ ty ^ op ^ mutability
-  | PtrFromParts mut ->
-      let mut = if mut = RMut then "Mut" else "" in
-      "@PtrFromParts" ^ mut
-
-and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
-  match fid with
-  | FRegular fid -> fun_decl_id_to_string env fid
-  | FBuiltin aid -> builtin_fun_id_to_string aid
-
-and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
-    (r : fun_id_or_trait_method_ref) : string =
-  match r with
-  | TraitMethod (trait_ref, method_name, _) ->
-      trait_ref_to_string env trait_ref ^ "::" ^ method_name
-  | FunId fid -> fun_id_to_string env fid
-
-and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
-  let generics = generic_args_to_string env ptr.generics in
-  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
 
 and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   match cv.value with
@@ -196,7 +164,7 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   | BinaryOp (binop, op1, op2) ->
       operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string env op2
-  | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
+  | Discriminant p -> "discriminant(" ^ place_to_string env p ^ ")"
   | Len (place, ty, const_generics) ->
       let const_generics =
         match const_generics with
