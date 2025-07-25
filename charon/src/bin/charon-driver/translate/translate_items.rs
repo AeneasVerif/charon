@@ -13,7 +13,7 @@ use std::ops::ControlFlow;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
-        let trans_id = self.register_id_no_enqueue(&None, item_src);
+        let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
         self.with_def_id(def_id, trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);

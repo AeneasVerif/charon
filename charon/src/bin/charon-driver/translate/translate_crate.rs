@@ -243,7 +243,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let _: Option<AnyTransId> = self.register_and_enqueue(&None, item_src);
     }
 
-    pub(crate) fn register_id_no_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_no_enqueue<T: TryFrom<AnyTransId>>(
         &mut self,
         dep_src: &Option<DepSource>,
         src: &TransItemSource,
@@ -286,7 +286,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         dep_src: &Option<DepSource>,
         item_src: TransItemSource,
     ) -> Option<T> {
-        let id = self.register_id_no_enqueue(dep_src, &item_src);
+        let id = self.register_no_enqueue(dep_src, &item_src);
         self.items_to_translate.insert(item_src);
         id
     }
@@ -359,7 +359,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         src: &TransItemSource,
     ) -> T {
         let dep_src = self.make_dep_source(span);
-        self.t_ctx.register_id_no_enqueue(&dep_src, src).unwrap()
+        self.t_ctx.register_no_enqueue(&dep_src, src).unwrap()
     }
 
     /// Register this item and enqueue it for translation.

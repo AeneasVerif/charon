@@ -368,7 +368,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
         {
-            let trans_id = self.register_and_enqueue(&None, src.clone()).unwrap();
+            let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
             bt_ctx.binding_levels.push(BindingLevel::new(true));
