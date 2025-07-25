@@ -929,34 +929,36 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v =
-                            Scalar(ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes));
+                        let v = Scalar(ScalarValue::from_le_bytes(
+                            IntegerTy::Signed(int_ty),
+                            v.data_le_bytes,
+                        ));
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
-                    IntegerTy::Signed(int_ty),
+                    LiteralTy::Int(int_ty),
                     targets,
                     otherwise,
                 ))
             }
-            LiteralTy::UInt(int_ty) => {
-                let targets: Vec<(ScalarValue, BlockId)> = targets
+            LiteralTy::UInt(uint_ty) => {
+                let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_le_bytes(
-                            IntegerTy::Unsigned(int_ty),
+                        let v = Scalar(ScalarValue::from_le_bytes(
+                            IntegerTy::Unsigned(uint_ty),
                             v.data_le_bytes,
-                        );
+                        ));
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
-                    IntegerTy::Unsigned(int_ty),
+                    LiteralTy::UInt(uint_ty),
                     targets,
                     otherwise,
                 ))

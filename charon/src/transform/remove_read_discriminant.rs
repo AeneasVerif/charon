@@ -14,25 +14,6 @@ use std::collections::{HashMap, HashSet};
 
 use super::ctx::LlbcPass;
 
-/// Generate `match _y { 0 => { _x = 0 }, 1 => { _x = 1; }, .. }`.
-fn generate_discr_assignment(
-    span: Span,
-    variants: &Vector<VariantId, Variant>,
-    scrutinee: &Place,
-    dest: &Place,
-) -> RawStatement {
-    let targets = variants
-        .iter_indexed_values()
-        .map(|(id, variant)| {
-            let discr_value =
-                Rvalue::Use(Operand::Const(Box::new(variant.discriminant.to_constant())));
-            let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
-            (vec![id], statement.into_block())
-        })
-        .collect();
-    RawStatement::Switch(Switch::Match(scrutinee.clone(), targets, None))
-}
-
 pub struct Transform;
 impl Transform {
     fn update_block(
@@ -155,7 +136,8 @@ impl Transform {
                         }
                         _ => {
                             // The discriminant read is not followed by a `SwitchInt`. This can happen
-                            // in optimized MIR.
+                            // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
+                            // = 0 }, 1 => { _x = 1; }, .. }`.
                             continue;
                         }
                     }
