@@ -285,6 +285,16 @@ let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
       raise (Failure "region_in_set shouldn't be called on bound regions")
   | RVar (Free id) -> RegionId.Set.mem id rset
 
+let region_is_free (r : region) : bool =
+  match r with
+  | RVar (Free _) -> true
+  | _ -> false
+
+let region_is_erased (r : region) : bool =
+  match r with
+  | RErased -> true
+  | _ -> false
+
 (** Return the set of regions in an type - TODO: add static?
 
     This function should be used on non-erased and non-bound regions. For
@@ -332,6 +342,21 @@ let ty_has_regions_in_pred (pred : region -> bool) (ty : ty) : bool =
 (** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
 let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   ty_has_regions_in_pred (fun r -> region_in_set r rset) ty
+
+(** Check if a type has free (i.e., non erased) regions.
+
+    This is useful in particular when using normalized projection types (types
+    where all the regions of interest are free regions, and the other regions
+    are erased, that we use for instance to project the borrows belonging to a
+    symbolic value into different region abstractions): the projection over a
+    symbolic value intersects a region abstraction if its projection type has
+    some free regions (or in other words, if not all the regions appearing in
+    the type are erased). *)
+let ty_has_free_regions (ty : ty) : bool =
+  ty_has_regions_in_pred region_is_free ty
+
+let ty_has_erased_regions (ty : ty) : bool =
+  ty_has_regions_in_pred region_is_erased ty
 
 let generic_args_lengths (args : generic_args) : int * int * int * int =
   let { regions; types; const_generics; trait_refs } = args in

@@ -1,8 +1,8 @@
-use crate::translate::translate_bodies::BodyTransCtx;
+use crate::translate::{translate_bodies::BodyTransCtx, translate_crate::TransItemSourceKind};
 
 use super::translate_ctx::*;
-use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
-use hax_frontend_exporter as hax;
+use charon_lib::ast::*;
+use hax_frontend_exporter::{self as hax, FullDefKind};
 
 impl ItemTransCtx<'_, '_> {
     fn translate_drop_method_body(
@@ -27,35 +27,6 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    /// Construct the `Ty` corresponding to the current adt. The generics must be the generics for
-    /// that def_id.
-    fn adt_self_ty(&mut self, span: Span, def_id: &hax::DefId) -> Result<Ty, Error> {
-        // The def_id must correspond to a type definition.
-        let self_decl_id = self.register_type_decl_id(span, def_id);
-        let self_ty = TyKind::Adt(TypeDeclRef {
-            id: TypeId::Adt(self_decl_id),
-            generics: Box::new(self.the_only_binder().params.identity_args()),
-        })
-        .into_ty();
-        Ok(self_ty)
-    }
-
-    fn adt_drop_predicate(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-    ) -> Result<TraitDeclRef, Error> {
-        let drop_trait = self.get_lang_item(rustc_hir::LangItem::Drop);
-        let drop_trait = self.register_trait_decl_id(span, &drop_trait);
-
-        let self_ty = self.adt_self_ty(span, def_id)?;
-        let implemented_trait = TraitDeclRef {
-            id: drop_trait,
-            generics: Box::new(GenericArgs::new_types([self_ty.clone()].into())),
-        };
-        Ok(implemented_trait)
-    }
-
     /// Given an item that is a closure, generate the `call_once`/`call_mut`/`call` method
     /// (depending on `target_kind`).
     #[tracing::instrument(skip(self, item_meta))]
@@ -66,12 +37,24 @@ impl ItemTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let drop_impl_id = self.register_drop_trait_impl_id(span, def.def_id());
 
         self.translate_def_generics(span, def)?;
 
-        let implemented_trait = self.adt_drop_predicate(span, def.def_id())?;
-        let self_ty = implemented_trait.generics.types[0].clone();
+        let (FullDefKind::Adt { drop_impl, .. } | FullDefKind::Closure { drop_impl, .. }) =
+            def.kind()
+        else {
+            unreachable!()
+        };
+        let implemented_trait = self.translate_trait_predicate(span, &drop_impl.trait_pred)?;
+        let self_ty = implemented_trait
+            .self_ty(&self.t_ctx.translated)
+            .unwrap()
+            .clone();
+        let drop_impl_id = self.register_item(
+            span,
+            def.this(),
+            TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue),
+        );
         let impl_ref = TraitImplRef {
             id: drop_impl_id,
             generics: Box::new(self.the_only_binder().params.identity_args()),
@@ -130,11 +113,15 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
 
-        let implemented_trait = self.adt_drop_predicate(span, def.def_id())?;
-        let drop_trait = implemented_trait.id;
+        let (FullDefKind::Adt { drop_impl, .. } | FullDefKind::Closure { drop_impl, .. }) =
+            def.kind()
+        else {
+            unreachable!()
+        };
+        let mut timpl = self.translate_virtual_trait_impl(impl_id, item_meta, drop_impl)?;
 
         // Construct the method reference.
-        let method_id = self.register_drop_method_id(span, &def.def_id);
+        let method_id = self.register_item(span, def.this(), TransItemSourceKind::DropGlueMethod);
         let method_name = TraitItemName("drop".to_owned());
         let method_binder = {
             let mut method_params = GenericParams::empty();
@@ -148,7 +135,7 @@ impl ItemTransCtx<'_, '_> {
                 .identity_args_at_depth(DeBruijnId::one())
                 .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
             Binder::new(
-                BinderKind::TraitMethod(drop_trait, method_name.clone()),
+                BinderKind::TraitMethod(timpl.impl_trait.id, method_name.clone()),
                 method_params,
                 FunDeclRef {
                     id: method_id,
@@ -156,45 +143,8 @@ impl ItemTransCtx<'_, '_> {
                 },
             )
         };
+        timpl.methods.push((method_name, method_binder));
 
-        let parent_trait_refs = {
-            let meta_sized_trait = self.get_lang_item(rustc_hir::LangItem::MetaSized);
-            let meta_sized_trait = self.register_trait_decl_id(span, &meta_sized_trait);
-            let self_ty = implemented_trait.generics.types[0].clone();
-            [TraitRef::new_builtin(
-                meta_sized_trait,
-                self_ty,
-                Default::default(),
-            )]
-            .into()
-        };
-
-        let vtable_instance = self.get_vtable_instance_ref(
-            span,
-            &self.get_lang_item(rustc_hir::LangItem::Drop),
-            &implemented_trait.generics,
-            def.def_id(),
-            None,
-        );
-        trace!(
-            "Get vtable instance done for Drop: {}",
-            match &vtable_instance {
-                Some(vtable) => vtable.with_ctx(&self.into_fmt()).to_string(),
-                None => "None".to_owned(),
-            }
-        );
-
-        Ok(TraitImpl {
-            def_id: impl_id,
-            item_meta,
-            impl_trait: implemented_trait,
-            generics: self.into_generics(),
-            methods: vec![(method_name, method_binder)],
-            parent_trait_refs,
-            type_clauses: Default::default(),
-            consts: Default::default(),
-            types: Default::default(),
-            vtable_instance,
-        })
+        Ok(timpl)
     }
 }

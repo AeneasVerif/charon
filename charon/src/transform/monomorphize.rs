@@ -359,7 +359,7 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Check the option which instructs to ignore this pass
-        if !ctx.options.monomorphize {
+        if !ctx.options.monomorphize_as_pass {
             return;
         }
 

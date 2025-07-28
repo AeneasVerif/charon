@@ -317,6 +317,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("use_polonius", use_polonius);
           ("skip_borrowck", skip_borrowck);
           ("monomorphize", monomorphize);
+          ("monomorphize_conservative", monomorphize_conservative);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
           ("include", include_);
@@ -356,6 +357,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* use_polonius = bool_of_json ctx use_polonius in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* monomorphize = bool_of_json ctx monomorphize in
+        let* monomorphize_conservative =
+          bool_of_json ctx monomorphize_conservative
+        in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
         let* included = list_of_json string_of_json ctx include_ in
@@ -402,6 +406,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              use_polonius;
              skip_borrowck;
              monomorphize;
+             monomorphize_conservative;
              extract_opaque_bodies;
              translate_all_methods;
              included;
@@ -1036,6 +1041,12 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* item_name = trait_item_name_of_json ctx item_name in
         let* reuses_default = bool_of_json ctx reuses_default in
         Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
+    | `Assoc [ ("VTableTy", `Assoc [ ("dyn_predicate", dyn_predicate) ]) ] ->
+        let* dyn_predicate = dyn_predicate_of_json ctx dyn_predicate in
+        Ok (VTableTyItem dyn_predicate)
+    | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
+        let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
+        Ok (VTableInstanceItem impl_ref)
     | _ -> Error "")
 
 and item_meta_of_json (ctx : of_json_ctx) (js : json) :
@@ -1280,6 +1291,7 @@ and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
     | `String "OldDefaults" -> Ok OldDefaults
     | `String "Aeneas" -> Ok Aeneas
     | `String "Eurydice" -> Ok Eurydice
+    | `String "Soteria" -> Ok Soteria
     | `String "Tests" -> Ok Tests
     | _ -> Error "")
 
@@ -1563,6 +1575,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("type_defaults", _);
           ("type_clauses", _);
           ("methods", methods);
+          ("vtable", vtable);
         ] ->
         let* def_id = trait_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -1583,6 +1596,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
                (binder_of_json fun_decl_ref_of_json))
             ctx methods
         in
+        let* vtable = option_of_json type_decl_ref_of_json ctx vtable in
         Ok
           ({
              def_id;
@@ -1592,6 +1606,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              consts;
              types;
              methods;
+             vtable;
            }
             : trait_decl)
     | _ -> Error "")
@@ -1628,6 +1643,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
           ("types", types);
           ("type_clauses", _);
           ("methods", methods);
+          ("vtable", vtable);
         ] ->
         let* def_id = trait_impl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -1653,6 +1669,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
                (binder_of_json fun_decl_ref_of_json))
             ctx methods
         in
+        let* vtable = option_of_json global_decl_ref_of_json ctx vtable in
         Ok
           ({
              def_id;
@@ -1663,6 +1680,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
              consts;
              types;
              methods;
+             vtable;
            }
             : trait_impl)
     | _ -> Error "")

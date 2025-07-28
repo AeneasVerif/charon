@@ -812,13 +812,22 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                         // we implement the trait.
                         let ctx = &ctx.set_generics(&timpl.generics);
                         let mut impl_trait = timpl.impl_trait.clone();
-                        let self_ty = impl_trait.generics.types.remove(TypeVarId::ZERO).unwrap();
-                        write!(
-                            f,
-                            "impl {} for {}",
-                            impl_trait.with_ctx(ctx),
-                            self_ty.with_ctx(ctx)
-                        )?;
+                        match impl_trait
+                            .generics
+                            .types
+                            .remove_and_shift_ids(TypeVarId::ZERO)
+                        {
+                            Some(self_ty) => {
+                                let self_ty = self_ty.with_ctx(ctx);
+                                let impl_trait = impl_trait.with_ctx(ctx);
+                                write!(f, "impl {impl_trait} for {self_ty}")?;
+                            }
+                            // TODO(mono): A monomorphized trait doesn't take arguments.
+                            None => {
+                                let impl_trait = impl_trait.with_ctx(ctx);
+                                write!(f, "impl {impl_trait}")?;
+                            }
+                        }
                     }
                 }
             }
@@ -1566,11 +1575,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
                 writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
             }
-            if let Some(vtb_ref) = &self.vtable {
-                writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
-            } else {
-                writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
-            }
+            // TODO(dyn)
+            // if let Some(vtb_ref) = &self.vtable {
+            //     writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
+            // } else {
+            //     writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
+            // }
             write!(f, "}}")?;
         }
         Ok(())
@@ -1600,11 +1610,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         let ctx = &ctx.set_generics(&self.generics);
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        write!(f, "impl{generics} ")?;
         let mut impl_trait = self.impl_trait.clone();
-        let self_ty = impl_trait.generics.types.remove(TypeVarId::ZERO).unwrap();
-        let self_ty = self_ty.with_ctx(ctx);
-        let impl_trait = impl_trait.with_ctx(ctx);
-        write!(f, "impl{generics} {impl_trait} for {self_ty}{clauses}")?;
+        match impl_trait
+            .generics
+            .types
+            .remove_and_shift_ids(TypeVarId::ZERO)
+        {
+            Some(self_ty) => {
+                let self_ty = self_ty.with_ctx(ctx);
+                let impl_trait = impl_trait.with_ctx(ctx);
+                write!(f, "{impl_trait} for {self_ty}")?;
+            }
+            // TODO(mono): A monomorphized trait doesn't take arguments.
+            None => {
+                let impl_trait = impl_trait.with_ctx(ctx);
+                write!(f, "{impl_trait}")?;
+            }
+        }
+        write!(f, "{clauses}")?;
 
         let newline = if clauses.is_empty() {
             " ".to_string()

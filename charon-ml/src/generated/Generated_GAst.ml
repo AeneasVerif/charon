@@ -209,6 +209,9 @@ type trait_decl = {
           The binder contains the type parameters specific to the method. The
           [FunDeclRef] then provides a full list of arguments to the pointed-to
           function. *)
+  vtable : type_decl_ref option;
+      (** The virtual table struct for this trait, if it has one. It is
+          guaranteed that the trait has a vtable iff it is dyn-compatible. *)
 }
 [@@deriving
   show,
@@ -256,6 +259,9 @@ type trait_impl = {
       (** The associated types declared in the trait. *)
   methods : (trait_item_name * fun_decl_ref binder) list;
       (** The implemented methods *)
+  vtable : global_decl_ref option;
+      (** The virtual table instance for this trait implementation. This is
+          [Some] iff the trait is dyn-compatible. *)
 }
 [@@deriving
   show,
@@ -309,8 +315,16 @@ type cli_options = {
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
   monomorphize : bool;
+      (** Monomorphize the items encountered when possible. Generic items found
+          in the crate are translated as normal. To only translate a particular
+          call graph, use [--start-from]. This uses a different mechanism than
+          [--monomorphize-conservative] which should be a lot more complete, but
+          doesn't currently support [dyn Trait]. *)
+  monomorphize_conservative : bool;
       (** Monomorphize the code, replacing generics with their concrete types.
-      *)
+          This is less complete than [--monomorphize] but at least doesn't crash
+          on [dyn Trait]. This will eventually be fully replaced with
+          [--monomorphized]. *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private
           fields. When this flag is on, we don't. *)
@@ -420,5 +434,6 @@ and preset =
           were made optional and disabled by default. *)
   | Aeneas
   | Eurydice
+  | Soteria
   | Tests
 [@@deriving show]

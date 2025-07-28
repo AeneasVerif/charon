@@ -1,6 +1,7 @@
 //! Translate information about items: name, attributes, etc.
-use super::translate_crate::{TransItemSource, TransItemSourceKind};
-use super::translate_ctx::{ItemTransCtx, TranslateCtx};
+use super::translate_crate::RustcItem;
+use super::translate_ctx::*;
+use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use hax_frontend_exporter::{self as hax, DefPathItem};
 use itertools::Itertools;
@@ -161,8 +162,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     fn path_elem_for_def(
         &mut self,
         span: Span,
-        def_id: &hax::DefId,
+        item: &RustcItem,
     ) -> Result<Option<PathElem>, Error> {
+        let def_id = item.def_id();
         let path_elem = def_id.path_item();
         // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
         // notably with macros and inherent impl blocks.
@@ -180,7 +182,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
             DefPathItem::Impl => {
-                let full_def = self.hax_def(def_id)?;
+                let full_def = self.hax_def_for_item(item)?;
                 // Two cases, depending on whether the impl block is
                 // a "regular" impl block (`impl Foo { ... }`) or a trait
                 // implementation (`impl Bar for Foo { ... }`).
@@ -191,7 +193,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = ItemTransCtx::new(
-                            TransItemSource::new(def_id.clone(), TransItemSourceKind::InherentImpl),
+                            TransItemSource::new(item.clone(), TransItemSourceKind::InherentImpl),
                             None,
                             self,
                         );
@@ -205,7 +207,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                     // Trait implementation
                     hax::FullDefKind::TraitImpl { .. } => {
-                        let impl_id = self.register_trait_impl_id(&None, def_id);
+                        let impl_id = {
+                            let item_src = TransItemSource::new(
+                                item.clone(),
+                                TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
+                            );
+                            self.register_and_enqueue(&None, item_src).unwrap()
+                        };
                         ImplElem::Trait(impl_id)
                     }
                     _ => unreachable!(),
@@ -285,91 +293,97 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// The names we will generate for `foo` and `bar` are:
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
-    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
-        if let Some(name) = self.cached_names.get(&def_id) {
+    fn name_for_item(&mut self, item: &RustcItem) -> Result<Name, Error> {
+        if let Some(name) = self.cached_names.get(item) {
             return Ok(name.clone());
         }
+        let def_id = item.def_id();
         trace!("Computing name for `{def_id:?}`");
 
-        let parent_name = if let Some(parent) = &def_id.parent {
-            self.def_id_to_name(parent)?
+        let parent_name = if let Some(parent_id) = &def_id.parent {
+            let def = self.hax_def_for_item(item)?;
+            if matches!(item, RustcItem::Mono(..))
+                && let Some(parent_item) = def.typing_parent(&self.hax_state)
+            {
+                self.name_for_item(&RustcItem::Mono(parent_item.clone()))?
+            } else {
+                self.name_for_item(&RustcItem::Poly(parent_id.clone()))?
+            }
         } else {
             Name { name: Vec::new() }
         };
         let span = self.def_span(def_id);
         let mut name = parent_name;
-        if let Some(path_elem) = self.path_elem_for_def(span, &def_id)? {
+        if let Some(path_elem) = self.path_elem_for_def(span, item)? {
             name.name.push(path_elem);
         }
 
         trace!("Computed name for `{def_id:?}`: `{name:?}`");
-        self.cached_names.insert(def_id.clone(), name.clone());
+        self.cached_names.insert(item.clone(), name.clone());
         Ok(name)
     }
 
-    /// Retrieve the name for an item.
-    pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
-        let def_id = src.as_def_id();
-        let mut name = self.def_id_to_name(def_id)?;
-        match src.kind {
-            TransItemSourceKind::ClosureTraitImpl(..)
-            | TransItemSourceKind::ClosureMethod(..)
-            | TransItemSourceKind::DropGlueImpl
-            | TransItemSourceKind::DropGlueMethod => {
-                let impl_id = match src.kind {
-                    TransItemSourceKind::ClosureTraitImpl(kind)
-                    | TransItemSourceKind::ClosureMethod(kind) => {
-                        let _ = name.name.pop(); // Pop the `{closure}`
-                        self.register_closure_trait_impl_id(&None, def_id, kind)
-                    }
-                    TransItemSourceKind::DropGlueImpl | TransItemSourceKind::DropGlueMethod => {
-                        self.register_drop_trait_impl_id(&None, def_id)
-                    }
-                    _ => unreachable!(),
-                };
-
-                name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
-
-                match src.kind {
-                    TransItemSourceKind::ClosureMethod(kind) => {
-                        let fn_name = kind.method_name().to_string();
-                        name.name
-                            .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
-                    }
-                    TransItemSourceKind::DropGlueMethod => {
-                        let fn_name = "drop".to_string();
-                        name.name
-                            .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
-                    }
-                    _ => {}
+    /// Compute the name for an item.
+    /// Internal function, use `translate_name`.
+    pub fn name_for_src(&mut self, src: &TransItemSource) -> Result<Name, Error> {
+        let mut name = if let Some(parent) = src.parent() {
+            self.name_for_src(&parent)?
+        } else {
+            self.name_for_item(&src.item)?
+        };
+        match &src.kind {
+            TransItemSourceKind::TraitImpl(
+                kind @ (TraitImplSource::Closure(..)
+                | TraitImplSource::DropGlue
+                | TraitImplSource::TraitAlias),
+            ) => {
+                if let TraitImplSource::Closure(..) = kind {
+                    let _ = name.name.pop(); // Pop the `{closure}`
                 }
-            }
-            TransItemSourceKind::TraitImpl if matches!(def_id.kind, hax::DefKind::TraitAlias) => {
-                let impl_id = self.register_trait_impl_id(&None, def_id);
+                let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
+            }
+            TransItemSourceKind::ClosureMethod(kind) => {
+                let fn_name = kind.method_name().to_string();
+                name.name
+                    .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+            }
+            TransItemSourceKind::DropGlueMethod => {
+                name.name
+                    .push(PathElem::Ident("drop".to_string(), Disambiguator::ZERO));
             }
             TransItemSourceKind::ClosureAsFnCast => {
                 name.name
                     .push(PathElem::Ident("as_fn".into(), Disambiguator::ZERO));
             }
-            TransItemSourceKind::VTable => {
+            TransItemSourceKind::VTable
+            | TransItemSourceKind::VTableInstance(..)
+            | TransItemSourceKind::VTableInstanceInitializer(..) => {
                 name.name
                     .push(PathElem::Ident("{vtable}".into(), Disambiguator::ZERO));
             }
-            TransItemSourceKind::VTableInstance(..) => {
-                name.name.push(PathElem::Ident(
-                    "{vtable_instance}".into(),
-                    Disambiguator::ZERO,
-                ));
-                // name.name.push()
-            }
-            TransItemSourceKind::VTableInstanceBody(..) => {
-                name.name.push(PathElem::Ident(
-                    "{vtable_instance_body}".into(),
-                    Disambiguator::ZERO,
-                ));
-            }
             _ => {}
+        }
+        Ok(name)
+    }
+
+    /// Retrieve the name for an item.
+    pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
+        let mut name = self.name_for_src(src)?;
+        // Push the generics used for monomorphization, if any.
+        if let RustcItem::Mono(item_ref) = &src.item
+            && !item_ref.generic_args.is_empty()
+        {
+            let trans_id = self.register_no_enqueue(&None, src).unwrap();
+            let span = self.def_span(&item_ref.def_id);
+            let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
+            bt_ctx.binding_levels.push(BindingLevel::new(true));
+            let args = bt_ctx.translate_generic_args(
+                span,
+                &item_ref.generic_args,
+                &item_ref.impl_exprs,
+            )?;
+            name.name.push(PathElem::Monomorphized(Box::new(args)));
         }
         Ok(name)
     }
@@ -379,7 +393,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         &mut self,
         def_id: &hax::DefId,
     ) -> Result<TraitItemName, Error> {
-        let def = self.hax_def(def_id)?;
+        let def = self.poly_hax_def(def_id)?;
         let assoc = match def.kind() {
             hax::FullDefKind::AssocTy {
                 associated_item, ..
@@ -491,11 +505,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
-        def.def_id().parent.as_ref().is_some_and(|parent| {
-            self.hax_def(parent).is_ok_and(|parent_def| {
-                matches!(parent_def.kind(), hax::FullDefKind::ForeignMod { .. })
-            })
-        })
+        def.def_id()
+            .parent
+            .as_ref()
+            .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod { .. }))
     }
 
     /// Compute the meta information for a Rust item.
@@ -511,7 +524,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
-        let is_local = def.def_id.is_local;
+        let is_local = def.def_id().is_local;
         let (attr_info, lang_item) = if item_src.is_derived_item() {
             (AttrInfo::default(), None)
         } else {

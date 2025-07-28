@@ -33,8 +33,10 @@
 // For when we use charon on itself
 #![register_tool(charon)]
 
+use annotate_snippets::Level;
 use anyhow::Result;
 use charon_lib::{
+    errors::display_unspanned_error,
     logger,
     options::{CHARON_ARGS, CliOpts},
 };
@@ -58,6 +60,14 @@ pub fn main() -> Result<()> {
 
     // Parse the command-line
     let cli = Cli::parse();
+    if let Some(subcommand) = &cli.command
+        && cli.opts != CliOpts::default()
+    {
+        let subcommand = subcommand.name();
+        bail!(
+            "Cli options must be written after the chosen subcommand: `charon {subcommand} [OPTIONS]`"
+        );
+    }
     let exit_status = match cli.command {
         Some(Charon::PrettyPrint(pretty_print)) => {
             let krate = charon_lib::deserialize_llbc(&pretty_print.file)?;
@@ -85,6 +95,11 @@ pub fn main() -> Result<()> {
         }
         // Legacy calling syntax.
         None => {
+            display_unspanned_error(
+                Level::WARNING,
+                "this way of calling charon is deprecated;\
+                use `charon cargo [CHARON OPTIONS] [-- CARGO OPTIONS]` instead",
+            );
             let options = cli.opts;
             if let Some(llbc_file) = options.read_llbc {
                 let krate = charon_lib::deserialize_llbc(&llbc_file)?;

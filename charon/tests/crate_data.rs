@@ -10,7 +10,7 @@ mod util;
 use util::*;
 
 fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
-    util::translate_rust_text(code)
+    util::translate_rust_text(code, &[])
 }
 
 /// A general item, with information shared by all items.

@@ -351,18 +351,23 @@ and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
   | ImplElemTrait impl_id -> begin
       match TraitImplId.Map.find_opt impl_id env.crate.trait_impls with
       | None -> trait_impl_id_to_string env impl_id
-      | Some impl ->
+      | Some impl -> (
           (* Locally replace the generics and the predicates *)
           let env = fmt_env_update_generics_and_preds env impl.generics in
           (* Put the first type argument aside (it gives the type for which we
              implement the trait) *)
           let { id; generics } : trait_decl_ref = impl.impl_trait in
-          let ty, types = Collections.List.pop generics.types in
-          let generics = { generics with types } in
-          let tr : trait_decl_ref = { id; generics } in
-          let ty = ty_to_string env ty in
-          let tr = trait_decl_ref_to_string env tr in
-          tr ^ " for " ^ ty
+          match generics.types with
+          | ty :: types -> begin
+              let ty, types = Collections.List.pop generics.types in
+              let generics = { generics with types } in
+              let tr : trait_decl_ref = { id; generics } in
+              let ty = ty_to_string env ty in
+              let tr = trait_decl_ref_to_string env tr in
+              tr ^ " for " ^ ty
+            end
+          (* When monomorphizing, traits no longer take a `Self` argument, it's stored in the name *)
+          | [] -> trait_decl_ref_to_string env impl.impl_trait)
     end
 
 and path_elem_to_string (env : 'a fmt_env) (e : path_elem) : string =

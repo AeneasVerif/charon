@@ -5,7 +5,7 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
-use hax::{BaseState, HasParamEnv, Visibility};
+use hax::{HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
@@ -89,7 +89,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
     pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
-        trace!("{:?}", ty);
         let cache_key = HashByAddr(ty.inner().clone());
         if let Some(ty) = self
             .innermost_binder()
@@ -99,7 +98,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         {
             return Ok(ty.clone());
         }
+        // Catch the error to avoid a single error stopping the translation of a whole item.
+        let ty = self
+            .translate_ty_inner(span, ty)
+            .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
+        self.innermost_binder_mut()
+            .type_trans_cache
+            .insert(cache_key, ty.clone());
+        Ok(ty)
+    }
 
+    fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
+        trace!("{:?}", ty);
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
@@ -217,15 +227,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Arrow(sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
-                let sig = self.translate_region_binder(span, sig, |ctx, sig| {
-                    let inputs = sig
-                        .inputs
-                        .iter()
-                        .map(|x| ctx.translate_ty(span, x))
-                        .try_collect()?;
-                    let output = ctx.translate_ty(span, &sig.output)?;
-                    Ok((inputs, output))
-                })?;
+                let sig = self.translate_fun_sig(span, sig)?;
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
@@ -237,15 +239,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
             hax::TyKind::Dynamic(self_ty, preds, region) => {
+                if self.monomorphize() {
+                    raise_error!(
+                        self,
+                        span,
+                        "`dyn Trait` is not yet supported with `--monomorphize`; \
+                        use `--monomorphize-conservative` instead"
+                    )
+                }
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
-                // enqueue to translate the vtable
-                let trait_ids = take_preds_trait_ids(preds);
-                assert!(
-                    trait_ids.len() == 1,
-                    "Expected exactly one trait in dynamic type, got: {trait_ids:?}"
-                );
-                let _ = self.register_vtable_as_type_decl_id(Span::dummy(), &trait_ids[0].clone());
-                // return
+                if let hax::ClauseKind::Trait(trait_predicate) =
+                    preds.predicates[0].0.kind.hax_skip_binder_ref()
+                {
+                    // TODO(dyn): for now, we consider traits with associated types to not be dyn
+                    // compatible because we don't know how to handle them; for these we skip
+                    // translating the vtable.
+                    if self.trait_is_dyn_compatible(&trait_predicate.trait_ref.def_id)? {
+                        // Ensure the vtable type is translated. The first predicate is the one that
+                        // can have methods, i.e. a vtable.
+                        let _: TypeDeclId = self.register_item(
+                            span,
+                            &trait_predicate.trait_ref,
+                            TransItemSourceKind::VTable,
+                        );
+                    }
+                }
                 TyKind::DynTrait(pred)
             }
 
@@ -269,11 +287,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 raise_error!(self, span, "Unsupported type: {:?}", s)
             }
         };
-        let ty = kind.into_ty();
-        self.innermost_binder_mut()
-            .type_trans_cache
-            .insert(cache_key, ty.clone());
-        Ok(ty)
+        Ok(kind.into_ty())
+    }
+
+    pub fn translate_fun_sig(
+        &mut self,
+        span: Span,
+        sig: &hax::Binder<hax::TyFnSig>,
+    ) -> Result<RegionBinder<(Vec<Ty>, Ty)>, Error> {
+        self.translate_region_binder(span, sig, |ctx, sig| {
+            let inputs = sig
+                .inputs
+                .iter()
+                .map(|x| ctx.translate_ty(span, x))
+                .try_collect()?;
+            let output = ctx.translate_ty(span, &sig.output)?;
+            Ok((inputs, output))
+        })
     }
 
     /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
@@ -312,19 +342,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Translate generic args for an item with late bound variables.
-    pub fn translate_generic_args_with_late_bound(
+    /// Append the given late bound variables to the provided generics.
+    pub fn append_late_bound_to_generics(
         &mut self,
         span: Span,
-        substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplExpr],
+        generics: GenericArgs,
         late_bound: Option<hax::Binder<()>>,
     ) -> Result<RegionBinder<GenericArgs>, Error> {
         let late_bound = late_bound.unwrap_or(hax::Binder {
             value: (),
             bound_vars: vec![],
         });
-        let generics = self.translate_generic_args(span, substs, trait_refs)?;
         self.translate_region_binder(span, &late_bound, |ctx, _| {
             Ok(generics
                 .move_under_binder()
@@ -335,9 +363,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Checks whether the given id corresponds to a built-in type.
     pub(crate) fn recognize_builtin_type(
         &mut self,
-        def_id: &hax::DefId,
+        item: &hax::ItemRef,
     ) -> Result<Option<BuiltinTy>, Error> {
-        let def = self.hax_def(def_id)?;
+        let def = self.hax_def(item)?;
         let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
             Some(BuiltinTy::Box)
         } else {
@@ -349,19 +377,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate a Dynamically Sized Type metadata kind.
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
-    pub fn translate_ptr_metadata(&self, def_id: &hax::DefId) -> Option<PtrMetadata> {
+    pub fn translate_ptr_metadata(&self, item: &hax::ItemRef) -> Option<PtrMetadata> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = def_id.as_rust_def_id().unwrap();
-        let ty_env = self
-            .t_ctx
-            .hax_state
-            .clone()
-            .with_owner_id(rdefid)
-            .typing_env();
-        // This `skip_binder` is ok because it's an `EarlyBinder`.
-        let ty = tcx.type_of(rdefid).skip_binder();
+        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let hax_state = &self.hax_state_with_id();
+        let ty_env = hax_state.typing_env();
+        let ty = tcx
+            .type_of(rdefid)
+            .instantiate(tcx, item.rustc_args(hax_state));
 
         // call the key method
         match tcx
@@ -388,7 +413,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&self, def_id: &hax::DefId) -> Option<Layout> {
+    pub fn translate_layout(&self, item: &hax::ItemRef) -> Option<Layout> {
         use rustc_abi as r_abi;
         // Panics if the fields layout is not `Arbitrary`.
         fn translate_variant_layout(
@@ -434,15 +459,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = def_id.as_rust_def_id().unwrap();
-        let ty_env = self
-            .t_ctx
-            .hax_state
-            .clone()
-            .with_owner_id(rdefid)
-            .typing_env();
-        // This `skip_binder` is ok because it's an `EarlyBinder`.
-        let ty = tcx.type_of(rdefid).skip_binder();
+        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let hax_state = &self.hax_state_with_id();
+        let ty_env = hax_state.typing_env();
+        let ty = tcx
+            .type_of(rdefid)
+            .instantiate(tcx, item.rustc_args(hax_state));
         let pseudo_input = ty_env.as_query_input(ty);
 
         // If layout computation returns an error, we return `None`.
@@ -548,6 +570,48 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// Generate a naive layout for this type.
+    pub fn generate_naive_layout(&self, span: Span, ty: &TypeDeclKind) -> Result<Layout, Error> {
+        match ty {
+            TypeDeclKind::Struct(fields) => {
+                let mut size = 0;
+                let mut align = 0;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let field_offsets = fields.map_ref(|field| {
+                    let offset = size;
+                    let size_of_ty = match field.ty.kind() {
+                        TyKind::Literal(literal_ty) => literal_ty.target_size(ptr_size) as u64,
+                        // This is a lie, the pointers could be fat...
+                        TyKind::Ref(..) | TyKind::RawPtr(..) | TyKind::FnPtr(..) => ptr_size,
+                        _ => panic!("Unsupported type for `generate_naive_layout`: {ty:?}"),
+                    };
+                    size += size_of_ty;
+                    // For these types, align == size is good enough.
+                    align = std::cmp::max(align, size);
+                    offset
+                });
+
+                Ok(Layout {
+                    size: Some(size),
+                    align: Some(align),
+                    discriminant_layout: None,
+                    uninhabited: false,
+                    variant_layouts: [VariantLayout {
+                        field_offsets,
+                        tag: None,
+                        uninhabited: false,
+                    }]
+                    .into(),
+                })
+            }
+            _ => raise_error!(
+                self,
+                span,
+                "`generate_naive_layout` only supports structs at the moment"
+            ),
+        }
+    }
+
     /// Translate the body of a type declaration.
     ///
     /// Note that the type may be external, in which case we translate the body
@@ -612,7 +676,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, &field_def.ty)?;
-                let field_full_def = self.hax_def(&field_def.did)?;
+                let field_full_def =
+                    self.hax_def(&def.this().with_def_id(self.hax_state(), &field_def.did))?;
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
@@ -643,7 +708,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
             let variant_name = var_def.name.clone();
-            let variant_full_def = self.hax_def(&var_def.def_id)?;
+            let variant_full_def =
+                self.hax_def(&def.this().with_def_id(self.hax_state(), &var_def.def_id))?;
             let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
 
             let mut variant = Variant {

@@ -37,7 +37,7 @@ fn charon_pretty_print() -> Result<()> {
             ensure!(std::fs::exists(llbc)?, "{llbc} doesn't exist!");
 
             charon(&["pretty-print", llbc], ".", |stdout, _| {
-                let search = "pub fn arrays::";
+                let search = "pub fn index_array_shared";
                 ensure!(
                     stdout.contains(search),
                     "Output of pretty-printing {llbc} is:\n{stdout:?}\nIt doesn't contain {search:?}."
@@ -195,6 +195,15 @@ fn charon_rustc() -> Result<()> {
         );
         Ok(())
     })
+}
+
+#[test]
+fn put_options_after_subcommand() -> Result<()> {
+    let path = "tests/cargo/workspace/crate1/src/lib.rs";
+    let args = &["--print-llbc", "rustc", "--", "--crate-type=lib", path];
+    let output = Command::cargo_bin("charon")?.args(args).output()?;
+    assert!(!output.status.success());
+    Ok(())
 }
 
 #[test]

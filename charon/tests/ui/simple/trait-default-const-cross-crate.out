@@ -19,7 +19,8 @@ trait Trait<Self>
     non-dyn-compatible
 }
 
-fn trait_default_const::Trait::FOO<Self>() -> usize
+// Full name: trait_default_const::Trait::FOO
+fn FOO<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
@@ -29,10 +30,11 @@ where
     return
 }
 
-const trait_default_const::Trait::FOO<Self>: usize
+// Full name: trait_default_const::Trait::FOO
+const FOO<Self>: usize
 where
     [@TraitClause0]: Trait<Self>,
- = trait_default_const::Trait::FOO()
+ = FOO()
 
 // Full name: trait_default_const::{impl Trait for T}
 impl<T> Trait for T
@@ -40,7 +42,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = @TraitClause0::parent_clause0
-    const FOO = trait_default_const::Trait::FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
+    const FOO = FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
 }
 
 // Full name: trait_default_const::foo
