@@ -28,6 +28,17 @@ struct CheckGenericsVisitor<'a> {
     visit_stack: Vec<&'static str>,
 }
 
+impl VisitorWithSpan for CheckGenericsVisitor<'_> {
+    fn current_span(&mut self) -> &mut Span {
+        &mut self.span
+    }
+}
+impl VisitorWithBinderStack for CheckGenericsVisitor<'_> {
+    fn binder_stack_mut(&mut self) -> &mut BindingStack<GenericParams> {
+        &mut self.binder_stack
+    }
+}
+
 impl CheckGenericsVisitor<'_> {
     fn error(&self, message: impl Display) {
         let msg = format!(
@@ -187,27 +198,8 @@ impl CheckGenericsVisitor<'_> {
 impl VisitAst for CheckGenericsVisitor<'_> {
     fn visit<'a, T: AstVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
         self.visit_stack.push(x.name());
-        x.drive(self)?; // default behavior
+        VisitWithSpan::new(VisitWithBinderStack::new(self)).visit(x)?;
         self.visit_stack.pop();
-        Continue(())
-    }
-
-    fn visit_binder<T: AstVisitable>(&mut self, binder: &Binder<T>) -> ControlFlow<Self::Break> {
-        self.binder_stack.push(binder.params.clone());
-        self.visit_inner(binder)?;
-        self.binder_stack.pop();
-        Continue(())
-    }
-    fn visit_region_binder<T: AstVisitable>(
-        &mut self,
-        binder: &RegionBinder<T>,
-    ) -> ControlFlow<Self::Break> {
-        self.binder_stack.push(GenericParams {
-            regions: binder.regions.clone(),
-            ..Default::default()
-        });
-        self.visit_inner(binder)?;
-        self.binder_stack.pop();
         Continue(())
     }
 
@@ -388,22 +380,6 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             ))
         }
     }
-
-    // Track span for more precise error messages.
-    fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
-        let old_span = self.span;
-        self.span = st.span;
-        self.visit_inner(st)?;
-        self.span = old_span;
-        Continue(())
-    }
-    fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
-        let old_span = self.span;
-        self.span = st.span;
-        self.visit_inner(st)?;
-        self.span = old_span;
-        Continue(())
-    }
 }
 
 // The argument is a name to disambiguate the two times we run this check.
@@ -425,8 +401,8 @@ impl TransformPass for Check {
             let mut visitor = CheckGenericsVisitor {
                 ctx,
                 phase: self.0,
-                span: item.item_meta().span,
-                binder_stack: BindingStack::new(item.generic_params().clone()),
+                span: Span::dummy(),
+                binder_stack: BindingStack::empty(),
                 visit_stack: Default::default(),
             };
             let _ = item.drive(&mut visitor);
