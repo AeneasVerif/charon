@@ -518,153 +518,6 @@ impl ItemTransCtx<'_, '_> {
         self.t_ctx.tcx.is_dyn_compatible(rid)
     }
 
-    /// DFS over the trait's ***inheritance hierarchy*** and get all the possible associated types.
-    /// Returns the list of references to these types.
-    /// I.e., returns a list of `TraitType`s
-    /// 
-    /// These types are used as the additional generic arguments of the vtable struct.
-    /// Also serves as a template of parameters of the vtable struct declaration.
-    pub fn prepare_trait_assoc_types(&mut self, trait_id: &hax::DefId) -> Result<Vec<Ty>, Error> {
-        let full_def = self.poly_hax_def(trait_id)?;
-        let hax::FullDefKind::Trait {
-            implied_predicates,
-            items,
-            self_predicate,
-            ..
-        } = full_def.kind()
-        else {
-            unreachable!("Expected a trait definition, got: {full_def:?}");
-        };
-        let mut assoc_types = Vec::new();
-
-        let span = self.def_span(trait_id);
-        let mut self_predicate = self.translate_trait_predicate(span, self_predicate)?;
-        self_predicate.generics = self_predicate.generics.move_under_binder();
-        let self_predicate = RegionBinder::empty(self_predicate);
-
-        // Collect from the parent traits
-        // simulation of the actual clause id for the parent trait clauses
-        let mut clause_id: TraitClauseId = TraitClauseId::ZERO;
-        for (clause, _) in implied_predicates.predicates.iter() {
-            match clause.kind.hax_skip_binder_ref() {
-                hax::ClauseKind::Trait(pred) => {
-                    // tell if `clause` is a parent trait clause
-                    if !is_hax_parent_trait_ref(&pred.trait_ref) {
-                        clause_id += 1;
-                        continue;
-                    }
-                    for ty in self.prepare_trait_assoc_types(&pred.trait_ref.def_id)? {
-                        // to add the parent trait info further to this
-                        let TyKind::TraitType(tref, name) = ty.kind() else {
-                            unreachable!();
-                        };
-                        // as `ParentClause` is expressed inner-out, we need to push the
-                        // self predicate to the inner-most trait ref
-                        fn push_self_trait_to_internal(
-                            parent_tref: &TraitRef,
-                            clause_id: TraitClauseId,
-                            self_predicate: &RegionBinder<TraitDeclRef>,
-                        ) -> TraitRef {
-                            match &parent_tref.kind {
-                                TraitRefKind::ParentClause(inner_parent, id) => {
-                                    TraitRef {
-                                        kind: TraitRefKind::ParentClause(
-                                            Box::new(push_self_trait_to_internal(inner_parent, *id, self_predicate)),
-                                            *id,
-                                        ),
-                                        trait_decl_ref: parent_tref.trait_decl_ref.clone(),
-                                    }
-                                }
-                                // in other cases, this is the inner-most trait ref
-                                TraitRefKind::SelfId => {
-                                    TraitRef {
-                                        kind: TraitRefKind::ParentClause(
-                                            Box::new(TraitRef {
-                                                kind: TraitRefKind::SelfId,
-                                                trait_decl_ref: self_predicate.clone(),
-                                            }),
-                                            clause_id,
-                                        ),
-                                        trait_decl_ref: parent_tref.trait_decl_ref.clone(),
-                                    }
-                                }
-                                _ => {
-                                    unreachable!()
-                                }
-                            }
-                        }
-
-                        let modified_tref = push_self_trait_to_internal(tref, clause_id, &self_predicate);
-                        assoc_types.push(Ty::new(TyKind::TraitType(
-                            modified_tref,
-                            name.clone(),
-                        )));
-                    }
-                    clause_id += 1;
-                }
-                // otherwise, it is not a parent trait clause anyway
-                // no need to update the clause id here, as in `self.register_predicates`
-                // the `Trait` kinds are handled firstly
-                _ => {}
-            }
-        }
-
-        // Collect for itself
-        for item in items {
-            let def = self.poly_hax_def(&item.def_id)?;
-            match def.kind() {
-                hax::FullDefKind::AssocTy { .. } => {
-                    let name = self.t_ctx.translate_trait_item_name(def.def_id())?;
-                    assoc_types.push(Ty::new(TyKind::TraitType(
-                        TraitRef {
-                            kind: TraitRefKind::SelfId,
-                            trait_decl_ref: self_predicate.clone(),
-                        },
-                        name,
-                    )));
-                }
-                _ => continue,
-            }
-        }
-
-        Ok(assoc_types)
-    }
-
-    /// Given a trait id, return the vtable struct reference for this trait whose
-    /// generic arguments are the parameters of the trait.
-    ///
-    /// If the current trait is not dyn-compatible, return `None`.
-    ///
-    /// NOTE: only use in `trait decl` translation
-    pub fn get_vtable_struct_id_args_ref(
-        &mut self,
-        span: Span,
-        trait_id: &hax::DefId,
-    ) -> Result<Option<TypeDeclRef>, Error> {
-        if !self.trait_id_is_dyn_compatible(trait_id) {
-            return Ok(None);
-        }
-        let assoc_tys = self.prepare_trait_assoc_types(trait_id)?;
-        // register the id and no enqueue it
-        let vtable_id: TypeDeclId = self
-            .register_no_enqueue(
-                span,
-                &TransItemSource {
-                    item: RustcItem::Poly(trait_id.clone()),
-                    kind: TransItemSourceKind::VTable,
-                },
-            );
-        let mut args = self.outermost_binder().params.identity_args();
-        // Remove the `Self` type variable from the generic parameters
-        args.types.remove_and_shift_ids(TypeVarId::ZERO);
-        // The associated types are the generic arguments of the vtable struct
-        args.types.extend(assoc_tys);
-        Ok(Some(TypeDeclRef {
-            id: TypeId::Adt(vtable_id),
-            generics: Box::new(args),
-        }))
-    }
-
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_decl(
         mut self,
@@ -683,7 +536,19 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
-        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
+        let vtable = match def.kind() {
+            hax::FullDefKind::Trait {
+                dyn_self: Some(t), ..
+            }
+            | hax::FullDefKind::TraitAlias {
+                dyn_self: Some(t), ..
+            } => {
+                let dyn_self = self.translate_ty(span, t)?;
+                let assoc_tys = self.prepare_assoc_types(&dyn_self, None)?;
+                Some(self.translate_vtable_struct_ref(span, def.this(), assoc_tys.clone())?)
+            }
+            _ => None,
+        };
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
@@ -698,13 +563,9 @@ impl ItemTransCtx<'_, '_> {
                 types: Default::default(),
                 type_defaults: Default::default(),
                 methods: Default::default(),
-                // Trait aliases will be expanded when used.
-                // No vtable on its own, just use those for its parents
-                vtable: None,
+                vtable,
             });
         }
-
-        let vtable = self.get_vtable_struct_id_args_ref(span, &def.def_id())?;
 
         let hax::FullDefKind::Trait {
             items,
@@ -907,15 +768,16 @@ impl ItemTransCtx<'_, '_> {
     ) -> Option<GlobalDeclRef> {
         if self.trait_id_is_dyn_compatible(trait_def_id) {
             // Register the vtable instance for this impl.
-            let id = self.register_and_enqueue(span, TransItemSource {
-                item: RustcItem::Poly(impl_def_id.clone()),
-                kind: TransItemSourceKind::VTableInstance(
-                    match maybe_closure_kind {
+            let id = self.register_and_enqueue(
+                span,
+                TransItemSource {
+                    item: RustcItem::Poly(impl_def_id.clone()),
+                    kind: TransItemSourceKind::VTableInstance(match maybe_closure_kind {
                         Some(closure_kind) => TraitImplSource::Closure(closure_kind),
                         None => TraitImplSource::Normal,
-                    },
-                )
-            });
+                    }),
+                },
+            );
             let mut generics = implemented_trait_args.clone();
             // Remove the `Self` type variable from the generic parameters.
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
@@ -1155,7 +1017,8 @@ impl ItemTransCtx<'_, '_> {
         // as required clauses for the impl.
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
         let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
-        self.innermost_generics_mut().trait_clauses = parent_trait_clauses.into_iter().map(|(_, v)| v).collect();
+        self.innermost_generics_mut().trait_clauses =
+            parent_trait_clauses.into_iter().map(|(_, v)| v).collect();
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
         let parent_trait_refs = mem::take(&mut generics.trait_refs);

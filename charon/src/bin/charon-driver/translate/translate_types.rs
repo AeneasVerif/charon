@@ -1,27 +1,11 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
-use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::{HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
-
-/// A helper function to extract the trait ids from the predicates.
-fn take_preds_trait_ids(preds: &hax::GenericPredicates) -> Vec<hax::DefId> {
-    preds
-        .predicates
-        .iter()
-        .filter_map(|(clause, _)| match clause.kind.hax_skip_binder_ref() {
-            hax::ClauseKind::Trait(trait_predicate) => {
-                Some(trait_predicate.trait_ref.def_id.clone())
-            }
-            _ => None,
-        })
-        .collect()
-}
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     // Translate a region
