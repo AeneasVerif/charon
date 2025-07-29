@@ -1,4 +1,5 @@
 use core::panic;
+use std::collections::HashMap;
 
 use crate::translate::{translate_generics::BindingLevel, translate_predicates::PredicateLocation};
 
@@ -27,7 +28,7 @@ fn usize_ty() -> Ty {
 /// Takes a `T` valid in the context of a trait ref and transforms it into a `T` valid in the
 /// context of its vtable definition, i.e. no longer mentions `Self`. If `new_self` is `Some`, we
 /// replace any mention of `Self` with it; otherwise we panic if `Self` is mentioned.
-fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>) -> T {
+fn dynify<T: TyVisitable>(mut x: T, ty_id_map: &HashMap<Ty, TypeVarId>, new_self: Option<Ty>) -> T {
     struct ReplaceSelfVisitor(Option<Ty>);
     impl VarsVisitor for ReplaceSelfVisitor {
         fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
@@ -442,6 +443,7 @@ impl ItemTransCtx<'_, '_> {
         };
         // The `dyn Trait<Args..>` type for this trait.
         let mut dyn_self = self.translate_ty(span, dyn_self)?;
+        let mut ty_id_map = HashMap::new();
 
         // Add the associated types to the generic parameters.
         for ty in self.prepare_assoc_types(&dyn_self, None)? {
@@ -450,10 +452,10 @@ impl ItemTransCtx<'_, '_> {
                 .to_string()
                 .replace("::", "_")
                 .replace(":", "_");
-            self.the_only_binder_mut()
-                .params
-                .types
-                .push_with(|index| TypeVar { index, name });
+            self.the_only_binder_mut().params.types.push_with(|index| {
+                ty_id_map.insert(ty, index);
+                TypeVar { index, name }
+            });
         }
 
         // First construct fields that use the real method signatures (which may use the `Self`
@@ -466,9 +468,9 @@ impl ItemTransCtx<'_, '_> {
         // from the generic parameters.
         let mut generics = self.into_generics();
         {
-            dyn_self = dynify(dyn_self, None);
-            generics = dynify(generics, Some(dyn_self.clone()));
-            kind = dynify(kind, Some(dyn_self.clone()));
+            dyn_self = dynify(dyn_self, &ty_id_map, None);
+            generics = dynify(generics, &ty_id_map, Some(dyn_self.clone()));
+            kind = dynify(kind, &ty_id_map, Some(dyn_self.clone()));
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             generics.types.iter_mut().for_each(|ty| {
                 ty.index -= 1;
