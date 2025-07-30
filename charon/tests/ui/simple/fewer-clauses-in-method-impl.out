@@ -1,92 +1,41 @@
-# Final LLBC before serialization:
+disabled backtrace
+warning[E9999]: Could not find a clause for `Binder { value: <T as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+ --> tests/ui/simple/fewer-clauses-in-method-impl.rs:8:5
+  |
+8 |     fn method<T: Clone>() {}
+  |     ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+warning: 1 warning emitted
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
+error: Found inconsistent generics after transformations:
+       Mismatched builtin trait parent clauses:
+       target: Clone
+       expected: [[@TraitClause0]: Sized<missing(@Type1_0)>]
+            got: [MetaSized<()>, Clone<()>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/simple/fewer-clauses-in-method-impl.rs:12:5
+   |
+12 |     <() as Trait>::method::<()>()
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: test_crate::Trait
-trait Trait<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn method<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method<Self, T>[Self, @TraitClause0_0, @TraitClause0_1]
-    non-dyn-compatible
-}
-
-fn test_crate::Trait::method<Self, T>()
-where
-    [@TraitClause0]: Trait<Self>,
-    [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Copy<T>,
-
-// Full name: test_crate::{impl Trait for ()}::method
-fn {impl Trait for ()}::method<T>()
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
-// Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
-    parent_clause0 = MetaSized<()>
-    fn method<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Clone<T>> = {impl Trait for ()}::method<T>[@TraitClause0_0, @TraitClause0_1]
-    non-dyn-compatible
-}
-
-// Full name: test_crate::main
-fn main()
-{
-    let @0: (); // return
-
-    @0 := {impl Trait for ()}::method<()>[Sized<()>, Copy<()>]()
-    @0 := ()
-    return
-}
-
-
-
+ERROR Charon failed to translate this code (1 errors)
