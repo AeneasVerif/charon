@@ -9,6 +9,7 @@ pub trait MetaSized::<test_crate::main::closure<'_>>
 pub trait Sized::<test_crate::main::closure<'_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<test_crate::main::closure#1<'_>>
@@ -20,6 +21,7 @@ pub trait MetaSized::<test_crate::main::closure#1<'_>>
 pub trait Sized::<test_crate::main::closure#1<'_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<test_crate::main::closure#2>
@@ -31,6 +33,7 @@ pub trait MetaSized::<test_crate::main::closure#2>
 pub trait Sized::<test_crate::main::closure#2>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<(u8)>
@@ -42,6 +45,7 @@ pub trait MetaSized::<(u8)>
 pub trait Sized::<(u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<Thing>
@@ -53,6 +57,7 @@ pub trait MetaSized::<Thing>
 pub trait Sized::<Thing>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<Thing>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple::<(u8)>
@@ -60,6 +65,7 @@ pub trait Sized::<Thing>
 pub trait Tuple::<(u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8)>
+    vtable: core::marker::Tuple::{vtable}::<(u8)>
 }
 
 // Full name: test_crate::Thing
@@ -78,6 +84,7 @@ pub trait Drop::<test_crate::main::closure<'_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
     fn drop<'_0> = core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure<'_>>
 }
 
 struct test_crate::main::closure#1<'_0> {
@@ -90,6 +97,7 @@ pub trait Drop::<test_crate::main::closure#1<'_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
     fn drop<'_0> = core::ops::drop::Drop::drop::<test_crate::main::closure#1<'_>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#1<'_>>
 }
 
 struct test_crate::main::closure#2 {
@@ -102,6 +110,7 @@ pub trait Drop::<test_crate::main::closure#2>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
     fn drop<'_0> = core::ops::drop::Drop::drop::<test_crate::main::closure#2><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#2>
 }
 
 pub fn core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0>(@1: &'_0 mut (test_crate::main::closure<'_>))
@@ -119,6 +128,7 @@ pub trait FnOnce::<test_crate::main::closure<'_>, (u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::<test_crate::main::closure<'_>, (u8)>
@@ -130,6 +140,7 @@ pub trait FnMut::<test_crate::main::closure<'_>, (u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8)>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8)><'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn::<test_crate::main::closure<'_>, (u8)>
@@ -141,6 +152,7 @@ pub trait Fn::<test_crate::main::closure<'_>, (u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8)>
     fn call<'_0> = core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8)><'_0_0>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0>(@1: &'_0 (test_crate::main::closure<'_>), @2: (u8)) -> u8
@@ -156,6 +168,7 @@ pub trait FnOnce::<test_crate::main::closure#1<'_>, (u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::<test_crate::main::closure#1<'_>, (u8)>
@@ -167,6 +180,7 @@ pub trait FnMut::<test_crate::main::closure#1<'_>, (u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8)>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8)><'_0_0>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut (test_crate::main::closure#1<'_>), @2: (u8)) -> u8
@@ -186,6 +200,7 @@ pub trait FnOnce::<test_crate::main::closure#2, (u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnOnce::call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
@@ -426,6 +441,7 @@ impl<'_0> FnOnce::<test_crate::main::closure<'_>, (u8)> {
     parent_clause2 = Tuple::<(u8)>
     type Output = u8
     fn call_once = {impl FnOnce::<test_crate::main::closure<'_>, (u8)>}::call_once<'_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnMut::<test_crate::main::closure<'_>, (u8)>}
@@ -435,6 +451,7 @@ impl<'_0> FnMut::<test_crate::main::closure<'_>, (u8)> {
     parent_clause2 = Sized::<(u8)>
     parent_clause3 = Tuple::<(u8)>
     fn call_mut<'_0> = {impl FnMut::<test_crate::main::closure<'_>, (u8)>}::call_mut<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8)>}
@@ -444,6 +461,7 @@ impl<'_0> Fn::<test_crate::main::closure<'_>, (u8)> {
     parent_clause2 = Sized::<(u8)>
     parent_clause3 = Tuple::<(u8)>
     fn call<'_0> = {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#1<'_>, (u8)>}::call_once
@@ -468,6 +486,7 @@ impl<'_0> FnOnce::<test_crate::main::closure#1<'_>, (u8)> {
     parent_clause2 = Tuple::<(u8)>
     type Output = u8
     fn call_once = {impl FnOnce::<test_crate::main::closure#1<'_>, (u8)>}::call_once<'_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}
@@ -477,6 +496,7 @@ impl<'_0> FnMut::<test_crate::main::closure#1<'_>, (u8)> {
     parent_clause2 = Sized::<(u8)>
     parent_clause3 = Tuple::<(u8)>
     fn call_mut<'_0> = {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#2, (u8)>}
@@ -486,6 +506,7 @@ impl FnOnce::<test_crate::main::closure#2, (u8)> {
     parent_clause2 = Tuple::<(u8)>
     type Output = u8
     fn call_once = {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once
+    non-dyn-compatible
 }
 
 

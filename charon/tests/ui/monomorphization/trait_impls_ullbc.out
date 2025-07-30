@@ -5,6 +5,7 @@
 pub trait PartialEq::<bool, bool>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq::<bool, bool><'_0_0, '_0_1>
+    vtable: core::cmp::PartialEq::{vtable}::<bool, bool>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -18,6 +19,7 @@ pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_
 pub trait Eq::<bool>
 {
     parent_clause0 : [@TraitClause0]: PartialEq::<bool, bool>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
@@ -26,11 +28,13 @@ pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (b
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
 impl PartialEq::<bool, bool> {
     fn eq<'_0, '_1> = {impl PartialEq::<bool, bool>}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq::<bool, bool>}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Eq::<bool>}
 impl Eq::<bool> {
     parent_clause0 = {impl PartialEq::<bool, bool>}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<bool>
@@ -42,6 +46,7 @@ pub trait MetaSized::<bool>
 pub trait Sized::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop::<bool>
@@ -50,6 +55,7 @@ pub trait Drop::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
     fn drop<'_0> = drop::<bool><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<bool>
 }
 
 // Full name: core::ops::drop::Drop::drop::<bool>

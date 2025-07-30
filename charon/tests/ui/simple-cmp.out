@@ -5,6 +5,7 @@
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -17,6 +18,7 @@ where
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::Ordering
@@ -36,6 +38,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -54,6 +57,7 @@ pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::Ord
@@ -63,6 +67,7 @@ pub trait Ord<Self>
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("ord_cmp_method")]
@@ -81,11 +86,13 @@ pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
     fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Eq for i32}
 impl Eq for i32 {
     parent_clause0 = {impl PartialEq<i32> for i32}
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
@@ -115,6 +122,7 @@ pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2:
 impl PartialOrd<i32> for i32 {
     parent_clause0 = {impl PartialEq<i32> for i32}
     fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<i32> for i32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Ord for i32}::cmp
@@ -125,6 +133,7 @@ impl Ord for i32 {
     parent_clause0 = {impl Eq for i32}
     parent_clause1 = {impl PartialOrd<i32> for i32}
     fn cmp<'_0, '_1> = {impl Ord for i32}::cmp<'_0_0, '_0_1>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

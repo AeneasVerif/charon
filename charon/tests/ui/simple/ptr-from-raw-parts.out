@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -30,6 +32,7 @@ where
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -42,6 +45,7 @@ where
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::Ordering
@@ -68,6 +72,7 @@ pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::Ord
@@ -77,6 +82,7 @@ pub trait Ord<Self>
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("ord_cmp_method")]
@@ -95,11 +101,13 @@ pub fn {impl PartialEq<()> for ()}::eq<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}
 impl PartialEq<()> for () {
     fn eq<'_0, '_1> = {impl PartialEq<()> for ()}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<()> for ()}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Eq for ()}
 impl Eq for () {
     parent_clause0 = {impl PartialEq<()> for ()}
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}::partial_cmp
@@ -109,6 +117,7 @@ pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(@1: &'_0 (()), @2: &'
 impl PartialOrd<()> for () {
     parent_clause0 = {impl PartialEq<()> for ()}
     fn partial_cmp<'_0, '_1> = {impl PartialOrd<()> for ()}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<()> for ()}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Ord for ()}::cmp
@@ -119,6 +128,7 @@ impl Ord for () {
     parent_clause0 = {impl Eq for ()}
     parent_clause1 = {impl PartialOrd<()> for ()}
     fn cmp<'_0, '_1> = {impl Ord for ()}::cmp<'_0_0, '_0_1>
+    non-dyn-compatible
 }
 
 // Full name: core::fmt::Error
@@ -140,6 +150,7 @@ where
 pub trait Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Debug::{vtable}
 }
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -152,6 +163,7 @@ pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (()), @2: &'_1 mut (Form
 // Full name: core::fmt::{impl Debug for ()}
 impl Debug for () {
     fn fmt<'_0, '_1, '_2> = {impl Debug for ()}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Debug for ()}::{vtable}
 }
 
 // Full name: core::hash::Hasher
@@ -160,6 +172,7 @@ pub trait Hasher<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn finish<'_0> = finish<'_0_0, Self>[Self]
     fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
+    vtable: core::hash::Hasher::{vtable}
 }
 
 // Full name: core::hash::Hash
@@ -167,6 +180,7 @@ pub trait Hasher<Self>
 pub trait Hash<Self>
 {
     fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 pub fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
@@ -194,6 +208,7 @@ where
 // Full name: core::hash::impls::{impl Hash for ()}
 impl Hash for () {
     fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = {impl Hash for ()}::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Send
@@ -206,6 +221,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sync
@@ -225,6 +241,7 @@ pub trait Unpin<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ptr::metadata::from_raw_parts

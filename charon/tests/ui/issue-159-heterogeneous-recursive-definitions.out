@@ -10,6 +10,7 @@ trait Ops<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn ZERO = test_crate::Ops::ZERO<Self>[Self]
     fn ntt_multiply = test_crate::Ops::ntt_multiply<Self>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::Ops::ZERO<Self>() -> Self
@@ -54,6 +55,7 @@ impl Ops for Portable {
     parent_clause0 = MetaSized<Portable>
     fn ZERO = {impl Ops for Portable}::ZERO
     fn ntt_multiply = {impl Ops for Portable}::ntt_multiply
+    non-dyn-compatible
 }
 
 

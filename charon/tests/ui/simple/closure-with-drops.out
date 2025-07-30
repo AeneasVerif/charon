@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple
@@ -16,6 +17,7 @@ pub trait Sized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -24,6 +26,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 #[lang_item("mem_drop")]
@@ -49,6 +52,7 @@ pub trait FnOnce<Self, Args>
     parent_clause6 : [@TraitClause6]: Drop<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut
@@ -62,6 +66,7 @@ pub trait FnMut<Self, Args>
     parent_clause4 : [@TraitClause4]: Drop<Self>
     parent_clause5 : [@TraitClause5]: Drop<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn
@@ -75,6 +80,7 @@ pub trait Fn<Self, Args>
     parent_clause4 : [@TraitClause4]: Drop<Self>
     parent_clause5 : [@TraitClause5]: Drop<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
@@ -152,6 +158,7 @@ where
     parent_clause6 = Drop<()>
     type Output = ()
     fn call_once = {impl FnOnce<()> for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 struct test_crate::bar::closure {}
@@ -224,6 +231,7 @@ impl FnOnce<()> for test_crate::bar::closure {
     parent_clause6 = Drop<()>
     type Output = ()
     fn call_once = {impl FnOnce<()> for test_crate::bar::closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::bar::{impl FnMut<()> for test_crate::bar::closure}
@@ -235,6 +243,7 @@ impl FnMut<()> for test_crate::bar::closure {
     parent_clause4 = Drop<test_crate::bar::closure>
     parent_clause5 = Drop<()>
     fn call_mut<'_0> = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::closure}
@@ -246,6 +255,7 @@ impl Fn<()> for test_crate::bar::closure {
     parent_clause4 = Drop<test_crate::bar::closure>
     parent_clause5 = Drop<()>
     fn call<'_0> = {impl Fn<()> for test_crate::bar::closure}::call<'_0_0>
+    non-dyn-compatible
 }
 
 

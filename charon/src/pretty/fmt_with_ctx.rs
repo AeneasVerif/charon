@@ -1569,12 +1569,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
                 writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
             }
-            // TODO(dyn)
-            // if let Some(vtb_ref) = &self.vtable {
-            //     writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
-            // } else {
-            //     writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
-            // }
+            if let Some(vtb_ref) = &self.vtable {
+                writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
+            } else {
+                writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
+            }
             write!(f, "}}")?;
         }
         Ok(())
@@ -1658,6 +1657,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
                 writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
             }
+        }
+        if let Some(vtb_ref) = &self.vtable {
+            writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
+        } else {
+            writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
         }
         write!(f, "}}")?;
         Ok(())

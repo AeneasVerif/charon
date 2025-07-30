@@ -9,6 +9,7 @@ trait Trait<'a, Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn method<'b> = test_crate::Trait::method<'a, 'b, Self>[Self]
+    vtable: test_crate::Trait::{vtable}<'a>
 }
 
 fn test_crate::Trait::method<'a, 'b, Self>(@1: &'b (Self)) -> &'b (())
@@ -22,6 +23,7 @@ fn {impl Trait<'a> for &'a (())}::method<'a, 'b>(@1: &'b (&'a (()))) -> &'b (())
 impl<'a> Trait<'a> for &'a (()) {
     parent_clause0 = MetaSized<&'_ (())>
     fn method<'b> = {impl Trait<'a> for &'a (())}::method<'a, 'b>
+    vtable: {impl Trait<'a> for &'a (())}::{vtable}<'a>
 }
 
 // Full name: test_crate::Foo

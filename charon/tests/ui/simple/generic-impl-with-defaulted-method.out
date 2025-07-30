@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -26,6 +27,7 @@ pub trait BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn foo<'_0> = foo<'_0_0, Self>[Self]
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 // Full name: test_crate::BoolTrait::foo
@@ -60,6 +62,7 @@ where
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn foo<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
+    vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 

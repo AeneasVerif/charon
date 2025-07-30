@@ -89,6 +89,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -106,6 +107,7 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::clone::Clone
@@ -115,6 +117,7 @@ pub trait Clone<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
     fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Copy
@@ -123,6 +126,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::intrinsics::ctpop
@@ -153,6 +157,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
@@ -178,12 +183,14 @@ impl Clone for usize {
     parent_clause0 = Sized<usize>
     fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
     fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {
     parent_clause0 = MetaSized<usize>
     parent_clause1 = {impl Clone for usize}
+    non-dyn-compatible
 }
 
 // Full name: core::fmt::rt::Count
@@ -486,6 +493,7 @@ pub trait Allocator<Self>
     fn grow_zeroed<'_0> = core::alloc::Allocator::grow_zeroed<'_0_0, Self>[Self]
     fn shrink<'_0> = core::alloc::Allocator::shrink<'_0_0, Self>[Self]
     fn by_ref<'_0, [@TraitClause0]: Sized<Self>> = by_ref<'_0_0, Self>[Self, @TraitClause0_0]
+    vtable: core::alloc::Allocator::{vtable}
 }
 
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
@@ -1927,18 +1935,21 @@ impl Clone for NonZeroUsizeInner {
     parent_clause0 = Sized<NonZeroUsizeInner>
     fn clone<'_0> = {impl Clone for NonZeroUsizeInner}::clone<'_0_0>
     fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroUsizeInner}
 impl Copy for NonZeroUsizeInner {
     parent_clause0 = MetaSized<NonZeroUsizeInner>
     parent_clause1 = {impl Clone for NonZeroUsizeInner}
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::private::Sealed
 pub trait Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::num::nonzero::private::Sealed::{vtable}
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
@@ -1950,11 +1961,13 @@ pub trait ZeroablePrimitive<Self>
     parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
     parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
     type NonZeroInner
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::{impl Sealed for usize}
 impl Sealed for usize {
     parent_clause0 = MetaSized<usize>
+    vtable: {impl Sealed for usize}::{vtable}
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
@@ -1965,6 +1978,7 @@ impl ZeroablePrimitive for usize {
     parent_clause3 = Sized<NonZeroUsizeInner>
     parent_clause4 = {impl Copy for NonZeroUsizeInner}
     type NonZeroInner = NonZeroUsizeInner
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::NonZero
@@ -4064,6 +4078,7 @@ impl Allocator for Global {
     fn grow_zeroed<'_0> = {impl Allocator for Global}::grow_zeroed<'_0_0>
     fn shrink<'_0> = {impl Allocator for Global}::shrink<'_0_0>
     fn by_ref<'_0, [@TraitClause0]: Sized<Global>> = alloc::alloc::{impl Allocator for Global}::by_ref<'_0_0>[@TraitClause0_0]
+    vtable: {impl Allocator for Global}::{vtable}
 }
 
 // Full name: alloc::alloc::handle_alloc_error::ct_error
@@ -4386,6 +4401,7 @@ where
 {
     parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
     fn drop<'_0> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: test_crate::foo

@@ -9,6 +9,7 @@ pub trait MetaSized::<closure<'_, '_>>
 pub trait Sized::<closure<'_, '_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<(u8, u8)>
@@ -20,6 +21,7 @@ pub trait MetaSized::<(u8, u8)>
 pub trait Sized::<(u8, u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8, u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple::<(u8, u8)>
@@ -27,6 +29,7 @@ pub trait Sized::<(u8, u8)>
 pub trait Tuple::<(u8, u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8, u8)>
+    vtable: core::marker::Tuple::{vtable}::<(u8, u8)>
 }
 
 // Full name: test_crate::main::closure
@@ -41,6 +44,7 @@ pub trait Drop::<closure<'_, '_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
     fn drop<'_0> = drop::<closure<'_, '_>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<closure<'_, '_>>
 }
 
 // Full name: core::ops::drop::Drop::drop::<closure<'_, '_>>
@@ -55,6 +59,7 @@ pub trait FnOnce::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8, u8)>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once::<closure<'_, '_>, (u8, u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::<closure<'_, '_>, (u8, u8)>
@@ -66,6 +71,7 @@ pub trait FnMut::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8, u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8, u8)>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn::<closure<'_, '_>, (u8, u8)>
@@ -77,6 +83,7 @@ pub trait Fn::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8, u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8, u8)>
     fn call<'_0> = core::ops::function::Fn::call::<closure<'_, '_>, (u8, u8)><'_0_0>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0>(@1: &'_0 (closure<'_, '_>), @2: (u8, u8)) -> u8
@@ -306,6 +313,7 @@ impl<'_0, '_1> FnOnce::<closure<'_, '_>, (u8, u8)> {
     parent_clause2 = Tuple::<(u8, u8)>
     type Output = u8
     fn call_once = {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_0, '_1>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnMut::<closure<'_, '_>, (u8, u8)>}
@@ -315,6 +323,7 @@ impl<'_0, '_1> FnMut::<closure<'_, '_>, (u8, u8)> {
     parent_clause2 = Sized::<(u8, u8)>
     parent_clause3 = Tuple::<(u8, u8)>
     fn call_mut<'_0> = {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl Fn::<closure<'_, '_>, (u8, u8)>}
@@ -324,6 +333,7 @@ impl<'_0, '_1> Fn::<closure<'_, '_>, (u8, u8)> {
     parent_clause2 = Sized::<(u8, u8)>
     parent_clause3 = Tuple::<(u8, u8)>
     fn call<'_0> = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_0_0>
+    non-dyn-compatible
 }
 
 

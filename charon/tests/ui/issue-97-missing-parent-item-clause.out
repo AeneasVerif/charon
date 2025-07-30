@@ -9,12 +9,14 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Ord
 pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::Ord::{vtable}
 }
 
 // Full name: test_crate::AVLTree
@@ -40,6 +42,7 @@ where
 // Full name: test_crate::{impl Ord for u32}
 impl Ord for u32 {
     parent_clause0 = MetaSized<u32>
+    vtable: {impl Ord for u32}::{vtable}
 }
 
 // Full name: test_crate::test

@@ -13,6 +13,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sized
@@ -20,6 +21,7 @@ pub trait Index<Self, Idx>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::array::{impl Index<I> for Array<T, const N : usize>}::index
@@ -41,6 +43,7 @@ where
     parent_clause2 = @TraitClause2::parent_clause2
     type Output = @TraitClause2::Output
     fn index<'_0> = {impl Index<I> for Array<T, const N : usize>}::index<'_0_0, T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 // Full name: core::fmt::Arguments
@@ -123,6 +126,7 @@ pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 pub trait Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
 // Full name: core::slice::index::SliceIndex
@@ -140,6 +144,7 @@ pub trait SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (@TraitClause0::Output)
@@ -173,6 +178,7 @@ where
     parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::slice_end_index_len_fail
@@ -210,6 +216,7 @@ fn slice_index_order_fail(@1: usize, @2: usize) -> !
 // Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[Sized<usize>]}
 impl Sealed for Range<usize>[Sized<usize>] {
     parent_clause0 = MetaSized<Range<usize>[Sized<usize>]>
+    vtable: {impl Sealed for Range<usize>[Sized<usize>]}::{vtable}
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
@@ -800,6 +807,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

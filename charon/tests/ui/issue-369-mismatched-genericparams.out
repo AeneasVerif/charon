@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -26,6 +27,7 @@ pub trait FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<R>
+    vtable: test_crate::FromResidual::{vtable}<R>
 }
 
 // Full name: test_crate::Try
@@ -35,6 +37,7 @@ pub trait Try<Self>
     parent_clause1 : [@TraitClause1]: FromResidual<Self, ()>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Residual
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl FromResidual<()> for Option<T>[@TraitClause0]}
@@ -44,6 +47,7 @@ where
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     parent_clause1 = Sized<()>
+    vtable: {impl FromResidual<()> for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::{impl Try for Option<T>[@TraitClause0]}
@@ -55,6 +59,7 @@ where
     parent_clause1 = {impl FromResidual<()> for Option<T>[@TraitClause0]}<T>[@TraitClause0]
     parent_clause2 = Sized<()>
     type Residual = ()
+    non-dyn-compatible
 }
 
 

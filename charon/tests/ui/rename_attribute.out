@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::BoolTrait
@@ -17,6 +18,7 @@ pub trait BoolTrait<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
     fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -59,6 +61,7 @@ impl BoolTrait for bool {
     parent_clause0 = MetaSized<bool>
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
     fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
+    vtable: {impl BoolTrait for bool}::{vtable}
 }
 
 // Full name: test_crate::test_bool_trait

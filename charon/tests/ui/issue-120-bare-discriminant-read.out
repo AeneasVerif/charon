@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop
@@ -17,6 +18,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -45,6 +47,7 @@ where
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::discriminant_value

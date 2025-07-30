@@ -9,6 +9,7 @@ pub trait MetaSized::<u8>
 pub trait Sized::<u8>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<u8>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<char>
@@ -20,6 +21,7 @@ pub trait MetaSized::<char>
 pub trait Sized::<char>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<char>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<u32>
@@ -31,6 +33,7 @@ pub trait MetaSized::<u32>
 pub trait Sized::<u32>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<u32>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<for<'_0> foo::<u32><'_0_0>>
@@ -42,6 +45,7 @@ pub trait MetaSized::<for<'_0> foo::<u32><'_0_0>>
 pub trait Sized::<for<'_0> foo::<u32><'_0_0>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'_0> foo::<u32><'_0_0>>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<(&'_ (u32))>
@@ -53,6 +57,7 @@ pub trait MetaSized::<(&'_ (u32))>
 pub trait Sized::<(&'_ (u32))>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ (u32))>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<()>
@@ -64,6 +69,7 @@ pub trait MetaSized::<()>
 pub trait Sized::<()>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<()>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple::<(&'_ (u32))>
@@ -71,6 +77,7 @@ pub trait Sized::<()>
 pub trait Tuple::<(&'_ (u32))>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ (u32))>
+    vtable: core::marker::Tuple::{vtable}::<(&'_ (u32))>
 }
 
 // Full name: test_crate::foo::<u32>
@@ -90,6 +97,7 @@ pub trait Drop::<for<'_0> foo::<u32><'_0_0>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'_0> foo::<u32><'_0_0>>
     fn drop<'_0> = drop::<for<'_0> foo::<u32><'_0_0>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<for<'_0> foo::<u32><'_0_0>>
 }
 
 // Full name: core::ops::drop::Drop::drop::<for<'_0> foo::<u32><'_0>>
@@ -104,6 +112,7 @@ pub trait FnOnce::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     parent_clause2 : [@TraitClause2]: Tuple::<(&'_ (u32))>
     type Output
     fn call_once = call_once::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
@@ -115,6 +124,7 @@ pub trait FnMut::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     parent_clause2 : [@TraitClause2]: Sized::<(&'_ (u32))>
     parent_clause3 : [@TraitClause3]: Tuple::<(&'_ (u32))>
     fn call_mut<'_0> = call_mut::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))><'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
@@ -126,6 +136,7 @@ pub trait Fn::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     parent_clause2 : [@TraitClause2]: Sized::<(&'_ (u32))>
     parent_clause3 : [@TraitClause3]: Tuple::<(&'_ (u32))>
     fn call<'_0> = call::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))><'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn::call

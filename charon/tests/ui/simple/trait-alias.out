@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -29,6 +31,7 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -37,6 +40,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -60,6 +64,7 @@ trait Trait<Self, T, Self_Item>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Struct
@@ -79,6 +84,7 @@ pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 (Struct)) -> Struct
 impl Clone for Struct {
     parent_clause0 = Sized<Struct>
     fn clone<'_0> = {impl Clone for Struct}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T, u32> for Struct}
@@ -89,6 +95,7 @@ where
     parent_clause0 = MetaSized<Struct>
     parent_clause1 = @TraitClause0
     parent_clause2 = Sized<u32>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Alias
@@ -98,6 +105,7 @@ trait Alias<Self, U>
     parent_clause1 : [@TraitClause1]: Trait<Self, Option<U>[Self::parent_clause3], u32>
     parent_clause2 : [@TraitClause2]: Clone<Self>
     parent_clause3 : [@TraitClause3]: Sized<U>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Alias::{impl Alias<U> for Self}
@@ -112,6 +120,7 @@ where
     parent_clause1 = @TraitClause1
     parent_clause2 = @TraitClause2
     parent_clause3 = @TraitClause3
+    non-dyn-compatible
 }
 
 // Full name: test_crate::takes_alias

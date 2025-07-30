@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -31,6 +33,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -38,6 +41,7 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -46,6 +50,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -58,6 +63,7 @@ trait Iterator<Self, Self_Item>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::IntoIterator
@@ -67,6 +73,7 @@ trait IntoIterator<Self, Self_Item, Self_IntoIter>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
     parent_clause2 : [@TraitClause2]: Sized<Self_IntoIter>
     parent_clause3 : [@TraitClause3]: Iterator<Self_IntoIter, Self_Item>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl IntoIterator<Clause1_Item, I> for I}
@@ -79,6 +86,7 @@ where
     parent_clause1 = @TraitClause1::parent_clause1
     parent_clause2 = @TraitClause0
     parent_clause3 = @TraitClause1
+    non-dyn-compatible
 }
 
 // Full name: test_crate::callee
@@ -120,6 +128,7 @@ trait X<Self, Self_Assoc>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
     fn method<'_0> = method<'_0_0, Self, Self_Assoc>[Self]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::X::method
@@ -132,6 +141,7 @@ trait A<Self, Self_Clause1_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::B
@@ -139,6 +149,7 @@ trait B<Self, Self_Clause1_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::a
