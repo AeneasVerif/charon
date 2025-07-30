@@ -1,5 +1,6 @@
 use core::panic;
 use std::collections::HashMap;
+use std::ops::ControlFlow;
 
 use crate::translate::{translate_generics::BindingLevel, translate_predicates::PredicateLocation};
 
@@ -29,6 +30,57 @@ fn usize_ty() -> Ty {
 /// context of its vtable definition, i.e. no longer mentions `Self`. If `new_self` is `Some`, we
 /// replace any mention of `Self` with it; otherwise we panic if `Self` is mentioned.
 fn dynify<T: TyVisitable>(mut x: T, ty_id_map: &HashMap<Ty, TypeVarId>, new_self: Option<Ty>) -> T {
+    #[derive(derive_generic_visitor::Visitor)]
+    struct AssocSubst(HashMap<Ty, TypeVarId>);
+    impl AssocSubst {
+        fn move_enter(&mut self) {
+            self.0 = std::mem::take(&mut self.0)
+                .into_iter()
+                .map(|(k, v)| (k.move_under_binder(), v))
+                .collect();
+        }
+        fn move_exit(&mut self) {
+            self.0 = std::mem::take(&mut self.0)
+                .into_iter()
+                .map(|(k, v)| (k.move_from_under_binder().unwrap(), v))
+                .collect();
+        }
+    }
+    impl VisitAstMut for AssocSubst {
+        fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+            self.move_enter();
+        }
+        fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+            self.move_exit();
+        }
+        fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+            self.move_enter();
+        }
+        fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+            self.move_exit();
+        }
+
+        fn visit_ty(&mut self, x: &mut Ty) -> std::ops::ControlFlow<Self::Break> {
+            trace!("[dynify] visiting type: {x:?}");
+            trace!("Candidate Ty ids: {}", {
+                self.0
+                    .iter()
+                    .map(|(t, tid)| format!("{t:?}: {tid:?}"))
+                    .format(",\n")
+            });
+            match self.0.get(x) {
+                Some(ty_id) => {
+                    trace!("[dynify] Replace type {x:?} with type var at: {ty_id:?}");
+                    *x = Ty::new(TyKind::TypeVar(DeBruijnVar::new_at_zero(*ty_id)));
+                    std::ops::ControlFlow::Continue(())
+                }
+                None => self.visit_inner(x),
+            }
+        }
+    }
+    let _ = x.drive_mut(&mut AssocSubst(ty_id_map.clone()));
+    trace!("[dynify] Assoc type substitution done.");
+
     struct ReplaceSelfVisitor(Option<Ty>);
     impl VarsVisitor for ReplaceSelfVisitor {
         fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
@@ -87,7 +139,13 @@ impl ItemTransCtx<'_, '_> {
                                 "[prepare_assoc_types] Add for constraint: {}",
                                 v.with_ctx(&self.into_fmt())
                             );
-                            assoc_types.push(v.ty);
+                            let mut ty = v.ty;
+                            // move to point at the top level of binding
+                            let _: ControlFlow<()> = ty.visit_db_id(|id| {
+                                id.index += self.binding_levels.len() - 1;
+                                ControlFlow::Continue(())
+                            });
+                            assoc_types.push(ty);
                         }
                     });
             }
@@ -98,6 +156,13 @@ impl ItemTransCtx<'_, '_> {
                 );
             }
         }
+
+        trace!("[prepare_assoc_types] Associated types found: {}", {
+            assoc_types
+                .iter()
+                .map(|ty| ty.with_ctx(&self.into_fmt()).to_string())
+                .format(",\n")
+        });
 
         Ok(assoc_types)
     }
@@ -314,7 +379,7 @@ impl ItemTransCtx<'_, '_> {
                 let assoc_tys = self.prepare_assoc_types(dyn_self, Some(clause_id))?;
                 let vtbl_struct = self
                     .translate_region_binder(span, &clause.kind, |ctx, _| {
-                        // Remember to `move_under_binder` as now it is within the `RegionBinder`.
+                        // To `move_under_binder` as now it is within the `RegionBinder`.
                         ctx.translate_vtable_struct_ref(
                             span,
                             &pred.trait_ref,
@@ -466,11 +531,31 @@ impl ItemTransCtx<'_, '_> {
 
         // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
         // from the generic parameters.
-        let mut generics = self.into_generics();
+        let fmt = &self.into_fmt();
+        let mut generics = self.the_only_binder().params.clone();
         {
             dyn_self = dynify(dyn_self, &ty_id_map, None);
+            trace!(
+                "[translate_vtable_struct] dynified dyn_self: {}",
+                dyn_self.with_ctx(fmt)
+            );
             generics = dynify(generics, &ty_id_map, Some(dyn_self.clone()));
+            trace!(
+                "[translate_vtable_struct] dynified generics: {}",
+                generics.fmt_with_ctx_single_line(fmt)
+            );
             kind = dynify(kind, &ty_id_map, Some(dyn_self.clone()));
+            trace!(
+                "[translate_vtable_struct] dynified kind: {}",
+                match &kind {
+                    TypeDeclKind::Struct(fields) => fields
+                        .iter()
+                        .map(|f| f.with_ctx(fmt).to_string())
+                        .format(",\n")
+                        .to_string(),
+                    _ => unreachable!(),
+                }
+            );
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             generics.types.iter_mut().for_each(|ty| {
                 ty.index -= 1;

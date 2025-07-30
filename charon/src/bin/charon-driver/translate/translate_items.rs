@@ -545,7 +545,7 @@ impl ItemTransCtx<'_, '_> {
             } => {
                 let dyn_self = self.translate_ty(span, t)?;
                 let assoc_tys = self.prepare_assoc_types(&dyn_self, None)?;
-                Some(self.translate_vtable_struct_ref(span, def.this(), assoc_tys.clone())?)
+                Some(self.translate_vtable_struct_ref(span, def.this(), assoc_tys)?)
             }
             _ => None,
         };
