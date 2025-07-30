@@ -12,24 +12,6 @@ use itertools::Itertools;
 use std::mem;
 use std::ops::ControlFlow;
 
-/// To tell if the given `hax::TraitRef` is a parent trait reference.
-pub fn is_hax_parent_trait_ref(tref: &hax::TraitRef) -> bool {
-    // to see if the first type parameter of the Trait Ref is `Self`
-    for arg in &tref.generic_args {
-        match arg {
-            hax::GenericArg::Type(ty) => match ty.kind() {
-                // hax guarantees that `Self` is always having id 0
-                hax::TyKind::Param(param_ty) => return param_ty.index == 0,
-                // If the first type parameter is not even a type variable
-                // Then it must not be a parent trait ref
-                _ => return false,
-            },
-            _ => {}
-        }
-    }
-    false
-}
-
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
         let trans_id = self.register_no_enqueue(&None, item_src);
@@ -78,6 +60,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item_src: &TransItemSource,
         trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
+        trace!("About to translate item: {item_src:?}");
         // Translate the meta information
         let name = self.translate_name(item_src)?;
         if let Some(trans_id) = trans_id {
@@ -513,11 +496,6 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    pub fn trait_id_is_dyn_compatible(&mut self, trait_id: &hax::DefId) -> bool {
-        let rid = trait_id.as_rust_def_id().unwrap();
-        self.t_ctx.tcx.is_dyn_compatible(rid)
-    }
-
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_decl(
         mut self,
@@ -555,7 +533,7 @@ impl ItemTransCtx<'_, '_> {
             return Ok(TraitDecl {
                 def_id,
                 item_meta,
-                parent_clauses: into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses)),
+                parent_clauses: mem::take(&mut self.parent_trait_clauses),
                 generics: self.into_generics(),
                 type_clauses: Default::default(),
                 consts: Default::default(),
@@ -746,7 +724,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitDecl {
             def_id,
             item_meta,
-            parent_clauses: into_trait_clause_vec(mem::take(&mut self.parent_trait_clauses)),
+            parent_clauses: mem::take(&mut self.parent_trait_clauses),
             generics: self.into_generics(),
             type_clauses,
             consts,
@@ -756,35 +734,6 @@ impl ItemTransCtx<'_, '_> {
             methods,
             vtable,
         })
-    }
-
-    pub fn get_vtable_instance_ref(
-        &mut self,
-        span: Span,
-        trait_def_id: &hax::DefId,
-        implemented_trait_args: &Box<GenericArgs>,
-        impl_def_id: &hax::DefId,
-        maybe_closure_kind: Option<ClosureKind>,
-    ) -> Option<GlobalDeclRef> {
-        if self.trait_id_is_dyn_compatible(trait_def_id) {
-            // Register the vtable instance for this impl.
-            let id = self.register_and_enqueue(
-                span,
-                TransItemSource {
-                    item: RustcItem::Poly(impl_def_id.clone()),
-                    kind: TransItemSourceKind::VTableInstance(match maybe_closure_kind {
-                        Some(closure_kind) => TraitImplSource::Closure(closure_kind),
-                        None => TraitImplSource::Normal,
-                    }),
-                },
-            );
-            let mut generics = implemented_trait_args.clone();
-            // Remove the `Self` type variable from the generic parameters.
-            generics.types.remove_and_shift_ids(TypeVarId::ZERO);
-            Some(GlobalDeclRef { id, generics })
-        } else {
-            None
-        }
     }
 
     #[tracing::instrument(skip(self, item_meta))]
@@ -1017,8 +966,7 @@ impl ItemTransCtx<'_, '_> {
         // as required clauses for the impl.
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
         let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
-        self.innermost_generics_mut().trait_clauses =
-            parent_trait_clauses.into_iter().map(|(_, v)| v).collect();
+        self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
         let parent_trait_refs = mem::take(&mut generics.trait_refs);

@@ -196,7 +196,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-    pub(crate) fn translate_vtable_shim(
+    pub(crate) fn translate_vtable_method(
         mut self,
         fun_id: FunDeclId,
         item_meta: ItemMeta,

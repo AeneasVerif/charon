@@ -103,7 +103,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 match location {
                     PredicateLocation::Parent => {
                         self.parent_trait_clauses
-                            .push_with(|clause_id| (trait_pred.clone(), clause(clause_id)));
+                            .push_with(|clause_id| clause(clause_id));
                     }
                     _ => {
                         let location = match location {

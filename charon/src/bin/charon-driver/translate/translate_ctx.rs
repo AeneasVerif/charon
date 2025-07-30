@@ -75,15 +75,9 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// parameters are referenced using [`DeBruijnVar`]; see there for details.
     pub binding_levels: BindingStack<BindingLevel>,
     /// (For traits only) accumulated implied trait clauses.
-    pub parent_trait_clauses: Vector<TraitClauseId, (hax::TraitPredicate, TraitClause)>,
+    pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
-}
-
-pub fn into_trait_clause_vec(
-    v: Vector<TraitClauseId, (hax::TraitPredicate, TraitClause)>,
-) -> Vector<TraitClauseId, TraitClause> {
-    v.into_iter().map(|(_, clause)| clause).collect()
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
