@@ -5,7 +5,7 @@ use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
-use hax::{BaseState, HasParamEnv, Visibility};
+use hax::{HasParamEnv, Visibility};
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
@@ -213,15 +213,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Arrow(sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
-                let sig = self.translate_region_binder(span, sig, |ctx, sig| {
-                    let inputs = sig
-                        .inputs
-                        .iter()
-                        .map(|x| ctx.translate_ty(span, x))
-                        .try_collect()?;
-                    let output = ctx.translate_ty(span, &sig.output)?;
-                    Ok((inputs, output))
-                })?;
+                let sig = self.translate_fun_sig(span, sig)?;
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
@@ -243,6 +235,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     )
                 }
                 let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
+                if let hax::ClauseKind::Trait(trait_predicate) =
+                    preds.predicates[0].0.kind.hax_skip_binder_ref()
+                {
+                    // TODO(dyn): for now, we consider traits with associated types to not be dyn
+                    // compatible because we don't know how to handle them; for these we skip
+                    // translating the vtable.
+                    if self.trait_is_dyn_compatible(&trait_predicate.trait_ref.def_id)? {
+                        // Ensure the vtable type is translated. The first predicate is the one that
+                        // can have methods, i.e. a vtable.
+                        let _: TypeDeclId = self.register_item(
+                            span,
+                            &trait_predicate.trait_ref,
+                            TransItemSourceKind::VTable,
+                        );
+                    }
+                }
                 TyKind::DynTrait(pred)
             }
 
@@ -267,6 +275,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
         Ok(kind.into_ty())
+    }
+
+    pub fn translate_fun_sig(
+        &mut self,
+        span: Span,
+        sig: &hax::Binder<hax::TyFnSig>,
+    ) -> Result<RegionBinder<(Vec<Ty>, Ty)>, Error> {
+        self.translate_region_binder(span, sig, |ctx, sig| {
+            let inputs = sig
+                .inputs
+                .iter()
+                .map(|x| ctx.translate_ty(span, x))
+                .try_collect()?;
+            let output = ctx.translate_ty(span, &sig.output)?;
+            Ok((inputs, output))
+        })
     }
 
     /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
@@ -345,7 +369,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
         let rdefid = item.def_id.as_rust_def_id().unwrap();
-        let hax_state = &self.t_ctx.hax_state.clone().with_owner_id(rdefid);
+        let hax_state = &self.hax_state_with_id();
         let ty_env = hax_state.typing_env();
         let ty = tcx
             .type_of(rdefid)
@@ -423,7 +447,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let tcx = self.t_ctx.tcx;
         let rdefid = item.def_id.as_rust_def_id().unwrap();
-        let hax_state = &self.t_ctx.hax_state.clone().with_owner_id(rdefid);
+        let hax_state = &self.hax_state_with_id();
         let ty_env = hax_state.typing_env();
         let ty = tcx
             .type_of(rdefid)
@@ -533,6 +557,48 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// Generate a naive layout for this type.
+    pub fn generate_naive_layout(&self, span: Span, ty: &TypeDeclKind) -> Result<Layout, Error> {
+        match ty {
+            TypeDeclKind::Struct(fields) => {
+                let mut size = 0;
+                let mut align = 0;
+                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let field_offsets = fields.map_ref(|field| {
+                    let offset = size;
+                    let size_of_ty = match field.ty.kind() {
+                        TyKind::Literal(literal_ty) => literal_ty.target_size(ptr_size) as u64,
+                        // This is a lie, the pointers could be fat...
+                        TyKind::Ref(..) | TyKind::RawPtr(..) | TyKind::FnPtr(..) => ptr_size,
+                        _ => panic!("Unsupported type for `generate_naive_layout`: {ty:?}"),
+                    };
+                    size += size_of_ty;
+                    // For these types, align == size is good enough.
+                    align = std::cmp::max(align, size);
+                    offset
+                });
+
+                Ok(Layout {
+                    size: Some(size),
+                    align: Some(align),
+                    discriminant_layout: None,
+                    uninhabited: false,
+                    variant_layouts: [VariantLayout {
+                        field_offsets,
+                        tag: None,
+                        uninhabited: false,
+                    }]
+                    .into(),
+                })
+            }
+            _ => raise_error!(
+                self,
+                span,
+                "`generate_naive_layout` only supports structs at the moment"
+            ),
+        }
+    }
+
     /// Translate the body of a type declaration.
     ///
     /// Note that the type may be external, in which case we translate the body
@@ -597,10 +663,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, &field_def.ty)?;
-                let field_full_def = self.hax_def(
-                    &def.this()
-                        .with_def_id(&self.t_ctx.hax_state, &field_def.did),
-                )?;
+                let field_full_def =
+                    self.hax_def(&def.this().with_def_id(self.hax_state(), &field_def.did))?;
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
@@ -631,10 +695,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
             let variant_name = var_def.name.clone();
-            let variant_full_def = self.hax_def(
-                &def.this()
-                    .with_def_id(&self.t_ctx.hax_state, &var_def.def_id),
-            )?;
+            let variant_full_def =
+                self.hax_def(&def.this().with_def_id(self.hax_state(), &var_def.def_id))?;
             let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
 
             let mut variant = Variant {

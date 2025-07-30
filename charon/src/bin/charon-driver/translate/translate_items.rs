@@ -13,8 +13,21 @@ use std::ops::ControlFlow;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
-        let trans_id = self.register_id_no_enqueue(&None, item_src);
+        let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
+        if let Some(trans_id) = trans_id {
+            if self.translate_stack.contains(&trans_id) {
+                register_error!(
+                    self,
+                    Span::dummy(),
+                    "Cycle detected while translating {def_id:?}! Stack: {:?}",
+                    &self.translate_stack
+                );
+                return;
+            } else {
+                self.translate_stack.push(trans_id);
+            }
+        }
         self.with_def_id(def_id, trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
             // Catch cycles
@@ -36,7 +49,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "Thread panicked when extracting item `{def_id:?}`."
                 ),
             };
-        })
+        });
+        // We must be careful not to early-return from this function to not unbalance the stack.
+        self.translate_stack.pop();
     }
 
     pub(crate) fn translate_item_aux(
@@ -59,7 +74,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
-        match item_src.kind {
+        match &item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
                 bt_ctx.register_module(item_meta, &def);
             }
@@ -91,22 +106,23 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            TransItemSourceKind::TraitImpl => {
+            TransItemSourceKind::TraitImpl(kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
-                let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
+                let trait_impl = match kind {
+                    TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
+                    TraitImplSource::TraitAlias => {
+                        bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
+                    }
+                    &TraitImplSource::Closure(kind) => {
+                        bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
+                    }
+                    TraitImplSource::DropGlue => bt_ctx.translate_drop_impl(id, item_meta, &def)?,
+                };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            TransItemSourceKind::ClosureTraitImpl(kind) => {
-                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
-                let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?;
-                self.translated.trait_impls.set_slot(id, closure_trait_impl);
-            }
-            TransItemSourceKind::ClosureMethod(kind) => {
+            &TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
@@ -120,13 +136,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::DropGlueImpl => {
-                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
-                let timpl = bt_ctx.translate_drop_impl(id, item_meta, &def)?;
-                self.translated.trait_impls.set_slot(id, timpl);
-            }
             TransItemSourceKind::DropGlueMethod => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
@@ -134,8 +143,55 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::VTable => {
+                let Some(AnyTransId::Type(id)) = trans_id else {
+                    unreachable!()
+                };
+                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
+                self.translated.type_decls.set_slot(id, ty_decl);
+            }
+            TransItemSourceKind::VTableInstance(impl_kind) => {
+                let Some(AnyTransId::Global(id)) = trans_id else {
+                    unreachable!()
+                };
+                let global_decl =
+                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
+                self.translated.global_decls.set_slot(id, global_decl);
+            }
+            TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl =
+                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableMethod => {
+                // let Some(AnyTransId::Fun(id)) = trans_id else {
+                //     unreachable!()
+                // };
+                // let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
+                // self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
+    }
+
+    /// While translating an item you may need the contents of another. Use this to retreive the
+    /// translated version of this item. Use with care as this could create cycles.
+    pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
+        // We have to call `get_item` a few times because we're running into the classic `Polonius`
+        // problem case.
+        if self.translated.get_item(id).is_none() {
+            let item_source = self.reverse_id_map.get(&id).unwrap().clone();
+            self.translate_item(&item_source);
+            if self.translated.get_item(id).is_none() {
+                let span = self.def_span(item_source.def_id());
+                raise_error!(self, span, "Failed to translate item {id:?}.")
+            }
+        }
+        let item = self.translated.get_item(id);
+        Ok(item.unwrap())
     }
 }
 
@@ -210,13 +266,15 @@ impl ItemTransCtx<'_, '_> {
                 overrides_default,
                 ..
             } => {
-                let impl_ref = self.translate_trait_impl_ref(span, impl_)?;
+                let impl_ref =
+                    self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // Ensure we translate the corresponding decl signature.
                     // FIXME(self_clause): also ensure we translate associated globals
                     // consistently; to do once we have clearer `Self` clause handling.
-                    let _ = self.translate_fun_id(span, implemented_trait_item);
+                    let _: FunDeclId =
+                        self.register_item(span, implemented_trait_item, TransItemSourceKind::Fun);
                 }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitImpl {
@@ -454,6 +512,8 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
+        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
+
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
             return Ok(TraitDecl {
@@ -467,6 +527,7 @@ impl ItemTransCtx<'_, '_> {
                 types: Default::default(),
                 type_defaults: Default::default(),
                 methods: Default::default(),
+                vtable,
             });
         }
 
@@ -516,7 +577,7 @@ impl ItemTransCtx<'_, '_> {
                 if poly_item_def.has_own_generics() {
                     continue;
                 } else {
-                    let item = def.this().with_def_id(&self.t_ctx.hax_state, item_def_id);
+                    let item = def.this().with_def_id(self.hax_state(), item_def_id);
                     let item_def = self.hax_def(&item)?;
                     let item_src = TransItemSource::monomorphic(&item, trans_kind);
                     (item_src, item_def)
@@ -657,6 +718,7 @@ impl ItemTransCtx<'_, '_> {
             types,
             type_defaults,
             methods,
+            vtable,
         })
     }
 
@@ -673,96 +735,6 @@ impl ItemTransCtx<'_, '_> {
         let span = item_meta.span;
 
         self.translate_def_generics(span, def)?;
-
-        if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
-            // Generate a blanket impl for this trait, as in:
-            //   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
-            // becomes:
-            //   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
-            //   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
-
-            // `translate_def_generics` registers the clauses as implied clauses, but we want them
-            // as required clauses for the impl.
-            assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-            let clauses = mem::take(&mut self.parent_trait_clauses);
-            self.innermost_generics_mut().trait_clauses = clauses;
-            let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
-            let mut generics = self.the_only_binder().params.identity_args();
-            // Do the inverse operation: the trait considers the clauses as implied.
-            let parent_trait_refs = mem::take(&mut generics.trait_refs);
-            let implemented_trait = TraitDeclRef {
-                id: trait_id,
-                generics: Box::new(generics),
-            };
-            let mut timpl = TraitImpl {
-                def_id,
-                item_meta,
-                impl_trait: implemented_trait,
-                generics: self.the_only_binder().params.clone(),
-                parent_trait_refs,
-                type_clauses: Default::default(),
-                consts: Default::default(),
-                types: Default::default(),
-                methods: Default::default(),
-            };
-            // We got the predicates from a trait decl, so they may refer to the virtual `Self`
-            // clause, which doesn't exist for impls. We fix that up here.
-            {
-                struct FixSelfVisitor {
-                    binder_depth: DeBruijnId,
-                }
-                struct UnhandledSelf;
-                impl Visitor for FixSelfVisitor {
-                    type Break = UnhandledSelf;
-                }
-                impl VisitAstMut for FixSelfVisitor {
-                    fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                        self.binder_depth = self.binder_depth.incr()
-                    }
-                    fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                        self.binder_depth = self.binder_depth.decr()
-                    }
-                    fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                        self.binder_depth = self.binder_depth.incr()
-                    }
-                    fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                        self.binder_depth = self.binder_depth.decr()
-                    }
-                    fn visit_trait_ref_kind(
-                        &mut self,
-                        kind: &mut TraitRefKind,
-                    ) -> ControlFlow<Self::Break> {
-                        match kind {
-                            TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
-                            TraitRefKind::ParentClause(sub, clause_id)
-                                if matches!(sub.kind, TraitRefKind::SelfId) =>
-                            {
-                                *kind = TraitRefKind::Clause(DeBruijnVar::bound(
-                                    self.binder_depth,
-                                    *clause_id,
-                                ))
-                            }
-                            _ => (),
-                        }
-                        self.visit_inner(kind)
-                    }
-                }
-                match timpl.drive_mut(&mut FixSelfVisitor {
-                    binder_depth: DeBruijnId::zero(),
-                }) {
-                    ControlFlow::Continue(()) => {}
-                    ControlFlow::Break(UnhandledSelf) => {
-                        register_error!(
-                            self,
-                            span,
-                            "Found `Self` clause we can't handle \
-                             in a trait alias blanket impl."
-                        );
-                    }
-                }
-            };
-            return Ok(timpl);
-        }
 
         let hax::FullDefKind::TraitImpl {
             trait_pred,
@@ -785,6 +757,8 @@ impl ItemTransCtx<'_, '_> {
             }),
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
+
+        let vtable = self.translate_vtable_instance_ref(span, &trait_pred.trait_ref, def.this())?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let parent_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
@@ -832,13 +806,11 @@ impl ItemTransCtx<'_, '_> {
                 } else {
                     let item = match &impl_item.value {
                         // Real item: we reuse the impl arguments to get a reference to the item.
-                        Provided { def_id, .. } => {
-                            def.this().with_def_id(&self.t_ctx.hax_state, def_id)
-                        }
+                        Provided { def_id, .. } => def.this().with_def_id(self.hax_state(), def_id),
                         // Defaulted item: we use the implemented trait arguments.
                         _ => trait_pred
                             .trait_ref
-                            .with_def_id(&self.t_ctx.hax_state, &impl_item.decl_def_id),
+                            .with_def_id(self.hax_state(), &impl_item.decl_def_id),
                     };
                     let item_def = self.hax_def(&item)?;
                     let item_src = TransItemSource::monomorphic(&item, trans_kind);
@@ -954,6 +926,164 @@ impl ItemTransCtx<'_, '_> {
             consts,
             types,
             methods,
+            vtable,
+        })
+    }
+
+    /// Generate a blanket impl for this trait, as in:
+    ///   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// becomes:
+    ///   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
+    ///   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_trait_alias_blanket_impl(
+        mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+
+        self.translate_def_generics(span, def)?;
+
+        let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
+
+        // `translate_def_generics` registers the clauses as implied clauses, but we want them
+        // as required clauses for the impl.
+        assert!(self.innermost_generics_mut().trait_clauses.is_empty());
+        let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
+        self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
+        let mut generics = self.the_only_binder().params.identity_args();
+        // Do the inverse operation: the trait considers the clauses as implied.
+        let parent_trait_refs = mem::take(&mut generics.trait_refs);
+        let implemented_trait = TraitDeclRef {
+            id: trait_id,
+            generics: Box::new(generics),
+        };
+
+        let mut timpl = TraitImpl {
+            def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics: self.the_only_binder().params.clone(),
+            parent_trait_refs,
+            type_clauses: Default::default(),
+            consts: Default::default(),
+            types: Default::default(),
+            methods: Default::default(),
+            // TODO(dyn)
+            vtable: None,
+        };
+        // We got the predicates from a trait decl, so they may refer to the virtual `Self`
+        // clause, which doesn't exist for impls. We fix that up here.
+        {
+            struct FixSelfVisitor {
+                binder_depth: DeBruijnId,
+            }
+            struct UnhandledSelf;
+            impl Visitor for FixSelfVisitor {
+                type Break = UnhandledSelf;
+            }
+            impl VisitAstMut for FixSelfVisitor {
+                fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                    self.binder_depth = self.binder_depth.incr()
+                }
+                fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                    self.binder_depth = self.binder_depth.decr()
+                }
+                fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                    self.binder_depth = self.binder_depth.incr()
+                }
+                fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                    self.binder_depth = self.binder_depth.decr()
+                }
+                fn visit_trait_ref_kind(
+                    &mut self,
+                    kind: &mut TraitRefKind,
+                ) -> ControlFlow<Self::Break> {
+                    match kind {
+                        TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
+                        TraitRefKind::ParentClause(sub, clause_id)
+                            if matches!(sub.kind, TraitRefKind::SelfId) =>
+                        {
+                            *kind = TraitRefKind::Clause(DeBruijnVar::bound(
+                                self.binder_depth,
+                                *clause_id,
+                            ))
+                        }
+                        _ => (),
+                    }
+                    self.visit_inner(kind)
+                }
+            }
+            match timpl.drive_mut(&mut FixSelfVisitor {
+                binder_depth: DeBruijnId::zero(),
+            }) {
+                ControlFlow::Continue(()) => {}
+                ControlFlow::Break(UnhandledSelf) => {
+                    register_error!(
+                        self,
+                        span,
+                        "Found `Self` clause we can't handle \
+                         in a trait alias blanket impl."
+                    );
+                }
+            }
+        };
+
+        Ok(timpl)
+    }
+
+    /// Make a trait impl from a hax `VirtualTraitImpl`. Used for constructing fake trait impls for
+    /// builtin types like `FnOnce`.
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_virtual_trait_impl(
+        &mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        vimpl: &hax::VirtualTraitImpl,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+        let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
+        let hax::FullDefKind::Trait {
+            items: trait_items, ..
+        } = trait_def.kind()
+        else {
+            panic!()
+        };
+
+        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
+        let parent_trait_refs = self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
+
+        let mut types = vec![];
+        let mut type_clauses = vec![];
+        let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
+            hax::AssocKind::Type { .. } => true,
+            _ => false,
+        });
+        for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
+            let name = self.t_ctx.translate_trait_item_name(&assoc.def_id)?;
+            let ty = self.translate_ty(span, ty)?;
+            types.push((name.clone(), ty.clone()));
+            if !self.monomorphize() {
+                let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                type_clauses.push((name.clone(), trait_refs));
+            }
+        }
+
+        let generics = self.the_only_binder().params.clone();
+        Ok(TraitImpl {
+            def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics,
+            parent_trait_refs,
+            type_clauses,
+            consts: vec![],
+            types,
+            methods: vec![],
+            // TODO(dyn): generate vtable instances for builtin traits
+            vtable: None,
         })
     }
 }

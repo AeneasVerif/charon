@@ -12,6 +12,7 @@
   "test_crate::GenericNotLastField": "None",
   "test_crate::GenericBehindIndirection": "None",
   "test_crate::ThinGeneric": null,
+  "test_crate::Showable::{vtable}": null,
   "alloc::alloc::Global": "None",
   "core::cmp::Ordering": "None",
   "core::option::Option": "None",

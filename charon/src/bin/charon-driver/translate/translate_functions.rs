@@ -105,10 +105,8 @@ impl ItemTransCtx<'_, '_> {
         fields: &hax::IndexVec<hax::FieldIdx, hax::FieldDef>,
         output_ty: &hax::Ty,
     ) -> Result<Body, Error> {
-        let tref = self.translate_type_decl_ref(
-            span,
-            &def.this().with_def_id(&self.t_ctx.hax_state, adt_def_id),
-        )?;
+        let tref = self
+            .translate_type_decl_ref(span, &def.this().with_def_id(self.hax_state(), adt_def_id))?;
         let output_ty = self.translate_ty(span, output_ty)?;
         let mut locals = Locals {
             arg_count: fields.len(),

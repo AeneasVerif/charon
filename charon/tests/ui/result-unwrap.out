@@ -56,6 +56,13 @@ where
   Err(E),
 }
 
+struct core::fmt::Debug::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)),
+  method_fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
+}
+
 // Full name: core::fmt::Debug
 #[lang_item("Debug")]
 pub trait Debug<Self>

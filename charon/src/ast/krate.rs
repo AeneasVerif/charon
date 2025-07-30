@@ -73,6 +73,18 @@ wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
 wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
+impl TryFrom<AnyTransId> for TypeId {
+    type Error = ();
+    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+        Ok(TypeId::Adt(x.try_into()?))
+    }
+}
+impl TryFrom<AnyTransId> for FunId {
+    type Error = ();
+    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+        Ok(FunId::Regular(x.try_into()?))
+    }
+}
 
 /// A reference to a translated item.
 #[derive(

@@ -406,6 +406,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     type_defaults,
                     type_clauses,
                     methods,
+                    vtable,
                 } = d;
                 // Visit the traits referenced in the generics
                 let _ = generics.drive(&mut graph);
@@ -418,6 +419,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 let _ = consts.drive(&mut graph);
                 let _ = types.drive(&mut graph);
                 let _ = type_defaults.drive(&mut graph);
+                let _ = vtable.drive(&mut graph);
 
                 // We consider that a trait decl only contains the function/constant signatures.
                 // Therefore we don't explore the default const/method ids.

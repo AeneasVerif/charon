@@ -3,7 +3,7 @@
 use std::panic;
 use std::rc::Rc;
 
-use hax::{BaseState, HasParamEnv, UnderOwnerState};
+use hax::{HasParamEnv, UnderOwnerState};
 use hax_frontend_exporter as hax;
 use rustc_hir as hir;
 use rustc_middle::mir::Body;
@@ -43,8 +43,7 @@ impl ItemTransCtx<'_, '_> {
         let def_id = &item_ref.def_id;
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
             Some(body) => {
-                let def_id = def_id.underlying_rust_def_id();
-                let state = self.t_ctx.hax_state.clone().with_owner_id(def_id);
+                let state = self.hax_state_with_id();
                 let body = if self.monomorphize() {
                     let typing_env = state.typing_env();
                     let args = item_ref.rustc_args(&state);
