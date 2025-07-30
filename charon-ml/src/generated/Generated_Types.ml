@@ -461,22 +461,18 @@ and trait_instance_id =
           including trait method declarations. Not present in trait
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
-      trait_decl_ref region_binder
-      * trait_ref list
-      * (trait_item_name * ty * trait_ref list) list
+      trait_ref list * (trait_item_name * ty * trait_ref list) list
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.
 
           Fields:
-          - [trait_decl_ref]
           - [parent_trait_refs]: Exactly like the same field on [TraitImpl]: the
             [TraitRef]s required to satisfy the implied predicates on the trait
             declaration. E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl
             would have a [TraitRef] for [T: FnOnce].
           - [types]: The values of the associated types for this trait. *)
-  | Dyn of trait_decl_ref region_binder
-      (** The automatically-generated implementation for [dyn Trait]. *)
+  | Dyn  (** The automatically-generated implementation for [dyn Trait]. *)
   | UnknownTrait of string  (** For error reporting. *)
 
 (** A constraint over a trait associated type.

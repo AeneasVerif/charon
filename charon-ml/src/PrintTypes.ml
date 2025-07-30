@@ -318,29 +318,27 @@ and generic_args_to_string (env : 'a fmt_env) (generics : generic_args) : string
   params ^ trait_refs
 
 and trait_ref_to_string (env : 'a fmt_env) (tr : trait_ref) : string =
-  trait_instance_id_to_string env tr.trait_id
+  match tr.trait_id with
+  | Self -> "Self"
+  | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
+  | BuiltinOrAuto _ ->
+      region_binder_to_string trait_decl_ref_to_string env tr.trait_decl_ref
+  | Clause id -> trait_db_var_to_string env id
+  | ParentClause (tref, clause_id) ->
+      let inst_id = trait_ref_to_string env tref in
+      let clause_id = trait_clause_id_to_string env clause_id in
+      "parent(" ^ inst_id ^ ")::" ^ clause_id
+  | Dyn ->
+      let trait =
+        region_binder_to_string trait_decl_ref_to_string env tr.trait_decl_ref
+      in
+      "dyn(" ^ trait ^ ")"
+  | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and trait_decl_ref_to_string (env : 'a fmt_env) (tr : trait_decl_ref) : string =
   let trait_id = trait_decl_id_to_string env tr.id in
   let generics = generic_args_to_string env tr.generics in
   trait_id ^ generics
-
-and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
-    string =
-  match id with
-  | Self -> "Self"
-  | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
-  | BuiltinOrAuto (trait, _, _) ->
-      region_binder_to_string trait_decl_ref_to_string env trait
-  | Clause id -> trait_db_var_to_string env id
-  | ParentClause (tref, clause_id) ->
-      let inst_id = trait_instance_id_to_string env tref.trait_id in
-      let clause_id = trait_clause_id_to_string env clause_id in
-      "parent(" ^ inst_id ^ ")::" ^ clause_id
-  | Dyn trait ->
-      let trait = region_binder_to_string trait_decl_ref_to_string env trait in
-      "dyn(" ^ trait ^ ")"
-  | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
   match elem with

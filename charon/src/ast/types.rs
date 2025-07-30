@@ -109,7 +109,6 @@ pub enum TraitRefKind {
     /// `Sized`. This morally points to an invisible `impl` block; as such it contains
     /// the information we may need from one.
     BuiltinOrAuto {
-        trait_decl_ref: PolyTraitDeclRef,
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
@@ -119,7 +118,7 @@ pub enum TraitRefKind {
     },
 
     /// The automatically-generated implementation for `dyn Trait`.
-    Dyn(PolyTraitDeclRef),
+    Dyn,
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]

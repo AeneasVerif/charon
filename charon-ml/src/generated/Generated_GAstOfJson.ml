@@ -1742,15 +1742,8 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         [
           ( "BuiltinOrAuto",
             `Assoc
-              [
-                ("trait_decl_ref", trait_decl_ref);
-                ("parent_trait_refs", parent_trait_refs);
-                ("types", types);
-              ] );
+              [ ("parent_trait_refs", parent_trait_refs); ("types", types) ] );
         ] ->
-        let* trait_decl_ref =
-          region_binder_of_json trait_decl_ref_of_json ctx trait_decl_ref
-        in
         let* parent_trait_refs =
           vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
             parent_trait_refs
@@ -1761,10 +1754,8 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
                (vector_of_json trait_clause_id_of_json trait_ref_of_json))
             ctx types
         in
-        Ok (BuiltinOrAuto (trait_decl_ref, parent_trait_refs, types))
-    | `Assoc [ ("Dyn", dyn) ] ->
-        let* dyn = region_binder_of_json trait_decl_ref_of_json ctx dyn in
-        Ok (Dyn dyn)
+        Ok (BuiltinOrAuto (parent_trait_refs, types))
+    | `String "Dyn" -> Ok Dyn
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json ctx unknown in
         Ok (UnknownTrait unknown)
