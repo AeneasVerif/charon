@@ -16,6 +16,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -39,6 +40,7 @@ pub trait Allocator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn allocate<'_0> = core::alloc::Allocator::allocate<'_0_0, Self>[Self]
     fn deallocate<'_0> = core::alloc::Allocator::deallocate<'_0_0, Self>[Self]
+    vtable: core::alloc::Allocator::{vtable}
 }
 
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
@@ -55,6 +57,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -76,6 +79,7 @@ impl Allocator for Global {
     parent_clause0 = MetaSized<Global>
     fn allocate<'_0> = {impl Allocator for Global}::allocate<'_0_0>
     fn deallocate<'_0> = {impl Allocator for Global}::deallocate<'_0_0>
+    vtable: {impl Allocator for Global}::{vtable}
 }
 
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
@@ -94,6 +98,7 @@ where
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
     fn drop<'_0> = {impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: test_crate::main

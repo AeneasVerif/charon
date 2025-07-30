@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -50,6 +52,7 @@ struct core::fmt::Display::{vtable} {
 pub trait Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Display::{vtable}
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -61,6 +64,7 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -69,6 +73,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -93,6 +98,7 @@ where
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::rc::Rc
@@ -120,6 +126,7 @@ where
 {
     parent_clause0 = MetaSized<Rc<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0> = {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::string::String
@@ -133,6 +140,7 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 impl Drop for String {
     parent_clause0 = MetaSized<String>
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 #[lang_item("string_new")]
@@ -145,6 +153,7 @@ pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
 impl Clone for String {
     parent_clause0 = Sized<String>
     fn clone<'_0> = {impl Clone for String}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::{impl Display for String}::fmt
@@ -165,6 +174,7 @@ static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl
 // Full name: alloc::string::{impl Display for String}
 impl Display for String {
     fn fmt<'_0, '_1, '_2> = {impl Display for String}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Display for String}::{vtable}
 }
 
 // Full name: test_crate::foo

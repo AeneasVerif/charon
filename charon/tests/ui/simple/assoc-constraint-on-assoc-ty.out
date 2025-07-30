@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop
@@ -17,6 +18,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -29,6 +31,7 @@ trait Trait<Self, Self_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::takes_trait
@@ -52,6 +55,7 @@ trait IntoIterator<Self, Self_IntoIter>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
     parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::collect

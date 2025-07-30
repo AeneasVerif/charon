@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -31,6 +33,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 impl Clone for u8 {
     parent_clause0 = Sized<u8>
     fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::PartialEq
@@ -38,6 +41,7 @@ impl Clone for u8 {
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -51,6 +55,7 @@ pub fn {impl PartialEq<bool> for bool}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
 impl PartialEq<bool> for bool {
     fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<bool> for bool}::{vtable}
 }
 
 // Full name: core::default::Default
@@ -59,6 +64,7 @@ pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn default = core::default::Default::default<Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("default_fn")]
@@ -73,6 +79,7 @@ pub fn {impl Default for bool}::default() -> bool
 impl Default for bool {
     parent_clause0 = Sized<bool>
     fn default = {impl Default for bool}::default
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -80,6 +87,7 @@ impl Default for bool {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -88,6 +96,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -132,6 +141,7 @@ where
 {
     parent_clause0 = Sized<Struct<A>[@TraitClause0]>
     fn default = {impl Default for Struct<A>[@TraitClause0]}::default<A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -141,6 +151,7 @@ trait Trait<Self, B, Self_Item>
     parent_clause1 : [@TraitClause1]: Sized<B>
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
     fn method<C, [@TraitClause0]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, B, C, Clause0_Item>()
@@ -176,6 +187,7 @@ where
     parent_clause1 = @TraitClause1
     parent_clause2 = Sized<(A, B)>
     fn method<C, [@TraitClause0]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

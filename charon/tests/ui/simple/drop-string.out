@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop
@@ -17,6 +18,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -34,6 +36,7 @@ fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
 impl Drop for Global {
     parent_clause0 = MetaSized<Global>
     fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: alloc::vec::Vec
@@ -69,6 +72,7 @@ where
 {
     parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
     fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
 }
 
 // Full name: alloc::string::String::{impl Drop for String}::drop
@@ -89,6 +93,7 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 impl Drop for String {
     parent_clause0 = MetaSized<String>
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::{String}::new

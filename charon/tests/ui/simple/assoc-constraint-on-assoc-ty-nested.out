@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -16,6 +17,7 @@ trait Trait<Self, Self_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::IntoIterator
@@ -24,6 +26,7 @@ trait IntoIterator<Self, Self_IntoIter>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
     parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::IntoIntoIterator
@@ -32,6 +35,7 @@ trait IntoIntoIterator<Self, Self_IntoIntoIter, Self_Clause2_IntoIter>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIntoIter>
     parent_clause2 : [@TraitClause2]: IntoIterator<Self_IntoIntoIter, Self_Clause2_IntoIter>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo

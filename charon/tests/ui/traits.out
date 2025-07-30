@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple
@@ -16,6 +17,7 @@ pub trait Sized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -24,6 +26,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -40,6 +43,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut
@@ -51,6 +55,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn
@@ -62,6 +67,7 @@ pub trait Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
@@ -98,6 +104,7 @@ where
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -121,6 +128,7 @@ pub trait BoolTrait<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
     fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -163,6 +171,7 @@ impl BoolTrait for bool {
     parent_clause0 = MetaSized<bool>
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
     fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
+    vtable: {impl BoolTrait for bool}::{vtable}
 }
 
 // Full name: test_crate::test_bool_trait_bool
@@ -233,6 +242,7 @@ where
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0]
     fn ret_true<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_0, T>[@TraitClause0]
+    vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -290,6 +300,7 @@ pub trait ToU64<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn to_u64 = test_crate::ToU64::to_u64<Self>[Self]
+    vtable: test_crate::ToU64::{vtable}
 }
 
 pub fn test_crate::ToU64::to_u64<Self>(@1: Self) -> u64
@@ -310,6 +321,7 @@ pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
 impl ToU64 for u64 {
     parent_clause0 = MetaSized<u64>
     fn to_u64 = {impl ToU64 for u64}::to_u64
+    vtable: {impl ToU64 for u64}::{vtable}
 }
 
 // Full name: test_crate::{impl ToU64 for (A, A)}::to_u64
@@ -353,6 +365,7 @@ where
 {
     parent_clause0 = MetaSized<(A, A)>
     fn to_u64 = {impl ToU64 for (A, A)}::to_u64<A>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToU64 for (A, A)}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
 pub fn test_crate::f<T>(@1: (T, T)) -> u64
@@ -424,6 +437,7 @@ where
 {
     parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
     fn drop<'_0> = {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64
@@ -452,6 +466,7 @@ where
 {
     parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
     fn to_u64 = {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToU64 for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::h1
@@ -492,6 +507,7 @@ pub trait ToType<Self, T>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn to_type = test_crate::ToType::to_type<Self, T>[Self]
+    vtable: test_crate::ToType::{vtable}<T>
 }
 
 pub fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
@@ -517,6 +533,7 @@ impl ToType<bool> for u64 {
     parent_clause0 = MetaSized<u64>
     parent_clause1 = Sized<bool>
     fn to_type = {impl ToType<bool> for u64}::to_type
+    vtable: {impl ToType<bool> for u64}::{vtable}
 }
 
 // Full name: test_crate::OfType
@@ -524,6 +541,7 @@ pub trait OfType<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn of_type<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: ToType<T, Self>, [@TraitClause2]: Sized<Self>> = test_crate::OfType::of_type<Self, T>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    vtable: test_crate::OfType::{vtable}
 }
 
 pub fn test_crate::OfType::of_type<Self, T>(@1: T) -> Self
@@ -561,6 +579,7 @@ pub trait OfTypeBis<Self, T>
     parent_clause2 : [@TraitClause2]: ToType<T, Self>
     parent_clause3 : [@TraitClause3]: Sized<Self>
     fn of_type<[@TraitClause0]: Sized<Self>> = test_crate::OfTypeBis::of_type<Self, T>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 pub fn test_crate::OfTypeBis::of_type<Self, T>(@1: T) -> Self
@@ -670,6 +689,7 @@ trait TestTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn test<'_0> = test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0_0, Self>[Self]
+    vtable: test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::{vtable}
 }
 
 fn test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -680,6 +700,7 @@ where
 impl TestTrait for TestType1 {
     parent_clause0 = MetaSized<TestType1>
     fn test<'_0> = {impl TestTrait for TestType1}::test<'_0_0>
+    vtable: {impl TestTrait for TestType1}::{vtable}
 }
 
 // Full name: test_crate::BoolWrapper
@@ -713,6 +734,7 @@ where
     parent_clause0 = MetaSized<BoolWrapper>
     parent_clause1 = @TraitClause0
     fn to_type = {impl ToType<T> for BoolWrapper}::to_type<T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToType<T> for BoolWrapper}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::WithConstTy
@@ -727,6 +749,7 @@ pub trait WithConstTy<Self, const LEN : usize>
     type V
     type W
     fn f<'_0, '_1> = test_crate::WithConstTy::f<'_0_0, '_0_1, Self, const LEN : usize>[Self]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::WithConstTy::LEN2
@@ -785,6 +808,7 @@ impl WithConstTy<32 : usize> for bool {
     type V = u8
     type W = u64
     fn f<'_0, '_1> = {impl WithConstTy<32 : usize> for bool}::f<'_0_0, '_0_1>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_with_const_ty1
@@ -869,6 +893,7 @@ pub trait ParentTrait0<Self>
     type W
     fn get_name<'_0> = get_name<'_0_0, Self>[Self]
     fn get_w<'_0> = test_crate::ParentTrait0::get_w<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::ParentTrait0::get_name
@@ -884,6 +909,7 @@ where
 pub trait ParentTrait1<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::ParentTrait1::{vtable}
 }
 
 // Full name: test_crate::ChildTrait
@@ -892,6 +918,7 @@ pub trait ChildTrait<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: ParentTrait0<Self>
     parent_clause2 : [@TraitClause2]: ParentTrait1<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_child_trait1
@@ -949,17 +976,20 @@ pub trait ChildTrait1<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: ParentTrait1<Self>
+    vtable: test_crate::ChildTrait1::{vtable}
 }
 
 // Full name: test_crate::{impl ParentTrait1 for usize}
 impl ParentTrait1 for usize {
     parent_clause0 = MetaSized<usize>
+    vtable: {impl ParentTrait1 for usize}::{vtable}
 }
 
 // Full name: test_crate::{impl ChildTrait1 for usize}
 impl ChildTrait1 for usize {
     parent_clause0 = MetaSized<usize>
     parent_clause1 = {impl ParentTrait1 for usize}
+    vtable: {impl ChildTrait1 for usize}::{vtable}
 }
 
 // Full name: test_crate::Iterator
@@ -968,6 +998,7 @@ pub trait Iterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
+    non-dyn-compatible
 }
 
 // Full name: test_crate::IntoIterator
@@ -982,6 +1013,7 @@ where
     type Item
     type IntoIter
     fn into_iter = into_iter<Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::IntoIterator::into_iter
@@ -994,6 +1026,7 @@ trait FromResidual<Self, T>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
+    vtable: test_crate::FromResidual::{vtable}<T>
 }
 
 // Full name: test_crate::Try
@@ -1003,6 +1036,7 @@ trait Try<Self>
     parent_clause1 : [@TraitClause1]: FromResidual<Self, Self::Residual>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Residual
+    non-dyn-compatible
 }
 
 // Full name: test_crate::WithTarget
@@ -1011,6 +1045,7 @@ pub trait WithTarget<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Target>
     type Target
+    non-dyn-compatible
 }
 
 // Full name: test_crate::ParentTrait2
@@ -1020,6 +1055,7 @@ pub trait ParentTrait2<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::U>
     parent_clause2 : [@TraitClause2]: WithTarget<Self::U>
     type U
+    non-dyn-compatible
 }
 
 // Full name: test_crate::ChildTrait2
@@ -1028,6 +1064,7 @@ pub trait ChildTrait2<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: ParentTrait2<Self>
     fn convert = test_crate::ChildTrait2::convert<Self>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::ChildTrait2::convert<Self>(@1: @TraitClause0::parent_clause1::U) -> @TraitClause0::parent_clause1::parent_clause2::Target
@@ -1039,6 +1076,7 @@ impl WithTarget for u32 {
     parent_clause0 = MetaSized<u32>
     parent_clause1 = Sized<u32>
     type Target = u32
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl ParentTrait2 for u32}
@@ -1047,6 +1085,7 @@ impl ParentTrait2 for u32 {
     parent_clause1 = Sized<u32>
     parent_clause2 = {impl WithTarget for u32}
     type U = u32
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl ChildTrait2 for u32}::convert
@@ -1064,6 +1103,7 @@ impl ChildTrait2 for u32 {
     parent_clause0 = MetaSized<u32>
     parent_clause1 = {impl ParentTrait2 for u32}
     fn convert = {impl ChildTrait2 for u32}::convert
+    non-dyn-compatible
 }
 
 // Full name: test_crate::CFnOnce
@@ -1074,6 +1114,7 @@ pub trait CFnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn call_once = test_crate::CFnOnce::call_once<Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -1087,6 +1128,7 @@ pub trait CFnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: CFnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     fn call_mut<'_0> = test_crate::CFnMut::call_mut<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
@@ -1100,6 +1142,7 @@ pub trait CFn<Self, Args>
     parent_clause1 : [@TraitClause1]: CFnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     fn call<'_0> = test_crate::CFn::call<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
@@ -1113,6 +1156,7 @@ pub trait GetTrait<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::W>
     type W
     fn get_w<'_0> = test_crate::GetTrait::get_w<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
@@ -1141,6 +1185,7 @@ pub trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     const LEN : usize
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait for Array<T, const N : usize>}::LEN
@@ -1167,6 +1212,7 @@ where
 {
     parent_clause0 = MetaSized<Array<T, const N : usize>>
     const LEN = {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}::LEN
@@ -1196,6 +1242,7 @@ where
 {
     parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
     const LEN = {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_wrapper_len
@@ -1280,6 +1327,7 @@ trait RecursiveImpl<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     parent_clause2 : [@TraitClause2]: RecursiveImpl<Self::Item>
     type Item
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl RecursiveImpl for ()}
@@ -1288,6 +1336,7 @@ impl RecursiveImpl for () {
     parent_clause1 = Sized<()>
     parent_clause2 = {impl RecursiveImpl for ()}
     type Item = ()
+    non-dyn-compatible
 }
 
 // Full name: test_crate::flabada
@@ -1334,6 +1383,7 @@ trait SliceIndex<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Output>
     type Output
+    non-dyn-compatible
 }
 
 // Full name: test_crate::assoc_ty_trait_ref::index

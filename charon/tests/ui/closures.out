@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple
@@ -16,6 +17,7 @@ pub trait Sized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::function::FnOnce
@@ -27,6 +29,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut
@@ -38,6 +41,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause1_Output>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::array::{Array<T, const N : usize>}::map
@@ -54,6 +58,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -68,6 +73,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
     fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -75,6 +81,7 @@ impl Clone for u32 {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -83,6 +90,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -98,6 +106,7 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause1_Clause1_Output>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause1_Clause1_Output
@@ -134,6 +143,7 @@ where
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::incr_u32
@@ -355,6 +365,7 @@ impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure {
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(u32), u32> for test_crate::test_closure_u32::closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_u32::{impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure}
@@ -364,6 +375,7 @@ impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure {
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call_mut<'_0> = {impl FnMut<(u32), u32> for test_crate::test_closure_u32::closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_u32::{impl Fn<(u32), u32> for test_crate::test_closure_u32::closure}
@@ -373,6 +385,7 @@ impl Fn<(u32), u32> for test_crate::test_closure_u32::closure {
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call<'_0> = {impl Fn<(u32), u32> for test_crate::test_closure_u32::closure}::call<'_0_0>
+    non-dyn-compatible
 }
 
 struct test_crate::test_closure_u32s::closure {}
@@ -487,6 +500,7 @@ impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
     parent_clause2 = Tuple<(u32, u32)>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_u32s::{impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
@@ -496,6 +510,7 @@ impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
     parent_clause2 = Sized<(u32, u32)>
     parent_clause3 = Tuple<(u32, u32)>
     fn call_mut<'_0> = {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_u32s::{impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
@@ -505,6 +520,7 @@ impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
     parent_clause2 = Sized<(u32, u32)>
     parent_clause3 = Tuple<(u32, u32)>
     fn call<'_0> = {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'_0_0>
+    non-dyn-compatible
 }
 
 struct test_crate::test_closure_ref_u32::closure {}
@@ -604,6 +620,7 @@ impl<'_0> FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::c
     parent_clause2 = Tuple<(&'_ (u32))>
     parent_clause3 = Sized<&'_ (u32)>
     fn call_once = {impl FnOnce<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}::call_once<'_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}
@@ -613,6 +630,7 @@ impl<'_0> FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::cl
     parent_clause2 = Sized<(&'_ (u32))>
     parent_clause3 = Tuple<(&'_ (u32))>
     fn call_mut<'_0> = {impl FnMut<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl Fn<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}
@@ -622,6 +640,7 @@ impl<'_0> Fn<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closu
     parent_clause2 = Sized<(&'_ (u32))>
     parent_clause3 = Tuple<(&'_ (u32))>
     fn call<'_0> = {impl Fn<(&'_ (u32)), &'_ (u32)> for test_crate::test_closure_ref_u32::closure}::call<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 struct test_crate::test_closure_ref_param::closure<T>
@@ -737,6 +756,7 @@ where
     parent_clause2 = Tuple<(&'_ (T))>
     parent_clause3 = Sized<&'_ (T)>
     fn call_once = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}::call_once<'_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}
@@ -749,6 +769,7 @@ where
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
     fn call_mut<'_0> = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}::call_mut<'_0, '_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}
@@ -761,12 +782,14 @@ where
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
     fn call<'_0> = {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}::call<'_0, '_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 pub trait Trait<'a, Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::Trait::{vtable}<'a>
 }
 
 struct test_crate::test_closure_ref_early_bound::closure<'a, T>
@@ -889,6 +912,7 @@ where
     parent_clause2 = Tuple<(&'_ (T))>
     parent_clause3 = Sized<&'_ (T)>
     fn call_once = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
@@ -902,6 +926,7 @@ where
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
     fn call_mut<'_0> = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_0_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
@@ -915,6 +940,7 @@ where
     parent_clause2 = Sized<(&'_ (T))>
     parent_clause3 = Tuple<(&'_ (T))>
     fn call<'_0> = {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call<'a, '_1, '_0_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 struct test_crate::test_map_option2::closure {}
@@ -1017,6 +1043,7 @@ impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure {
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(u32), u32> for test_crate::test_map_option2::closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_map_option2::{impl FnMut<(u32), u32> for test_crate::test_map_option2::closure}
@@ -1026,6 +1053,7 @@ impl FnMut<(u32), u32> for test_crate::test_map_option2::closure {
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call_mut<'_0> = {impl FnMut<(u32), u32> for test_crate::test_map_option2::closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_map_option2::{impl Fn<(u32), u32> for test_crate::test_map_option2::closure}
@@ -1035,6 +1063,7 @@ impl Fn<(u32), u32> for test_crate::test_map_option2::closure {
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call<'_0> = {impl Fn<(u32), u32> for test_crate::test_map_option2::closure}::call<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::id
@@ -1225,6 +1254,7 @@ impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure {
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_map_option3::{impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}
@@ -1234,6 +1264,7 @@ impl FnMut<(u32), u32> for test_crate::test_map_option3::closure {
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call_mut<'_0> = {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_map_option3::{impl Fn<(u32), u32> for test_crate::test_map_option3::closure}
@@ -1243,6 +1274,7 @@ impl Fn<(u32), u32> for test_crate::test_map_option3::closure {
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call<'_0> = {impl Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_map_option3
@@ -1345,6 +1377,7 @@ impl<'_0> FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
     parent_clause2 = Tuple<(&'_ (&'_ (u32)))>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}::call_once<'_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}
@@ -1354,6 +1387,7 @@ impl<'_0> FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
     fn call_mut<'_0> = {impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}
@@ -1363,6 +1397,7 @@ impl<'_0> Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure {
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
     fn call<'_0> = {impl Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions::closure}::call<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 struct test_crate::test_regions_casted::closure {}
@@ -1462,6 +1497,7 @@ impl<'_0> FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::cl
     parent_clause2 = Tuple<(&'_ (&'_ (u32)))>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}::call_once<'_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}
@@ -1471,6 +1507,7 @@ impl<'_0> FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::clo
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
     fn call_mut<'_0> = {impl FnMut<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}
@@ -1480,6 +1517,7 @@ impl<'_0> Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closur
     parent_clause2 = Sized<(&'_ (&'_ (u32)))>
     parent_clause3 = Tuple<(&'_ (&'_ (u32)))>
     fn call<'_0> = {impl Fn<(&'_ (&'_ (u32))), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 struct test_crate::test_closure_capture::closure<'_0, '_1> {
@@ -1594,6 +1632,7 @@ impl<'_0, '_1> FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<
     parent_clause2 = Tuple<(u32)>
     parent_clause3 = Sized<u32>
     fn call_once = {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_capture::{impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
@@ -1603,6 +1642,7 @@ impl<'_0, '_1> FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call_mut<'_0> = {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
@@ -1612,6 +1652,7 @@ impl<'_0, '_1> Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0,
     parent_clause2 = Sized<(u32)>
     parent_clause3 = Tuple<(u32)>
     fn call<'_0> = {impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_0_0>
+    non-dyn-compatible
 }
 
 struct test_crate::test_closure_clone::closure<T>
@@ -1723,6 +1764,7 @@ where
     parent_clause2 = Tuple<(T)>
     parent_clause3 = @TraitClause0
     fn call_once = {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_clone::{impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}
@@ -1736,6 +1778,7 @@ where
     parent_clause2 = Sized<(T)>
     parent_clause3 = Tuple<(T)>
     fn call_mut<'_0> = {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_0_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_closure_clone::{impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}
@@ -1749,6 +1792,7 @@ where
     parent_clause2 = Sized<(T)>
     parent_clause3 = Tuple<(T)>
     fn call<'_0> = {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 struct test_crate::test_array_map::closure {}
@@ -1789,6 +1833,7 @@ impl FnOnce<(i32), i32> for test_crate::test_array_map::closure {
     parent_clause2 = Tuple<(i32)>
     parent_clause3 = Sized<i32>
     fn call_once = {impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_array_map::{impl FnMut<(i32), i32> for test_crate::test_array_map::closure}
@@ -1798,6 +1843,7 @@ impl FnMut<(i32), i32> for test_crate::test_array_map::closure {
     parent_clause2 = Sized<(i32)>
     parent_clause3 = Tuple<(i32)>
     fn call_mut<'_0> = {impl FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_array_map
@@ -1914,6 +1960,7 @@ impl<'_0, '_1> FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::cl
     parent_clause2 = Tuple<(&'_ (usize))>
     parent_clause3 = Sized<()>
     fn call_once = {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}
@@ -1923,6 +1970,7 @@ impl<'_0, '_1> FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::clo
     parent_clause2 = Sized<(&'_ (usize))>
     parent_clause3 = Tuple<(&'_ (usize))>
     fn call_mut<'_0> = {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_0_0>
+    non-dyn-compatible
 }
 
 

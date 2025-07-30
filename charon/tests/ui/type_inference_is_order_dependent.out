@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::default::Default
@@ -17,6 +18,7 @@ pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn default = core::default::Default::default<Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("default_fn")]
@@ -31,6 +33,7 @@ pub fn {impl Default for bool}::default() -> bool
 impl Default for bool {
     parent_clause0 = Sized<bool>
     fn default = {impl Default for bool}::default
+    non-dyn-compatible
 }
 
 // Full name: core::fmt::Error
@@ -58,6 +61,7 @@ where
 pub trait Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Debug::{vtable}
 }
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -70,6 +74,7 @@ pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (
 // Full name: core::fmt::{impl Debug for bool}
 impl Debug for bool {
     fn fmt<'_0, '_1, '_2> = {impl Debug for bool}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Debug for bool}::{vtable}
 }
 
 // Full name: core::fmt::rt::Argument
@@ -91,6 +96,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -106,6 +112,7 @@ trait Left<Self, T>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
+    vtable: test_crate::Left::{vtable}<T>
 }
 
 // Full name: test_crate::Right
@@ -113,6 +120,7 @@ trait Right<Self, T>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
+    vtable: test_crate::Right::{vtable}<T>
 }
 
 // Full name: test_crate::Join
@@ -121,6 +129,7 @@ trait Join<Self, U>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<U>
     fn test = test_crate::Join::test<Self, U>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::Join::test<Self, U>()
@@ -206,6 +215,7 @@ where
     parent_clause0 = @TraitClause0::parent_clause0
     parent_clause1 = @TraitClause1
     fn test = {impl Join<U> for T}::test<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Left<U> for T}
@@ -218,6 +228,7 @@ where
 {
     parent_clause0 = @TraitClause0::parent_clause0
     parent_clause1 = @TraitClause1
+    vtable: {impl Left<U> for T}::{vtable}<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 // Full name: test_crate::{impl Right<U> for T}
@@ -230,6 +241,7 @@ where
 {
     parent_clause0 = @TraitClause0::parent_clause0
     parent_clause1 = @TraitClause1
+    vtable: {impl Right<U> for T}::{vtable}<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 // Full name: test_crate::try_it
