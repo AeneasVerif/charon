@@ -1,5 +1,4 @@
 use core::panic;
-use std::collections::HashMap;
 
 use crate::translate::{translate_generics::BindingLevel, translate_predicates::PredicateLocation};
 
@@ -133,18 +132,6 @@ impl ItemTransCtx<'_, '_> {
             }
         }
         Ok(())
-    }
-
-    pub(crate) fn translate_vtable_method(
-        mut self,
-        fun_id: FunDeclId,
-        item_meta: ItemMeta,
-        impl_func_def: &hax::FullDef,
-    ) -> Result<FunDecl, Error> {
-        Err(Error {
-            span: item_meta.span,
-            msg: String::from("TODO"),
-        })
     }
 
     pub fn translate_existential_predicates(

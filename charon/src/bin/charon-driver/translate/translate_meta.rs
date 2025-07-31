@@ -301,7 +301,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         trace!("Computing name for `{def_id:?}`");
 
         let parent_name = if let Some(parent_id) = &def_id.parent {
-            trace!("About to get hax-def for {item:?}");
             let def = self.hax_def_for_item(item)?;
             if matches!(item, RustcItem::Mono(..))
                 && let Some(parent_item) = def.typing_parent(&self.hax_state)
