@@ -16,7 +16,333 @@ note: the error occurred when translating `core::str::pattern::Pattern`, which i
 error: Item `core::str::pattern::Pattern` caused errors; ignoring.
  --> /rustc/library/core/src/str/pattern.rs:100:1
 
-ERROR Charon failed to translate this code (2 errors)
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:44:36:
+Found unexpected `Self` 
+                        type when constructing vtable
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `core::str::pattern::Searcher`.
+ --> /rustc/library/core/src/str/pattern.rs:212:1
+
+note: the error occurred when translating `core::str::pattern::Searcher::{vtable}`, which is (transitively) used at the following location(s):
+ --> src/module.rs:6:13
+  |
+6 |     let _ = "".contains("");
+  |             ---------------
+7 |     let _ = crate::opaque::takes_pattern::<&str>();
+  |             --------------------------------------
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:44:36:
+Found unexpected `Self` 
+                        type when constructing vtable
+error: Thread panicked when extracting item `core::str::pattern::ReverseSearcher`.
+ --> /rustc/library/core/src/str/pattern.rs:289:1
+
+note: the error occurred when translating `core::str::pattern::ReverseSearcher::{vtable}`, which is (transitively) used at the following location(s):
+ --> src/module.rs:6:13
+  |
+6 |     let _ = "".contains("");
+  |             ---------------
+7 |     let _ = crate::opaque::takes_pattern::<&str>();
+  |             --------------------------------------
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:44:36:
+Found unexpected `Self` 
+                        type when constructing vtable
+error: Thread panicked when extracting item `core::marker::MetaSized`.
+ --> /rustc/library/core/src/marker.rs:179:1
+
+note: the error occurred when translating `core::marker::MetaSized::{vtable}`, which is (transitively) used at the following location(s):
+  --> src/main.rs:16:26
+   |
+16 |     pub fn takes_pattern<T: std::str::pattern::Pattern>() {}
+   |                          -  --------------------------
+   |
+  ::: src/module.rs:6:13
+   |
+ 6 |     let _ = "".contains("");
+   |             ---------------
+ 7 |     let _ = crate::opaque::takes_pattern::<&str>();
+   |             --------------------------------------
+error: Found inconsistent generics after translation:
+       Mismatched builtin trait parent clauses:
+       target: Sized
+       expected: []
+            got: [MetaSized<&'_ (Str)>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'b>
+ --> /rustc/library/core/src/str/pattern.rs:972:1
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: contains
+       expected: []
+            got: [Sized<&'_ (Str)>, {impl Pattern for &'b (Str)}<'_>]
+       Visitor stack:
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:5:1
+  |
+5 | / pub fn fun3() {
+6 | |     let _ = "".contains("");
+7 | |     let _ = crate::opaque::takes_pattern::<&str>();
+8 | | }
+  | |_^
+
+error: Found inconsistent generics after translation:
+       Mismatched builtin trait parent clauses:
+       target: Sized
+       expected: []
+            got: [MetaSized<&'_ (Str)>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:5:1
+  |
+5 | / pub fn fun3() {
+6 | |     let _ = "".contains("");
+7 | |     let _ = crate::opaque::takes_pattern::<&str>();
+8 | | }
+  | |_^
+
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       target: takes_pattern
+       expected: []
+            got: [Sized<&'_ (Str)>, {impl Pattern for &'b (Str)}<'_>]
+       Visitor stack:
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:5:1
+  |
+5 | / pub fn fun3() {
+6 | |     let _ = "".contains("");
+7 | |     let _ = crate::opaque::takes_pattern::<&str>();
+8 | | }
+  | |_^
+
+error: Found inconsistent generics after translation:
+       Mismatched builtin trait parent clauses:
+       target: Sized
+       expected: []
+            got: [MetaSized<&'_ (Str)>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:5:1
+  |
+5 | / pub fn fun3() {
+6 | |     let _ = "".contains("");
+7 | |     let _ = crate::opaque::takes_pattern::<&str>();
+8 | | }
+  | |_^
+
+error: Found inconsistent generics after translation:
+       Found incorrect clause var: 0_0
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self>
+ --> /rustc/library/core/src/str/pattern.rs:106:5
+
+error: Found inconsistent generics after transformations:
+       Mismatched builtin trait parent clauses:
+       target: Sized
+       expected: []
+            got: [MetaSized<&'_ (Str)>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'b>
+ --> /rustc/library/core/src/str/pattern.rs:972:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched trait clauses:
+       target: contains
+       expected: []
+            got: [Sized<&'_ (Str)>, {impl Pattern for &'b (Str)}<'_>]
+       Visitor stack:
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:6:13
+  |
+6 |     let _ = "".contains("");
+  |             ^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched builtin trait parent clauses:
+       target: Sized
+       expected: []
+            got: [MetaSized<&'_ (Str)>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:6:13
+  |
+6 |     let _ = "".contains("");
+  |             ^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched trait clauses:
+       target: takes_pattern
+       expected: []
+            got: [Sized<&'_ (Str)>, {impl Pattern for &'b (Str)}<'_>]
+       Visitor stack:
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:7:13
+  |
+7 |     let _ = crate::opaque::takes_pattern::<&str>();
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched builtin trait parent clauses:
+       target: Sized
+       expected: []
+            got: [MetaSized<&'_ (Str)>]
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> src/module.rs:7:13
+  |
+7 |     let _ = crate::opaque::takes_pattern::<&str>();
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Found incorrect clause var: 0_0
+       Visitor stack:
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, Self>
+ --> /rustc/library/core/src/str/pattern.rs:106:5
+
+ERROR Charon failed to translate this code (17 errors)
 error: could not compile `test-cargo` (bin "test-cargo")
 
 Caused by:

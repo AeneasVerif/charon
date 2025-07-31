@@ -222,7 +222,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = self.translate_closure_type_ref(span, args)?;
                 TyKind::Adt(tref)
             }
-            
+
             hax::TyKind::Dynamic(self_ty, preds, region) => {
                 if self.monomorphize() {
                     raise_error!(
