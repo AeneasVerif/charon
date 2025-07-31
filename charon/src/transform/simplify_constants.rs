@@ -45,6 +45,25 @@ fn transform_constant_expr(
         RawConstantExpr::Global(global_ref) => {
             Operand::Move(new_var(Rvalue::Global(global_ref), val.ty.clone()))
         }
+        RawConstantExpr::PtrNoProvenance(ptr) => {
+            let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
+            let ptr_usize = RawConstantExpr::Literal(Literal::Scalar(ScalarValue::Unsigned(
+                UIntTy::Usize,
+                ptr,
+            )));
+            let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty.clone()));
+            let uvar = new_var(
+                Rvalue::UnaryOp(
+                    cast,
+                    Operand::Const(Box::new(ConstantExpr {
+                        value: ptr_usize,
+                        ty: usize_ty,
+                    })),
+                ),
+                val.ty,
+            );
+            Operand::Move(uvar)
+        }
         RawConstantExpr::Ref(bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
