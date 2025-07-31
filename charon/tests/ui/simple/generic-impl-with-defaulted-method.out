@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -25,7 +25,7 @@ pub trait test_crate::BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn foo<'_0> = foo<'_0_0, Self>[Self]
-    vtable: test_crate::BoolTrait
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 // Full name: test_crate::BoolTrait::foo
@@ -58,8 +58,9 @@ impl<T> test_crate::BoolTrait for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::marker::MetaSized<Option<T>[@TraitClause0]>
-    fn foo<'_0> = test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    fn foo<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
+    vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 

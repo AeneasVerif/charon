@@ -9,6 +9,7 @@ pub trait MetaSized::<i32>
 pub trait Sized::<i32>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<i32>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<bool>
@@ -20,6 +21,7 @@ pub trait MetaSized::<bool>
 pub trait Sized::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Foo::<i32>

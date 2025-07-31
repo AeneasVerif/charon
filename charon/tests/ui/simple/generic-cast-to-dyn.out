@@ -29,23 +29,6 @@ where
     vtable: core::any::Any::{vtable}
 }
 
-struct core::marker::MetaSized::{vtable} {
-  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn>)),
-  self_ty_size: usize,
-  self_ty_align: usize,
-}
-
-struct core::any::Any::{vtable}
-where
-    missing(@Type1_0) : 'static,
-{
-  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Any<_dyn>)),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  super_trait_0: *const core::marker::MetaSized::{vtable},
-  type_id: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn>))) -> TypeId,
-}
-
 // Full name: core::any::Any::type_id
 pub fn type_id<'_0, Self>(@1: &'_0 (Self)) -> TypeId
 where

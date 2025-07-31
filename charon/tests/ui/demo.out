@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -494,7 +494,7 @@ pub trait test_crate::Counter<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>[Self]
-    vtable: test_crate::Counter
+    vtable: test_crate::Counter::{vtable}
 }
 
 pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
@@ -519,10 +519,11 @@ pub fn {impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> 
     return
 }
 
-// Full name: test_crate::{impl test_crate::Counter for usize}
-impl test_crate::Counter for usize {
-    parent_clause0 = core::marker::MetaSized<usize>
-    fn incr<'_0> = {impl test_crate::Counter for usize}::incr<'_0_0>
+// Full name: test_crate::{impl Counter for usize}
+impl Counter for usize {
+    parent_clause0 = MetaSized<usize>
+    fn incr<'_0> = {impl Counter for usize}::incr<'_0_0>
+    vtable: {impl Counter for usize}::{vtable}
 }
 
 // Full name: test_crate::use_counter

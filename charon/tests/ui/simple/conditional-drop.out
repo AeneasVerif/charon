@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -30,10 +30,11 @@ pub struct Global {}
 // Full name: alloc::alloc::Global::{impl core::ops::drop::Drop for Global}::drop
 fn {impl core::ops::drop::Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
 
-// Full name: alloc::alloc::Global::{impl core::ops::drop::Drop for Global}
-impl core::ops::drop::Drop for Global {
-    parent_clause0 = core::marker::MetaSized<Global>
-    fn drop<'_0> = {impl core::ops::drop::Drop for Global}::drop<'_0_0>
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop
@@ -52,8 +53,9 @@ where
     [@TraitClause3]: core::ops::drop::Drop<T>,
     [@TraitClause4]: core::ops::drop::Drop<A>,
 {
-    parent_clause0 = core::marker::MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
-    fn drop<'_0> = {impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
 }
 
 // Full name: test_crate::use_box

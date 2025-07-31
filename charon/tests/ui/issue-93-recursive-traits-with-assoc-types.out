@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -17,7 +17,7 @@ pub trait test_crate::Trait1<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::T>
     parent_clause2 : [@TraitClause2]: test_crate::Trait2<Self::T>
     type T
-    vtable: test_crate::Trait1
+    non-dyn-compatible
 }
 
 pub trait test_crate::Trait2<Self>
@@ -26,7 +26,7 @@ pub trait test_crate::Trait2<Self>
     parent_clause1 : [@TraitClause1]: test_crate::Trait1<Self>
     parent_clause2 : [@TraitClause2]: Sized<Self::U>
     type U
-    vtable: test_crate::Trait2
+    non-dyn-compatible
 }
 
 

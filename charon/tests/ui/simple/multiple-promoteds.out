@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -19,7 +19,7 @@ pub trait core::ops::arith::Add<Self, Rhs>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
-    vtable: core::ops::arith::Add<Rhs>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}::add
@@ -31,7 +31,8 @@ impl<'_0, '_1> core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32) {
     parent_clause1 = Sized<&'_ (u32)>
     parent_clause2 = Sized<u32>
     type Output = u32
-    fn add = {impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>
+    fn add = {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>
+    non-dyn-compatible
 }
 
 #[lang_item("add")]

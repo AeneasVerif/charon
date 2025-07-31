@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -29,7 +29,7 @@ pub trait test_crate::From<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn from<[@TraitClause0]: Sized<Self>> = test_crate::From::from<Self, T>[Self, @TraitClause0_0]
-    vtable: test_crate::From<T>
+    non-dyn-compatible
 }
 
 pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause2]
@@ -57,7 +57,8 @@ impl<'_0> test_crate::From<&'_0 (bool)> for bool {
     parent_clause1 = Sized<&'_ (bool)>
     parent_clause2 = Sized<()>
     type Error = ()
-    fn from = {impl test_crate::From<&'_0 (bool)> for bool}::from<'_0>
+    fn from = {impl From<&'_0 (bool)> for bool}::from<'_0>
+    non-dyn-compatible
 }
 
 

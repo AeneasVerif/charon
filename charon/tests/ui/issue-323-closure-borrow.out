@@ -7,15 +7,15 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Tuple
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 #[lang_item("drop")]
@@ -23,7 +23,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -40,7 +40,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    vtable: core::ops::function::FnOnce<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("fn_mut")]
@@ -51,7 +51,7 @@ pub trait core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::FnMut<Args>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
@@ -143,7 +143,8 @@ impl<'_0> core::ops::function::FnOnce<()> for closure<'_0> {
     parent_clause2 = core::marker::Tuple<()>
     parent_clause3 = Sized<()>
     type Output = ()
-    fn call_once = {impl core::ops::function::FnOnce<()> for closure<'_0>}::call_once<'_0>
+    fn call_once = {impl FnOnce<()> for closure<'_0>}::call_once<'_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::new::{impl core::ops::function::FnMut<()> for closure<'_0>}
@@ -151,8 +152,9 @@ impl<'_0> core::ops::function::FnMut<()> for closure<'_0> {
     parent_clause0 = core::marker::MetaSized<closure<'_0>>
     parent_clause1 = {impl core::ops::function::FnOnce<()> for closure<'_0>}<'_0>
     parent_clause2 = Sized<()>
-    parent_clause3 = core::marker::Tuple<()>
-    fn call_mut<'_0> = {impl core::ops::function::FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_0>
+    parent_clause3 = Tuple<()>
+    fn call_mut<'_0> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_0>
+    non-dyn-compatible
 }
 
 

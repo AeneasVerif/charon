@@ -54,6 +54,7 @@ impl Ops for Portable {
     parent_clause0 = core::marker::MetaSized<Portable>
     fn ZERO = {impl Ops for Portable}::ZERO
     fn ntt_multiply = {impl Ops for Portable}::ntt_multiply
+    non-dyn-compatible
 }
 
 

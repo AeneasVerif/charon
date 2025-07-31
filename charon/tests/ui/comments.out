@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -32,6 +32,7 @@ pub fn {impl Default for u32}::default() -> u32
 impl Default for u32 {
     parent_clause0 = Sized<u32>
     fn default = {impl Default for u32}::default
+    non-dyn-compatible
 }
 
 // Full name: core::fmt::Arguments
@@ -45,7 +46,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -263,6 +264,7 @@ pub fn {impl Default for Foo}::default() -> Foo
 impl Default for Foo {
     parent_clause0 = Sized<Foo>
     fn default = {impl Default for Foo}::default
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Bar
@@ -292,6 +294,7 @@ pub fn {impl Default for Bar}::default() -> Bar
 impl Default for Bar {
     parent_clause0 = Sized<Bar>
     fn default = {impl Default for Bar}::default
+    non-dyn-compatible
 }
 
 // Full name: test_crate::eat

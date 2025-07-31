@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -32,6 +32,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
     fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
@@ -41,6 +42,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 impl Clone for i32 {
     parent_clause0 = Sized<i32>
     fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
@@ -50,13 +52,14 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
 impl Clone for usize {
     parent_clause0 = Sized<usize>
     fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 #[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialEq<Rhs>
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -68,7 +71,7 @@ where
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
     non-dyn-compatible
 }
 
@@ -95,7 +98,7 @@ pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialOrd<Rhs>
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::Ord
@@ -121,52 +124,58 @@ where
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}::eq
 pub fn {impl core::cmp::PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}
-impl core::cmp::PartialEq<u32> for u32 {
-    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
+impl PartialEq<u32> for u32 {
+    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<u32> for u32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}::eq
 pub fn {impl core::cmp::PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}
-impl core::cmp::PartialEq<i32> for i32 {
-    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
+impl PartialEq<i32> for i32 {
+    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::eq
 pub fn {impl core::cmp::PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}
-impl core::cmp::PartialEq<usize> for usize {
-    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<usize> for usize}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
+impl PartialEq<usize> for usize {
+    fn eq<'_0, '_1> = {impl PartialEq<usize> for usize}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<usize> for usize}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}::partial_cmp
 pub fn {impl core::cmp::PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> Option<Ordering>[Sized<Ordering>]
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}
-impl core::cmp::PartialOrd<u32> for u32 {
-    parent_clause0 = {impl core::cmp::PartialEq<u32> for u32}
-    fn partial_cmp<'_0, '_1> = {impl core::cmp::PartialOrd<u32> for u32}::partial_cmp<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
+impl PartialOrd<u32> for u32 {
+    parent_clause0 = {impl PartialEq<u32> for u32}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<u32> for u32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}::partial_cmp
 pub fn {impl core::cmp::PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}
-impl core::cmp::PartialOrd<i32> for i32 {
-    parent_clause0 = {impl core::cmp::PartialEq<i32> for i32}
-    fn partial_cmp<'_0, '_1> = {impl core::cmp::PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
+impl PartialOrd<i32> for i32 {
+    parent_clause0 = {impl PartialEq<i32> for i32}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<i32> for i32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::partial_cmp
 pub fn {impl core::cmp::PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> Option<Ordering>[Sized<Ordering>]
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}
-impl core::cmp::PartialOrd<usize> for usize {
-    parent_clause0 = {impl core::cmp::PartialEq<usize> for usize}
-    fn partial_cmp<'_0, '_1> = {impl core::cmp::PartialOrd<usize> for usize}::partial_cmp<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
+impl PartialOrd<usize> for usize {
+    parent_clause0 = {impl PartialEq<usize> for usize}
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<usize> for usize}::{vtable}
 }
 
 // Full name: core::default::Default
@@ -234,6 +243,7 @@ impl Step for usize {
     fn steps_between<'_0, '_1> = {impl Step for usize}::steps_between<'_0_0, '_0_1>
     fn forward_checked = {impl Step for usize}::forward_checked
     fn backward_checked = {impl Step for usize}::backward_checked
+    non-dyn-compatible
 }
 
 // Full name: core::iter::range::{impl Step for u32}::steps_between
@@ -253,6 +263,7 @@ impl Step for u32 {
     fn steps_between<'_0, '_1> = {impl Step for u32}::steps_between<'_0_0, '_0_1>
     fn forward_checked = {impl Step for u32}::forward_checked
     fn backward_checked = {impl Step for u32}::backward_checked
+    non-dyn-compatible
 }
 
 // Full name: core::iter::range::{impl Step for i32}::steps_between
@@ -272,6 +283,7 @@ impl Step for i32 {
     fn steps_between<'_0, '_1> = {impl Step for i32}::steps_between<'_0_0, '_0_1>
     fn forward_checked = {impl Step for i32}::forward_checked
     fn backward_checked = {impl Step for i32}::backward_checked
+    non-dyn-compatible
 }
 
 #[lang_item("iterator")]
@@ -281,7 +293,7 @@ pub trait core::iter::traits::iterator::Iterator<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
-    vtable: core::iter::traits::iterator::Iterator
+    non-dyn-compatible
 }
 
 // Full name: core::ops::range::Range
@@ -309,7 +321,8 @@ where
     parent_clause0 = core::marker::MetaSized<Range<A>[@TraitClause0]>
     parent_clause1 = @TraitClause0
     type Item = A
-    fn next<'_0> = {impl core::iter::traits::iterator::Iterator for Range<A>[@TraitClause0]}::next<'_0_0, A>[@TraitClause0, @TraitClause1]
+    fn next<'_0> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_0, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -317,7 +330,7 @@ pub trait Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -333,7 +346,7 @@ pub trait Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -356,7 +369,7 @@ where
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
-    vtable: core::iter::traits::collect::IntoIterator
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -365,7 +378,7 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -401,7 +414,8 @@ where
     parent_clause3 = @TraitClause1
     type Item = @TraitClause1::Item
     type IntoIter = I
-    fn into_iter = {impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
+    fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::Extend
@@ -409,7 +423,7 @@ pub trait Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -427,7 +441,7 @@ pub trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: core::iter::traits::iterator::Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
-    vtable: core::iter::traits::double_ended::DoubleEndedIterator
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
@@ -437,9 +451,9 @@ where
 
 pub trait core::iter::traits::exact_size::ExactSizeIterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: core::iter::traits::iterator::Iterator<Self>
-    vtable: core::iter::traits::exact_size::ExactSizeIterator
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Iterator<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("next")]
@@ -459,15 +473,15 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Destruct
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Tuple
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::control_flow::ControlFlow
@@ -490,7 +504,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    vtable: core::ops::function::FnOnce<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("fn_mut")]
@@ -501,7 +515,7 @@ pub trait core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::FnMut<Args>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -522,7 +536,7 @@ pub trait core::ops::index::Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: core::marker::MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-    vtable: core::ops::index::Index<Idx>
+    non-dyn-compatible
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -536,7 +550,7 @@ pub trait core::ops::index::IndexMut<Self, Idx>
     parent_clause1 : [@TraitClause1]: core::ops::index::Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: core::marker::MetaSized<Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>[Self]
-    vtable: core::ops::index::IndexMut<Idx>
+    non-dyn-compatible
 }
 
 pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (@TraitClause0::parent_clause1::Output)
@@ -596,18 +610,19 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual<O>
+    non-dyn-compatible
 }
 
 pub trait core::slice::index::private_slice_index::Sealed<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::slice::index::private_slice_index::Sealed
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
-// Full name: core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize}
-impl core::slice::index::private_slice_index::Sealed for usize {
-    parent_clause0 = core::marker::MetaSized<usize>
+// Full name: core::slice::index::private_slice_index::{impl Sealed for usize}
+impl Sealed for usize {
+    parent_clause0 = MetaSized<usize>
+    vtable: {impl Sealed for usize}::{vtable}
 }
 
 #[lang_item("SliceIndex")]
@@ -624,7 +639,7 @@ pub trait core::slice::index::SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
-    vtable: core::slice::index::SliceIndex<T>
+    non-dyn-compatible
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
@@ -691,12 +706,13 @@ where
     parent_clause2 = core::marker::MetaSized<Slice<T>>
     parent_clause3 = @TraitClause0::parent_clause0
     type Output = T
-    fn get<'_0> = {impl core::slice::index::SliceIndex<Slice<T>> for usize}::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = {impl core::slice::index::SliceIndex<Slice<T>> for usize}::get_mut<'_0_0, T>[@TraitClause0]
-    fn get_unchecked = {impl core::slice::index::SliceIndex<Slice<T>> for usize}::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl core::slice::index::SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = {impl core::slice::index::SliceIndex<Slice<T>> for usize}::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = {impl core::slice::index::SliceIndex<Slice<T>> for usize}::index_mut<'_0_0, T>[@TraitClause0]
+    fn get<'_0> = {impl SliceIndex<Slice<T>> for usize}::get<'_0_0, T>[@TraitClause0]
+    fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0_0, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<Slice<T>> for usize}::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_0, T>[@TraitClause0]
+    fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -735,7 +751,8 @@ where
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause3::parent_clause3
     type Output = @TraitClause3::Output
-    fn index<'_0> = {impl core::ops::index::Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index<'_0> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    non-dyn-compatible
 }
 
 // Full name: alloc::vec::{impl core::ops::index::IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
@@ -757,7 +774,8 @@ where
     parent_clause0 = core::marker::MetaSized<Vec<T>[@TraitClause0, @TraitClause2]>
     parent_clause1 = {impl core::ops::index::Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl core::ops::index::IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_loop1

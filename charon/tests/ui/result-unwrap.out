@@ -41,7 +41,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -68,15 +68,7 @@ struct core::fmt::Debug::{vtable} {
 pub trait Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-    vtable: {vtable}
-}
-
-// Full name: core::fmt::Debug::{vtable}
-struct {vtable} {
-  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn>)),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn>)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
+    vtable: core::fmt::Debug::{vtable}
 }
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -87,7 +79,7 @@ where
 pub trait core::fmt::Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-    vtable: core::fmt::Display
+    vtable: core::fmt::Display::{vtable}
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -97,7 +89,7 @@ where
 pub trait core::fmt::LowerHex<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::LowerHex::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-    vtable: core::fmt::LowerHex
+    vtable: core::fmt::LowerHex::{vtable}
 }
 
 pub fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -107,7 +99,7 @@ where
 pub trait core::fmt::UpperHex<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::UpperHex::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-    vtable: core::fmt::UpperHex
+    vtable: core::fmt::UpperHex::{vtable}
 }
 
 pub fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -117,17 +109,19 @@ where
 // Full name: core::fmt::num::{impl core::fmt::LowerHex for u32}::fmt
 pub fn {impl core::fmt::LowerHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::num::{impl core::fmt::LowerHex for u32}
-impl core::fmt::LowerHex for u32 {
-    fn fmt<'_0, '_1, '_2> = {impl core::fmt::LowerHex for u32}::fmt<'_0_0, '_0_1, '_0_2>
+// Full name: core::fmt::num::{impl LowerHex for u32}
+impl LowerHex for u32 {
+    fn fmt<'_0, '_1, '_2> = {impl LowerHex for u32}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl LowerHex for u32}::{vtable}
 }
 
 // Full name: core::fmt::num::{impl core::fmt::UpperHex for u32}::fmt
 pub fn {impl core::fmt::UpperHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::num::{impl core::fmt::UpperHex for u32}
-impl core::fmt::UpperHex for u32 {
-    fn fmt<'_0, '_1, '_2> = {impl core::fmt::UpperHex for u32}::fmt<'_0_0, '_0_1, '_0_2>
+// Full name: core::fmt::num::{impl UpperHex for u32}
+impl UpperHex for u32 {
+    fn fmt<'_0, '_1, '_2> = {impl UpperHex for u32}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl UpperHex for u32}::{vtable}
 }
 
 // Full name: core::fmt::num::imp::{impl core::fmt::Display for u32}::fmt
@@ -186,11 +180,13 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
 // Full name: core::fmt::num::{impl Debug for u32}
 impl Debug for u32 {
     fn fmt<'_0, '_1, '_2> = {impl Debug for u32}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Debug for u32}::{vtable}
 }
 
-// Full name: core::fmt::num::imp::{impl core::fmt::Display for u32}
-impl core::fmt::Display for u32 {
-    fn fmt<'_0, '_1, '_2> = {impl core::fmt::Display for u32}::fmt<'_0_0, '_0_1, '_0_2>
+// Full name: core::fmt::num::imp::{impl Display for u32}
+impl Display for u32 {
+    fn fmt<'_0, '_1, '_2> = {impl Display for u32}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Display for u32}::{vtable}
 }
 
 #[lang_item("drop")]
@@ -198,7 +194,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop

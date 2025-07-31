@@ -13,15 +13,15 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Tuple
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 #[lang_item("fn_once")]
@@ -33,7 +33,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    vtable: core::ops::function::FnOnce<Args>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -96,7 +96,8 @@ impl core::ops::function::FnOnce<(u32)> for closure {
     parent_clause2 = core::marker::Tuple<(u32)>
     parent_clause3 = Sized<u32>
     type Output = u32
-    fn call_once = {impl core::ops::function::FnOnce<(u32)> for closure}::call_once
+    fn call_once = {impl FnOnce<(u32)> for closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_cargo_dependencies::main::silly_incr

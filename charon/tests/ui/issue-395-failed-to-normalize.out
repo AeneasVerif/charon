@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -30,7 +30,7 @@ where
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialEq<Rhs>
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -42,7 +42,7 @@ where
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
     non-dyn-compatible
 }
 
@@ -69,7 +69,7 @@ pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialOrd<Rhs>
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::Ord
@@ -122,7 +122,7 @@ pub trait core::iter::traits::iterator::Iterator<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = next<'_0_0, Self>[Self]
-    vtable: core::iter::traits::iterator::Iterator
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -130,7 +130,7 @@ pub trait Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -146,7 +146,7 @@ pub trait Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -169,7 +169,7 @@ where
     type Item
     type IntoIter
     fn into_iter = into_iter<Self>[Self]
-    vtable: core::iter::traits::collect::IntoIterator
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -178,7 +178,7 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -202,7 +202,7 @@ pub trait Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -220,7 +220,7 @@ pub trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: core::iter::traits::iterator::Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
-    vtable: core::iter::traits::double_ended::DoubleEndedIterator
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
@@ -230,9 +230,9 @@ where
 
 pub trait core::iter::traits::exact_size::ExactSizeIterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: core::iter::traits::iterator::Iterator<Self>
-    vtable: core::iter::traits::exact_size::ExactSizeIterator
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Iterator<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::iterator::Iterator::next
@@ -253,15 +253,15 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Destruct
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Tuple
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::control_flow::ControlFlow
@@ -284,7 +284,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    vtable: core::ops::function::FnOnce<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("fn_mut")]
@@ -295,7 +295,7 @@ pub trait core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::FnMut<Args>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -361,7 +361,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual<O>
+    non-dyn-compatible
 }
 
 pub trait test_crate::Trait<Self>
@@ -369,7 +369,7 @@ pub trait test_crate::Trait<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::AssocType>
     type AssocType
-    vtable: test_crate::Trait
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Alias
@@ -381,7 +381,7 @@ pub trait test_crate::C<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
-    vtable: test_crate::C<T>
+    vtable: test_crate::C::{vtable}<T>
 }
 
 // Full name: test_crate::S

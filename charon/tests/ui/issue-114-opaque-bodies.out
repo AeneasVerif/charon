@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -26,7 +26,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::bool::{bool}::then_some
@@ -58,7 +58,7 @@ pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
     fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialEq<Rhs>
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::PartialEq::eq
@@ -115,6 +115,7 @@ impl From<i32> for i64 {
     parent_clause0 = Sized<i64>
     parent_clause1 = Sized<i32>
     fn from = {impl From<i32> for i64}::from
+    non-dyn-compatible
 }
 
 // Full name: core::marker::PhantomData
@@ -238,8 +239,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = core::marker::MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: issue_114_opaque_bodies_aux::inline_always

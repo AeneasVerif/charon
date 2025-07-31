@@ -7,14 +7,14 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
 pub trait test_crate::Ord<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: test_crate::Ord
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::Ord::{vtable}
 }
 
 // Full name: test_crate::AVLTree
@@ -37,9 +37,10 @@ where
     panic(core::panicking::panic)
 }
 
-// Full name: test_crate::{impl test_crate::Ord for u32}
-impl test_crate::Ord for u32 {
-    parent_clause0 = core::marker::MetaSized<u32>
+// Full name: test_crate::{impl Ord for u32}
+impl Ord for u32 {
+    parent_clause0 = MetaSized<u32>
+    vtable: {impl Ord for u32}::{vtable}
 }
 
 // Full name: test_crate::test

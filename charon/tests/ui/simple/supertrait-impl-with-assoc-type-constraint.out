@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -16,20 +16,20 @@ trait test_crate::HasAssoc<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
     type Assoc
-    vtable: test_crate::HasAssoc
+    non-dyn-compatible
 }
 
 trait test_crate::SuperTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: test_crate::SuperTrait
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::SuperTrait::{vtable}
 }
 
 trait test_crate::Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: test_crate::SuperTrait<Self>
-    vtable: test_crate::Trait
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: SuperTrait<Self>
+    vtable: test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl test_crate::SuperTrait for T}
@@ -40,6 +40,7 @@ where
     @TraitClause0::Assoc = (),
 {
     parent_clause0 = @TraitClause0::parent_clause0
+    vtable: {impl SuperTrait for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::{impl test_crate::Trait for T}
@@ -50,7 +51,8 @@ where
     @TraitClause0::Assoc = (),
 {
     parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = {impl test_crate::SuperTrait for T}<T>[@TraitClause0, @TraitClause1]
+    parent_clause1 = {impl SuperTrait for T}<T>[@TraitClause0, @TraitClause1]
+    vtable: {impl Trait for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::main

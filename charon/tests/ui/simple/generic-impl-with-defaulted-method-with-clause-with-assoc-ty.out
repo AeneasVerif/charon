@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -25,14 +25,14 @@ trait test_crate::HasType<Self, Self_Type>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
-    vtable: test_crate::HasType
+    non-dyn-compatible
 }
 
 // Full name: test_crate::HasMethod
 trait HasMethod<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    fn method<Clause0_Type, [@TraitClause0]: test_crate::HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[Self, @TraitClause0_0]
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn method<Clause0_Type, [@TraitClause0]: HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[Self, @TraitClause0_0]
     non-dyn-compatible
 }
 
@@ -66,8 +66,9 @@ impl<T> HasMethod for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::marker::MetaSized<Option<T>[@TraitClause0]>
-    fn method<Clause0_Type, [@TraitClause0]: test_crate::HasType<Option<T>[@TraitClause0], Clause0_Type>> = test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_0]
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    fn method<Clause0_Type, [@TraitClause0]: HasType<Option<T>[@TraitClause0], Clause0_Type>> = test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 

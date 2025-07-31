@@ -7,15 +7,15 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Tuple
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::mem::size_of
@@ -47,7 +47,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -63,7 +63,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    vtable: core::ops::function::FnOnce<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("fn_mut")]
@@ -74,7 +74,7 @@ pub trait core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::FnMut<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("r#fn")]
@@ -85,7 +85,7 @@ pub trait core::ops::function::Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::Fn<Args>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
@@ -120,8 +120,9 @@ where
     [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = core::marker::MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::addr_of
@@ -407,7 +408,8 @@ impl core::ops::function::FnOnce<(u8)> for closure {
     parent_clause2 = core::marker::Tuple<(u8)>
     parent_clause3 = Sized<()>
     type Output = ()
-    fn call_once = {impl core::ops::function::FnOnce<(u8)> for closure}::call_once
+    fn call_once = {impl FnOnce<(u8)> for closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_crate::fn_casts::{impl core::ops::function::FnMut<(u8)> for closure}
@@ -415,8 +417,9 @@ impl core::ops::function::FnMut<(u8)> for closure {
     parent_clause0 = core::marker::MetaSized<closure>
     parent_clause1 = {impl core::ops::function::FnOnce<(u8)> for closure}
     parent_clause2 = Sized<(u8)>
-    parent_clause3 = core::marker::Tuple<(u8)>
-    fn call_mut<'_0> = {impl core::ops::function::FnMut<(u8)> for closure}::call_mut<'_0_0>
+    parent_clause3 = Tuple<(u8)>
+    fn call_mut<'_0> = {impl FnMut<(u8)> for closure}::call_mut<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::fn_casts::{impl core::ops::function::Fn<(u8)> for closure}
@@ -424,8 +427,9 @@ impl core::ops::function::Fn<(u8)> for closure {
     parent_clause0 = core::marker::MetaSized<closure>
     parent_clause1 = {impl core::ops::function::FnMut<(u8)> for closure}
     parent_clause2 = Sized<(u8)>
-    parent_clause3 = core::marker::Tuple<(u8)>
-    fn call<'_0> = {impl core::ops::function::Fn<(u8)> for closure}::call<'_0_0>
+    parent_clause3 = Tuple<(u8)>
+    fn call<'_0> = {impl Fn<(u8)> for closure}::call<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::boxes

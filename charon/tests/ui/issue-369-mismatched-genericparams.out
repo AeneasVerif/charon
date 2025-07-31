@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -25,7 +25,7 @@ pub trait test_crate::FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<R>
-    vtable: test_crate::FromResidual<R>
+    vtable: test_crate::FromResidual::{vtable}<R>
 }
 
 pub trait test_crate::Try<Self>
@@ -34,7 +34,7 @@ pub trait test_crate::Try<Self>
     parent_clause1 : [@TraitClause1]: test_crate::FromResidual<Self, ()>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Residual
-    vtable: test_crate::Try
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl test_crate::FromResidual<()> for Option<T>[@TraitClause0]}
@@ -44,6 +44,7 @@ where
 {
     parent_clause0 = core::marker::MetaSized<Option<T>[@TraitClause0]>
     parent_clause1 = Sized<()>
+    vtable: {impl FromResidual<()> for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::{impl test_crate::Try for Option<T>[@TraitClause0]}
@@ -55,6 +56,7 @@ where
     parent_clause1 = {impl test_crate::FromResidual<()> for Option<T>[@TraitClause0]}<T>[@TraitClause0]
     parent_clause2 = Sized<()>
     type Residual = ()
+    non-dyn-compatible
 }
 
 

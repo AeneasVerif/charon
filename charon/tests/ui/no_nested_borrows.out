@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -17,7 +17,7 @@ pub trait core::ops::deref::Deref<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self::Target>
     type Target
     fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>[Self]
-    vtable: core::ops::deref::Deref
+    non-dyn-compatible
 }
 
 #[lang_item("deref_method")]
@@ -30,7 +30,7 @@ pub trait core::ops::deref::DerefMut<Self>
 {
     parent_clause0 : [@TraitClause0]: core::ops::deref::Deref<Self>
     fn deref_mut<'_0> = core::ops::deref::DerefMut::deref_mut<'_0_0, Self>[Self]
-    vtable: core::ops::deref::DerefMut
+    non-dyn-compatible
 }
 
 #[lang_item("deref_mut_method")]
@@ -43,7 +43,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -66,8 +66,9 @@ where
     [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = core::marker::MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
@@ -84,7 +85,8 @@ where
 {
     parent_clause0 = @TraitClause0
     type Target = T
-    fn deref<'_0> = {impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut
@@ -99,8 +101,9 @@ where
     [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = {impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<T, A>[@TraitClause0, @TraitClause1]
-    fn deref_mut<'_0> = {impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<T, A>[@TraitClause0, @TraitClause1]
+    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Pair
@@ -132,8 +135,9 @@ impl<T> core::ops::drop::Drop for List<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::marker::MetaSized<List<T>[@TraitClause0]>
-    fn drop<'_0> = {impl core::ops::drop::Drop for List<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    parent_clause0 = MetaSized<List<T>[@TraitClause0]>
+    fn drop<'_0> = {impl Drop for List<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::One
@@ -246,8 +250,9 @@ impl<T> core::ops::drop::Drop for IdType<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::marker::MetaSized<IdType<T>[@TraitClause0]>
-    fn drop<'_0> = {impl core::ops::drop::Drop for IdType<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    parent_clause0 = MetaSized<IdType<T>[@TraitClause0]>
+    fn drop<'_0> = {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_id_type

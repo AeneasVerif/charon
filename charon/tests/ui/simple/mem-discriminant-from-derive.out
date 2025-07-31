@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -30,7 +30,7 @@ where
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialEq<Rhs>
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -42,16 +42,17 @@ where
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
     non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}::eq
 pub fn {impl core::cmp::PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-// Full name: core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}
-impl core::cmp::PartialEq<u8> for u8 {
-    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<u8> for u8}::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
+impl PartialEq<u8> for u8 {
+    fn eq<'_0, '_1> = {impl PartialEq<u8> for u8}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<u8> for u8}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}::eq
@@ -64,7 +65,8 @@ impl<'_0, '_1, A, B> core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)
 where
     [@TraitClause0]: core::cmp::PartialEq<A, B>,
 {
-    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_0_0, '_0_1, A, B>[@TraitClause0]
+    fn eq<'_0, '_1> = {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_0_0, '_0_1, A, B>[@TraitClause0]
+    vtable: {impl PartialEq<&'_0 (B)> for &'_1 (A)}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
 }
 
 // Full name: core::fmt::Error
@@ -85,7 +87,7 @@ where
 pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-    vtable: core::fmt::Debug
+    vtable: core::fmt::Debug::{vtable}
 }
 
 // Full name: core::fmt::Debug::fmt
@@ -98,14 +100,14 @@ pub trait core::hash::Hasher<Self>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn finish<'_0> = finish<'_0_0, Self>[Self]
     fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
-    vtable: core::hash::Hasher
+    vtable: core::hash::Hasher::{vtable}
 }
 
 // Full name: core::hash::Hash
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -159,7 +161,7 @@ pub trait core::marker::DiscriminantKind<Self>
     parent_clause9 : [@TraitClause9]: core::marker::Sync<Self::Discriminant>
     parent_clause10 : [@TraitClause10]: core::marker::Unpin<Self::Discriminant>
     type Discriminant
-    vtable: core::marker::DiscriminantKind
+    non-dyn-compatible
 }
 
 // Full name: core::intrinsics::discriminant_value
@@ -170,15 +172,15 @@ where
 #[lang_item("structural_peq")]
 pub trait core::marker::StructuralPartialEq<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::StructuralPartialEq
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::StructuralPartialEq::{vtable}
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Destruct
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: test_crate::Enum
@@ -187,9 +189,10 @@ enum Enum {
   None,
 }
 
-// Full name: test_crate::{impl core::marker::StructuralPartialEq for Enum}
-impl core::marker::StructuralPartialEq for Enum {
-    parent_clause0 = core::marker::MetaSized<Enum>
+// Full name: test_crate::{impl StructuralPartialEq for Enum}
+impl StructuralPartialEq for Enum {
+    parent_clause0 = MetaSized<Enum>
+    vtable: {impl StructuralPartialEq for Enum}::{vtable}
 }
 
 // Full name: test_crate::{impl core::cmp::PartialEq<Enum> for Enum}::eq
@@ -287,9 +290,10 @@ pub fn {impl core::cmp::PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum),
     return
 }
 
-// Full name: test_crate::{impl core::cmp::PartialEq<Enum> for Enum}
-impl core::cmp::PartialEq<Enum> for Enum {
-    fn eq<'_0, '_1> = {impl core::cmp::PartialEq<Enum> for Enum}::eq<'_0_0, '_0_1>
+// Full name: test_crate::{impl PartialEq<Enum> for Enum}
+impl PartialEq<Enum> for Enum {
+    fn eq<'_0, '_1> = {impl PartialEq<Enum> for Enum}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<Enum> for Enum}::{vtable}
 }
 
 

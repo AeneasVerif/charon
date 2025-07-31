@@ -9,6 +9,7 @@ pub trait MetaSized::<u32>
 pub trait Sized::<u32>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<u32>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result::<u32, u32>

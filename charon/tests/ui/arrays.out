@@ -10,14 +10,14 @@ pub trait core::ops::index::Index<Self, Idx, Self_Output>
     parent_clause1 : [@TraitClause1]: core::marker::MetaSized<Idx>
     parent_clause2 : [@TraitClause2]: core::marker::MetaSized<Self_Output>
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx, Self_Output>[Self]
-    vtable: core::ops::index::Index<Idx>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -38,7 +38,8 @@ where
     parent_clause0 = core::marker::MetaSized<Array<T, const N : usize>>
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause2
-    fn index<'_0> = {impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}::index<'_0_0, T, I, Clause2_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I, Clause2_Output> for Array<T, const N : usize>}::index<'_0_0, T, I, Clause2_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 #[lang_item("index_mut")]
@@ -48,7 +49,7 @@ pub trait core::ops::index::IndexMut<Self, Idx, Self_Clause1_Output>
     parent_clause1 : [@TraitClause1]: core::ops::index::Index<Self, Idx, Self_Clause1_Output>
     parent_clause2 : [@TraitClause2]: core::marker::MetaSized<Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx, Self_Clause1_Output>[Self]
-    vtable: core::ops::index::IndexMut<Idx>
+    non-dyn-compatible
 }
 
 // Full name: core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut
@@ -68,7 +69,8 @@ where
     parent_clause0 = core::marker::MetaSized<Array<T, const N : usize>>
     parent_clause1 = {impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}<T, I, Clause2_Clause1_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause1]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl core::ops::index::IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_0_0, T, I, Clause2_Clause1_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index_mut<'_0> = {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_0_0, T, I, Clause2_Clause1_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 #[lang_item("drop")]
@@ -76,7 +78,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::ops::drop::Drop::drop
@@ -114,8 +116,8 @@ where
 
 pub trait core::slice::index::private_slice_index::Sealed<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::slice::index::private_slice_index::Sealed
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
 #[lang_item("SliceIndex")]
@@ -131,7 +133,7 @@ pub trait core::slice::index::SliceIndex<Self, T, Self_Output>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T, Self_Output>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T, Self_Output>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T, Self_Output>[Self]
-    vtable: core::slice::index::SliceIndex<T>
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}::index
@@ -151,7 +153,8 @@ where
     parent_clause0 = core::marker::MetaSized<Slice<T>>
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause3
-    fn index<'_0> = {impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}::index<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I, Clause2_Output> for Slice<T>}::index<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}::index_mut
@@ -171,12 +174,14 @@ where
     parent_clause0 = core::marker::MetaSized<Slice<T>>
     parent_clause1 = {impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}::index_mut<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index_mut<'_0> = {impl IndexMut<I, Clause2_Output> for Slice<T>}::index_mut<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
-// Full name: core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for Range<usize>[Sized<usize>]}
-impl core::slice::index::private_slice_index::Sealed for Range<usize>[Sized<usize>] {
-    parent_clause0 = core::marker::MetaSized<Range<usize>[Sized<usize>]>
+// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[Sized<usize>]}
+impl Sealed for Range<usize>[Sized<usize>] {
+    parent_clause0 = MetaSized<Range<usize>[Sized<usize>]>
+    vtable: {impl Sealed for Range<usize>[Sized<usize>]}::{vtable}
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T, Clause0_Output>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Clause0_Output)>[Sized<&'_0 (Clause0_Output)>]
@@ -238,16 +243,17 @@ impl<T> core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Size
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::marker::MetaSized<Range<usize>[Sized<usize>]>
-    parent_clause1 = {impl core::slice::index::private_slice_index::Sealed for Range<usize>[Sized<usize>]}
-    parent_clause2 = core::marker::MetaSized<Slice<T>>
-    parent_clause3 = core::marker::MetaSized<Slice<T>>
-    fn get<'_0> = {impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = {impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_mut<'_0_0, T>[@TraitClause0]
-    fn get_unchecked = {impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = {impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = {impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
+    parent_clause0 = MetaSized<Range<usize>[Sized<usize>]>
+    parent_clause1 = {impl Sealed for Range<usize>[Sized<usize>]}
+    parent_clause2 = MetaSized<Slice<T>>
+    parent_clause3 = MetaSized<Slice<T>>
+    fn get<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get<'_0_0, T>[@TraitClause0]
+    fn get_mut<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_mut<'_0_0, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
+    fn index_mut<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: core::slice::{Slice<T>}::len

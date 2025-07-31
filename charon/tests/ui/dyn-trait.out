@@ -16,14 +16,6 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
-struct core::cmp::PartialEq::{vtable}<Rhs> {
-  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs>)),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  eq: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs>)), &'_0_1 (Rhs)) -> bool,
-  ne: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs>)), &'_0_1 (Rhs)) -> bool,
-}
-
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
@@ -71,13 +63,6 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-struct core::fmt::Display::{vtable} {
-  drop_func: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn>)),
-  self_ty_size: usize,
-  self_ty_align: usize,
-  fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn>)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
-}
-
 // Full name: core::fmt::Display::fmt
 pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
@@ -93,7 +78,7 @@ struct core::marker::MetaSized::{vtable} {
 pub trait core::marker::Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::function::FnOnce
@@ -106,7 +91,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    vtable: core::ops::function::FnOnce::{vtable}<Args>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut
@@ -118,7 +103,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::FnMut::{vtable}<Args>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn
@@ -130,7 +115,7 @@ pub trait Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = call<'_0_0, Self, Args>[Self]
-    vtable: core::ops::function::Fn::{vtable}<Args>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn::call
@@ -171,7 +156,7 @@ pub trait alloc::string::ToString<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
-    vtable: alloc::string::ToString
+    vtable: alloc::string::ToString::{vtable}
 }
 
 #[lang_item("to_string_method")]
@@ -192,7 +177,8 @@ where
     [@TraitClause1]: Display<T>,
 {
     parent_clause0 = @TraitClause0
-    fn to_string<'_0> = {impl alloc::string::ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::construct

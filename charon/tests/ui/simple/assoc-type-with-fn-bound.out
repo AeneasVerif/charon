@@ -7,15 +7,15 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Tuple
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 #[lang_item("fn_once")]
@@ -26,7 +26,7 @@ pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self_Output>
     fn call_once = call_once<Self, Args, Self_Output>[Self]
-    vtable: core::ops::function::FnOnce<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("fn_mut")]
@@ -37,7 +37,7 @@ pub trait core::ops::function::FnMut<Self, Args, Self_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args, Self_Clause1_Output>[Self]
-    vtable: core::ops::function::FnMut<Args>
+    non-dyn-compatible
 }
 
 #[lang_item("r#fn")]
@@ -48,7 +48,7 @@ pub trait core::ops::function::Fn<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: core::marker::Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause1_Clause1_Output>[Self]
-    vtable: core::ops::function::Fn<Args>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause1_Clause1_Output
@@ -71,7 +71,7 @@ pub trait test_crate::Trait<Self, Self_Foo>
     parent_clause1 : [@TraitClause1]: Sized<Self_Foo>
     parent_clause2 : [@TraitClause2]: core::ops::function::Fn<Self_Foo, (), ()>
     fn call<'_0> = test_crate::Trait::call<'_0_0, Self, Self_Foo>[Self]
-    vtable: test_crate::Trait
+    non-dyn-compatible
 }
 
 pub fn test_crate::Trait::call<'_0, Self, Clause0_Foo>(@1: &'_0 (Self))
@@ -109,7 +109,8 @@ where
     parent_clause0 = @TraitClause0::parent_clause0
     parent_clause1 = @TraitClause1
     parent_clause2 = @TraitClause0
-    fn call<'_0> = {impl test_crate::Trait<F> for F}::call<'_0_0, F>[@TraitClause0, @TraitClause1]
+    fn call<'_0> = {impl Trait<F> for F}::call<'_0_0, F>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_foo

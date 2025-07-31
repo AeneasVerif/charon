@@ -9,7 +9,7 @@ pub trait core::borrow::Borrow<Self, Borrowed>
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::MetaSized<Borrowed>
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
-    vtable: core::borrow::Borrow<Borrowed>
+    vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
 pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
@@ -20,7 +20,7 @@ where
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -42,8 +42,8 @@ where
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Destruct
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: alloc::alloc::Global
@@ -99,9 +99,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = core::marker::MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
-    parent_clause1 = core::marker::MetaSized<Slice<T>>
-    fn borrow<'_0> = {impl core::borrow::Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    parent_clause1 = MetaSized<Slice<T>>
+    fn borrow<'_0> = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::slice::{impl ToOwned for Slice<T>}::to_owned
@@ -121,6 +122,7 @@ where
     parent_clause2 = {impl core::borrow::Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, Sized<Global>]
     type Owned = Vec<T>[@TraitClause0, Sized<Global>]
     fn to_owned<'_0> = {impl ToOwned for Slice<T>}::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Generic2

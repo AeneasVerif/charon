@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -30,10 +30,11 @@ pub opaque type String
 // Full name: alloc::string::String::{impl core::ops::drop::Drop for String}::drop
 fn {impl core::ops::drop::Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
-// Full name: alloc::string::String::{impl core::ops::drop::Drop for String}
-impl core::ops::drop::Drop for String {
-    parent_clause0 = core::marker::MetaSized<String>
-    fn drop<'_0> = {impl core::ops::drop::Drop for String}::drop<'_0_0>
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -46,7 +47,7 @@ trait Trait<Self, T>
     parent_clause4 : [@TraitClause4]: Sized<Self::Type>
     parent_clause5 : [@TraitClause5]: core::ops::drop::Drop<Self::Type>
     type Type
-    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: core::ops::drop::Drop<U>> = foo<Self, T, U>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Drop<U>> = foo<Self, T, U>[Self, @TraitClause0_0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -89,7 +90,8 @@ impl Trait<u32> for () {
     parent_clause4 = Sized<String>
     parent_clause5 = {impl core::ops::drop::Drop for String}
     type Type = String
-    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: core::ops::drop::Drop<U>> = test_crate::{impl Trait<u32> for ()}::foo<U>[@TraitClause0_0, @TraitClause0_1]
+    fn foo<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Drop<U>> = test_crate::{impl Trait<u32> for ()}::foo<U>[@TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_trait

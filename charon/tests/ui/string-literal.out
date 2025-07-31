@@ -10,7 +10,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -29,7 +29,7 @@ where
 pub trait core::fmt::Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
-    vtable: core::fmt::Display
+    vtable: core::fmt::Display::{vtable}
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -39,9 +39,10 @@ where
 // Full name: core::fmt::{impl core::fmt::Display for Str}::fmt
 pub fn {impl core::fmt::Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: core::fmt::{impl core::fmt::Display for Str}
-impl core::fmt::Display for Str {
-    fn fmt<'_0, '_1, '_2> = {impl core::fmt::Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
+// Full name: core::fmt::{impl Display for Str}
+impl Display for Str {
+    fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Display for Str}::{vtable}
 }
 
 #[lang_item("drop")]
@@ -49,7 +50,7 @@ pub trait core::ops::drop::Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -63,10 +64,11 @@ pub opaque type String
 // Full name: alloc::string::String::{impl core::ops::drop::Drop for String}::drop
 fn {impl core::ops::drop::Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
-// Full name: alloc::string::String::{impl core::ops::drop::Drop for String}
-impl core::ops::drop::Drop for String {
-    parent_clause0 = core::marker::MetaSized<String>
-    fn drop<'_0> = {impl core::ops::drop::Drop for String}::drop<'_0_0>
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 #[lang_item("ToString")]
@@ -74,7 +76,7 @@ pub trait alloc::string::ToString<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
-    vtable: alloc::string::ToString
+    vtable: alloc::string::ToString::{vtable}
 }
 
 #[lang_item("to_string_method")]
@@ -95,7 +97,8 @@ where
     [@TraitClause1]: core::fmt::Display<T>,
 {
     parent_clause0 = @TraitClause0
-    fn to_string<'_0> = {impl alloc::string::ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::FOO

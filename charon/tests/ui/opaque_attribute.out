@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -25,7 +25,7 @@ pub trait test_crate::BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
-    vtable: test_crate::BoolTrait
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -42,10 +42,11 @@ pub fn {impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> 
     return
 }
 
-// Full name: test_crate::{impl test_crate::BoolTrait for bool}
-impl test_crate::BoolTrait for bool {
-    parent_clause0 = core::marker::MetaSized<bool>
-    fn get_bool<'_0> = {impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
+// Full name: test_crate::{impl BoolTrait for bool}
+impl BoolTrait for bool {
+    parent_clause0 = MetaSized<bool>
+    fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
+    vtable: {impl BoolTrait for bool}::{vtable}
 }
 
 // Full name: test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::get_bool
@@ -85,8 +86,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: test_crate::BoolTrait<T>,
 {
-    parent_clause0 = core::marker::MetaSized<Option<T>[@TraitClause0]>
-    fn get_bool<'_0> = {impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::test_bool_trait_option

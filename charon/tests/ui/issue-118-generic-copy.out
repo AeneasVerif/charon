@@ -7,7 +7,7 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
@@ -37,8 +37,8 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
-    vtable: core::marker::Destruct
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: test_crate::Foo
@@ -58,12 +58,14 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 impl Clone for Foo {
     parent_clause0 = Sized<Foo>
     fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
     parent_clause0 = core::marker::MetaSized<Foo>
     parent_clause1 = {impl Clone for Foo}
+    non-dyn-compatible
 }
 
 // Full name: test_crate::copy_foo
@@ -113,7 +115,7 @@ trait test_crate::Trait<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Ty>
     parent_clause2 : [@TraitClause2]: Copy<Self::Ty>
     type Ty
-    vtable: test_crate::Trait
+    non-dyn-compatible
 }
 
 // Full name: test_crate::copy_assoc_ty
