@@ -20,10 +20,17 @@ fn usize_ty() -> Ty {
 }
 
 /// Takes a `T` valid in the context of a trait ref and transforms it into a `T` valid in the
-/// context of its vtable definition, i.e. no longer mentions `Self`. If `new_self` is `Some`, we
-/// replace any mention of `Self` with it; otherwise we panic if `Self` is mentioned.
-fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>) -> T {
-    struct ReplaceSelfVisitor(Option<Ty>);
+/// context of its vtable definition, i.e. no longer mentions the `Self` type or `Self` clause. If
+/// `new_self` is `Some`, we replace any mention of the `Self` type with it; otherwise we panic if
+/// `Self` is mentioned.
+/// If `for_method` is true, we're handling a value coming from a `AssocFn`, which takes the `Self`
+/// clause as its first clause parameter. Otherwise we're in trait scope, where the `Self` clause
+/// is represented with `TraitRefKind::SelfId`.
+fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>, for_method: bool) -> T {
+    struct ReplaceSelfVisitor {
+        new_self: Option<Ty>,
+        for_method: bool,
+    }
     impl VarsVisitor for ReplaceSelfVisitor {
         fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
             if let DeBruijnVar::Bound(DeBruijnId::ZERO, type_id) = v {
@@ -32,7 +39,7 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>) -> T {
                     TyKind::TypeVar(DeBruijnVar::Bound(DeBruijnId::ZERO, TypeVarId::new(new_id)))
                         .into_ty()
                 } else {
-                    self.0.clone().expect(
+                    self.new_self.clone().expect(
                         "Found unexpected `Self` 
                         type when constructing vtable",
                     )
@@ -41,8 +48,28 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>) -> T {
                 None
             }
         }
+
+        fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+            if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
+                if self.for_method && clause_id == TraitClauseId::ZERO {
+                    // That's the `Self` clause.
+                    Some(TraitRefKind::Dyn)
+                } else {
+                    panic!("Found unexpected clause var when constructing vtable: {v}")
+                }
+            } else {
+                None
+            }
+        }
+
+        fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
+            Some(TraitRefKind::Dyn)
+        }
     }
-    x.visit_vars(&mut ReplaceSelfVisitor(new_self));
+    x.visit_vars(&mut ReplaceSelfVisitor {
+        new_self,
+        for_method,
+    });
     x
 }
 
@@ -126,22 +153,8 @@ impl ItemTransCtx<'_, '_> {
     pub fn trait_is_dyn_compatible(&mut self, def_id: &hax::DefId) -> Result<bool, Error> {
         let def = self.poly_hax_def(def_id)?;
         Ok(match def.kind() {
-            hax::FullDefKind::Trait {
-                dyn_self: Some(dyn_self),
-                ..
-            }
-            | hax::FullDefKind::TraitAlias {
-                dyn_self: Some(dyn_self),
-                ..
-            } => {
-                match dyn_self.kind() {
-                    // `dyn_self` looks like `dyn Trait<Args.., Ty0 = .., Ty1 = ..>`. The first
-                    // predicate is `_: Trait<Args..>`, the rest are type constraints. Hence the
-                    // trait recursively has no assoc types iff `preds.len() == 1`.
-                    hax::TyKind::Dynamic(_, preds, _) => preds.predicates.len() == 1,
-                    _ => panic!("unexpected `dyn_self`: {dyn_self:?}"),
-                }
-            }
+            hax::FullDefKind::Trait { dyn_self, .. }
+            | hax::FullDefKind::TraitAlias { dyn_self, .. } => dyn_self.is_some(),
             _ => false,
         })
     }
@@ -186,6 +199,15 @@ impl ItemTransCtx<'_, '_> {
             .generics
             .types
             .remove_and_shift_ids(TypeVarId::ZERO);
+
+        // The vtable type also takes associated types as parameters.
+        let assoc_tys: Vec<_> = tref
+            .trait_associated_types(&self.hax_state_with_id())
+            .iter()
+            .map(|ty| self.translate_ty(span, ty))
+            .try_collect()?;
+        vtable_ref.generics.types.extend(assoc_tys);
+
         Ok(Some(vtable_ref))
     }
 
@@ -329,7 +351,6 @@ impl ItemTransCtx<'_, '_> {
         }
 
         self.translate_def_generics(span, trait_def)?;
-        // TODO(dyn): add the associated types.
 
         let (hax::FullDefKind::Trait {
             dyn_self,
@@ -349,7 +370,36 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // The `dyn Trait<Args..>` type for this trait.
-        let mut dyn_self = self.translate_ty(span, dyn_self)?;
+        let mut dyn_self = {
+            let dyn_self = self.translate_ty(span, dyn_self)?;
+            let TyKind::DynTrait(mut dyn_pred) = dyn_self.kind().clone() else {
+                panic!("incorrect `dyn_self`")
+            };
+
+            // Add one generic parameter for each associated type of this trait and its parents. We
+            // then use that in `dyn_self`
+            for (i, ty_constraint) in dyn_pred
+                .binder
+                .params
+                .trait_type_constraints
+                .iter_mut()
+                .enumerate()
+            {
+                let name = format!("Ty{i}");
+                let new_ty = self
+                    .the_only_binder_mut()
+                    .params
+                    .types
+                    .push_with(|index| TypeVar { index, name });
+                // Moving that type under two levels of binders: the `DynPredicate` binder and the
+                // type constraint binder.
+                let new_ty =
+                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::new(2), new_ty)).into_ty();
+                ty_constraint.skip_binder.ty = new_ty;
+            }
+            TyKind::DynTrait(dyn_pred).into_ty()
+        };
+
         // First construct fields that use the real method signatures (which may use the `Self`
         // type). We fixup the types and generics below.
         let fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
@@ -360,9 +410,9 @@ impl ItemTransCtx<'_, '_> {
         // from the generic parameters.
         let mut generics = self.into_generics();
         {
-            dyn_self = dynify(dyn_self, None);
-            generics = dynify(generics, Some(dyn_self.clone()));
-            kind = dynify(kind, Some(dyn_self.clone()));
+            dyn_self = dynify(dyn_self, None, false);
+            generics = dynify(generics, Some(dyn_self.clone()), false);
+            kind = dynify(kind, Some(dyn_self.clone()), true);
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             generics.types.iter_mut().for_each(|ty| {
                 ty.index -= 1;
@@ -434,17 +484,15 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// E.g.,
-    /// global <T..., VT...>
-    ///     trait::{vtable_instance}::<ImplTy<T...>> :
-    ///         trait::{vtable}<VT...> = trait::{vtable}<VT...> {
-    ///     drop: &ignore / &<ImplTy<T...> as Drop>::drop,
-    ///     size: size_of(<ImplTy<T...>>),
-    ///     align: align_of(<ImplTy<T...>>),
-    ///     method_0: &<ImplTy<T...> as Trait>::method_0::{shim},
-    ///     method_1: &<ImplTy<T...> as Trait>::method_1::{shim},
+    /// global {impl Trait for Foo}::vtable<Args..>: Trait::{vtable}<TraitArgs.., AssocTys..> {
+    ///     size: size_of(Foo),
+    ///     align: align_of(Foo),
+    ///     drop: <Foo as Drop>::drop,
+    ///     method_0: <Foo as Trait>::method_0::{shim},
+    ///     method_1: <Foo as Trait>::method_1::{shim},
     ///     ...
-    ///     super_trait_0: &SuperTrait0<VT...>::{vtable_instance}::<ImplTy<T...>>,
-    ///     super_trait_1: &SuperTrait1<VT...>::{vtable_instance}::<ImplTy<T...>>,
+    ///     super_trait_0: SuperImpl0<..>::{vtable_instance}::<..>,
+    ///     super_trait_1: SuperImpl1<..>::{vtable_instance}::<..>,
     ///     ...
     /// }
     pub(crate) fn translate_vtable_instance(
@@ -539,11 +587,12 @@ impl ItemTransCtx<'_, '_> {
         };
         for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
         {
-            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() {
-                // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-                if !self.pred_is_for_self(&pred.trait_ref) {
-                    continue;
-                }
+            let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
+                continue;
+            };
+            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            if !self.pred_is_for_self(&pred.trait_ref) {
+                continue;
             }
 
             let vtable_def_ref = self

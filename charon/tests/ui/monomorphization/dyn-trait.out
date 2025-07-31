@@ -131,11 +131,8 @@ note: the error occurred when translating `core::fmt::Display::{vtable}::<alloc:
    |
 12 |     let _ = dyn_to_string(&str);
    |                           ----
-error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 498 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
- --> /rustc/library/core/src/fmt/mod.rs:562:1
 
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:375:14:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:376:17:
 incorrect `dyn_self`
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `core::fmt::Display`.
@@ -252,4 +249,4 @@ note: the error occurred when translating `alloc::string::ToString::to_string`, 
   |
 7 |     x.to_string()
   |     -------------
-ERROR Charon failed to translate this code (46 errors)
+ERROR Charon failed to translate this code (45 errors)

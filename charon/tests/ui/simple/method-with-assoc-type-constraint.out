@@ -31,7 +31,7 @@ pub trait IntoIterator<Self, Self_Item>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
-    non-dyn-compatible
+    vtable: test_crate::IntoIterator::{vtable}<Self_Item>
 }
 
 // Full name: test_crate::FromIterator

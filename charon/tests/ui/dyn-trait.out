@@ -86,7 +86,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -98,7 +98,16 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+}
+
+struct core::ops::function::Fn::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0)),
+  method_call: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0)), Args) -> Fn<(dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0), Args>::parent_clause1::parent_clause1::Output,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (core::ops::function::FnMut::{vtable}<Args, Fn<(dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0), Args>::parent_clause1::parent_clause1::Output>),
 }
 
 // Full name: core::ops::function::Fn
@@ -110,7 +119,7 @@ pub trait Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = call<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::Fn::call
