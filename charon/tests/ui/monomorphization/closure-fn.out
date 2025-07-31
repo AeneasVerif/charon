@@ -58,7 +58,7 @@ pub trait FnOnce::<closure<'_, '_>, (u8, u8)>
     parent_clause1 : [@TraitClause1]: Sized::<(u8, u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8, u8)>
     fn call_once = core::ops::function::FnOnce::call_once::<closure<'_, '_>, (u8, u8)>
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}::<closure<'_, '_>, (u8, u8)><u8>
 }
 
 // Full name: core::ops::function::FnMut::<closure<'_, '_>, (u8, u8)>
@@ -70,7 +70,7 @@ pub trait FnMut::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8, u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8, u8)>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0_0>
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}::<closure<'_, '_>, (u8, u8)><u8>
 }
 
 // Full name: core::ops::function::Fn::<closure<'_, '_>, (u8, u8)>
@@ -82,7 +82,7 @@ pub trait Fn::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8, u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8, u8)>
     fn call<'_0> = core::ops::function::Fn::call::<closure<'_, '_>, (u8, u8)><'_0_0>
-    non-dyn-compatible
+    vtable: core::ops::function::Fn::{vtable}::<closure<'_, '_>, (u8, u8)><u8>
 }
 
 pub fn core::ops::function::Fn::call<'_0>(@1: &'_0 (closure<'_, '_>), @2: (u8, u8)) -> u8

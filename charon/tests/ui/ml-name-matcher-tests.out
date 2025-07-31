@@ -21,7 +21,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-    non-dyn-compatible
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -74,7 +74,7 @@ pub trait SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
-    non-dyn-compatible
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
 // Full name: core::slice::index::{impl Index<I> for Slice<T>}::index
@@ -96,7 +96,7 @@ where
     parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
-    non-dyn-compatible
+    vtable: {impl Index<I> for Slice<T>}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[Sized<usize>]}
@@ -175,7 +175,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: alloc::alloc::Global

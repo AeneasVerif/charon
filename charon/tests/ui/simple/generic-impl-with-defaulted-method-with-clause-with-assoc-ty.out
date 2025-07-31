@@ -27,7 +27,7 @@ trait HasType<Self, Self_Type>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
-    non-dyn-compatible
+    vtable: test_crate::HasType::{vtable}<Self_Type>
 }
 
 // Full name: test_crate::HasMethod

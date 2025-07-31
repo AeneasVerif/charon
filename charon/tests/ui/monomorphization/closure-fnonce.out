@@ -74,7 +74,7 @@ pub trait FnOnce::<closure, (u8)>
     parent_clause1 : [@TraitClause1]: Sized::<(u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
     fn call_once = core::ops::function::FnOnce::call_once::<closure, (u8)>
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}::<closure, (u8)><u8>
 }
 
 pub fn core::ops::function::FnOnce::call_once(@1: closure, @2: (u8)) -> u8

@@ -18,7 +18,7 @@ trait HasAssoc<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
     type Assoc
-    non-dyn-compatible
+    vtable: test_crate::HasAssoc::{vtable}<Self::Assoc>
 }
 
 // Full name: test_crate::SuperTrait

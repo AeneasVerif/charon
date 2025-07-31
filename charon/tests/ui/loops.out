@@ -297,7 +297,7 @@ pub trait Iterator<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
 // Full name: core::ops::range::Range
@@ -326,7 +326,7 @@ where
     parent_clause1 = @TraitClause0
     type Item = A
     fn next<'_0> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_0, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
+    vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -374,7 +374,7 @@ where
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -420,7 +420,7 @@ where
     type Item = @TraitClause1::Item
     type IntoIter = I
     fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
+    vtable: {impl IntoIterator for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: core::iter::traits::collect::Extend
@@ -447,7 +447,7 @@ pub trait DoubleEndedIterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
@@ -460,7 +460,7 @@ pub trait ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
-    non-dyn-compatible
+    vtable: core::iter::traits::exact_size::ExactSizeIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 #[lang_item("next")]
@@ -514,7 +514,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -526,7 +526,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -548,7 +548,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-    non-dyn-compatible
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -563,7 +563,7 @@ pub trait IndexMut<Self, Idx>
     parent_clause1 : [@TraitClause1]: Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>[Self]
-    non-dyn-compatible
+    vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::parent_clause1::Output>
 }
 
 pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (@TraitClause0::parent_clause1::Output)
@@ -624,7 +624,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    non-dyn-compatible
+    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
 }
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -655,7 +655,7 @@ pub trait SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
-    non-dyn-compatible
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
@@ -728,7 +728,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl SliceIndex<Slice<T>> for usize}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: alloc::alloc::Global
@@ -768,7 +768,7 @@ where
     parent_clause2 = @TraitClause3::parent_clause3
     type Output = @TraitClause3::Output
     fn index<'_0> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    non-dyn-compatible
+    vtable: {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 // Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
@@ -791,7 +791,7 @@ where
     parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     parent_clause2 = @TraitClause1::parent_clause0
     fn index_mut<'_0> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    non-dyn-compatible
+    vtable: {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 // Full name: test_crate::test_loop1

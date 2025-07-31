@@ -63,7 +63,7 @@ trait Iterator<Self, Self_Item>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
-    non-dyn-compatible
+    vtable: test_crate::Iterator::{vtable}<Self_Item>
 }
 
 // Full name: test_crate::IntoIterator
@@ -73,7 +73,7 @@ trait IntoIterator<Self, Self_Item, Self_IntoIter>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
     parent_clause2 : [@TraitClause2]: Sized<Self_IntoIter>
     parent_clause3 : [@TraitClause3]: Iterator<Self_IntoIter, Self_Item>
-    non-dyn-compatible
+    vtable: test_crate::IntoIterator::{vtable}<Self_Item, Self_IntoIter>
 }
 
 // Full name: test_crate::{impl IntoIterator<Clause1_Item, I> for I}
@@ -86,7 +86,7 @@ where
     parent_clause1 = @TraitClause1::parent_clause1
     parent_clause2 = @TraitClause0
     parent_clause3 = @TraitClause1
-    non-dyn-compatible
+    vtable: {impl IntoIterator<Clause1_Item, I> for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::callee
@@ -128,7 +128,7 @@ trait X<Self, Self_Assoc>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
     fn method<'_0> = method<'_0_0, Self, Self_Assoc>[Self]
-    non-dyn-compatible
+    vtable: test_crate::X::{vtable}<Self_Assoc>
 }
 
 // Full name: test_crate::X::method
@@ -141,7 +141,7 @@ trait A<Self, Self_Clause1_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
-    non-dyn-compatible
+    vtable: test_crate::A::{vtable}<Self_Clause1_Assoc>
 }
 
 // Full name: test_crate::B
@@ -149,7 +149,7 @@ trait B<Self, Self_Clause1_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
-    non-dyn-compatible
+    vtable: test_crate::B::{vtable}<Self_Clause1_Assoc>
 }
 
 // Full name: test_crate::a
