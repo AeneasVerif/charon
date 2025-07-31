@@ -9,6 +9,7 @@ pub trait MetaSized::<bool>
 pub trait Sized::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop::<bool>
@@ -17,6 +18,7 @@ pub trait Drop::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
     fn drop<'_0> = drop::<bool><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<bool>
 }
 
 // Full name: core::ops::drop::Drop::drop::<bool>
@@ -27,6 +29,7 @@ pub trait Trait::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
     fn method<'_0> = test_crate::Trait::method::<bool><'_0_0>
+    vtable: test_crate::Trait::{vtable}::<bool>
 }
 
 pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 (bool))
@@ -48,6 +51,7 @@ pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 impl Trait::<bool> {
     parent_clause0 = MetaSized::<bool>
     fn method<'_0> = {impl Trait::<bool>}::method<'_0_0>
+    vtable: {impl Trait::<bool>}::{vtable}
 }
 
 // Full name: test_crate::do_test::<bool>

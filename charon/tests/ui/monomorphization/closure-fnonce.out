@@ -9,6 +9,7 @@ pub trait MetaSized::<closure>
 pub trait Sized::<closure>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<(u8)>
@@ -20,6 +21,7 @@ pub trait MetaSized::<(u8)>
 pub trait Sized::<(u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized::<NotCopy>
@@ -31,6 +33,7 @@ pub trait MetaSized::<NotCopy>
 pub trait Sized::<NotCopy>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<NotCopy>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple::<(u8)>
@@ -38,6 +41,7 @@ pub trait Sized::<NotCopy>
 pub trait Tuple::<(u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8)>
+    vtable: core::marker::Tuple::{vtable}::<(u8)>
 }
 
 // Full name: test_crate::NotCopy
@@ -57,6 +61,7 @@ pub trait Drop::<closure>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure>
     fn drop<'_0> = core::ops::drop::Drop::drop::<closure><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<closure>
 }
 
 pub fn core::ops::drop::Drop::drop::<closure><'_0>(@1: &'_0 mut (closure))
@@ -70,6 +75,7 @@ pub trait FnOnce::<closure, (u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once::<closure, (u8)>
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnOnce::call_once(@1: closure, @2: (u8)) -> u8
@@ -153,6 +159,7 @@ impl FnOnce::<closure, (u8)> {
     parent_clause2 = Tuple::<(u8)>
     type Output = u8
     fn call_once = {impl FnOnce::<closure, (u8)>}::call_once
+    non-dyn-compatible
 }
 
 

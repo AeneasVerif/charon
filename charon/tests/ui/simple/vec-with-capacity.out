@@ -13,6 +13,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::PhantomData
@@ -26,6 +27,7 @@ pub trait SizedTypeProperties<Self>
     const IS_ZST : bool
     const LAYOUT : Layout
     const MAX_SLICE_LEN : usize
+    non-dyn-compatible
 }
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
@@ -70,6 +72,7 @@ where
     const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop
@@ -78,6 +81,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -192,6 +196,7 @@ where
 {
     parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::vec

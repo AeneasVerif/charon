@@ -15,6 +15,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple
@@ -22,6 +23,7 @@ pub trait Sized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::function::FnOnce
@@ -34,6 +36,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -97,6 +100,7 @@ impl FnOnce<(u32)> for closure {
     parent_clause3 = Sized<u32>
     type Output = u32
     fn call_once = {impl FnOnce<(u32)> for closure}::call_once
+    non-dyn-compatible
 }
 
 // Full name: test_cargo_dependencies::main::silly_incr

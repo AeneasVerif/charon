@@ -4,12 +4,14 @@
 trait HasAssoc<Self>
 {
     type Assoc
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
     fn default_method<T, [@TraitClause1]: HasAssoc<T>> = default_method<Self, T>[Self, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait::default_method
@@ -35,6 +37,7 @@ where
 // Full name: test_crate::{impl Trait for T}
 impl<T> Trait for T {
     fn default_method<T, [@TraitClause1]: HasAssoc<T>> = test_crate::{impl Trait for T}::default_method<T, T>[@TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

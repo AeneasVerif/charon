@@ -11,6 +11,7 @@ trait Trait<Self>
     fn required<'_0> = test_crate::Trait::required<'_0_0, Self>[Self]
     fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>[Self]
     fn provided2<'_0> = provided2<'_0_0, Self>[Self]
+    vtable: test_crate::Trait::{vtable}
 }
 
 fn test_crate::Trait::required<'_0, Self>(@1: &'_0 (Self))
@@ -154,6 +155,7 @@ impl Trait for Foo {
     fn required<'_0> = {impl Trait for Foo}::required<'_0_0>
     fn provided1<'_0> = test_crate::{impl Trait for Foo}::provided1<'_0_0>
     fn provided2<'_0> = test_crate::{impl Trait for Foo}::provided2<'_0_0>
+    vtable: {impl Trait for Foo}::{vtable}
 }
 
 // Full name: test_crate::Bar
@@ -229,6 +231,7 @@ impl Trait for Bar {
     fn required<'_0> = {impl Trait for Bar}::required<'_0_0>
     fn provided1<'_0> = {impl Trait for Bar}::provided1<'_0_0>
     fn provided2<'_0> = test_crate::{impl Trait for Bar}::provided2<'_0_0>
+    vtable: {impl Trait for Bar}::{vtable}
 }
 
 

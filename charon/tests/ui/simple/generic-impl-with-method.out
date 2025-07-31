@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -16,6 +17,7 @@ pub trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn method<'_0> = test_crate::Trait::method<'_0_0, Self>[Self]
+    vtable: test_crate::Trait::{vtable}
 }
 
 pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
@@ -42,6 +44,7 @@ where
 {
     parent_clause0 = @TraitClause0::parent_clause0
     fn method<'_0> = {impl Trait for T}::method<'_0_0, T>[@TraitClause0]
+    vtable: {impl Trait for T}::{vtable}<T>[@TraitClause0]
 }
 
 

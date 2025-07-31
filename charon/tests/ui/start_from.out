@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -16,6 +17,7 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::clone::Clone
@@ -25,6 +27,7 @@ pub trait Clone<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
     fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone

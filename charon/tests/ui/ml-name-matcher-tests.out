@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::index::Index
@@ -20,6 +21,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -54,6 +56,7 @@ where
 pub trait Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
 // Full name: core::slice::index::SliceIndex
@@ -71,6 +74,7 @@ pub trait SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::{impl Index<I> for Slice<T>}::index
@@ -92,11 +96,13 @@ where
     parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[Sized<usize>]}
 impl Sealed for RangeFrom<usize>[Sized<usize>] {
     parent_clause0 = MetaSized<RangeFrom<usize>[Sized<usize>]>
+    vtable: {impl Sealed for RangeFrom<usize>[Sized<usize>]}::{vtable}
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
@@ -169,6 +175,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -191,6 +198,7 @@ trait Trait<Self, T>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, T, U>()
@@ -219,6 +227,7 @@ where
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]>
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
     fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]}::method<T, U>[@TraitClause0, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]}::method
@@ -244,6 +253,7 @@ where
     parent_clause0 = MetaSized<Option<U>[@TraitClause1]>
     parent_clause1 = Sized<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]>
     fn method<V, [@TraitClause0]: Sized<V>> = {impl Trait<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]> for Option<U>[@TraitClause1]}::method<T, U, V>[@TraitClause0, @TraitClause1, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo

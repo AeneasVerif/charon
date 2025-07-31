@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -30,6 +31,7 @@ pub struct Error {}
 pub trait Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Debug::{vtable}
 }
 
 // Full name: core::array::TryFromSliceError
@@ -41,6 +43,7 @@ pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 (TryFromS
 // Full name: core::array::{impl Debug for TryFromSliceError}
 impl Debug for TryFromSliceError {
     fn fmt<'_0, '_1, '_2> = {impl Debug for TryFromSliceError}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Debug for TryFromSliceError}::{vtable}
 }
 
 // Full name: core::convert::TryFrom
@@ -52,6 +55,7 @@ pub trait TryFrom<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -60,6 +64,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Copy
@@ -68,6 +73,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from
@@ -87,6 +93,7 @@ where
     parent_clause2 = Sized<TryFromSliceError>
     type Error = TryFromSliceError
     fn try_from = {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from<'_0, T, const N : usize>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -101,6 +108,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 impl Clone for u8 {
     parent_clause0 = Sized<u8>
     fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::convert::TryInto
@@ -112,6 +120,7 @@ pub trait TryInto<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn try_into = core::convert::TryInto::try_into<Self, T>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> Result<T, @TraitClause0::Error>[@TraitClause0::parent_clause1, @TraitClause0::parent_clause2]
@@ -142,6 +151,7 @@ where
     parent_clause2 = @TraitClause2::parent_clause2
     type Error = @TraitClause2::Error
     fn try_into = {impl TryInto<U> for T}::try_into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -152,6 +162,7 @@ where
 impl Copy for u8 {
     parent_clause0 = MetaSized<u8>
     parent_clause1 = {impl Clone for u8}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -159,6 +170,7 @@ impl Copy for u8 {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap

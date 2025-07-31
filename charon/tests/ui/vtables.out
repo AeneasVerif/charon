@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -31,6 +33,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 impl Clone for i32 {
     parent_clause0 = Sized<i32>
     fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::fmt::Error
@@ -58,6 +61,7 @@ where
 pub trait Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Display::{vtable}
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -70,6 +74,7 @@ pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (
 // Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
     fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Display for Str}::{vtable}
 }
 
 // Full name: core::marker::Destruct
@@ -77,6 +82,7 @@ impl Display for Str {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ops::drop::Drop
@@ -85,6 +91,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -119,6 +126,7 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 impl Drop for String {
     parent_clause0 = MetaSized<String>
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::{String}::is_empty
@@ -131,6 +139,7 @@ pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
 impl Clone for String {
     parent_clause0 = Sized<String>
     fn clone<'_0> = {impl Clone for String}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::ToString
@@ -139,6 +148,7 @@ pub trait ToString<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
+    vtable: alloc::string::ToString::{vtable}
 }
 
 #[lang_item("to_string_method")]
@@ -160,6 +170,7 @@ where
 {
     parent_clause0 = @TraitClause0
     fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::Super
@@ -168,6 +179,7 @@ trait Super<Self, T>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn super_method<'_0> = test_crate::Super::super_method<'_0_0, Self, T>[Self]
+    vtable: test_crate::Super::{vtable}<T>
 }
 
 fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
@@ -190,6 +202,7 @@ trait Checkable<Self, T>
     parent_clause1 : [@TraitClause1]: Super<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<T>
     fn check<'_0> = test_crate::Checkable::check<'_0_0, Self, T>[Self]
+    vtable: test_crate::Checkable::{vtable}<T>
 }
 
 fn test_crate::Checkable::check<'_0, Self, T>(@1: &'_0 (Self)) -> bool
@@ -223,6 +236,7 @@ impl Super<i32> for i32 {
     parent_clause0 = MetaSized<i32>
     parent_clause1 = Sized<i32>
     fn super_method<'_0> = {impl Super<i32> for i32}::super_method<'_0_0>
+    vtable: {impl Super<i32> for i32}::{vtable}
 }
 
 // Full name: test_crate::{impl Checkable<i32> for i32}::check
@@ -264,6 +278,7 @@ impl Checkable<i32> for i32 {
     parent_clause1 = {impl Super<i32> for i32}
     parent_clause2 = Sized<i32>
     fn check<'_0> = {impl Checkable<i32> for i32}::check<'_0_0>
+    vtable: {impl Checkable<i32> for i32}::{vtable}
 }
 
 struct test_crate::NoParam::{vtable} {
@@ -279,6 +294,7 @@ trait NoParam<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn dummy<'_0> = test_crate::NoParam::dummy<'_0_0, Self>[Self]
+    vtable: test_crate::NoParam::{vtable}
 }
 
 fn test_crate::NoParam::dummy<'_0, Self>(@1: &'_0 (Self))
@@ -317,6 +333,7 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
 impl NoParam for i32 {
     parent_clause0 = MetaSized<i32>
     fn dummy<'_0> = {impl NoParam for i32}::dummy<'_0_0>
+    vtable: {impl NoParam for i32}::{vtable}
 }
 
 // Full name: test_crate::to_dyn_obj
@@ -358,6 +375,7 @@ trait Modifiable<Self, T>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn modify<'_0, '_1> = test_crate::Modifiable::modify<'_0_0, '_0_1, Self, T>[Self]
+    vtable: test_crate::Modifiable::{vtable}<T>
 }
 
 fn test_crate::Modifiable::modify<'_0, '_1, Self, T>(@1: &'_0 mut (Self), @2: &'_1 (T)) -> T
@@ -414,6 +432,7 @@ where
     parent_clause0 = MetaSized<i32>
     parent_clause1 = @TraitClause0
     fn modify<'_0, '_1> = {impl Modifiable<T> for i32}::modify<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::modify_trait_object
@@ -459,6 +478,7 @@ trait BaseOn<Self, T>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn operate_on<'_0, '_1> = test_crate::BaseOn::operate_on<'_0_0, '_0_1, Self, T>[Self]
+    vtable: test_crate::BaseOn::{vtable}<T>
 }
 
 fn test_crate::BaseOn::operate_on<'_0, '_1, Self, T>(@1: &'_0 (Self), @2: &'_1 (T))
@@ -482,6 +502,7 @@ trait Both32And64<Self>
     parent_clause1 : [@TraitClause1]: BaseOn<Self, i32>
     parent_clause2 : [@TraitClause2]: BaseOn<Self, i64>
     fn both_operate<'_0, '_1, '_2> = both_operate<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: test_crate::Both32And64::{vtable}
 }
 
 // Full name: test_crate::Both32And64::both_operate
@@ -562,6 +583,7 @@ impl BaseOn<i32> for i32 {
     parent_clause0 = MetaSized<i32>
     parent_clause1 = Sized<i32>
     fn operate_on<'_0, '_1> = {impl BaseOn<i32> for i32}::operate_on<'_0_0, '_0_1>
+    vtable: {impl BaseOn<i32> for i32}::{vtable}
 }
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on
@@ -607,6 +629,7 @@ impl BaseOn<i64> for i32 {
     parent_clause0 = MetaSized<i32>
     parent_clause1 = Sized<i64>
     fn operate_on<'_0, '_1> = {impl BaseOn<i64> for i32}::operate_on<'_0_0, '_0_1>
+    vtable: {impl BaseOn<i64> for i32}::{vtable}
 }
 
 fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
@@ -669,6 +692,7 @@ impl Both32And64 for i32 {
     parent_clause1 = {impl BaseOn<i32> for i32}
     parent_clause2 = {impl BaseOn<i64> for i32}
     fn both_operate<'_0, '_1, '_2> = test_crate::{impl Both32And64 for i32}::both_operate<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Both32And64 for i32}::{vtable}
 }
 
 // Full name: test_crate::Alias
@@ -676,6 +700,7 @@ trait Alias<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Both32And64<Self>
+    vtable: test_crate::Alias::{vtable}
 }
 
 // Full name: test_crate::use_alias

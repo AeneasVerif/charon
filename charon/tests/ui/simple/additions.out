@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -16,6 +17,7 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::clone::Clone
@@ -25,6 +27,7 @@ pub trait Clone<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
     fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -38,6 +41,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::clone::Clone::clone_from
@@ -93,6 +97,7 @@ impl Clone for u8 {
     parent_clause0 = Sized<u8>
     fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
     fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<u8>> = core::clone::impls::{impl Clone for u8}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Copy
@@ -101,6 +106,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 pub fn core::intrinsics::saturating_add<T>(@1: T, @2: T) -> T
@@ -119,6 +125,7 @@ where
 impl Copy for u8 {
     parent_clause0 = MetaSized<u8>
     parent_clause1 = {impl Clone for u8}
+    non-dyn-compatible
 }
 
 pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8

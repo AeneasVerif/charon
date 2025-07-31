@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -16,6 +17,7 @@ trait Trait<'a, Self, Self_Type>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo

@@ -15,6 +15,7 @@ where
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -23,6 +24,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Copy
@@ -31,6 +33,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cell::{Cell<T>[@TraitClause0::parent_clause0]}::get
@@ -56,12 +59,14 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
     fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::{impl Copy for u32}
 impl Copy for u32 {
     parent_clause0 = MetaSized<u32>
     parent_clause1 = {impl Clone for u32}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -69,6 +74,7 @@ impl Copy for u32 {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 #[lang_item("mem_swap")]
@@ -86,18 +92,21 @@ pub fn {impl Clone for NonZeroU32Inner}::clone<'_0>(@1: &'_0 (NonZeroU32Inner)) 
 impl Clone for NonZeroU32Inner {
     parent_clause0 = Sized<NonZeroU32Inner>
     fn clone<'_0> = {impl Clone for NonZeroU32Inner}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}
 impl Copy for NonZeroU32Inner {
     parent_clause0 = MetaSized<NonZeroU32Inner>
     parent_clause1 = {impl Clone for NonZeroU32Inner}
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::private::Sealed
 pub trait Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::num::nonzero::private::Sealed::{vtable}
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
@@ -109,11 +118,13 @@ pub trait ZeroablePrimitive<Self>
     parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
     parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
     type NonZeroInner
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::{impl Sealed for u32}
 impl Sealed for u32 {
     parent_clause0 = MetaSized<u32>
+    vtable: {impl Sealed for u32}::{vtable}
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
@@ -124,6 +135,7 @@ impl ZeroablePrimitive for u32 {
     parent_clause3 = Sized<NonZeroU32Inner>
     parent_clause4 = {impl Copy for NonZeroU32Inner}
     type NonZeroInner = NonZeroU32Inner
+    non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::NonZero
@@ -154,6 +166,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -202,6 +215,7 @@ where
 {
     parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 pub fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))

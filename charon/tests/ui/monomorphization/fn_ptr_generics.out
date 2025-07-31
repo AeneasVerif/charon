@@ -9,6 +9,7 @@ pub trait MetaSized::<u8>
 pub trait Sized::<u8>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<u8>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option::<u8>

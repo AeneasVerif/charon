@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -495,6 +496,7 @@ pub trait Counter<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>[Self]
+    vtable: test_crate::Counter::{vtable}
 }
 
 pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
@@ -523,6 +525,7 @@ pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
 impl Counter for usize {
     parent_clause0 = MetaSized<usize>
     fn incr<'_0> = {impl Counter for usize}::incr<'_0_0>
+    vtable: {impl Counter for usize}::{vtable}
 }
 
 // Full name: test_crate::use_counter
