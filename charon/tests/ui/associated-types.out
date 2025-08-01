@@ -321,14 +321,14 @@ trait test_crate::loopy::Bar<Self, Self_BarTy>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_BarTy>
-    non-dyn-compatible
+    vtable: test_crate::loopy::Bar::{vtable}<Self_BarTy>
 }
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()}
 impl test_crate::loopy::Bar<bool> for () {
     parent_clause0 = MetaSized<()>
     parent_clause1 = Sized<bool>
-    non-dyn-compatible
+    vtable: {impl test_crate::loopy::Bar<bool> for ()}::{vtable}
 }
 
 trait test_crate::loopy::Foo<Self>
@@ -339,7 +339,7 @@ trait test_crate::loopy::Foo<Self>
     parent_clause3 : [@TraitClause3]: test_crate::loopy::Bar<Self::FooTy, Self::Self_Clause3_BarTy>
     type FooTy
     type Self_Clause3_BarTy
-    non-dyn-compatible
+    vtable: test_crate::loopy::Foo::{vtable}<Self::FooTy>
 }
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Foo for ()}
@@ -350,7 +350,7 @@ impl test_crate::loopy::Foo for () {
     parent_clause3 = {impl test_crate::loopy::Bar<bool> for ()}
     type FooTy = ()
     type Self_Clause3_BarTy = bool
-    non-dyn-compatible
+    vtable: {impl test_crate::loopy::Foo for ()}::{vtable}
 }
 
 // Full name: test_crate::loopy::Baz
@@ -363,7 +363,7 @@ trait Baz<Self, T>
     parent_clause4 : [@TraitClause4]: Sized<Self::BazTy>
     type BazTy
     type Self_Clause3_BarTy
-    non-dyn-compatible
+    vtable: test_crate::loopy::Baz::{vtable}<T, Self::BazTy>
 }
 
 // Full name: test_crate::loopy::{impl Baz<()> for ()}
@@ -375,7 +375,7 @@ impl Baz<()> for () {
     parent_clause4 = Sized<usize>
     type BazTy = usize
     type Self_Clause3_BarTy = bool
-    non-dyn-compatible
+    vtable: {impl Baz<()> for ()}::{vtable}
 }
 
 trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
@@ -384,7 +384,7 @@ trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: Sized<U>
     parent_clause3 : [@TraitClause3]: Sized<Self_BarTy>
-    non-dyn-compatible
+    vtable: test_crate::loopy_with_generics::Bar::{vtable}<'a, T, U, Self_BarTy>
 }
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}
@@ -397,7 +397,7 @@ where
     parent_clause1 = Sized<u8>
     parent_clause2 = @TraitClause0
     parent_clause3 = Sized<&'_ (T)>
-    non-dyn-compatible
+    vtable: {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}::{vtable}<'a, T>[@TraitClause0]
 }
 
 trait test_crate::loopy_with_generics::Foo<'b, Self, T>
@@ -409,7 +409,7 @@ trait test_crate::loopy_with_generics::Foo<'b, Self, T>
     parent_clause4 : [@TraitClause4]: test_crate::loopy_with_generics::Bar<'b, Self::FooTy, u8, Option<T>[Self::parent_clause1], Self::Self_Clause4_BarTy>
     type FooTy
     type Self_Clause4_BarTy
-    non-dyn-compatible
+    vtable: test_crate::loopy_with_generics::Foo::{vtable}<'b, T, Self::FooTy>
 }
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
@@ -421,7 +421,7 @@ impl test_crate::loopy_with_generics::Foo<'static, u16> for () {
     parent_clause4 = {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}<'_, Option<u16>[Sized<u16>]>[Sized<Option<u16>[Sized<u16>]>]
     type FooTy = ()
     type Self_Clause4_BarTy = &'_ (Option<u16>[Sized<u16>])
-    non-dyn-compatible
+    vtable: {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}::{vtable}
 }
 
 // Full name: test_crate::cow::Cow
@@ -445,7 +445,7 @@ where
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: Sized<Self_X>
     parent_clause3 : [@TraitClause3]: Sized<Self_Item>
-    non-dyn-compatible
+    vtable: test_crate::params::Foo::{vtable}<'a, T, Self_X, Self_Item>
 }
 
 // Full name: test_crate::params::{impl test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'a (())))> for ()}
@@ -458,7 +458,7 @@ where
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
     parent_clause2 = Sized<&'_ (())>
     parent_clause3 = Sized<&'_ ((Option<T>[@TraitClause0], &'_ (())))>
-    non-dyn-compatible
+    vtable: {impl test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'a (())))> for ()}::{vtable}<'a, T>[@TraitClause0]
 }
 
 

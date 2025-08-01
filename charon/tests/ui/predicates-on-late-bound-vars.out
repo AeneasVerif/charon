@@ -172,7 +172,7 @@ trait Foo<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::S>
     type S
-    non-dyn-compatible
+    vtable: test_crate::Foo::{vtable}<Self::S>
 }
 
 // Full name: test_crate::f

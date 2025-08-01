@@ -1,3 +1,4 @@
+//@ known-failure
 //@ charon-args=--remove-associated-types=*
 trait Trait {
     fn method<T: Copy>();

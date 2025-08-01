@@ -118,7 +118,7 @@ pub trait BuildHasher<Self>
     parent_clause2 : [@TraitClause2]: Hasher<Self::Hasher>
     type Hasher
     fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::hash::BuildHasher::{vtable}<Self::Hasher>
 }
 
 pub fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Hasher
@@ -146,7 +146,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-    non-dyn-compatible
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -229,7 +229,7 @@ where
     parent_clause2 = @TraitClause2::parent_clause0
     type Output = V
     fn index<'_0> = {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
-    non-dyn-compatible
+    vtable: {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::{vtable}<'_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
 }
 
 // Full name: std::hash::random::RandomState
@@ -262,7 +262,7 @@ impl BuildHasher for RandomState {
     parent_clause2 = {impl Hasher for DefaultHasher}
     type Hasher = DefaultHasher
     fn build_hasher<'_0> = {impl BuildHasher for RandomState}::build_hasher<'_0_0>
-    non-dyn-compatible
+    vtable: {impl BuildHasher for RandomState}::{vtable}
 }
 
 // Full name: test_crate::get_or_insert

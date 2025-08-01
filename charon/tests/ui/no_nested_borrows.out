@@ -19,7 +19,7 @@ pub trait Deref<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self::Target>
     type Target
     fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::ops::deref::Deref::{vtable}<Self::Target>
 }
 
 #[lang_item("deref_method")]
@@ -33,7 +33,7 @@ pub trait DerefMut<Self>
 {
     parent_clause0 : [@TraitClause0]: Deref<Self>
     fn deref_mut<'_0> = core::ops::deref::DerefMut::deref_mut<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::ops::deref::DerefMut::{vtable}<Self::parent_clause0::Target>
 }
 
 #[lang_item("deref_mut_method")]
@@ -90,7 +90,7 @@ where
     parent_clause0 = @TraitClause0
     type Target = T
     fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
+    vtable: {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut
@@ -107,7 +107,7 @@ where
 {
     parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<T, A>[@TraitClause0, @TraitClause1]
     fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_0, T, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
+    vtable: {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::Pair

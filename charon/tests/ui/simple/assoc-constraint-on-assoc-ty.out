@@ -31,7 +31,7 @@ trait Trait<Self, Self_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
-    non-dyn-compatible
+    vtable: test_crate::Trait::{vtable}<Self_Assoc>
 }
 
 // Full name: test_crate::takes_trait
@@ -55,7 +55,7 @@ trait IntoIterator<Self, Self_IntoIter>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
     parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
-    non-dyn-compatible
+    vtable: test_crate::IntoIterator::{vtable}<Self_IntoIter>
 }
 
 // Full name: test_crate::collect
