@@ -544,6 +544,12 @@ pub enum RawConstantExpr {
     Var(ConstGenericDbVar),
     /// Function pointer
     FnPtr(FnPtr),
+    /// A pointer with no provenance (e.g. 0 for the null pointer)
+    ///
+    /// We eliminate this case in a micro-pass.
+    #[drive(skip)]
+    #[charon::opaque]
+    PtrNoProvenance(u128),
     /// Raw memory value obtained from constant evaluation. Used when a more structured
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
     #[drive(skip)]

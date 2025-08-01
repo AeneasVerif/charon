@@ -417,7 +417,8 @@ impl TransformPass for Transform {
 
             // 1. Find new uses
             let Some(item) = ctx.translated.get_item(id) else {
-                panic!("Couldn't find item {:} in translated items.", id)
+                trace!("Couldn't find item {:} in translated items?", id);
+                continue;
             };
             find_uses(&mut data, &ctx.translated, &item);
 
@@ -523,7 +524,10 @@ impl TransformPass for Transform {
                 *mono = OptionHint::Some(new_mono);
                 data.worklist.push(new_mono);
 
-                let item = ctx.translated.get_item(new_mono).unwrap();
+                let Some(item) = ctx.translated.get_item(new_mono) else {
+                    trace!("Missing monomorphised item {new_mono:?}");
+                    continue;
+                };
                 ctx.translated
                     .item_names
                     .insert(new_mono, item.item_meta().name.clone());

@@ -42,6 +42,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 Literal::Float(FloatValue { value, ty })
             }
+            hax::ConstantLiteral::PtrNoProvenance(v) => {
+                return Ok(RawConstantExpr::PtrNoProvenance(*v));
+            }
         };
         Ok(RawConstantExpr::Literal(lit))
     }
@@ -168,7 +171,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::Ptr(..)
             | RawConstantExpr::FnPtr { .. }
-            | RawConstantExpr::Opaque(_) => {
+            | RawConstantExpr::Opaque(_)
+            | RawConstantExpr::PtrNoProvenance(..) => {
                 raise_error!(self, span, "Unexpected constant generic: {:?}", value)
             }
         }
