@@ -11,5 +11,6 @@ TODO: explain each item
 - Hide the distinction between early- and late-bound lifetime variables;
 - Make non-overriden default methods in impl blocks appear as normal methods;
 - Handle trait method implementations that have a more general signature than as declared in the trait (WIP: https://github.com/AeneasVerif/charon/issues/513);
-- Represent closures as normal structs that implement the `Fn*` traits (WIP: https://github.com/AeneasVerif/charon/issues/194);
+- Represent closures as normal structs that implement the `Fn*` traits;
+- Represent VTables as normal structs stored in statics (WIP: see https://github.com/AeneasVerif/charon/issues/123);
 - Many useful post-processing transformations to make the output more usable; see [the dedicated file](./transformations.md).
