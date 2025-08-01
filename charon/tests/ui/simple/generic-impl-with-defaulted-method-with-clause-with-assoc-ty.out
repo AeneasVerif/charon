@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -22,10 +21,9 @@ where
   Some(T),
 }
 
-// Full name: test_crate::HasType
-trait HasType<Self, Self_Type>
+trait test_crate::HasType<Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
     non-dyn-compatible
 }
@@ -42,7 +40,7 @@ trait HasMethod<Self>
 fn method<Self, Clause1_Type>()
 where
     [@TraitClause0]: HasMethod<Self>,
-    [@TraitClause1]: HasType<Self, Clause1_Type>,
+    [@TraitClause1]: test_crate::HasType<Self, Clause1_Type>,
 {
     let @0: (); // return
 
@@ -54,7 +52,7 @@ where
 fn test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause1_Type>()
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasType<Option<T>[@TraitClause0], Clause1_Type>,
+    [@TraitClause1]: test_crate::HasType<Option<T>[@TraitClause0], Clause1_Type>,
 {
     let @0: (); // return
 

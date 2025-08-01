@@ -1,11 +1,16 @@
-use super::{
-    translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
-    translate_predicates::PredicateLocation,
-};
+use core::panic;
 
+use crate::translate::{translate_generics::BindingLevel, translate_predicates::PredicateLocation};
+
+use super::translate_ctx::*;
+use charon_lib::ast::*;
+use hax_frontend_exporter::{self as hax};
+
+use super::translate_crate::TransItemSourceKind;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 fn dummy_public_attr_info() -> AttrInfo {
@@ -25,6 +30,10 @@ fn usize_ty() -> Ty {
 fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>) -> T {
     struct ReplaceSelfVisitor(Option<Ty>);
     impl VarsVisitor for ReplaceSelfVisitor {
+        fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
+            Some(TraitRefKind::Dyn(todo!()))
+        }
+
         fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
             if let DeBruijnVar::Bound(DeBruijnId::ZERO, type_id) = v {
                 // Replace type 0 and decrement the others.
@@ -48,6 +57,54 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>) -> T {
 
 //// Translate the `dyn Trait` type.
 impl ItemTransCtx<'_, '_> {
+    /// To collect the associated types from the `dyn_self` type
+    /// It is guaranteed from Hax that `dyn_self` will contain all the constraints for
+    /// the all the associated types in a fixed order shared across each of the super traits
+    ///
+    /// The `for_parent` is `Some` iff we are to collect the arguments for
+    /// the specified super trait
+    pub fn prepare_assoc_types(
+        &mut self,
+        dyn_self: &Ty,
+        for_parent: Option<TraitClauseId>,
+    ) -> Result<Vec<Ty>, Error> {
+        let mut assoc_types = Vec::new();
+
+        match dyn_self.kind() {
+            TyKind::DynTrait(pred) => {
+                pred.binder
+                    .params
+                    .trait_type_constraints
+                    .iter()
+                    .for_each(|binded_cons| {
+                        let v = binded_cons.clone().erase();
+                        let to_add_ty = match for_parent {
+                            None => true,
+                            Some(id) => match v.trait_ref.kind {
+                                TraitRefKind::ParentClause(_, clause_id) => clause_id == id,
+                                _ => false,
+                            },
+                        };
+                        if to_add_ty {
+                            trace!(
+                                "[prepare_assoc_types] Add for constraint: {}",
+                                v.with_ctx(&self.into_fmt())
+                            );
+                            assoc_types.push(v.ty);
+                        }
+                    });
+            }
+            _ => {
+                panic!(
+                    "Internal error: Dyn Self {} is not a DynTrait kind.",
+                    dyn_self.with_ctx(&self.into_fmt())
+                );
+            }
+        }
+
+        Ok(assoc_types)
+    }
+
     pub fn check_at_most_one_pred_has_methods(
         &mut self,
         span: Span,
@@ -135,10 +192,8 @@ impl ItemTransCtx<'_, '_> {
                 ..
             } => {
                 match dyn_self.kind() {
-                    // `dyn_self` looks like `dyn Trait<Args.., Ty0 = .., Ty1 = ..>`. The first
-                    // predicate is `_: Trait<Args..>`, the rest are type constraints. Hence the
-                    // trait recursively has no assoc types iff `preds.len() == 1`.
-                    hax::TyKind::Dynamic(_, preds, _) => preds.predicates.len() == 1,
+                    // It is promised by hax that it is dyn-compatible iff `dyn_self` is `Some`
+                    hax::TyKind::Dynamic(..) => true,
                     _ => panic!("unexpected `dyn_self`: {dyn_self:?}"),
                 }
             }
@@ -169,13 +224,16 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
+    /// Besides the trait decl ref, one should additionally provide the associated types
+    /// in the same order as appearing in `dyn_self` of its full definition
     pub fn translate_vtable_struct_ref(
         &mut self,
         span: Span,
         tref: &hax::TraitRef,
-    ) -> Result<Option<TypeDeclRef>, Error> {
+        assoc_tys: Vec<Ty>,
+    ) -> Result<TypeDeclRef, Error> {
         if !self.trait_is_dyn_compatible(&tref.def_id)? {
-            return Ok(None);
+            raise_error!(self, span, "The given trait is not dyn compatible");
         }
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
@@ -186,7 +244,8 @@ impl ItemTransCtx<'_, '_> {
             .generics
             .types
             .remove_and_shift_ids(TypeVarId::ZERO);
-        Ok(Some(vtable_ref))
+        vtable_ref.generics.types.extend(assoc_tys);
+        Ok(vtable_ref)
     }
 
     /// Add a `method_name: fn(...) -> ...` field for the method.
@@ -226,27 +285,44 @@ impl ItemTransCtx<'_, '_> {
     fn add_supertraits_to_vtable_def(
         &mut self,
         span: Span,
+        dyn_self: &Ty,
         mut mk_field: impl FnMut(String, Ty),
         implied_predicates: &hax::GenericPredicates,
     ) -> Result<(), Error> {
         let mut counter = (0..).into_iter();
+        let mut next_clause_id = TraitClauseId::ZERO;
         for (clause, _span) in &implied_predicates.predicates {
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() {
+                // All `Trait` predicates are counted first, so we are safe to get the current ID
+                let clause_id = next_clause_id;
+                next_clause_id += 1;
+
                 // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
                 if !self.pred_is_for_self(&pred.trait_ref) {
                     continue;
                 }
+
+                let assoc_tys = self.prepare_assoc_types(dyn_self, Some(clause_id))?;
                 let vtbl_struct = self
                     .translate_region_binder(span, &clause.kind, |ctx, _| {
-                        ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
+                        // Remember to `move_under_binder` as now it is within the `RegionBinder`.
+                        ctx.translate_vtable_struct_ref(
+                            span,
+                            &pred.trait_ref,
+                            assoc_tys
+                                .into_iter()
+                                .map(|ty| ty.move_under_binder())
+                                .collect(),
+                        )
                     })?
-                    .erase()
-                    .expect("parent trait should be dyn compatible");
+                    .erase();
+
                 let ty = Ty::new(TyKind::Ref(
                     Region::Static,
                     Ty::new(TyKind::Adt(vtbl_struct)),
                     RefKind::Shared,
                 ));
+
                 mk_field(format!("super_trait_{}", counter.next().unwrap()), ty);
             }
         }
@@ -275,6 +351,8 @@ impl ItemTransCtx<'_, '_> {
         // Field: `align: usize`
         mk_field("align".into(), usize_ty());
         // Field: `drop: fn(*mut Self)`
+        // where the added `Self` will be replaced by the `dyn Trait<...>`
+        // in `translate_vtable_struct`
         mk_field("drop".into(), {
             let self_ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
             let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
@@ -291,8 +369,18 @@ impl ItemTransCtx<'_, '_> {
             }
         }
 
+        let dyn_self = match trait_def.kind() {
+            hax::FullDefKind::Trait { dyn_self, .. }
+            | hax::FullDefKind::TraitAlias { dyn_self, .. } => match dyn_self {
+                Some(t) => self.translate_ty(span, t)?,
+                None => {
+                    panic!("Internal error: fetching `dyn_self` for a non-dyn-compatible trait")
+                }
+            },
+            _ => panic!("Internal error: fetching `dyn_self` for a non-trait definition"),
+        };
         // Add the supertrait vtables.
-        self.add_supertraits_to_vtable_def(span, &mut mk_field, implied_predicates)?;
+        self.add_supertraits_to_vtable_def(span, &dyn_self, &mut mk_field, implied_predicates)?;
 
         Ok(fields)
     }
@@ -329,7 +417,6 @@ impl ItemTransCtx<'_, '_> {
         }
 
         self.translate_def_generics(span, trait_def)?;
-        // TODO(dyn): add the associated types.
 
         let (hax::FullDefKind::Trait {
             dyn_self,
@@ -347,9 +434,22 @@ impl ItemTransCtx<'_, '_> {
         let Some(dyn_self) = dyn_self else {
             panic!("Trying to generate a vtable for a non-dyn-compatible trait")
         };
-
         // The `dyn Trait<Args..>` type for this trait.
         let mut dyn_self = self.translate_ty(span, dyn_self)?;
+
+        // Add the associated types to the generic parameters.
+        for ty in self.prepare_assoc_types(&dyn_self, None)? {
+            let name = ty
+                .with_ctx(&self.into_fmt())
+                .to_string()
+                .replace("::", "_")
+                .replace(":", "_");
+            self.the_only_binder_mut()
+                .params
+                .types
+                .push_with(|index| TypeVar { index, name });
+        }
+
         // First construct fields that use the real method signatures (which may use the `Self`
         // type). We fixup the types and generics below.
         let fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
@@ -421,9 +521,21 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
             _ => unreachable!(),
         };
-        let vtable_struct_ref = self
-            .translate_vtable_struct_ref(span, implemented_trait)?
-            .expect("trait should be dyn-compatible");
+        let dyn_self = match impl_def.kind() {
+            hax::FullDefKind::TraitImpl { dyn_self, .. } => match dyn_self {
+                Some(t) => self.translate_ty(span, t)?,
+                None => {
+                    panic!("Internal error: fetching `dyn_self` for a non-dyn-compatible trait")
+                }
+            },
+            hax::FullDefKind::Closure { .. } => {
+                panic!("TODO: get `dyn_self` for closures");
+            }
+            _ => unreachable!(),
+        };
+        let assoc_tys = self.prepare_assoc_types(&dyn_self, None)?;
+        let vtable_struct_ref =
+            self.translate_vtable_struct_ref(span, implemented_trait, assoc_tys)?;
         let implemented_trait = self.translate_trait_decl_ref(span, implemented_trait)?;
         let impl_ref = self.translate_item(
             span,
@@ -526,7 +638,9 @@ impl ItemTransCtx<'_, '_> {
         mut mk_field: impl FnMut(RawConstantExpr),
     ) -> Result<(), Error> {
         let hax::FullDefKind::TraitImpl {
-            implied_impl_exprs, ..
+            dyn_self,
+            implied_impl_exprs,
+            ..
         } = impl_def.kind()
         else {
             unreachable!()
@@ -537,40 +651,49 @@ impl ItemTransCtx<'_, '_> {
         else {
             unreachable!()
         };
+        let dyn_self = match dyn_self {
+            Some(t) => self.translate_ty(span, t)?,
+            None => panic!("Internal error: fetching `dyn_self` for a non-dyn-compatible trait"),
+        };
+        let mut next_clause_id = TraitClauseId::ZERO;
         for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
         {
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() {
+                let clause_id = next_clause_id;
+                next_clause_id += 1;
                 // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
                 if !self.pred_is_for_self(&pred.trait_ref) {
                     continue;
                 }
-            }
 
-            let vtable_def_ref = self
-                .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    ctx.translate_vtable_struct_ref(span, tref)
-                })?
-                .erase()
-                .expect("parent trait should be dyn compatible");
-            let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
-            let kind = match &impl_expr.r#impl {
-                hax::ImplExprAtom::Concrete(impl_item) => {
-                    let vtable_instance_ref = self
-                        .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                            ctx.translate_vtable_instance_ref(span, tref, impl_item)
-                        })?
-                        .erase()
-                        .expect("parent trait should be dyn compatible");
-                    let global = Box::new(ConstantExpr {
-                        value: RawConstantExpr::Global(vtable_instance_ref),
-                        ty: fn_ptr_ty,
-                    });
-                    RawConstantExpr::Ref(global)
-                }
-                // TODO(dyn): builtin impls
-                _ => RawConstantExpr::Opaque("missing supertrait vtable".into()),
-            };
-            mk_field(kind);
+                let assoc_tys = self.prepare_assoc_types(&dyn_self, Some(clause_id))?;
+
+                let vtable_def_ref = self
+                    .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                        ctx.translate_vtable_struct_ref(span, tref, assoc_tys)
+                    })?
+                    .erase();
+
+                let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
+                let kind = match &impl_expr.r#impl {
+                    hax::ImplExprAtom::Concrete(impl_item) => {
+                        let vtable_instance_ref = self
+                            .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                                ctx.translate_vtable_instance_ref(span, tref, impl_item)
+                            })?
+                            .erase()
+                            .expect("parent trait should be dyn compatible");
+                        let global = Box::new(ConstantExpr {
+                            value: RawConstantExpr::Global(vtable_instance_ref),
+                            ty: fn_ptr_ty,
+                        });
+                        RawConstantExpr::Ref(global)
+                    }
+                    // TODO(dyn): builtin impls
+                    _ => RawConstantExpr::Opaque("missing supertrait vtable".into()),
+                };
+                mk_field(kind);
+            }
         }
         Ok(())
     }

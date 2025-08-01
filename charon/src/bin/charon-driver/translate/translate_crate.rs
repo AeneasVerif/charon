@@ -148,6 +148,7 @@ impl TransItemSource {
 
     /// Whether this item is the "main" item for this def_id or not (e.g. drop impl/methods are not
     /// the main item).
+    /// VTable and its instances all have DefId referring to the trait itself, so also not the main item.
     pub(crate) fn is_derived_item(&self) -> bool {
         use TransItemSourceKind::*;
         match self.kind {

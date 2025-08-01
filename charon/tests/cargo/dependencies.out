@@ -6,9 +6,8 @@ pub opaque type Arguments<'a>
 where
     'a : 'a,
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -18,21 +17,19 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait Tuple<Self>
+pub trait core::marker::Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
-// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
@@ -41,7 +38,7 @@ pub trait FnOnce<Self, Args>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    [@TraitClause0]: core::ops::function::FnOnce<Self, Args>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -65,14 +62,14 @@ pub fn take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnOnce<F, (T)>,
+    [@TraitClause2]: core::ops::function::FnOnce<F, (T)>,
     @TraitClause2::Output = T,
 
 // Full name: test_cargo_dependencies::main::silly_incr::closure
 struct closure {}
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}::call_once
-fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
+// Full name: test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for closure}::call_once
+fn {impl core::ops::function::FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
 {
     let @0: u32; // return
     let @1: closure; // arg #1
@@ -92,11 +89,11 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     return
 }
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
-impl FnOnce<(u32)> for closure {
-    parent_clause0 = MetaSized<closure>
+// Full name: test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for closure}
+impl core::ops::function::FnOnce<(u32)> for closure {
+    parent_clause0 = core::marker::MetaSized<closure>
     parent_clause1 = Sized<(u32)>
-    parent_clause2 = Tuple<(u32)>
+    parent_clause2 = core::marker::Tuple<(u32)>
     parent_clause3 = Sized<u32>
     type Output = u32
     fn call_once = {impl FnOnce<(u32)> for closure}::call_once
@@ -117,7 +114,7 @@ fn silly_incr<'_0>(@1: &'_0 mut (u32))
     @3 := &two-phase-mut *(x@1)
     storage_live(@4)
     @4 := closure {  }
-    @2 := take<'_, u32, closure>[Sized<u32>, Sized<closure>, {impl FnOnce<(u32)> for closure}](move (@3), move (@4))
+    @2 := take<'_, u32, closure>[Sized<u32>, Sized<closure>, {impl core::ops::function::FnOnce<(u32)> for closure}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)

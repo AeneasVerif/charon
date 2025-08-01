@@ -13,6 +13,7 @@
   "test_crate::GenericBehindIndirection": "None",
   "test_crate::ThinGeneric": null,
   "test_crate::Showable::{vtable}": null,
+  "core::marker::MetaSized::{vtable}": null,
   "alloc::alloc::Global": "None",
   "core::cmp::Ordering": "None",
   "core::option::Option": "None",

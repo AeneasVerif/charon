@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -12,34 +11,31 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::HasAssoc
-trait HasAssoc<Self>
+trait test_crate::HasAssoc<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
     type Assoc
     non-dyn-compatible
 }
 
-// Full name: test_crate::SuperTrait
-trait SuperTrait<Self>
+trait test_crate::SuperTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: test_crate::SuperTrait::{vtable}
 }
 
-// Full name: test_crate::Trait
-trait Trait<Self>
+trait test_crate::Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: SuperTrait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-// Full name: test_crate::{impl SuperTrait for T}
-impl<T> SuperTrait for T
+// Full name: test_crate::{impl test_crate::SuperTrait for T}
+impl<T> test_crate::SuperTrait for T
 where
-    [@TraitClause0]: HasAssoc<T>,
+    [@TraitClause0]: test_crate::HasAssoc<T>,
     [@TraitClause1]: Sized<T>,
     @TraitClause0::Assoc = (),
 {
@@ -47,10 +43,10 @@ where
     vtable: {impl SuperTrait for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: test_crate::{impl Trait for T}
-impl<T> Trait for T
+// Full name: test_crate::{impl test_crate::Trait for T}
+impl<T> test_crate::Trait for T
 where
-    [@TraitClause0]: HasAssoc<T>,
+    [@TraitClause0]: test_crate::HasAssoc<T>,
     [@TraitClause1]: Sized<T>,
     @TraitClause0::Assoc = (),
 {

@@ -4,9 +4,8 @@
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -75,18 +74,17 @@ where
     non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: core::ptr::drop_in_place
 #[lang_item("drop_in_place")]
@@ -158,8 +156,8 @@ where
     return
 }
 
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::vec::{impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -188,8 +186,8 @@ where
     return
 }
 
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
+// Full name: alloc::vec::{impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -207,7 +205,7 @@ fn vec()
 
     storage_live(@1)
     @1 := with_capacity<u32>[Sized<u32>](const (42 : usize))
-    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] @1
+    drop[{impl core::ops::drop::Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] @1
     storage_dead(@1)
     @0 := ()
     @0 := ()
