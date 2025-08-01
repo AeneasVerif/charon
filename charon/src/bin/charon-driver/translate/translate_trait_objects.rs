@@ -461,8 +461,8 @@ impl ItemTransCtx<'_, '_> {
         let mut generics = self.into_generics();
         {
             dyn_self = dynify(dyn_self, None);
-            generics = dynify(generics, None);
-            kind = dynify(kind, None);
+            generics = dynify(generics, Some(dyn_self.clone()));
+            kind = dynify(kind, Some(dyn_self.clone()));
             generics.types.remove_and_shift_ids(TypeVarId::ZERO);
             generics.types.iter_mut().for_each(|ty| {
                 ty.index -= 1;
