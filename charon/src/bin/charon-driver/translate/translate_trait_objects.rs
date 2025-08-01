@@ -346,6 +346,10 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Add the basic fields.
+        // Field: `size: usize`
+        mk_field("size".into(), usize_ty());
+        // Field: `align: usize`
+        mk_field("align".into(), usize_ty());
         // Field: `drop: fn(*mut Self)`
         // where the added `Self` will be replaced by the `dyn Trait<...>`
         // in `translate_vtable_struct`
@@ -357,10 +361,6 @@ impl ItemTransCtx<'_, '_> {
                 Ty::mk_unit(),
             ))))
         });
-        // Field: `size: usize`
-        mk_field("size".into(), usize_ty());
-        // Field: `align: usize`
-        mk_field("align".into(), usize_ty());
 
         // Add the method pointers (trait aliases don't have methods).
         if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
@@ -756,9 +756,9 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // TODO(dyn): provide values
-        mk_field(RawConstantExpr::Opaque("unknown drop".to_string()));
         mk_field(RawConstantExpr::Opaque("unknown size".to_string()));
         mk_field(RawConstantExpr::Opaque("unknown align".to_string()));
+        mk_field(RawConstantExpr::Opaque("unknown drop".to_string()));
 
         for item in items {
             self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
