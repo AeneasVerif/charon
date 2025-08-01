@@ -105,6 +105,15 @@ impl Error {
     }
 }
 
+impl<T: ToString> From<T> for Error {
+    fn from(err: T) -> Self {
+        Self {
+            span: Span::dummy(),
+            msg: err.to_string(),
+        }
+    }
+}
+
 /// Display an error without a specific location.
 pub fn display_unspanned_error(level: Level, msg: &str) {
     use annotate_snippets::*;

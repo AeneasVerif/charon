@@ -53,6 +53,7 @@ impl UllbcPass for Transform {
         for candidate_block_idx in b.body.all_indices() {
             let second_block;
             let at_5;
+            let at_5_ty;
             let box_generics;
             let value_to_write;
             let old_assign_idx;
@@ -91,8 +92,8 @@ impl UllbcPass for Transform {
                             ..
                         }, rest @ ..] = target_block.statements.as_slice()
                 && alloc_use == malloc_dest
-                && box_make.is_local()
-                && box_make.local_id() == *target_var
+                && let Some(local_id) = box_make.as_local()
+                && local_id == *target_var
                 && let TyKind::Adt(ty_ref) = b.locals[*target_var].ty.kind()
                 && let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id
                 && let Some((assign_idx_in_rest, val, span)) = rest.iter().enumerate().find_map(|(idx, st)| {
@@ -110,7 +111,8 @@ impl UllbcPass for Transform {
                     }
                 })
             {
-                at_5 = box_make.clone();
+                at_5 = local_id;
+                at_5_ty = box_make.ty().clone();
                 old_assign_idx = assign_idx_in_rest + 2; // +2 because rest skips the first two statements
                 value_to_write = val.clone();
                 box_generics = ty_ref.generics.clone();
@@ -134,7 +136,7 @@ impl UllbcPass for Transform {
                 }
                 _ => {
                     // We need to create a new variable to store the value.
-                    let name = b.locals[at_5.local_id()].name.clone();
+                    let name = b.locals[at_5].name.clone();
                     let ty = box_generics.types[0].clone();
                     let var = b.locals.new_var(name, ty);
                     let st = Statement::new(
@@ -153,7 +155,7 @@ impl UllbcPass for Transform {
                 .statements
                 .get_mut(number_statements - 1)
                 .unwrap()
-                .content = RawStatement::StorageLive(at_5.local_id());
+                .content = RawStatement::StorageLive(at_5);
             first_block.terminator.content = RawTerminator::Call {
                 call: Call {
                     func: FnOperand::Regular(FnPtr {
@@ -163,7 +165,7 @@ impl UllbcPass for Transform {
                         generics: box_generics,
                     }),
                     args: vec![value_to_write],
-                    dest: at_5,
+                    dest: Place::new(at_5, at_5_ty),
                 },
                 target: second_block,
                 on_unwind: unwind_target,

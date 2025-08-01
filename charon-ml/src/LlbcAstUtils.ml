@@ -528,3 +528,15 @@ let find_local_transitive_dep (m : crate) (marked_externals : AnyDeclIdSet.t) :
     !edges;
   (* Return the spans *)
   SpanSet.elements !spans
+
+let map_statement (f : statement -> statement list) (b : block) : block =
+  let visitor =
+    object
+      inherit [_] map_statement_base as super
+
+      method! visit_block env b =
+        super#visit_block env
+          { b with statements = List.flatten (List.map f b.statements) }
+    end
+  in
+  visitor#visit_block () b

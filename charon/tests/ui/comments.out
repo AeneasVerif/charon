@@ -496,15 +496,12 @@ pub fn thing()
     let @3: u32; // anonymous local
     let @4: (); // anonymous local
     let @5: u32; // anonymous local
-    let @6: u32; // anonymous local
 
     storage_live(@3)
-    storage_live(@6)
     storage_live(x@1)
     storage_live(@2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    @6 := CONSTANT
-    @2 := move (@6) panic.>> const (3 : i32)
+    @2 := copy (CONSTANT) panic.>> const (3 : i32)
     @3 := copy (@2) panic.+ const (12 : u32)
     x@1 := move (@3)
     storage_dead(@2)

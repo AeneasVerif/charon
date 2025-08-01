@@ -170,11 +170,7 @@ fn literal_casts()
     let @3: f64; // anonymous local
     let @4: u64; // anonymous local
     let @5: f64; // anonymous local
-    let @6: f64; // anonymous local
-    let @7: f32; // anonymous local
 
-    storage_live(@6)
-    storage_live(@7)
     storage_live(@1)
     @1 := cast<u64, u8>(const (0 : u64))
     storage_dead(@1)
@@ -185,12 +181,10 @@ fn literal_casts()
     @3 := cast<u64, f64>(const (0 : u64))
     storage_dead(@3)
     storage_live(@4)
-    @6 := MIN
-    @4 := cast<f64, u64>(move (@6))
+    @4 := cast<f64, u64>(copy (MIN))
     storage_dead(@4)
     storage_live(@5)
-    @7 := MAX
-    @5 := cast<f32, f64>(move (@7))
+    @5 := cast<f32, f64>(copy (MAX))
     storage_dead(@5)
     @0 := ()
     @0 := ()

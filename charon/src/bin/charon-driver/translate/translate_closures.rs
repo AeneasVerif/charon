@@ -253,7 +253,7 @@ impl ItemTransCtx<'_, '_> {
         let fields: Vector<FieldId, Field> = args
             .upvar_tys
             .iter()
-            .map(|ty| {
+            .map(|ty| -> Result<Field, Error> {
                 let mut ty = self.translate_ty(span, ty)?;
                 // We supply fresh regions for the by-ref upvars.
                 if let TyKind::Ref(Region::Erased, deref_ty, kind) = ty.kind() {

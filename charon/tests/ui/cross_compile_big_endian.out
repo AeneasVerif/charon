@@ -39,15 +39,12 @@ fn main()
     let @6: usize; // anonymous local
     let a@7: u128; // local
     let b@8: HasBEDiscr; // local
-    let @9: usize; // anonymous local
 
     storage_live(@6)
-    storage_live(@9)
     storage_live(x@1)
     x@1 := const (52 : usize)
     storage_live(y@2)
-    @9 := MAX
-    y@2 := move (@9)
+    y@2 := copy (MAX)
     storage_live(z@3)
     storage_live(@4)
     @4 := copy (y@2)

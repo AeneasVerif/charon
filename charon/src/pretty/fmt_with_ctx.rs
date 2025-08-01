@@ -1015,6 +1015,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
             PlaceKind::Local(var_id) => write!(f, "{}", var_id.with_ctx(ctx)),
+            PlaceKind::Global(global_ref) => global_ref.fmt_with_ctx(ctx, f),
             PlaceKind::Projection(subplace, projection) => {
                 let sub = subplace.with_ctx(ctx);
                 match projection {
@@ -1264,13 +1265,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                         write!(f, "*{} ({})", mutability, ops_s)
                     }
                 }
-            }
-            Rvalue::Global(global_ref) => write!(f, "{}", global_ref.with_ctx(ctx)),
-            Rvalue::GlobalRef(global_ref, RefKind::Shared) => {
-                write!(f, "&{}", global_ref.with_ctx(ctx))
-            }
-            Rvalue::GlobalRef(global_ref, RefKind::Mut) => {
-                write!(f, "&raw mut {}", global_ref.with_ctx(ctx))
             }
             Rvalue::Len(place, ..) => write!(f, "len({})", place.with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
