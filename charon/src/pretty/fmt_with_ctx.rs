@@ -1116,6 +1116,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
             RawConstantExpr::FnPtr(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
             }
+            RawConstantExpr::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
             RawConstantExpr::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
             RawConstantExpr::Opaque(cause) => write!(f, "Opaque({cause})"),
         }

@@ -984,18 +984,14 @@ impl ItemTransCtx<'_, '_> {
             impl Visitor for FixSelfVisitor {
                 type Break = UnhandledSelf;
             }
+            impl VisitorWithBinderDepth for FixSelfVisitor {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
             impl VisitAstMut for FixSelfVisitor {
-                fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                    self.binder_depth = self.binder_depth.incr()
-                }
-                fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                    self.binder_depth = self.binder_depth.decr()
-                }
-                fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                    self.binder_depth = self.binder_depth.incr()
-                }
-                fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                    self.binder_depth = self.binder_depth.decr()
+                fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(x)
                 }
                 fn visit_trait_ref_kind(
                     &mut self,
