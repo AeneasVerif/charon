@@ -35,7 +35,8 @@ impl Transform {
             },
             ..,
         ] = seq
-            && locals[call.dest.local_id()].ty.kind().is_never()
+            && let Some(local_id) = call.dest.as_local()
+            && locals[local_id].ty.kind().is_never()
         {
             *second_abort = RawStatement::Nop;
             return Vec::new();

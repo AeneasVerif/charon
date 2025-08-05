@@ -85,8 +85,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     let @24: u64; // anonymous local
     let @25: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @26: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @27: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @28: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @27: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
     storage_live(pieces@7)
@@ -100,7 +99,6 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     storage_live(@23)
     storage_live(@24)
     storage_live(@27)
-    storage_live(@28)
     storage_live(@4)
     storage_live(overflow@19)
     storage_live(rhs@9)
@@ -168,10 +166,9 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     storage_live(@25)
     @25 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@7))
     storage_live(@26)
-    @27 := {promoted_const}<'_, 1 : usize>
-    @26 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@27))
-    @28 := Option::None {  }
-    @6 := Arguments { 0: move (@25), 1: move (@28), 2: move (@26) }
+    @26 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
+    @27 := Option::None {  }
+    @6 := Arguments { 0: move (@25), 1: move (@27), 2: move (@26) }
     storage_dead(@26)
     storage_dead(@25)
     @5 := panic_nounwind_fmt<'_>(move (@6), const (false))
