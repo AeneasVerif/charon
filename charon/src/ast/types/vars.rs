@@ -313,6 +313,10 @@ impl<T> BindingStack<T> {
     pub fn new(x: T) -> Self {
         Self { stack: vec![x] }
     }
+    /// Creates an empty stack. Beware, a number of method calls will panic on an empty stack.
+    pub fn empty() -> Self {
+        Self { stack: vec![] }
+    }
 
     pub fn is_empty(&self) -> bool {
         self.stack.is_empty()

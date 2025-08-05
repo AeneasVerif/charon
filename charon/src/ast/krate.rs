@@ -309,6 +309,15 @@ impl<'ctx> AnyTransItemMut<'ctx> {
             AnyTransItemMut::TraitImpl(d) => AnyTransItem::TraitImpl(d),
         }
     }
+    pub fn reborrow(&mut self) -> AnyTransItemMut<'_> {
+        match self {
+            AnyTransItemMut::Type(d) => AnyTransItemMut::Type(d),
+            AnyTransItemMut::Fun(d) => AnyTransItemMut::Fun(d),
+            AnyTransItemMut::Global(d) => AnyTransItemMut::Global(d),
+            AnyTransItemMut::TraitDecl(d) => AnyTransItemMut::TraitDecl(d),
+            AnyTransItemMut::TraitImpl(d) => AnyTransItemMut::TraitImpl(d),
+        }
+    }
 
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {

@@ -172,7 +172,7 @@ impl<'a> IndexVisitor<'a> {
         mutability: bool,
     ) -> ControlFlow<Infallible>
     where
-        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>>,
+        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>> + BodyVisitable,
     {
         self.place_mutability_stack.push(mutability);
         self.visit_inner(x)?;

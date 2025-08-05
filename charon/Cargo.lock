@@ -438,18 +438,18 @@ dependencies = [
 
 [[package]]
 name = "derive_generic_visitor"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f97cf6da50801d6ce913a011f0588883b9ef894603adc3cb40ebe1eb1ac43e5"
+checksum = "21588db07753dafe6460b13faad18bd7e46548ce91ee38f0bc0f7529b3864b82"
 dependencies = [
  "derive_generic_visitor_macros",
 ]
 
 [[package]]
 name = "derive_generic_visitor_macros"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "885f5274163b5b1720591c0c24b34350a0b05e4774351f9fb3d13c192d8c995b"
+checksum = "f3aed1890235ebcf844a24263ecc395c4e57a970f13bcc9948989f22aa051aa7"
 dependencies = [
  "convert_case",
  "darling",
@@ -788,7 +788,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hax-adt-into"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#1a06fb019d3baac3cdf1d03068eaae49c1714b74"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#ca0315ee625f26c56ca72b7b6e92b255e14b6eab"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -799,7 +799,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#1a06fb019d3baac3cdf1d03068eaae49c1714b74"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#ca0315ee625f26c56ca72b7b6e92b255e14b6eab"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -816,7 +816,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#1a06fb019d3baac3cdf1d03068eaae49c1714b74"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#ca0315ee625f26c56ca72b7b6e92b255e14b6eab"
 dependencies = [
  "hax-adt-into",
  "schemars",
