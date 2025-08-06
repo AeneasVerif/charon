@@ -4,7 +4,7 @@
 trait HasAssoc<Self>
 {
     type Assoc
-    non-dyn-compatible
+    vtable: test_crate::HasAssoc::{vtable}<Self::Assoc>
 }
 
 // Full name: test_crate::Trait
