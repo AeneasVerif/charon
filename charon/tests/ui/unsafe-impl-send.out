@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::Send
 #[lang_item("Send")]
-pub trait Send<Self>
+pub trait core::marker::Send<Self>
 
 // Full name: test_crate::Foo
 struct Foo {

@@ -4,6 +4,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
+use core::panic;
 use derive_generic_visitor::Visitor;
 use hax_frontend_exporter as hax;
 use indexmap::IndexMap;
@@ -59,6 +60,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item_src: &TransItemSource,
         trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
+        trace!("About to translate item: {item_src:?}");
         // Translate the meta information
         let name = self.translate_name(item_src)?;
         if let Some(trans_id) = trans_id {
@@ -512,7 +514,19 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
-        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
+        let vtable = match def.kind() {
+            hax::FullDefKind::Trait {
+                dyn_self: Some(t), ..
+            }
+            | hax::FullDefKind::TraitAlias {
+                dyn_self: Some(t), ..
+            } => {
+                let dyn_self = self.translate_ty(span, t)?;
+                let assoc_tys = self.prepare_assoc_types(&dyn_self, None)?;
+                Some(self.translate_vtable_struct_ref(span, def.this(), assoc_tys)?)
+            }
+            _ => None,
+        };
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.

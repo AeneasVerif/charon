@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -31,24 +30,22 @@ where
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -56,31 +53,29 @@ pub trait Drop<Self>
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: test_crate::Iterator
-trait Iterator<Self, Self_Item>
+trait test_crate::Iterator<Self, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
     non-dyn-compatible
 }
 
-// Full name: test_crate::IntoIterator
-trait IntoIterator<Self, Self_Item, Self_IntoIter>
+trait test_crate::IntoIterator<Self, Self_Item, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
     parent_clause2 : [@TraitClause2]: Sized<Self_IntoIter>
     parent_clause3 : [@TraitClause3]: Iterator<Self_IntoIter, Self_Item>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl IntoIterator<Clause1_Item, I> for I}
-impl<I, Clause1_Item> IntoIterator<Clause1_Item, I> for I
+// Full name: test_crate::{impl test_crate::IntoIterator<Clause1_Item, I> for I}
+impl<I, Clause1_Item> test_crate::IntoIterator<Clause1_Item, I> for I
 where
     [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I, Clause1_Item>,
+    [@TraitClause1]: test_crate::Iterator<I, Clause1_Item>,
 {
     parent_clause0 = @TraitClause0::parent_clause0
     parent_clause1 = @TraitClause1::parent_clause1
@@ -93,13 +88,13 @@ where
 fn callee<T, Clause1_Item>(@1: Clause1_Item) -> Clause1_Item
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Iterator<T, Clause1_Item>,
+    [@TraitClause1]: test_crate::Iterator<T, Clause1_Item>,
 {
     let @0: Clause1_Item; // return
     let t@1: Clause1_Item; // arg #1
 
     @0 := move (t@1)
-    drop[Drop<Clause1_Item>] t@1
+    drop[core::ops::drop::Drop<Clause1_Item>] t@1
     return
 }
 
@@ -107,8 +102,8 @@ where
 fn caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(@1: Clause1_Item) -> Clause2_Item
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Iterator<T, Clause1_Item>,
-    [@TraitClause2]: IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
+    [@TraitClause1]: test_crate::Iterator<T, Clause1_Item>,
+    [@TraitClause2]: test_crate::IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
 {
     let @0: Clause2_Item; // return
     let t@1: Clause1_Item; // arg #1
@@ -118,14 +113,13 @@ where
     @2 := move (t@1)
     @0 := callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[Drop<Clause1_Item>] t@1
+    drop[core::ops::drop::Drop<Clause1_Item>] t@1
     return
 }
 
-// Full name: test_crate::X
-trait X<Self, Self_Assoc>
+trait test_crate::X<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
     fn method<'_0> = method<'_0_0, Self, Self_Assoc>[Self]
     non-dyn-compatible
@@ -134,18 +128,16 @@ trait X<Self, Self_Assoc>
 // Full name: test_crate::X::method
 fn method<'_0, Self, Clause0_Assoc>(@1: &'_0 (Self)) -> Clause0_Assoc
 where
-    [@TraitClause0]: X<Self, Clause0_Assoc>,
+    [@TraitClause0]: test_crate::X<Self, Clause0_Assoc>,
 
-// Full name: test_crate::A
-trait A<Self, Self_Clause1_Assoc>
+trait test_crate::A<Self, Self_Clause1_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
     non-dyn-compatible
 }
 
-// Full name: test_crate::B
-trait B<Self, Self_Clause1_Assoc>
+trait test_crate::B<Self, Self_Clause1_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
@@ -156,7 +148,7 @@ trait B<Self, Self_Clause1_Assoc>
 fn a<T, Clause1_Clause1_Assoc>(@1: T) -> Clause1_Clause1_Assoc
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,
+    [@TraitClause1]: test_crate::A<T, Clause1_Clause1_Assoc>,
 {
     let @0: Clause1_Clause1_Assoc; // return
     let x@1: T; // arg #1
@@ -166,7 +158,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<T>] x@1
+    drop[core::ops::drop::Drop<T>] x@1
     return
 }
 
@@ -174,7 +166,7 @@ where
 fn b<T, Clause1_Clause1_Assoc>(@1: T) -> Clause1_Clause1_Assoc
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: B<T, Clause1_Clause1_Assoc>,
+    [@TraitClause1]: test_crate::B<T, Clause1_Clause1_Assoc>,
 {
     let @0: Clause1_Clause1_Assoc; // return
     let x@1: T; // arg #1
@@ -184,7 +176,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<T>] x@1
+    drop[core::ops::drop::Drop<T>] x@1
     return
 }
 
@@ -192,8 +184,8 @@ where
 fn x<T, Clause1_Clause1_Assoc, Clause2_Clause1_Assoc>(@1: T) -> (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc)
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,
-    [@TraitClause2]: B<T, Clause2_Clause1_Assoc>,
+    [@TraitClause1]: test_crate::A<T, Clause1_Clause1_Assoc>,
+    [@TraitClause2]: test_crate::B<T, Clause2_Clause1_Assoc>,
     [@TraitClause3]: Copy<T>,
 {
     let @0: (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc); // return
@@ -214,9 +206,9 @@ where
     @4 := b<T, Clause2_Clause1_Assoc>[@TraitClause0, @TraitClause2](move (@5))
     storage_dead(@5)
     @0 := (move (@2), move (@4))
-    drop[Drop<Clause1_Clause1_Assoc>] @4
+    drop[core::ops::drop::Drop<Clause1_Clause1_Assoc>] @4
     storage_dead(@4)
-    drop[Drop<Clause1_Clause1_Assoc>] @2
+    drop[core::ops::drop::Drop<Clause1_Clause1_Assoc>] @2
     storage_dead(@2)
     return
 }

@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -12,18 +11,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -35,13 +33,13 @@ where
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}::drop
-fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+// Full name: core::option::Option::{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}::drop
+fn {impl core::ops::drop::Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}
-impl<T> Drop for Option<T>[@TraitClause0]
+// Full name: core::option::Option::{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}
+impl<T> core::ops::drop::Drop for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -87,7 +85,7 @@ where
     @0 := move (@2) != const (0 : isize)
     storage_dead(@2)
     storage_dead(@4)
-    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
+    drop[{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
     return
 }
 
@@ -107,7 +105,7 @@ where
             @0 := const (1 : isize)
         },
     }
-    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
+    drop[{impl core::ops::drop::Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
     return
 }
 

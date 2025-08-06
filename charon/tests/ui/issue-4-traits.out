@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -26,9 +25,8 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Debug
 #[lang_item("Debug")]
-pub trait Debug<Self>
+pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
     vtable: core::fmt::Debug::{vtable}
@@ -37,8 +35,8 @@ pub trait Debug<Self>
 // Full name: core::array::TryFromSliceError
 pub opaque type TryFromSliceError
 
-// Full name: core::array::{impl Debug for TryFromSliceError}::fmt
-pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 (TryFromSliceError), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+// Full name: core::array::{impl core::fmt::Debug for TryFromSliceError}::fmt
+pub fn {impl core::fmt::Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 (TryFromSliceError), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
 // Full name: core::array::{impl Debug for TryFromSliceError}
 impl Debug for TryFromSliceError {
@@ -71,7 +69,7 @@ pub trait Clone<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     non-dyn-compatible
 }
@@ -156,18 +154,17 @@ where
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
-    [@TraitClause0]: Debug<Self>,
+    [@TraitClause0]: core::fmt::Debug<Self>,
 
 // Full name: core::marker::{impl Copy for u8}
 impl Copy for u8 {
-    parent_clause0 = MetaSized<u8>
+    parent_clause0 = core::marker::MetaSized<u8>
     parent_clause1 = {impl Clone for u8}
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
@@ -178,7 +175,7 @@ pub fn unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
-    [@TraitClause2]: Debug<E>,
+    [@TraitClause2]: core::fmt::Debug<E>,
 
 // Full name: test_crate::trait_error
 fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
@@ -195,7 +192,7 @@ fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
     @4 := &*(s@1)
     @3 := {impl TryInto<U> for T}::try_into<&'_ (Slice<u8>), Array<u8, 4 : usize>>[Sized<&'_ (Slice<u8>)>, Sized<Array<u8, 4 : usize>>, {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}<'_, u8, 4 : usize>[Sized<u8>, {impl Copy for u8}]](move (@4))
     storage_dead(@4)
-    _array@2 := unwrap<Array<u8, 4 : usize>, TryFromSliceError>[Sized<Array<u8, 4 : usize>>, Sized<TryFromSliceError>, {impl Debug for TryFromSliceError}](move (@3))
+    _array@2 := unwrap<Array<u8, 4 : usize>, TryFromSliceError>[Sized<Array<u8, 4 : usize>>, Sized<TryFromSliceError>, {impl core::fmt::Debug for TryFromSliceError}](move (@3))
     storage_dead(@3)
     @0 := ()
     storage_dead(_array@2)

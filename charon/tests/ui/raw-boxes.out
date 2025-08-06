@@ -80,9 +80,8 @@ pub struct Layout {
   align: Alignment,
 }
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -102,9 +101,8 @@ where
   Some(T),
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
@@ -124,7 +122,7 @@ pub trait Clone<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     non-dyn-compatible
 }
@@ -151,18 +149,17 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
     return
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 where
-    [@TraitClause0]: Destruct<usize>,
+    [@TraitClause0]: core::marker::Destruct<usize>,
 {
     let @0: (); // return
     let self@1: &'_ mut (usize); // arg #1
@@ -171,7 +168,7 @@ where
 
     storage_live(@3)
     @3 := {impl Clone for usize}::clone<'_>(move (source@2))
-    drop[Drop<usize>] *(self@1)
+    drop[core::ops::drop::Drop<usize>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -188,7 +185,7 @@ impl Clone for usize {
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {
-    parent_clause0 = MetaSized<usize>
+    parent_clause0 = core::marker::MetaSized<usize>
     parent_clause1 = {impl Clone for usize}
     non-dyn-compatible
 }
@@ -482,10 +479,9 @@ fn is_size_align_valid(@1: usize, @2: usize) -> bool
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
-// Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub trait core::alloc::Allocator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn allocate<'_0> = core::alloc::Allocator::allocate<'_0_0, Self>[Self]
     fn allocate_zeroed<'_0> = core::alloc::Allocator::allocate_zeroed<'_0_0, Self>[Self]
     fn deallocate<'_0> = core::alloc::Allocator::deallocate<'_0_0, Self>[Self]
@@ -498,7 +494,7 @@ pub trait Allocator<Self>
 
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -652,7 +648,7 @@ where
 
 pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -743,7 +739,7 @@ where
 
 pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout)
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
@@ -1548,7 +1544,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
 
 pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -1642,7 +1638,7 @@ where
 
 pub unsafe fn core::alloc::Allocator::grow_zeroed<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -1736,7 +1732,7 @@ where
 
 pub unsafe fn core::alloc::Allocator::shrink<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Self); // arg #1
@@ -1831,7 +1827,7 @@ where
 // Full name: core::alloc::Allocator::by_ref
 pub fn by_ref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self)
 where
-    [@TraitClause0]: Allocator<Self>,
+    [@TraitClause0]: core::alloc::Allocator<Self>,
     [@TraitClause1]: Sized<Self>,
 {
     let @0: &'_ (Self); // return
@@ -1850,7 +1846,7 @@ where
 pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
-    [@TraitClause1]: Destruct<Self>,
+    [@TraitClause1]: core::marker::Destruct<Self>,
 {
     let @0: (); // return
     let self@1: &'_ mut (Self); // arg #1
@@ -1859,7 +1855,7 @@ where
 
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop[Drop<Self>] *(self@1)
+    drop[core::ops::drop::Drop<Self>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -1869,7 +1865,7 @@ where
 // Full name: core::intrinsics::size_of_val
 pub unsafe fn size_of_val<T>(@1: *const T) -> usize
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
     let @0: usize; // return
     let ptr@1: *const T; // arg #1
@@ -1880,7 +1876,7 @@ where
 // Full name: core::intrinsics::align_of_val
 pub unsafe fn align_of_val<T>(@1: *const T) -> usize
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
     let @0: usize; // return
     let ptr@1: *const T; // arg #1
@@ -1892,7 +1888,7 @@ where
 #[lang_item("manually_drop")]
 pub struct ManuallyDrop<T>
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
   value: T,
 }
@@ -1914,7 +1910,7 @@ pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInne
 
 pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
 where
-    [@TraitClause0]: Destruct<NonZeroUsizeInner>,
+    [@TraitClause0]: core::marker::Destruct<NonZeroUsizeInner>,
 {
     let @0: (); // return
     let self@1: &'_ mut (NonZeroUsizeInner); // arg #1
@@ -1923,7 +1919,7 @@ where
 
     storage_live(@3)
     @3 := {impl Clone for NonZeroUsizeInner}::clone<'_>(move (source@2))
-    drop[Drop<NonZeroUsizeInner>] *(self@1)
+    drop[core::ops::drop::Drop<NonZeroUsizeInner>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -1940,13 +1936,12 @@ impl Clone for NonZeroUsizeInner {
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroUsizeInner}
 impl Copy for NonZeroUsizeInner {
-    parent_clause0 = MetaSized<NonZeroUsizeInner>
+    parent_clause0 = core::marker::MetaSized<NonZeroUsizeInner>
     parent_clause1 = {impl Clone for NonZeroUsizeInner}
     non-dyn-compatible
 }
 
-// Full name: core::num::nonzero::private::Sealed
-pub trait Sealed<Self>
+pub trait core::num::nonzero::private::Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::num::nonzero::private::Sealed::{vtable}
@@ -1957,7 +1952,7 @@ pub trait ZeroablePrimitive<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Copy<Self>
-    parent_clause2 : [@TraitClause2]: Sealed<Self>
+    parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
     parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
     parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
     type NonZeroInner
@@ -1974,7 +1969,7 @@ impl Sealed for usize {
 impl ZeroablePrimitive for usize {
     parent_clause0 = Sized<usize>
     parent_clause1 = {impl Copy for usize}
-    parent_clause2 = {impl Sealed for usize}
+    parent_clause2 = {impl core::num::nonzero::private::Sealed for usize}
     parent_clause3 = Sized<NonZeroUsizeInner>
     parent_clause4 = {impl Copy for NonZeroUsizeInner}
     type NonZeroInner = NonZeroUsizeInner
@@ -1993,7 +1988,7 @@ where
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
@@ -3038,8 +3033,8 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::allocate
+pub fn {impl core::alloc::Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -3049,8 +3044,8 @@ pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout)
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate_zeroed
-pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::allocate_zeroed
+pub fn {impl core::alloc::Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -3060,8 +3055,8 @@ pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: 
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
-pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::deallocate
+pub unsafe fn {impl core::alloc::Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
 {
     let @0: (); // return
     let self@1: &'_ (Global); // arg #1
@@ -3144,8 +3139,8 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::grow
-pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::grow
+pub unsafe fn {impl core::alloc::Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -3157,8 +3152,8 @@ pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonN
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::grow_zeroed
-pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::grow_zeroed
+pub unsafe fn {impl core::alloc::Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -3170,8 +3165,8 @@ pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::shrink
-pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+// Full name: alloc::alloc::{impl core::alloc::Allocator for Global}::shrink
+pub unsafe fn {impl core::alloc::Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
 {
     let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
     let self@1: &'_ (Global); // arg #1
@@ -4057,7 +4052,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     return
 }
 
-pub fn alloc::alloc::{impl Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
+pub fn alloc::alloc::{impl core::alloc::Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
 where
     [@TraitClause0]: Sized<Global>,
 {
@@ -4185,20 +4180,20 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
 #[lang_item("owned_box")]
 pub struct Box<T, A>
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
 {
   Unique<T>,
   A,
 }
 
 #[lang_item("box_new")]
-pub fn alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]
+pub fn alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]; // return
+    let @0: Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // return
     let x@1: T; // arg #1
     let @2: usize; // anonymous local
     let @3: usize; // anonymous local
@@ -4218,12 +4213,12 @@ where
     return
 }
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]}::from_raw
-pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]
+// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::from_raw
+pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
-    let @0: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // return
+    let @0: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // return
     let raw@1: *mut T; // arg #1
     let @2: Unique<T>; // anonymous local
     let @3: NonNull<T>; // anonymous local
@@ -4264,15 +4259,15 @@ where
     return
 }
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]}::into_raw
-pub fn into_raw<T>(@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]) -> *mut T
+// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::into_raw
+pub fn into_raw<T>(@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]) -> *mut T
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 {
     let @0: *mut T; // return
-    let b@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // arg #1
-    let @2: ManuallyDrop<Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]>[MetaSized<Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]>]; // anonymous local
-    let @3: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let b@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // arg #1
+    let @2: ManuallyDrop<Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]>[core::marker::MetaSized<Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]>]; // anonymous local
+    let @3: Box<T, Global>[@TraitClause0, Sized<Global>, {impl core::alloc::Allocator for Global}]; // anonymous local
     let @4: *const T; // anonymous local
 
     storage_live(@3)
@@ -4289,9 +4284,9 @@ where
 // Full name: alloc::boxed::{Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::leak
 pub fn leak<'a, T, A>(@1: Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]) -> &'a mut (T)
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
     A : 'a,
 {
     let @0: &'_ mut (T); // return
@@ -4312,12 +4307,12 @@ where
     return
 }
 
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
-pub fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(@1: &'_0 mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]))
+// Full name: alloc::boxed::{impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
+pub fn {impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(@1: &'_0 mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]))
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
 {
     let @0: (); // return
     let self@1: &'_ mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]); // arg #1
@@ -4392,12 +4387,12 @@ where
     return
 }
 
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
-impl<T, A> Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+// Full name: alloc::boxed::{impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
+impl<T, A> core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    [@TraitClause2]: core::alloc::Allocator<A>,
 {
     parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
     fn drop<'_0> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
@@ -4408,41 +4403,41 @@ where
 unsafe fn foo()
 {
     let @0: (); // return
-    let b@1: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // local
+    let b@1: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // local
     let p@2: *mut i32; // local
-    let @3: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let @3: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // anonymous local
     let @4: &'_ mut (i32); // anonymous local
-    let @5: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
-    let b@6: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // local
+    let @5: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // anonymous local
+    let b@6: Box<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]; // local
     let @7: *mut i32; // anonymous local
     let i@8: i32; // local
     let @9: *const i32; // anonymous local
 
     storage_live(@9)
     storage_live(b@1)
-    b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
+    b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
     storage_live(p@2)
     storage_live(@3)
     @3 := move (b@1)
-    p@2 := into_raw<i32>[MetaSized<i32>](move (@3))
+    p@2 := into_raw<i32>[core::marker::MetaSized<i32>](move (@3))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
-    @4 := leak<'_, i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}](move (@5))
+    @5 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl core::alloc::Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
+    @4 := leak<'_, i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(b@6)
     storage_live(@7)
     @7 := copy (p@2)
-    b@6 := from_raw<i32>[MetaSized<i32>](move (@7))
+    b@6 := from_raw<i32>[core::marker::MetaSized<i32>](move (@7))
     storage_dead(@7)
     storage_live(i@8)
     @9 := transmute<NonNull<i32>, *const i32>(copy (((b@6).0).pointer))
     i@8 := copy (*(@9))
     @0 := ()
     storage_dead(i@8)
-    drop[{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]] b@6
+    drop[{impl core::ops::drop::Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[core::marker::MetaSized<i32>, Sized<Global>, {impl core::alloc::Allocator for Global}]] b@6
     storage_dead(b@6)
     storage_dead(p@2)
     storage_dead(b@1)

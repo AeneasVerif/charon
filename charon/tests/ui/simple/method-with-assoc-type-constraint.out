@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -12,11 +11,10 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -24,12 +22,11 @@ pub trait Drop<Self>
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
-// Full name: test_crate::IntoIterator
-pub trait IntoIterator<Self, Self_Item>
+pub trait test_crate::IntoIterator<Self, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Item>
     non-dyn-compatible
 }
@@ -47,19 +44,19 @@ pub fn test_crate::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
 where
     [@TraitClause0]: FromIterator<Self, A>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: IntoIterator<T, A>,
+    [@TraitClause2]: test_crate::IntoIterator<T, A>,
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
 pub fn {impl FromIterator<()> for ()}::from_iter<I>(@1: I)
 where
     [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I, ()>,
+    [@TraitClause1]: test_crate::IntoIterator<I, ()>,
 {
     let @0: (); // return
     let iter@1: I; // arg #1
 
     @0 := ()
-    drop[Drop<I>] iter@1
+    drop[core::ops::drop::Drop<I>] iter@1
     @0 := ()
     return
 }

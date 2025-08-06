@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -12,8 +11,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::Hasher
-pub trait Hasher<Self>
+pub trait test_crate::Hasher<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: test_crate::Hasher::{vtable}
@@ -40,13 +38,13 @@ pub fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (
 where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
+    [@TraitClause2]: test_crate::Hasher<H>,
 
 // Full name: test_crate::{impl Hash for u32}::hash
 pub fn {impl Hash for u32}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
     [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: Hasher<H>,
+    [@TraitClause1]: test_crate::Hasher<H>,
 {
     let @0: (); // return
     let self@1: &'_ (u32); // arg #1
@@ -86,7 +84,7 @@ fn main()
     storage_live(@6)
     @6 := &mut hasher@1
     @5 := &two-phase-mut *(@6)
-    @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[Sized<DefaultHasher>, {impl Hasher for DefaultHasher}](move (@3), move (@5))
+    @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[Sized<DefaultHasher>, {impl test_crate::Hasher for DefaultHasher}](move (@3), move (@5))
     storage_dead(@5)
     storage_dead(@3)
     storage_dead(@6)

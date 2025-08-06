@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -26,9 +25,8 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
@@ -38,30 +36,28 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -69,7 +65,7 @@ pub trait Drop<Self>
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -101,7 +97,7 @@ where
 // Full name: test_crate::GenericTrait
 trait GenericTrait<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: Clone<T>
     fn other_method = test_crate::GenericTrait::other_method<Self, T>[Self]
@@ -117,7 +113,7 @@ fn test_crate::GenericTrait::provided<Self, T, U>(@1: T, @2: U)
 where
     [@TraitClause0]: GenericTrait<Self, T>,
     [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: PartialEq<U, T>,
+    [@TraitClause2]: core::cmp::PartialEq<U, T>,
 {
     let @0: (); // return
     let x@1: T; // arg #1
@@ -143,8 +139,8 @@ where
         @0 := ()
     }
     storage_dead(@3)
-    drop[Drop<U>] y@2
-    drop[Drop<T>] x@1
+    drop[core::ops::drop::Drop<U>] y@2
+    drop[core::ops::drop::Drop<T>] x@1
     @0 := ()
     return
 }
@@ -176,7 +172,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
     [@TraitClause2]: Sized<U>,
-    [@TraitClause3]: PartialEq<U, Option<T>[@TraitClause0]>,
+    [@TraitClause3]: core::cmp::PartialEq<U, Option<T>[@TraitClause0]>,
 {
     let @0: (); // return
     let x@1: Option<T>[@TraitClause0]; // arg #1
@@ -202,7 +198,7 @@ where
         @0 := ()
     }
     storage_dead(@3)
-    drop[Drop<U>] y@2
+    drop[core::ops::drop::Drop<U>] y@2
     @0 := ()
     return
 }
@@ -213,7 +209,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = MetaSized<Override<T>[@TraitClause0]>
+    parent_clause0 = core::marker::MetaSized<Override<T>[@TraitClause0]>
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
     parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
@@ -247,7 +243,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
     [@TraitClause2]: Sized<U>,
-    [@TraitClause3]: PartialEq<U, Option<T>[@TraitClause0]>,
+    [@TraitClause3]: core::cmp::PartialEq<U, Option<T>[@TraitClause0]>,
 {
     let @0: (); // return
     let x@1: Option<T>[@TraitClause0]; // arg #1
@@ -273,8 +269,8 @@ where
         @0 := ()
     }
     storage_dead(@3)
-    drop[Drop<U>] y@2
-    drop[Drop<Option<T>[@TraitClause0]>] x@1
+    drop[core::ops::drop::Drop<U>] y@2
+    drop[core::ops::drop::Drop<Option<T>[@TraitClause0]>] x@1
     @0 := ()
     return
 }
@@ -285,7 +281,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = MetaSized<NoOverride<T>[@TraitClause0]>
+    parent_clause0 = core::marker::MetaSized<NoOverride<T>[@TraitClause0]>
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
     parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]

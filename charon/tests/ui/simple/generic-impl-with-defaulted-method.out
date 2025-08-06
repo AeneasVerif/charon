@@ -1,8 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -22,10 +21,9 @@ where
   Some(T),
 }
 
-// Full name: test_crate::BoolTrait
-pub trait BoolTrait<Self>
+pub trait test_crate::BoolTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn foo<'_0> = foo<'_0_0, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
@@ -33,7 +31,7 @@ pub trait BoolTrait<Self>
 // Full name: test_crate::BoolTrait::foo
 pub fn foo<'_0, Self>(@1: &'_0 (Self))
 where
-    [@TraitClause0]: BoolTrait<Self>,
+    [@TraitClause0]: test_crate::BoolTrait<Self>,
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1
@@ -43,7 +41,7 @@ where
     return
 }
 
-pub fn test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0]))
+pub fn test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -55,8 +53,8 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}
-impl<T> BoolTrait for Option<T>[@TraitClause0]
+// Full name: test_crate::{impl test_crate::BoolTrait for Option<T>[@TraitClause0]}
+impl<T> test_crate::BoolTrait for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {

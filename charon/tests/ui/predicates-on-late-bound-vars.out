@@ -1,14 +1,13 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
 // Full name: core::cell::RefCell
 #[lang_item("RefCell")]
 pub opaque type RefCell<T>
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 
 // Full name: core::cell::BorrowError
 pub struct BorrowError {}
@@ -41,13 +40,13 @@ where
 #[lang_item("RefCellRef")]
 pub opaque type Ref<'b, T>
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
     T : 'b,
 
 // Full name: core::cell::{RefCell<T>[@TraitClause0]}::try_borrow
 pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>[@TraitClause0])) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[Sized<Ref<'_0, T>[@TraitClause0]>, Sized<BorrowError>]
 where
-    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause0]: core::marker::MetaSized<T>,
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -64,26 +63,24 @@ pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct<Self>
+pub trait core::marker::Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait Drop<Self>
+pub trait core::ops::drop::Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
-    [@TraitClause0]: Drop<Self>,
+    [@TraitClause0]: core::ops::drop::Drop<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -95,14 +92,14 @@ where
   Some(T),
 }
 
-// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop
-fn {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0, T, E>(@1: &'_0 mut (Result<T, E>[@TraitClause0, @TraitClause1]))
+// Full name: core::result::Result::{impl core::ops::drop::Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop
+fn {impl core::ops::drop::Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0, T, E>(@1: &'_0 mut (Result<T, E>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
 
-// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}
-impl<T, E> Drop for Result<T, E>[@TraitClause0, @TraitClause1]
+// Full name: core::result::Result::{impl core::ops::drop::Drop for Result<T, E>[@TraitClause0, @TraitClause1]}
+impl<T, E> core::ops::drop::Drop for Result<T, E>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
@@ -146,9 +143,9 @@ where
 fn foo()
 {
     let @0: (); // return
-    let ref_b@1: RefCell<bool>[MetaSized<bool>]; // local
-    let @2: Result<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]; // anonymous local
-    let @3: &'_ (RefCell<bool>[MetaSized<bool>]); // anonymous local
+    let ref_b@1: RefCell<bool>[core::marker::MetaSized<bool>]; // local
+    let @2: Result<Ref<'_, bool>[core::marker::MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[core::marker::MetaSized<bool>]>, Sized<BorrowError>]; // anonymous local
+    let @3: &'_ (RefCell<bool>[core::marker::MetaSized<bool>]); // anonymous local
 
     storage_live(ref_b@1)
     ref_b@1 := new<bool>[Sized<bool>](const (false))
@@ -156,9 +153,9 @@ fn foo()
     storage_live(@3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     @3 := &ref_b@1
-    @2 := try_borrow<'_, bool>[MetaSized<bool>](move (@3))
+    @2 := try_borrow<'_, bool>[core::marker::MetaSized<bool>](move (@3))
     storage_dead(@3)
-    drop[{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]] @2
+    drop[{impl core::ops::drop::Drop for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'_, bool>[core::marker::MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[core::marker::MetaSized<bool>]>, Sized<BorrowError>]] @2
     storage_dead(@2)
     @0 := ()
     storage_dead(ref_b@1)
@@ -166,10 +163,9 @@ fn foo()
     return
 }
 
-// Full name: test_crate::Foo
-trait Foo<Self>
+trait test_crate::Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::S>
     type S
     non-dyn-compatible
@@ -180,8 +176,8 @@ fn f<T, U>() -> Option<@TraitClause3::S>[@TraitClause3::parent_clause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Foo<T>,
-    [@TraitClause3]: Foo<U>,
+    [@TraitClause2]: test_crate::Foo<T>,
+    [@TraitClause3]: test_crate::Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
     let @0: Option<@TraitClause3::S>[@TraitClause3::parent_clause1]; // return
