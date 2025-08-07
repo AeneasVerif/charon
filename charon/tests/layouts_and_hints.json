@@ -1,0 +1,899 @@
+{
+  "Formatter<'_0_0>": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            16,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "u32": {
+    "Left": {
+      "size": 4,
+      "align": 4,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "@Type0": null,
+  "usize": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Slice<usize>": {
+    "Left": {
+      "size": null,
+      "align": null,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}]": null,
+  "(dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : 'static)": {
+    "Left": {
+      "size": null,
+      "align": null,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "@Type1_0": null,
+  "@Type0_0": null,
+  "alloc::boxed::Box<@Type0, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]": {
+    "Right": {
+      "min_size": 8,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
+  "Global": {
+    "Left": {
+      "size": 0,
+      "align": 1,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "u8": {
+    "Left": {
+      "size": 1,
+      "align": 1,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "!": null,
+  "(usize, &'_0 (@Type0))": {
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
+  "&'_0 (@Type0)": {
+    "Right": {
+      "min_size": 8,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
+  "(u32, u32)": {
+    "Left": {
+      "size": 8,
+      "align": 4,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            4
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "u64": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "char": {
+    "Left": {
+      "size": 4,
+      "align": 4,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "String": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "fn(*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": null,
+  "*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "(dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)": {
+    "Left": {
+      "size": null,
+      "align": null,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "()": {
+    "Left": {
+      "size": 0,
+      "align": 1,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "fn<'_0, '_1, '_2>(&'_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]": null,
+  "&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_0_1 mut (Formatter<'_0_2>)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Formatter<'_0_2>": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            16,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Result<(), Error>[Sized<()>, Sized<Error>]": {
+    "Right": {
+      "min_size": 0,
+      "min_alignment": 1,
+      "possibly_uninhabited": false
+    }
+  },
+  "Error": {
+    "Left": {
+      "size": 0,
+      "align": 1,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "@Type1": null,
+  "&'_1 (GenericButFixedSize<'_0, @Type0>[@TraitClause0])": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "GenericButFixedSize<'_0, @Type0>[@TraitClause0]": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": {
+        "offset": 0,
+        "tag_ty": {
+          "Signed": "Isize"
+        },
+        "encoding": {
+          "Niche": {
+            "untagged_variant": 1
+          }
+        }
+      },
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [],
+          "uninhabited": false,
+          "tag": {
+            "Signed": [
+              "Isize",
+              "0"
+            ]
+          }
+        },
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_2 mut (Formatter<'_3>)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Formatter<'_3>": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            16,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_ (GenericButFixedSize<'_, @Type0>[@TraitClause0])": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "GenericButFixedSize<'_, @Type0>[@TraitClause0]": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": {
+        "offset": 0,
+        "tag_ty": {
+          "Signed": "Isize"
+        },
+        "encoding": {
+          "Niche": {
+            "untagged_variant": 1
+          }
+        }
+      },
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [],
+          "uninhabited": false,
+          "tag": {
+            "Signed": [
+              "Isize",
+              "0"
+            ]
+          }
+        },
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_ mut (Formatter<'_>)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Formatter<'_>": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            16,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_ (Str)": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Str": {
+    "Left": {
+      "size": null,
+      "align": null,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_ (&'_ (@Type0))": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_ (@Type0)": {
+    "Right": {
+      "min_size": 8,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
+  "&'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_ (&'_ (&'_ (@Type0)))": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_1 mut (Formatter<'_2>)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Formatter<'_2>": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            16,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_1 mut (Formatter<'_0>)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Formatter<'_0>": {
+    "Left": {
+      "size": 24,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            16,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_2 (Str)": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_3 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : missing('_3)))": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "(dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : missing('_3))": {
+    "Left": {
+      "size": null,
+      "align": null,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Layout": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            8,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]": null,
+  "NonNull<Slice<u8>>": null,
+  "Slice<u8>": {
+    "Left": {
+      "size": null,
+      "align": null,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "AllocError": {
+    "Left": {
+      "size": 0,
+      "align": 1,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "NonNull<u8>": null,
+  "&'_0 (NonZeroU32Inner)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "NonZeroU32Inner": {
+    "Left": {
+      "size": 4,
+      "align": 4,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_0 (u32)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_1 (&'_0 (@Type0))": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "core::fmt::Debug::{vtable}": {
+    "Left": {
+      "size": 32,
+      "align": 32,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8,
+            16,
+            24
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "&'_0 (Global)": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "Self::NonZeroInner": null
+}
