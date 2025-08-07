@@ -199,6 +199,10 @@ module type Map = sig
   (** Add a binding in the map, failing if the binding already exists *)
   val add_strict : key -> 'a -> 'a t -> 'a t
 
+  (** Add a binding in the map, failing if the binding already exists and maps
+      to a value which is different from the one given as input *)
+  val add_strict_or_unchanged : key -> 'a -> 'a t -> 'a t
+
   val add_list : (key * 'a) list -> 'a t -> 'a t
   val of_list : (key * 'a) list -> 'a t
   val keys : 'a t -> key list
@@ -239,6 +243,13 @@ module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
 
   let add_strict k v m =
     assert (not (mem k m));
+    add k v m
+
+  let add_strict_or_unchanged k v m =
+    assert (
+      match find_opt k m with
+      | None -> true
+      | Some v' -> v = v');
     add k v m
 
   let add_list bl m = List.fold_left (fun s (key, e) -> add key e s) m bl

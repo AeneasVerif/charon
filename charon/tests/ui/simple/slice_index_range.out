@@ -981,9 +981,8 @@ where
     let @17: *const T; // anonymous local
     let self@18: usize; // local
     let self@19: bool; // local
-    let @20: usize; // anonymous local
+    let @20: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // anonymous local
     let @21: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // anonymous local
-    let @22: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // anonymous local
 
     storage_live(self@4)
     storage_live(exclusive_end@6)
@@ -1002,17 +1001,15 @@ where
     storage_live(self@19)
     storage_live(@20)
     storage_live(@21)
-    storage_live(@22)
     storage_live(@3)
     storage_live(self@5)
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @20 := MAX
-    @3 := copy (self@4) == move (@20)
+    @3 := copy (self@4) == copy (MAX)
     if move (@3) {
-        @21 := Option::None {  }
-        @0 := move (@21)
+        @20 := Option::None {  }
+        @0 := move (@20)
     }
     else {
         storage_live(self@18)
@@ -1034,8 +1031,8 @@ where
         @14 := copy (exclusive_end@6) < copy (self@8)
         if move (@14) {
             storage_dead(@14)
-            @22 := Option::None {  }
-            @0 := move (@22)
+            @21 := Option::None {  }
+            @0 := move (@21)
             storage_dead(@9)
             storage_dead(@11)
         }
@@ -1065,8 +1062,8 @@ where
             }
             else {
                 storage_dead(@10)
-                @22 := Option::None {  }
-                @0 := move (@22)
+                @21 := Option::None {  }
+                @0 := move (@21)
             }
             storage_dead(@9)
             storage_dead(@11)
@@ -1101,9 +1098,8 @@ where
     let @17: *mut T; // anonymous local
     let self@18: usize; // local
     let self@19: bool; // local
-    let @20: usize; // anonymous local
+    let @20: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // anonymous local
     let @21: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // anonymous local
-    let @22: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // anonymous local
 
     storage_live(self@4)
     storage_live(exclusive_end@6)
@@ -1122,17 +1118,15 @@ where
     storage_live(self@19)
     storage_live(@20)
     storage_live(@21)
-    storage_live(@22)
     storage_live(@3)
     storage_live(self@5)
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @20 := MAX
-    @3 := copy (self@4) == move (@20)
+    @3 := copy (self@4) == copy (MAX)
     if move (@3) {
-        @21 := Option::None {  }
-        @0 := move (@21)
+        @20 := Option::None {  }
+        @0 := move (@20)
     }
     else {
         storage_live(self@18)
@@ -1154,8 +1148,8 @@ where
         @14 := copy (exclusive_end@6) < copy (self@8)
         if move (@14) {
             storage_dead(@14)
-            @22 := Option::None {  }
-            @0 := move (@22)
+            @21 := Option::None {  }
+            @0 := move (@21)
             storage_dead(@9)
             storage_dead(@11)
         }
@@ -1185,8 +1179,8 @@ where
             }
             else {
                 storage_dead(@10)
-                @22 := Option::None {  }
-                @0 := move (@22)
+                @21 := Option::None {  }
+                @0 := move (@21)
             }
             storage_dead(@9)
             storage_dead(@11)
@@ -1346,7 +1340,6 @@ where
     let @10: usize; // anonymous local
     let self@11: usize; // local
     let self@12: bool; // local
-    let @13: usize; // anonymous local
 
     storage_live(self@4)
     storage_live(@6)
@@ -1356,14 +1349,12 @@ where
     storage_live(@10)
     storage_live(self@11)
     storage_live(self@12)
-    storage_live(@13)
     storage_live(@3)
     storage_live(self@5)
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @13 := MAX
-    @3 := copy (self@4) == move (@13)
+    @3 := copy (self@4) == copy (MAX)
     if move (@3) {
     }
     else {
@@ -1413,7 +1404,6 @@ where
     let @10: usize; // anonymous local
     let self@11: usize; // local
     let self@12: bool; // local
-    let @13: usize; // anonymous local
 
     storage_live(self@4)
     storage_live(@6)
@@ -1423,14 +1413,12 @@ where
     storage_live(@10)
     storage_live(self@11)
     storage_live(self@12)
-    storage_live(@13)
     storage_live(@3)
     storage_live(self@5)
     self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
-    @13 := MAX
-    @3 := copy (self@4) == move (@13)
+    @3 := copy (self@4) == copy (MAX)
     if move (@3) {
     }
     else {

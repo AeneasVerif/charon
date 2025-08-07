@@ -547,7 +547,7 @@ impl ItemTransCtx<'_, '_> {
         };
         let items: Vec<(TraitItemName, &hax::AssocItem)> = items
             .iter()
-            .map(|item| {
+            .map(|item| -> Result<_, Error> {
                 let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
                 Ok((name, item))
             })

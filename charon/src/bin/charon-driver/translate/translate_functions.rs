@@ -115,7 +115,7 @@ impl ItemTransCtx<'_, '_> {
         locals.new_var(None, output_ty);
         let args: Vec<_> = fields
             .iter()
-            .map(|field| {
+            .map(|field| -> Result<Operand, Error> {
                 let ty = self.translate_ty(span, &field.ty)?;
                 let place = locals.new_var(None, ty);
                 Ok(Operand::Move(place))

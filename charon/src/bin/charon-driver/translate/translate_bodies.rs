@@ -934,9 +934,9 @@ impl BodyTransCtx<'_, '_, '_> {
                         let b: [u8; 1] = v.data_le_bytes[0..1].try_into().unwrap();
                         let v = Char(u8::from_le_bytes(b) as char);
                         let tgt = self.translate_basic_block_id(*tgt);
-                        Ok((v, tgt))
+                        (v, tgt)
                     })
-                    .try_collect()?;
+                    .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
                     LiteralTy::Char,
@@ -953,9 +953,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             v.data_le_bytes,
                         ));
                         let tgt = self.translate_basic_block_id(*tgt);
-                        Ok((v, tgt))
+                        (v, tgt)
                     })
-                    .try_collect()?;
+                    .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
                     LiteralTy::Int(int_ty),

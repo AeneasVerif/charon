@@ -16,21 +16,15 @@ fn overflow() -> &'static (u32)
     let @4: &'_ (u32); // anonymous local
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
-    let @7: u32; // anonymous local
-    let @8: u32; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
     storage_live(@1)
-    @7 := MAX
-    @2 := move (@7) panic.+ const (1 : u32)
-    @8 := MAX
-    @6 := move (@8) wrap.+ const (1 : u32)
+    @2 := copy (MAX) panic.+ const (1 : u32)
+    @6 := copy (MAX) wrap.+ const (1 : u32)
     @5 := move (@6)
     @4 := &@5
     @3 := move (@4)

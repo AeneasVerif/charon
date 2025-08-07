@@ -174,8 +174,11 @@ and overflow_mode =
 and place = { kind : place_kind; ty : ty }
 
 and place_kind =
-  | PlaceLocal of local_id
-  | PlaceProjection of place * projection_elem
+  | PlaceLocal of local_id  (** A local variable in a function body. *)
+  | PlaceProjection of place * projection_elem  (** A subplace of a place. *)
+  | PlaceGlobal of global_decl_ref
+      (** A global (const or static). Not present in MIR; introduced in
+          [simplify_constants.rs]. *)
 
 (** Note that we don't have the equivalent of "downcasts". Downcasts are
     actually necessary, for instance when initializing enumeration values: the
@@ -226,7 +229,7 @@ and projection_elem =
       desugar those to regular ADTs, see [regularize_constant_adts.rs].
 
     [[RawConstantExpr::Global]] case: access to a global variable. We later
-    desugar it to a separate statement.
+    desugar it to a copy of a place global.
 
     [[RawConstantExpr::Ref]] case: reference to a constant value. We later
     desugar it to a separate statement.
@@ -302,13 +305,6 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure
           id together with its state. *)
-  | Global of global_decl_ref
-      (** Copy the value of the referenced global. Not present in MIR;
-          introduced in [simplify_constants.rs]. *)
-  | GlobalRef of global_decl_ref * ref_kind
-      (** Reference the value of the global. This has type [&T] or [*mut T]
-          depending on desired mutability. Not present in MIR; introduced in
-          [simplify_constants.rs]. *)
   | Len of place * ty * const_generic option
       (** Length of a memory location. The run-time length of e.g. a vector or a
           slice is represented differently (but pretty-prints the same, FIXME).

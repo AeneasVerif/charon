@@ -424,14 +424,12 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     let @9: Array<&'_ (Str), 1 : usize>; // anonymous local
     let @10: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @11: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @12: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @13: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @12: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
     storage_live(@6)
     storage_live(pieces@8)
     storage_live(@12)
-    storage_live(@13)
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -455,10 +453,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
-    @12 := {promoted_const}<'_, 1 : usize>
-    @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
-    @13 := Option::None {  }
-    @7 := Arguments { 0: move (@10), 1: move (@13), 2: move (@11) }
+    @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
+    @12 := Option::None {  }
+    @7 := Arguments { 0: move (@10), 1: move (@12), 2: move (@11) }
     storage_dead(@11)
     storage_dead(@10)
     @6 := panic_nounwind_fmt<'_>(move (@7), const (false))
@@ -536,14 +533,12 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     let @9: Array<&'_ (Str), 1 : usize>; // anonymous local
     let @10: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @11: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @12: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @13: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @12: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
     storage_live(@5)
     storage_live(@6)
     storage_live(pieces@8)
     storage_live(@12)
-    storage_live(@13)
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -567,10 +562,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
-    @12 := {promoted_const}<'_, 1 : usize>
-    @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
-    @13 := Option::None {  }
-    @7 := Arguments { 0: move (@10), 1: move (@13), 2: move (@11) }
+    @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
+    @12 := Option::None {  }
+    @7 := Arguments { 0: move (@10), 1: move (@12), 2: move (@11) }
     storage_dead(@11)
     storage_dead(@10)
     @6 := panic_nounwind_fmt<'_>(move (@7), const (false))

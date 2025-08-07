@@ -48,11 +48,8 @@ pub const X0: u32 = X0()
 pub fn X1() -> u32
 {
     let @0: u32; // return
-    let @1: u32; // anonymous local
 
-    storage_live(@1)
-    @1 := MAX
-    @0 := move (@1)
+    @0 := copy (MAX)
     return
 }
 
@@ -243,12 +240,9 @@ pub fn unwrap_y() -> i32
 {
     let @0: i32; // return
     let @1: Wrap<i32>[Sized<i32>]; // anonymous local
-    let @2: Wrap<i32>[Sized<i32>]; // anonymous local
 
-    storage_live(@2)
     storage_live(@1)
-    @2 := Y
-    @1 := move (@2)
+    @1 := copy (Y)
     @0 := copy ((@1).value)
     storage_dead(@1)
     return
@@ -282,11 +276,8 @@ const Z1: i32 = Z1()
 pub fn get_z1() -> i32
 {
     let @0: i32; // return
-    let @1: i32; // anonymous local
 
-    storage_live(@1)
-    @1 := Z1
-    @0 := move (@1)
+    @0 := copy (Z1)
     return
 }
 
@@ -328,11 +319,8 @@ pub const Q1: i32 = Q1()
 pub fn Q2() -> i32
 {
     let @0: i32; // return
-    let @1: i32; // anonymous local
 
-    storage_live(@1)
-    @1 := Q1
-    @0 := move (@1)
+    @0 := copy (Q1)
     return
 }
 
@@ -343,11 +331,8 @@ pub const Q2: i32 = Q2()
 pub fn Q3() -> i32
 {
     let @0: i32; // return
-    let @1: i32; // anonymous local
 
-    storage_live(@1)
-    @1 := Q2
-    @0 := add(move (@1), const (3 : i32))
+    @0 := add(copy (Q2), const (3 : i32))
     return
 }
 
@@ -360,19 +345,13 @@ pub fn get_z2() -> i32
     let @0: i32; // return
     let @1: i32; // anonymous local
     let @2: i32; // anonymous local
-    let @3: i32; // anonymous local
-    let @4: i32; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
     storage_live(@1)
     storage_live(@2)
     @2 := get_z1()
-    @3 := Q3
-    @1 := add(move (@2), move (@3))
+    @1 := add(move (@2), copy (Q3))
     storage_dead(@2)
-    @4 := Q1
-    @0 := add(move (@4), move (@1))
+    @0 := add(copy (Q1), move (@1))
     storage_dead(@1)
     return
 }
@@ -416,11 +395,8 @@ pub static S2: u32 = S2()
 pub fn S3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
 {
     let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
-    let @1: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // anonymous local
 
-    storage_live(@1)
-    @1 := P3
-    @0 := move (@1)
+    @0 := copy (P3)
     return
 }
 
@@ -470,11 +446,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
-    let @1: usize; // anonymous local
 
-    storage_live(@1)
-    @1 := LEN<T, const N : usize>[@TraitClause0]
-    @0 := move (@1)
+    @0 := copy (LEN<T, const N : usize>[@TraitClause0])
     return
 }
 
