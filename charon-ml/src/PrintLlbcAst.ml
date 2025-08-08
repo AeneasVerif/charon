@@ -67,7 +67,7 @@ module Ast = struct
               List.map
                 (fun (svl, be) ->
                   let svl =
-                    List.map (fun sv -> "| " ^ scalar_value_to_string sv) svl
+                    List.map (fun sv -> "| " ^ literal_to_string sv) svl
                   in
                   let svl = String.concat " " svl in
                   indent ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
