@@ -972,7 +972,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             v.data_le_bytes,
                         ));
                         let tgt = self.translate_basic_block_id(*tgt);
-                        Ok((v, tgt))
+                        Ok::<(charon_lib::ast::Literal, charon_lib::ullbc_ast::BlockId), Error>((
+                            v, tgt,
+                        ))
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
