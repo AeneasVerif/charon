@@ -271,12 +271,19 @@ fn foo()
     let @9: &'_ (Slice<bool>); // anonymous local
     let @10: &'_ (Slice<bool>); // anonymous local
     let @11: RangeFrom<usize>[Sized<usize>]; // anonymous local
+    let @12: (); // anonymous local
+    let @13: usize; // anonymous local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
+    let @16: usize; // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     @3 := Option::Some { 0: const (0 : i32) }
-    @2 := &@3
+    storage_live(@12)
+    @12 := ()
+    @2 := &(@3, move (@12))
     @1 := is_some<'_, i32>[Sized<i32>](move (@2))
     storage_dead(@2)
     storage_dead(@3)
@@ -286,21 +293,29 @@ fn foo()
     storage_live(@6)
     storage_live(@7)
     @7 := [const (false)]
-    @6 := &@7
-    @5 := &*(@6)
+    storage_live(@15)
+    @15 := ()
+    @6 := &(@7, move (@15))
+    storage_live(@14)
+    @14 := ()
+    @5 := &(*(@6), move (@14))
     slice@4 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@5))
     storage_dead(@5)
     storage_dead(@6)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
-    @10 := &*(slice@4)
+    storage_live(@13)
+    @13 := ptr_metadata(copy (slice@4))
+    @10 := &(*(slice@4), move (@13))
     storage_live(@11)
     @11 := RangeFrom { start: const (1 : usize) }
     @9 := {impl Index<I> for Slice<T>}::index<'_, bool, RangeFrom<usize>[Sized<usize>]>[Sized<bool>, Sized<RangeFrom<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}<bool>[Sized<bool>]](move (@10), move (@11))
     storage_dead(@11)
     storage_dead(@10)
-    @8 := &*(@9)
+    storage_live(@16)
+    @16 := ptr_metadata(copy (@9))
+    @8 := &(*(@9), move (@16))
     storage_dead(@8)
     @0 := ()
     storage_dead(@9)

@@ -269,13 +269,16 @@ where
     let @2: &'_ (Clause1_Item); // anonymous local
     let @3: Clause1_Item; // anonymous local
     let @4: Clause1_Item; // anonymous local
+    let @5: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := copy (x@1)
     @3 := @TraitClause1::use_item_provided<Clause2_Item>[@TraitClause2](move (@4))
-    @2 := &@3
+    storage_live(@5)
+    @5 := ()
+    @2 := &(@3, move (@5))
     storage_dead(@4)
     @0 := @TraitClause2::parent_clause1::parent_clause1::clone<'_>(move (@2))
     storage_dead(@2)

@@ -126,9 +126,12 @@ where
     let @1: closure<T, const K : usize>[@TraitClause0, @TraitClause1]; // arg #1
     let @2: (usize); // arg #2
     let @3: &'_ mut (closure<T, const K : usize>[@TraitClause0, @TraitClause1]); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, const K : usize>[@TraitClause0, @TraitClause1](move (@3), move (@2))
     drop[Drop<closure<T, const K : usize>[@TraitClause0, @TraitClause1]>] @1
     return

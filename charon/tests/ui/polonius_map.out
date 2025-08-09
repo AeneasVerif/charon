@@ -284,6 +284,16 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
     let @13: &'_ (u32); // anonymous local
     let @14: &'_ (u32); // anonymous local
     let @15: u32; // anonymous local
+    let @16: (); // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: (); // anonymous local
+    let @21: (); // anonymous local
+    let @22: (); // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
+    let @25: (); // anonymous local
 
     storage_live(v@7)
     storage_live(@8)
@@ -294,15 +304,28 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
     storage_live(@13)
     storage_live(@14)
     storage_live(@15)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(@24)
+    storage_live(@25)
     storage_live(@2)
     storage_live(@3)
-    @3 := &*(map@1)
+    storage_live(@18)
+    @18 := ()
+    @3 := &(*(map@1), move (@18))
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := const (22 : u32)
-    @5 := &@6
-    @4 := &*(@5)
+    storage_live(@17)
+    @17 := ()
+    @5 := &(@6, move (@17))
+    storage_live(@16)
+    @16 := ()
+    @4 := &(*(@5), move (@16))
     @2 := get<'_, '_, u32, u32, RandomState, u32>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, MetaSized<u32>, {impl Borrow<T> for T}<u32>[MetaSized<u32>], {impl Hash for u32}, {impl Eq for u32}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
@@ -310,25 +333,37 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
         Option::None => {
             storage_live(@8)
             storage_live(@9)
-            @9 := &two-phase-mut *(map@1)
+            storage_live(@19)
+            @19 := ()
+            @9 := &two-phase-mut (*(map@1), move (@19))
             @8 := insert<'_, u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@9), const (22 : u32), const (33 : u32))
             storage_dead(@9)
             storage_dead(@8)
             storage_live(@10)
             storage_live(@11)
             storage_live(@12)
-            @12 := &*(map@1)
+            storage_live(@22)
+            @22 := ()
+            @12 := &(*(map@1), move (@22))
             storage_live(@13)
             storage_live(@14)
             storage_live(@15)
             @15 := const (22 : u32)
-            @14 := &@15
-            @13 := &*(@14)
+            storage_live(@21)
+            @21 := ()
+            @14 := &(@15, move (@21))
+            storage_live(@20)
+            @20 := ()
+            @13 := &(*(@14), move (@20))
             @11 := {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_, '_, u32, u32, u32, RandomState>[Sized<u32>, MetaSized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[MetaSized<u32>], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@12), move (@13))
             storage_dead(@13)
             storage_dead(@12)
-            @10 := &*(@11)
-            @0 := &*(@10)
+            storage_live(@25)
+            @25 := ()
+            @10 := &(*(@11), move (@25))
+            storage_live(@24)
+            @24 := ()
+            @0 := &(*(@10), move (@24))
             storage_dead(@15)
             storage_dead(@14)
             storage_dead(@11)
@@ -337,7 +372,9 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
         Option::Some => {
             storage_live(v@7)
             v@7 := copy ((@2 as variant Option::Some).0)
-            @0 := &*(v@7)
+            storage_live(@23)
+            @23 := ()
+            @0 := &(*(v@7), move (@23))
             storage_dead(v@7)
         },
     }

@@ -71,14 +71,20 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let @4: bool; // anonymous local
     let @5: &'_ (bool); // anonymous local
     let @6: &'_ (bool); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
 
     bb0: {
         storage_live(@3);
         storage_live(@4);
         storage_live(@5);
-        @5 := &expected@2;
+        storage_live(@8);
+        @8 := ();
+        @5 := &(expected@2, move (@8));
         storage_live(@6);
-        @6 := &init@1;
+        storage_live(@7);
+        @7 := ();
+        @6 := &(init@1, move (@7));
         @4 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 

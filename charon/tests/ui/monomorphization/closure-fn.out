@@ -155,9 +155,12 @@ fn apply_to::<closure<'_, '_>><'_0>(@1: &'_0 (closure<'_, '_>)) -> u8
     let f@1: &'_ (closure<'_, '_>); // arg #1
     let @2: &'_ (closure<'_, '_>); // anonymous local
     let @3: (u8, u8); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
-    @2 := &*(f@1)
+    storage_live(@4)
+    @4 := ()
+    @2 := &(*(f@1), move (@4))
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
     @0 := {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_, '_, '_>(move (@2), move (@3))
@@ -173,9 +176,12 @@ fn {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_2>(@1: &'_2 m
     let state@1: &'_2 mut (closure<'_0, '_1>); // arg #1
     let args@2: (u8, u8); // arg #2
     let @3: &'_ (closure<'_0, '_1>); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &*(state@1)
+    storage_live(@4)
+    @4 := ()
+    @3 := &(*(state@1), move (@4))
     @0 := {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_>(move (@3), move (args@2))
     return
 }
@@ -187,9 +193,12 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut (closure<'_, '_>)) -> u8
     let f@1: &'_ mut (closure<'_, '_>); // arg #1
     let @2: &'_ mut (closure<'_, '_>); // anonymous local
     let @3: (u8, u8); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
-    @2 := &mut *(f@1)
+    storage_live(@4)
+    @4 := ()
+    @2 := &mut (*(f@1), move (@4))
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
     @0 := {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_, '_, '_>(move (@2), move (@3))
@@ -205,9 +214,12 @@ fn {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_0, '_1>(@1: closure<'
     let @1: closure<'_0, '_1>; // arg #1
     let @2: (u8, u8); // arg #2
     let @3: &'_ mut (closure<'_0, '_1>); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop[Drop::<closure<'_, '_>>] @1
     return
@@ -252,6 +264,13 @@ fn main()
     let @14: &'_ mut (closure<'_, '_>); // anonymous local
     let @15: u8; // anonymous local
     let @16: closure<'_, '_>; // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: (); // anonymous local
+    let @21: (); // anonymous local
+    let @22: (); // anonymous local
+    let @23: (); // anonymous local
 
     storage_live(v@1)
     v@1 := const (5 : u8)
@@ -259,15 +278,21 @@ fn main()
     z@2 := const (1 : u8)
     storage_live(f@3)
     storage_live(@4)
-    @4 := &v@1
+    storage_live(@19)
+    @19 := ()
+    @4 := &(v@1, move (@19))
     storage_live(@5)
-    @5 := &z@2
+    storage_live(@18)
+    @18 := ()
+    @5 := &(z@2, move (@18))
     f@3 := closure { 0: move (@4), 1: move (@5) }
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
     storage_live(@7)
-    @7 := &f@3
+    storage_live(@17)
+    @17 := ()
+    @7 := &(f@3, move (@17))
     storage_live(@8)
     @8 := (const (10 : u8), const (20 : u8))
     @6 := {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_, '_, '_>(move (@7), move (@8))
@@ -277,8 +302,12 @@ fn main()
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
-    @11 := &f@3
-    @10 := &*(@11)
+    storage_live(@21)
+    @21 := ()
+    @11 := &(f@3, move (@21))
+    storage_live(@20)
+    @20 := ()
+    @10 := &(*(@11), move (@20))
     @9 := apply_to::<closure<'_, '_>><'_>(move (@10))
     storage_dead(@10)
     storage_dead(@11)
@@ -286,8 +315,12 @@ fn main()
     storage_live(@12)
     storage_live(@13)
     storage_live(@14)
-    @14 := &mut f@3
-    @13 := &two-phase-mut *(@14)
+    storage_live(@23)
+    @23 := ()
+    @14 := &mut (f@3, move (@23))
+    storage_live(@22)
+    @22 := ()
+    @13 := &two-phase-mut (*(@14), move (@22))
     @12 := apply_to_mut::<closure<'_, '_>><'_>(move (@13))
     storage_dead(@13)
     storage_dead(@14)
