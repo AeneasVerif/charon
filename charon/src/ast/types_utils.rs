@@ -143,19 +143,16 @@ impl<T: AstVisitable> Binder<Binder<T>> {
             shift_by: &'a GenericParams,
             binder_depth: DeBruijnId,
         }
+        impl VisitorWithBinderDepth for FlattenVisitor<'_> {
+            fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                &mut self.binder_depth
+            }
+        }
         impl VisitAstMut for FlattenVisitor<'_> {
-            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.binder_depth = self.binder_depth.incr()
+            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                VisitWithBinderDepth::new(self).visit(x)
             }
-            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.binder_depth = self.binder_depth.decr()
-            }
-            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.binder_depth = self.binder_depth.incr()
-            }
-            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.binder_depth = self.binder_depth.decr()
-            }
+
             fn enter_de_bruijn_id(&mut self, db_id: &mut DeBruijnId) {
                 if *db_id > self.binder_depth {
                     // We started visiting at the inner binder, so in this branch we're either

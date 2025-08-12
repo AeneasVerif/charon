@@ -27,7 +27,7 @@ struct IndexVisitor<'a> {
 impl<'a> IndexVisitor<'a> {
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         let var = self.locals.new_var(name, ty);
-        let live_kind = RawStatement::StorageLive(var.local_id());
+        let live_kind = RawStatement::StorageLive(var.local_id().unwrap());
         self.statements.push(Statement::new(self.span, live_kind));
         var
     }
@@ -139,7 +139,7 @@ impl<'a> IndexVisitor<'a> {
                 ),
             );
             self.statements.push(Statement::new(self.span, kind));
-            let dead_kind = RawStatement::StorageDead(len_var.local_id());
+            let dead_kind = RawStatement::StorageDead(len_var.local_id().unwrap());
             self.statements.push(Statement::new(self.span, dead_kind));
             args.push(Operand::Copy(index_var));
         } else {
@@ -172,7 +172,7 @@ impl<'a> IndexVisitor<'a> {
         mutability: bool,
     ) -> ControlFlow<Infallible>
     where
-        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>>,
+        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>> + BodyVisitable,
     {
         self.place_mutability_stack.push(mutability);
         self.visit_inner(x)?;
@@ -224,8 +224,8 @@ impl VisitBodyMut for IndexVisitor<'_> {
             | Discriminant(..)
             | Len(..) => self.visit_inner_with_mutability(x, false),
 
-            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..)
-            | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => self.visit_inner(x),
+            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Repeat(..)
+            | ShallowInitBox(..) => self.visit_inner(x),
         }
     }
 

@@ -95,13 +95,21 @@ impl Error {
                 // Show just the file and line/col.
                 let origin = Origin::path(&origin)
                     .line(span.beg.line)
-                    .char_column(span.beg.col + 1)
-                    .primary(true);
+                    .char_column(span.beg.col + 1);
                 group = group.element(origin);
             }
         }
 
         Renderer::styled().render(&[group]).to_string()
+    }
+}
+
+impl<T: ToString> From<T> for Error {
+    fn from(err: T) -> Self {
+        Self {
+            span: Span::dummy(),
+            msg: err.to_string(),
+        }
     }
 }
 

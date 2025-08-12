@@ -697,12 +697,9 @@ pub fn test_crate::_#8() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
-    let @2: u32; // anonymous local
 
     storage_live(@1)
-    storage_live(@2)
-    @2 := test_crate::FOO
-    @1 := const (1 : u32) panic.+ move (@2)
+    @1 := const (1 : u32) panic.+ copy (test_crate::FOO)
     @0 := move (@1)
     return
 }
@@ -713,12 +710,9 @@ pub fn test_crate::_#9() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
-    let @2: u32; // anonymous local
 
     storage_live(@1)
-    storage_live(@2)
-    @2 := test_crate::FOO
-    @1 := const (10 : u32) panic.- move (@2)
+    @1 := const (10 : u32) panic.- copy (test_crate::FOO)
     @0 := move (@1)
     return
 }
@@ -729,12 +723,9 @@ pub fn test_crate::_#10() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
-    let @2: u32; // anonymous local
 
     storage_live(@1)
-    storage_live(@2)
-    @2 := test_crate::FOO
-    @1 := const (2 : u32) panic.* move (@2)
+    @1 := const (2 : u32) panic.* copy (test_crate::FOO)
     @0 := move (@1)
     return
 }
@@ -744,11 +735,8 @@ pub const test_crate::_#10: u32 = test_crate::_#10()
 pub fn test_crate::_#11() -> u32
 {
     let @0: u32; // return
-    let @1: u32; // anonymous local
 
-    storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (2 : u32) panic.>> move (@1)
+    @0 := const (2 : u32) panic.>> copy (test_crate::FOO)
     return
 }
 
@@ -757,11 +745,8 @@ pub const test_crate::_#11: u32 = test_crate::_#11()
 pub fn test_crate::_#12() -> u32
 {
     let @0: u32; // return
-    let @1: u32; // anonymous local
 
-    storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (2 : u32) panic.<< move (@1)
+    @0 := const (2 : u32) panic.<< copy (test_crate::FOO)
     return
 }
 
@@ -770,11 +755,8 @@ pub const test_crate::_#12: u32 = test_crate::_#12()
 pub fn test_crate::_#13() -> u32
 {
     let @0: u32; // return
-    let @1: u32; // anonymous local
 
-    storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (2 : u32) panic.% move (@1)
+    @0 := const (2 : u32) panic.% copy (test_crate::FOO)
     return
 }
 
@@ -783,11 +765,8 @@ pub const test_crate::_#13: u32 = test_crate::_#13()
 pub fn test_crate::_#14() -> u32
 {
     let @0: u32; // return
-    let @1: u32; // anonymous local
 
-    storage_live(@1)
-    @1 := test_crate::FOO
-    @0 := const (2 : u32) panic./ move (@1)
+    @0 := const (2 : u32) panic./ copy (test_crate::FOO)
     return
 }
 
@@ -807,11 +786,8 @@ const test_crate::div_signed_with_constant::FOO: i32 = test_crate::div_signed_wi
 fn div_signed_with_constant() -> i32
 {
     let @0: i32; // return
-    let @1: i32; // anonymous local
 
-    storage_live(@1)
-    @1 := test_crate::div_signed_with_constant::FOO
-    @0 := move (@1) panic./ const (2 : i32)
+    @0 := copy (test_crate::div_signed_with_constant::FOO) panic./ const (2 : i32)
     return
 }
 

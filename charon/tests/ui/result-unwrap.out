@@ -141,16 +141,11 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
-    let @7: u32; // anonymous local
-    let @8: u32; // anonymous local
 
-    storage_live(@7)
-    storage_live(@8)
     storage_live(@3)
     storage_live(@4)
     @4 := copy (((*(f@2)).0).flags)
-    @7 := DEBUG_LOWER_HEX_FLAG
-    @3 := move (@4) & move (@7)
+    @3 := move (@4) & copy (DEBUG_LOWER_HEX_FLAG)
     storage_dead(@4)
     switch move (@3) {
         0 : u32 => {
@@ -165,8 +160,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     storage_live(@5)
     storage_live(@6)
     @6 := copy (((*(f@2)).0).flags)
-    @8 := DEBUG_UPPER_HEX_FLAG
-    @5 := move (@6) & move (@8)
+    @5 := move (@6) & copy (DEBUG_UPPER_HEX_FLAG)
     storage_dead(@6)
     switch move (@5) {
         0 : u32 => {

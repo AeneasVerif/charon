@@ -933,9 +933,9 @@ impl BodyTransCtx<'_, '_, '_> {
                         let v =
                             ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes);
                         let tgt = self.translate_basic_block_id(*tgt);
-                        Ok((v, tgt))
+                        (v, tgt)
                     })
-                    .try_collect()?;
+                    .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
                     IntegerTy::Signed(int_ty),
@@ -952,9 +952,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             v.data_le_bytes,
                         );
                         let tgt = self.translate_basic_block_id(*tgt);
-                        Ok((v, tgt))
+                        (v, tgt)
                     })
-                    .try_collect()?;
+                    .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
                     IntegerTy::Unsigned(int_ty),

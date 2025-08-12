@@ -547,7 +547,7 @@ impl ItemTransCtx<'_, '_> {
         };
         let items: Vec<(TraitItemName, &hax::AssocItem)> = items
             .iter()
-            .map(|item| {
+            .map(|item| -> Result<_, Error> {
                 let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
                 Ok((name, item))
             })
@@ -931,10 +931,14 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Generate a blanket impl for this trait, as in:
-    ///   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// ```
+    ///     trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// ```
     /// becomes:
-    ///   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
-    ///   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    /// ```
+    ///     trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
+    ///     impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    /// ```
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_alias_blanket_impl(
         mut self,
@@ -984,18 +988,14 @@ impl ItemTransCtx<'_, '_> {
             impl Visitor for FixSelfVisitor {
                 type Break = UnhandledSelf;
             }
+            impl VisitorWithBinderDepth for FixSelfVisitor {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
             impl VisitAstMut for FixSelfVisitor {
-                fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                    self.binder_depth = self.binder_depth.incr()
-                }
-                fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                    self.binder_depth = self.binder_depth.decr()
-                }
-                fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                    self.binder_depth = self.binder_depth.incr()
-                }
-                fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                    self.binder_depth = self.binder_depth.decr()
+                fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(x)
                 }
                 fn visit_trait_ref_kind(
                     &mut self,
