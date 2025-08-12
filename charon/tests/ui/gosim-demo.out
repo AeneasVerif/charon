@@ -194,7 +194,7 @@ pub trait Iterator<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -242,7 +242,7 @@ where
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -293,7 +293,7 @@ pub trait DoubleEndedIterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
@@ -306,7 +306,7 @@ pub trait ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
-    non-dyn-compatible
+    vtable: core::iter::traits::exact_size::ExactSizeIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 #[lang_item("next")]
@@ -360,7 +360,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -372,7 +372,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -439,7 +439,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    non-dyn-compatible
+    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
 }
 
 // Full name: core::slice::iter::Iter
@@ -464,7 +464,7 @@ where
     parent_clause1 = Sized<&'_ (T)>
     type Item = &'a (T)
     fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}::into_iter
@@ -484,7 +484,7 @@ where
     type Item = &'a (T)
     type IntoIter = Iter<'a, T>[@TraitClause0]
     fn into_iter = {impl IntoIterator for &'a (Slice<T>)}::into_iter<'a, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl IntoIterator for &'a (Slice<T>)}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: std::io::stdio::_eprint
