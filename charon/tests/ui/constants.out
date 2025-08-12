@@ -374,13 +374,16 @@ pub fn S2() -> u32
     let @0: u32; // return
     let @1: u32; // anonymous local
     let @2: &'_ (u32); // anonymous local
-    let @3: &'_ (u32); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'_ (u32); // anonymous local
 
     storage_live(@3)
+    storage_live(@4)
     storage_live(@1)
     storage_live(@2)
-    @3 := &S1
-    @2 := move (@3)
+    @3 := ()
+    @4 := &(S1, move (@3))
+    @2 := move (@4)
     @1 := copy (*(@2))
     @0 := incr(move (@1))
     storage_dead(@2)

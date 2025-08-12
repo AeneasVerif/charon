@@ -225,6 +225,12 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
     let __arg1_0@14: &'_ (u8); // local
     let @15: &'_ (&'_ (u8)); // anonymous local
     let @16: &'_ (&'_ (u8)); // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: (); // anonymous local
+    let @21: (); // anonymous local
+    let @22: (); // anonymous local
 
     storage_live(@10)
     storage_live(@11)
@@ -233,14 +239,22 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
     storage_live(__arg1_0@14)
     storage_live(@15)
     storage_live(@16)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
+    storage_live(@22)
     storage_live(__self_discr@3)
     storage_live(@4)
-    @4 := &*(self@1)
+    storage_live(@17)
+    @17 := ()
+    @4 := &(*(self@1), move (@17))
     __self_discr@3 := @discriminant(*(@4))
     storage_dead(@4)
     storage_live(__arg1_discr@5)
     storage_live(@6)
-    @6 := &*(other@2)
+    storage_live(@18)
+    @18 := ()
+    @6 := &(*(other@2), move (@18))
     __arg1_discr@5 := @discriminant(*(@6))
     storage_dead(@6)
     storage_live(@7)
@@ -265,13 +279,21 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
                 match *((@10).1) {
                     Enum::Some => {
                         storage_live(__self_0@13)
-                        __self_0@13 := &(*((@10).0) as variant Enum::Some).0
+                        storage_live(@22)
+                        @22 := ()
+                        __self_0@13 := &((*((@10).0) as variant Enum::Some).0, move (@22))
                         storage_live(__arg1_0@14)
-                        __arg1_0@14 := &(*((@10).1) as variant Enum::Some).0
+                        storage_live(@21)
+                        @21 := ()
+                        __arg1_0@14 := &((*((@10).1) as variant Enum::Some).0, move (@21))
                         storage_live(@15)
-                        @15 := &__self_0@13
+                        storage_live(@20)
+                        @20 := ()
+                        @15 := &(__self_0@13, move (@20))
                         storage_live(@16)
-                        @16 := &__arg1_0@14
+                        storage_live(@19)
+                        @19 := ()
+                        @16 := &(__arg1_0@14, move (@19))
                         @0 := {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_, '_, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}](move (@15), move (@16))
                         storage_dead(@16)
                         storage_dead(@15)

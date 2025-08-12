@@ -518,6 +518,14 @@ where
     let @19: Array<&'_ (Str), 2 : usize>; // anonymous local
     let @20: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @21: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @22: (); // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
+    let @25: (); // anonymous local
+    let @26: (); // anonymous local
+    let @27: (); // anonymous local
+    let @28: (); // anonymous local
+    let @29: (); // anonymous local
 
     storage_live(@7)
     storage_live(x@9)
@@ -533,6 +541,14 @@ where
     storage_live(@19)
     storage_live(@20)
     storage_live(@21)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(@24)
+    storage_live(@25)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@28)
+    storage_live(@29)
     storage_live(@2)
     storage_live(@3)
     @3 := copy (slice@1)
@@ -545,8 +561,12 @@ where
         storage_live(@6)
         storage_live(@7)
         storage_live(@8)
-        @8 := &mut iter@4
-        @7 := &two-phase-mut *(@8)
+        storage_live(@23)
+        @23 := ()
+        @8 := &mut (iter@4, move (@23))
+        storage_live(@22)
+        @22 := ()
+        @7 := &two-phase-mut (*(@8), move (@22))
         @6 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, T>[@TraitClause0](move (@7))
         storage_dead(@7)
         match @6 {
@@ -563,8 +583,12 @@ where
                 storage_live(@14)
                 storage_live(@15)
                 storage_live(@16)
-                @16 := &x@9
-                @15 := &*(@16)
+                storage_live(@25)
+                @25 := ()
+                @16 := &(x@9, move (@25))
+                storage_live(@24)
+                @24 := ()
+                @15 := &(*(@16), move (@24))
                 @14 := new_debug<'_, '_, &'_ (T)>[Sized<&'_ (T)>, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
                 storage_dead(@15)
                 args@13 := [move (@14)]
@@ -573,12 +597,20 @@ where
                 storage_live(@18)
                 storage_live(@19)
                 @19 := [const ("- "), const ("\n")]
-                @18 := &@19
-                @17 := &*(@18)
+                storage_live(@29)
+                @29 := ()
+                @18 := &(@19, move (@29))
+                storage_live(@28)
+                @28 := ()
+                @17 := &(*(@18), move (@28))
                 storage_live(@20)
                 storage_live(@21)
-                @21 := &args@13
-                @20 := &*(@21)
+                storage_live(@27)
+                @27 := ()
+                @21 := &(args@13, move (@27))
+                storage_live(@26)
+                @26 := ()
+                @20 := &(*(@21), move (@26))
                 @12 := new_v1<'_, 2 : usize, 1 : usize>(move (@17), move (@20))
                 storage_dead(@21)
                 storage_dead(@20)
@@ -618,6 +650,8 @@ fn main()
     let @3: &'_ (Array<i32, 3 : usize>); // anonymous local
     let @4: &'_ (Array<i32, 3 : usize>); // anonymous local
     let @5: Array<i32, 3 : usize>; // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
@@ -625,8 +659,12 @@ fn main()
     storage_live(@4)
     storage_live(@5)
     @5 := [const (0 : i32), const (1 : i32), const (2 : i32)]
-    @4 := &@5
-    @3 := &*(@4)
+    storage_live(@7)
+    @7 := ()
+    @4 := &(@5, move (@7))
+    storage_live(@6)
+    @6 := ()
+    @3 := &(*(@4), move (@6))
     @2 := @ArrayToSliceShared<'_, i32, 3 : usize>(move (@3))
     storage_dead(@3)
     @1 := debug_slice<'_, i32>[Sized<i32>, {impl Debug for i32}](move (@2))

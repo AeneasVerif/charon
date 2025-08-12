@@ -74,6 +74,9 @@ fn main()
     let @4: u32; // anonymous local
     let @5: &'_ mut (DefaultHasher); // anonymous local
     let @6: &'_ mut (DefaultHasher); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
 
     storage_live(hasher@1)
     hasher@1 := DefaultHasher {  }
@@ -81,11 +84,17 @@ fn main()
     storage_live(@3)
     storage_live(@4)
     @4 := const (0 : u32)
-    @3 := &@4
+    storage_live(@9)
+    @9 := ()
+    @3 := &(@4, move (@9))
     storage_live(@5)
     storage_live(@6)
-    @6 := &mut hasher@1
-    @5 := &two-phase-mut *(@6)
+    storage_live(@8)
+    @8 := ()
+    @6 := &mut (hasher@1, move (@8))
+    storage_live(@7)
+    @7 := ()
+    @5 := &two-phase-mut (*(@6), move (@7))
     @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[Sized<DefaultHasher>, {impl Hasher for DefaultHasher}](move (@3), move (@5))
     storage_dead(@5)
     storage_dead(@3)

@@ -91,19 +91,27 @@ where
     let elem_size@13: usize; // local
     let self@14: UsizeNoHighBit; // local
     let @15: NonNull<u8>; // anonymous local
+    let @16: (); // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
 
     storage_live(len@3)
     storage_live(@7)
     storage_live(@8)
     storage_live(end@9)
     storage_live(self@14)
+    storage_live(@18)
     len@3 := copy ((*(self@1)).len)
     storage_live(@4)
     storage_live(@5)
     storage_live(self@6)
-    self@6 := &(*(self@1)).buf
+    storage_live(@17)
+    @17 := ()
+    self@6 := &((*(self@1)).buf, move (@17))
     storage_live(self@12)
-    self@12 := &((*(self@1)).buf).0
+    storage_live(@16)
+    @16 := ()
+    self@12 := &(((*(self@1)).buf).0, move (@16))
     storage_live(elem_size@13)
     elem_size@13 := size_of<T>
     switch move (elem_size@13) {
@@ -124,7 +132,9 @@ where
     if move (@4) {
         storage_dead(@5)
         storage_live(@8)
-        @8 := &two-phase-mut (*(self@1)).buf
+        storage_live(@18)
+        @18 := ()
+        @8 := &two-phase-mut ((*(self@1)).buf, move (@18))
         @7 := grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@8))
         storage_dead(@8)
     }
@@ -154,9 +164,12 @@ fn vec<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
     let @0: (); // return
     let x@1: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // arg #1
     let @2: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &two-phase-mut *(x@1)
+    storage_live(@3)
+    @3 := ()
+    @2 := &two-phase-mut (*(x@1), move (@3))
     @0 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@2), const (42 : u32))
     storage_dead(@2)
     @0 := ()

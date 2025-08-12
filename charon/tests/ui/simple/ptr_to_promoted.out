@@ -9,19 +9,28 @@ fn main()
     let @3: usize; // anonymous local
     let @4: *const u8; // anonymous local
     let @5: &'_ (u8); // anonymous local
-    let @6: &'_ (u8); // anonymous local
-    let @7: u8; // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
+    let @8: &'_ (u8); // anonymous local
+    let @9: u8; // anonymous local
+    let @10: (); // anonymous local
 
     storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    @7 := const (0 : u8)
-    @6 := &@7
+    storage_live(@8)
+    storage_live(@9)
+    @9 := const (0 : u8)
+    storage_live(@10)
+    @10 := ()
+    @8 := &(@9, move (@10))
     storage_live(x@1)
     storage_live(@2)
-    @5 := move (@6)
-    @2 := &*(@5)
-    x@1 := &raw const *(@2)
+    @5 := move (@8)
+    storage_live(@7)
+    @7 := ()
+    @2 := &(*(@5), move (@7))
+    storage_live(@6)
+    @6 := ()
+    x@1 := &raw const (*(@2), move (@6))
     storage_dead(@2)
     storage_live(@3)
     storage_live(@4)

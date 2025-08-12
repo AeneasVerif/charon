@@ -459,18 +459,24 @@ pub fn test_box1()
     let @6: (); // anonymous local
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
 
     storage_live(b@1)
     b@1 := @BoxNew<i32>[Sized<i32>](const (0 : i32))
     storage_live(x@2)
     storage_live(@3)
-    @3 := &two-phase-mut b@1
+    storage_live(@9)
+    @9 := ()
+    @3 := &two-phase-mut (b@1, move (@9))
     x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_, i32, Global>[MetaSized<i32>, Sized<Global>](move (@3))
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
-    @5 := &b@1
+    storage_live(@10)
+    @10 := ()
+    @5 := &(b@1, move (@10))
     x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_, i32, Global>[MetaSized<i32>, Sized<Global>](move (@5))
     storage_dead(@5)
     storage_live(@6)

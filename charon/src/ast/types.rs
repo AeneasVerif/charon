@@ -381,11 +381,6 @@ pub struct Layout {
     pub variant_layouts: Vector<VariantId, VariantLayout>,
 }
 
-/// A placeholder for the vtable of a trait object.
-/// To be implemented in the future when `dyn Trait` is fully supported.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct VTable;
-
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
 /// their address. It's empty for `Sized` types, and interesting for unsized
 /// aka dynamically-sized types.
@@ -394,12 +389,20 @@ pub enum PtrMetadata {
     /// Types that need no metadata, namely `T: Sized` types.
     #[charon::rename("NoMetadata")]
     None,
-    /// Metadata for `[T]`, `str`, and user-defined types
-    /// that directly or indirectly contain one of these two.
+    /// Metadata for `[T]` and `str`, and user-defined types
+    /// that directly or indirectly contain one of the two.
+    /// Of type `usize`.
+    /// Notably, length for `[T]` denotes the number of elements in the slice.
+    /// While for `str` it denotes the number of bytes in the string.
     Length,
-    /// Metadata for `dyn Trait` and user-defined types
-    /// that directly or indirectly contain a `dyn Trait`.
-    VTable(VTable),
+    /// Metadata for `dyn Trait`, referring to the vtable struct,
+    /// also for user-defined types that directly or indirectly contain a `dyn Trait`.
+    /// Of type `&'static vtable`
+    VTable(TypeDeclRef),
+    /// Unknown due to generics, but will inherit from the given type.
+    /// This is consistent with `<Ty as Pointee>::Metadata`.
+    /// Of type `TyKind::Metadata(Ty)`.
+    InheritFrom(Ty),
 }
 
 /// A type declaration.
@@ -430,12 +433,7 @@ pub struct TypeDecl {
     /// sized types. If rustc cannot compute a layout, it is `None`.
     pub layout: Option<Layout>,
     /// The metadata associated with a pointer to the type.
-    /// This is `None` if we could not compute it because of generics.
-    /// The information is *accurate* if it is `Some`
-    ///     while if it is `None`, it may still be theoretically computable
-    ///     but due to some limitation to be fixed, we are unable to obtain the info.
-    /// See `translate_types::{impl ItemTransCtx}::translate_ptr_metadata` for more details.
-    pub ptr_metadata: Option<PtrMetadata>,
+    pub ptr_metadata: PtrMetadata,
 }
 
 generate_index_type!(VariantId, "Variant");
@@ -822,6 +820,9 @@ pub enum TyKind {
     /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
     /// we need to bind them here.
     FnDef(RegionBinder<FnPtr>),
+    /// As a marker of taking out metadata from a given type
+    /// The internal type is assumed to be a type variable
+    PtrMetadata(Ty),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),

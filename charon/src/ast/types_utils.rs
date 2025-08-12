@@ -630,6 +630,75 @@ impl Ty {
         }
     }
 
+    pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
+        let ref ty_decls = translated.type_decls;
+        let ref trait_decls = translated.trait_decls;
+        match self.kind() {
+            TyKind::Adt(ty_ref) => {
+                // there are two cases:
+                // 1. if the declared type has a fixed metadata, just returns it
+                // 2. if it depends on some other types or the generic itself
+                match ty_ref.id {
+                    TypeId::Adt(type_decl_id) => {
+                        let Some(decl) = ty_decls.get(type_decl_id) else {
+                            panic!(
+                                "Internal Error: type decl id not found during getting metadata: {type_decl_id}"
+                            )
+                        };
+                        match &decl.ptr_metadata {
+                            // if it depends on some type, recursion with the binding env
+                            PtrMetadata::InheritFrom(ty) => {
+                                let ty = ty.clone().substitute(&ty_ref.generics);
+                                ty.get_ptr_metadata(translated)
+                            }
+                            // otherwise, simply returns it
+                            meta => meta.clone(),
+                        }
+                    }
+                    // the metadata of a tuple is simply the last field
+                    TypeId::Tuple => {
+                        match ty_ref.generics.types.iter().last() {
+                            // `None` refers to the unit type `()`
+                            None => PtrMetadata::None,
+                            // Otherwise, simply recurse
+                            Some(ty) => ty.get_ptr_metadata(translated),
+                        }
+                    }
+                    // Box simply recurse with its sole argument
+                    TypeId::Builtin(BuiltinTy::Box) => {
+                        ty_ref.generics.types[0].get_ptr_metadata(translated)
+                    }
+                    // Array: `[T; N]` has no metadata
+                    TypeId::Builtin(BuiltinTy::Array) => PtrMetadata::None,
+                    // `[T]` & `str` all have metadata length
+                    TypeId::Builtin(BuiltinTy::Slice) => PtrMetadata::Length,
+                    TypeId::Builtin(BuiltinTy::Str) => PtrMetadata::Length,
+                }
+            }
+            TyKind::DynTrait(pred) => {
+                match trait_decls
+                    .get(pred.binder.params.trait_clauses[0].trait_.skip_binder.id)
+                    .unwrap()
+                    .vtable
+                    .clone()
+                {
+                    Some(vtable) => PtrMetadata::VTable(vtable),
+                    None => panic!("Fetching a vtable from non-dyn-compatible table"),
+                }
+            }
+            TyKind::TraitType(..) | TyKind::TypeVar(_) => PtrMetadata::InheritFrom(self.clone()),
+            TyKind::Literal(_)
+            | TyKind::Never
+            | TyKind::Ref(..)
+            | TyKind::RawPtr(..)
+            | TyKind::FnPtr(..)
+            | TyKind::FnDef(..)
+            | TyKind::Error(_) => PtrMetadata::None,
+            // The metadata itself must be Sized, hence must with `PtrMetadata::None`
+            TyKind::PtrMetadata(_) => PtrMetadata::None,
+        }
+    }
+
     pub fn as_array_or_slice(&self) -> Option<&Ty> {
         match self.kind() {
             TyKind::Adt(ty_ref)
