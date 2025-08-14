@@ -10,3 +10,6 @@ let literal_type_is_integer (t : literal_type) : bool =
   | TInt _ -> true
   | TUInt _ -> true
   | _ -> false
+
+let literal_list_to_scalar_list (llist : literal list) : scalar_value list =
+  List.map (fun lit -> literal_as_scalar lit) llist

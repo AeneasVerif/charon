@@ -12,6 +12,7 @@ use std::panic;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use charon_lib::ast::values::Literal::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
@@ -926,38 +927,59 @@ impl BodyTransCtx<'_, '_, '_> {
                 let then_block = self.translate_basic_block_id(*target);
                 Ok(SwitchTargets::If(if_block, then_block))
             }
-            LiteralTy::Int(int_ty) => {
-                let targets: Vec<(ScalarValue, BlockId)> = targets
+            LiteralTy::Char => {
+                let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v =
-                            ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes);
+                        let b: [u8; 1] = v.data_le_bytes[0..1].try_into().unwrap();
+                        let v = Char(u8::from_le_bytes(b) as char);
                         let tgt = self.translate_basic_block_id(*tgt);
                         (v, tgt)
                     })
                     .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
-                    IntegerTy::Signed(int_ty),
+                    LiteralTy::Char,
                     targets,
                     otherwise,
                 ))
             }
-            LiteralTy::UInt(int_ty) => {
-                let targets: Vec<(ScalarValue, BlockId)> = targets
+            LiteralTy::Int(int_ty) => {
+                let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = ScalarValue::from_le_bytes(
-                            IntegerTy::Unsigned(int_ty),
+                        let v = Scalar(ScalarValue::from_le_bytes(
+                            IntegerTy::Signed(int_ty),
                             v.data_le_bytes,
-                        );
+                        ));
                         let tgt = self.translate_basic_block_id(*tgt);
                         (v, tgt)
                     })
                     .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
-                    IntegerTy::Unsigned(int_ty),
+                    LiteralTy::Int(int_ty),
+                    targets,
+                    otherwise,
+                ))
+            }
+            LiteralTy::UInt(uint_ty) => {
+                let targets: Vec<(Literal, BlockId)> = targets
+                    .iter()
+                    .map(|(v, tgt)| {
+                        let v = Scalar(ScalarValue::from_le_bytes(
+                            IntegerTy::Unsigned(uint_ty),
+                            v.data_le_bytes,
+                        ));
+                        let tgt = self.translate_basic_block_id(*tgt);
+                        Ok::<(charon_lib::ast::Literal, charon_lib::ullbc_ast::BlockId), Error>((
+                            v, tgt,
+                        ))
+                    })
+                    .try_collect()?;
+                let otherwise = self.translate_basic_block_id(*otherwise);
+                Ok(SwitchTargets::SwitchInt(
+                    LiteralTy::UInt(uint_ty),
                     targets,
                     otherwise,
                 ))
