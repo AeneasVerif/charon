@@ -34,6 +34,7 @@ pub mod remove_unused_self_clause;
 pub mod reorder_decls;
 pub mod simplify_constants;
 pub mod skip_trait_refs_when_known;
+pub mod strings_as_globals;
 pub mod ullbc_to_llbc;
 pub mod unbind_item_vars;
 pub mod update_block_indices;
@@ -95,6 +96,9 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // it must happen before passes that insert statements like [simplify_constants].
     // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
     UnstructuredBody(&reconstruct_boxes::Transform),
+    // # Micro-pass: substitute string literals with references to a global containing the string.
+    // Must be run before `simplify_constants`.
+    UnstructuredBody(&strings_as_globals::Transform),
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     UnstructuredBody(&simplify_constants::Transform),
