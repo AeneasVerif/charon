@@ -31,7 +31,7 @@ pub trait From<Self, T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
     fn from<[@TraitClause0]: Sized<Self>> = test_crate::From::from<Self, T>[Self, @TraitClause0_0]
-    non-dyn-compatible
+    vtable: test_crate::From::{vtable}<T, Self::Error>
 }
 
 pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause2]
@@ -60,7 +60,7 @@ impl<'_0> From<&'_0 (bool)> for bool {
     parent_clause2 = Sized<()>
     type Error = ()
     fn from = {impl From<&'_0 (bool)> for bool}::from<'_0>
-    non-dyn-compatible
+    vtable: {impl From<&'_0 (bool)> for bool}::{vtable}<'_0>
 }
 
 

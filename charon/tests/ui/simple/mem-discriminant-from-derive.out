@@ -169,7 +169,7 @@ pub trait DiscriminantKind<Self>
     parent_clause9 : [@TraitClause9]: Sync<Self::Discriminant>
     parent_clause10 : [@TraitClause10]: Unpin<Self::Discriminant>
     type Discriminant
-    non-dyn-compatible
+    vtable: core::marker::DiscriminantKind::{vtable}<Self::Discriminant>
 }
 
 // Full name: core::intrinsics::discriminant_value

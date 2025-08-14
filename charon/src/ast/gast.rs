@@ -134,6 +134,7 @@ pub enum ItemKind {
     },
     /// This is a vtable value for an impl.
     VTableInstance { impl_ref: TraitImplRef },
+    VTableMethodShim,
 }
 
 /// A function definition

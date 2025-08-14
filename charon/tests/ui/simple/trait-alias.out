@@ -64,7 +64,7 @@ trait Trait<Self, T, Self_Item>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
-    non-dyn-compatible
+    vtable: test_crate::Trait::{vtable}<T, Self_Item>
 }
 
 // Full name: test_crate::Struct
@@ -95,7 +95,7 @@ where
     parent_clause0 = MetaSized<Struct>
     parent_clause1 = @TraitClause0
     parent_clause2 = Sized<u32>
-    non-dyn-compatible
+    vtable: {impl Trait<T, u32> for Struct}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::Alias

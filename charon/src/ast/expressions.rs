@@ -197,6 +197,15 @@ pub enum CastKind {
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty, Ty),
+    /// Converts a receiver type with `dyn Trait<...>` to a concrete type `T`, used in vtable method shims.
+    /// Valid conversions are references, raw pointers, and (optionally) boxes:
+    /// - `&[mut] dyn Trait<...>` -> `&[mut] T`
+    /// - `*[mut] dyn Trait<...>` -> `*[mut] T`
+    /// - `Box<dyn Trait<...>>` -> `Box<T>` when no `--raw-boxes`
+    ///
+    /// For possible receivers, see: https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility.
+    /// Other receivers, e.g., `Rc` should be unpacked before the cast and re-boxed after.
+    Concretize(Ty, Ty),
 }
 
 #[derive(
@@ -303,6 +312,8 @@ pub enum Operand {
     Deserialize,
     Drive,
     DriveMut,
+    PartialOrd,
+    Ord,
 )]
 #[charon::variants_prefix("F")]
 pub enum FunId {
@@ -343,6 +354,8 @@ impl From<BuiltinFunId> for FunId {
     Deserialize,
     Drive,
     DriveMut,
+    PartialOrd,
+    Ord,
 )]
 pub enum BuiltinFunId {
     /// `alloc::boxed::Box::new`
@@ -375,7 +388,20 @@ pub enum BuiltinFunId {
 }
 
 /// One of 8 built-in indexing operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    PartialOrd,
+    Ord,
+)]
 pub struct BuiltinIndexOp {
     /// Whether this is a slice or array.
     #[drive(skip)]
@@ -409,7 +435,18 @@ pub struct TraitMethodRef {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut, Hash,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumAsGetters,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    Hash,
+    PartialOrd,
+    Ord,
 )]
 pub enum FunIdOrTraitMethodRef {
     #[charon::rename("FunId")]
@@ -432,7 +469,9 @@ impl From<FunDeclId> for FunIdOrTraitMethodRef {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash, PartialOrd, Ord,
+)]
 pub struct FnPtr {
     pub func: Box<FunIdOrTraitMethodRef>,
     pub generics: BoxedArgs,
