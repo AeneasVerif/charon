@@ -587,5 +587,6 @@
         }
       }
     ]
-  }
+  },
+  "test_crate::NestedPointers": null
 }

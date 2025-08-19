@@ -4,9 +4,11 @@ use either::Either;
 use serde::Serialize;
 
 use crate::ast::{
-    BuiltinTy, ByteCount, DeBruijnVar, Field, FieldId, Layout, TranslatedCrate, Ty, TyKind,
+    BuiltinTy, ByteCount, Field, FieldId, GenericParams, Layout, TranslatedCrate, Ty, TyKind,
     TypeDeclKind, TypeDeclRef, TypeId, TypeVarId, VariantLayout, Vector,
 };
+
+type GenericCtx<'a> = Option<&'a GenericParams>;
 
 /// A utility to compute/lookup layouts of types from the crate's data.
 /// Uses memoization to not re-compute already requested type layouts.
@@ -15,9 +17,11 @@ use crate::ast::{
 /// WARNING: Using this will lead to leaked memory to guarantee that computed layouts stay available.
 /// Since any crate should only have finitely many types, the memory usage is bounded.
 pub struct LayoutComputer<'a> {
-    memoized_layouts: HashMap<Ty, Either<&'a Layout, LayoutHint>>,
+    memoized_layouts: HashMap<(Ty, Option<GenericParams>), Either<&'a Layout, LayoutHint>>,
     krate: &'a TranslatedCrate,
 }
+
+// TODO: use `repr` information
 
 /// Minimal information about a type's layout that can be known without
 /// querying the rustc type layout algorithm.
@@ -55,6 +59,7 @@ impl<'a> LayoutComputer<'a> {
     fn get_layout_of_tuple<'c, 't>(
         &'c mut self,
         type_decl_ref: &'t TypeDeclRef,
+        generic_ctx: GenericCtx,
     ) -> Option<Either<&'a Layout, LayoutHint>> {
         let mut total_min_size = 0;
         let mut max_align = 1;
@@ -64,7 +69,7 @@ impl<'a> LayoutComputer<'a> {
 
         for ty_arg in type_decl_ref.generics.types.iter() {
             uninhabited_part |= ty_arg.is_possibly_uninhabited();
-            match self.get_layout_of(ty_arg) {
+            match self.get_layout_of(ty_arg, generic_ctx) {
                 Some(Either::Left(l)) => {
                     if let Some(size) = l.size {
                         total_min_size += size;
@@ -115,6 +120,7 @@ impl<'a> LayoutComputer<'a> {
         &mut self,
         fields: &Vector<FieldId, Field>,
         ty_var_map: &HashMap<TypeVarId, Ty>,
+        generic_ctx: GenericCtx,
     ) -> Option<Either<&'a Layout, LayoutHint>> {
         let mut total_min_size = 0;
         let mut max_align = 1;
@@ -124,15 +130,13 @@ impl<'a> LayoutComputer<'a> {
         if fields.elem_count() == 1 {
             let field = fields.get(FieldId::from_raw(0)).unwrap();
             let ty = if field.ty.is_type_var() {
-                let bound_ty_var = field.ty.as_type_var().unwrap();
-                match bound_ty_var {
-                    DeBruijnVar::Bound(_, id) | DeBruijnVar::Free(id) => ty_var_map.get(id)?,
-                }
+                let id = field.ty.as_type_var().unwrap().get_raw();
+                ty_var_map.get(id)?
             } else {
                 &field.ty
             };
 
-            match self.get_layout_of(ty) {
+            match self.get_layout_of(ty, generic_ctx) {
                 Some(Either::Left(l)) => {
                     // Simply exchange the field_offsets and variants.
                     let new_layout = Layout {
@@ -152,17 +156,14 @@ impl<'a> LayoutComputer<'a> {
         } else {
             for field in fields {
                 let ty = if field.ty.is_type_var() {
-                    let bound_ty_var = field.ty.as_type_var().unwrap();
-                    match bound_ty_var {
-                        DeBruijnVar::Bound(_, id) => ty_var_map.get(id)?,
-                        DeBruijnVar::Free(_) => unreachable!(),
-                    }
+                    let id = field.ty.as_type_var().unwrap().get_raw();
+                    ty_var_map.get(id)?
                 } else {
                     &field.ty
                 };
 
                 uninhabited_part |= ty.is_possibly_uninhabited();
-                match self.get_layout_of(ty) {
+                match self.get_layout_of(ty, generic_ctx) {
                     Some(Either::Left(l)) => {
                         if let Some(size) = l.size {
                             total_min_size += size;
@@ -215,11 +216,11 @@ impl<'a> LayoutComputer<'a> {
 
         match &type_decl.kind {
             TypeDeclKind::Struct(fields) => {
-                self.compute_layout_from_fields(fields, &ty_var_map)
+                self.compute_layout_from_fields(fields, &ty_var_map, None)
             }
             TypeDeclKind::Enum(variants) => {
                 // Assume that there could be a niche and ignore the discriminant for the hint.
-                let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant| self.compute_layout_from_fields(&variant.fields, &ty_var_map)).collect();
+                let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant| self.compute_layout_from_fields(&variant.fields, &ty_var_map,None)).collect();
                 // If all variants have at least a layout hint, combine them.
                 if variant_layouts.iter().all(|l| l.is_some()) {
                     let mut max_variant_size = 0;
@@ -261,16 +262,53 @@ impl<'a> LayoutComputer<'a> {
         }
     }
 
+    /// Computes the layout of pointers.
+    ///
+    /// Tries to use information about whether the pointee is sized,
+    /// if it's a type variable.
+    fn get_layout_of_ptr_type<'c, 't>(
+        &'c mut self,
+        pointee: &'t Ty,
+        generic_ctx: GenericCtx,
+    ) -> Either<&'a Layout, LayoutHint> {
+        match pointee.needs_metadata(&self.krate, generic_ctx) {
+            Some(true) => {
+                let new_layout = Layout::mk_ptr_layout_with_metadata(
+                    self.krate.target_information.target_pointer_size,
+                );
+                let layout_ref = Box::leak(Box::new(new_layout));
+                Either::Left(layout_ref)
+            }
+            Some(false) => {
+                let new_layout = Layout::mk_ptr_layout_wo_metadata(
+                    self.krate.target_information.target_pointer_size,
+                );
+                let layout_ref = Box::leak(Box::new(new_layout));
+                Either::Left(layout_ref)
+            }
+            None => Either::Right(LayoutHint {
+                min_size: self.krate.target_information.target_pointer_size,
+                min_alignment: self.krate.target_information.target_pointer_size,
+                possibly_uninhabited: false,
+            }),
+        }
+    }
+
     /// Computes or looks up layout of given type if possible or tries to produce a layout hint instead.
     ///
     /// If the layout was not already available, it will be computed and leaked to guarantee
     /// that it stays available.
+    ///
+    /// The generic context is used to obtain more information about the type and should correspond
+    /// to where the type occurs, e.g. the generic context of a function signature for one of its argument's types.
     pub fn get_layout_of<'c, 't>(
         &'c mut self,
         ty: &'t Ty,
+        generic_ctx: GenericCtx<'_>,
     ) -> Option<Either<&'a Layout, LayoutHint>> {
         // Check memoization.
-        if let Some(layout) = self.memoized_layouts.get(ty) {
+        let key = (ty.clone(), generic_ctx.cloned());
+        if let Some(layout) = self.memoized_layouts.get(&key) {
             return Some(*layout);
         }
 
@@ -286,49 +324,22 @@ impl<'a> LayoutComputer<'a> {
                         .as_ref()
                         .map(|l| Either::Left(l))
                         .or_else(|| self.get_layout_hint_for_generic_adt(type_decl_ref)),
-                    // Without recreating the layout computation mechanism from rustc, we cannot know the layout of a tuple, other than for the unit type.
                     TypeId::Tuple => {
                         if ty.is_unit() {
                             let new_layout = Layout::mk_1zst_layout();
                             let layout_ref = Box::leak(Box::new(new_layout));
                             Some(Either::Left(layout_ref))
                         } else {
-                            self.get_layout_of_tuple(type_decl_ref)
+                            self.get_layout_of_tuple(type_decl_ref, generic_ctx)
                         }
                     }
                     TypeId::Builtin(builtin_ty) => {
                         match builtin_ty {
                             BuiltinTy::Box => {
-                                // Box has only two type parameters: the first is the boxed type, the second is the allocator.
-                                let boxed_ty = type_decl_ref
-                                    .generics
-                                    .types
-                                    .get(TypeVarId::from_usize(0))
-                                    .unwrap();
-                                Some(match boxed_ty.needs_metadata(&self.krate.type_decls) {
-                                    Some(true) => {
-                                        let new_layout = Layout::mk_ptr_layout_with_metadata(
-                                            self.krate.target_information.target_pointer_size,
-                                        );
-                                        let layout_ref = Box::leak(Box::new(new_layout));
-                                        Either::Left(layout_ref)
-                                    }
-                                    Some(false) => {
-                                        let new_layout = Layout::mk_ptr_layout_wo_metadata(
-                                            self.krate.target_information.target_pointer_size,
-                                        );
-                                        let layout_ref = Box::leak(Box::new(new_layout));
-                                        Either::Left(layout_ref)
-                                    }
-                                    None => Either::Right(LayoutHint {
-                                        min_size: self.krate.target_information.target_pointer_size,
-                                        min_alignment: self
-                                            .krate
-                                            .target_information
-                                            .target_pointer_size,
-                                        possibly_uninhabited: false,
-                                    }),
-                                })
+                                // Box has only one relevant type parameters: the boxed type.
+                                let boxed_ty =
+                                    type_decl_ref.generics.types.get(TypeVarId::ZERO).unwrap();
+                                Some(self.get_layout_of_ptr_type(boxed_ty, generic_ctx))
                             }
                             // Slices are non-sized and can be handled as such.
                             BuiltinTy::Slice | BuiltinTy::Str => {
@@ -349,27 +360,7 @@ impl<'a> LayoutComputer<'a> {
                 Some(Either::Left(layout_ref))
             }
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => {
-                Some(match ty.needs_metadata(&self.krate.type_decls) {
-                    Some(true) => {
-                        let new_layout = Layout::mk_ptr_layout_with_metadata(
-                            self.krate.target_information.target_pointer_size,
-                        );
-                        let layout_ref = Box::leak(Box::new(new_layout));
-                        Either::Left(layout_ref)
-                    }
-                    Some(false) => {
-                        let new_layout = Layout::mk_ptr_layout_wo_metadata(
-                            self.krate.target_information.target_pointer_size,
-                        );
-                        let layout_ref = Box::leak(Box::new(new_layout));
-                        Either::Left(layout_ref)
-                    }
-                    None => Either::Right(LayoutHint {
-                        min_size: self.krate.target_information.target_pointer_size,
-                        min_alignment: self.krate.target_information.target_pointer_size,
-                        possibly_uninhabited: false,
-                    }),
-                })
+                Some(self.get_layout_of_ptr_type(ty, generic_ctx))
             }
             TyKind::DynTrait(_) => {
                 let new_layout = Layout::mk_unsized_layout();
@@ -382,7 +373,7 @@ impl<'a> LayoutComputer<'a> {
 
         // Update memoization.
         if let Some(layout) = res {
-            self.memoized_layouts.insert(ty.clone(), layout);
+            self.memoized_layouts.insert(key, layout);
         }
 
         res
@@ -391,7 +382,8 @@ impl<'a> LayoutComputer<'a> {
     /// Checks whether the type is known to be a ZST.
     /// Computes the layout first if necessary.
     pub fn is_known_zst(&mut self, ty: &Ty) -> bool {
-        match self.get_layout_of(ty) {
+        // The generic context cannot change whether a type is a ZST.
+        match self.get_layout_of(ty, None) {
             Some(Either::Left(l)) => {
                 if let Some(size) = l.size {
                     size == 0
@@ -410,7 +402,8 @@ impl<'a> LayoutComputer<'a> {
         if ty.is_never() {
             true
         } else {
-            match self.get_layout_of(ty) {
+            // The generic context cannot change whether a type is uninhabited.
+            match self.get_layout_of(ty, None) {
                 Some(Either::Left(l)) => l.uninhabited,
                 // Since the hint can only tell whether a type is guarantee to be inhabited,
                 // we can never be sure that it is uninhabited.
@@ -426,7 +419,8 @@ impl<'a> LayoutComputer<'a> {
         if ty.is_never() {
             false
         } else {
-            match self.get_layout_of(ty) {
+            // The generic context cannot change whether a type is uninhabited.
+            match self.get_layout_of(ty, None) {
                 Some(Either::Left(l)) => !l.uninhabited,
                 Some(Either::Right(h)) => !h.possibly_uninhabited,
                 None => false,
