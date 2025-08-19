@@ -212,6 +212,13 @@
       ]
     }
   },
+  "(alloc::boxed::Box<@Type0, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}], alloc::boxed::Box<@Type0, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}])": {
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
   "fn(*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": null,
   "*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)": {
     "Left": {
@@ -895,5 +902,43 @@
       ]
     }
   },
-  "Self::NonZeroInner": null
+  "Self::NonZeroInner": null,
+  "T": null,
+  "alloc::boxed::Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "(alloc::boxed::Box<N, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}], alloc::boxed::Box<N, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}])": {
+    "Left": {
+      "size": 16,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0,
+            8
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "N": null,
+  "fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]": null
 }

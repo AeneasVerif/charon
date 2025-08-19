@@ -720,13 +720,22 @@ impl Ty {
 
     /// Whether the types is guaranteed to need pointers to it to be wide.
     /// If the result is `None`, then it could not be determined.
-    pub fn needs_metadata(&self, ctx: &Vector<TypeDeclId, TypeDecl>) -> Option<bool> {
+    ///
+    /// The function needs additional context to approximate this information as
+    /// precisely as possible.
+    pub fn needs_metadata(
+        &self,
+        krate: &TranslatedCrate,
+        generic_ctx: Option<&GenericParams>,
+    ) -> Option<bool> {
         match self {
             TyKind::Adt(type_decl_ref) => match type_decl_ref.id {
-                TypeId::Adt(type_decl_id) => match ctx.get(type_decl_id).unwrap().ptr_metadata {
-                    Some(PtrMetadata::Length) | Some(PtrMetadata::VTable(_)) => Some(true),
-                    _ => Some(false),
-                },
+                TypeId::Adt(type_decl_id) => {
+                    match krate.type_decls.get(type_decl_id).unwrap().ptr_metadata {
+                        Some(PtrMetadata::Length) | Some(PtrMetadata::VTable(_)) => Some(true),
+                        _ => Some(false),
+                    }
+                }
                 TypeId::Tuple => Some(false),
                 TypeId::Builtin(builtin_ty) => Some(!matches!(builtin_ty, BuiltinTy::Box)),
             },
@@ -736,8 +745,42 @@ impl Ty {
             | TyKind::Ref(_, _, _)
             | TyKind::RawPtr(_, _)
             | TyKind::FnPtr(_) => Some(false),
-            TyKind::TraitType(_, _) | TyKind::TypeVar(_) | TyKind::FnDef(_) | TyKind::Error(_) => {
-                None
+            TyKind::TraitType(_, _) | TyKind::FnDef(_) | TyKind::Error(_) => None,
+            TyKind::TypeVar(tvar) => {
+                // Try to figure out whether the type variable is bound to be `Sized`
+                let tvar = tvar.get_raw();
+                if let Some(generic_params) = generic_ctx {
+                    generic_params
+                        .trait_clauses
+                        .iter()
+                        .find(|clause| {
+                            // Check the first argument of the trait clause, i.e.
+                            // the `T` in `T: Trait<S>`.
+                            if let Some(ty) = clause
+                                .trait_
+                                .skip_binder
+                                .generics
+                                .types
+                                .get(TypeVarId::ZERO)
+                            {
+                                ty.is_type_var()
+                                    && tvar == ty.as_type_var().unwrap().get_raw()
+                                    // Check whether the trait is indeed `Sized`
+                                    && krate
+                                        .trait_decls
+                                        .get(clause.trait_.skip_binder.id)
+                                        .unwrap()
+                                        .item_meta
+                                        .lang_item
+                                        == Some("sized".to_owned())
+                            } else {
+                                false
+                            }
+                        })
+                        .map(|_| false)
+                } else {
+                    None
+                }
             }
         }
     }
@@ -1272,6 +1315,15 @@ impl Layout {
                 tag: None,
             }]
             .into(),
+        }
+    }
+}
+
+impl<T> DeBruijnVar<T> {
+    /// Get's the contained value and ignores binding information.
+    pub fn get_raw(&self) -> &T {
+        match self {
+            DeBruijnVar::Bound(_, var) | DeBruijnVar::Free(var) => var,
         }
     }
 }
