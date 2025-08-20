@@ -931,10 +931,14 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Generate a blanket impl for this trait, as in:
-    ///   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// ```
+    ///     trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// ```
     /// becomes:
-    ///   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
-    ///   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    /// ```
+    ///     trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
+    ///     impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    /// ```
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_alias_blanket_impl(
         mut self,
