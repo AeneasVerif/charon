@@ -588,5 +588,42 @@
       }
     ]
   },
-  "test_crate::NestedPointers": null
+  "test_crate::NestedPointers": null,
+  "test_crate::GenericC": null,
+  "test_crate::Instance": {
+    "size": 8,
+    "align": 4,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          1,
+          4
+        ],
+        "uninhabited": false,
+        "tag": null
+      }
+    ]
+  },
+  "test_crate::InstanceGen": {
+    "size": 32,
+    "align": 8,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          8,
+          16
+        ],
+        "uninhabited": false,
+        "tag": null
+      }
+    ]
+  },
+  "test_crate::InstanceGen2": null,
+  "test_crate::InstanceGen3": null
 }

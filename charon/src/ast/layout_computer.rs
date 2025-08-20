@@ -21,11 +21,11 @@ pub struct LayoutComputer<'a> {
     krate: &'a TranslatedCrate,
 }
 
-// TODO: use `repr` information
+// TODO: use `repr` information, add FFI-safety information where possible
 
 /// Minimal information about a type's layout that can be known without
 /// querying the rustc type layout algorithm.
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
 pub struct LayoutHint {
     /// The minimal size of the type.
     ///
@@ -120,7 +120,7 @@ impl<'a> LayoutComputer<'a> {
         &mut self,
         fields: &Vector<FieldId, Field>,
         ty_var_map: &HashMap<TypeVarId, Ty>,
-        generic_ctx: GenericCtx,
+        generic_ctx: GenericCtx<'_>,
     ) -> Option<Either<&'a Layout, LayoutHint>> {
         let mut total_min_size = 0;
         let mut max_align = 1;
@@ -187,23 +187,125 @@ impl<'a> LayoutComputer<'a> {
         }
     }
 
+    /// Computes the layout based on the simple algorithm for C types.
+    fn compute_c_layout_from_fields(
+        &mut self,
+        fields: &Vector<FieldId, Field>,
+        ty_var_map: &HashMap<TypeVarId, Ty>,
+        generic_ctx: GenericCtx<'_>,
+    ) -> Either<&'a Layout, LayoutHint> {
+        let mut total_min_size = 0;
+        let mut max_align = 1;
+        let mut uninhabited_part = false;
+        let mut only_hint = false;
+
+        let field_infos: Vec<(Option<ByteCount>, Option<ByteCount>)> = fields
+            .iter()
+            .map(|field| {
+                let ty = if field.ty.is_type_var() {
+                    let id = field.ty.as_type_var().unwrap().get_raw();
+                    ty_var_map.get(id).unwrap()
+                } else {
+                    &field.ty
+                };
+                uninhabited_part |= ty.is_possibly_uninhabited();
+                let field_info = match self.get_layout_of(ty, generic_ctx) {
+                    Some(Either::Left(l)) => {
+                        if let Some(size) = l.size {
+                            total_min_size += size;
+                        } else {
+                            only_hint = true;
+                        }
+                        if let Some(align) = l.align {
+                            max_align = max(max_align, align);
+                        } else {
+                            only_hint = true;
+                        }
+                        (l.size, l.align)
+                    }
+                    Some(Either::Right(h)) => {
+                        total_min_size += h.min_size;
+                        max_align = max(max_align, h.min_alignment);
+                        only_hint = true;
+                        (None, None)
+                    }
+                    None => {
+                        only_hint = true;
+                        (None, None)
+                    }
+                };
+                field_info
+            })
+            .collect();
+
+        if only_hint {
+            Either::Right(LayoutHint {
+                min_size: total_min_size,
+                min_alignment: max_align,
+                possibly_uninhabited: uninhabited_part,
+            })
+        } else {
+            let mut size_sum = 0;
+            let mut field_offsets: Vector<FieldId, ByteCount> =
+                Vector::with_capacity(fields.elem_count());
+
+            for field_info in field_infos {
+                let field_size = field_info.0.unwrap();
+                let field_align = field_info.1.unwrap();
+
+                if size_sum % field_align == 0 {
+                    field_offsets.push(size_sum);
+                    size_sum += field_size;
+                } else {
+                    // floor(size_sum / field_align) is n, s.t. n*field_align < size_sum < (n+1)*field_align
+                    let last_aligned = (size_sum / field_align) * field_align;
+                    let next_align = last_aligned + field_align;
+                    size_sum = next_align;
+                    field_offsets.push(size_sum);
+                    size_sum += field_size;
+                }
+            }
+            if size_sum % max_align != 0 {
+                let last_aligned = (size_sum / max_align) * max_align;
+                let next_align = last_aligned + max_align;
+                size_sum = next_align
+            }
+
+            let new_layout = Layout {
+                size: Some(size_sum),
+                align: Some(max_align),
+                discriminant_layout: None,
+                uninhabited: uninhabited_part,
+                variant_layouts: vec![VariantLayout {
+                    field_offsets,
+                    uninhabited: uninhabited_part,
+                    tag: None,
+                }]
+                .into(),
+            };
+            let layout_ref = Box::leak(Box::new(new_layout));
+            Either::Left(layout_ref)
+        }
+    }
+
     /// Tries to compute a layout hint for otherwise generic ADTs with the given type arguments.
     ///
     /// Most of time, we can't compute a full layout due to potential reordering and padding bytes.
     fn get_layout_hint_for_generic_adt(
         &mut self,
         type_decl_ref: &TypeDeclRef,
+        generic_ctx: GenericCtx<'_>,
     ) -> Option<Either<&'a Layout, LayoutHint>> {
         let generics = &*type_decl_ref.generics;
         let type_decl_id = type_decl_ref.id.as_adt()?;
         let type_decl = self.krate.type_decls.get(*type_decl_id)?;
 
         // If we certainly can't instantiate all relevant type parameters, fail.
-        if generics.types.elem_count() != type_decl.generics.types.elem_count()
+        /* if generics.types.elem_count() != type_decl.generics.types.elem_count()
             || generics.types.iter().find(|ty| ty.is_type_var()).is_some()
         {
             return None;
-        }
+        } */
 
         // Map the generic type parameter variables to the given instantiations.
         let ty_var_map: HashMap<TypeVarId, Ty> = type_decl
@@ -216,11 +318,15 @@ impl<'a> LayoutComputer<'a> {
 
         match &type_decl.kind {
             TypeDeclKind::Struct(fields) => {
-                self.compute_layout_from_fields(fields, &ty_var_map, None)
+                if type_decl.is_c_repr() {
+                    Some(self.compute_c_layout_from_fields(fields, &ty_var_map, generic_ctx))
+                } else {
+                    self.compute_layout_from_fields(fields, &ty_var_map, generic_ctx)
+                }
             }
             TypeDeclKind::Enum(variants) => {
                 // Assume that there could be a niche and ignore the discriminant for the hint.
-                let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant| self.compute_layout_from_fields(&variant.fields, &ty_var_map,None)).collect();
+                let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant| self.compute_layout_from_fields(&variant.fields, &ty_var_map, generic_ctx)).collect();
                 // If all variants have at least a layout hint, combine them.
                 if variant_layouts.iter().all(|l| l.is_some()) {
                     let mut max_variant_size = 0;
@@ -323,7 +429,9 @@ impl<'a> LayoutComputer<'a> {
                         .layout
                         .as_ref()
                         .map(|l| Either::Left(l))
-                        .or_else(|| self.get_layout_hint_for_generic_adt(type_decl_ref)),
+                        .or_else(|| {
+                            self.get_layout_hint_for_generic_adt(type_decl_ref, generic_ctx)
+                        }),
                     TypeId::Tuple => {
                         if ty.is_unit() {
                             let new_layout = Layout::mk_1zst_layout();
