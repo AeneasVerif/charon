@@ -1299,6 +1299,10 @@ impl TypeDecl {
             TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
         }
     }
+
+    pub fn is_c_repr(&self) -> bool {
+        self.repr.as_ref().is_some_and(|repr| repr.c)
+    }
 }
 
 impl Layout {
@@ -1308,6 +1312,16 @@ impl Layout {
         } else {
             false
         }
+    }
+}
+
+impl ReprOptions {
+    /// Whether this representation options guarantee a fixed
+    /// field ordering for the type.
+    ///
+    /// Cf. `rustc_abi::ReprOptions::inhibit_struct_field_reordering`.
+    pub fn guarantees_fixed_field_order(&self) -> bool {
+        self.c || self.explicit_discr_type
     }
 }
 

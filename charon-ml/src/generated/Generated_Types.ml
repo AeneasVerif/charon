@@ -860,6 +860,24 @@ and ptr_metadata =
       (** Unknown due to generics, but will inherit from the given type. This is
           consistent with [<Ty as Pointee>::Metadata]. Of type
           [TyKind::Metadata(Ty)]. *)
+          
+(** The representation options as annotated by the user.
+
+    If all are false/None, then this is equivalent to [#[repr(Rust)]]. Some
+    combinations are ruled out by the compiler, e.g. align and pack.
+
+    NOTE: This does not include less common/unstable representations such as
+    [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
+    discriminant representations are encoded in [[Variant::discriminant]] and
+    [[DiscriminantLayout]] instead. This only stores whether the discriminant
+    type was derived from an explicit annotation. *)
+and repr_options = {
+  align : int option;
+  pack : int option;
+  c : bool;
+  transparent : bool;
+  explicit_discr_type : bool;
+}
 
 (** Describes how we represent the active enum variant in memory. *)
 and tag_encoding =
@@ -900,6 +918,9 @@ and type_decl = {
           [None]. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
+  repr : repr_options option;
+      (** The representation options of this type declaration as annotated by
+          the user. Is [None] for foreign type declarations. *)
 }
 
 and type_decl_kind =
@@ -924,9 +945,9 @@ and variant = {
   fields : field list;
   discriminant : literal;
       (** The discriminant value outputted by [std::mem::discriminant] for this
-          variant. This is different than the discriminant stored in memory (the
-          one controlled by [repr]). That one is described by
-          [[DiscriminantLayout]] and [[TagEncoding]]. *)
+          variant. This can be different than the discriminant stored in memory
+          (called [tag]). That one is described by [[DiscriminantLayout]] and
+          [[TagEncoding]]. *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])
