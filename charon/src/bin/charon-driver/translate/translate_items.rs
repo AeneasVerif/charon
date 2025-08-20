@@ -345,6 +345,7 @@ impl ItemTransCtx<'_, '_> {
         };
         let layout = self.translate_layout(def.this());
         let ptr_metadata = self.translate_ptr_metadata(def.this());
+        let repr = self.translate_repr_options(def.this());
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
@@ -353,6 +354,7 @@ impl ItemTransCtx<'_, '_> {
             src,
             layout,
             ptr_metadata,
+            repr,
         };
 
         Ok(type_def)

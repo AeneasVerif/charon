@@ -1436,6 +1436,26 @@ and region_var_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ index; name } : region_var)
     | _ -> Error "")
 
+and repr_options_of_json (ctx : of_json_ctx) (js : json) :
+    (repr_options, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("align", align);
+          ("pack", pack);
+          ("c", c);
+          ("transparent", transparent);
+          ("explicit_discr_type", explicit_discr_type);
+        ] ->
+        let* align = option_of_json int_of_json ctx align in
+        let* pack = option_of_json int_of_json ctx pack in
+        let* c = bool_of_json ctx c in
+        let* transparent = bool_of_json ctx transparent in
+        let* explicit_discr_type = bool_of_json ctx explicit_discr_type in
+        Ok ({ align; pack; c; transparent; explicit_discr_type } : repr_options)
+    | _ -> Error "")
+
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1884,6 +1904,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("kind", kind);
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
+          ("repr", repr);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -1894,8 +1915,18 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* ptr_metadata =
           option_of_json ptr_metadata_of_json ctx ptr_metadata
         in
+        let* repr = option_of_json repr_options_of_json ctx repr in
         Ok
-          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             src;
+             kind;
+             layout;
+             ptr_metadata;
+             repr;
+           }
             : type_decl)
     | _ -> Error "")
 

@@ -737,6 +737,7 @@ impl Ty {
                     }
                 }
                 TypeId::Tuple => Some(false),
+                // All builtins but box need metadata!
                 TypeId::Builtin(builtin_ty) => Some(!matches!(builtin_ty, BuiltinTy::Box)),
             },
             TyKind::DynTrait(_) => Some(true),
@@ -1210,6 +1211,10 @@ impl TypeDecl {
             TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
         }
     }
+
+    pub fn is_c_repr(&self) -> bool {
+        self.repr.as_ref().is_some_and(|repr| repr.c)
+    }
 }
 
 impl Layout {
@@ -1325,6 +1330,16 @@ impl<T> DeBruijnVar<T> {
         match self {
             DeBruijnVar::Bound(_, var) | DeBruijnVar::Free(var) => var,
         }
+    }
+}
+
+impl ReprOptions {
+    /// Whether this representation options guarantee a fixed
+    /// field ordering for the type.
+    ///
+    /// Cf. `rustc_abi::ReprOptions::inhibit_struct_field_reordering`.
+    pub fn guarantees_fixed_field_order(&self) -> bool {
+        self.c || self.explicit_discr_type
     }
 }
 

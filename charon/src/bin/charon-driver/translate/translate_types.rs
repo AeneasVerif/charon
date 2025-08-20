@@ -748,4 +748,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let int_ty = ty.kind().as_literal().unwrap().to_integer_ty().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
+
+    pub fn translate_repr_options(&mut self, item: &hax::ItemRef) -> Option<ReprOptions> {
+        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        if let Some(local_rdefid) = rdefid.as_local() {
+            let tcx = self.t_ctx.tcx;
+            let r_repr = tcx.repr_options_of_def(local_rdefid);
+            Some(ReprOptions {
+                align: r_repr.align.map(|a| a.bytes()),
+                pack: r_repr.pack.map(|a| a.bytes()),
+                c: r_repr.c(),
+                transparent: r_repr.transparent(),
+                explicit_discr_type: r_repr.int.is_some(),
+            })
+        } else {
+            None
+        }
+    }
 }
