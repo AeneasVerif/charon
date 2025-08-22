@@ -52,7 +52,7 @@ pub trait FnOnce<Self, Args>
     parent_clause6 : [@TraitClause6]: Drop<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -66,7 +66,7 @@ pub trait FnMut<Self, Args>
     parent_clause4 : [@TraitClause4]: Drop<Self>
     parent_clause5 : [@TraitClause5]: Drop<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::Fn
@@ -80,7 +80,7 @@ pub trait Fn<Self, Args>
     parent_clause4 : [@TraitClause4]: Drop<Self>
     parent_clause5 : [@TraitClause5]: Drop<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output

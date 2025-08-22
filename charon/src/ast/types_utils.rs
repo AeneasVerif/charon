@@ -597,6 +597,32 @@ impl Ty {
         }
     }
 
+    /// Substitue the given `target_ty` with the `replacement` type recursively in this type.
+    /// E.g., if `self` is `Vec<i32>`, `target_ty` is `i32` and `replacement` is `Vec<i32>`, then
+    /// `self` will become `Vec<Vec<i32>>`.
+    /// No recursion is performed for `target_ty` and `replacement`.
+    pub fn substitute_ty(&mut self, target_ty: &Ty, replacement: &Ty) {
+        #[derive(Visitor)]
+        struct SubstituteVisitor<'a, 'b> {
+            target_ty: &'a Ty,
+            replacement: &'b Ty,
+        }
+        impl VisitAstMut for SubstituteVisitor<'_, '_> {
+            fn visit_ty(&mut self, x: &mut Ty) -> ::std::ops::ControlFlow<Self::Break> {
+                if *x == *self.target_ty {
+                    *x = self.replacement.clone();
+                    ControlFlow::Continue(())
+                } else {
+                    self.visit_inner(x)
+                }
+            }
+        }
+        let _ = self.drive_mut(&mut SubstituteVisitor {
+            target_ty,
+            replacement,
+        });
+    }
+
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
@@ -711,7 +737,6 @@ impl TraitRef {
         });
         TraitRef {
             kind: TraitRefKind::BuiltinOrAuto {
-                trait_decl_ref: trait_decl_ref.clone(),
                 parent_trait_refs: parents,
                 types: Default::default(),
             },

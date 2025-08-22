@@ -98,7 +98,9 @@ pub enum ItemKind {
     /// This item stands on its own.
     TopLevel,
     /// This is a closure in a function body.
-    Closure { info: ClosureInfo },
+    Closure {
+        info: ClosureInfo,
+    },
     /// This is an associated item in a trait declaration. It has a body if and only if the trait
     /// provided a default implementation.
     TraitDecl {
@@ -133,7 +135,10 @@ pub enum ItemKind {
         dyn_predicate: DynPredicate,
     },
     /// This is a vtable value for an impl.
-    VTableInstance { impl_ref: TraitImplRef },
+    VTableInstance {
+        impl_ref: TraitImplRef,
+    },
+    VTableMethodShim,
 }
 
 /// A function definition
