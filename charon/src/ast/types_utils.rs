@@ -651,6 +651,113 @@ impl Ty {
     pub fn as_adt(&self) -> Option<&TypeDeclRef> {
         self.kind().as_adt()
     }
+
+    /// Whether the types is guaranteed to need pointers to it to be wide.
+    /// If the result is `None`, then it could not be determined.
+    ///
+    /// The function needs additional context to approximate this information as
+    /// precisely as possible.
+    pub fn needs_metadata(
+        &self,
+        krate: &TranslatedCrate,
+        generic_ctx: Option<&GenericParams>,
+    ) -> Option<bool> {
+        match self {
+            TyKind::Adt(type_decl_ref) => match type_decl_ref.id {
+                TypeId::Adt(type_decl_id) => {
+                    match krate.type_decls.get(type_decl_id).unwrap().ptr_metadata {
+                        Some(PtrMetadata::Length) | Some(PtrMetadata::VTable(_)) => Some(true),
+                        _ => Some(false),
+                    }
+                }
+                TypeId::Tuple => Some(false),
+                // All builtins but box need metadata!
+                TypeId::Builtin(builtin_ty) => Some(!matches!(builtin_ty, BuiltinTy::Box)),
+            },
+            TyKind::DynTrait(_) => Some(true),
+            TyKind::Literal(_)
+            | TyKind::Never
+            | TyKind::Ref(_, _, _)
+            | TyKind::RawPtr(_, _)
+            | TyKind::FnPtr(_) => Some(false),
+            TyKind::TraitType(_, _) | TyKind::FnDef(_) | TyKind::Error(_) => None,
+            TyKind::TypeVar(tvar) => {
+                // Try to figure out whether the type variable is bound to be `Sized`
+                let tvar = tvar.get_raw();
+                if let Some(generic_params) = generic_ctx {
+                    generic_params
+                        .trait_clauses
+                        .iter()
+                        .find(|clause| {
+                            // Check the first argument of the trait clause, i.e.
+                            // the `T` in `T: Trait<S>`.
+                            if let Some(ty) = clause
+                                .trait_
+                                .skip_binder
+                                .generics
+                                .types
+                                .get(TypeVarId::ZERO)
+                            {
+                                ty.is_type_var()
+                                    && tvar == ty.as_type_var().unwrap().get_raw()
+                                    // Check whether the trait is indeed `Sized`
+                                    && krate
+                                        .trait_decls
+                                        .get(clause.trait_.skip_binder.id)
+                                        .unwrap()
+                                        .item_meta
+                                        .lang_item
+                                        == Some("sized".to_owned())
+                            } else {
+                                false
+                            }
+                        })
+                        .map(|_| false)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
+    /// Whether the type is not guaranteed to be inhabited.
+    ///
+    /// This is the case if the type is [`!`], contains [`!`], or could
+    /// either of these (but is not known to, e.g. because it is an uninstantiated type variable).
+    pub fn is_possibly_uninhabited(&self) -> bool {
+        match self {
+            /*  Adts of any kind can only be uninhabited if they would store
+                anything of an uninhabited type. In many cases, this can only
+                happen if any type argument could be uninhabited.
+                We don't traverse all the fields in the Adt since having an uninhabited field
+                that doesn't relate to a type parameter seems very uncommon.
+
+                Important to note: pointers such as Box are always inhabited!
+            */
+            TyKind::Adt(type_decl_ref) => {
+                if let TypeId::Builtin(b) = type_decl_ref.id
+                    && b.is_box()
+                {
+                    false
+                } else {
+                    type_decl_ref
+                        .generics
+                        .types
+                        .iter()
+                        .find(|arg0: &&Self| Self::is_possibly_uninhabited(*arg0))
+                        .is_some()
+                }
+            }
+            TyKind::TypeVar(_) | TyKind::Never | TyKind::TraitType(_, _) => true,
+            TyKind::Literal(_)
+            | TyKind::Ref(_, _, _)
+            | TyKind::RawPtr(_, _)
+            | TyKind::DynTrait(_)
+            | TyKind::FnPtr(_)
+            | TyKind::FnDef(_)
+            | TyKind::Error(_) => false,
+        }
+    }
 }
 
 impl TyKind {
@@ -1039,6 +1146,10 @@ impl TypeDecl {
             TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
         }
     }
+
+    pub fn is_c_repr(&self) -> bool {
+        self.repr.as_ref().is_some_and(|repr| repr.c)
+    }
 }
 
 impl Layout {
@@ -1048,6 +1159,122 @@ impl Layout {
         } else {
             false
         }
+    }
+
+    /// Construct a simple layout with a single variant and a single field of `size`.
+    ///
+    /// Assumes that the alignment is the same as the size.
+    pub fn mk_simple_layout(size: ByteCount) -> Self {
+        Self {
+            size: Some(size),
+            align: Some(size),
+            discriminant_layout: None,
+            uninhabited: false,
+            variant_layouts: [VariantLayout {
+                field_offsets: [0].into(),
+                uninhabited: false,
+                tag: None,
+            }]
+            .into(),
+        }
+    }
+
+    /// Constructs the layout of a thin pointer.
+    pub fn mk_ptr_layout_wo_metadata(ptr_size: ByteCount) -> Self {
+        Self::mk_simple_layout(ptr_size)
+    }
+
+    /// Constructs the layout of a wide pointer.
+    ///
+    /// Assumes that the metadata is pointer-sized.
+    pub fn mk_ptr_layout_with_metadata(ptr_size: ByteCount) -> Self {
+        Self {
+            // I just hope that all kinds of meta data is ptr sized?
+            size: Some(2 * ptr_size),
+            align: Some(ptr_size),
+            discriminant_layout: None,
+            uninhabited: false,
+            variant_layouts: [VariantLayout {
+                field_offsets: [0, ptr_size].into(),
+                uninhabited: false,
+                tag: None,
+            }]
+            .into(),
+        }
+    }
+
+    /// Constructs the layout of a 1ZST, i.e. a zero-sized type with alignment 1.
+    pub fn mk_1zst_layout() -> Self {
+        Self {
+            size: Some(0),
+            align: Some(1),
+            discriminant_layout: None,
+            uninhabited: false,
+            variant_layouts: [VariantLayout {
+                field_offsets: [0].into(),
+                uninhabited: false,
+                tag: None,
+            }]
+            .into(),
+        }
+    }
+
+    /// Creates the layout of a tuple where all fields are of the same size.
+    ///
+    /// Assumes that they are ordered linearly.
+    pub fn mk_uniform_tuple(elem_size: ByteCount, elem_count: usize, align: ByteCount) -> Self {
+        let mut field_offsets = Vector::with_capacity(elem_count);
+        for elem in 0..elem_count {
+            field_offsets.push(elem_size * elem as u64);
+        }
+        Self {
+            size: Some(elem_size * elem_count as u64),
+            align: Some(align),
+            discriminant_layout: None,
+            uninhabited: false,
+            variant_layouts: [VariantLayout {
+                field_offsets,
+                uninhabited: false,
+                tag: None,
+            }]
+            .into(),
+        }
+    }
+
+    /// Constructs the layout of an unsized type with a single variant,
+    /// e.g. [`BuiltinTy::Slice`] or [`TyKind::DynTrait`].
+    pub fn mk_unsized_layout() -> Self {
+        Self {
+            size: None,
+            align: None,
+            discriminant_layout: None,
+            uninhabited: false,
+            variant_layouts: [VariantLayout {
+                field_offsets: [0].into(),
+                uninhabited: false,
+                tag: None,
+            }]
+            .into(),
+        }
+    }
+}
+
+impl<T> DeBruijnVar<T> {
+    /// Get's the contained value and ignores binding information.
+    pub fn get_raw(&self) -> &T {
+        match self {
+            DeBruijnVar::Bound(_, var) | DeBruijnVar::Free(var) => var,
+        }
+    }
+}
+
+impl ReprOptions {
+    /// Whether this representation options guarantee a fixed
+    /// field ordering for the type.
+    ///
+    /// Cf. `rustc_abi::ReprOptions::inhibit_struct_field_reordering`.
+    pub fn guarantees_fixed_field_order(&self) -> bool {
+        self.c || self.explicit_discr_type
     }
 }
 
