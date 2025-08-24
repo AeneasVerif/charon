@@ -118,7 +118,7 @@ trait Trait<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Ty>
     parent_clause2 : [@TraitClause2]: Copy<Self::Ty>
     type Ty
-    non-dyn-compatible
+    vtable: test_crate::Trait::{vtable}<Self::Ty>
 }
 
 // Full name: test_crate::copy_assoc_ty
