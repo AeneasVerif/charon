@@ -382,7 +382,8 @@ impl ItemTransCtx<'_, '_> {
             },
             kind,
             layout: Some(layout),
-            ptr_metadata: None,
+            // a vtable must not have unsizing metadata itself
+            ptr_metadata: PtrMetadata::None,
         })
     }
 }

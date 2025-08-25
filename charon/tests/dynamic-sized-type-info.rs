@@ -45,12 +45,20 @@ fn ptr_metadata() -> anyhow::Result<()> {
         x: u32,
         y: T,
     }
+    struct GenericWithUnsize<T: ?Sized> {
+        x: u32,
+        y: T
+    }
     struct GenericNotLastField<T> {
         x: u32,
         y: T,
         z: u32,
     }
     struct GenericBehindIndirection<T> {
+        x: u32,
+        y: Box<T>,
+    }
+    struct GenericBehindIndirectionUnsized<T: ?Sized> {
         x: u32,
         y: Box<T>,
     }
@@ -62,12 +70,12 @@ fn ptr_metadata() -> anyhow::Result<()> {
     "#,
         &[],
     )?;
-    let meta_kinds: IndexMap<String, Option<&PtrMetadata>> = crate_data
+    let meta_kinds: IndexMap<String, &PtrMetadata> = crate_data
         .type_decls
         .iter()
         .map(|td| {
             let name = repr_name(&crate_data, &td.item_meta.name);
-            (name, td.ptr_metadata.as_ref())
+            (name, &td.ptr_metadata)
         })
         .collect();
     let str = serde_json::to_string_pretty(&meta_kinds)?;

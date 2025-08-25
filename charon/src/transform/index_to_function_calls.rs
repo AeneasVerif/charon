@@ -1,9 +1,11 @@
 //! Desugar array/slice index operations to function calls.
+
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 use derive_generic_visitor::*;
 
 use super::ctx::LlbcPass;
+use crate::transform::insert_ptr_metadata::*;
 
 /// We replace some place constructors with function calls. To do that, we explore all the places
 /// in a body and deconstruct a given place access into intermediate assignments.
@@ -11,7 +13,7 @@ use super::ctx::LlbcPass;
 /// We accumulate the new assignments as statements in the visitor, and at the end we insert these
 /// statements before the one that was just explored.
 #[derive(Visitor)]
-struct IndexVisitor<'a> {
+struct IndexVisitor<'a, 'b> {
     locals: &'a mut Locals,
     /// Statements to prepend to the statement currently being explored.
     statements: Vec<Statement>,
@@ -22,18 +24,35 @@ struct IndexVisitor<'a> {
     place_mutability_stack: Vec<bool>,
     // Span of the statement.
     span: Span,
+    ctx: &'b TransformCtx,
 }
 
-impl<'a> IndexVisitor<'a> {
-    fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
-        let var = self.locals.new_var(name, ty);
-        let live_kind = RawStatement::StorageLive(var.local_id().unwrap());
-        self.statements.push(Statement::new(self.span, live_kind));
-        var
+impl PtrMetadataComputable for IndexVisitor<'_, '_> {
+    fn get_locals_mut(&mut self) -> &mut Locals {
+        self.locals
     }
 
+    fn insert_storage_live_stmt(&mut self, local: LocalId) {
+        let statement = RawStatement::StorageLive(local);
+        self.statements.push(Statement::new(self.span, statement));
+    }
+
+    fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
+        let statement = RawStatement::Assign(place, rvalue);
+        self.statements.push(Statement::new(self.span, statement));
+    }
+
+    fn get_ctx(&self) -> &TransformCtx {
+        self.ctx
+    }
+}
+
+impl<'a, 'b> IndexVisitor<'a, 'b> {
+    /// transform `place: subplace[i]` into indexing function calls for `subplace` and `i`
     fn transform_place(&mut self, mut_access: bool, place: &mut Place) {
         use ProjectionElem::*;
+        // This function is naturally called recusively, so `subplace` cannot be another `Index` or `Subslice`.
+        // Hence, `subplace`, if still projecting, must be either a `Deref` or a `Field`.
         let Some((subplace, pe @ (Index { .. } | Subslice { .. }))) = place.as_projection() else {
             return;
         };
@@ -82,6 +101,9 @@ impl<'a> IndexVisitor<'a> {
             .into_ty()
         };
 
+        // do something similar to the `input_var` below, but for the metadata.
+        let ptr_metadata = place_ptr_metadata_operand(self, subplace);
+
         // Push the statements:
         // `storage_live(tmp0)`
         // `tmp0 = &{mut}p`
@@ -89,7 +111,11 @@ impl<'a> IndexVisitor<'a> {
             let input_var = self.fresh_var(None, input_ty);
             let kind = RawStatement::Assign(
                 input_var.clone(),
-                Rvalue::Ref(subplace.clone(), BorrowKind::mutable(mut_access)),
+                Rvalue::Ref {
+                    place: subplace.clone(),
+                    kind: BorrowKind::mutable(mut_access),
+                    ptr_metadata,
+                },
             );
             self.statements.push(Statement::new(self.span, kind));
             input_var
@@ -182,8 +208,8 @@ impl<'a> IndexVisitor<'a> {
 }
 
 /// The visitor methods.
-impl VisitBodyMut for IndexVisitor<'_> {
-    /// We explore places from the inside-out.
+impl VisitBodyMut for IndexVisitor<'_, '_> {
+    /// We explore places from the inside-out --- recursion naturally happens here.
     fn exit_place(&mut self, place: &mut Place) {
         // We have intercepted every traversal that would reach a place and pushed the correct
         // mutability on the stack.
@@ -215,12 +241,21 @@ impl VisitBodyMut for IndexVisitor<'_> {
         match x {
             // `UniqueImmutable` de facto gives mutable access and only shows up if there is nested
             // mutable access.
-            RawPtr(_, RefKind::Mut)
-            | Ref(_, BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable) => {
-                self.visit_inner_with_mutability(x, true)
+            RawPtr {
+                kind: RefKind::Mut, ..
             }
-            RawPtr(_, RefKind::Shared)
-            | Ref(_, BorrowKind::Shared | BorrowKind::Shallow)
+            | Ref {
+                kind: BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable,
+                ..
+            } => self.visit_inner_with_mutability(x, true),
+            RawPtr {
+                kind: RefKind::Shared,
+                ..
+            }
+            | Ref {
+                kind: BorrowKind::Shared | BorrowKind::Shallow,
+                ..
+            }
             | Discriminant(..)
             | Len(..) => self.visit_inner_with_mutability(x, false),
 
@@ -295,13 +330,14 @@ pub struct Transform;
 ///   *tmp1 = x
 /// ```
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
+    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body.transform(|st: &mut Statement| {
             let mut visitor = IndexVisitor {
                 locals: &mut b.locals,
                 statements: Vec::new(),
                 place_mutability_stack: Vec::new(),
                 span: st.span,
+                ctx: &ctx,
             };
             use RawStatement::*;
             match &mut st.content {

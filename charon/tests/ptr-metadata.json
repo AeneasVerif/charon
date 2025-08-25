@@ -6,13 +6,31 @@
   "test_crate::MoreSliceDst": "Length",
   "test_crate::Embedded": "Length",
   "test_crate::DynTrait": {
-    "VTable": null
+    "VTable": {
+      "id": {
+        "Adt": 13
+      },
+      "generics": {
+        "regions": [],
+        "types": [],
+        "const_generics": [],
+        "trait_refs": []
+      }
+    }
   },
-  "test_crate::GenericInLastField": null,
+  "test_crate::GenericInLastField": "None",
+  "test_crate::GenericWithUnsize": {
+    "InheritFrom": {
+      "TypeVar": {
+        "Free": 0
+      }
+    }
+  },
   "test_crate::GenericNotLastField": "None",
   "test_crate::GenericBehindIndirection": "None",
-  "test_crate::ThinGeneric": null,
-  "test_crate::Showable::{vtable}": null,
+  "test_crate::GenericBehindIndirectionUnsized": "None",
+  "test_crate::ThinGeneric": "None",
+  "test_crate::Showable::{vtable}": "None",
   "alloc::alloc::Global": "None",
   "core::cmp::Ordering": "None",
   "core::option::Option": "None",

@@ -125,12 +125,18 @@ where
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (T); // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &y@2
+    storage_live(@7)
+    @7 := ()
+    @4 := &(y@2, move (@7))
     storage_live(@5)
-    @5 := &x@1
+    storage_live(@6)
+    @6 := ()
+    @5 := &(x@1, move (@6))
     @3 := @TraitClause2::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)
@@ -184,12 +190,18 @@ where
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (Option<T>[@TraitClause0]); // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &y@2
+    storage_live(@7)
+    @7 := ()
+    @4 := &(y@2, move (@7))
     storage_live(@5)
-    @5 := &x@1
+    storage_live(@6)
+    @6 := ()
+    @5 := &(x@1, move (@6))
     @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)
@@ -255,12 +267,18 @@ where
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (Option<T>[@TraitClause0]); // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &y@2
+    storage_live(@7)
+    @7 := ()
+    @4 := &(y@2, move (@7))
     storage_live(@5)
-    @5 := &x@1
+    storage_live(@6)
+    @6 := ()
+    @5 := &(x@1, move (@6))
     @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)
