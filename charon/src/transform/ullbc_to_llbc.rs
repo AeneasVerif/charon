@@ -1566,7 +1566,7 @@ fn translate_terminator(
                     // We link block ids to:
                     // - vector of matched integer values
                     // - translated blocks
-                    let mut branches: IndexMap<src::BlockId, (Vec<ScalarValue>, tgt::Block)> =
+                    let mut branches: IndexMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
                         IndexMap::new();
 
                     // Translate the children expressions
@@ -1577,7 +1577,7 @@ fn translate_terminator(
                             // Already translated: add the matched value to
                             // the list of values
                             let branch = branches.get_mut(bid).unwrap();
-                            branch.0.push(*v);
+                            branch.0.push(v.clone());
                         } else {
                             // Not translated: translate it
                             let block = translate_child_block(
@@ -1590,10 +1590,10 @@ fn translate_terminator(
                             // We use the terminator span information in case then
                             // then statement is `None`
                             let block = opt_block_unwrap_or_nop(terminator.span, block);
-                            branches.insert(*bid, (vec![*v], block));
+                            branches.insert(*bid, (vec![v.clone()], block));
                         }
                     }
-                    let targets_blocks: Vec<(Vec<ScalarValue>, tgt::Block)> =
+                    let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> =
                         branches.into_iter().map(|(_, x)| x).collect();
 
                     let otherwise_block = translate_child_block(

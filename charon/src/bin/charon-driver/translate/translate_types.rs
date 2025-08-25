@@ -1,4 +1,6 @@
 use super::translate_ctx::*;
+use charon_lib::ast::Literal::*;
+use charon_lib::ast::types::LiteralTy::*;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
@@ -744,9 +746,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         def_span: Span,
         discr: &hax::DiscriminantValue,
-    ) -> Result<ScalarValue, Error> {
+    ) -> Result<Literal, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
-        let int_ty = ty.kind().as_literal().unwrap().to_integer_ty().unwrap();
-        Ok(ScalarValue::from_bits(int_ty, discr.val))
+        match *ty.kind() {
+            charon_lib::ast::types::TyKind::Literal(Int(int_ty)) => Ok(Scalar(
+                ScalarValue::from_bits(IntegerTy::Signed(int_ty), discr.val),
+            )),
+            charon_lib::ast::types::TyKind::Literal(UInt(uint_ty)) => Ok(Scalar(
+                ScalarValue::from_bits(IntegerTy::Unsigned(uint_ty), discr.val),
+            )),
+            charon_lib::ast::types::TyKind::Literal(charon_lib::ast::types::LiteralTy::Char) => {
+                Ok(charon_lib::ast::Literal::Char(discr.val as u8 as char))
+            }
+            _ => Err(Error {
+                span: def_span,
+                msg: "*ty.kind unsupported as discriminant".to_string(),
+            }),
+        }
     }
 }
