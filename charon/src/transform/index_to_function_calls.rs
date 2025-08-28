@@ -27,7 +27,7 @@ struct IndexVisitor<'a> {
 impl<'a> IndexVisitor<'a> {
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         let var = self.locals.new_var(name, ty);
-        let live_kind = StatementKind::StorageLive(var.local_id());
+        let live_kind = StatementKind::StorageLive(var.local_id().unwrap());
         self.statements.push(Statement::new(self.span, live_kind));
         var
     }
@@ -114,7 +114,7 @@ impl<'a> IndexVisitor<'a> {
         if from_end {
             // `storage_live(len_var)`
             // `len_var = len(p)`
-            let usize_ty = TyKind::Literal(LiteralTy::Integer(IntegerTy::Usize)).into_ty();
+            let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
             let len_var = self.fresh_var(None, usize_ty.clone());
             let kind = StatementKind::Assign(
                 len_var.clone(),
@@ -132,10 +132,14 @@ impl<'a> IndexVisitor<'a> {
             let index_var = self.fresh_var(None, usize_ty);
             let kind = StatementKind::Assign(
                 index_var.clone(),
-                Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(len_var.clone()), last_arg),
+                Rvalue::BinaryOp(
+                    BinOp::Sub(OverflowMode::UB),
+                    Operand::Copy(len_var.clone()),
+                    last_arg,
+                ),
             );
             self.statements.push(Statement::new(self.span, kind));
-            let dead_kind = StatementKind::StorageDead(len_var.local_id());
+            let dead_kind = StatementKind::StorageDead(len_var.local_id().unwrap());
             self.statements.push(Statement::new(self.span, dead_kind));
             args.push(Operand::Copy(index_var));
         } else {
@@ -168,7 +172,7 @@ impl<'a> IndexVisitor<'a> {
         mutability: bool,
     ) -> ControlFlow<Infallible>
     where
-        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>>,
+        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>> + BodyVisitable,
     {
         self.place_mutability_stack.push(mutability);
         self.visit_inner(x)?;
@@ -220,8 +224,8 @@ impl VisitBodyMut for IndexVisitor<'_> {
             | Discriminant(..)
             | Len(..) => self.visit_inner_with_mutability(x, false),
 
-            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..)
-            | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => self.visit_inner(x),
+            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Repeat(..)
+            | ShallowInitBox(..) => self.visit_inner(x),
         }
     }
 

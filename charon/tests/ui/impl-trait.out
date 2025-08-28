@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -31,6 +33,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
     fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}::clone
@@ -41,6 +44,7 @@ pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_
 impl<'_0, T> Clone for &'_0 (T) {
     parent_clause0 = Sized<&'_ (T)>
     fn clone<'_0> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_0, T>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -48,6 +52,7 @@ impl<'_0, T> Clone for &'_0 (T) {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::marker::Tuple
@@ -55,7 +60,22 @@ pub trait Destruct<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -67,6 +87,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -81,6 +102,7 @@ pub trait Foo<Self>
     parent_clause2 : [@TraitClause2]: Clone<Self::Type>
     type Type
     fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Type)
@@ -112,6 +134,7 @@ impl Foo for () {
     parent_clause2 = {impl Clone for u32}
     type Type = u32
     fn get_ty<'_0> = {impl Foo for ()}::get_ty<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::mk_foo
@@ -146,11 +169,11 @@ fn use_foo()
     storage_dead(@5)
     @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<u32>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop foo@1
+    drop[Drop<()>] foo@1
     storage_dead(foo@1)
     @0 := ()
     return
@@ -164,14 +187,16 @@ pub trait RPITIT<Self>
     parent_clause2 : [@TraitClause2]: Foo<Self::>
     type 
     fn make_foo = test_crate::RPITIT::make_foo<Self>[Self]
+    non-dyn-compatible
 }
 
-pub fn test_crate::RPITIT::make_foo<Self>() -> @TraitClause0::
+pub fn test_crate::RPITIT::make_foo<Self>()
 where
     [@TraitClause0]: RPITIT<Self>,
 {
     let @0: (); // return
 
+    @0 := ()
     @0 := ()
     return
 }
@@ -193,6 +218,7 @@ impl RPITIT for () {
     parent_clause2 = {impl Foo for ()}
     type  = ()
     fn make_foo = {impl RPITIT for ()}::make_foo
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_tait
@@ -220,11 +246,11 @@ where
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<@TraitClause1::parent_clause2::Type>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop foo@1
+    drop[Drop<@TraitClause1::>] foo@1
     storage_dead(foo@1)
     @0 := ()
     return
@@ -281,12 +307,13 @@ impl<'_0, U> FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]
 where
     [@TraitClause0]: Sized<U>,
 {
-    parent_clause0 = MetaSized<(&'_ (U))>
+    parent_clause0 = MetaSized<closure<U>[@TraitClause0]>
     parent_clause1 = Sized<(&'_ (U))>
     parent_clause2 = Tuple<(&'_ (U))>
     parent_clause3 = Sized<WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]>
     type Output = WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]
     fn call_once = {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::use_wrap
@@ -314,7 +341,7 @@ pub fn use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := FnOnce<closure<u32>[Sized<u32>], (&'_ (u32))> where Output  = WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}<'_, u32>]::call_once(move (@3), move (@4))
+    @2 := {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_, u32>[Sized<u32>](move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)
@@ -322,7 +349,7 @@ pub fn use_wrap()
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
-    drop f@1
+    drop[Drop<closure<u32>[Sized<u32>]>] f@1
     storage_dead(f@1)
     @0 := ()
     return

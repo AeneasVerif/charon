@@ -35,7 +35,7 @@ and statement_kind =
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
   | Deinit of place
-  | Drop of place
+  | Drop of place * trait_ref
   | Assert of assertion
       (** A built-in assert, which corresponds to runtime checks that we remove,
           namely: bounds checks, over/underflow checks, div/rem by zero checks,

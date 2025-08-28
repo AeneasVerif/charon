@@ -63,31 +63,22 @@ and binop =
   | Ne
   | Ge
   | Gt
-  | Div
-      (** Fails if the divisor is 0, or if the operation is [int::MIN / -1]. *)
-  | Rem
-      (** Fails if the divisor is 0, or if the operation is [int::MIN % -1]. *)
-  | Add
-      (** Fails on overflow. Not present in MIR: this is introduced by the
-          [remove_dynamic_checks] pass. *)
-  | Sub
-      (** Fails on overflow. Not present in MIR: this is introduced by the
-          [remove_dynamic_checks] pass. *)
-  | Mul
-      (** Fails on overflow. Not present in MIR: this is introduced by the
-          [remove_dynamic_checks] pass. *)
-  | WrappingAdd  (** Wraps on overflow. *)
-  | WrappingSub  (** Wraps on overflow. *)
-  | WrappingMul  (** Wraps on overflow. *)
-  | CheckedAdd
+  | Add of overflow_mode
+  | Sub of overflow_mode
+  | Mul of overflow_mode
+  | Div of overflow_mode
+  | Rem of overflow_mode
+  | AddChecked
       (** Returns [(result, did_overflow)], where [result] is the result of the
           operation with wrapping semantics, and [did_overflow] is a boolean
           that indicates whether the operation overflowed. This operation does
           not fail. *)
-  | CheckedSub  (** Like [CheckedAdd]. *)
-  | CheckedMul  (** Like [CheckedAdd]. *)
-  | Shl  (** Fails if the shift is bigger than the bit-size of the type. *)
-  | Shr  (** Fails if the shift is bigger than the bit-size of the type. *)
+  | SubChecked  (** Like [AddChecked]. *)
+  | MulChecked  (** Like [AddChecked]. *)
+  | Shl of overflow_mode
+      (** Fails if the shift is bigger than the bit-size of the type. *)
+  | Shr of overflow_mode
+      (** Fails if the shift is bigger than the bit-size of the type. *)
   | Offset
       (** [BinOp(Offset, ptr, n)] for [ptr] a pointer to type [T] offsets [ptr]
           by [n * size_of::<T>()]. *)
@@ -129,50 +120,6 @@ and borrow_kind =
           <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
       *)
 
-(** An built-in function identifier, identifying a function coming from a
-    standard library. *)
-and builtin_fun_id =
-  | BoxNew  (** [alloc::boxed::Box::new] *)
-  | ArrayToSliceShared
-      (** Cast an array as a slice.
-
-          Converted from [UnOp::ArrayToSlice] *)
-  | ArrayToSliceMut
-      (** Cast an array as a slice.
-
-          Converted from [UnOp::ArrayToSlice] *)
-  | ArrayRepeat
-      (** [repeat(n, x)] returns an array where [x] has been replicated [n]
-          times.
-
-          We introduce this when desugaring the [ArrayRepeat] rvalue. *)
-  | Index of builtin_index_op
-      (** Converted from indexing [ProjectionElem]s. The signature depends on
-          the parameters. It could look like:
-          - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
-          - [fn SliceIndexShared<T>(&[T], usize) -> &T]
-          - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
-          - [fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]]
-          - etc *)
-  | PtrFromParts of ref_kind
-      (** Build a raw pointer, from a data pointer and metadata. The metadata
-          can be unit, if building a thin pointer.
-
-          Converted from [AggregateKind::RawPtr] *)
-
-(** One of 8 built-in indexing operations. *)
-and builtin_index_op = {
-  is_array : bool;  (** Whether this is a slice or array. *)
-  mutability : ref_kind;
-      (** Whether we're indexing mutably or not. Determines the type ofreference
-          of the input and output. *)
-  is_range : bool;
-      (** Whether we're indexing a single element or a subrange. If [true], the
-          function takes two indices and the output is a slice; otherwise, the
-          function take one index and the output is a reference to a single
-          element. *)
-}
-
 (** For all the variants: the first type gives the source type, the second one
     gives the destination type. *)
 and cast_kind =
@@ -181,7 +128,7 @@ and cast_kind =
           support conversions with Char. *)
   | CastRawPtr of ty * ty
   | CastFnPtr of ty * ty
-  | CastUnsize of ty * ty
+  | CastUnsize of ty * ty * unsizing_metadata
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
           coercions, behind a pointer (reference, [Box], or other type that
@@ -201,24 +148,6 @@ and field_proj_kind =
       (** If we project from a tuple, the projection kind gives the arity of the
           tuple. *)
 
-and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
-
-(** A function identifier. See [crate::ullbc_ast::Terminator] *)
-and fun_id =
-  | FRegular of fun_decl_id
-      (** A "regular" function (function local to the crate, external function
-          not treated as a primitive one). *)
-  | FBuiltin of builtin_fun_id
-      (** A primitive function, coming from a standard library (for instance:
-          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
-
-and fun_id_or_trait_method_ref =
-  | FunId of fun_id
-  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
-      (** If a trait: the reference to the trait and the id of the trait method.
-          The fun decl id is not really necessary - we put it here for
-          convenience purposes. *)
-
 and local_id = (LocalId.id[@visitors.opaque])
 
 (** Nullary operation *)
@@ -230,11 +159,26 @@ and operand =
   | Constant of constant_expr
       (** Constant value (including constant and static variables) *)
 
+and overflow_mode =
+  | OPanic
+      (** If this operation overflows, it panics. Only exists in debug mode, for
+          instance in [a + b], and is introduced by the [remove_dynamic_checks]
+          pass. *)
+  | OUB
+      (** If this operation overflows, it UBs, for instance in
+          [core::num::unchecked_add]. *)
+  | OWrap
+      (** If this operation overflows, it wraps around, for instance in
+          [core::num::wrapping_add], or [a + b] in release mode. *)
+
 and place = { kind : place_kind; ty : ty }
 
 and place_kind =
-  | PlaceLocal of local_id
-  | PlaceProjection of place * projection_elem
+  | PlaceLocal of local_id  (** A local variable in a function body. *)
+  | PlaceProjection of place * projection_elem  (** A subplace of a place. *)
+  | PlaceGlobal of global_decl_ref
+      (** A global (const or static). Not present in MIR; introduced in
+          [simplify_constants.rs]. *)
 
 (** Note that we don't have the equivalent of "downcasts". Downcasts are
     actually necessary, for instance when initializing enumeration values: the
@@ -285,7 +229,7 @@ and projection_elem =
       desugar those to regular ADTs, see [regularize_constant_adts.rs].
 
     [[RawConstantExpr::Global]] case: access to a global variable. We later
-    desugar it to a separate statement.
+    desugar it to a copy of a place global.
 
     [[RawConstantExpr::Ref]] case: reference to a constant value. We later
     desugar it to a separate statement.
@@ -336,10 +280,9 @@ and rvalue =
           binops) *)
   | UnaryOp of unop * operand  (** Unary operation (e.g. not, neg) *)
   | NullaryOp of nullop * ty  (** Nullary operation (e.g. [size_of]) *)
-  | Discriminant of place * type_decl_id
-      (** Discriminant (for enumerations). Note that discriminant values have
-          type isize. We also store the identifier of the type from which we
-          read the discriminant.
+  | Discriminant of place
+      (** Discriminant read. Reads the discriminant value of an enum. The place
+          must have the type of an enum.
 
           This case is filtered in [crate::transform::remove_read_discriminant]
       *)
@@ -362,13 +305,6 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure
           id together with its state. *)
-  | Global of global_decl_ref
-      (** Copy the value of the referenced global. Not present in MIR;
-          introduced in [simplify_constants.rs]. *)
-  | GlobalRef of global_decl_ref * ref_kind
-      (** Reference the value of the global. This has type [&T] or [*mut T]
-          depending on desired mutability. Not present in MIR; introduced in
-          [simplify_constants.rs]. *)
   | Len of place * ty * const_generic option
       (** Length of a memory location. The run-time length of e.g. a vector or a
           slice is represented differently (but pretty-prints the same, FIXME).
@@ -406,24 +342,17 @@ and rvalue =
 (** Unary operation *)
 and unop =
   | Not
-  | Neg
-      (** This can overflow. In practice, rust introduces an assert before (in
-          debug mode) to check that it is not equal to the minimum integer value
-          (for the proper type). *)
+  | Neg of overflow_mode  (** This can overflow, for [-i::MIN]. *)
   | PtrMetadata
       (** Retreive the metadata part of a fat pointer. For slices, this
           retreives their length. *)
   | Cast of cast_kind
       (** Casts are rvalues in MIR, but we treat them as unops. *)
-  | ArrayToSlice of ref_kind * ty * const_generic
-      (** Coercion from array (i.e., [T; N]) to slice.
 
-          **Remark:** We introduce this unop when translating from MIR, **then
-          transform** it to a function call in a micro pass. The type and the
-          scalar value are not *necessary* as we can retrieve them from the
-          context, but storing them here is very useful. The [RefKind] argument
-          states whethere we operate on a mutable or a shared borrow to an
-          array. *)
+and unsizing_metadata =
+  | MetaLength of const_generic
+  | MetaVTablePtr of trait_ref
+  | MetaUnknown
 [@@deriving
   show,
   eq,

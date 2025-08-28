@@ -9,12 +9,28 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: test_crate::OtherTrait
 trait OtherTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::OtherTrait::{vtable}
 }
 
 // Full name: test_crate::ImpliesOtherTrait
@@ -22,6 +38,7 @@ trait ImpliesOtherTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: OtherTrait<Self>
+    vtable: test_crate::ImpliesOtherTrait::{vtable}
 }
 
 // Full name: test_crate::HasMethod
@@ -29,6 +46,7 @@ trait HasMethod<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn method<'_0> = test_crate::HasMethod::method<'_0_0, Self>[Self]
+    vtable: test_crate::HasMethod::{vtable}
 }
 
 fn test_crate::HasMethod::method<'_0, Self>(@1: &'_0 (Self))
@@ -57,6 +75,7 @@ where
 {
     parent_clause0 = @TraitClause0::parent_clause0
     fn method<'_0> = {impl HasMethod for T}::method<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl HasMethod for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::call_method
@@ -77,7 +96,7 @@ where
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop x@1
+    drop[Drop<T>] x@1
     @0 := ()
     return
 }

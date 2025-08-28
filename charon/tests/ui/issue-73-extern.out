@@ -3,9 +3,11 @@
 // Full name: test_crate::foo
 unsafe fn foo(@1: i32)
 
-fn test_crate::CONST() -> u8
+// Full name: test_crate::CONST
+fn CONST() -> u8
 
-static test_crate::CONST: u8 = test_crate::CONST()
+// Full name: test_crate::CONST
+static CONST: u8 = CONST()
 
 // Full name: test_crate::Type
 opaque type Type

@@ -13,13 +13,14 @@
 
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![expect(incomplete_features)]
 #![feature(assert_matches)]
 #![feature(box_patterns)]
+#![feature(deref_patterns)]
 #![feature(deref_pure_trait)]
 #![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iterator_try_collect)]
-#![feature(let_chains)]
 #![feature(trait_alias)]
 #![feature(register_tool)]
 // For when we use charon on itself :3
@@ -44,7 +45,7 @@ pub use pretty::formatter;
 pub use transform::{graphs, reorder_decls, ullbc_to_llbc};
 
 /// The version of the crate, as defined in `Cargo.toml`.
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Read a `.llbc` file.
 pub fn deserialize_llbc(path: &std::path::Path) -> anyhow::Result<ast::TranslatedCrate> {

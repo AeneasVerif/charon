@@ -27,8 +27,13 @@ pub struct Place {
 )]
 #[charon::variants_prefix("Place")]
 pub enum PlaceKind {
+    /// A local variable in a function body.
     Local(LocalId),
+    /// A subplace of a place.
     Projection(Box<Place>, ProjectionElem),
+    /// A global (const or static).
+    /// Not present in MIR; introduced in [simplify_constants.rs].
+    Global(GlobalDeclRef),
 }
 
 /// Note that we don't have the equivalent of "downcasts".
@@ -149,22 +154,13 @@ pub enum BorrowKind {
 #[charon::rename("Unop")]
 pub enum UnOp {
     Not,
-    /// This can overflow. In practice, rust introduces an assert before
-    /// (in debug mode) to check that it is not equal to the minimum integer
-    /// value (for the proper type).
-    Neg,
+    /// This can overflow, for `-i::MIN`.
+    #[drive(skip)]
+    Neg(OverflowMode),
     /// Retreive the metadata part of a fat pointer. For slices, this retreives their length.
     PtrMetadata,
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
-    /// Coercion from array (i.e., [T; N]) to slice.
-    ///
-    /// **Remark:** We introduce this unop when translating from MIR, **then transform**
-    /// it to a function call in a micro pass. The type and the scalar value are not
-    /// *necessary* as we can retrieve them from the context, but storing them here is
-    /// very useful. The [RefKind] argument states whethere we operate on a mutable
-    /// or a shared borrow to an array.
-    ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
 /// Nullary operation
@@ -197,10 +193,33 @@ pub enum CastKind {
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
-    Unsize(Ty, Ty),
+    Unsize(Ty, Ty, UnsizingMetadata),
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty, Ty),
+}
+
+#[derive(
+    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+)]
+#[charon::variants_prefix("Meta")]
+pub enum UnsizingMetadata {
+    Length(ConstGeneric),
+    VTablePtr(TraitRef),
+    Unknown,
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
+#[charon::variants_prefix("O")]
+pub enum OverflowMode {
+    /// If this operation overflows, it panics. Only exists in debug mode, for instance in
+    /// `a + b`, and is introduced by the `remove_dynamic_checks` pass.
+    Panic,
+    /// If this operation overflows, it UBs, for instance in `core::num::unchecked_add`.
+    UB,
+    /// If this operation overflows, it wraps around, for instance in `core::num::wrapping_add`,
+    /// or `a + b` in release mode.
+    Wrap,
 }
 
 /// Binary operations.
@@ -218,37 +237,30 @@ pub enum BinOp {
     Ne,
     Ge,
     Gt,
-    /// Fails if the divisor is 0, or if the operation is `int::MIN / -1`.
-    Div,
-    /// Fails if the divisor is 0, or if the operation is `int::MIN % -1`.
-    Rem,
-    /// Fails on overflow.
-    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
-    Add,
-    /// Fails on overflow.
-    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
-    Sub,
-    /// Fails on overflow.
-    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
-    Mul,
-    /// Wraps on overflow.
-    WrappingAdd,
-    /// Wraps on overflow.
-    WrappingSub,
-    /// Wraps on overflow.
-    WrappingMul,
+    #[drive(skip)]
+    Add(OverflowMode),
+    #[drive(skip)]
+    Sub(OverflowMode),
+    #[drive(skip)]
+    Mul(OverflowMode),
+    #[drive(skip)]
+    Div(OverflowMode),
+    #[drive(skip)]
+    Rem(OverflowMode),
     /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
     /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
     /// overflowed. This operation does not fail.
-    CheckedAdd,
-    /// Like `CheckedAdd`.
-    CheckedSub,
-    /// Like `CheckedAdd`.
-    CheckedMul,
+    AddChecked,
+    /// Like `AddChecked`.
+    SubChecked,
+    /// Like `AddChecked`.
+    MulChecked,
     /// Fails if the shift is bigger than the bit-size of the type.
-    Shl,
+    #[drive(skip)]
+    Shl(OverflowMode),
     /// Fails if the shift is bigger than the bit-size of the type.
-    Shr,
+    #[drive(skip)]
+    Shr(OverflowMode),
     /// `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`.
     Offset,
     /// `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`.
@@ -337,11 +349,11 @@ pub enum BuiltinFunId {
     BoxNew,
     /// Cast an array as a slice.
     ///
-    /// Converted from [UnOp::ArrayToSlice]
+    /// Converted from `UnOp::ArrayToSlice`
     ArrayToSliceShared,
     /// Cast an array as a slice.
     ///
-    /// Converted from [UnOp::ArrayToSlice]
+    /// Converted from `UnOp::ArrayToSlice`
     ArrayToSliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
@@ -381,9 +393,7 @@ pub struct BuiltinIndexOp {
 /// Reference to a function declaration or builtin function.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct MaybeBuiltinFunDeclRef {
-    #[charon::rename("fun_decl_id")]
     pub id: FunId,
-    #[charon::rename("fun_decl_generics")]
     pub generics: BoxedArgs,
 }
 
@@ -398,7 +408,9 @@ pub struct TraitMethodRef {
     pub method_decl_id: FunDeclId,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut, Hash,
+)]
 pub enum FunIdOrTraitMethodRef {
     #[charon::rename("FunId")]
     Fun(FunId),
@@ -420,7 +432,7 @@ impl From<FunDeclId> for FunIdOrTraitMethodRef {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash)]
 pub struct FnPtr {
     pub func: Box<FunIdOrTraitMethodRef>,
     pub generics: BoxedArgs,
@@ -452,7 +464,7 @@ impl From<FunDeclRef> for FnPtr {
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
 /// [`RawConstantExpr::Global`] case: access to a global variable. We later desugar it to
-/// a separate statement.
+/// a copy of a place global.
 ///
 /// [`RawConstantExpr::Ref`] case: reference to a constant value. We later desugar it to a separate
 /// statement.
@@ -464,6 +476,7 @@ impl From<FunDeclRef> for FnPtr {
 /// reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
 #[derive(
     Debug,
+    Hash,
     PartialEq,
     Eq,
     Clone,
@@ -478,7 +491,6 @@ impl From<FunDeclRef> for FnPtr {
 #[charon::variants_prefix("C")]
 pub enum RawConstantExpr {
     Literal(Literal),
-    ///
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with
     /// no fields, unit (encoded as a 0-tuple).
@@ -537,6 +549,12 @@ pub enum RawConstantExpr {
     Var(ConstGenericDbVar),
     /// Function pointer
     FnPtr(FnPtr),
+    /// A pointer with no provenance (e.g. 0 for the null pointer)
+    ///
+    /// We eliminate this case in a micro-pass.
+    #[drive(skip)]
+    #[charon::opaque]
+    PtrNoProvenance(u128),
     /// Raw memory value obtained from constant evaluation. Used when a more structured
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
     #[drive(skip)]
@@ -546,7 +564,7 @@ pub enum RawConstantExpr {
     Opaque(String),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ConstantExpr {
     pub value: RawConstantExpr,
     pub ty: Ty,
@@ -574,12 +592,11 @@ pub enum Rvalue {
     UnaryOp(UnOp, Operand),
     /// Nullary operation (e.g. `size_of`)
     NullaryOp(NullOp, Ty),
-    /// Discriminant (for enumerations).
-    /// Note that discriminant values have type isize. We also store the identifier
-    /// of the type from which we read the discriminant.
+    /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
+    /// an enum.
     ///
     /// This case is filtered in [crate::transform::remove_read_discriminant]
-    Discriminant(Place, TypeDeclId),
+    Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
     /// l = List::Cons { value:x, tail:tl };
@@ -599,13 +616,6 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Copy the value of the referenced global.
-    /// Not present in MIR; introduced in [simplify_constants.rs].
-    Global(GlobalDeclRef),
-    /// Reference the value of the global. This has type `&T` or `*mut T` depending on desired
-    /// mutability.
-    /// Not present in MIR; introduced in [simplify_constants.rs].
-    GlobalRef(GlobalDeclRef, RefKind),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:

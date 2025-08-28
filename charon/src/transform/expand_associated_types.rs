@@ -82,7 +82,7 @@ use macros::EnumAsGetters;
 
 use crate::{ast::*, formatter::IntoFormatter, ids::Vector, pretty::FmtWithCtx, register_error};
 
-use super::{ctx::TransformPass, utils::GenericsSource, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass, utils::GenericsSource};
 
 /// Represent some `TraitRef`s as paths for easier manipulation.
 use trait_ref_path::*;
@@ -216,7 +216,7 @@ mod trait_ref_path {
                     base: BaseClause::Local(*id),
                     parent_path: vec![],
                 }),
-                TraitRefKind::ParentClause(tref, _, id) => {
+                TraitRefKind::ParentClause(tref, id) => {
                     let mut path = tref.to_path()?;
                     path.parent_path.push(*id);
                     Some(path)
@@ -775,7 +775,7 @@ impl<'a> ComputeItemModifications<'a> {
         &'b mut self,
         clause: &TraitClause,
         clause_to_path: fn(TraitClauseId) -> TraitRefPath,
-    ) -> impl Iterator<Item = AssocTypePath> + use<'b> {
+    ) -> impl Iterator<Item = AssocTypePath> + use<'a, 'b> {
         let trait_id = clause.trait_.skip_binder.id;
         let clause_path = clause_to_path(clause.clause_id);
         self.compute_extra_params_for_trait(trait_id)
@@ -858,7 +858,7 @@ impl<'a> ComputeItemModifications<'a> {
                 types,
                 ..
             } => {
-                for (name, ty) in types.iter().cloned() {
+                for (name, ty, _) in types.iter().cloned() {
                     let path = TraitRefPath::self_ref().with_assoc_type(name);
                     out.push((path, ty));
                 }
@@ -962,9 +962,9 @@ impl UpdateItemBody<'_> {
                 let path = path.on_tref(&tref.to_path().unwrap());
                 self.lookup_type_replacement(&path)
             }
-            TraitRefKind::ParentClause(parent, _, clause_id) => {
+            TraitRefKind::ParentClause(parent, clause_id) => {
                 let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id));
-                self.lookup_path_on_trait_ref(&path, parent)
+                self.lookup_path_on_trait_ref(&path, &parent.kind)
             }
             TraitRefKind::ItemClause(..) => {
                 register_error!(
@@ -982,8 +982,8 @@ impl UpdateItemBody<'_> {
             } => match path.pop_first_parent() {
                 None => types
                     .iter()
-                    .find(|(name, _)| name == &path.type_name)
-                    .map(|(_, ty)| ty.clone()),
+                    .find(|(name, _, _)| name == &path.type_name)
+                    .map(|(_, ty, _)| ty.clone()),
                 Some((parent_clause_id, sub_path)) => {
                     let parent_ref = &parent_trait_refs[parent_clause_id];
                     self.lookup_path_on_trait_ref(&sub_path, &parent_ref.kind)
@@ -1133,12 +1133,22 @@ impl VisitAstMut for UpdateItemBody<'_> {
         // implemented trait info at each level. This would require hax to give us more info.
         let kind_clone = kind.clone();
         match kind {
+            TraitRefKind::Dyn(tref) => {
+                self.process_poly_trait_decl_ref(tref, kind_clone);
+            }
             TraitRefKind::BuiltinOrAuto {
                 trait_decl_ref: tref,
+                types,
                 ..
-            }
-            | TraitRefKind::Dyn(tref) => {
+            } => {
                 self.process_poly_trait_decl_ref(tref, kind_clone);
+                let target = GenericsSource::item(tref.skip_binder.id);
+                if let Some(decl_modifs) = self.item_modifications.get(&target) {
+                    assert!(decl_modifs.required_extra_assoc_types().count() == 0);
+                    if decl_modifs.add_type_params {
+                        types.clear();
+                    }
+                }
             }
             _ => {}
         }
@@ -1147,9 +1157,15 @@ impl VisitAstMut for UpdateItemBody<'_> {
         self.process_trait_decl_ref(&mut timpl.impl_trait, TraitRefKind::SelfId);
     }
     fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
+        let self_tref = TraitRef {
+            kind: TraitRefKind::SelfId,
+            trait_decl_ref: RegionBinder::empty(TraitDeclRef {
+                id: tdecl.def_id,
+                generics: Box::new(tdecl.generics.identity_args()),
+            }),
+        };
         for (clause_id, clause) in tdecl.parent_clauses.iter_mut_indexed() {
-            let self_path =
-                TraitRefKind::ParentClause(Box::new(TraitRefKind::SelfId), tdecl.def_id, clause_id);
+            let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }
     }
@@ -1161,7 +1177,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
     }
     fn enter_item_kind(&mut self, kind: &mut ItemKind) {
         match kind {
-            ItemKind::TopLevel | ItemKind::Closure { .. } => {}
+            ItemKind::TopLevel
+            | ItemKind::Closure { .. }
+            | ItemKind::VTableTy { .. }
+            | ItemKind::VTableInstance { .. } => {}
             // Inside method declarations, the implicit `Self` clause is the first clause.
             ItemKind::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,

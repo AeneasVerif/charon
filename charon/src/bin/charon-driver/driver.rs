@@ -1,11 +1,11 @@
 //! Run the rustc compiler with our custom options and hooks.
-use crate::translate::translate_crate;
 use crate::CharonFailure;
+use crate::translate::translate_crate;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::TransformCtx;
 use rustc_driver::{Callbacks, Compilation};
-use rustc_interface::interface::Compiler;
 use rustc_interface::Config;
+use rustc_interface::interface::Compiler;
 use rustc_middle::ty::TyCtxt;
 use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes, Polonius};

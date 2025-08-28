@@ -9,13 +9,29 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: test_crate::Trait
 trait Trait<Self, Self_Assoc>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::takes_trait
@@ -28,7 +44,7 @@ where
     let it@1: I; // arg #1
 
     @0 := ()
-    drop it@1
+    drop[Drop<I>] it@1
     @0 := ()
     return
 }
@@ -39,6 +55,7 @@ trait IntoIterator<Self, Self_IntoIter>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
     parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::collect
@@ -55,7 +72,7 @@ where
     @2 := move (it@1)
     @0 := takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause1, @TraitClause1::parent_clause2](move (@2))
     storage_dead(@2)
-    drop it@1
+    drop[Drop<Clause1_IntoIter>] it@1
     @0 := ()
     return
 }

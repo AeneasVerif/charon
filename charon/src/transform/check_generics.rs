@@ -12,7 +12,7 @@ use crate::{
     transform::utils::GenericsSource,
 };
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 #[derive(Visitor)]
 struct CheckGenericsVisitor<'a> {
@@ -26,6 +26,17 @@ struct CheckGenericsVisitor<'a> {
     binder_stack: BindingStack<GenericParams>,
     /// Remember the names of the types visited up to here.
     visit_stack: Vec<&'static str>,
+}
+
+impl VisitorWithSpan for CheckGenericsVisitor<'_> {
+    fn current_span(&mut self) -> &mut Span {
+        &mut self.span
+    }
+}
+impl VisitorWithBinderStack for CheckGenericsVisitor<'_> {
+    fn binder_stack_mut(&mut self) -> &mut BindingStack<GenericParams> {
+        &mut self.binder_stack
+    }
 }
 
 impl CheckGenericsVisitor<'_> {
@@ -187,27 +198,8 @@ impl CheckGenericsVisitor<'_> {
 impl VisitAst for CheckGenericsVisitor<'_> {
     fn visit<'a, T: AstVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
         self.visit_stack.push(x.name());
-        x.drive(self)?; // default behavior
+        VisitWithSpan::new(VisitWithBinderStack::new(self)).visit(x)?;
         self.visit_stack.pop();
-        Continue(())
-    }
-
-    fn visit_binder<T: AstVisitable>(&mut self, binder: &Binder<T>) -> ControlFlow<Self::Break> {
-        self.binder_stack.push(binder.params.clone());
-        self.visit_inner(binder)?;
-        self.binder_stack.pop();
-        Continue(())
-    }
-    fn visit_region_binder<T: AstVisitable>(
-        &mut self,
-        binder: &RegionBinder<T>,
-    ) -> ControlFlow<Self::Break> {
-        self.binder_stack.push(GenericParams {
-            regions: binder.regions.clone(),
-            ..Default::default()
-        });
-        self.visit_inner(binder)?;
-        self.binder_stack.pop();
         Continue(())
     }
 
@@ -234,10 +226,64 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         }
     }
     fn enter_trait_ref_kind(&mut self, x: &TraitRefKind) {
-        if let TraitRefKind::Clause(var) = x {
-            if self.binder_stack.get_var(*var).is_none() {
-                self.error(format!("Found incorrect clause var: {var}"));
+        match x {
+            TraitRefKind::Clause(var) => {
+                if self.binder_stack.get_var(*var).is_none() {
+                    self.error(format!("Found incorrect clause var: {var}"));
+                }
             }
+            TraitRefKind::BuiltinOrAuto {
+                trait_decl_ref,
+                parent_trait_refs,
+                types,
+            } => {
+                let trait_id = trait_decl_ref.skip_binder.id;
+                let target = GenericsSource::item(trait_id);
+                let Some(tdecl) = self.ctx.translated.trait_decls.get(trait_id) else {
+                    return;
+                };
+                if tdecl
+                    .item_meta
+                    .lang_item
+                    .as_deref()
+                    .is_some_and(|s| matches!(s, "pointee_trait" | "discriminant_kind"))
+                {
+                    // These traits have builtin assoc types that we can't resolve.
+                    return;
+                }
+                let fmt = &self.ctx.into_fmt();
+                let args_fmt = &self.val_fmt_ctx();
+                self.zip_assert_match(
+                    &tdecl.parent_clauses,
+                    parent_trait_refs,
+                    fmt,
+                    args_fmt,
+                    "builtin trait parent clauses",
+                    &target,
+                    |tclause, tref| self.assert_clause_matches(&fmt, tclause, tref),
+                );
+                let types_match = types.len() == tdecl.types.len()
+                    && tdecl
+                        .types
+                        .iter()
+                        .zip(types.iter())
+                        .all(|(dname, (iname, _, _))| dname == iname);
+                if !types_match {
+                    let target = target.with_ctx(args_fmt);
+                    let a = tdecl.types.iter().format(", ");
+                    let b = types
+                        .iter()
+                        .map(|(_, ty, _)| ty.with_ctx(args_fmt))
+                        .format(", ");
+                    self.error(format!(
+                        "Mismatched types in builtin trait ref:\
+                        \ntarget: {target}\
+                        \nexpected: [{a}]\
+                        \n     got: [{b}]"
+                    ));
+                }
+            }
+            _ => {}
         }
     }
 
@@ -334,22 +380,6 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             ))
         }
     }
-
-    // Track span for more precise error messages.
-    fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
-        let old_span = self.span;
-        self.span = st.span;
-        self.visit_inner(st)?;
-        self.span = old_span;
-        Continue(())
-    }
-    fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
-        let old_span = self.span;
-        self.span = st.span;
-        self.visit_inner(st)?;
-        self.span = old_span;
-        Continue(())
-    }
 }
 
 // The argument is a name to disambiguate the two times we run this check.
@@ -371,8 +401,8 @@ impl TransformPass for Check {
             let mut visitor = CheckGenericsVisitor {
                 ctx,
                 phase: self.0,
-                span: item.item_meta().span,
-                binder_stack: BindingStack::new(item.generic_params().clone()),
+                span: Span::dummy(),
+                binder_stack: BindingStack::empty(),
                 visit_stack: Default::default(),
             };
             let _ = item.drive(&mut visitor);

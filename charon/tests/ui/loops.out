@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -31,6 +33,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
     fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
@@ -40,6 +43,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 impl Clone for i32 {
     parent_clause0 = Sized<i32>
     fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
@@ -49,6 +53,7 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
 impl Clone for usize {
     parent_clause0 = Sized<usize>
     fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::PartialEq
@@ -56,6 +61,7 @@ impl Clone for usize {
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
@@ -68,6 +74,7 @@ where
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::Ordering
@@ -94,6 +101,7 @@ pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::Ord
@@ -103,6 +111,7 @@ pub trait Ord<Self>
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("ord_cmp_method")]
@@ -121,6 +130,7 @@ pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl PartialEq<u32> for u32 {
     fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<u32> for u32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
@@ -129,6 +139,7 @@ pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
     fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
@@ -137,6 +148,7 @@ pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
 impl PartialEq<usize> for usize {
     fn eq<'_0, '_1> = {impl PartialEq<usize> for usize}::eq<'_0_0, '_0_1>
+    vtable: {impl PartialEq<usize> for usize}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
@@ -146,6 +158,7 @@ pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2:
 impl PartialOrd<u32> for u32 {
     parent_clause0 = {impl PartialEq<u32> for u32}
     fn partial_cmp<'_0, '_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<u32> for u32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
@@ -155,6 +168,7 @@ pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2:
 impl PartialOrd<i32> for i32 {
     parent_clause0 = {impl PartialEq<i32> for i32}
     fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<i32> for i32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
@@ -164,6 +178,7 @@ pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize
 impl PartialOrd<usize> for usize {
     parent_clause0 = {impl PartialEq<usize> for usize}
     fn partial_cmp<'_0, '_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_0, '_0_1>
+    vtable: {impl PartialOrd<usize> for usize}::{vtable}
 }
 
 // Full name: core::default::Default
@@ -172,6 +187,7 @@ pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn default = default<Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::default::Default::default
@@ -185,6 +201,7 @@ pub trait TrustedRandomAccessNoCoerce<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     const MAY_HAVE_SIDE_EFFECT : bool
+    non-dyn-compatible
 }
 
 // Full name: core::iter::range::Step
@@ -197,6 +214,7 @@ pub trait Step<Self>
     fn steps_between<'_0, '_1> = core::iter::range::Step::steps_between<'_0_0, '_0_1, Self>[Self]
     fn forward_checked = core::iter::range::Step::forward_checked<Self>[Self]
     fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[Sized<usize>])
@@ -228,6 +246,7 @@ impl Step for usize {
     fn steps_between<'_0, '_1> = {impl Step for usize}::steps_between<'_0_0, '_0_1>
     fn forward_checked = {impl Step for usize}::forward_checked
     fn backward_checked = {impl Step for usize}::backward_checked
+    non-dyn-compatible
 }
 
 // Full name: core::iter::range::{impl Step for u32}::steps_between
@@ -247,6 +266,7 @@ impl Step for u32 {
     fn steps_between<'_0, '_1> = {impl Step for u32}::steps_between<'_0_0, '_0_1>
     fn forward_checked = {impl Step for u32}::forward_checked
     fn backward_checked = {impl Step for u32}::backward_checked
+    non-dyn-compatible
 }
 
 // Full name: core::iter::range::{impl Step for i32}::steps_between
@@ -266,6 +286,7 @@ impl Step for i32 {
     fn steps_between<'_0, '_1> = {impl Step for i32}::steps_between<'_0_0, '_0_1>
     fn forward_checked = {impl Step for i32}::forward_checked
     fn backward_checked = {impl Step for i32}::backward_checked
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::iterator::Iterator
@@ -276,6 +297,7 @@ pub trait Iterator<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::range::Range
@@ -304,6 +326,7 @@ where
     parent_clause1 = @TraitClause0
     type Item = A
     fn next<'_0> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_0, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -312,6 +335,7 @@ pub trait Sum<Self, A>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
     fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
@@ -327,6 +351,7 @@ pub trait Product<Self, A>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
     fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
@@ -349,6 +374,7 @@ where
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -358,6 +384,7 @@ pub trait FromIterator<Self, A>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
     fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::FromIterator::from_iter
@@ -393,6 +420,7 @@ where
     type Item = @TraitClause1::Item
     type IntoIter = I
     fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::Extend
@@ -401,6 +429,7 @@ pub trait Extend<Self, A>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
     fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::collect::Extend::extend
@@ -418,6 +447,7 @@ pub trait DoubleEndedIterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
@@ -430,6 +460,7 @@ pub trait ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
+    non-dyn-compatible
 }
 
 #[lang_item("next")]
@@ -443,6 +474,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -450,6 +482,7 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::marker::Tuple
@@ -457,6 +490,7 @@ pub trait Destruct<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
 
 // Full name: core::ops::control_flow::ControlFlow
@@ -480,6 +514,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut
@@ -491,6 +526,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -512,6 +548,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -526,6 +563,7 @@ pub trait IndexMut<Self, Idx>
     parent_clause1 : [@TraitClause1]: Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (@TraitClause0::parent_clause1::Output)
@@ -539,6 +577,7 @@ pub trait FromResidual<Self, R>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<R>
     fn from_residual = from_residual<Self, R>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::try_trait::Try
@@ -553,6 +592,7 @@ pub trait Try<Self>
     type Residual
     fn from_output = from_output<Self>[Self]
     fn branch = branch<Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::try_trait::Try::from_output
@@ -584,17 +624,20 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::private_slice_index::Sealed
 pub trait Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for usize}
 impl Sealed for usize {
     parent_clause0 = MetaSized<usize>
+    vtable: {impl Sealed for usize}::{vtable}
 }
 
 // Full name: core::slice::index::SliceIndex
@@ -612,6 +655,7 @@ pub trait SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
@@ -684,6 +728,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_0, T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -692,59 +737,61 @@ pub struct Global {}
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub opaque type Vec<T, A>
+pub opaque type Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+
+pub fn alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_0, T, A>(@1: &'_0 (Vec<T>[@TraitClause0, @TraitClause1])) -> usize
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
-pub fn alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::len<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index
-pub fn {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
+// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index
+pub fn {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 (Vec<T>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 
-// Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}
-impl<T, I, A> Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]
+// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}
+impl<T, I, A> Index<I> for Vec<T>[@TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause2]>
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause2]>
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause3::parent_clause3
     type Output = @TraitClause3::Output
-    fn index<'_0> = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index<'_0> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    non-dyn-compatible
 }
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut
-pub fn {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
+pub fn {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}
-impl<T, I, A> IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}
+impl<T, I, A> IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = MetaSized<Vec<T, A>[@TraitClause0, @TraitClause2]>
-    parent_clause1 = {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause2]>
+    parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_loop1
@@ -785,10 +832,10 @@ pub fn test_loop1(@1: u32) -> u32
             storage_dead(@6)
             storage_live(@8)
             @8 := copy (i@2)
-            @9 := copy (s@3) + copy (@8)
+            @9 := copy (s@3) panic.+ copy (@8)
             s@3 := move (@9)
             storage_dead(@8)
-            @10 := copy (i@2) + const (1 : u32)
+            @10 := copy (i@2) panic.+ const (1 : u32)
             i@2 := move (@10)
             storage_dead(@5)
             continue 0
@@ -803,7 +850,7 @@ pub fn test_loop1(@1: u32) -> u32
     storage_dead(@11)
     storage_dead(@5)
     storage_dead(@4)
-    @12 := copy (s@3) * const (2 : u32)
+    @12 := copy (s@3) panic.* const (2 : u32)
     s@3 := move (@12)
     @0 := copy (s@3)
     storage_dead(s@3)
@@ -867,10 +914,10 @@ pub fn test_loop2(@1: u32) -> u32
                 storage_dead(@8)
                 storage_live(@11)
                 @11 := copy (i@2)
-                @12 := copy (s@3) + copy (@11)
+                @12 := copy (s@3) panic.+ copy (@11)
                 s@3 := move (@12)
                 storage_dead(@11)
-                @13 := copy (i@2) + const (1 : u32)
+                @13 := copy (i@2) panic.+ const (1 : u32)
                 i@2 := move (@13)
                 storage_dead(@5)
                 continue 0
@@ -979,7 +1026,7 @@ pub fn test_loop3(@1: u32) -> u32
                     @16 := copy (i@2)
                     storage_live(@17)
                     @17 := copy (j@3)
-                    @18 := copy (@16) + copy (@17)
+                    @18 := copy (@16) panic.+ copy (@17)
                     @15 := move (@18)
                     storage_dead(@17)
                     storage_dead(@16)
@@ -992,10 +1039,10 @@ pub fn test_loop3(@1: u32) -> u32
                         storage_dead(@13)
                         storage_live(@19)
                         @19 := copy (i@2)
-                        @20 := copy (s@4) + copy (@19)
+                        @20 := copy (s@4) panic.+ copy (@19)
                         s@4 := move (@20)
                         storage_dead(@19)
-                        @21 := copy (j@3) + const (1 : u32)
+                        @21 := copy (j@3) panic.+ const (1 : u32)
                         j@3 := move (@21)
                         storage_dead(@10)
                         storage_dead(@9)
@@ -1021,10 +1068,10 @@ pub fn test_loop3(@1: u32) -> u32
             j@3 := const (0 : u32)
             storage_live(@23)
             @23 := copy (i@2)
-            @24 := copy (s@4) + copy (@23)
+            @24 := copy (s@4) panic.+ copy (@23)
             s@4 := move (@24)
             storage_dead(@23)
-            @25 := copy (i@2) + const (1 : u32)
+            @25 := copy (i@2) panic.+ const (1 : u32)
             i@2 := move (@25)
             storage_dead(@6)
             continue 0
@@ -1132,7 +1179,7 @@ pub fn test_loop4(@1: u32) -> u32
                     @16 := copy (i@2)
                     storage_live(@17)
                     @17 := copy (j@3)
-                    @18 := copy (@16) + copy (@17)
+                    @18 := copy (@16) panic.+ copy (@17)
                     @15 := move (@18)
                     storage_dead(@17)
                     storage_dead(@16)
@@ -1150,10 +1197,10 @@ pub fn test_loop4(@1: u32) -> u32
                         storage_dead(@13)
                         storage_live(@19)
                         @19 := copy (i@2)
-                        @20 := copy (s@4) + copy (@19)
+                        @20 := copy (s@4) panic.+ copy (@19)
                         s@4 := move (@20)
                         storage_dead(@19)
-                        @21 := copy (j@3) + const (1 : u32)
+                        @21 := copy (j@3) panic.+ const (1 : u32)
                         j@3 := move (@21)
                         storage_dead(@10)
                         storage_dead(@9)
@@ -1173,10 +1220,10 @@ pub fn test_loop4(@1: u32) -> u32
             j@3 := const (0 : u32)
             storage_live(@23)
             @23 := copy (i@2)
-            @24 := copy (s@4) + copy (@23)
+            @24 := copy (s@4) panic.+ copy (@23)
             s@4 := move (@24)
             storage_dead(@23)
-            @25 := copy (i@2) + const (1 : u32)
+            @25 := copy (i@2) panic.+ const (1 : u32)
             i@2 := move (@25)
             storage_dead(@6)
             continue 0
@@ -1264,10 +1311,10 @@ pub fn test_loop5(@1: u32) -> u32
                     storage_dead(@11)
                     storage_live(@13)
                     @13 := copy (j@3)
-                    @14 := copy (s@4) + copy (@13)
+                    @14 := copy (s@4) panic.+ copy (@13)
                     s@4 := move (@14)
                     storage_dead(@13)
-                    @15 := copy (j@3) + const (1 : u32)
+                    @15 := copy (j@3) panic.+ const (1 : u32)
                     j@3 := move (@15)
                     storage_dead(@10)
                     continue 0
@@ -1284,10 +1331,10 @@ pub fn test_loop5(@1: u32) -> u32
             storage_dead(@9)
             storage_live(@17)
             @17 := copy (i@2)
-            @18 := copy (s@4) + copy (@17)
+            @18 := copy (s@4) panic.+ copy (@17)
             s@4 := move (@18)
             storage_dead(@17)
-            @19 := copy (i@2) + const (1 : u32)
+            @19 := copy (i@2) panic.+ const (1 : u32)
             i@2 := move (@19)
             storage_dead(@6)
             continue 0
@@ -1367,10 +1414,10 @@ pub fn test_loop6(@1: u32) -> u32
                 storage_dead(@8)
                 storage_live(@11)
                 @11 := copy (i@2)
-                @12 := copy (s@3) + copy (@11)
+                @12 := copy (s@3) panic.+ copy (@11)
                 s@3 := move (@12)
                 storage_dead(@11)
-                @13 := copy (i@2) + const (1 : u32)
+                @13 := copy (i@2) panic.+ const (1 : u32)
                 i@2 := move (@13)
                 storage_dead(@5)
                 continue 0
@@ -1391,7 +1438,7 @@ pub fn test_loop6(@1: u32) -> u32
     storage_dead(@5)
     storage_dead(@4)
     // All the below nodes are exit candidates (each of them is referenced twice)
-    @15 := copy (s@3) + const (1 : u32)
+    @15 := copy (s@3) panic.+ const (1 : u32)
     s@3 := move (@15)
     @0 := copy (s@3)
     storage_dead(s@3)
@@ -1470,10 +1517,10 @@ pub fn test_loop7(@1: u32) -> u32
                     storage_dead(@11)
                     storage_live(@14)
                     @14 := copy (i@2)
-                    @15 := copy (s@3) + copy (@14)
+                    @15 := copy (s@3) panic.+ copy (@14)
                     s@3 := move (@15)
                     storage_dead(@14)
-                    @16 := copy (i@2) + const (1 : u32)
+                    @16 := copy (i@2) panic.+ const (1 : u32)
                     i@2 := move (@16)
                     storage_dead(@8)
                     continue 0
@@ -1500,7 +1547,7 @@ pub fn test_loop7(@1: u32) -> u32
     }
     storage_dead(@5)
     storage_dead(@4)
-    @18 := copy (s@3) + const (1 : u32)
+    @18 := copy (s@3) panic.+ const (1 : u32)
     s@3 := move (@18)
     @0 := copy (s@3)
     storage_dead(s@3)
@@ -1715,7 +1762,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                 break 0
             },
             Option::Some => {
-                @12 := copy (s@3) + const (1 : usize)
+                @12 := copy (s@3) panic.+ const (1 : usize)
                 s@3 := move (@12)
                 storage_dead(@11)
                 storage_dead(@9)
@@ -1779,7 +1826,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                             break 0
                         },
                         Option::Some => {
-                            @30 := copy (s@3) + const (1 : usize)
+                            @30 := copy (s@3) panic.+ const (1 : usize)
                             s@3 := move (@30)
                             storage_dead(@29)
                             storage_dead(@27)
@@ -1879,7 +1926,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
                     i@14 := copy ((@11 as variant Option::Some).0)
                     storage_live(@15)
                     @15 := copy (i@14)
-                    @16 := copy (s@4) + copy (@15)
+                    @16 := copy (s@4) panic.+ copy (@15)
                     s@4 := move (@16)
                     storage_dead(@15)
                     storage_dead(i@14)
@@ -1943,10 +1990,10 @@ pub fn test_crate::sum(@1: u32) -> u32
             storage_dead(@6)
             storage_live(@8)
             @8 := copy (i@2)
-            @9 := copy (s@3) + copy (@8)
+            @9 := copy (s@3) panic.+ copy (@8)
             s@3 := move (@9)
             storage_dead(@8)
-            @10 := copy (i@2) + const (1 : u32)
+            @10 := copy (i@2) panic.+ const (1 : u32)
             i@2 := move (@10)
             storage_dead(@5)
             continue 0
@@ -1961,7 +2008,7 @@ pub fn test_crate::sum(@1: u32) -> u32
     storage_dead(@11)
     storage_dead(@5)
     storage_dead(@4)
-    @12 := copy (s@3) * const (2 : u32)
+    @12 := copy (s@3) panic.* const (2 : u32)
     s@3 := move (@12)
     @0 := copy (s@3)
     storage_dead(s@3)
@@ -2013,11 +2060,11 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
             storage_live(@13)
             @13 := @ArrayIndexShared<'_, u32, const N : usize>(move (@12), copy (@8))
             @7 := copy (*(@13))
-            @9 := copy (s@3) + copy (@7)
+            @9 := copy (s@3) panic.+ copy (@7)
             s@3 := move (@9)
             storage_dead(@7)
             storage_dead(@8)
-            @10 := copy (i@2) + const (1 : usize)
+            @10 := copy (i@2) panic.+ const (1 : usize)
             i@2 := move (@10)
             storage_dead(@5)
             continue 0
@@ -2038,17 +2085,17 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
 }
 
 // Full name: test_crate::clear
-pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
+pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
 {
     let @0: (); // return
-    let v@1: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // arg #1
+    let v@1: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // arg #1
     let i@2: usize; // local
     let @3: bool; // anonymous local
     let @4: usize; // anonymous local
     let @5: usize; // anonymous local
-    let @6: &'_ (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @6: &'_ (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
     let @7: &'_ mut (u32); // anonymous local
-    let @8: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @8: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
     let @11: (); // anonymous local
@@ -2067,7 +2114,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
         storage_live(@5)
         storage_live(@6)
         @6 := &*(v@1)
-        @5 := alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
+        @5 := alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
@@ -2082,12 +2129,12 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
         @8 := &mut *(v@1)
         storage_live(@9)
         @9 := copy (i@2)
-        @7 := {impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
+        @7 := {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
         storage_dead(@9)
         storage_dead(@8)
         *(@7) := const (0 : u32)
         storage_dead(@7)
-        @10 := copy (i@2) + const (1 : usize)
+        @10 := copy (i@2) panic.+ const (1 : usize)
         i@2 := move (@10)
         storage_dead(@3)
         continue 0
@@ -2217,7 +2264,7 @@ where
                     @8 := &mut *(*(tl@5))
                     ls@1 := move (@8)
                     storage_dead(@8)
-                    @9 := copy (i@2) - const (1 : u32)
+                    @9 := copy (i@2) panic.- const (1 : u32)
                     i@2 := move (@9)
                     storage_dead(@6)
                     storage_dead(tl@5)

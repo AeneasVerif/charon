@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::convert::Into
@@ -18,6 +19,7 @@ pub trait Into<Self, T>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn into = core::convert::Into::into<Self, T>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
@@ -31,6 +33,7 @@ pub trait From<Self, T>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn from = core::convert::From::from<Self, T>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("from_fn")]
@@ -62,6 +65,7 @@ where
     parent_clause0 = @TraitClause0
     parent_clause1 = @TraitClause1
     fn into = {impl Into<U> for T}::into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 // Full name: core::convert::num::{impl From<u32> for u64}::from
@@ -79,6 +83,7 @@ impl From<u32> for u64 {
     parent_clause0 = Sized<u64>
     parent_clause1 = Sized<u32>
     fn from = {impl From<u32> for u64}::from
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -101,14 +106,7 @@ where
     let @2: isize; // anonymous local
 
     storage_live(@2)
-    match *(self@1) {
-        Option::None => {
-            @2 := const (0 : isize)
-        },
-        Option::Some => {
-            @2 := const (1 : isize)
-        },
-    }
+    @2 := @discriminant(*(self@1))
     @0 := copy (@2) == const (1 : isize)
     return
 }

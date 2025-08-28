@@ -123,6 +123,47 @@ module List = struct
             match mmap f tl with
             | None -> None
             | Some tl -> Some (hd :: tl)))
+
+  let rec map3 (f : 'a -> 'b -> 'c -> 'd) (l0 : 'a list) (l1 : 'b list)
+      (l2 : 'c list) : 'd list =
+    match (l0, l1, l2) with
+    | [], [], [] -> []
+    | a :: l0, b :: l1, c :: l3 -> f a b c :: map3 f l0 l1 l2
+    | _ ->
+        raise
+          (Invalid_argument "List.combine3 expects lists of the same length")
+
+  let rec combine3 (l0 : 'a list) (l1 : 'b list) (l2 : 'c list) :
+      ('a * 'b * 'c) list =
+    match (l0, l1, l2) with
+    | [], [], [] -> []
+    | a :: l0, b :: l1, c :: l3 -> (a, b, c) :: combine3 l0 l1 l2
+    | _ ->
+        raise
+          (Invalid_argument "List.combine3 expects lists of the same length")
+
+  let rec split3 (l : ('a * 'b * 'c) list) : 'a list * 'b list * 'c list =
+    match l with
+    | [] -> ([], [], [])
+    | (a, b, c) :: l ->
+        let l0, l1, l2 = split3 l in
+        (a :: l0, b :: l1, c :: l2)
+
+  let rec split4 (l : ('a * 'b * 'c * 'd) list) :
+      'a list * 'b list * 'c list * 'd list =
+    match l with
+    | [] -> ([], [], [], [])
+    | (a, b, c, d) :: l ->
+        let l0, l1, l2, l3 = split4 l in
+        (a :: l0, b :: l1, c :: l2, d :: l3)
+
+  let rec split5 (l : ('a * 'b * 'c * 'd * 'e) list) :
+      'a list * 'b list * 'c list * 'd list * 'e list =
+    match l with
+    | [] -> ([], [], [], [], [])
+    | (a, b, c, d, e) :: l ->
+        let l0, l1, l2, l3, l4 = split5 l in
+        (a :: l0, b :: l1, c :: l2, d :: l3, e :: l4)
 end
 
 module type OrderedType = sig
@@ -157,6 +198,10 @@ module type Map = sig
 
   (** Add a binding in the map, failing if the binding already exists *)
   val add_strict : key -> 'a -> 'a t -> 'a t
+
+  (** Add a binding in the map, failing if the binding already exists and maps
+      to a value which is different from the one given as input *)
+  val add_strict_or_unchanged : key -> 'a -> 'a t -> 'a t
 
   val add_list : (key * 'a) list -> 'a t -> 'a t
   val of_list : (key * 'a) list -> 'a t
@@ -198,6 +243,13 @@ module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
 
   let add_strict k v m =
     assert (not (mem k m));
+    add k v m
+
+  let add_strict_or_unchanged k v m =
+    assert (
+      match find_opt k m with
+      | None -> true
+      | Some v' -> v = v');
     add k v m
 
   let add_list bl m = List.fold_left (fun s (key, e) -> add key e s) m bl

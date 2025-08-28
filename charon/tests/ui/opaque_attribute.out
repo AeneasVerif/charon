@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -26,6 +27,7 @@ pub trait BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -46,6 +48,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 impl BoolTrait for bool {
     parent_clause0 = MetaSized<bool>
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
+    vtable: {impl BoolTrait for bool}::{vtable}
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::get_bool
@@ -87,6 +90,7 @@ where
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
     fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -98,9 +102,11 @@ where
 // Full name: test_crate::Test
 opaque type Test
 
-fn test_crate::SIX_SIX_SIX() -> u32
+// Full name: test_crate::SIX_SIX_SIX
+fn SIX_SIX_SIX() -> u32
 
-const test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
+// Full name: test_crate::SIX_SIX_SIX
+const SIX_SIX_SIX: u32 = SIX_SIX_SIX()
 
 // Full name: test_crate::Test2
 opaque type Test2

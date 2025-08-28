@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -41,6 +42,7 @@ trait Trait<Self, T>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, T, U>()
@@ -69,6 +71,7 @@ where
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]>
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
     fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]}::method<T, U>[@TraitClause0, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T> for Slice<T>}::method
@@ -92,6 +95,7 @@ where
     parent_clause0 = MetaSized<Slice<T>>
     parent_clause1 = @TraitClause0
     fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<T> for Slice<T>}::method<T, U>[@TraitClause0, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T> for &'_0 (Slice<T>)}::method
@@ -115,6 +119,7 @@ where
     parent_clause0 = MetaSized<&'_ (Slice<T>)>
     parent_clause1 = @TraitClause0
     fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<T> for &'_0 (Slice<T>)}::method<'_0, T, U>[@TraitClause0, @TraitClause0_0]
+    non-dyn-compatible
 }
 
 

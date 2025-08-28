@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple
@@ -16,7 +17,22 @@ pub trait Sized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -27,6 +43,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnMut
@@ -38,6 +55,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause1_Output>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::Fn
@@ -49,6 +67,7 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause1_Clause1_Output>[Self]
+    non-dyn-compatible
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause1_Clause1_Output
@@ -68,6 +87,7 @@ pub trait PrimeField<Self, Self_Repr>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Repr>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::SqrtTables
@@ -152,7 +172,7 @@ where
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop @1
+    drop[Drop<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>] @1
     @0 := ()
     return
 }
@@ -163,11 +183,12 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<(())>
     parent_clause2 = Tuple<(())>
     parent_clause3 = Sized<()>
     fn call_once = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
@@ -176,11 +197,12 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>
     fn call_mut<'_0> = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_0_0, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
@@ -189,11 +211,12 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<(())>
+    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
     parent_clause1 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>
     fn call<'_0> = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0_0, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 

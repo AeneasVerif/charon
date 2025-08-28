@@ -1,5 +1,5 @@
 use super::translate_bodies::BodyTransCtx;
-use super::translate_crate::TransItemSource;
+use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
@@ -10,12 +10,24 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use std::mem;
 use std::ops::ControlFlow;
-use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
-        let trans_id = self.id_map.get(&item_src).copied();
-        let def_id = item_src.as_def_id();
+        let trans_id = self.register_no_enqueue(&None, item_src);
+        let def_id = item_src.def_id();
+        if let Some(trans_id) = trans_id {
+            if self.translate_stack.contains(&trans_id) {
+                register_error!(
+                    self,
+                    Span::dummy(),
+                    "Cycle detected while translating {def_id:?}! Stack: {:?}",
+                    &self.translate_stack
+                );
+                return;
+            } else {
+                self.translate_stack.push(trans_id);
+            }
+        }
         self.with_def_id(def_id, trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
             // Catch cycles
@@ -37,7 +49,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "Thread panicked when extracting item `{def_id:?}`."
                 ),
             };
-        })
+        });
+        // We must be careful not to early-return from this function to not unbalance the stack.
+        self.translate_stack.pop();
     }
 
     pub(crate) fn translate_item_aux(
@@ -55,78 +69,161 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        let def = self.hax_def(item_src.as_def_id())?;
+        let def = self.hax_def_for_item(&item_src.item)?;
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
 
         // Initialize the item translation context
-        let bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
-        match item_src {
-            TransItemSource::Type(_) => {
+        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
+        match &item_src.kind {
+            TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
+                bt_ctx.register_module(item_meta, &def);
+            }
+            TransItemSourceKind::Type => {
                 let Some(AnyTransId::Type(id)) = trans_id else {
                     unreachable!()
                 };
                 let ty = bt_ctx.translate_type_decl(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
-            TransItemSource::Fun(_) => {
+            TransItemSourceKind::Fun => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSource::Global(_) => {
+            TransItemSourceKind::Global => {
                 let Some(AnyTransId::Global(id)) = trans_id else {
                     unreachable!()
                 };
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            TransItemSource::TraitDecl(_) => {
+            TransItemSourceKind::TraitDecl => {
                 let Some(AnyTransId::TraitDecl(id)) = trans_id else {
                     unreachable!()
                 };
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            TransItemSource::TraitImpl(_) => {
+            TransItemSourceKind::TraitImpl(kind) => {
                 let Some(AnyTransId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
-                let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
+                let trait_impl = match kind {
+                    TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
+                    TraitImplSource::TraitAlias => {
+                        bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
+                    }
+                    &TraitImplSource::Closure(kind) => {
+                        bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
+                    }
+                    TraitImplSource::DropGlue => bt_ctx.translate_drop_impl(id, item_meta, &def)?,
+                };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            TransItemSource::InherentImpl(_) => {
-                panic!("inherent impls aren't translated to items")
-            }
-            TransItemSource::ClosureTraitImpl(_, kind) => {
-                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
-                let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, *kind)?;
-                self.translated.trait_impls.set_slot(id, closure_trait_impl);
-            }
-            TransItemSource::ClosureMethod(_, kind) => {
+            &TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
+                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSource::ClosureAsFnCast(_) => {
+            TransItemSourceKind::ClosureAsFnCast => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::DropGlueMethod => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_drop_method(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTable => {
+                let Some(AnyTransId::Type(id)) = trans_id else {
+                    unreachable!()
+                };
+                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
+                self.translated.type_decls.set_slot(id, ty_decl);
+            }
+            TransItemSourceKind::VTableInstance(impl_kind) => {
+                let Some(AnyTransId::Global(id)) = trans_id else {
+                    unreachable!()
+                };
+                let global_decl =
+                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
+                self.translated.global_decls.set_slot(id, global_decl);
+            }
+            TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl =
+                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableMethod => {
+                // let Some(AnyTransId::Fun(id)) = trans_id else {
+                //     unreachable!()
+                // };
+                // let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
+                // self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
+    }
+
+    /// While translating an item you may need the contents of another. Use this to retreive the
+    /// translated version of this item. Use with care as this could create cycles.
+    pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
+        // We have to call `get_item` a few times because we're running into the classic `Polonius`
+        // problem case.
+        if self.translated.get_item(id).is_none() {
+            let item_source = self.reverse_id_map.get(&id).unwrap().clone();
+            self.translate_item(&item_source);
+            if self.translated.get_item(id).is_none() {
+                let span = self.def_span(item_source.def_id());
+                raise_error!(self, span, "Failed to translate item {id:?}.")
+            }
+        }
+        let item = self.translated.get_item(id);
+        Ok(item.unwrap())
     }
 }
 
 impl ItemTransCtx<'_, '_> {
+    /// Register the items inside this module or inherent impl.
+    // TODO: we may want to accumulate the set of modules we found, to check that all
+    // the opaque modules given as arguments actually exist
+    #[tracing::instrument(skip(self, item_meta))]
+    pub(crate) fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) {
+        if !item_meta.opacity.is_transparent() {
+            return;
+        }
+        match def.kind() {
+            hax::FullDefKind::InherentImpl { items, .. } => {
+                for assoc in items {
+                    self.t_ctx.enqueue_module_item(&assoc.def_id);
+                }
+            }
+            hax::FullDefKind::Mod { items, .. } => {
+                for (_, def_id) in items {
+                    self.t_ctx.enqueue_module_item(def_id);
+                }
+            }
+            hax::FullDefKind::ForeignMod { items, .. } => {
+                for def_id in items {
+                    self.t_ctx.enqueue_module_item(def_id);
+                }
+            }
+            _ => panic!("Item should be a module but isn't: {def:?}"),
+        }
+    }
+
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,
@@ -169,13 +266,15 @@ impl ItemTransCtx<'_, '_> {
                 overrides_default,
                 ..
             } => {
-                let impl_ref = self.translate_trait_impl_ref(span, impl_)?;
+                let impl_ref =
+                    self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // Ensure we translate the corresponding decl signature.
                     // FIXME(self_clause): also ensure we translate associated globals
                     // consistently; to do once we have clearer `Self` clause handling.
-                    let _ = self.register_fun_decl_id(span, implemented_trait_item);
+                    let _: FunDeclId =
+                        self.register_item(span, implemented_trait_item, TransItemSourceKind::Fun);
                 }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemKind::TraitImpl {
@@ -233,15 +332,9 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TyAlias { ty, .. } => {
                 // Don't error on missing trait refs.
                 self.error_on_impl_expr_error = false;
-                // We only translate crate-local type aliases so the `unwrap` is ok.
-                let ty = ty.as_ref().unwrap();
                 self.translate_ty(span, ty).map(TypeDeclKind::Alias)
             }
-            hax::FullDefKind::Struct { def, .. }
-            | hax::FullDefKind::Enum { def, .. }
-            | hax::FullDefKind::Union { def, .. } => {
-                self.translate_adt_def(trans_id, span, &item_meta, def)
-            }
+            hax::FullDefKind::Adt { .. } => self.translate_adt_def(trans_id, span, &item_meta, def),
             hax::FullDefKind::Closure { args, .. } => {
                 self.translate_closure_adt(trans_id, span, &args)
             }
@@ -252,8 +345,8 @@ impl ItemTransCtx<'_, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self.translate_layout(def.def_id());
-        let ptr_metadata = self.translate_ptr_metadata(def.def_id());
+        let layout = self.translate_layout(def.this());
+        let ptr_metadata = self.translate_ptr_metadata(def.this());
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
@@ -275,7 +368,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        trace!("About to translate function:\n{:?}", def.def_id);
+        trace!("About to translate function:\n{:?}", def.def_id());
         let span = item_meta.span;
 
         // Translate the function signature
@@ -294,13 +387,10 @@ impl ItemTransCtx<'_, '_> {
             def.kind(),
             hax::FullDefKind::Const { .. }
                 | hax::FullDefKind::AssocConst { .. }
-                | hax::FullDefKind::AnonConst { .. }
-                | hax::FullDefKind::InlineConst { .. }
-                | hax::FullDefKind::PromotedConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
-        let is_global_initializer =
-            is_global_initializer.then(|| self.register_global_decl_id(span, &def.def_id));
+        let is_global_initializer = is_global_initializer
+            .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
         let body = if item_meta.opacity.with_private_contents().is_opaque()
             || is_trait_method_decl_without_default
@@ -317,7 +407,7 @@ impl ItemTransCtx<'_, '_> {
         {
             let body = self.build_ctor_body(
                 span,
-                &signature,
+                def,
                 adt_def_id,
                 ctor_of,
                 *variant_id,
@@ -356,7 +446,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        trace!("About to translate global:\n{:?}", def.def_id);
+        trace!("About to translate global:\n{:?}", def.def_id());
         let span = item_meta.span;
 
         // Translate the generics and predicates - globals *can* have generics
@@ -375,9 +465,6 @@ impl ItemTransCtx<'_, '_> {
         let ty = match &def.kind {
             hax::FullDefKind::Const { ty, .. }
             | hax::FullDefKind::AssocConst { ty, .. }
-            | hax::FullDefKind::AnonConst { ty, .. }
-            | hax::FullDefKind::InlineConst { ty, .. }
-            | hax::FullDefKind::PromotedConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
@@ -385,16 +472,16 @@ impl ItemTransCtx<'_, '_> {
 
         let global_kind = match &def.kind {
             hax::FullDefKind::Static { .. } => GlobalKind::Static,
-            hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
-                GlobalKind::NamedConst
+            hax::FullDefKind::Const {
+                kind: hax::ConstKind::TopLevel,
+                ..
             }
-            hax::FullDefKind::AnonConst { .. }
-            | hax::FullDefKind::InlineConst { .. }
-            | hax::FullDefKind::PromotedConst { .. } => GlobalKind::AnonConst,
+            | hax::FullDefKind::AssocConst { .. } => GlobalKind::NamedConst,
+            hax::FullDefKind::Const { .. } => GlobalKind::AnonConst,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 
-        let initializer = self.register_fun_decl_id(span, &def.def_id);
+        let initializer = self.register_item(span, def.this(), TransItemSourceKind::Fun);
 
         Ok(GlobalDecl {
             def_id,
@@ -414,7 +501,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
-        trace!("About to translate trait decl:\n{:?}", def.def_id);
+        trace!("About to translate trait decl:\n{:?}", def.def_id());
         trace!("Trait decl id:\n{:?}", def_id);
 
         let span = item_meta.span;
@@ -424,6 +511,8 @@ impl ItemTransCtx<'_, '_> {
         // contain the local trait clauses. The parent clauses are stored in
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
+
+        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
@@ -438,6 +527,7 @@ impl ItemTransCtx<'_, '_> {
                 types: Default::default(),
                 type_defaults: Default::default(),
                 methods: Default::default(),
+                vtable,
             });
         }
 
@@ -455,11 +545,11 @@ impl ItemTransCtx<'_, '_> {
                 self.translate_trait_predicate(span, self_predicate)?,
             ),
         };
-        let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
+        let items: Vec<(TraitItemName, &hax::AssocItem)> = items
             .iter()
-            .map(|(item, def)| {
-                let name = self.t_ctx.translate_trait_item_name(def.def_id())?;
-                Ok((name, item, def.clone()))
+            .map(|item| -> Result<_, Error> {
+                let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
+                Ok((name, item))
             })
             .try_collect()?;
 
@@ -471,17 +561,39 @@ impl ItemTransCtx<'_, '_> {
         let mut type_clauses = Vec::new();
         let mut type_defaults = IndexMap::new();
         let mut methods = Vec::new();
-        for (item_name, hax_item, hax_def) in &items {
+        for (item_name, hax_item) in &items {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
-            match &hax_def.kind {
+
+            // In --mono mode, we keep only non-polymorphic items; in not-mono mode, we use the
+            // polymorphic item as usual.
+            let trans_kind = match hax_item.kind {
+                hax::AssocKind::Fn { .. } => TransItemSourceKind::Fun,
+                hax::AssocKind::Const { .. } => TransItemSourceKind::Global,
+                hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
+            };
+            let poly_item_def = self.poly_hax_def(item_def_id)?;
+            let (item_src, item_def) = if self.monomorphize() {
+                if poly_item_def.has_own_generics() {
+                    continue;
+                } else {
+                    let item = def.this().with_def_id(self.hax_state(), item_def_id);
+                    let item_def = self.hax_def(&item)?;
+                    let item_src = TransItemSource::monomorphic(&item, trans_kind);
+                    (item_src, item_def)
+                }
+            } else {
+                let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
+                (item_src, poly_item_def)
+            };
+
+            match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_def = self.hax_def(item_def_id)?;
                     let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
                     let mut fn_ref = self.translate_binder_for_def(
                         item_span,
                         binder_kind,
-                        &fun_def,
+                        &item_def,
                         |bt_ctx| {
                             // If the trait is opaque, we only translate the signature of a method
                             // with default body if it's overridden or used somewhere else.
@@ -494,9 +606,9 @@ impl ItemTransCtx<'_, '_> {
                                 || item_meta.opacity.is_transparent()
                                 || !hax_item.has_value
                             {
-                                bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                                bt_ctx.register_and_enqueue(item_span, item_src)
                             } else {
-                                bt_ctx.register_fun_decl_id_no_enqueue(item_span, item_def_id)
+                                bt_ctx.register_no_enqueue(item_span, &item_src)
                             };
 
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
@@ -520,7 +632,7 @@ impl ItemTransCtx<'_, '_> {
                     // don't want that to be part of the method clauses. Hence we remove the first
                     // bound clause and replace its uses with references to the ambient `Self`
                     // clause available in trait declarations.
-                    {
+                    if !self.monomorphize() {
                         struct ReplaceSelfVisitor;
                         impl VarsVisitor for ReplaceSelfVisitor {
                             fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
@@ -556,7 +668,7 @@ impl ItemTransCtx<'_, '_> {
                     if hax_item.has_value {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
-                        let id = self.register_global_decl_id(item_span, item_def_id);
+                        let id = self.register_and_enqueue(item_span, item_src);
                         let mut generics = self.the_only_binder().params.identity_args();
                         generics.trait_refs.push(self_trait_ref.clone());
                         let gref = GlobalDeclRef {
@@ -588,7 +700,7 @@ impl ItemTransCtx<'_, '_> {
                     };
                     types.push(item_name.clone());
                 }
-                _ => panic!("Unexpected definition for trait item: {hax_def:?}"),
+                _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
         }
 
@@ -606,6 +718,7 @@ impl ItemTransCtx<'_, '_> {
             types,
             type_defaults,
             methods,
+            vtable,
         })
     }
 
@@ -616,100 +729,12 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
-        trace!("About to translate trait impl:\n{:?}", def.def_id);
+        trace!("About to translate trait impl:\n{:?}", def.def_id());
         trace!("Trait impl id:\n{:?}", def_id);
 
         let span = item_meta.span;
 
         self.translate_def_generics(span, def)?;
-
-        if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
-            // Generate a blanket impl for this trait, as in:
-            //   trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
-            // becomes:
-            //   trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
-            //   impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
-
-            // `translate_def_generics` registers the clauses as implied clauses, but we want them
-            // as required clauses for the impl.
-            assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-            let clauses = mem::take(&mut self.parent_trait_clauses);
-            self.innermost_generics_mut().trait_clauses = clauses;
-            let trait_id = self.register_trait_decl_id(span, def.def_id());
-            let mut generics = self.the_only_binder().params.identity_args();
-            // Do the inverse operation: the trait considers the clauses as implied.
-            let parent_trait_refs = mem::take(&mut generics.trait_refs);
-            let implemented_trait = TraitDeclRef {
-                id: trait_id,
-                generics: Box::new(generics),
-            };
-            let mut timpl = TraitImpl {
-                def_id,
-                item_meta,
-                impl_trait: implemented_trait,
-                generics: self.the_only_binder().params.clone(),
-                parent_trait_refs,
-                type_clauses: Default::default(),
-                consts: Default::default(),
-                types: Default::default(),
-                methods: Default::default(),
-            };
-            // We got the predicates from a trait decl, so they may refer to the virtual `Self`
-            // clause, which doesn't exist for impls. We fix that up here.
-            {
-                struct FixSelfVisitor {
-                    binder_depth: DeBruijnId,
-                }
-                struct UnhandledSelf;
-                impl Visitor for FixSelfVisitor {
-                    type Break = UnhandledSelf;
-                }
-                impl VisitAstMut for FixSelfVisitor {
-                    fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                        self.binder_depth = self.binder_depth.incr()
-                    }
-                    fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                        self.binder_depth = self.binder_depth.decr()
-                    }
-                    fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                        self.binder_depth = self.binder_depth.incr()
-                    }
-                    fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                        self.binder_depth = self.binder_depth.decr()
-                    }
-                    fn visit_trait_ref_kind(
-                        &mut self,
-                        kind: &mut TraitRefKind,
-                    ) -> ControlFlow<Self::Break> {
-                        match kind {
-                            TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
-                            TraitRefKind::ParentClause(box TraitRefKind::SelfId, _, clause_id) => {
-                                *kind = TraitRefKind::Clause(DeBruijnVar::bound(
-                                    self.binder_depth,
-                                    *clause_id,
-                                ))
-                            }
-                            _ => (),
-                        }
-                        self.visit_inner(kind)
-                    }
-                }
-                match timpl.drive_mut(&mut FixSelfVisitor {
-                    binder_depth: DeBruijnId::zero(),
-                }) {
-                    ControlFlow::Continue(()) => {}
-                    ControlFlow::Break(UnhandledSelf) => {
-                        register_error!(
-                            self,
-                            span,
-                            "Found `Self` clause we can't handle \
-                             in a trait alias blanket impl."
-                        );
-                    }
-                }
-            };
-            return Ok(timpl);
-        }
 
         let hax::FullDefKind::TraitImpl {
             trait_pred,
@@ -733,6 +758,8 @@ impl ItemTransCtx<'_, '_> {
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
 
+        let vtable = self.translate_vtable_instance_ref(span, &trait_pred.trait_ref, def.this())?;
+
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let parent_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
 
@@ -745,7 +772,7 @@ impl ItemTransCtx<'_, '_> {
                 .format("\n");
             trace!(
                 "Trait impl: {:?}\n- parent_trait_refs:\n{}",
-                def.def_id,
+                def.def_id(),
                 refs
             );
         }
@@ -760,20 +787,49 @@ impl ItemTransCtx<'_, '_> {
             use hax::ImplAssocItemValue::*;
             let name = self
                 .t_ctx
-                .translate_trait_item_name(impl_item.decl_def.def_id())?;
-            let item_def = impl_item.def(); // The impl item or the corresponding trait default.
-            let item_span = self.def_span(&item_def.def_id);
-            let item_def_id = &item_def.def_id;
+                .translate_trait_item_name(&impl_item.decl_def_id)?;
+            let item_def_id = impl_item.def_id();
+            let item_span = self.def_span(item_def_id);
+            //
+            // In --mono mode, we keep only non-polymorphic items; in not-mono mode, we use the
+            // polymorphic item as usual.
+            let poly_item_def = self.poly_hax_def(item_def_id)?;
+            let trans_kind = match poly_item_def.kind() {
+                hax::FullDefKind::AssocFn { .. } => TransItemSourceKind::Fun,
+                hax::FullDefKind::AssocConst { .. } => TransItemSourceKind::Global,
+                hax::FullDefKind::AssocTy { .. } => TransItemSourceKind::Type,
+                _ => unreachable!(),
+            };
+            let (item_src, item_def) = if self.monomorphize() {
+                if poly_item_def.has_own_generics() {
+                    continue;
+                } else {
+                    let item = match &impl_item.value {
+                        // Real item: we reuse the impl arguments to get a reference to the item.
+                        Provided { def_id, .. } => def.this().with_def_id(self.hax_state(), def_id),
+                        // Defaulted item: we use the implemented trait arguments.
+                        _ => trait_pred
+                            .trait_ref
+                            .with_def_id(self.hax_state(), &impl_item.decl_def_id),
+                    };
+                    let item_def = self.hax_def(&item)?;
+                    let item_src = TransItemSource::monomorphic(&item, trans_kind);
+                    (item_src, item_def)
+                }
+            } else {
+                let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
+                (item_src, poly_item_def)
+            };
+
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
                     match &impl_item.value {
                         Provided { is_override, .. } => {
-                            let fun_def = self.hax_def(item_def_id)?;
                             let binder_kind = BinderKind::TraitMethod(trait_id, name.clone());
                             let fn_ref = self.translate_binder_for_def(
                                 item_span,
                                 binder_kind,
-                                &fun_def,
+                                &item_def,
                                 |bt_ctx| {
                                     // If the impl is opaque, we only translate the signature of a
                                     // method with a default body if it's directly used somewhere
@@ -785,10 +841,9 @@ impl ItemTransCtx<'_, '_> {
                                         || item_meta.opacity.is_transparent()
                                         || !*is_override
                                     {
-                                        bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                                        bt_ctx.register_and_enqueue(item_span, item_src)
                                     } else {
-                                        bt_ctx
-                                            .register_fun_decl_id_no_enqueue(item_span, item_def_id)
+                                        bt_ctx.register_no_enqueue(item_span, &item_src)
                                     };
 
                                     // TODO: there's probably a cleaner way to write this
@@ -818,7 +873,7 @@ impl ItemTransCtx<'_, '_> {
                     }
                 }
                 hax::FullDefKind::AssocConst { .. } => {
-                    let id = self.register_global_decl_id(item_span, item_def_id);
+                    let id = self.register_and_enqueue(item_span, item_src);
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
@@ -849,9 +904,13 @@ impl ItemTransCtx<'_, '_> {
                     let ty = self.translate_ty(item_span, &ty)?;
                     types.push((name.clone(), ty));
 
-                    let trait_refs =
-                        self.translate_trait_impl_exprs(item_span, &impl_item.required_impl_exprs)?;
-                    type_clauses.push((name, trait_refs));
+                    if !self.monomorphize() {
+                        let trait_refs = self.translate_trait_impl_exprs(
+                            item_span,
+                            &impl_item.required_impl_exprs,
+                        )?;
+                        type_clauses.push((name, trait_refs));
+                    }
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
@@ -867,6 +926,164 @@ impl ItemTransCtx<'_, '_> {
             consts,
             types,
             methods,
+            vtable,
+        })
+    }
+
+    /// Generate a blanket impl for this trait, as in:
+    /// ```
+    ///     trait Alias<U> = Trait<Option<U>, Item = u32> + Clone;
+    /// ```
+    /// becomes:
+    /// ```
+    ///     trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
+    ///     impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
+    /// ```
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_trait_alias_blanket_impl(
+        mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+
+        self.translate_def_generics(span, def)?;
+
+        let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
+
+        // `translate_def_generics` registers the clauses as implied clauses, but we want them
+        // as required clauses for the impl.
+        assert!(self.innermost_generics_mut().trait_clauses.is_empty());
+        let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
+        self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
+        let mut generics = self.the_only_binder().params.identity_args();
+        // Do the inverse operation: the trait considers the clauses as implied.
+        let parent_trait_refs = mem::take(&mut generics.trait_refs);
+        let implemented_trait = TraitDeclRef {
+            id: trait_id,
+            generics: Box::new(generics),
+        };
+
+        let mut timpl = TraitImpl {
+            def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics: self.the_only_binder().params.clone(),
+            parent_trait_refs,
+            type_clauses: Default::default(),
+            consts: Default::default(),
+            types: Default::default(),
+            methods: Default::default(),
+            // TODO(dyn)
+            vtable: None,
+        };
+        // We got the predicates from a trait decl, so they may refer to the virtual `Self`
+        // clause, which doesn't exist for impls. We fix that up here.
+        {
+            struct FixSelfVisitor {
+                binder_depth: DeBruijnId,
+            }
+            struct UnhandledSelf;
+            impl Visitor for FixSelfVisitor {
+                type Break = UnhandledSelf;
+            }
+            impl VisitorWithBinderDepth for FixSelfVisitor {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
+            impl VisitAstMut for FixSelfVisitor {
+                fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(x)
+                }
+                fn visit_trait_ref_kind(
+                    &mut self,
+                    kind: &mut TraitRefKind,
+                ) -> ControlFlow<Self::Break> {
+                    match kind {
+                        TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
+                        TraitRefKind::ParentClause(sub, clause_id)
+                            if matches!(sub.kind, TraitRefKind::SelfId) =>
+                        {
+                            *kind = TraitRefKind::Clause(DeBruijnVar::bound(
+                                self.binder_depth,
+                                *clause_id,
+                            ))
+                        }
+                        _ => (),
+                    }
+                    self.visit_inner(kind)
+                }
+            }
+            match timpl.drive_mut(&mut FixSelfVisitor {
+                binder_depth: DeBruijnId::zero(),
+            }) {
+                ControlFlow::Continue(()) => {}
+                ControlFlow::Break(UnhandledSelf) => {
+                    register_error!(
+                        self,
+                        span,
+                        "Found `Self` clause we can't handle \
+                         in a trait alias blanket impl."
+                    );
+                }
+            }
+        };
+
+        Ok(timpl)
+    }
+
+    /// Make a trait impl from a hax `VirtualTraitImpl`. Used for constructing fake trait impls for
+    /// builtin types like `FnOnce`.
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_virtual_trait_impl(
+        &mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        vimpl: &hax::VirtualTraitImpl,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+        let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
+        let hax::FullDefKind::Trait {
+            items: trait_items, ..
+        } = trait_def.kind()
+        else {
+            panic!()
+        };
+
+        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
+        let parent_trait_refs = self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
+
+        let mut types = vec![];
+        let mut type_clauses = vec![];
+        let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
+            hax::AssocKind::Type { .. } => true,
+            _ => false,
+        });
+        for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
+            let name = self.t_ctx.translate_trait_item_name(&assoc.def_id)?;
+            let ty = self.translate_ty(span, ty)?;
+            types.push((name.clone(), ty.clone()));
+            if !self.monomorphize() {
+                let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                type_clauses.push((name.clone(), trait_refs));
+            }
+        }
+
+        let generics = self.the_only_binder().params.clone();
+        Ok(TraitImpl {
+            def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics,
+            parent_trait_refs,
+            type_clauses,
+            consts: vec![],
+            types,
+            methods: vec![],
+            // TODO(dyn): generate vtable instances for builtin traits
+            vtable: None,
         })
     }
 }

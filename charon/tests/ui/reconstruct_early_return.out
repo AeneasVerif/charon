@@ -37,7 +37,7 @@ fn f() -> usize
         @4 := move (@5) < const (32 : i32)
         if move (@4) {
             storage_dead(@5)
-            @6 := copy (j@2) + const (1 : i32)
+            @6 := copy (j@2) panic.+ const (1 : i32)
             j@2 := move (@6)
             storage_live(@7)
             storage_live(@8)
@@ -46,7 +46,7 @@ fn f() -> usize
             @8 := move (@9) > const (16 : i32)
             if move (@8) {
                 storage_dead(@9)
-                j@2 := copy (j@2) / const (2 : i32)
+                j@2 := copy (j@2) panic./ const (2 : i32)
             }
             else {
                 storage_dead(@9)
@@ -73,7 +73,7 @@ fn f() -> usize
             }
             storage_dead(@8)
             storage_dead(@7)
-            @12 := copy (i@1) + const (1 : i32)
+            @12 := copy (i@1) panic.+ const (1 : i32)
             i@1 := move (@12)
             storage_dead(@4)
             continue 0

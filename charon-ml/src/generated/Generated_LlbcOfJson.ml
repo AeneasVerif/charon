@@ -21,15 +21,24 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("span", span);
+          ("id", id);
           ("content", content);
           ("comments_before", comments_before);
         ] ->
         let* span = span_of_json ctx span in
+        let* statement_id = statement_id_of_json ctx id in
         let* content = statement_kind_of_json ctx content in
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
-        Ok ({ span; content; comments_before } : statement)
+        Ok ({ span; statement_id; content; comments_before } : statement)
+    | _ -> Error "")
+
+and statement_id_of_json (ctx : of_json_ctx) (js : json) :
+    (statement_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> StatementId.id_of_json ctx x
     | _ -> Error "")
 
 and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -58,9 +67,10 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Deinit", deinit) ] ->
         let* deinit = place_of_json ctx deinit in
         Ok (Deinit deinit)
-    | `Assoc [ ("Drop", drop) ] ->
-        let* drop = place_of_json ctx drop in
-        Ok (Drop drop)
+    | `Assoc [ ("Drop", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json ctx x_0 in
+        let* x_1 = trait_ref_of_json ctx x_1 in
+        Ok (Drop (x_0, x_1))
     | `Assoc [ ("Assert", assert_) ] ->
         let* assert_ = assertion_of_json ctx assert_ in
         Ok (Assert assert_)

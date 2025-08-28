@@ -1,4 +1,4 @@
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use std::{path::PathBuf, process::Command};
@@ -37,7 +37,7 @@ fn charon_pretty_print() -> Result<()> {
             ensure!(std::fs::exists(llbc)?, "{llbc} doesn't exist!");
 
             charon(&["pretty-print", llbc], ".", |stdout, _| {
-                let search = "pub fn arrays::";
+                let search = "pub fn index_array_shared";
                 ensure!(
                     stdout.contains(search),
                     "Output of pretty-printing {llbc} is:\n{stdout:?}\nIt doesn't contain {search:?}."
@@ -46,6 +46,18 @@ fn charon_pretty_print() -> Result<()> {
             })
         },
     )
+}
+
+#[test]
+fn charon_version() -> Result<()> {
+    charon(&["version"], ".", |stdout, cmd| {
+        let version = charon_lib::VERSION;
+        ensure!(
+            stdout.trim() == version,
+            "Output of `{cmd}` is:\n{stdout:?}\nIt should be {version}."
+        );
+        Ok(())
+    })
 }
 
 #[test]
@@ -106,30 +118,16 @@ fn charon_cargo_features() -> Result<()> {
     })
 }
 
-fn rustup_install_target(target: &str) -> Result<()> {
-    // e.g. rustup target add riscv64gc-unknown-none-elf
-    let mut cmd = Command::new("rustup");
-    let output = cmd.args(["target", "add", target]).output()?;
-    ensure!(
-        output.status.success(),
-        "`rustup target add {target}` failed: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    Ok(())
-}
-
 #[test]
-#[ignore = "Network is inaccessible in nix"]
 fn charon_cargo_target() -> Result<()> {
     let target = "riscv64gc-unknown-none-elf";
-    rustup_install_target(target)?;
 
     let dir = "tests/cargo/multi-targets";
-    let fn_ = "pub fn multi_targets::";
+    let fn_ = "pub fn";
 
     #[cfg(target_family = "unix")]
     charon(&["cargo", "--print-llbc"], dir, |stdout, cmd| {
-        let main = "pub fn multi_targets::on_unix";
+        let main = "multi_targets::on_unix";
         ensure!(
             stdout.contains(main),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
@@ -145,7 +143,7 @@ fn charon_cargo_target() -> Result<()> {
 
     #[cfg(target_os = "windows")]
     charon(&["cargo", "--print-llbc"], dir, |stdout, cmd| {
-        let main = "pub fn multi_targets::on_windows";
+        let main = "multi_targets::on_windows";
         ensure!(
             stdout.contains(main),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
@@ -161,7 +159,7 @@ fn charon_cargo_target() -> Result<()> {
 
     let args = &["cargo", "--print-llbc", "--", "--target", target];
     charon(args, dir, |stdout, cmd| {
-        let main = "pub fn multi_targets::no_os";
+        let main = "multi_targets::no_os";
         ensure!(
             stdout.contains(main),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
@@ -200,10 +198,17 @@ fn charon_rustc() -> Result<()> {
 }
 
 #[test]
-#[ignore = "Network is inaccessible in nix"]
+fn put_options_after_subcommand() -> Result<()> {
+    let path = "tests/cargo/workspace/crate1/src/lib.rs";
+    let args = &["--print-llbc", "rustc", "--", "--crate-type=lib", path];
+    let output = Command::cargo_bin("charon")?.args(args).output()?;
+    assert!(!output.status.success());
+    Ok(())
+}
+
+#[test]
 fn charon_rust_target() -> Result<()> {
     let target = "riscv64gc-unknown-none-elf";
-    rustup_install_target(target)?;
 
     let path = "tests/cargo/multi-targets/src/lib.rs";
     let args = &[

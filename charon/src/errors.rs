@@ -81,36 +81,45 @@ impl Error {
         use annotate_snippets::*;
         let span = self.span.span;
 
-        let mut group = Group::new();
+        let mut group = Group::with_title(level.title(&self.msg));
         let origin;
         if let Some(file) = krate.files.get(span.file_id) {
             origin = format!("{}", file.name);
             if let Some(source) = &file.contents {
                 let snippet = Snippet::source(source)
-                    .origin(&origin)
+                    .path(&origin)
                     .fold(true)
                     .annotation(AnnotationKind::Primary.span(span.to_byte_range(source)));
                 group = group.element(snippet);
             } else {
                 // Show just the file and line/col.
-                let origin = Origin::new(&origin)
+                let origin = Origin::path(&origin)
                     .line(span.beg.line)
-                    .char_column(span.beg.col + 1)
-                    .primary(true);
+                    .char_column(span.beg.col + 1);
                 group = group.element(origin);
             }
         }
-        let message = level.header(&self.msg).group(group);
 
-        Renderer::styled().render(message).to_string()
+        Renderer::styled().render(&[group]).to_string()
+    }
+}
+
+impl<T: ToString> From<T> for Error {
+    fn from(err: T) -> Self {
+        Self {
+            span: Span::dummy(),
+            msg: err.to_string(),
+        }
     }
 }
 
 /// Display an error without a specific location.
 pub fn display_unspanned_error(level: Level, msg: &str) {
     use annotate_snippets::*;
-    let message = level.header(msg);
-    let message = Renderer::styled().render(message).to_string();
+    let title = level.title(msg);
+    let message = Renderer::styled()
+        .render(&[Group::with_title(title)])
+        .to_string();
     anstream::eprintln!("{message}\n");
 }
 
@@ -314,8 +323,8 @@ impl ErrorCtx {
 
         let level = Level::NOTE;
         let snippets = by_file.iter().map(|(_, origin, source, spans)| {
-            Snippet::source(source)
-                .origin(&origin)
+            Snippet::source(*source)
+                .path(origin)
                 .fold(true)
                 .annotations(
                     spans
@@ -329,8 +338,8 @@ impl ErrorCtx {
              which is (transitively) used at the following location(s):",
             id.with_ctx(&krate.into_fmt())
         );
-        let message = level.header(&msg).group(Group::new().elements(snippets));
-        let out = Renderer::styled().render(message).to_string();
+        let message = Group::with_title(level.title(&msg)).elements(snippets);
+        let out = Renderer::styled().render(&[message]).to_string();
         anstream::eprintln!("{}", out);
     }
 }

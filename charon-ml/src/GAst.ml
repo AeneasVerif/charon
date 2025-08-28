@@ -37,12 +37,16 @@ type 'body gfun_decl = {
 }
 [@@deriving show]
 
+type target_info = { target_pointer_size : int; is_little_endian : bool }
+[@@deriving show]
+
 (* Hand-written because the rust equivalent isn't generic *)
 
 (** A crate *)
 type 'fun_body gcrate = {
   name : string;
   options : cli_options;
+  target_information : target_info;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;

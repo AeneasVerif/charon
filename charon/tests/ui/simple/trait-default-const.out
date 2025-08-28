@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
@@ -16,9 +17,11 @@ trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     const FOO : usize
+    non-dyn-compatible
 }
 
-fn test_crate::Trait::FOO<Self>() -> usize
+// Full name: test_crate::Trait::FOO
+fn FOO<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
@@ -28,10 +31,11 @@ where
     return
 }
 
-const test_crate::Trait::FOO<Self>: usize
+// Full name: test_crate::Trait::FOO
+const FOO<Self>: usize
 where
     [@TraitClause0]: Trait<Self>,
- = test_crate::Trait::FOO()
+ = FOO()
 
 // Full name: test_crate::{impl Trait for T}
 impl<T> Trait for T
@@ -39,7 +43,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = @TraitClause0::parent_clause0
-    const FOO = test_crate::Trait::FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
+    const FOO = FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo

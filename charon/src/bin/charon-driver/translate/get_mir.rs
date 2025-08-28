@@ -3,8 +3,8 @@
 use std::panic;
 use std::rc::Rc;
 
+use hax::{HasParamEnv, UnderOwnerState};
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter};
 use rustc_hir as hir;
 use rustc_middle::mir::Body;
 use rustc_middle::ty::TyCtxt;
@@ -12,17 +12,17 @@ use rustc_middle::ty::TyCtxt;
 use charon_lib::ast::*;
 use charon_lib::options::MirLevel;
 
-use super::translate_ctx::TranslateCtx;
+use super::translate_ctx::ItemTransCtx;
 
-impl TranslateCtx<'_> {
+impl ItemTransCtx<'_, '_> {
     pub fn get_mir(
         &mut self,
-        def_id: &hax::DefId,
+        item_ref: &hax::ItemRef,
         span: Span,
     ) -> Result<Option<hax::MirBody<hax::mir_kinds::Unknown>>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.get_mir_inner(def_id, span));
+        let res = panic::catch_unwind(move || this.get_mir_inner(item_ref, span));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -35,24 +35,28 @@ impl TranslateCtx<'_> {
 
     fn get_mir_inner(
         &mut self,
-        def_id: &hax::DefId,
+        item_ref: &hax::ItemRef,
         span: Span,
     ) -> Result<Option<hax::MirBody<hax::mir_kinds::Unknown>>, Error> {
-        let tcx = self.tcx;
-        let mir_level = self.options.mir_level;
+        let tcx = self.t_ctx.tcx;
+        let mir_level = self.t_ctx.options.mir_level;
+        let def_id = &item_ref.def_id;
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
             Some(body) => {
+                let state = self.hax_state_with_id();
+                let body = if self.monomorphize() {
+                    let typing_env = state.typing_env();
+                    let args = item_ref.rustc_args(&state);
+                    hax::substitute(tcx, typing_env, Some(args), body)
+                } else {
+                    body
+                };
                 // Here, we have to create a MIR state, which contains the body.
-                let def_id = def_id.underlying_rust_def_id();
                 let body = Rc::new(body);
-                let state = self
-                    .hax_state
-                    .clone()
-                    .with_owner_id(def_id)
-                    .with_mir(body.clone());
+                let state = state.with_mir(body.clone());
                 // Translate
                 let body: hax::MirBody<hax::mir_kinds::Unknown> =
-                    self.catch_sinto(&state, span, body.as_ref())?;
+                    self.t_ctx.catch_sinto(&state, span, body.as_ref())?;
                 Some(body)
             }
             None => None,

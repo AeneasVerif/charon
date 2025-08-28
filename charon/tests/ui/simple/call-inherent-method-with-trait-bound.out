@@ -9,19 +9,35 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: test_crate::Trait
 pub trait Trait<Self, Self_Type>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<()> for ()}
 impl Trait<()> for () {
     parent_clause0 = MetaSized<()>
     parent_clause1 = Sized<()>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::HashMap
@@ -30,6 +46,21 @@ where
     [@TraitClause0]: Sized<S>,
 {
   S,
+}
+
+// Full name: test_crate::HashMap::{impl Drop for HashMap<S>[@TraitClause0]}::drop
+fn {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0, S>(@1: &'_0 mut (HashMap<S>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<S>,
+
+// Full name: test_crate::HashMap::{impl Drop for HashMap<S>[@TraitClause0]}
+impl<S> Drop for HashMap<S>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<S>,
+{
+    parent_clause0 = MetaSized<HashMap<S>[@TraitClause0]>
+    fn drop<'_0> = {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0_0, S>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
@@ -44,8 +75,8 @@ where
     let _k@2: Q; // arg #2
 
     @0 := ()
-    drop _k@2
-    drop _x@1
+    drop[Drop<Q>] _k@2
+    drop[{impl Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     @0 := ()
     return
 }
@@ -62,8 +93,8 @@ where
     let _k@2: Q; // arg #2
 
     @0 := ()
-    drop _k@2
-    drop _x@1
+    drop[Drop<Q>] _k@2
+    drop[{impl Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     @0 := ()
     return
 }

@@ -1,11 +1,12 @@
 //! The translation contexts.
-use super::translate_crate::TransItemSource;
+use super::translate_crate::RustcItem;
+pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSourceKind};
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::Vector;
 use charon_lib::options::TranslateOptions;
-use hax_frontend_exporter::{self as hax, DefId, SInto};
+use hax_frontend_exporter::{self as hax, SInto};
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -17,7 +18,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
+    DepSource, ErrorCtx, Level, error_assert, raise_error, register_error,
 };
 
 /// Translation context used while translating the crate data into our representation.
@@ -48,8 +49,10 @@ pub struct TranslateCtx<'tcx> {
     pub items_to_translate: BTreeSet<TransItemSource>,
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
+    /// Stack of the translations currently happening. Used to avoid accidental cycles.
+    pub translate_stack: Vec<AnyTransId>,
     /// Cache the names to compute them only once each.
-    pub cached_names: HashMap<hax::DefId, Name>,
+    pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
 }
@@ -75,9 +78,6 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
-    /// (For method declarations only) the clause id corresponding to the explicit `Self` clause.
-    /// If `None` then we're in a trait declaration and should use `TraitRefKind::Self` instead.
-    pub self_clause_id: Option<TraitClauseId>,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -119,20 +119,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
     }
 
-    pub fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
-        let span = self.def_span(def_id);
-        // Hax takes care of caching the translation.
-        let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
-        std::panic::catch_unwind(move || def_id.full_def(*unwind_safe_s))
-            .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
+    /// Return the polymorphic definition for this item. Use with care, prefer `hax_def` whenever
+    /// possible.
+    ///
+    /// Used for computing names, for associated items, and for various checks.
+    pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+        self.hax_def_for_item(&RustcItem::Poly(def_id.clone()))
     }
 
-    pub(crate) fn get_lang_item(&self, item: rustc_hir::LangItem) -> DefId {
-        self.tcx
-            .lang_items()
-            .get(item)
-            .unwrap()
-            .sinto(&self.hax_state)
+    /// Return the definition for this item. This uses the polymorphic or monomorphic definition
+    /// depending on user choice.
+    pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef>, Error> {
+        let def_id = item.def_id();
+        let span = self.def_span(def_id);
+        if let RustcItem::Mono(item_ref) = item
+            && item_ref.has_param
+        {
+            raise_error!(self, span, "Item is not monomorphic: {item:?}")
+        }
+        // Hax takes care of caching the translation.
+        let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
+        std::panic::catch_unwind(move || match item {
+            RustcItem::Poly(def_id) => def_id.full_def(*unwind_safe_s),
+            RustcItem::Mono(item_ref) => item_ref.instantiated_full_def(*unwind_safe_s),
+        })
+        .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
     }
 
     pub(crate) fn with_def_id<F, T>(
@@ -171,20 +182,41 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             binding_levels: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
-            self_clause_id: Default::default(),
         }
+    }
+
+    /// Whether to monomorphize items we encounter.
+    pub fn monomorphize(&self) -> bool {
+        matches!(self.item_src.item, RustcItem::Mono(..))
     }
 
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.t_ctx.span_err(span, msg, level)
     }
 
-    pub(crate) fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
-        self.t_ctx.hax_def(def_id)
+    pub fn hax_state(&self) -> &hax::StateWithBase<'tcx> {
+        &self.t_ctx.hax_state
     }
 
-    pub(crate) fn get_lang_item(&self, item: rustc_hir::LangItem) -> DefId {
-        self.t_ctx.get_lang_item(item)
+    pub fn hax_state_with_id(&self) -> hax::StateWithOwner<'tcx> {
+        use hax::BaseState;
+        let def_id = self.item_src.def_id().underlying_rust_def_id();
+        self.t_ctx.hax_state.clone().with_owner_id(def_id)
+    }
+
+    /// Return the definition for this item. This uses the polymorphic or monomorphic definition
+    /// depending on user choice.
+    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
+        let item = if self.monomorphize() {
+            RustcItem::Mono(item.clone())
+        } else {
+            RustcItem::Poly(item.def_id.clone())
+        };
+        self.t_ctx.hax_def_for_item(&item)
+    }
+
+    pub(crate) fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+        self.t_ctx.poly_hax_def(def_id)
     }
 }
 

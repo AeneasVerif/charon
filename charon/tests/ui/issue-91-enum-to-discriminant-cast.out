@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
@@ -30,6 +32,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -37,6 +40,7 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: test_crate::Foo
@@ -59,12 +63,14 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 impl Clone for Foo {
     parent_clause0 = Sized<Foo>
     fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
     parent_clause0 = MetaSized<Foo>
     parent_clause1 = {impl Clone for Foo}
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Ordering
@@ -114,14 +120,7 @@ fn main()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    match @3 {
-        Foo::A => {
-            @4 := const (0 : isize)
-        },
-        Foo::B => {
-            @4 := const (1 : isize)
-        },
-    }
+    @4 := @discriminant(@3)
     @5 := cast<isize, u8>(copy (@4))
     @6 := copy (@5) <= const (1 : u8)
     assert(move (@6) == true)
@@ -131,14 +130,7 @@ fn main()
     storage_live(@7)
     storage_live(@8)
     @8 := copy (x@1)
-    match @8 {
-        Foo::A => {
-            @9 := const (0 : isize)
-        },
-        Foo::B => {
-            @9 := const (1 : isize)
-        },
-    }
+    @9 := @discriminant(@8)
     @10 := cast<isize, u8>(copy (@9))
     @11 := copy (@10) <= const (1 : u8)
     assert(move (@11) == true)
@@ -150,17 +142,7 @@ fn main()
     storage_live(@13)
     storage_live(@14)
     @14 := move (x@12)
-    match @14 {
-        Ordering::Less => {
-            @15 := const (-1 : isize)
-        },
-        Ordering::Equal => {
-            @15 := const (0 : isize)
-        },
-        Ordering::Greater => {
-            @15 := const (1 : isize)
-        },
-    }
+    @15 := @discriminant(@14)
     @16 := cast<isize, u8>(copy (@15))
     @17 := copy (@16) >= const (255 : u8)
     @18 := copy (@16) <= const (1 : u8)

@@ -73,6 +73,18 @@ wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
 wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
+impl TryFrom<AnyTransId> for TypeId {
+    type Error = ();
+    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+        Ok(TypeId::Adt(x.try_into()?))
+    }
+}
+impl TryFrom<AnyTransId> for FunId {
+    type Error = ();
+    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+        Ok(FunId::Regular(x.try_into()?))
+    }
+}
 
 /// A reference to a translated item.
 #[derive(
@@ -96,6 +108,14 @@ pub enum AnyTransItemMut<'ctx> {
     TraitImpl(&'ctx mut TraitImpl),
 }
 
+#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
+pub struct TargetInfo {
+    /// The pointer size of the target in bytes.
+    pub target_pointer_size: types::ByteCount,
+    /// Whether the target platform uses little endian byte order.
+    pub is_little_endian: bool,
+}
+
 /// The data of a translated crate.
 #[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
 pub struct TranslatedCrate {
@@ -108,6 +128,10 @@ pub struct TranslatedCrate {
     /// the proper options.
     #[drive(skip)]
     pub options: crate::options::CliOpts,
+
+    /// Information about the target platform for which rustc is called on for the crate.
+    #[drive(skip)]
+    pub target_information: TargetInfo,
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
@@ -283,6 +307,15 @@ impl<'ctx> AnyTransItemMut<'ctx> {
             AnyTransItemMut::Global(d) => AnyTransItem::Global(d),
             AnyTransItemMut::TraitDecl(d) => AnyTransItem::TraitDecl(d),
             AnyTransItemMut::TraitImpl(d) => AnyTransItem::TraitImpl(d),
+        }
+    }
+    pub fn reborrow(&mut self) -> AnyTransItemMut<'_> {
+        match self {
+            AnyTransItemMut::Type(d) => AnyTransItemMut::Type(d),
+            AnyTransItemMut::Fun(d) => AnyTransItemMut::Fun(d),
+            AnyTransItemMut::Global(d) => AnyTransItemMut::Global(d),
+            AnyTransItemMut::TraitDecl(d) => AnyTransItemMut::TraitDecl(d),
+            AnyTransItemMut::TraitImpl(d) => AnyTransItemMut::TraitImpl(d),
         }
     }
 

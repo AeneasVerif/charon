@@ -65,6 +65,9 @@ and place_to_string (env : 'a fmt_env) (p : place) : string =
   | PlaceProjection (subplace, pe) ->
       let subplace = place_to_string env subplace in
       projection_elem_to_string env subplace pe
+  | PlaceGlobal global_ref ->
+      let generics = generic_args_to_string env global_ref.generics in
+      global_decl_id_to_string env global_ref.id ^ generics
 
 and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
   match cast with
@@ -73,7 +76,7 @@ and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
       ^ ">"
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) | CastTransmute (src, tgt) ->
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
-  | CastUnsize (src, tgt) ->
+  | CastUnsize (src, tgt, _) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
 and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
@@ -86,10 +89,15 @@ and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
 and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   match unop with
   | Not -> "¬"
-  | Neg -> "-"
+  | Neg om -> overflow_mode_to_string om ^ ".-"
   | PtrMetadata -> "ptr_metadata"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
-  | ArrayToSlice _ -> "to_slice"
+
+and overflow_mode_to_string (mode : overflow_mode) : string =
+  match mode with
+  | OWrap -> "wrap"
+  | OUB -> "ub"
+  | OPanic -> "panic"
 
 and binop_to_string (binop : binop) : string =
   match binop with
@@ -102,52 +110,18 @@ and binop_to_string (binop : binop) : string =
   | Ne -> "!="
   | Ge -> ">="
   | Gt -> ">"
-  | Div -> "/"
-  | Rem -> "%"
-  | Add -> "+"
-  | Sub -> "-"
-  | Mul -> "*"
-  | WrappingAdd -> "wrapping.+"
-  | WrappingSub -> "wrapping.-"
-  | WrappingMul -> "wrapping.*"
-  | CheckedAdd -> "checked.+"
-  | CheckedSub -> "checked.-"
-  | CheckedMul -> "checked.*"
-  | Shl -> "<<"
-  | Shr -> ">>"
+  | Div om -> overflow_mode_to_string om ^ "./"
+  | Rem om -> overflow_mode_to_string om ^ ".%"
+  | Add om -> overflow_mode_to_string om ^ ".+"
+  | Sub om -> overflow_mode_to_string om ^ ".-"
+  | Mul om -> overflow_mode_to_string om ^ ".*"
+  | Shl om -> overflow_mode_to_string om ^ ".<<"
+  | Shr om -> overflow_mode_to_string om ^ ".>>"
+  | AddChecked -> "checked.+"
+  | SubChecked -> "checked.-"
+  | MulChecked -> "checked.*"
   | Cmp -> "cmp"
   | Offset -> "offset"
-
-and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
-  match aid with
-  | BoxNew -> "alloc::boxed::Box::new"
-  | ArrayToSliceShared -> "@ArrayToSliceShared"
-  | ArrayToSliceMut -> "@ArrayToSliceMut"
-  | ArrayRepeat -> "@ArrayRepeat"
-  | Index { is_array; mutability; is_range } ->
-      let ty = if is_array then "Array" else "Slice" in
-      let op = if is_range then "SubSlice" else "Index" in
-      let mutability = ref_kind_to_string mutability in
-      "@" ^ ty ^ op ^ mutability
-  | PtrFromParts mut ->
-      let mut = if mut = RMut then "Mut" else "" in
-      "@PtrFromParts" ^ mut
-
-and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
-  match fid with
-  | FRegular fid -> fun_decl_id_to_string env fid
-  | FBuiltin aid -> builtin_fun_id_to_string aid
-
-and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
-    (r : fun_id_or_trait_method_ref) : string =
-  match r with
-  | TraitMethod (trait_ref, method_name, _) ->
-      trait_ref_to_string env trait_ref ^ "::" ^ method_name
-  | FunId fid -> fun_id_to_string env fid
-
-and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
-  let generics = generic_args_to_string env ptr.generics in
-  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
 
 and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   match cv.value with
@@ -193,7 +167,7 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   | BinaryOp (binop, op1, op2) ->
       operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string env op2
-  | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
+  | Discriminant p -> "discriminant(" ^ place_to_string env p ^ ")"
   | Len (place, ty, const_generics) ->
       let const_generics =
         match const_generics with
@@ -205,15 +179,6 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
           (ty_to_string env ty
           :: List.map (const_generic_to_string env) const_generics)
       ^ ">(" ^ place_to_string env place ^ ")"
-  | Global global_ref ->
-      let generics = generic_args_to_string env global_ref.generics in
-      "global " ^ global_decl_id_to_string env global_ref.id ^ generics
-  | GlobalRef (global_ref, RShared) ->
-      let generics = generic_args_to_string env global_ref.generics in
-      "&global " ^ global_decl_id_to_string env global_ref.id ^ generics
-  | GlobalRef (global_ref, RMut) ->
-      let generics = generic_args_to_string env global_ref.generics in
-      "&raw mut global " ^ global_decl_id_to_string env global_ref.id ^ generics
   | Repeat (v, _, len) ->
       "[" ^ operand_to_string env v ^ ";"
       ^ const_generic_to_string env len

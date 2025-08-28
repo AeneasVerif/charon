@@ -3,12 +3,6 @@
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -18,6 +12,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::result::Result
@@ -36,6 +31,7 @@ where
 pub trait Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Display::{vtable}
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -48,11 +44,35 @@ pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (
 // Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
     fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
+    vtable: {impl Display for Str}::{vtable}
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
+}
 
 // Full name: alloc::string::ToString
 #[lang_item("ToString")]
@@ -60,6 +80,7 @@ pub trait ToString<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
+    vtable: alloc::string::ToString::{vtable}
 }
 
 #[lang_item("to_string_method")]
@@ -81,9 +102,11 @@ where
 {
     parent_clause0 = @TraitClause0
     fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
-fn test_crate::FOO() -> &'static (Str)
+// Full name: test_crate::FOO
+fn FOO() -> &'static (Str)
 {
     let @0: &'_ (Str); // return
 
@@ -91,9 +114,11 @@ fn test_crate::FOO() -> &'static (Str)
     return
 }
 
-static test_crate::FOO: &'static (Str) = test_crate::FOO()
+// Full name: test_crate::FOO
+static FOO: &'static (Str) = FOO()
 
-fn test_crate::BAR() -> &'static (Slice<u8>)
+// Full name: test_crate::BAR
+fn BAR() -> &'static (Slice<u8>)
 {
     let @0: &'_ (Slice<u8>); // return
     let @1: &'_ (Array<u8, 5 : usize>); // anonymous local
@@ -115,7 +140,8 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
     return
 }
 
-static test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
+// Full name: test_crate::BAR
+static BAR: &'static (Slice<u8>) = BAR()
 
 // Full name: test_crate::main
 fn main()
@@ -134,7 +160,7 @@ fn main()
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()
-    drop _s@1
+    drop[{impl Drop for String}] _s@1
     storage_dead(_s@1)
     @0 := ()
     return

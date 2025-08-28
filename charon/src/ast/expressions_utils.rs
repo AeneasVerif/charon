@@ -10,6 +10,13 @@ impl Place {
         }
     }
 
+    pub fn new_global(global: GlobalDeclRef, ty: Ty) -> Place {
+        Place {
+            kind: PlaceKind::Global(global),
+            ty,
+        }
+    }
+
     pub fn ty(&self) -> &Ty {
         &self.ty
     }
@@ -29,13 +36,14 @@ impl Place {
     }
 
     #[deprecated(note = "use `local_id` instead")]
-    pub fn var_id(&self) -> LocalId {
+    pub fn var_id(&self) -> Option<LocalId> {
         self.local_id()
     }
-    pub fn local_id(&self) -> LocalId {
+    pub fn local_id(&self) -> Option<LocalId> {
         match &self.kind {
-            PlaceKind::Local(var_id) => *var_id,
+            PlaceKind::Local(var_id) => Some(*var_id),
             PlaceKind::Projection(subplace, _) => subplace.local_id(),
+            PlaceKind::Global(_) => None,
         }
     }
 
@@ -65,8 +73,8 @@ impl Place {
             Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
                 tref.generics.types[0].clone()
             }
-            Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_) | FnPtr(..)
-            | FnDef(..) | Error(..) => panic!("internal type error"),
+            Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
+            | FnPtr(..) | FnDef(..) | Error(..) => panic!("internal type error"),
         };
         Place {
             ty: proj_ty,
@@ -102,11 +110,7 @@ impl Rvalue {
 
 impl BorrowKind {
     pub fn mutable(x: bool) -> Self {
-        if x {
-            Self::Mut
-        } else {
-            Self::Shared
-        }
+        if x { Self::Mut } else { Self::Shared }
     }
 }
 
@@ -126,7 +130,7 @@ impl ProjectionElem {
                     Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
                         tref.generics.types[0].clone()
                     }
-                    Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
+                    Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
                     | FnPtr(..) | FnDef(..) | Error(..) => {
                         // Type error
                         return Err(());
@@ -191,6 +195,40 @@ impl From<ConstGeneric> for RawConstantExpr {
             }),
             ConstGeneric::Var(var) => RawConstantExpr::Var(var),
             ConstGeneric::Value(lit) => RawConstantExpr::Literal(lit),
+        }
+    }
+}
+
+impl BinOp {
+    pub fn with_overflow(&self, overflow: OverflowMode) -> Self {
+        match self {
+            BinOp::Add(_) | BinOp::AddChecked => BinOp::Add(overflow),
+            BinOp::Sub(_) | BinOp::SubChecked => BinOp::Sub(overflow),
+            BinOp::Mul(_) | BinOp::MulChecked => BinOp::Mul(overflow),
+            BinOp::Div(_) => BinOp::Div(overflow),
+            BinOp::Rem(_) => BinOp::Rem(overflow),
+            BinOp::Shl(_) => BinOp::Shl(overflow),
+            BinOp::Shr(_) => BinOp::Shr(overflow),
+            _ => {
+                panic!(
+                    "Cannot set overflow mode for this binary operator: {:?}",
+                    self
+                );
+            }
+        }
+    }
+}
+
+impl UnOp {
+    pub fn with_overflow(&self, overflow: OverflowMode) -> Self {
+        match self {
+            UnOp::Neg(_) => UnOp::Neg(overflow),
+            _ => {
+                panic!(
+                    "Cannot set overflow mode for this unary operator: {:?}",
+                    self
+                );
+            }
         }
     }
 }

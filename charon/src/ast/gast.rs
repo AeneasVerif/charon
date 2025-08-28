@@ -127,6 +127,13 @@ pub enum ItemKind {
         #[drive(skip)]
         reuses_default: bool,
     },
+    /// This is a vtable struct for a trait.
+    VTableTy {
+        /// The `dyn Trait` predicate implemented by this vtable.
+        dyn_predicate: DynPredicate,
+    },
+    /// This is a vtable value for an impl.
+    VTableInstance { impl_ref: TraitImplRef },
 }
 
 /// A function definition
@@ -279,6 +286,9 @@ pub struct TraitDecl {
     /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
     /// provides a full list of arguments to the pointed-to function.
     pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The virtual table struct for this trait, if it has one.
+    /// It is guaranteed that the trait has a vtable iff it is dyn-compatible.
+    pub vtable: Option<TypeDeclRef>,
 }
 
 /// A trait **implementation**.
@@ -313,6 +323,9 @@ pub struct TraitImpl {
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
     /// The implemented methods
     pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The virtual table instance for this trait implementation. This is `Some` iff the trait is
+    /// dyn-compatible.
+    pub vtable: Option<GlobalDeclRef>,
 }
 
 /// A function operand is used in function calls.

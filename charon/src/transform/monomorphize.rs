@@ -52,17 +52,17 @@ impl TranslatedCrate {
     // FIXME(Nadrieril): implement type&tref normalization and use that instead
     fn find_trait_impl_and_gargs(
         self: &Self,
-        kind: &TraitRefKind,
+        tref: &TraitRef,
     ) -> Option<(&TraitImpl, GenericArgs)> {
-        match kind {
+        match &tref.kind {
             TraitRefKind::TraitImpl(impl_ref) => {
                 let trait_impl = self.trait_impls.get(impl_ref.id)?;
                 Some((trait_impl, impl_ref.generics.as_ref().clone()))
             }
-            TraitRefKind::ParentClause(p, _, clause) => {
+            TraitRefKind::ParentClause(p, clause) => {
                 let (trait_impl, _) = self.find_trait_impl_and_gargs(p)?;
                 let t_ref = trait_impl.parent_trait_refs.get(*clause)?;
-                self.find_trait_impl_and_gargs(&t_ref.kind)
+                self.find_trait_impl_and_gargs(t_ref)
             }
             _ => None,
         }
@@ -127,17 +127,21 @@ impl VisitAst for UsageVisitor<'_> {
         }
     }
 
-    fn enter_ty_kind(&mut self, kind: &TyKind) {
+    fn visit_ty_kind(&mut self, kind: &TyKind) -> ControlFlow<Infallible> {
         match kind {
             TyKind::Adt(tref) => {
                 self.found_use_ty(tref);
             }
             TyKind::FnDef(binder) => {
-                let FunDeclRef { id, generics } = &binder.clone().erase();
-                self.found_use_fn(id, generics);
+                // we don't want to visit inside the binder, as it will have regions that
+                // haven't been erased; instead we visit the erased version, and skip
+                // the default "visit_inner" behaviour
+                let _ = self.visit(&binder.clone().erase());
+                return Continue(());
             }
             _ => {}
-        }
+        };
+        self.visit_inner(kind)
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
@@ -146,8 +150,7 @@ impl VisitAst for UsageVisitor<'_> {
                 self.found_use_fn(&id, &fn_ptr.generics)
             }
             FunIdOrTraitMethodRef::Trait(t_ref, name, id) => {
-                let Some((trait_impl, impl_gargs)) =
-                    self.krate.find_trait_impl_and_gargs(&t_ref.kind)
+                let Some((trait_impl, impl_gargs)) = self.krate.find_trait_impl_and_gargs(t_ref)
                 else {
                     return;
                 };
@@ -220,18 +223,6 @@ impl SubstVisitor<'_> {
 }
 
 impl VisitAstMut for SubstVisitor<'_> {
-    fn exit_rvalue(&mut self, rval: &mut Rvalue) {
-        if let Rvalue::Discriminant(place, id) = rval
-            && let Some(tref) = place.ty.as_adt()
-            && let TypeId::Adt(new_enum_id) = tref.id
-        {
-            // Small trick; the discriminant doesn't carry the information on the
-            // generics of the enum, since it's irrelevant, but we need it to do
-            // the substitution, so we look at the type of the place we read from
-            *id = new_enum_id;
-        }
-    }
-
     fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
             AggregateKind::Adt(tref, _, _) => self.subst_use_ty(tref),
@@ -243,12 +234,17 @@ impl VisitAstMut for SubstVisitor<'_> {
         match kind {
             TyKind::Adt(tref) => self.subst_use_ty(tref),
             TyKind::FnDef(binder) => {
-                let FunDeclRef {
-                    mut id,
-                    mut generics,
-                } = binder.clone().erase();
-                self.subst_use_fun(&mut id, &mut generics);
-                *binder = RegionBinder::empty(FunDeclRef { id, generics });
+                // erase the FnPtr binder, as we'll monomorphise its content
+                if let FnPtr {
+                    func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(id)),
+                    generics,
+                } = binder.clone().erase()
+                {
+                    *binder = RegionBinder::empty(FnPtr {
+                        func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(id))),
+                        generics,
+                    });
+                }
             }
             _ => {}
         }
@@ -363,7 +359,7 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Check the option which instructs to ignore this pass
-        if !ctx.options.monomorphize {
+        if !ctx.options.monomorphize_as_pass {
             return;
         }
 
@@ -421,7 +417,8 @@ impl TransformPass for Transform {
 
             // 1. Find new uses
             let Some(item) = ctx.translated.get_item(id) else {
-                panic!("Couldn't find item {:} in translated items.", id)
+                trace!("Couldn't find item {:} in translated items?", id);
+                continue;
             };
             find_uses(&mut data, &ctx.translated, &item);
 
@@ -518,9 +515,7 @@ impl TransformPass for Transform {
                 };
                 trace!(
                     "Mono: Monomorphized {:?} with {:?} to {:?}",
-                    id,
-                    gargs,
-                    new_mono
+                    id, gargs, new_mono
                 );
                 if id != &new_mono {
                     trace!(" - From {:?}", ctx.translated.get_item(id.clone()));
@@ -529,7 +524,10 @@ impl TransformPass for Transform {
                 *mono = OptionHint::Some(new_mono);
                 data.worklist.push(new_mono);
 
-                let item = ctx.translated.get_item(new_mono).unwrap();
+                let Some(item) = ctx.translated.get_item(new_mono) else {
+                    trace!("Missing monomorphised item {new_mono:?}");
+                    continue;
+                };
                 ctx.translated
                     .item_names
                     .insert(new_mono, item.item_meta().name.clone());

@@ -190,6 +190,84 @@ class virtual ['self] map_ty_base_base =
         { index; name }
   end
 
+(* Ancestors for the ty visitors *)
+class ['self] iter_ty_base =
+  object (self : 'self)
+    inherit [_] iter_ty_base_base
+    method visit_span : 'env -> span -> unit = fun _ _ -> ()
+  end
+
+class ['self] map_ty_base =
+  object (self : 'self)
+    inherit [_] map_ty_base_base
+    method visit_span : 'env -> span -> span = fun _ x -> x
+  end
+
+(** A value of type [T] bound by generic parameters. Used in any context where
+    we're adding generic parameters that aren't on the top-level item, e.g.
+    [for<'a>] clauses (uses [RegionBinder] for now), trait methods, GATs (TODO).
+*)
+type 'a0 binder = {
+  binder_params : generic_params;
+  binder_value : 'a0;
+      (** Named this way to highlight accesses to the inner value that might be
+          handling parameters incorrectly. Prefer using helper methods. *)
+}
+
+and binder_kind =
+  | BKTraitMethod of trait_decl_id * trait_item_name
+      (** The parameters of a trait method. Used in the [methods] lists in trait
+          decls and trait impls. *)
+  | BKInherentImplBlock
+      (** The parameters bound in a non-trait [impl] block. Used in the [Name]s
+          of inherent methods. *)
+  | BKDyn  (** Binder used for [dyn Trait] existential predicates. *)
+  | BKOther  (** Some other use of a binder outside the main Charon ast. *)
+
+(** An built-in function identifier, identifying a function coming from a
+    standard library. *)
+and builtin_fun_id =
+  | BoxNew  (** [alloc::boxed::Box::new] *)
+  | ArrayToSliceShared
+      (** Cast an array as a slice.
+
+          Converted from [UnOp::ArrayToSlice] *)
+  | ArrayToSliceMut
+      (** Cast an array as a slice.
+
+          Converted from [UnOp::ArrayToSlice] *)
+  | ArrayRepeat
+      (** [repeat(n, x)] returns an array where [x] has been replicated [n]
+          times.
+
+          We introduce this when desugaring the [ArrayRepeat] rvalue. *)
+  | Index of builtin_index_op
+      (** Converted from indexing [ProjectionElem]s. The signature depends on
+          the parameters. It could look like:
+          - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
+          - [fn SliceIndexShared<T>(&[T], usize) -> &T]
+          - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
+          - [fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]]
+          - etc *)
+  | PtrFromParts of ref_kind
+      (** Build a raw pointer, from a data pointer and metadata. The metadata
+          can be unit, if building a thin pointer.
+
+          Converted from [AggregateKind::RawPtr] *)
+
+(** One of 8 built-in indexing operations. *)
+and builtin_index_op = {
+  is_array : bool;  (** Whether this is a slice or array. *)
+  mutability : ref_kind;
+      (** Whether we're indexing mutably or not. Determines the type ofreference
+          of the input and output. *)
+  is_range : bool;
+      (** Whether we're indexing a single element or a subrange. If [true], the
+          function takes two indices and the output is a slice; otherwise, the
+          function take one index and the output is a reference to a single
+          element. *)
+}
+
 (** Builtin types identifiers.
 
     WARNING: for now, all the built-in types are covariant in the generic
@@ -199,22 +277,56 @@ class virtual ['self] map_ty_base_base =
 
     TODO: update to not hardcode the types (except [Box] maybe) and be more
     modular. TODO: move to builtins.rs? *)
-type builtin_ty =
+and builtin_ty =
   | TBox  (** Boxes are de facto a primitive type. *)
   | TArray  (** Primitive type *)
   | TSlice  (** Primitive type *)
   | TStr  (** Primitive type *)
 
-(** A predicate of the form [exists<T> where T: Trait].
+(** A const generic variable in a signature or binder. *)
+and const_generic_var = {
+  index : const_generic_var_id;
+      (** Index identifying the variable among other variables bound at the same
+          level. *)
+  name : string;  (** Const generic name *)
+  ty : literal_type;  (** Type of the const generic *)
+}
 
-    TODO: store something useful here *)
-and existential_predicate = unit
+(** The contents of a [dyn Trait] type. *)
+and dyn_predicate = {
+  binder : ty binder;
+      (** This binder binds a single type [T], which is considered existentially
+          quantified. The predicates in the binder apply to [T] and represent
+          the [dyn Trait] constraints. E.g. [dyn Iterator<Item=u32> + Send] is
+          represented as [exists<T: Iterator<Item=u32> + Send> T].
+
+          Only the first trait clause may have methods. We use the vtable of
+          this trait in the [dyn Trait] pointer metadata. *)
+}
+
+and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
 
 (** Reference to a function declaration. *)
 and fun_decl_ref = {
   id : fun_decl_id;
   generics : generic_args;  (** Generic arguments passed to the function. *)
 }
+
+(** A function identifier. See [crate::ullbc_ast::Terminator] *)
+and fun_id =
+  | FRegular of fun_decl_id
+      (** A "regular" function (function local to the crate, external function
+          not treated as a primitive one). *)
+  | FBuiltin of builtin_fun_id
+      (** A primitive function, coming from a standard library (for instance:
+          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
+
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
+      (** If a trait: the reference to the trait and the id of the trait method.
+          The fun decl id is not really necessary - we put it here for
+          convenience purposes. *)
 
 (** A set of generic arguments. *)
 and generic_args = {
@@ -224,8 +336,30 @@ and generic_args = {
   trait_refs : trait_ref list;
 }
 
+(** Generic parameters for a declaration. We group the generics which come from
+    the Rust compiler substitutions (the regions, types and const generics) as
+    well as the trait clauses. The reason is that we consider that those are
+    parameters that need to be filled. We group in a different place the
+    predicates which are not trait clauses, because those enforce constraints
+    but do not need to be filled with witnesses/instances. *)
+and generic_params = {
+  regions : region_var list;
+  types : type_var list;
+  const_generics : const_generic_var list;
+  trait_clauses : trait_clause list;
+  regions_outlive : (region, region) outlives_pred region_binder list;
+      (** The first region in the pair outlives the second region *)
+  types_outlive : (ty, region) outlives_pred region_binder list;
+      (** The type outlives the region *)
+  trait_type_constraints : trait_type_constraint region_binder list;
+      (** Constraints over trait associated types *)
+}
+
 (** Reference to a global declaration. *)
 and global_decl_ref = { id : global_decl_id; generics : generic_args }
+
+(** .0 outlives .1 *)
+and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
 and ref_kind = RMut | RShared
 
@@ -249,6 +383,17 @@ and region_id = (RegionId.id[@visitors.opaque])
 
 (** A region variable in a signature or binder. *)
 and region_var = (region_id, string option) indexed_var
+
+(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
+    functions like a variable binder, to which variables of the form
+    [TraitRefKind::Clause] can refer to. *)
+and trait_clause = {
+  clause_id : trait_clause_id;
+      (** Index identifying the clause among other clauses bound at the same
+          level. *)
+  span : span option;
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
+}
 
 (** A predicate of the form [Type: Trait<Args>].
 
@@ -290,15 +435,8 @@ and trait_instance_id =
                                ^^^^^^^
                                Clause(0)
           ]} *)
-  | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
+  | ParentClause of trait_ref * trait_clause_id
       (** A parent clause
-
-          Remark: the [TraitDeclId] gives the trait declaration which is
-          implemented by the instance id from which we take the parent clause
-          (see example below). It is not necessary and included for convenience.
-
-          Remark: Ideally we should store a full [TraitRef] instead, but hax
-          does not give us enough information to get the right generic args.
 
           Example:
           {@rust[
@@ -313,11 +451,9 @@ and trait_instance_id =
             fn g<T : Bar>(x : T) {
               x.f()
               ^^^^^
-              Parent(Clause(0), Bar, 1)::f(x)
-                                     ^
-                                     parent clause 1 of clause 0
-                                ^^^
-                         clause 0 implements Bar
+              Parent(Clause(0), 1)::f(x)
+                                ^
+                                parent clause 1 of clause 0
             }
           ]} *)
   | Self
@@ -327,20 +463,34 @@ and trait_instance_id =
   | BuiltinOrAuto of
       trait_decl_ref region_binder
       * trait_ref list
-      * (trait_item_name * ty) list
+      * (trait_item_name * ty * trait_ref list) list
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.
 
           Fields:
           - [trait_decl_ref]
-          - [parent_trait_refs]: The [ImplExpr]s required to satisfy the implied
-            predicates on the trait declaration. E.g. since [FnMut: FnOnce], a
-            built-in [T: FnMut] impl would have an [ImplExpr] for [T: FnOnce].
+          - [parent_trait_refs]: Exactly like the same field on [TraitImpl]: the
+            [TraitRef]s required to satisfy the implied predicates on the trait
+            declaration. E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl
+            would have a [TraitRef] for [T: FnOnce].
           - [types]: The values of the associated types for this trait. *)
   | Dyn of trait_decl_ref region_binder
       (** The automatically-generated implementation for [dyn Trait]. *)
   | UnknownTrait of string  (** For error reporting. *)
+
+(** A constraint over a trait associated type.
+
+    Example:
+    {@rust[
+      T : Foo<S = String>
+              ^^^^^^^^^^
+    ]} *)
+and trait_type_constraint = {
+  trait_ref : trait_ref;
+  type_name : trait_item_name;
+  ty : ty;
+}
 
 and ty =
   | TAdt of type_decl_ref
@@ -383,20 +533,13 @@ and ty =
               type Bar; // type associated to the trait Foo
             }
           ]} *)
-  | TDynTrait of existential_predicate
-      (** [dyn Trait]
-
-          This carries an existentially quantified list of predicates, e.g.
-          [exists<T> where T: Into<u64>]. The predicate must quantify over a
-          single type and no any regions or constants.
-
-          TODO: we don't translate this properly yet. *)
+  | TDynTrait of dyn_predicate  (** [dyn Trait] *)
   | TFnPtr of (ty list * ty) region_binder
       (** Function pointer type. This is a literal pointer to a region of memory
           that contains a callable function. This is a function signature with
           limited generics: it only supports lifetime generics, not other kinds
           of generics. *)
-  | TFnDef of fun_decl_ref region_binder
+  | TFnDef of fn_ptr region_binder
       (** The unique type associated with each function item. Each function item
           is given a unique generic type that takes as input the function's
           early-bound generics. This type is not generally nameable in Rust;
@@ -429,6 +572,9 @@ and type_id =
           Vec, Cell... The Array and Slice types were initially modelled as
           primitive in the [Ty] type. We decided to move them to built-in types
           as it allows for more uniform treatment throughout the codebase. *)
+
+(** A type variable in a signature or binder. *)
+and type_var = (type_var_id, string) indexed_var
 [@@deriving
   show,
   eq,
@@ -438,7 +584,7 @@ and type_id =
       name = "iter_ty";
       monomorphic = [ "env" ];
       variety = "iter";
-      ancestors = [ "iter_ty_base_base" ];
+      ancestors = [ "iter_ty_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -446,7 +592,7 @@ and type_id =
       name = "map_ty";
       monomorphic = [ "env" ];
       variety = "map";
-      ancestors = [ "map_ty_base_base" ];
+      ancestors = [ "map_ty_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
@@ -454,14 +600,12 @@ and type_id =
 class ['self] iter_type_decl_base =
   object (self : 'self)
     inherit [_] iter_ty
-    method visit_span : 'env -> span -> unit = fun _ _ -> ()
     method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
   end
 
 class ['self] map_type_decl_base =
   object (self : 'self)
     inherit [_] map_ty
-    method visit_span : 'env -> span -> span = fun _ x -> x
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
   end
 
@@ -475,26 +619,6 @@ type abort_kind =
   | UnwindTerminate
       (** Unwind had to stop for Abi reasons or because cleanup code panicked
           again. *)
-
-(** A value of type [T] bound by generic parameters. Used in any context where
-    we're adding generic parameters that aren't on the top-level item, e.g.
-    [for<'a>] clauses (uses [RegionBinder] for now), trait methods, GATs (TODO).
-*)
-and 'a0 binder = {
-  binder_params : generic_params;
-  binder_value : 'a0;
-      (** Named this way to highlight accesses to the inner value that might be
-          handling parameters incorrectly. Prefer using helper methods. *)
-}
-
-and binder_kind =
-  | BKTraitMethod of trait_decl_id * trait_item_name
-      (** The parameters of a trait method. Used in the [methods] lists in trait
-          decls and trait impls. *)
-  | BKInherentImplBlock
-      (** The parameters bound in a non-trait [impl] block. Used in the [Name]s
-          of inherent methods. *)
-  | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
 (** Additional information for closures. *)
 and closure_info = {
@@ -510,16 +634,6 @@ and closure_info = {
 }
 
 and closure_kind = Fn | FnMut | FnOnce
-
-(** A const generic variable in a signature or binder. *)
-and const_generic_var = {
-  index : const_generic_var_id;
-      (** Index identifying the variable among other variables bound at the same
-          level. *)
-  name : string;  (** Const generic name *)
-  ty : literal_type;  (** Type of the const generic *)
-}
-
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
 (** Layout of the discriminant. Describes the offset of the discriminant field
@@ -538,25 +652,6 @@ and field = {
 }
 
 and field_id = (FieldId.id[@visitors.opaque])
-
-(** Generic parameters for a declaration. We group the generics which come from
-    the Rust compiler substitutions (the regions, types and const generics) as
-    well as the trait clauses. The reason is that we consider that those are
-    parameters that need to be filled. We group in a different place the
-    predicates which are not trait clauses, because those enforce constraints
-    but do not need to be filled with witnesses/instances. *)
-and generic_params = {
-  regions : region_var list;
-  types : type_var list;
-  const_generics : const_generic_var list;
-  trait_clauses : trait_clause list;
-  regions_outlive : (region, region) outlives_pred region_binder list;
-      (** The first region in the pair outlives the second region *)
-  types_outlive : (ty, region) outlives_pred region_binder list;
-      (** The type outlives the region *)
-  trait_type_constraints : trait_type_constraint region_binder list;
-      (** Constraints over trait associated types *)
-}
 
 (** There are two kinds of [impl] blocks:
     {ul
@@ -622,6 +717,17 @@ and item_kind =
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
+  | VTableTyItem of dyn_predicate
+      (** This is a vtable struct for a trait.
+
+          Fields:
+          - [dyn_predicate]: The [dyn Trait] predicate implemented by this
+            vtable. *)
+  | VTableInstanceItem of trait_impl_ref
+      (** This is a vtable value for an impl.
+
+          Fields:
+          - [impl_ref] *)
 
 (** Meta information about an item (function, trait decl, trait impl, type decl,
     global). *)
@@ -698,9 +804,6 @@ and layout = {
 *)
 and name = (path_elem list[@visitors.opaque])
 
-(** .0 outlives .1 *)
-and ('a0, 'a1) outlives_pred = 'a0 * 'a1
-
 (** See the comments for [Name] *)
 and path_elem =
   | PeIdent of string * disambiguator
@@ -732,30 +835,6 @@ and tag_encoding =
 
           Fields:
           - [untagged_variant] *)
-
-(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
-    functions like a variable binder, to which variables of the form
-    [TraitRefKind::Clause] can refer to. *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** Index identifying the clause among other clauses bound at the same
-          level. *)
-  span : span option;
-  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
-}
-
-(** A constraint over a trait associated type.
-
-    Example:
-    {@rust[
-      T : Foo<S = String>
-              ^^^^^^^^^^
-    ]} *)
-and trait_type_constraint = {
-  trait_ref : trait_ref;
-  type_name : trait_item_name;
-  ty : ty;
-}
 
 (** A type declaration.
 
@@ -806,9 +885,6 @@ and type_decl_kind =
   | TDeclError of string
       (** Used if an error happened during the extraction, and we don't panic on
           error. *)
-
-(** A type variable in a signature or binder. *)
-and type_var = (type_var_id, string) indexed_var
 
 (** A placeholder for the vtable of a trait object. To be implemented in the
     future when [dyn Trait] is fully supported. *)

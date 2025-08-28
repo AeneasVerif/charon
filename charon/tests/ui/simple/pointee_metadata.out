@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -30,6 +32,7 @@ where
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::PartialEq::eq
@@ -43,6 +46,7 @@ where
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::Ordering
@@ -69,6 +73,7 @@ pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::Ord
@@ -78,6 +83,7 @@ pub trait Ord<Self>
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::cmp::Ord::cmp
@@ -95,12 +101,6 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
-// Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
-pub opaque type Formatter<'a>
-where
-    'a : 'a,
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -117,6 +117,7 @@ where
 pub trait Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    vtable: core::fmt::Debug::{vtable}
 }
 
 // Full name: core::fmt::Debug::fmt
@@ -130,6 +131,7 @@ pub trait Hasher<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn finish<'_0> = finish<'_0_0, Self>[Self]
     fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
+    vtable: core::hash::Hasher::{vtable}
 }
 
 // Full name: core::hash::Hash
@@ -137,6 +139,7 @@ pub trait Hasher<Self>
 pub trait Hash<Self>
 {
     fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: core::hash::Hash::hash
@@ -166,6 +169,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sync
@@ -185,6 +189,7 @@ pub trait Unpin<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::ptr::metadata::Pointee
@@ -201,6 +206,7 @@ pub trait Pointee<Self>
     parent_clause7 : [@TraitClause7]: Unpin<Self::Metadata>
     parent_clause8 : [@TraitClause8]: Freeze<Self::Metadata>
     type Metadata
+    non-dyn-compatible
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::to_raw_parts
@@ -250,7 +256,7 @@ fn slice_metadata()
     @5 := [const (0 : u32), const (1 : u32)]
     @4 := &@5
     @3 := &raw const *(@4)
-    @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>>(move (@3))
+    @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>, 2 : usize>(move (@3))
     storage_dead(@3)
     @1 := to_raw_parts<Slice<u32>>(move (@2))
     storage_dead(@2)

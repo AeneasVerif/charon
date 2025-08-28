@@ -18,6 +18,7 @@ pub struct BorrowError {}
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::cell::{RefCell<T>[@TraitClause0::parent_clause0]}::new
@@ -54,6 +55,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -67,7 +69,21 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -77,6 +93,23 @@ where
 {
   None,
   Some(T),
+}
+
+// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop
+fn {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0, T, E>(@1: &'_0 mut (Result<T, E>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+
+// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}
+impl<T, E> Drop for Result<T, E>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+    parent_clause0 = MetaSized<Result<T, E>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, E>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::wrap
@@ -125,7 +158,7 @@ fn foo()
     @3 := &ref_b@1
     @2 := try_borrow<'_, bool>[MetaSized<bool>](move (@3))
     storage_dead(@3)
-    drop @2
+    drop[{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]] @2
     storage_dead(@2)
     @0 := ()
     storage_dead(ref_b@1)
@@ -139,6 +172,7 @@ trait Foo<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::S>
     type S
+    non-dyn-compatible
 }
 
 // Full name: test_crate::f

@@ -153,10 +153,19 @@ let ty_as_literal (ty : ty) : literal_type =
   | TLiteral lty -> lty
   | _ -> raise (Failure "Unreachable")
 
-let ty_as_integer (ty : ty) : integer_type =
-  match ty_as_literal ty with
-  | TInteger ty -> ty
+let literal_as_integer (literal : literal_type) : integer_type =
+  match literal with
+  | TInt ty -> Signed ty
+  | TUInt ty -> Unsigned ty
   | _ -> raise (Failure "Unreachable")
+
+let ty_as_integer (ty : ty) : integer_type =
+  literal_as_integer (ty_as_literal ty)
+
+let integer_as_literal (int_ty : integer_type) : literal_type =
+  match int_ty with
+  | Signed int_ty -> TInt int_ty
+  | Unsigned int_ty -> TUInt int_ty
 
 let const_generic_as_literal (cg : const_generic) : Values.literal =
   match cg with
@@ -168,42 +177,6 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   match id with
   | TraitImpl impl_ref -> (impl_ref.id, impl_ref.generics)
   | _ -> raise (Failure "Unreachable")
-
-let is_signed (int_ty : integer_type) =
-  match int_ty with
-  | Isize | I8 | I16 | I32 | I64 | I128 -> true
-  | Usize | U8 | U16 | U32 | U64 | U128 -> false
-
-let is_in_bounds (int_ty : integer_type) (v : Z.t) =
-  match int_ty with
-  | Isize -> Z.fits_nativeint v
-  | I8 -> (v >= Z.(~- (~$0x80))) && v <= Z.of_int 0x7F
-  | I16 -> (v >= Z.(~- (~$0x8000))) && v <= Z.of_int 0x7FFF
-  | I32 -> Z.fits_int32 v
-  | I64 -> Z.fits_int64 v
-  | Usize -> Z.fits_nativeint_unsigned v
-  | U8 -> v >= Z.zero && v <= Z.of_int 0xFF
-  | U16 -> v >= Z.zero && v <= Z.of_int 0xFFFF
-  | U32 -> Z.fits_int32_unsigned v
-  | U64 -> Z.fits_int64_unsigned v
-  | I128 | U128 ->
-      true (* Only true if derived from anything representable in rust *)
-
-let max_of (int_ty : integer_type) =
-  (* FIXME: Not sure whether all of these values are even representable before being made into Z.t. *)
-  match int_ty with
-  | Isize -> Z.of_nativeint Nativeint.max_int
-  | I8 -> Z.of_int 0x7FF
-  | I16 -> Z.of_int 0x7FFF
-  | I32 -> Z.of_int32 Int32.max_int
-  | I64 -> Z.of_int64 Int64.max_int
-  | I128 -> Z.of_string "0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-  | Usize -> Z.of_nativeint_unsigned Nativeint.minus_one
-  | U8 -> Z.of_int 0xFF
-  | U16 -> Z.of_int 0xFFFF
-  | U32 -> Z.of_int64_unsigned 0xFFFFFFFFL (* Doesn't fit in Int32.t*)
-  | U64 -> Z.of_string "0xFFFFFFFFFFFFFFFF" (* Doesn't fit in Int64.t*)
-  | U128 -> Z.of_string "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
 
 (* Make a debruijn variable of index 0 *)
 let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
@@ -267,7 +240,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
 let mk_unit_ty : ty = TAdt { id = TTuple; generics = empty_generic_args }
 
 (** The usize type *)
-let mk_usize_ty : ty = TLiteral (TInteger Usize)
+let mk_usize_ty : ty = TLiteral (TUInt Usize)
 
 let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with
@@ -311,6 +284,16 @@ let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
   | RVar (Bound _) ->
       raise (Failure "region_in_set shouldn't be called on bound regions")
   | RVar (Free id) -> RegionId.Set.mem id rset
+
+let region_is_free (r : region) : bool =
+  match r with
+  | RVar (Free _) -> true
+  | _ -> false
+
+let region_is_erased (r : region) : bool =
+  match r with
+  | RErased -> true
+  | _ -> false
 
 (** Return the set of regions in an type - TODO: add static?
 
@@ -360,6 +343,21 @@ let ty_has_regions_in_pred (pred : region -> bool) (ty : ty) : bool =
 let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   ty_has_regions_in_pred (fun r -> region_in_set r rset) ty
 
+(** Check if a type has free (i.e., non erased) regions.
+
+    This is useful in particular when using normalized projection types (types
+    where all the regions of interest are free regions, and the other regions
+    are erased, that we use for instance to project the borrows belonging to a
+    symbolic value into different region abstractions): the projection over a
+    symbolic value intersects a region abstraction if its projection type has
+    some free regions (or in other words, if not all the regions appearing in
+    the type are erased). *)
+let ty_has_free_regions (ty : ty) : bool =
+  ty_has_regions_in_pred region_is_free ty
+
+let ty_has_erased_regions (ty : ty) : bool =
+  ty_has_regions_in_pred region_is_erased ty
+
 let generic_args_lengths (args : generic_args) : int * int * int * int =
   let { regions; types; const_generics; trait_refs } = args in
   ( List.length regions,
@@ -379,7 +377,7 @@ let generic_params_lengths (args : generic_params) : int * int * int * int =
     If the [tag] does not correspond to any valid discriminant but there is a
     niche, the resulting [VariantId] will be for the untagged
     variant[TagEncoding::Niche::untagged_variant]. *)
-let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
+let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
   let ( let* ) = Option.bind in
   let* layout = ty_decl.layout in
   let* discr_layout = layout.discriminant_layout in
@@ -388,7 +386,7 @@ let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
       match variants with
       | [] -> None
       | hd_variant :: _ -> (
-          let discr_ty = hd_variant.discriminant.int_ty in
+          let discr_ty = Scalars.get_ty hd_variant.discriminant in
           let rec find_mapi f i = function
             | [] -> None
             | v :: tl ->
@@ -398,11 +396,13 @@ let get_variant_from_tag ty_decl (tag : Values.scalar_value) =
 
           match discr_layout.encoding with
           | Direct -> begin
-              assert (discr_layout.tag_ty = tag.int_ty);
+              assert (discr_layout.tag_ty = Scalars.get_ty tag);
               let discr =
-                if is_in_bounds discr_ty tag.value then
-                  Some { tag with int_ty = discr_ty }
-                else None
+                match
+                  Scalars.mk_scalar ptr_size discr_ty (Scalars.get_val tag)
+                with
+                | Ok sv -> Some sv
+                | Error _ -> None
               in
               find_mapi (fun i v -> Some v.discriminant = discr) 0 variants
             end

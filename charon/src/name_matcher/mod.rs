@@ -64,7 +64,21 @@ impl Pattern {
         name: &Name,
         args: Option<&GenericArgs>,
     ) -> bool {
-        let zipped = self.elems.iter().zip_longest(&name.name).collect_vec();
+        let mut scrutinee_elems = name.name.as_slice();
+        // Patterns that start with an impl block match that impl block anywhere. In such a case we
+        // truncate the scrutinee name to start with the rightmost impl in its name. This isn't
+        // fully precise in case of impls within impls, but we'll ignore that.
+        if let Some(PatElem::Impl(_)) = self.elems.first() {
+            if let Some((i, _)) = scrutinee_elems
+                .iter()
+                .enumerate()
+                .rfind(|(_, elem)| elem.is_impl())
+            {
+                scrutinee_elems = &scrutinee_elems[i..];
+            }
+        }
+
+        let zipped = self.elems.iter().zip_longest(scrutinee_elems).collect_vec();
         let zipped_len = zipped.len();
         for (i, x) in zipped.into_iter().enumerate() {
             let is_last = i + 1 == zipped_len;

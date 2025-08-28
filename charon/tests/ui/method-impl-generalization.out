@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -17,6 +18,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone::clone
@@ -31,6 +33,7 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -38,7 +41,22 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: test_crate::Trait
 trait Trait<Self>
@@ -46,6 +64,7 @@ trait Trait<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn method1 = test_crate::Trait::method1<Self>[Self]
     fn method2<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method2<Self, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    non-dyn-compatible
 }
 
 fn test_crate::Trait::method1<Self>(@1: Self, @2: &'static (u32)) -> bool
@@ -79,7 +98,7 @@ where
     let _other@2: T; // arg #2
 
     @0 := ()
-    drop _other@2
+    drop[Drop<T>] _other@2
     @0 := ()
     return
 }
@@ -89,6 +108,7 @@ impl Trait for () {
     parent_clause0 = Sized<()>
     fn method1 = {impl Trait for ()}::method1
     fn method2<T, [@TraitClause0]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::MyCompare
@@ -97,6 +117,7 @@ trait MyCompare<Self, Other>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Other>
     fn compare = test_crate::MyCompare::compare<Self, Other>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
@@ -119,6 +140,7 @@ impl<'a> MyCompare<&'a (())> for &'a (()) {
     parent_clause0 = Sized<&'_ (())>
     parent_clause1 = Sized<&'_ (())>
     fn compare = {impl MyCompare<&'a (())> for &'a (())}::compare<'a>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main
@@ -184,6 +206,7 @@ trait Foo<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>[Self]
+    non-dyn-compatible
 }
 
 fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
@@ -205,6 +228,7 @@ fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
 impl Foo for () {
     parent_clause0 = MetaSized<()>
     fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::call_foo

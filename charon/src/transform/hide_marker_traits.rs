@@ -4,11 +4,31 @@ use std::collections::HashSet;
 
 use crate::{ast::*, name_matcher::NamePattern};
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 #[derive(Visitor)]
 struct RemoveMarkersVisitor {
     exclude: HashSet<TraitDeclId>,
+}
+
+impl RemoveMarkersVisitor {
+    fn filter_trait_refs(&mut self, trait_refs: &mut Vector<TraitClauseId, TraitRef>) {
+        for i in trait_refs.all_indices() {
+            let tref = &trait_refs[i];
+            if self.exclude.contains(&tref.trait_decl_ref.skip_binder.id) {
+                trait_refs.remove(i);
+            }
+        }
+    }
+
+    fn filter_trait_clauses(&mut self, trait_clauses: &mut Vector<TraitClauseId, TraitClause>) {
+        for i in trait_clauses.all_indices() {
+            let clause = &trait_clauses[i];
+            if self.exclude.contains(&clause.trait_.skip_binder.id) {
+                trait_clauses.remove(i);
+            }
+        }
+    }
 }
 
 // Remove clauses and trait refs that mention the offending traits. This relies on the fact that
@@ -16,38 +36,27 @@ struct RemoveMarkersVisitor {
 // FIXME: this is a footgun, it caused at least https://github.com/AeneasVerif/charon/issues/561.
 impl VisitAstMut for RemoveMarkersVisitor {
     fn enter_generic_params(&mut self, args: &mut GenericParams) {
-        let trait_clauses = &mut args.trait_clauses;
-        for i in trait_clauses.all_indices() {
-            let clause = &trait_clauses[i];
-            if self.exclude.contains(&clause.trait_.skip_binder.id) {
-                trait_clauses.remove(i);
-            }
-        }
+        self.filter_trait_clauses(&mut args.trait_clauses);
     }
     fn enter_generic_args(&mut self, args: &mut GenericArgs) {
-        let trait_refs = &mut args.trait_refs;
-        for i in trait_refs.all_indices() {
-            let tref = &trait_refs[i];
-            if self.exclude.contains(&tref.trait_decl_ref.skip_binder.id) {
-                trait_refs.remove(i);
-            }
-        }
+        self.filter_trait_refs(&mut args.trait_refs);
     }
     fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
-        let trait_clauses = &mut tdecl.parent_clauses;
-        for i in trait_clauses.all_indices() {
-            let clause = &trait_clauses[i];
-            if self.exclude.contains(&clause.trait_.skip_binder.id) {
-                trait_clauses.remove(i);
-            }
-        }
+        self.filter_trait_clauses(&mut tdecl.parent_clauses);
     }
     fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
-        let trait_refs = &mut timpl.parent_trait_refs;
-        for i in trait_refs.all_indices() {
-            let tref = &trait_refs[i];
-            if self.exclude.contains(&tref.trait_decl_ref.skip_binder.id) {
-                trait_refs.remove(i);
+        self.filter_trait_refs(&mut timpl.parent_trait_refs);
+    }
+    fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
+        if let TraitRefKind::BuiltinOrAuto {
+            parent_trait_refs,
+            types,
+            ..
+        } = x
+        {
+            self.filter_trait_refs(parent_trait_refs);
+            for (_, _, trait_refs) in types {
+                self.filter_trait_refs(trait_refs);
             }
         }
     }
@@ -56,11 +65,9 @@ impl VisitAstMut for RemoveMarkersVisitor {
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        // Remove any mention of these traits in generic parameters and arguments.
-        // We always hide `Allocator` because in `Box` it refers to a type parameter that we always
-        // remove.
-        let exclude: &[_] = if ctx.options.hide_marker_traits {
-            &[
+        // We remove any mention of these traits in generic parameters and arguments.
+        let mut exclude = if ctx.options.hide_marker_traits {
+            vec![
                 "core::marker::Destruct",
                 "core::marker::PointeeSized",
                 "core::marker::MetaSized",
@@ -69,13 +76,16 @@ impl TransformPass for Transform {
                 "core::marker::Send",
                 "core::marker::Sync",
                 "core::marker::Unpin",
-                "core::alloc::Allocator",
             ]
-        } else if ctx.options.raw_boxes {
-            &[]
         } else {
-            &["core::alloc::Allocator"]
+            vec![]
         };
+        if ctx.options.hide_allocator {
+            exclude.push("core::alloc::Allocator");
+        }
+        if exclude.is_empty() {
+            return;
+        }
 
         let exclude: Vec<NamePattern> = exclude
             .into_iter()

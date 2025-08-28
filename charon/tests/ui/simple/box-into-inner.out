@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::drop::Drop
@@ -17,6 +18,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -49,11 +51,22 @@ where
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
+}
 
 // Full name: test_crate::into_inner
 fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
@@ -96,7 +109,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
     assert(copy (@13) == true)
     _x@2 := move (*(@6))
     @0 := ()
-    drop _x@2
+    drop[{impl Drop for String}] _x@2
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1

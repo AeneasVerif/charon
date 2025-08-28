@@ -17,10 +17,10 @@ module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
 (* Imports *)
-type builtin_fun_id = Expressions.builtin_fun_id [@@deriving show, ord]
-type fun_id = Expressions.fun_id [@@deriving show, ord]
+type builtin_fun_id = Types.builtin_fun_id [@@deriving show, ord]
+type fun_id = Types.fun_id [@@deriving show, ord]
 
-type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
+type fun_id_or_trait_method_ref = Types.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
@@ -209,6 +209,9 @@ type trait_decl = {
           The binder contains the type parameters specific to the method. The
           [FunDeclRef] then provides a full list of arguments to the pointed-to
           function. *)
+  vtable : type_decl_ref option;
+      (** The virtual table struct for this trait, if it has one. It is
+          guaranteed that the trait has a vtable iff it is dyn-compatible. *)
 }
 [@@deriving
   show,
@@ -256,6 +259,9 @@ type trait_impl = {
       (** The associated types declared in the trait. *)
   methods : (trait_item_name * fun_decl_ref binder) list;
       (** The implemented methods *)
+  vtable : global_decl_ref option;
+      (** The virtual table instance for this trait implementation. This is
+          [Some] iff the trait is dyn-compatible. *)
 }
 [@@deriving
   show,
@@ -309,8 +315,16 @@ type cli_options = {
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
   monomorphize : bool;
+      (** Monomorphize the items encountered when possible. Generic items found
+          in the crate are translated as normal. To only translate a particular
+          call graph, use [--start-from]. This uses a different mechanism than
+          [--monomorphize-conservative] which should be a lot more complete, but
+          doesn't currently support [dyn Trait]. *)
+  monomorphize_conservative : bool;
       (** Monomorphize the code, replacing generics with their concrete types.
-      *)
+          This is less complete than [--monomorphize] but at least doesn't crash
+          on [dyn Trait]. This will eventually be fully replaced with
+          [--monomorphized]. *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private
           fields. When this flag is on, we don't. *)
@@ -331,12 +345,18 @@ type cli_options = {
   hide_marker_traits : bool;
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
           anywhere they show up. *)
+  hide_allocator : bool;
+      (** Hide the [A] type parameter on standard library containers ([Box],
+          [Vec], etc). *)
   remove_unused_self_clauses : bool;
       (** Trait method declarations take a [Self: Trait] clause as parameter, so
           that they can be reused by multiple trait impls. This however causes
           trait definitions to be mutually recursive with their method
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion. *)
+  add_drop_bounds : bool;
+      (** Whether to add [Drop] bounds everywhere to enable proper tracking of
+          what code runs on a given [drop] call. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to
@@ -414,5 +434,6 @@ and preset =
           were made optional and disabled by default. *)
   | Aeneas
   | Eurydice
+  | Soteria
   | Tests
 [@@deriving show]

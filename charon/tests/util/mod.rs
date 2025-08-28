@@ -62,7 +62,10 @@ fn expect_file_contents(path: &Path, actual: snapbox::Data) -> snapbox::assert::
 }
 
 /// Given a string that contains rust code, this calls charon on it and returns the result.
-pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate> {
+pub fn translate_rust_text(
+    code: impl Display,
+    options: &[&str],
+) -> anyhow::Result<TranslatedCrate> {
     // Initialize the logger
     logger::initialize_logger();
 
@@ -82,6 +85,7 @@ pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate
         .arg("rustc")
         .arg("--dest-file")
         .arg(&output_path)
+        .args(options)
         .arg("--")
         .arg("--edition=2021")
         .arg("--crate-type=rlib")

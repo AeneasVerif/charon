@@ -24,6 +24,20 @@ pub enum Charon {
     ToolchainPath(ToolchainPathArgs),
     /// Pretty-print the given llbc file.
     PrettyPrint(PrettyPrintArgs),
+    /// Print the version.
+    Version,
+}
+
+impl Charon {
+    pub fn name(&self) -> &str {
+        match self {
+            Charon::Rustc(..) => "rustc",
+            Charon::Cargo(..) => "cargo",
+            Charon::ToolchainPath(..) => "toolchain-path",
+            Charon::PrettyPrint(..) => "pretty-print",
+            Charon::Version => "version",
+        }
+    }
 }
 
 /// Read a llbc or ullbc file and pretty print it.

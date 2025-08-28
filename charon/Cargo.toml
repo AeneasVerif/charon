@@ -1,11 +1,11 @@
 [package]
 name = "charon"
-version = "0.1.108"
+version = "0.1.123"
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
 ]
-edition = "2021"
+edition = "2024"
 license = "Apache-2.0"
 
 [lib]
@@ -48,7 +48,7 @@ clap = { version = "4.0", features = ["derive", "env"] }
 colored = "2.0.4"
 convert_case = "0.6.0"
 crates_io_api = { version = "0.11.0", optional = true }
-derive_generic_visitor = "0.1.0"
+derive_generic_visitor = "0.2.0"
 either = "1.15.0"
 env_logger = { version = "0.11", features = ["color"] }
 flate2 = { version = "1.0.34", optional = true }

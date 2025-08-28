@@ -15,12 +15,6 @@ error: Unexpected region kind: Region { kind: ReError(ErrorGuaranteed { todo: "E
 5 | fn get(_x: &'a u32) {}
   | ^^^^^^^^^^^^^^^^^^^^^^
 
-error: Item `test_crate::get` caused errors; ignoring.
- --> tests/ui/unsupported/unbound-lifetime.rs:5:1
-  |
-5 | fn get(_x: &'a u32) {}
-  | ^^^^^^^^^^^^^^^^^^^
-
 error: aborting due to 1 previous error
 
 For more information about this error, try `rustc --explain E0261`.

@@ -9,25 +9,34 @@ impl Transform {
     fn update_statements(locals: &Locals, seq: &mut [Statement]) -> Vec<Statement> {
         // Remove double aborts. This can happen when a function call is turned into an `Abort` by
         // `inline_local_panic_functions`.
-        if let [Statement {
-            content: StatementKind::Abort(_),
-            ..
-        }, Statement {
-            content: second_abort @ StatementKind::Abort(_),
-            ..
-        }, ..] = seq
+        if let [
+            Statement {
+                content: StatementKind::Abort(_),
+                ..
+            },
+            Statement {
+                content: second_abort @ StatementKind::Abort(_),
+                ..
+            },
+            ..,
+        ] = seq
         {
             *second_abort = StatementKind::Nop;
             return Vec::new();
         }
-        if let [Statement {
-            content: StatementKind::Call(call),
-            ..
-        }, Statement {
-            content: second_abort @ StatementKind::Abort(_),
-            ..
-        }, ..] = seq
-            && locals[call.dest.local_id()].ty.kind().is_never()
+        if let [
+            Statement {
+                content: StatementKind::Call(call),
+                ..
+            },
+            Statement {
+                content: second_abort @ StatementKind::Abort(_),
+                ..
+            },
+            ..,
+        ] = seq
+            && let Some(local_id) = call.dest.as_local()
+            && locals[local_id].ty.kind().is_never()
         {
             *second_abort = StatementKind::Nop;
             return Vec::new();

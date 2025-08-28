@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_cargo_build_script::FOO() -> u8
+// Full name: test_cargo_build_script::FOO
+pub fn FOO() -> u8
 {
     let @0: u8; // return
 
@@ -8,7 +9,8 @@ pub fn test_cargo_build_script::FOO() -> u8
     return
 }
 
-pub const test_cargo_build_script::FOO: u8 = test_cargo_build_script::FOO()
+// Full name: test_cargo_build_script::FOO
+pub const FOO: u8 = FOO()
 
 // Full name: test_cargo_build_script::main
 fn main()

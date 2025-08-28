@@ -25,7 +25,7 @@ use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast as tgt;
-use crate::meta::{combine_span, Span};
+use crate::meta::{Span, combine_span};
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{self as src};
@@ -33,9 +33,9 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_rational::BigRational;
+use petgraph::Direction;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
-use petgraph::Direction;
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 
 use super::ctx::TransformPass;
@@ -787,7 +787,9 @@ fn compute_loop_exits(
                 // several candidates.
                 let span = body.body[loop_id].terminator.span; // Taking *a* span from the block
                 sanity_check!(ctx, span, candidates.is_empty());
-                trace!("Loop {loop_id}: did not select an exit candidate because they all lead to panics");
+                trace!(
+                    "Loop {loop_id}: did not select an exit candidate because they all lead to panics"
+                );
                 chosen_loop_exits.insert(loop_id, None);
             }
         } else {
@@ -1029,9 +1031,7 @@ fn compute_switch_exits(
     let mut succs_info_map = HashMap::new();
     trace!(
         "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
-        cfg.cfg,
-        cfg.cfg_no_be,
-        cfg.switch_blocks
+        cfg.cfg, cfg.cfg_no_be, cfg.switch_blocks
     );
     let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
 
@@ -1133,7 +1133,9 @@ fn compute_switch_exits(
                     ord_exits_set.insert(make_ord_block_id(exit.id, tsort_map));
                     exits.insert(bid, Some(exit.id));
                 } else {
-                    trace!("Ignoring the exit candidate because of an intersection with external switches");
+                    trace!(
+                        "Ignoring the exit candidate because of an intersection with external switches"
+                    );
                     exits.insert(bid, None);
                 }
             }
@@ -1463,7 +1465,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
         src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
         src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
-        src::StatementKind::Drop(place) => tgt::StatementKind::Drop(place),
+        src::StatementKind::Drop(place, tref) => tgt::StatementKind::Drop(place, tref),
         src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
         src::StatementKind::Nop => tgt::StatementKind::Nop,
         src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
@@ -1635,9 +1637,7 @@ fn translate_block(
     // this block, and insert the block id in the set of already translated blocks.
     trace!(
         "Parent loops: {:?}, Parent switch exits: {:?}, Block id: {}",
-        parent_loops,
-        switch_exit_blocks,
-        block_id
+        parent_loops, switch_exit_blocks, block_id
     );
     info.explored.insert(block_id);
 

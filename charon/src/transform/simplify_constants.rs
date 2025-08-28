@@ -42,13 +42,35 @@ fn transform_constant_expr(
             // it as a function call, like for globals.
             Operand::Const(val)
         }
-        RawConstantExpr::Global(global_ref) => {
-            Operand::Move(new_var(Rvalue::Global(global_ref), val.ty.clone()))
+        // Here we use a copy, rather than a move -- moving a global would leave it uninitialized,
+        // which would e.g. make the following code fail:
+        //     const GLOBAL: usize = 0;
+        //     let x = GLOBAL;
+        //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
+        RawConstantExpr::Global(global_ref) => Operand::Copy(Place::new_global(global_ref, val.ty)),
+        RawConstantExpr::PtrNoProvenance(ptr) => {
+            let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
+            let ptr_usize = RawConstantExpr::Literal(Literal::Scalar(ScalarValue::Unsigned(
+                UIntTy::Usize,
+                ptr,
+            )));
+            let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty.clone()));
+            let uvar = new_var(
+                Rvalue::UnaryOp(
+                    cast,
+                    Operand::Const(Box::new(ConstantExpr {
+                        value: ptr_usize,
+                        ty: usize_ty,
+                    })),
+                ),
+                val.ty,
+            );
+            Operand::Move(uvar)
         }
         RawConstantExpr::Ref(bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
-                    Rvalue::GlobalRef(global_ref, RefKind::Shared),
+                    Rvalue::Ref(Place::new_global(global_ref, bval.ty), BorrowKind::Shared),
                     val.ty,
                 )),
                 _ => {
@@ -68,9 +90,10 @@ fn transform_constant_expr(
         }
         RawConstantExpr::Ptr(rk, bval) => {
             match bval.value {
-                RawConstantExpr::Global(global_ref) => {
-                    Operand::Move(new_var(Rvalue::GlobalRef(global_ref, rk), val.ty))
-                }
+                RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
+                    Rvalue::RawPtr(Place::new_global(global_ref, bval.ty), rk),
+                    val.ty,
+                )),
                 _ => {
                     // Recurse on the borrowed value
                     let bval_ty = bval.ty.clone();
@@ -108,7 +131,10 @@ fn transform_constant_expr(
                 .map(|x| transform_constant_expr(span, Box::new(x), new_var))
                 .collect_vec();
 
-            let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));
+            let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Unsigned(
+                UIntTy::Usize,
+                fields.len() as u128,
+            )));
             let tref = val.ty.kind().as_adt().unwrap();
             assert_matches!(
                 *tref.id.as_builtin().unwrap(),

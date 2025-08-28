@@ -12,10 +12,14 @@
   "test_crate::GenericNotLastField": "None",
   "test_crate::GenericBehindIndirection": "None",
   "test_crate::ThinGeneric": null,
+  "test_crate::Showable::{vtable}": null,
   "alloc::alloc::Global": "None",
   "core::cmp::Ordering": "None",
   "core::option::Option": "None",
   "core::fmt::Formatter": "None",
   "core::result::Result": "None",
-  "core::fmt::Error": "None"
+  "core::fmt::Error": "None",
+  "core::alloc::layout::Layout": "None",
+  "core::ptr::non_null::NonNull": "None",
+  "core::alloc::AllocError": "None"
 }

@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -69,11 +70,11 @@ pub fn mul2_add1(@1: u32) -> u32
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (x@1)
-    @5 := copy (@3) + copy (@4)
+    @5 := copy (@3) panic.+ copy (@4)
     @2 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
-    @6 := copy (@2) + const (1 : u32)
+    @6 := copy (@2) panic.+ const (1 : u32)
     @0 := move (@6)
     storage_dead(@2)
     return
@@ -98,7 +99,7 @@ pub fn use_mul2_add1(@1: u32, @2: u32) -> u32
     storage_dead(@4)
     storage_live(@5)
     @5 := copy (y@2)
-    @6 := copy (@3) + copy (@5)
+    @6 := copy (@3) panic.+ copy (@5)
     @0 := move (@6)
     storage_dead(@5)
     storage_dead(@3)
@@ -112,7 +113,7 @@ pub fn test_crate::incr<'a>(@1: &'a mut (u32))
     let @2: u32; // anonymous local
 
     storage_live(@2)
-    @2 := copy (*(x@1)) + const (1 : u32)
+    @2 := copy (*(x@1)) panic.+ const (1 : u32)
     *(x@1) := move (@2)
     @0 := ()
     @0 := ()
@@ -228,7 +229,7 @@ where
         storage_live(@9)
         storage_live(@10)
         @10 := copy (i@2)
-        @11 := copy (@10) - const (1 : u32)
+        @11 := copy (@10) panic.- const (1 : u32)
         @9 := move (@11)
         storage_dead(@10)
         @7 := list_nth<'_, T>[@TraitClause0](move (@8), move (@9))
@@ -306,7 +307,7 @@ where
         storage_live(@14)
         storage_live(@15)
         @15 := copy (i@2)
-        @16 := copy (@15) - const (1 : u32)
+        @16 := copy (@15) panic.- const (1 : u32)
         @14 := move (@16)
         storage_dead(@15)
         @12 := list_nth_mut<'_, T>[@TraitClause0](move (@13), move (@14))
@@ -374,7 +375,7 @@ where
                     storage_dead(@8)
                     storage_dead(@7)
                     storage_dead(@6)
-                    @9 := copy (i@2) - const (1 : u32)
+                    @9 := copy (i@2) panic.- const (1 : u32)
                     i@2 := move (@9)
                     storage_live(@10)
                     @10 := &mut *(*(tl@5))
@@ -435,12 +436,12 @@ pub fn i32_id(@1: i32) -> i32
         storage_live(@5)
         storage_live(@6)
         @6 := copy (i@1)
-        @7 := copy (@6) - const (1 : i32)
+        @7 := copy (@6) panic.- const (1 : i32)
         @5 := move (@7)
         storage_dead(@6)
         @4 := i32_id(move (@5))
         storage_dead(@5)
-        @8 := copy (@4) + const (1 : i32)
+        @8 := copy (@4) panic.+ const (1 : i32)
         @0 := move (@8)
         storage_dead(@4)
     }
@@ -495,6 +496,7 @@ pub trait Counter<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>[Self]
+    vtable: test_crate::Counter::{vtable}
 }
 
 pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
@@ -512,7 +514,7 @@ pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
     storage_live(@3)
     storage_live(x@2)
     x@2 := copy (*(self@1))
-    @3 := copy (*(self@1)) + const (1 : usize)
+    @3 := copy (*(self@1)) panic.+ const (1 : usize)
     *(self@1) := move (@3)
     @0 := copy (x@2)
     storage_dead(x@2)
@@ -523,6 +525,7 @@ pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
 impl Counter for usize {
     parent_clause0 = MetaSized<usize>
     fn incr<'_0> = {impl Counter for usize}::incr<'_0_0>
+    vtable: {impl Counter for usize}::{vtable}
 }
 
 // Full name: test_crate::use_counter

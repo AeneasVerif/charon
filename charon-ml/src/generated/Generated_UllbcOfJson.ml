@@ -102,9 +102,10 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Deinit", deinit) ] ->
         let* deinit = place_of_json ctx deinit in
         Ok (Deinit deinit)
-    | `Assoc [ ("Drop", drop) ] ->
-        let* drop = place_of_json ctx drop in
-        Ok (Drop drop)
+    | `Assoc [ ("Drop", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json ctx x_0 in
+        let* x_1 = trait_ref_of_json ctx x_1 in
+        Ok (Drop (x_0, x_1))
     | `Assoc [ ("Assert", assert_) ] ->
         let* assert_ = assertion_of_json ctx assert_ in
         Ok (Assert assert_)

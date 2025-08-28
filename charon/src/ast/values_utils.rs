@@ -1,6 +1,5 @@
 //! Implementations for [crate::values]
 use crate::ast::*;
-use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Debug, Clone)]
 pub enum ScalarError {
@@ -8,50 +7,81 @@ pub enum ScalarError {
     IncorrectSign,
     /// Out of bounds scalar
     OutOfBounds,
+    UnsupportedPtrSize,
 }
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
 
+macro_rules! from_le_bytes {
+    ($m:ident, $b:ident, [$(($i_ty: ty, $i:ident, $s:ident, $n_ty:ty, $t:ty)),*]) => {
+        match $m {
+            $(
+                IntegerTy::$s(<$i_ty>::$i) => {
+                    let n = size_of::<$n_ty>();
+                    let b: [u8; _] = $b[0..n].try_into().unwrap();
+                    ScalarValue::$s(<$i_ty>::$i, <$n_ty>::from_le_bytes(b) as $t)
+                }
+            )*
+        }
+    }
+}
+
 impl ScalarValue {
+    fn ptr_size_max(ptr_size: ByteCount, signed: bool) -> ScalarResult<u128> {
+        match ptr_size {
+            2 => Ok(if signed {
+                i16::MAX as u128
+            } else {
+                u16::MAX as u128
+            }),
+            4 => Ok(if signed {
+                i32::MAX as u128
+            } else {
+                u32::MAX as u128
+            }),
+            8 => Ok(if signed {
+                i64::MAX as u128
+            } else {
+                u64::MAX as u128
+            }),
+            _ => Err(ScalarError::UnsupportedPtrSize),
+        }
+    }
+
+    fn ptr_size_min(ptr_size: ByteCount, signed: bool) -> ScalarResult<i128> {
+        match ptr_size {
+            2 => Ok(if signed {
+                i16::MIN as i128
+            } else {
+                u16::MIN as i128
+            }),
+            4 => Ok(if signed {
+                i32::MIN as i128
+            } else {
+                u32::MIN as i128
+            }),
+            8 => Ok(if signed {
+                i64::MIN as i128
+            } else {
+                u64::MIN as i128
+            }),
+            _ => Err(ScalarError::UnsupportedPtrSize),
+        }
+    }
+
     pub fn get_integer_ty(&self) -> IntegerTy {
         match self {
-            ScalarValue::Isize(_) => IntegerTy::Isize,
-            ScalarValue::I8(_) => IntegerTy::I8,
-            ScalarValue::I16(_) => IntegerTy::I16,
-            ScalarValue::I32(_) => IntegerTy::I32,
-            ScalarValue::I64(_) => IntegerTy::I64,
-            ScalarValue::I128(_) => IntegerTy::I128,
-            ScalarValue::Usize(_) => IntegerTy::Usize,
-            ScalarValue::U8(_) => IntegerTy::U8,
-            ScalarValue::U16(_) => IntegerTy::U16,
-            ScalarValue::U32(_) => IntegerTy::U32,
-            ScalarValue::U64(_) => IntegerTy::U64,
-            ScalarValue::U128(_) => IntegerTy::U128,
+            ScalarValue::Signed(ty, _) => IntegerTy::Signed(*ty),
+            ScalarValue::Unsigned(ty, _) => IntegerTy::Unsigned(*ty),
         }
     }
 
     pub fn is_int(&self) -> bool {
-        matches!(
-            self,
-            ScalarValue::Isize(_)
-                | ScalarValue::I8(_)
-                | ScalarValue::I16(_)
-                | ScalarValue::I32(_)
-                | ScalarValue::I64(_)
-                | ScalarValue::I128(_)
-        )
+        matches!(self, ScalarValue::Signed(_, _))
     }
 
     pub fn is_uint(&self) -> bool {
-        matches!(
-            self,
-            ScalarValue::Usize(_)
-                | ScalarValue::U8(_)
-                | ScalarValue::U16(_)
-                | ScalarValue::U32(_)
-                | ScalarValue::U64(_)
-                | ScalarValue::U128(_)
-        )
+        matches!(self, ScalarValue::Unsigned(_, _))
     }
 
     /// When computing the result of binary operations, we convert the values
@@ -59,42 +89,28 @@ impl ScalarValue {
     /// of course).
     pub fn as_uint(&self) -> ScalarResult<u128> {
         match self {
-            ScalarValue::Usize(v) => Ok(*v as u128),
-            ScalarValue::U8(v) => Ok(*v as u128),
-            ScalarValue::U16(v) => Ok(*v as u128),
-            ScalarValue::U32(v) => Ok(*v as u128),
-            ScalarValue::U64(v) => Ok(*v as u128),
-            ScalarValue::U128(v) => Ok(*v),
+            ScalarValue::Unsigned(_, v) => Ok(*v),
             _ => Err(ScalarError::IncorrectSign),
         }
     }
 
-    pub fn uint_is_in_bounds(ty: IntegerTy, v: u128) -> bool {
+    pub fn uint_is_in_bounds(ptr_size: ByteCount, ty: UIntTy, v: u128) -> bool {
         match ty {
-            IntegerTy::Usize => v <= (usize::MAX as u128),
-            IntegerTy::U8 => v <= (u8::MAX as u128),
-            IntegerTy::U16 => v <= (u16::MAX as u128),
-            IntegerTy::U32 => v <= (u32::MAX as u128),
-            IntegerTy::U64 => v <= (u64::MAX as u128),
-            IntegerTy::U128 => true,
-            _ => false,
+            UIntTy::Usize => v <= Self::ptr_size_max(ptr_size, false).unwrap(),
+            UIntTy::U8 => v <= (u8::MAX as u128),
+            UIntTy::U16 => v <= (u16::MAX as u128),
+            UIntTy::U32 => v <= (u32::MAX as u128),
+            UIntTy::U64 => v <= (u64::MAX as u128),
+            UIntTy::U128 => true,
         }
     }
 
-    pub fn from_unchecked_uint(ty: IntegerTy, v: u128) -> ScalarValue {
-        match ty {
-            IntegerTy::Usize => ScalarValue::Usize(v as u64),
-            IntegerTy::U8 => ScalarValue::U8(v as u8),
-            IntegerTy::U16 => ScalarValue::U16(v as u16),
-            IntegerTy::U32 => ScalarValue::U32(v as u32),
-            IntegerTy::U64 => ScalarValue::U64(v as u64),
-            IntegerTy::U128 => ScalarValue::U128(v),
-            _ => panic!("Expected an unsigned integer kind"),
-        }
+    pub fn from_unchecked_uint(ty: UIntTy, v: u128) -> ScalarValue {
+        ScalarValue::Unsigned(ty, v)
     }
 
-    pub fn from_uint(ty: IntegerTy, v: u128) -> ScalarResult<ScalarValue> {
-        if !ScalarValue::uint_is_in_bounds(ty, v) {
+    pub fn from_uint(ptr_size: ByteCount, ty: UIntTy, v: u128) -> ScalarResult<ScalarValue> {
+        if !ScalarValue::uint_is_in_bounds(ptr_size, ty, v) {
             trace!("Not in bounds for {:?}: {}", ty, v);
             Err(ScalarError::OutOfBounds)
         } else {
@@ -107,120 +123,72 @@ impl ScalarValue {
     /// of course).
     pub fn as_int(&self) -> ScalarResult<i128> {
         match self {
-            ScalarValue::Isize(v) => Ok(*v as i128),
-            ScalarValue::I8(v) => Ok(*v as i128),
-            ScalarValue::I16(v) => Ok(*v as i128),
-            ScalarValue::I32(v) => Ok(*v as i128),
-            ScalarValue::I64(v) => Ok(*v as i128),
-            ScalarValue::I128(v) => Ok(*v),
+            ScalarValue::Signed(_, v) => Ok(*v),
             _ => Err(ScalarError::IncorrectSign),
         }
     }
 
-    pub fn int_is_in_bounds(ty: IntegerTy, v: i128) -> bool {
+    pub fn int_is_in_bounds(ptr_size: ByteCount, ty: IntTy, v: i128) -> bool {
         match ty {
-            IntegerTy::Isize => v >= (isize::MIN as i128) && v <= (isize::MAX as i128),
-            IntegerTy::I8 => v >= (i8::MIN as i128) && v <= (i8::MAX as i128),
-            IntegerTy::I16 => v >= (i16::MIN as i128) && v <= (i16::MAX as i128),
-            IntegerTy::I32 => v >= (i32::MIN as i128) && v <= (i32::MAX as i128),
-            IntegerTy::I64 => v >= (i64::MIN as i128) && v <= (i64::MAX as i128),
-            IntegerTy::I128 => true,
-            _ => false,
+            IntTy::Isize => {
+                v >= Self::ptr_size_min(ptr_size, true).unwrap()
+                    && v <= Self::ptr_size_max(ptr_size, true).unwrap() as i128
+            }
+            IntTy::I8 => v >= (i8::MIN as i128) && v <= (i8::MAX as i128),
+            IntTy::I16 => v >= (i16::MIN as i128) && v <= (i16::MAX as i128),
+            IntTy::I32 => v >= (i32::MIN as i128) && v <= (i32::MAX as i128),
+            IntTy::I64 => v >= (i64::MIN as i128) && v <= (i64::MAX as i128),
+            IntTy::I128 => true,
         }
     }
 
-    pub fn from_unchecked_int(ty: IntegerTy, v: i128) -> ScalarValue {
-        match ty {
-            IntegerTy::Isize => ScalarValue::Isize(v as i64),
-            IntegerTy::I8 => ScalarValue::I8(v as i8),
-            IntegerTy::I16 => ScalarValue::I16(v as i16),
-            IntegerTy::I32 => ScalarValue::I32(v as i32),
-            IntegerTy::I64 => ScalarValue::I64(v as i64),
-            IntegerTy::I128 => ScalarValue::I128(v),
-            _ => panic!("Expected a signed integer kind"),
-        }
-    }
-
-    pub fn from_le_bytes(ty: IntegerTy, b: [u8; 16]) -> ScalarValue {
-        match ty {
-            IntegerTy::Isize => {
-                let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::Isize(i64::from_le_bytes(b))
-            }
-            IntegerTy::I8 => {
-                let b: [u8; 1] = b[0..1].try_into().unwrap();
-                ScalarValue::I8(i8::from_le_bytes(b))
-            }
-            IntegerTy::I16 => {
-                let b: [u8; 2] = b[0..2].try_into().unwrap();
-                ScalarValue::I16(i16::from_le_bytes(b))
-            }
-            IntegerTy::I32 => {
-                let b: [u8; 4] = b[0..4].try_into().unwrap();
-                ScalarValue::I32(i32::from_le_bytes(b))
-            }
-            IntegerTy::I64 => {
-                let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::I64(i64::from_le_bytes(b))
-            }
-            IntegerTy::I128 => {
-                let b: [u8; 16] = b[0..16].try_into().unwrap();
-                ScalarValue::I128(i128::from_le_bytes(b))
-            }
-            IntegerTy::Usize => {
-                let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::Usize(u64::from_le_bytes(b))
-            }
-            IntegerTy::U8 => {
-                let b: [u8; 1] = b[0..1].try_into().unwrap();
-                ScalarValue::U8(u8::from_le_bytes(b))
-            }
-            IntegerTy::U16 => {
-                let b: [u8; 2] = b[0..2].try_into().unwrap();
-                ScalarValue::U16(u16::from_le_bytes(b))
-            }
-            IntegerTy::U32 => {
-                let b: [u8; 4] = b[0..4].try_into().unwrap();
-                ScalarValue::U32(u32::from_le_bytes(b))
-            }
-            IntegerTy::U64 => {
-                let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::U64(u64::from_le_bytes(b))
-            }
-            IntegerTy::U128 => {
-                let b: [u8; 16] = b[0..16].try_into().unwrap();
-                ScalarValue::U128(u128::from_le_bytes(b))
-            }
-        }
+    pub fn from_unchecked_int(ty: IntTy, v: i128) -> ScalarValue {
+        ScalarValue::Signed(ty, v)
     }
 
     /// Most integers are represented as `u128` by rustc. We must be careful not to sign-extend.
     pub fn to_bits(&self) -> u128 {
         match *self {
-            ScalarValue::Usize(v) => v as u128,
-            ScalarValue::U8(v) => v as u128,
-            ScalarValue::U16(v) => v as u128,
-            ScalarValue::U32(v) => v as u128,
-            ScalarValue::U64(v) => v as u128,
-            ScalarValue::U128(v) => v,
-            ScalarValue::Isize(v) => v as usize as u128,
-            ScalarValue::I8(v) => v as u8 as u128,
-            ScalarValue::I16(v) => v as u16 as u128,
-            ScalarValue::I32(v) => v as u32 as u128,
-            ScalarValue::I64(v) => v as u64 as u128,
-            ScalarValue::I128(v) => v as u128,
+            ScalarValue::Unsigned(_, v) => v,
+            ScalarValue::Signed(_, v) => u128::from_le_bytes(v.to_le_bytes()),
         }
     }
 
+    /// Translates little endian bytes into a corresponding `ScalarValue`.
+    /// This needs to do the round-trip to the correct integer type to guarantee
+    /// that the values are correctly sign-extended (e.g. if the bytes encode -1i8, taking all 16 bytes
+    /// would lead to the value 255i128 instead of -1i128).
+    pub fn from_le_bytes(ty: IntegerTy, bytes: [u8; 16]) -> Self {
+        from_le_bytes!(
+            ty,
+            bytes,
+            [
+                (IntTy, Isize, Signed, isize, i128),
+                (IntTy, I8, Signed, i8, i128),
+                (IntTy, I16, Signed, i16, i128),
+                (IntTy, I32, Signed, i32, i128),
+                (IntTy, I64, Signed, i64, i128),
+                (IntTy, I128, Signed, i128, i128),
+                (UIntTy, Usize, Unsigned, usize, u128),
+                (UIntTy, U8, Unsigned, u8, u128),
+                (UIntTy, U16, Unsigned, u16, u128),
+                (UIntTy, U32, Unsigned, u32, u128),
+                (UIntTy, U64, Unsigned, u64, u128),
+                (UIntTy, U128, Unsigned, u128, u128)
+            ]
+        )
+    }
+
     pub fn from_bits(ty: IntegerTy, bits: u128) -> Self {
-        Self::from_le_bytes(ty, bits.to_le_bytes())
+        let bytes = bits.to_le_bytes();
+        Self::from_le_bytes(ty, bytes)
     }
 
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
     /// bits (see [ScalarValue::from_le_bytes]).
-    pub fn from_int(ty: IntegerTy, v: i128) -> ScalarResult<ScalarValue> {
-        if !ScalarValue::int_is_in_bounds(ty, v) {
+    pub fn from_int(ptr_size: ByteCount, ty: IntTy, v: i128) -> ScalarResult<ScalarValue> {
+        if !ScalarValue::int_is_in_bounds(ptr_size, ty, v) {
             Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_int(ty, v))
@@ -228,78 +196,76 @@ impl ScalarValue {
     }
 
     pub fn to_constant(self) -> ConstantExpr {
+        let literal_ty = match self {
+            ScalarValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
+            ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
+        };
         ConstantExpr {
             value: RawConstantExpr::Literal(Literal::Scalar(self)),
-            ty: TyKind::Literal(LiteralTy::Integer(self.get_integer_ty())).into_ty(),
+            ty: TyKind::Literal(literal_ty).into_ty(),
         }
     }
 }
 
-/// Custom serializer that stores integers as strings to avoid overflow.
-impl Serialize for ScalarValue {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "ScalarValue";
-        let variant_name = self.variant_name();
-        let (variant_index, _variant_arity) = self.variant_index_arity();
-        let v = match self {
-            ScalarValue::Isize(i) => i.to_string(),
-            ScalarValue::I8(i) => i.to_string(),
-            ScalarValue::I16(i) => i.to_string(),
-            ScalarValue::I32(i) => i.to_string(),
-            ScalarValue::I64(i) => i.to_string(),
-            ScalarValue::I128(i) => i.to_string(),
-            ScalarValue::Usize(i) => i.to_string(),
-            ScalarValue::U8(i) => i.to_string(),
-            ScalarValue::U16(i) => i.to_string(),
-            ScalarValue::U32(i) => i.to_string(),
-            ScalarValue::U64(i) => i.to_string(),
-            ScalarValue::U128(i) => i.to_string(),
-        };
-        serializer.serialize_newtype_variant(enum_name, variant_index, variant_name, &v)
-    }
-}
+/// Custom serializer that stores 128 bit integers as strings to avoid overflow.
+pub(crate) mod scalar_value_ser_de {
+    use std::{marker::PhantomData, str::FromStr};
 
-impl<'de> Deserialize<'de> for ScalarValue {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    use serde::de::{Deserializer, Error};
+
+    pub fn serialize<S, V>(val: &V, serializer: S) -> Result<S::Ok, S::Error>
     where
-        D: serde::Deserializer<'de>,
+        S: serde::ser::Serializer,
+        V: ToString,
     {
-        struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = ScalarValue;
+        serializer.serialize_str(&val.to_string())
+    }
+
+    pub fn deserialize<'de, D, V>(deserializer: D) -> Result<V, D::Error>
+    where
+        D: Deserializer<'de>,
+        V: FromStr,
+    {
+        struct Visitor<V> {
+            _val: PhantomData<V>,
+        }
+        impl<'de, V> serde::de::Visitor<'de> for Visitor<V>
+        where
+            V: FromStr,
+        {
+            type Value = V;
             fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "ScalarValue")
+                write!(f, "ScalarValue value")
             }
-            fn visit_map<A: serde::de::MapAccess<'de>>(
-                self,
-                mut map: A,
-            ) -> Result<Self::Value, A::Error> {
-                use serde::de::Error;
-                let (k, v): (String, String) = map.next_entry()?.expect("Malformed ScalarValue");
-                Ok(match k.as_str() {
-                    "Isize" => ScalarValue::Isize(v.parse().unwrap()),
-                    "I8" => ScalarValue::I8(v.parse().unwrap()),
-                    "I16" => ScalarValue::I16(v.parse().unwrap()),
-                    "I32" => ScalarValue::I32(v.parse().unwrap()),
-                    "I64" => ScalarValue::I64(v.parse().unwrap()),
-                    "I128" => ScalarValue::I128(v.parse().unwrap()),
-                    "Usize" => ScalarValue::Usize(v.parse().unwrap()),
-                    "U8" => ScalarValue::U8(v.parse().unwrap()),
-                    "U16" => ScalarValue::U16(v.parse().unwrap()),
-                    "U32" => ScalarValue::U32(v.parse().unwrap()),
-                    "U64" => ScalarValue::U64(v.parse().unwrap()),
-                    "U128" => ScalarValue::U128(v.parse().unwrap()),
-                    _ => {
-                        return Err(A::Error::custom(format!(
-                            "{k} is not a valid type for a ScalarValue"
-                        )))
-                    }
-                })
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                v.parse()
+                    .map_err(|_| E::custom("Could not parse 128 bit integer!"))
             }
         }
-        deserializer.deserialize_map(Visitor)
+        deserializer.deserialize_str(Visitor { _val: PhantomData })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_big_endian_scalars() -> ScalarResult<()> {
+        let u128 = 0x12345678901234567890123456789012u128;
+        let le_bytes = u128.to_le_bytes();
+
+        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Unsigned(UIntTy::U128), le_bytes);
+        assert_eq!(le_scalar, ScalarValue::Unsigned(UIntTy::U128, u128));
+
+        let i64 = 0x1234567890123456i64;
+        let le_bytes = (i64 as i128).to_le_bytes();
+        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Signed(IntTy::I64), le_bytes);
+        assert_eq!(le_scalar, ScalarValue::Signed(IntTy::I64, i64 as i128));
+
+        Ok(())
     }
 }

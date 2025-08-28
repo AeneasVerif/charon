@@ -1,73 +1,71 @@
 # Final LLBC before serialization:
 
-// Full name: core::cmp::PartialEq
-#[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
-{
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
-}
-
-// Full name: core::cmp::Eq
-#[lang_item("Eq")]
-pub trait Eq<Self>
-{
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
-}
-
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
-impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
-}
-
-pub fn core::cmp::impls::{impl PartialEq<bool> for bool}::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
-
-// Full name: core::cmp::impls::{impl Eq for bool}
-impl Eq for bool {
-    parent_clause0 = {impl PartialEq<bool> for bool}
-}
-
-// Full name: core::marker::MetaSized
+// Full name: core::marker::MetaSized::<bool>
 #[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+pub trait MetaSized::<bool>
 
-// Full name: core::marker::Sized
+// Full name: core::marker::Sized::<bool>
 #[lang_item("sized")]
-pub trait Sized<Self>
+pub trait Sized::<bool>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    non-dyn-compatible
 }
 
-fn test_crate::do_test::<bool>(@1: bool, @2: bool)
+// Full name: core::ops::drop::Drop::<bool>
+#[lang_item("drop")]
+pub trait Drop::<bool>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    fn drop<'_0> = drop::<bool><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<bool>
+}
+
+// Full name: core::ops::drop::Drop::drop::<bool>
+pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))
+
+// Full name: test_crate::Trait::<bool>
+pub trait Trait::<bool>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    fn method<'_0> = test_crate::Trait::method::<bool><'_0_0>
+    vtable: test_crate::Trait::{vtable}::<bool>
+}
+
+pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 (bool))
+
+pub fn test_crate::Trait::method<'_0>(@1: &'_0 (bool))
+
+// Full name: test_crate::{impl Trait::<bool>}::method
+pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 {
     let @0: (); // return
-    let init@1: bool; // arg #1
-    let expected@2: bool; // arg #2
-    let @3: (); // anonymous local
-    let @4: bool; // anonymous local
-    let @5: &'_ (bool); // anonymous local
-    let @6: &'_ (bool); // anonymous local
+    let self@1: &'_ (bool); // arg #1
 
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := &expected@2
-    storage_live(@6)
-    @6 := &init@1
-    @4 := {impl Eq for bool}::parent_clause0::eq(move (@5), move (@6))
-    if move (@4) {
-    }
-    else {
-        storage_dead(@6)
-        storage_dead(@5)
-        panic(core::panicking::panic)
-    }
-    storage_dead(@6)
-    storage_dead(@5)
-    storage_dead(@4)
-    storage_dead(@3)
     @0 := ()
-    drop expected@2
-    drop init@1
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Trait::<bool>}
+impl Trait::<bool> {
+    parent_clause0 = MetaSized::<bool>
+    fn method<'_0> = {impl Trait::<bool>}::method<'_0_0>
+    vtable: {impl Trait::<bool>}::{vtable}
+}
+
+// Full name: test_crate::do_test::<bool>
+fn do_test::<bool>(@1: bool)
+{
+    let @0: (); // return
+    let x@1: bool; // arg #1
+    let @2: &'_ (bool); // anonymous local
+
+    storage_live(@2)
+    @2 := &x@1
+    @0 := {impl Trait::<bool>}::method<'_>(move (@2))
+    storage_dead(@2)
+    drop[Drop::<bool>] x@1
     @0 := ()
     return
 }
@@ -79,7 +77,7 @@ fn main()
     let @1: (); // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::do_test::<bool>(const (true), const (true))
+    @1 := do_test::<bool>(const (true))
     storage_dead(@1)
     @0 := ()
     @0 := ()

@@ -108,10 +108,21 @@ where
 
     /// Remove the value from this slot, shifting other ids as needed.
     pub fn remove_and_shift_ids(&mut self, id: I) -> Option<T> {
+        if id.index() >= self.slot_count() {
+            return None;
+        }
         if self.vector[id].is_some() {
             self.elem_count -= 1;
         }
         self.vector.remove(id)
+    }
+
+    /// Remove the last slot.
+    pub fn pop(&mut self) -> Option<T> {
+        if self.vector.last().is_some() {
+            self.elem_count -= 1;
+        }
+        self.vector.pop().flatten()
     }
 
     pub fn push(&mut self, x: T) -> I {
@@ -128,14 +139,14 @@ where
 
     pub fn push_all<It>(&mut self, it: It) -> impl Iterator<Item = I> + use<'_, I, T, It>
     where
-        It: Iterator<Item = T>,
+        It: IntoIterator<Item = T>,
     {
-        it.map(move |x| self.push(x))
+        it.into_iter().map(move |x| self.push(x))
     }
 
     pub fn extend<It>(&mut self, it: It)
     where
-        It: Iterator<Item = T>,
+        It: IntoIterator<Item = T>,
     {
         self.push_all(it).for_each(|_| ())
     }
@@ -282,7 +293,7 @@ where
         self.iter_indexed().map(|(id, _)| id)
     }
 
-    pub fn all_indices(&self) -> impl Iterator<Item = I> {
+    pub fn all_indices(&self) -> impl Iterator<Item = I> + use<I, T> {
         self.vector.indices()
     }
 

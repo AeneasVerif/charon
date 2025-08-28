@@ -47,11 +47,12 @@ impl GenericParams {
     /// Run some sanity checks.
     pub fn check_consistency(&self) {
         // Sanity check: check the clause ids are consistent.
-        assert!(self
-            .trait_clauses
-            .iter()
-            .enumerate()
-            .all(|(i, c)| c.clause_id.index() == i));
+        assert!(
+            self.trait_clauses
+                .iter()
+                .enumerate()
+                .all(|(i, c)| c.clause_id.index() == i)
+        );
 
         // Sanity check: region names are pairwise distinct (this caused trouble when generating
         // names for the backward functions in Aeneas): at some point, Rustc introduced names equal
@@ -142,19 +143,16 @@ impl<T: AstVisitable> Binder<Binder<T>> {
             shift_by: &'a GenericParams,
             binder_depth: DeBruijnId,
         }
+        impl VisitorWithBinderDepth for FlattenVisitor<'_> {
+            fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                &mut self.binder_depth
+            }
+        }
         impl VisitAstMut for FlattenVisitor<'_> {
-            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.binder_depth = self.binder_depth.incr()
+            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                VisitWithBinderDepth::new(self).visit(x)
             }
-            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.binder_depth = self.binder_depth.decr()
-            }
-            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.binder_depth = self.binder_depth.incr()
-            }
-            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.binder_depth = self.binder_depth.decr()
-            }
+
             fn enter_de_bruijn_id(&mut self, db_id: &mut DeBruijnId) {
                 if *db_id > self.binder_depth {
                     // We started visiting at the inner binder, so in this branch we're either
@@ -411,51 +409,88 @@ impl GenericArgs {
     }
 }
 
-impl IntegerTy {
-    pub fn is_signed(&self) -> bool {
-        matches!(
-            self,
-            IntegerTy::Isize
-                | IntegerTy::I8
-                | IntegerTy::I16
-                | IntegerTy::I32
-                | IntegerTy::I64
-                | IntegerTy::I128
-        )
-    }
-
-    pub fn is_unsigned(&self) -> bool {
-        !(self.is_signed())
-    }
-
-    /// Return the size (in bytes) of an integer of the proper type
-    pub fn size(&self) -> usize {
-        use std::mem::size_of;
+impl IntTy {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
         match self {
-            IntegerTy::Isize => size_of::<isize>(),
-            IntegerTy::I8 => size_of::<i8>(),
-            IntegerTy::I16 => size_of::<i16>(),
-            IntegerTy::I32 => size_of::<i32>(),
-            IntegerTy::I64 => size_of::<i64>(),
-            IntegerTy::I128 => size_of::<i128>(),
-            IntegerTy::Usize => size_of::<isize>(),
-            IntegerTy::U8 => size_of::<u8>(),
-            IntegerTy::U16 => size_of::<u16>(),
-            IntegerTy::U32 => size_of::<u32>(),
-            IntegerTy::U64 => size_of::<u64>(),
-            IntegerTy::U128 => size_of::<u128>(),
+            IntTy::Isize => ptr_size as usize,
+            IntTy::I8 => size_of::<i8>(),
+            IntTy::I16 => size_of::<i16>(),
+            IntTy::I32 => size_of::<i32>(),
+            IntTy::I64 => size_of::<i64>(),
+            IntTy::I128 => size_of::<i128>(),
+        }
+    }
+}
+impl UIntTy {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            UIntTy::Usize => ptr_size as usize,
+            UIntTy::U8 => size_of::<u8>(),
+            UIntTy::U16 => size_of::<u16>(),
+            UIntTy::U32 => size_of::<u32>(),
+            UIntTy::U64 => size_of::<u64>(),
+            UIntTy::U128 => size_of::<u128>(),
+        }
+    }
+}
+impl FloatTy {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self) -> usize {
+        match self {
+            FloatTy::F16 => size_of::<u16>(),
+            FloatTy::F32 => size_of::<u32>(),
+            FloatTy::F64 => size_of::<u64>(),
+            FloatTy::F128 => size_of::<u128>(),
+        }
+    }
+}
+
+impl IntegerTy {
+    pub fn to_unsigned(&self) -> Self {
+        match self {
+            IntegerTy::Signed(IntTy::Isize) => IntegerTy::Unsigned(UIntTy::Usize),
+            IntegerTy::Signed(IntTy::I8) => IntegerTy::Unsigned(UIntTy::U8),
+            IntegerTy::Signed(IntTy::I16) => IntegerTy::Unsigned(UIntTy::U16),
+            IntegerTy::Signed(IntTy::I32) => IntegerTy::Unsigned(UIntTy::U32),
+            IntegerTy::Signed(IntTy::I64) => IntegerTy::Unsigned(UIntTy::U64),
+            IntegerTy::Signed(IntTy::I128) => IntegerTy::Unsigned(UIntTy::U128),
+            _ => *self,
         }
     }
 
-    pub fn to_unsigned(&self) -> Self {
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
         match self {
-            IntegerTy::Isize => IntegerTy::Usize,
-            IntegerTy::I8 => IntegerTy::U8,
-            IntegerTy::I16 => IntegerTy::U16,
-            IntegerTy::I32 => IntegerTy::U32,
-            IntegerTy::I64 => IntegerTy::U64,
-            IntegerTy::I128 => IntegerTy::U128,
-            _ => *self,
+            IntegerTy::Signed(ty) => ty.target_size(ptr_size),
+            IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
+        }
+    }
+}
+
+impl LiteralTy {
+    pub fn to_integer_ty(&self) -> Option<IntegerTy> {
+        match self {
+            Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),
+            Self::UInt(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
+            _ => None,
+        }
+    }
+
+    /// Important: this returns the target byte count for the types.
+    /// Must not be used for host types from rustc.
+    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+        match self {
+            LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
+            LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
+            LiteralTy::Float(float_ty) => float_ty.target_size(),
+            LiteralTy::Char => 4,
+            LiteralTy::Bool => 1,
         }
     }
 }
@@ -565,23 +600,17 @@ impl Ty {
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(kind) => kind.is_integer(),
+            TyKind::Literal(kind) => kind.is_int() || kind.is_uint(),
             _ => false,
         }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Literal(LiteralTy::Integer(kind)) => kind.is_unsigned(),
-            _ => false,
-        }
+        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(_)))
     }
 
     pub fn is_signed_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Literal(LiteralTy::Integer(kind)) => kind.is_signed(),
-            _ => false,
-        }
+        matches!(self.kind(), TyKind::Literal(LiteralTy::Int(_)))
     }
 
     /// Return true if the type is Box
@@ -656,6 +685,41 @@ impl TypeDeclRef {
     }
 }
 
+impl TraitDeclRef {
+    pub fn self_ty<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a Ty> {
+        match self.generics.types.iter().next() {
+            Some(ty) => return Some(ty),
+            // TODO(mono): A monomorphized trait takes no arguments.
+            None => {
+                let name = krate.item_name(self.id)?;
+                let args = name.name.last()?.as_monomorphized()?;
+                args.types.iter().next()
+            }
+        }
+    }
+}
+
+impl TraitRef {
+    pub fn new_builtin(
+        trait_id: TraitDeclId,
+        ty: Ty,
+        parents: Vector<TraitClauseId, TraitRef>,
+    ) -> Self {
+        let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
+            id: trait_id,
+            generics: Box::new(GenericArgs::new_types([ty].into())),
+        });
+        TraitRef {
+            kind: TraitRefKind::BuiltinOrAuto {
+                trait_decl_ref: trait_decl_ref.clone(),
+                parent_trait_refs: parents,
+                types: Default::default(),
+            },
+            trait_decl_ref,
+        }
+    }
+}
+
 impl Field {
     /// The new name for this field, as suggested by the `#[charon::rename]` attribute.
     pub fn renamed_name(&self) -> Option<&str> {
@@ -692,11 +756,7 @@ impl Variant {
 
 impl RefKind {
     pub fn mutable(x: bool) -> Self {
-        if x {
-            Self::Mut
-        } else {
-            Self::Shared
-        }
+        if x { Self::Mut } else { Self::Shared }
     }
 }
 

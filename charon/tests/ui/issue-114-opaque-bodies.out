@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -19,6 +20,15 @@ where
 {
   None,
   Some(T),
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::bool::{bool}::then_some
@@ -35,7 +45,7 @@ where
     }
     else {
         @0 := Option::None {  }
-        drop t@2
+        drop[Drop<T>] t@2
         return
     }
     storage_live(@3)
@@ -51,6 +61,7 @@ pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
     fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
 // Full name: core::cmp::PartialEq::eq
@@ -84,6 +95,7 @@ pub trait From<Self, T>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     fn from = core::convert::From::from<Self, T>[Self]
+    non-dyn-compatible
 }
 
 #[lang_item("from_fn")]
@@ -106,6 +118,7 @@ impl From<i32> for i64 {
     parent_clause0 = Sized<i64>
     parent_clause1 = Sized<i32>
     fn from = {impl From<i32> for i64}::from
+    non-dyn-compatible
 }
 
 // Full name: core::marker::PhantomData
@@ -117,7 +130,8 @@ pub struct UsizeNoHighBit {
   usize,
 }
 
-pub fn core::num::{usize}::MAX() -> usize
+// Full name: core::num::{usize}::MAX
+pub fn MAX() -> usize
 {
     let @0: usize; // return
 
@@ -125,7 +139,24 @@ pub fn core::num::{usize}::MAX() -> usize
     return
 }
 
-pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+// Full name: core::num::{usize}::MAX
+pub const MAX: usize = MAX()
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
+// Full name: core::ptr::drop_in_place
+#[lang_item("drop_in_place")]
+pub unsafe fn drop_in_place<T>(@1: *mut T)
+{
+    let @0: (); // return
+    let to_drop@1: *mut T; // arg #1
+
+    @0 := drop_in_place<T>(move (to_drop@1))
+    @0 := ()
+    return
+}
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
@@ -166,13 +197,54 @@ where
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub struct Vec<T, A>
+pub struct Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+{
+  buf: RawVec<T, type_error("removed allocator parameter")>[@TraitClause0, @TraitClause1],
+  len: usize,
+}
+
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
-  len: usize,
+    let @0: (); // return
+    let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
+    let @2: *mut Slice<T>; // anonymous local
+    let data@3: *mut T; // local
+    let len@4: usize; // local
+    let @5: NonNull<u8>; // anonymous local
+
+    storage_live(@2)
+    storage_live(data@3)
+    storage_live(@5)
+    @5 := copy (((((*(self@1)).buf).inner).ptr).pointer)
+    data@3 := transmute<NonNull<u8>, *mut T>(copy (@5))
+    storage_dead(@5)
+    storage_live(len@4)
+    len@4 := copy ((*(self@1)).len)
+    @2 := @PtrFromPartsMut<'_, Slice<T>>(copy (data@3), copy (len@4))
+    storage_dead(len@4)
+    storage_dead(data@3)
+    @0 := drop_in_place<Slice<T>>(move (@2))
+    storage_dead(@2)
+    @0 := ()
+    return
+}
+
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: issue_114_opaque_bodies_aux::inline_always
@@ -230,19 +302,19 @@ fn use_inlines() -> u32
     @3 := inline_always()
     storage_live(@4)
     @4 := inline_sometimes()
-    @5 := copy (@3) + copy (@4)
+    @5 := copy (@3) panic.+ copy (@4)
     @2 := move (@5)
     storage_dead(@4)
     storage_dead(@3)
     storage_live(@6)
     @6 := inline_never()
-    @7 := copy (@2) + copy (@6)
+    @7 := copy (@2) panic.+ copy (@6)
     @1 := move (@7)
     storage_dead(@6)
     storage_dead(@2)
     storage_live(@8)
     @8 := inline_generic<bool>[Sized<bool>]()
-    @9 := copy (@1) + copy (@8)
+    @9 := copy (@1) panic.+ copy (@8)
     @0 := move (@9)
     storage_dead(@8)
     storage_dead(@1)
@@ -282,13 +354,13 @@ fn convert(@1: i32) -> i64
 }
 
 // Full name: test_crate::vec
-fn vec(@1: Vec<u32, Global>[Sized<u32>, Sized<Global>])
+fn vec(@1: Vec<u32>[Sized<u32>, Sized<Global>])
 {
     let @0: (); // return
-    let _x@1: Vec<u32, Global>[Sized<u32>, Sized<Global>]; // arg #1
+    let _x@1: Vec<u32>[Sized<u32>, Sized<Global>]; // arg #1
 
     @0 := ()
-    drop _x@1
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] _x@1
     @0 := ()
     return
 }
@@ -297,11 +369,8 @@ fn vec(@1: Vec<u32, Global>[Sized<u32>, Sized<Global>])
 fn max() -> usize
 {
     let @0: usize; // return
-    let @1: usize; // anonymous local
 
-    storage_live(@1)
-    @1 := core::num::{usize}::MAX
-    @0 := move (@1)
+    @0 := copy (MAX)
     return
 }
 
@@ -315,7 +384,7 @@ where
     let _x@1: T; // arg #1
 
     @0 := ()
-    drop _x@1
+    drop[Drop<T>] _x@1
     @0 := ()
     return
 }

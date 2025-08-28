@@ -9,6 +9,7 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::BoolTrait
@@ -17,6 +18,7 @@ pub trait BoolTrait<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
     fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
+    vtable: test_crate::BoolTrait::{vtable}
 }
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -59,6 +61,7 @@ impl BoolTrait for bool {
     parent_clause0 = MetaSized<bool>
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
     fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
+    vtable: {impl BoolTrait for bool}::{vtable}
 }
 
 // Full name: test_crate::test_bool_trait
@@ -107,7 +110,8 @@ struct Foo {
   field1: u32,
 }
 
-fn test_crate::C() -> u32
+// Full name: test_crate::C
+fn C() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -117,15 +121,16 @@ fn test_crate::C() -> u32
     storage_live(@2)
     storage_live(@3)
     storage_live(@1)
-    @2 := const (100 : u32) + const (10 : u32)
+    @2 := const (100 : u32) panic.+ const (10 : u32)
     @1 := move (@2)
-    @3 := copy (@1) + const (1 : u32)
+    @3 := copy (@1) panic.+ const (1 : u32)
     @0 := move (@3)
     storage_dead(@1)
     return
 }
 
-const test_crate::C: u32 = test_crate::C()
+// Full name: test_crate::C
+const C: u32 = C()
 
 // Full name: test_crate::Test2
 type Test2 = u32

@@ -384,14 +384,16 @@ let literal_type_to_string (ty : T.literal_type) : string =
   match ty with
   | TBool -> "bool"
   | TChar -> "char"
-  | TInteger ty -> (
+  | TInt ty -> (
       match ty with
       | Isize -> "isize"
       | I8 -> "i8"
       | I16 -> "i16"
       | I32 -> "i32"
       | I64 -> "i64"
-      | I128 -> "i128"
+      | I128 -> "i128")
+  | TUInt ty -> (
+      match ty with
       | Usize -> "usize"
       | U8 -> "u8"
       | U16 -> "u16"
@@ -426,7 +428,7 @@ let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
 
 let match_literal (pl : literal) (l : Values.literal) : bool =
   match (pl, l) with
-  | LInt pv, VScalar v -> pv = v.value
+  | LInt pv, VScalar v -> pv = Scalars.get_val v
   | LBool pv, VBool v -> pv = v
   | LChar pv, VChar v -> Uchar.of_char pv = v
   | _ -> false
@@ -665,7 +667,7 @@ and match_expr_with_const_generic (ctx : 'fun_body ctx) (c : match_config)
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
-let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
+let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
   match fid with
   | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
   | ArrayToSliceShared -> "ArrayToSliceShared"
@@ -681,7 +683,7 @@ let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
       "std::ptr::from_raw_parts" ^ mut
 
 let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
-    (func : E.fn_ptr) : bool =
+    (func : T.fn_ptr) : bool =
   match func.func with
   | FunId (FBuiltin fid) -> (
       let to_name (s : string list) : T.name =
@@ -705,11 +707,11 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
               && match_generic_args ctx c (mk_empty_maps ()) g2 func.generics
               &&
               match box_impl with
-              | [ PIdent ("Box", _, [ GExpr (EVar _) ]) ]
+              | [ PIdent ("Box", _, _) ]
               | [
                   PIdent ("alloc", _, []);
                   PIdent ("boxed", _, []);
-                  PIdent ("Box", _, [ GExpr (EVar _) ]);
+                  PIdent ("Box", _, _);
                 ] -> true
               | _ -> false)
           | _ -> false)
@@ -898,7 +900,7 @@ let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
 
 let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
   match lit with
-  | VScalar sv -> LInt sv.value
+  | VScalar sv -> LInt (Scalars.get_val sv)
   | VBool v -> LBool v
   | VChar v when Uchar.is_char v -> LChar (Uchar.to_char v)
   | VChar _ ->
@@ -996,12 +998,15 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
         else Some (ty_to_pattern_aux ctx c m output)
       in
       EArrow (inputs, output)
+  | TError _ -> EVar None
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
-  | TFnDef _ -> raise (Failure "Unimplemented: FnDef")
-  | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")
-  | TNever -> raise (Failure "Unimplemented: Never")
-  | TError _ -> EVar None
+  | _ ->
+      let fmt_env = ctx_to_fmt_env ctx in
+      raise
+        (Failure
+           ("Can't convert type to pattern: "
+           ^ PrintTypes.ty_to_string fmt_env ty))
 
 and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
     (c : to_pat_config) (m : constraints) (trait_ref : T.trait_ref)
@@ -1103,7 +1108,7 @@ let name_with_generics_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
 (** We use the [params] to compute proper names for the variables. Note that it
     is safe to provide empty generic parameters. *)
 let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
-    (params : T.generic_params) (func : E.fn_ptr) : pattern =
+    (params : T.generic_params) (func : T.fn_ptr) : pattern =
   (* Convert the function pointer to a pattern *)
   let m = compute_constraints_map params in
   let args = generic_args_to_pattern ctx c m func.generics in
@@ -1141,7 +1146,7 @@ let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (lazy
       (let fmt_env = ctx_to_fmt_env ctx in
        "fn_ptr_to_pattern:" ^ "\n- fn_ptr: "
-       ^ PrintExpressions.fn_ptr_to_string fmt_env func
+       ^ PrintTypes.fn_ptr_to_string fmt_env func
        ^ "\n- pattern: "
        ^ pattern_to_string { tgt = TkPattern } pat));
   assert (

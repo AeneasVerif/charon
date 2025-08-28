@@ -58,10 +58,21 @@ impl Switch {
     }
 }
 
+impl StatementId {
+    pub fn fresh() -> StatementId {
+        use std::sync::atomic::AtomicUsize;
+        use std::sync::atomic::Ordering;
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
+        let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+        StatementId::new(id)
+    }
+}
+
 impl Statement {
     pub fn new(span: Span, content: StatementKind) -> Self {
         Statement {
             span,
+            id: StatementId::fresh(),
             content,
             comments_before: vec![],
         }

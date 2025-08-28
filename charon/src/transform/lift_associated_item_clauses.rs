@@ -6,7 +6,7 @@ use std::mem;
 
 use crate::{ast::*, ids::Vector};
 
-use super::{ctx::TransformPass, TransformCtx};
+use super::{TransformCtx, ctx::TransformPass};
 
 pub struct Transform;
 impl TransformPass for Transform {
@@ -45,24 +45,37 @@ impl TransformPass for Transform {
         // Update trait refs.
         ctx.translated.dyn_visit_mut(|trkind: &mut TraitRefKind| {
             use TraitRefKind::*;
-            if let ItemClause(..) = trkind {
-                take_mut::take(trkind, |trkind| {
-                    let ItemClause(trait_ref, trait_decl, item_name, item_clause_id) = trkind
-                    else {
+            match trkind {
+                ItemClause(..) => take_mut::take(trkind, |trkind| {
+                    let ItemClause(tref, item_name, item_clause_id) = trkind else {
                         unreachable!()
                     };
                     let new_id = (|| {
                         let new_id = *trait_item_clause_ids
-                            .get(trait_decl)?
+                            .get(tref.trait_decl_ref.skip_binder.id)?
                             .get(&item_name)?
                             .get(item_clause_id)?;
                         Some(new_id)
                     })();
                     match new_id {
-                        Some(new_id) => ParentClause(trait_ref, trait_decl, new_id),
-                        None => ItemClause(trait_ref, trait_decl, item_name, item_clause_id),
+                        Some(new_id) => ParentClause(tref, new_id),
+                        None => ItemClause(tref, item_name, item_clause_id),
                     }
-                })
+                }),
+                BuiltinOrAuto {
+                    parent_trait_refs,
+                    types,
+                    ..
+                } => {
+                    for (_, _, ty_trait_refs) in types {
+                        for tref in std::mem::take(ty_trait_refs) {
+                            // Note: this assumes that we listed the types in the same order as in
+                            // the trait decl, which we do.
+                            parent_trait_refs.push(tref);
+                        }
+                    }
+                }
+                _ => {}
             }
         });
     }

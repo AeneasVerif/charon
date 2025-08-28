@@ -51,6 +51,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    pub(crate) fn translate_poly_trait_predicate(
+        &mut self,
+        span: Span,
+        bound_trait_ref: &hax::Binder<hax::TraitPredicate>,
+    ) -> Result<PolyTraitDeclRef, Error> {
+        self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
+            ctx.translate_trait_predicate(span, trait_ref)
+        })
+    }
+
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
@@ -189,11 +199,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
+        use hax::DropData;
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
             ImplExprAtom::Concrete(item) => {
-                let impl_ref = self.translate_trait_impl_ref(span, item)?;
+                let impl_ref =
+                    self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_ref),
                     trait_decl_ref,
@@ -210,20 +222,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 trace!(
                     "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
-                    trait_ref,
-                    path,
+                    trait_ref, path,
                 );
                 // If we are refering to a trait clause, we need to find the relevant one.
-                let mut trait_id = match &impl_source.r#impl {
-                    ImplExprAtom::SelfImpl { .. } => match self.self_clause_id {
-                        None => TraitRefKind::SelfId,
-                        // An explicit `Self` clause is bound at the top-level; we use it instead
-                        // of the implicit `TraitRefKind::SelfId` one.
-                        Some(id) => TraitRefKind::Clause(DeBruijnVar::bound(
-                            self.binding_levels.depth(),
-                            id,
-                        )),
-                    },
+                let mut tref_kind = match &impl_source.r#impl {
+                    ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
                         let var = self.lookup_clause_var(span, *index)?;
                         TraitRefKind::Clause(var)
@@ -231,12 +234,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     _ => unreachable!(),
                 };
 
-                let mut current_trait_decl_id =
-                    self.register_trait_decl_id(span, &trait_ref.hax_skip_binder_ref().def_id);
+                let mut current_pred = self.translate_poly_trait_ref(span, trait_ref)?;
 
                 // Apply the path
                 for path_elem in path {
                     use hax::ImplExprPathChunk::*;
+                    let trait_ref = Box::new(TraitRef {
+                        kind: tref_kind,
+                        trait_decl_ref: current_pred,
+                    });
                     match path_elem {
                         AssocItem {
                             item,
@@ -254,37 +260,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                     trait_decl_ref.with_ctx(&self.into_fmt())
                                 )
                             }
-                            trait_id = TraitRefKind::ItemClause(
-                                Box::new(trait_id),
-                                current_trait_decl_id,
+                            tref_kind = TraitRefKind::ItemClause(
+                                trait_ref,
                                 name,
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self.register_trait_decl_id(
-                                span,
-                                &predicate.hax_skip_binder_ref().trait_ref.def_id,
-                            );
+                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
                         }
                         Parent {
                             predicate, index, ..
                         } => {
-                            trait_id = TraitRefKind::ParentClause(
-                                Box::new(trait_id),
-                                current_trait_decl_id,
-                                TraitClauseId::new(*index),
-                            );
-                            current_trait_decl_id = self.register_trait_decl_id(
-                                span,
-                                &predicate.hax_skip_binder_ref().trait_ref.def_id,
-                            );
+                            tref_kind =
+                                TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index));
+                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
                         }
                     }
                 }
 
-                // Ignore the arguments: we forbid using universal quantifiers
-                // on the trait clauses for now.
                 TraitRef {
-                    kind: trait_id,
+                    kind: tref_kind,
                     trait_decl_ref,
                 }
             }
@@ -293,10 +287,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 trait_decl_ref,
             },
             ImplExprAtom::Builtin {
-                impl_exprs, types, ..
+                trait_data,
+                impl_exprs,
+                types,
+                ..
             } => {
-                let trait_def_id = &impl_source.r#trait.hax_skip_binder_ref().def_id;
-                let trait_def = self.hax_def(trait_def_id)?;
+                let tref = &impl_source.r#trait;
+                let trait_def =
+                    self.hax_def(&tref.hax_skip_binder_ref().erase(&self.hax_state_with_id()))?;
                 let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
                     "fn_once" => Some(ClosureKind::FnOnce),
                     "fn_mut" => Some(ClosureKind::FnMut),
@@ -321,7 +319,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     TraitRefKind::TraitImpl(binder.erase())
                 } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
-                    let impl_id = self.register_trait_impl_id(span, trait_def_id);
+                    let impl_id = self.register_item(
+                        span,
+                        tref.hax_skip_binder_ref(),
+                        TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
+                    );
                     let mut generics = trait_decl_ref.clone().erase().generics;
                     assert!(
                         generics.trait_refs.is_empty(),
@@ -332,14 +334,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         id: impl_id,
                         generics,
                     })
+                } else if let hax::BuiltinTraitData::Drop(DropData::Glue { ty, .. }) = trait_data
+                    && let hax::TyKind::Adt(item) = ty.kind()
+                {
+                    let impl_ref =
+                        self.translate_trait_impl_ref(span, item, TraitImplSource::DropGlue)?;
+                    TraitRefKind::TraitImpl(impl_ref)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types
                         .iter()
-                        .map(|(def_id, ty)| {
+                        .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
                             let name = self.t_ctx.translate_trait_item_name(def_id)?;
                             let ty = self.translate_ty(span, ty)?;
-                            Ok((name, ty))
+                            let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                            Ok((name, ty, trait_refs))
                         })
                         .try_collect()?;
                     TraitRefKind::BuiltinOrAuto {
@@ -362,9 +371,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 trait_ref
-            }
-            ImplExprAtom::Drop(..) => {
-                raise_error!(self, span, "Unsupported predicate: drop glue")
             }
         };
         Ok(trait_ref)
