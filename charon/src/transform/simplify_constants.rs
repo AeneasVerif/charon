@@ -134,7 +134,7 @@ fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>,
                     let var = locals.new_var(None, ty);
                     nst.push(Statement::new(
                         *span,
-                        RawStatement::Assign(var.clone(), rvalue),
+                        StatementKind::Assign(var.clone(), rvalue),
                     ));
                     var
                 }

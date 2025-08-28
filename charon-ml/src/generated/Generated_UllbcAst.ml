@@ -8,8 +8,14 @@ module BlockId = IdGen ()
 
 type block_id = (BlockId.id[@visitors.opaque])
 
+and statement = {
+  span : span;
+  content : statement_kind;
+  comments_before : string list;  (** Comments that precede this statement. *)
+}
+
 (** A raw statement: a statement without meta data. *)
-and raw_statement =
+and statement_kind =
   | Assign of place * rvalue
   | SetDiscriminant of place * variant_id
       (** A call. For now, we don't support dynamic calls (i.e. to a function
@@ -35,12 +41,6 @@ and raw_statement =
           namely: bounds checks, over/underflow checks, div/rem by zero checks,
           pointer alignement check. *)
   | Nop  (** Does nothing. Useful for passes. *)
-
-and statement = {
-  span : span;
-  content : raw_statement;
-  comments_before : string list;  (** Comments that precede this statement. *)
-}
 
 and switch =
   | If of block_id * block_id  (** Gives the [if] block and the [else] block *)

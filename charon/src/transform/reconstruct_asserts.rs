@@ -54,7 +54,7 @@ impl UllbcPass for Transform {
                     let (discr, _) = content.as_switch().unwrap();
                     block.statements.push(Statement::new(
                         block.terminator.span,
-                        RawStatement::Assert(Assert {
+                        StatementKind::Assert(Assert {
                             cond: discr.clone(),
                             expected,
                             on_failure: abort.clone(),

@@ -19,7 +19,7 @@ impl UllbcPass for Transform {
                         let return_place = body.locals.return_place();
                         let assign_st = Statement::new(
                             block.terminator.span,
-                            RawStatement::Assign(return_place, Rvalue::unit_value()),
+                            StatementKind::Assign(return_place, Rvalue::unit_value()),
                         );
                         block.statements.push(assign_st)
                     }

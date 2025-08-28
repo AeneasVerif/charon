@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
 )]
-pub enum RawStatement {
+pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
     /// `y := move x` which is represented as `Assign(y, Rvalue::Use(Operand::Move(x)))`.
     Assign(Place, Rvalue),
@@ -73,7 +73,7 @@ pub enum RawStatement {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
-    pub content: RawStatement,
+    pub content: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]

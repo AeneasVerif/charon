@@ -28,41 +28,6 @@ and blocks_of_json (ctx : of_json_ctx) (js : json) : (blocks, string) result =
     | x -> vector_of_json block_id_of_json block_of_json ctx x
     | _ -> Error "")
 
-and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
-    (raw_statement, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = place_of_json ctx x_0 in
-        let* x_1 = rvalue_of_json ctx x_1 in
-        Ok (Assign (x_0, x_1))
-    | `Assoc [ ("SetDiscriminant", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = place_of_json ctx x_0 in
-        let* x_1 = variant_id_of_json ctx x_1 in
-        Ok (SetDiscriminant (x_0, x_1))
-    | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
-        let* copy_non_overlapping =
-          box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
-        in
-        Ok (CopyNonOverlapping copy_non_overlapping)
-    | `Assoc [ ("StorageLive", storage_live) ] ->
-        let* storage_live = local_id_of_json ctx storage_live in
-        Ok (StorageLive storage_live)
-    | `Assoc [ ("StorageDead", storage_dead) ] ->
-        let* storage_dead = local_id_of_json ctx storage_dead in
-        Ok (StorageDead storage_dead)
-    | `Assoc [ ("Deinit", deinit) ] ->
-        let* deinit = place_of_json ctx deinit in
-        Ok (Deinit deinit)
-    | `Assoc [ ("Drop", drop) ] ->
-        let* drop = place_of_json ctx drop in
-        Ok (Drop drop)
-    | `Assoc [ ("Assert", assert_) ] ->
-        let* assert_ = assertion_of_json ctx assert_ in
-        Ok (Assert assert_)
-    | `String "Nop" -> Ok Nop
-    | _ -> Error "")
-
 and raw_terminator_of_json (ctx : of_json_ctx) (js : json) :
     (raw_terminator, string) result =
   combine_error_msgs js __FUNCTION__
@@ -104,11 +69,46 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
           ("comments_before", comments_before);
         ] ->
         let* span = span_of_json ctx span in
-        let* content = raw_statement_of_json ctx content in
+        let* content = statement_kind_of_json ctx content in
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
         Ok ({ span; content; comments_before } : statement)
+    | _ -> Error "")
+
+and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (statement_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json ctx x_0 in
+        let* x_1 = rvalue_of_json ctx x_1 in
+        Ok (Assign (x_0, x_1))
+    | `Assoc [ ("SetDiscriminant", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json ctx x_0 in
+        let* x_1 = variant_id_of_json ctx x_1 in
+        Ok (SetDiscriminant (x_0, x_1))
+    | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
+        let* copy_non_overlapping =
+          box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
+        in
+        Ok (CopyNonOverlapping copy_non_overlapping)
+    | `Assoc [ ("StorageLive", storage_live) ] ->
+        let* storage_live = local_id_of_json ctx storage_live in
+        Ok (StorageLive storage_live)
+    | `Assoc [ ("StorageDead", storage_dead) ] ->
+        let* storage_dead = local_id_of_json ctx storage_dead in
+        Ok (StorageDead storage_dead)
+    | `Assoc [ ("Deinit", deinit) ] ->
+        let* deinit = place_of_json ctx deinit in
+        Ok (Deinit deinit)
+    | `Assoc [ ("Drop", drop) ] ->
+        let* drop = place_of_json ctx drop in
+        Ok (Drop drop)
+    | `Assoc [ ("Assert", assert_) ] ->
+        let* assert_ = assertion_of_json ctx assert_ in
+        Ok (Assert assert_)
+    | `String "Nop" -> Ok Nop
     | _ -> Error "")
 
 and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =

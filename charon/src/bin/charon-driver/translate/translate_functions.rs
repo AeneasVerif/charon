@@ -128,7 +128,7 @@ impl ItemTransCtx<'_, '_> {
             hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
         };
         let tref = TypeDeclRef::new(TypeId::Adt(adt_decl_id), signature.generics.identity_args());
-        let st_kind = RawStatement::Assign(
+        let st_kind = StatementKind::Assign(
             locals.return_place(),
             Rvalue::Aggregate(AggregateKind::Adt(tref, variant, None), args),
         );

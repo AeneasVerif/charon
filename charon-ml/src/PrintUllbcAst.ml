@@ -14,10 +14,10 @@ module Ast = struct
 
   let rec statement_to_string (env : fmt_env) (indent : string) (st : statement)
       : string =
-    raw_statement_to_string env indent st.content
+    statement_kind_to_string env indent st.content
 
-  and raw_statement_to_string (env : fmt_env) (indent : string)
-      (st : raw_statement) : string =
+  and statement_kind_to_string (env : fmt_env) (indent : string)
+      (st : statement_kind) : string =
     match st with
     | Assign (p, rv) ->
         indent ^ place_to_string env p ^ " := " ^ rvalue_to_string env rv

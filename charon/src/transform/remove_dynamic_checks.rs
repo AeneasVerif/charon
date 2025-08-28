@@ -8,7 +8,7 @@ use derive_generic_visitor::*;
 
 use crate::ast::*;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{ExprBody, RawStatement, Statement};
+use crate::ullbc_ast::{ExprBody, Statement, StatementKind};
 
 use super::ctx::UllbcPass;
 
@@ -49,18 +49,18 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [Statement {
             content:
-                RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op))),
+                StatementKind::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op))),
             ..
         }, Statement {
             content:
-                RawStatement::Assign(
+                StatementKind::Assign(
                     is_in_bounds,
                     Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
                 ),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
                     ..
@@ -77,22 +77,22 @@ fn remove_dynamic_checks(
         //   b := copy x < copy l
         //   assert(move b == true)
         [Statement {
-            content: RawStatement::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
+            content: StatementKind::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
             ..
         }, Statement {
             content:
-                RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op))),
+                StatementKind::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op))),
             ..
         }, Statement {
             content:
-                RawStatement::Assign(
+                StatementKind::Assign(
                     is_in_bounds,
                     Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
                 ),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
                     ..
@@ -109,11 +109,11 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [Statement {
             content:
-                RawStatement::Assign(is_in_bounds, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(_))),
+                StatementKind::Assign(is_in_bounds, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(_))),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
                     ..
@@ -130,11 +130,11 @@ fn remove_dynamic_checks(
         //   assert(move b == false)
         [Statement {
             content:
-                RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, _, Operand::Const(_zero))),
+                StatementKind::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, _, Operand::Const(_zero))),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: false,
                     ..
@@ -152,21 +152,21 @@ fn remove_dynamic_checks(
         //   has_overflow := move (is_neg_1) & move (is_min)
         //   assert(move has_overflow == false)
         [Statement {
-            content: RawStatement::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
+            content: StatementKind::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
             ..
         }, Statement {
-            content: RawStatement::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _int_min)),
+            content: StatementKind::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _int_min)),
             ..
         }, Statement {
             content:
-                RawStatement::Assign(
+                StatementKind::Assign(
                     has_overflow,
                     Rvalue::BinaryOp(BinOp::BitAnd, Operand::Move(and_op1), Operand::Move(and_op2)),
                 ),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: false,
                     ..
@@ -183,18 +183,18 @@ fn remove_dynamic_checks(
         //   b := move a < const 32; // or another constant
         //   assert(move b == true);
         [Statement {
-            content: RawStatement::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), _)),
+            content: StatementKind::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), _)),
             ..
         }, Statement {
             content:
-                RawStatement::Assign(
+                StatementKind::Assign(
                     has_overflow,
                     Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lhs), Operand::Const(..)),
                 ),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
                     ..
@@ -213,11 +213,11 @@ fn remove_dynamic_checks(
         //   assert(move b == true);
         [Statement {
             content:
-                RawStatement::Assign(has_overflow, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(..))),
+                StatementKind::Assign(has_overflow, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(..))),
             ..
         }, Statement {
             content:
-                RawStatement::Assert(Assert {
+                StatementKind::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
                     ..
@@ -245,7 +245,7 @@ fn remove_dynamic_checks(
         // without assert. In that case we replace it with its wrapping equivalent.
         [Statement {
             content:
-                RawStatement::Assign(
+                StatementKind::Assign(
                     result,
                     rval_op @ Rvalue::BinaryOp(
                         BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul,
@@ -273,7 +273,7 @@ fn remove_dynamic_checks(
             // Check if the operation is followed by an assert.
             let followed_by_assert = if let [Statement {
                 content:
-                    RawStatement::Assert(Assert {
+                    StatementKind::Assert(Assert {
                         cond: Operand::Move(assert_cond),
                         expected: false,
                         ..
@@ -307,7 +307,7 @@ fn remove_dynamic_checks(
                     _ => unreachable!(),
                 };
                 // The failure behavior is part of the binop now, so we remove the assert.
-                rest[0].content = RawStatement::Nop;
+                rest[0].content = StatementKind::Nop;
             } else {
                 // The overflow boolean is not used, we replace the operations with wrapping
                 // semantics.
@@ -345,7 +345,7 @@ fn remove_dynamic_checks(
     // Remove the statements we're not keeping.
     let keep_len = statements_to_keep.len();
     for i in 0..statements.len() - keep_len {
-        statements[i].content = RawStatement::Nop;
+        statements[i].content = StatementKind::Nop;
     }
 }
 

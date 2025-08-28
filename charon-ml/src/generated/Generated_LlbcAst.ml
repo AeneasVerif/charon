@@ -6,8 +6,14 @@ open Meta
 
 type block = { span : span; statements : statement list }
 
+and statement = {
+  span : span;
+  content : statement_kind;
+  comments_before : string list;  (** Comments that precede this statement. *)
+}
+
 (** A raw statement: a statement without meta data. *)
-and raw_statement =
+and statement_kind =
   | Assign of place * rvalue
       (** Assigns an [Rvalue] to a [Place]. e.g. [let y = x;] could become
           [y := move x] which is represented as
@@ -56,12 +62,6 @@ and raw_statement =
   | Switch of switch
   | Loop of block
   | Error of string
-
-and statement = {
-  span : span;
-  content : raw_statement;
-  comments_before : string list;  (** Comments that precede this statement. *)
-}
 
 and switch =
   | If of operand * block * block

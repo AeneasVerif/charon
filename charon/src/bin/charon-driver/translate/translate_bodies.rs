@@ -698,11 +698,14 @@ impl BodyTransCtx<'_, '_, '_> {
             .translate_span_from_source_info(&body.source_scopes, &statement.source_info);
 
         use hax::StatementKind;
-        let t_statement: Option<RawStatement> = match &*statement.kind {
+        let t_statement: Option<charon_lib::ast::ullbc_ast::StatementKind> = match &*statement.kind
+        {
             StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_rvalue(span, rvalue)?;
-                Some(RawStatement::Assign(t_place, t_rvalue))
+                Some(charon_lib::ast::ullbc_ast::StatementKind::Assign(
+                    t_place, t_rvalue,
+                ))
             }
             StatementKind::SetDiscriminant {
                 place,
@@ -710,24 +713,30 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 let t_place = self.translate_place(span, place)?;
                 let variant_id = translate_variant_id(*variant_index);
-                Some(RawStatement::SetDiscriminant(t_place, variant_id))
+                Some(charon_lib::ast::ullbc_ast::StatementKind::SetDiscriminant(
+                    t_place, variant_id,
+                ))
             }
             StatementKind::StorageLive(local) => {
                 let var_id = self.translate_local(local).unwrap();
-                Some(RawStatement::StorageLive(var_id))
+                Some(charon_lib::ast::ullbc_ast::StatementKind::StorageLive(
+                    var_id,
+                ))
             }
             StatementKind::StorageDead(local) => {
                 let var_id = self.translate_local(local).unwrap();
-                Some(RawStatement::StorageDead(var_id))
+                Some(charon_lib::ast::ullbc_ast::StatementKind::StorageDead(
+                    var_id,
+                ))
             }
             StatementKind::Deinit(place) => {
                 let t_place = self.translate_place(span, place)?;
-                Some(RawStatement::Deinit(t_place))
+                Some(charon_lib::ast::ullbc_ast::StatementKind::Deinit(t_place))
             }
             // This asserts the operand true on pain of UB. We treat it like a normal assertion.
             StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
-                Some(RawStatement::Assert(Assert {
+                Some(charon_lib::ast::ullbc_ast::StatementKind::Assert(Assert {
                     cond: op,
                     expected: true,
                     on_failure: AbortKind::UndefinedBehavior,
@@ -739,9 +748,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 let src = self.translate_operand(span, src)?;
                 let dst = self.translate_operand(span, dst)?;
                 let count = self.translate_operand(span, count)?;
-                Some(RawStatement::CopyNonOverlapping(Box::new(
-                    CopyNonOverlapping { src, dst, count },
-                )))
+                Some(
+                    charon_lib::ast::ullbc_ast::StatementKind::CopyNonOverlapping(Box::new(
+                        CopyNonOverlapping { src, dst, count },
+                    )),
+                )
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,
@@ -816,7 +827,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 ..
             } => {
                 let place = self.translate_place(span, place)?;
-                statements.push(Statement::new(span, RawStatement::Drop(place)));
+                statements.push(Statement::new(span, StatementKind::Drop(place)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
@@ -841,7 +852,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     expected: *expected,
                     on_failure: AbortKind::Panic(None),
                 };
-                statements.push(Statement::new(span, RawStatement::Assert(assert)));
+                statements.push(Statement::new(span, StatementKind::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }

@@ -20,17 +20,17 @@ fn generate_discr_assignment(
     variants: &Vector<VariantId, Variant>,
     scrutinee: &Place,
     dest: &Place,
-) -> RawStatement {
+) -> StatementKind {
     let targets = variants
         .iter_indexed_values()
         .map(|(id, variant)| {
             let discr_value =
                 Rvalue::Use(Operand::Const(Box::new(variant.discriminant.to_constant())));
-            let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
+            let statement = Statement::new(span, StatementKind::Assign(dest.clone(), discr_value));
             (vec![id], statement.into_block())
         })
         .collect();
-    RawStatement::Switch(Switch::Match(scrutinee.clone(), targets, None))
+    StatementKind::Switch(Switch::Match(scrutinee.clone(), targets, None))
 }
 
 pub struct Transform;
@@ -45,7 +45,7 @@ impl Transform {
             let suffix = &mut block.statements[i..];
             match suffix {
                 [Statement {
-                    content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
+                    content: StatementKind::Assign(dest, Rvalue::Discriminant(p, adt_id)),
                     span: span1,
                     ..
                 }, rest @ ..] => {
@@ -78,7 +78,7 @@ impl Transform {
                                 );
                             }
                         }
-                        block.statements[i].content = RawStatement::Error(
+                        block.statements[i].content = StatementKind::Error(
                             "error reading the discriminant of this type".to_owned(),
                         );
                         return;
@@ -88,7 +88,7 @@ impl Transform {
                     match rest {
                         [Statement {
                             content:
-                                RawStatement::Switch(switch @ Switch::SwitchInt(Operand::Move(_), ..)),
+                                StatementKind::Switch(switch @ Switch::SwitchInt(Operand::Move(_), ..)),
                             ..
                         }, ..] => {
                             // Convert between discriminants and variant indices. Remark: the discriminant can
@@ -138,7 +138,7 @@ impl Transform {
                                 Switch::Match(p.clone(), targets, otherwise)
                             });
                             // `Nop` the discriminant read.
-                            block.statements[i].content = RawStatement::Nop;
+                            block.statements[i].content = StatementKind::Nop;
                         }
                         _ => {
                             // The discriminant read is not followed by a `SwitchInt`. This can happen
@@ -152,7 +152,7 @@ impl Transform {
                 // Replace calls of `core::intrinsics::discriminant_value` on a known enum with the
                 // appropriate MIR.
                 [Statement {
-                    content: RawStatement::Call(call),
+                    content: StatementKind::Call(call),
                     span: span1,
                     ..
                 }, ..]

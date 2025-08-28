@@ -436,7 +436,7 @@ impl ItemTransCtx<'_, '_> {
                                 ),
                                 ty,
                             );
-                            mk_stt(RawStatement::Assign(
+                            mk_stt(StatementKind::Assign(
                                 locals.place_for_var(LocalId::new(i + 3)),
                                 Rvalue::Use(Operand::Move(nth_field)),
                             ))
@@ -508,7 +508,7 @@ impl ItemTransCtx<'_, '_> {
                     TyKind::Ref(Region::Erased, deref_state.ty.clone(), RefKind::Shared).into_ty();
                 let reborrow = locals.new_var(None, reborrow_ty);
 
-                statements.push(mk_stt(RawStatement::Assign(
+                statements.push(mk_stt(StatementKind::Assign(
                     reborrow.clone(),
                     Rvalue::Ref(deref_state, BorrowKind::Shared),
                 )));
@@ -807,7 +807,7 @@ impl ItemTransCtx<'_, '_> {
             let args_tupled = locals.new_var(Some("args".to_string()), args_tuple_ty.clone());
             let state = locals.new_var(Some("state".to_string()), state_ty.clone());
 
-            statements.push(mk_stt(RawStatement::Assign(
+            statements.push(mk_stt(StatementKind::Assign(
                 args_tupled.clone(),
                 Rvalue::Aggregate(
                     AggregateKind::Adt(args_tuple_ty.as_adt().unwrap().clone(), None, None),
@@ -816,7 +816,7 @@ impl ItemTransCtx<'_, '_> {
             )));
 
             let state_ty_adt = state_ty.as_adt().unwrap();
-            statements.push(mk_stt(RawStatement::Assign(
+            statements.push(mk_stt(StatementKind::Assign(
                 state.clone(),
                 Rvalue::Aggregate(AggregateKind::Adt(state_ty_adt.clone(), None, None), vec![]),
             )));

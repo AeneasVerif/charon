@@ -74,20 +74,20 @@ impl UllbcPass for Transform {
                 // The call has two move arguments
                 && let [Operand::Move(arg0), Operand::Move(arg1)] = malloc_args.as_slice()
                 && let [ .., Statement {
-                            content: RawStatement::Assign(size, Rvalue::NullaryOp(NullOp::SizeOf, _)),
+                            content: StatementKind::Assign(size, Rvalue::NullaryOp(NullOp::SizeOf, _)),
                             ..
                         }, Statement {
-                            content: RawStatement::Assign(align, Rvalue::NullaryOp(NullOp::AlignOf, _)),
+                            content: StatementKind::Assign(align, Rvalue::NullaryOp(NullOp::AlignOf, _)),
                             ..
                         }] = candidate_block.statements.as_slice()
                 && arg0 == size && arg1 == align
                 && let Some(target_block) = b.body.get(*target_block_idx)
                 && let [Statement {
-                            content: RawStatement::StorageLive(target_var),
+                            content: StatementKind::StorageLive(target_var),
                             ..
                         }, Statement {
                             content:
-                                RawStatement::Assign(box_make, Rvalue::ShallowInitBox(Operand::Move(alloc_use), _)),
+                                StatementKind::Assign(box_make, Rvalue::ShallowInitBox(Operand::Move(alloc_use), _)),
                             ..
                         }, rest @ ..] = target_block.statements.as_slice()
                 && alloc_use == malloc_dest
@@ -97,7 +97,7 @@ impl UllbcPass for Transform {
                 && let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id
                 && let Some((assign_idx_in_rest, val, span)) = rest.iter().enumerate().find_map(|(idx, st)| {
                     if let Statement {
-                            content: RawStatement::Assign(box_deref, val),
+                            content: StatementKind::Assign(box_deref, val),
                             span,
                             ..
                         } = st
@@ -129,7 +129,7 @@ impl UllbcPass for Transform {
                         .statements
                         .get_mut(number_statements - 2)
                         .unwrap()
-                        .content = RawStatement::Nop;
+                        .content = StatementKind::Nop;
                     op
                 }
                 _ => {
@@ -139,7 +139,7 @@ impl UllbcPass for Transform {
                     let var = b.locals.new_var(name, ty);
                     let st = Statement::new(
                         assign_span,
-                        RawStatement::Assign(var.clone(), value_to_write),
+                        StatementKind::Assign(var.clone(), value_to_write),
                     );
                     // We overide the @2 := size_of<i32> statement with the rvalue assignment
                     *first_block
@@ -153,7 +153,7 @@ impl UllbcPass for Transform {
                 .statements
                 .get_mut(number_statements - 1)
                 .unwrap()
-                .content = RawStatement::StorageLive(at_5.local_id());
+                .content = StatementKind::StorageLive(at_5.local_id());
             first_block.terminator.content = RawTerminator::Call {
                 call: Call {
                     func: FnOperand::Regular(FnPtr {
@@ -171,13 +171,13 @@ impl UllbcPass for Transform {
 
             // We now update the statements in the second block.
             let second_block = b.body.get_mut(second_block).unwrap();
-            second_block.statements.get_mut(0).unwrap().content = RawStatement::Nop;
-            second_block.statements.get_mut(1).unwrap().content = RawStatement::Nop;
+            second_block.statements.get_mut(0).unwrap().content = StatementKind::Nop;
+            second_block.statements.get_mut(1).unwrap().content = StatementKind::Nop;
             second_block
                 .statements
                 .get_mut(old_assign_idx)
                 .unwrap()
-                .content = RawStatement::Nop;
+                .content = StatementKind::Nop;
         }
 
         // Make sure we got all the `ShallowInitBox`es.
