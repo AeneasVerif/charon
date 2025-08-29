@@ -348,15 +348,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Checks whether the given id corresponds to a built-in type.
     pub(crate) fn recognize_builtin_type(
         &mut self,
+        span: Span,
         item: &hax::ItemRef,
     ) -> Result<Option<BuiltinTy>, Error> {
         let def = self.hax_def(item)?;
         let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
+            // When Box is encountered, enqueue the translation of its drop implementation
+            self.enqueue_box_drop_impl(span, item)?;
             Some(BuiltinTy::Box)
         } else {
             None
         };
         Ok(ty)
+    }
+
+    /// Enqueue the drop implementation for Box<T> when Box is encountered
+    fn enqueue_box_drop_impl(&mut self, span: Span, item: &hax::ItemRef) -> Result<(), Error> {
+        use crate::translate::translate_crate::TransItemSourceKind;
+        
+        // Register the drop implementation for Box
+        let _drop_impl_id: TraitImplId = self.register_item_no_enqueue(
+            span,
+            item,
+            TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue),
+        );
+        
+        Ok(())
     }
 
     /// Translate a Dynamically Sized Type metadata kind.
@@ -748,5 +765,47 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
         let int_ty = ty.kind().as_literal().unwrap().to_integer_ty().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
+    }
+
+    /// Translate the drop implementation for a type, if any.
+    /// Returns `Some(TraitImplRef)` if the type has a drop implementation, `None` otherwise.
+    pub fn translate_drop_glue(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef,
+    ) -> Result<Option<TraitImplRef>, Error> {
+        use crate::translate::translate_crate::TransItemSourceKind;
+
+        // Check if this type has a drop implementation by checking both drop_impl and drop_glue
+        match def.kind() {
+            hax::FullDefKind::Adt { drop_impl: _, drop_glue, .. } |
+            hax::FullDefKind::Closure { drop_impl: _, drop_glue, .. } => {
+                // Only create a TraitImplRef if there's actually a drop implementation
+                // We check drop_glue to see if there's an actual implementation
+                if drop_glue.is_some() {
+                    // Register the drop implementation
+                    let drop_impl_id = self.register_item_no_enqueue(
+                        span,
+                        def.this(),
+                        TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue),
+                    );
+                    
+                    // Create the TraitImplRef
+                    let trait_impl_ref = TraitImplRef {
+                        id: drop_impl_id,
+                        generics: Box::new(self.the_only_binder().params.identity_args()),
+                    };
+                    
+                    Ok(Some(trait_impl_ref))
+                } else {
+                    // Type supports drop but doesn't have a custom implementation
+                    Ok(None)
+                }
+            }
+            _ => {
+                // No drop implementation possible for this type
+                Ok(None)
+            }
+        }
     }
 }

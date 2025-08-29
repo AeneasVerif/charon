@@ -20,6 +20,19 @@ pub trait Tuple<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -30,7 +43,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -42,7 +55,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -95,6 +108,26 @@ where
 
 // Full name: test_crate::T
 pub struct T {}
+
+// Full name: test_crate::T::{impl Drop for T}
+impl Drop for T {
+    parent_clause0 = MetaSized<T>
+    fn drop<'_0> = {impl Drop for T}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::T::{impl Drop for T}::drop
+fn {impl Drop for T}::drop<'_0>(@1: &'_0 mut (T))
+{
+    let @0: (); // return
+    let @1: *mut T; // arg #1
+    let @2: &'_ mut (T); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 pub fn test_crate::{T}::f<F>()
 where

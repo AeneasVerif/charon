@@ -4,6 +4,19 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: test_crate::Ops
 trait Ops<Self>
 {
@@ -23,6 +36,26 @@ where
 
 // Full name: test_crate::Portable
 struct Portable {}
+
+// Full name: test_crate::Portable::{impl Drop for Portable}
+impl Drop for Portable {
+    parent_clause0 = MetaSized<Portable>
+    fn drop<'_0> = {impl Drop for Portable}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Portable::{impl Drop for Portable}::drop
+fn {impl Drop for Portable}::drop<'_0>(@1: &'_0 mut (Portable))
+{
+    let @0: (); // return
+    let @1: *mut Portable; // arg #1
+    let @2: &'_ mut (Portable); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: test_crate::{impl Ops for Portable}::ZERO
 fn {impl Ops for Portable}::ZERO() -> Portable

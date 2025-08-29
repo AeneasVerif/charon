@@ -48,7 +48,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -80,6 +80,26 @@ where
 
 // Full name: test_crate::NotCopy
 struct NotCopy {}
+
+// Full name: test_crate::NotCopy::{impl Drop for NotCopy}
+impl Drop for NotCopy {
+    parent_clause0 = MetaSized<NotCopy>
+    fn drop<'_0> = {impl Drop for NotCopy}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::NotCopy::{impl Drop for NotCopy}::drop
+fn {impl Drop for NotCopy}::drop<'_0>(@1: &'_0 mut (NotCopy))
+{
+    let @0: (); // return
+    let @1: *mut NotCopy; // arg #1
+    let @2: &'_ mut (NotCopy); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: test_crate::main::closure
 struct closure {

@@ -123,36 +123,19 @@ note: the error occurred when translating `core::marker::MetaSized::<type_error(
   |
 7 |     x.to_string()
   |     -------------
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/fmt/mod.rs:1003:1
 
-note: the error occurred when translating `core::fmt::Display::{vtable}::<alloc::string::String>`, which is (transitively) used at the following location(s):
-  --> tests/ui/monomorphization/dyn-trait.rs:12:27
-   |
-12 |     let _ = dyn_to_string(&str);
-   |                           ----
-error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 498 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
- --> /rustc/library/core/src/fmt/mod.rs:562:1
-
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:375:14:
-incorrect `dyn_self`
+thread 'rustc' panicked at /Users/ssyram/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/index_vec-0.1.4/src/indexing.rs:128:10:
+index out of bounds: the len is 0 but the index is 0
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `core::fmt::Display`.
- --> /rustc/library/core/src/fmt/mod.rs:1003:1
-
-error: Failed to translate item Type(3).
- --> /rustc/library/core/src/fmt/mod.rs:1003:1
+error: Thread panicked when extracting item `alloc::string::{impl#23}`.
+ --> /rustc/library/alloc/src/string.rs:2623:1
 
 note: the error occurred when translating `alloc::string::{impl core::fmt::Display::<alloc::string::String>}::{vtable}`, which is (transitively) used at the following location(s):
   --> tests/ui/monomorphization/dyn-trait.rs:12:27
    |
 12 |     let _ = dyn_to_string(&str);
    |                           ----
-error: Item `alloc::string::{impl#23}` caused errors; ignoring.
- --> /rustc/library/alloc/src/string.rs:2623:1
-
-error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 671 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
+error: Item is not monomorphic: Mono(ItemRef { contents: Node { id: Id { id: 729 }, value: ItemRefContents { def_id: core::fmt::Formatter, generic_args: [Lifetime(Region { kind: ReBound(0, BoundRegion { var: 2, kind: Anon }) })], impl_exprs: [], in_trait: None, has_param: true } } })
  --> /rustc/library/core/src/fmt/mod.rs:562:1
 
 note: the error occurred when translating `alloc::string::{impl core::fmt::Display::<alloc::string::String>}::fmt`, which is (transitively) used at the following location(s):
@@ -232,7 +215,7 @@ error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphi
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/alloc/src/string.rs:2805:1
 
-note: the error occurred when translating `alloc::string::{impl#5}::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
+note: the error occurred when translating `alloc::string::{impl#7}::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/alloc/src/string.rs:2807:5
 
@@ -252,4 +235,4 @@ note: the error occurred when translating `alloc::string::ToString::to_string`, 
   |
 7 |     x.to_string()
   |     -------------
-ERROR Charon failed to translate this code (46 errors)
+ERROR Charon failed to translate this code (42 errors)

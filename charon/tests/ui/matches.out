@@ -17,12 +17,11 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -31,6 +30,38 @@ pub enum E1 {
   V1,
   V2,
   V3,
+}
+
+// Full name: test_crate::E1::{impl Drop for E1}
+impl Drop for E1 {
+    parent_clause0 = MetaSized<E1>
+    fn drop<'_0> = {impl Drop for E1}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::E1::{impl Drop for E1}::drop
+fn {impl Drop for E1}::drop<'_0>(@1: &'_0 mut (E1))
+{
+    let @0: (); // return
+    let @1: *mut E1; // arg #1
+    let @2: &'_ mut (E1); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    match *(@2) {
+        E1::V1 => {
+        },
+        E1::V2 => {
+            @0 := ()
+            return
+        },
+        _ => {
+            @0 := ()
+            return
+        },
+    }
+    @0 := ()
+    return
 }
 
 // Full name: test_crate::test1
@@ -69,6 +100,38 @@ pub enum E2 {
   V1(u32),
   V2(u32),
   V3,
+}
+
+// Full name: test_crate::E2::{impl Drop for E2}
+impl Drop for E2 {
+    parent_clause0 = MetaSized<E2>
+    fn drop<'_0> = {impl Drop for E2}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::E2::{impl Drop for E2}::drop
+fn {impl Drop for E2}::drop<'_0>(@1: &'_0 mut (E2))
+{
+    let @0: (); // return
+    let @1: *mut E2; // arg #1
+    let @2: &'_ mut (E2); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    match *(@2) {
+        E2::V1 => {
+        },
+        E2::V2 => {
+            @0 := ()
+            return
+        },
+        _ => {
+            @0 := ()
+            return
+        },
+    }
+    @0 := ()
+    return
 }
 
 // Full name: test_crate::test2

@@ -29,15 +29,15 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
-fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
-
 // Full name: alloc::alloc::Global::{impl Drop for Global}
 impl Drop for Global {
     parent_clause0 = MetaSized<Global>
     fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
     non-dyn-compatible
 }
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
@@ -47,12 +47,6 @@ where
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
     [@TraitClause3]: Drop<T>,
     [@TraitClause4]: Drop<type_error("removed allocator parameter")>,
-
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub struct String {
-  vec: Vec<u8>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}],
-}
 
 // Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop
 pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]))
@@ -75,6 +69,19 @@ where
     vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
 }
 
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub struct String {
+  vec: Vec<u8>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}],
+}
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
+}
+
 // Full name: alloc::string::String::{impl Drop for String}::drop
 fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 {
@@ -87,13 +94,6 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}]] (*(@2)).vec
     @0 := ()
     return
-}
-
-// Full name: alloc::string::String::{impl Drop for String}
-impl Drop for String {
-    parent_clause0 = MetaSized<String>
-    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
-    non-dyn-compatible
 }
 
 // Full name: alloc::string::{String}::new

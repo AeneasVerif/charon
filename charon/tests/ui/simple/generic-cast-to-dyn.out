@@ -1,11 +1,30 @@
 # Final LLBC before serialization:
 
-// Full name: core::any::TypeId
-pub opaque type TypeId
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::any::TypeId
+pub opaque type TypeId
+
+// Full name: core::any::TypeId::{impl Drop for TypeId}
+impl Drop for TypeId {
+    parent_clause0 = MetaSized<TypeId>
+    fn drop<'_0> = {impl Drop for TypeId}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::any::TypeId::{impl Drop for TypeId}::drop
+fn {impl Drop for TypeId}::drop<'_0>(@1: &'_0 mut (TypeId))
 
 struct core::any::Any::{vtable}
 where
@@ -13,7 +32,7 @@ where
 {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_))),
   method_type_id: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_))) -> TypeId,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -42,6 +61,10 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: test_crate::foo
 fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : 'static))

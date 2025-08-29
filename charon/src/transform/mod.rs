@@ -34,6 +34,7 @@ pub mod remove_unused_self_clause;
 pub mod reorder_decls;
 pub mod simplify_constants;
 pub mod skip_trait_refs_when_known;
+pub mod transform_dyn_trait_calls;
 pub mod ullbc_to_llbc;
 pub mod unbind_item_vars;
 pub mod update_block_indices;
@@ -76,6 +77,9 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
 
 /// Body cleanup passes on the ullbc.
 pub static ULLBC_PASSES: &[Pass] = &[
+    // Transform dyn trait method calls to vtable function pointer calls
+    // This should be early to handle the calls before other transformations
+    UnstructuredBody(&transform_dyn_trait_calls::Transform),
     // Inline promoted consts into their parent bodies.
     UnstructuredBody(&inline_promoted_consts::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the

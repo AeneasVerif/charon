@@ -25,12 +25,11 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -44,7 +43,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -56,7 +55,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
@@ -69,6 +68,26 @@ where
 
 // Full name: test_crate::Rng
 struct Rng {}
+
+// Full name: test_crate::Rng::{impl Drop for Rng}
+impl Drop for Rng {
+    parent_clause0 = MetaSized<Rng>
+    fn drop<'_0> = {impl Drop for Rng}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Rng::{impl Drop for Rng}::drop
+fn {impl Drop for Rng}::drop<'_0>(@1: &'_0 mut (Rng))
+{
+    let @0: (); // return
+    let @1: *mut Rng; // arg #1
+    let @2: &'_ mut (Rng); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: test_crate::{Rng}::next_u64
 fn next_u64<'_0>(@1: &'_0 mut (Rng))

@@ -102,7 +102,9 @@ generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
 /// A type variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct TypeVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
@@ -124,7 +126,9 @@ pub struct RegionVar {
 }
 
 /// A const generic variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct ConstGenericVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
@@ -137,7 +141,7 @@ pub struct ConstGenericVar {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord)]
 pub struct TraitClause {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,

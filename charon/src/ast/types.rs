@@ -40,7 +40,9 @@ pub enum Region {
 /// definition. Note that every path designated by `TraitInstanceId` refers
 /// to a *trait instance*, which is why the [`TraitRefKind::Clause`] variant may seem redundant
 /// with some of the other variants.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut, PartialOrd, Ord,
+)]
 #[charon::rename("TraitInstanceId")]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
@@ -109,7 +111,6 @@ pub enum TraitRefKind {
     /// `Sized`. This morally points to an invisible `impl` block; as such it contains
     /// the information we may need from one.
     BuiltinOrAuto {
-        trait_decl_ref: PolyTraitDeclRef,
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
@@ -119,7 +120,7 @@ pub enum TraitRefKind {
     },
 
     /// The automatically-generated implementation for `dyn Trait`.
-    Dyn(PolyTraitDeclRef),
+    Dyn,
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
@@ -128,7 +129,9 @@ pub enum TraitRefKind {
 }
 
 /// A reference to a trait
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct TraitRef {
     #[charon::rename("trait_id")]
     pub kind: TraitRefKind,
@@ -144,7 +147,9 @@ pub struct TraitRef {
 /// ```
 ///
 /// The substitution is: `[String, bool]`.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct TraitDeclRef {
     pub id: TraitDeclId,
     pub generics: BoxedArgs,
@@ -154,14 +159,18 @@ pub struct TraitDeclRef {
 pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 
 /// A reference to a tait impl, using the provided arguments.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct TraitImplRef {
     pub id: TraitImplId,
     pub generics: BoxedArgs,
 }
 
 /// .0 outlives .1
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
@@ -174,7 +183,9 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 /// T : Foo<S = String>
 ///         ^^^^^^^^^^
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
     pub type_name: TraitItemName,
@@ -182,7 +193,7 @@ pub struct TraitTypeConstraint {
 }
 
 /// A set of generic arguments.
-#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord)]
 pub struct GenericArgs {
     pub regions: Vector<RegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
@@ -196,7 +207,9 @@ pub type BoxedArgs = Box<GenericArgs>;
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
 /// TODO: merge with `binder`
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     pub regions: Vector<RegionId, RegionVar>,
@@ -206,7 +219,9 @@ pub struct RegionBinder<T> {
     pub skip_binder: T,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 #[charon::variants_prefix("BK")]
 pub enum BinderKind {
     /// The parameters of a trait method. Used in the `methods` lists in trait decls and trait
@@ -223,7 +238,9 @@ pub enum BinderKind {
 /// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
 /// parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
 /// now), trait methods, GATs (TODO).
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct Binder<T> {
     #[charon::rename("binder_params")]
     pub params: GenericParams,
@@ -244,7 +261,9 @@ pub struct Binder<T> {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
@@ -260,7 +279,9 @@ pub struct GenericParams {
 }
 
 /// Where a given predicate came from.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub enum PredicateOrigin {
     // Note: we use this for globals too, but that's only available with an unstable feature.
     // ```
@@ -436,6 +457,9 @@ pub struct TypeDecl {
     ///     but due to some limitation to be fixed, we are unable to obtain the info.
     /// See `translate_types::{impl ItemTransCtx}::translate_ptr_metadata` for more details.
     pub ptr_metadata: Option<PtrMetadata>,
+    /// The drop implementation for this type, if any.
+    /// This is `Some` if and only if the given type has a drop implementation.
+    pub drop_glue: Option<TraitImplRef>,
 }
 
 generate_index_type!(VariantId, "Variant");
@@ -646,7 +670,9 @@ pub enum TypeId {
 }
 
 /// Reference to a type declaration or builtin type.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, Ord, PartialOrd,
+)]
 pub struct TypeDeclRef {
     pub id: TypeId,
     pub generics: BoxedArgs,
@@ -696,6 +722,8 @@ pub enum LiteralTy {
     Drive,
     DriveMut,
     Hash,
+    PartialOrd,
+    Ord,
 )]
 #[charon::variants_prefix("Cg")]
 pub enum ConstGeneric {
@@ -713,6 +741,18 @@ pub enum ConstGeneric {
 /// the hash-consing invariant. This is expensive, avoid visiting types mutably when not needed.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Ty(HashConsed<TyKind>);
+
+impl Ord for Ty {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.inner().cmp(other.0.inner())
+    }
+}
+
+impl PartialOrd for Ty {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 impl Ty {
     pub fn new(kind: TyKind) -> Self {
@@ -758,6 +798,8 @@ where
     Deserialize,
     Drive,
     DriveMut,
+    PartialOrd,
+    Ord,
 )]
 #[charon::variants_prefix("T")]
 #[charon::rename("Ty")]
@@ -923,7 +965,9 @@ pub struct FunSig {
 }
 
 /// The contents of a `dyn Trait` type.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, Ord, PartialOrd,
+)]
 pub struct DynPredicate {
     /// This binder binds a single type `T`, which is considered existentially quantified. The
     /// predicates in the binder apply to `T` and represent the `dyn Trait` constraints.

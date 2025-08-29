@@ -24,15 +24,85 @@ pub trait Sized::<bool>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<Foo::<i32>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Foo::<i32>>
+
+// Full name: core::marker::MetaSized::<Foo::<bool>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Foo::<bool>>
+
+// Full name: core::ops::drop::Drop::<Foo::<i32>>
+#[lang_item("drop")]
+pub trait Drop::<Foo::<i32>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Foo::<i32>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Foo::<i32>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Foo::<i32>>
+}
+
 // Full name: test_crate::Foo::<i32>
 struct Foo::<i32> {
   value: i32,
+}
+
+// Full name: test_crate::Foo::{impl Drop::<Foo::<i32>>}::<i32>
+impl Drop::<Foo::<i32>> {
+    parent_clause0 = MetaSized::<Foo::<i32>>
+    fn drop<'_0> = {impl Drop::<Foo::<i32>>}::drop::<i32><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::{impl Drop::<Foo::<i32>>}::drop::<i32>
+fn {impl Drop::<Foo::<i32>>}::drop::<i32><'_0>(@1: &'_0 mut (Foo::<i32>))
+{
+    let @0: (); // return
+    let @1: *mut Foo::<i32>; // arg #1
+    let @2: &'_ mut (Foo::<i32>); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
+// Full name: core::ops::drop::Drop::<Foo::<bool>>
+#[lang_item("drop")]
+pub trait Drop::<Foo::<bool>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Foo::<bool>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Foo::<bool>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Foo::<bool>>
 }
 
 // Full name: test_crate::Foo::<bool>
 struct Foo::<bool> {
   value: bool,
 }
+
+// Full name: test_crate::Foo::{impl Drop::<Foo::<bool>>}::<bool>
+impl Drop::<Foo::<bool>> {
+    parent_clause0 = MetaSized::<Foo::<bool>>
+    fn drop<'_0> = {impl Drop::<Foo::<bool>>}::drop::<bool><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::{impl Drop::<Foo::<bool>>}::drop::<bool>
+fn {impl Drop::<Foo::<bool>>}::drop::<bool><'_0>(@1: &'_0 mut (Foo::<bool>))
+{
+    let @0: (); // return
+    let @1: *mut Foo::<bool>; // arg #1
+    let @2: &'_ mut (Foo::<bool>); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
+pub fn core::ops::drop::Drop::drop::<Foo::<i32>><'_0>(@1: &'_0 mut (Foo::<i32>))
+
+pub fn core::ops::drop::Drop::drop::<Foo::<bool>><'_0>(@1: &'_0 mut (Foo::<bool>))
 
 // Full name: test_crate::FooInt
 fn FooInt() -> Foo::<i32>

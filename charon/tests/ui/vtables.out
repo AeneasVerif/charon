@@ -36,8 +36,27 @@ impl Clone for i32 {
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::fmt::Error
 pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
 
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
@@ -85,15 +104,6 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
@@ -115,12 +125,19 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}
+impl Drop for AssertKind {
+    parent_clause0 = MetaSized<AssertKind>
+    fn drop<'_0> = {impl Drop for AssertKind}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}::drop
+fn {impl Drop for AssertKind}::drop<'_0>(@1: &'_0 mut (AssertKind))
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
-
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
 // Full name: alloc::string::String::{impl Drop for String}
 impl Drop for String {
@@ -128,6 +145,9 @@ impl Drop for String {
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
     non-dyn-compatible
 }
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
 // Full name: alloc::string::{String}::is_empty
 pub fn is_empty<'_0>(@1: &'_0 (String)) -> bool
@@ -189,7 +209,7 @@ where
 struct test_crate::Checkable::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, T> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, T> + _dyn : '_))),
   method_check: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, T> + _dyn : '_))) -> bool,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::Super::{vtable}<T>),
@@ -257,6 +277,21 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 (i32)) -> bool
     return
 }
 
+// Full name: test_crate::{impl Checkable<i32> for i32}::check::{vtable_method}
+fn {impl Checkable<i32> for i32}::check::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_))) -> bool
+{
+    let @0: bool; // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_)); // arg #1
+    let @2: &'_0 (i32); // anonymous local
+
+    storage_live(@0)
+    storage_live(@1)
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @0 := {impl Checkable<i32> for i32}::check<'_0>(move (@2))
+    return
+}
+
 // Full name: test_crate::{impl Checkable<i32> for i32}::{vtable}
 fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<i32>
 {
@@ -265,7 +300,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
 
     storage_live(@1)
     @1 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_check: const ({impl Checkable<i32> for i32}::check), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@1) }
+    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@1) }
     return
 }
 
@@ -284,7 +319,7 @@ impl Checkable<i32> for i32 {
 struct test_crate::NoParam::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))),
   method_dummy: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -364,7 +399,7 @@ where
 struct test_crate::Modifiable::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_))),
   method_modify: fn<'_0, '_1>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_0_1 (T)) -> T,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -404,6 +439,26 @@ where
     return
 }
 
+// Full name: test_crate::{impl Modifiable<T> for i32}::modify::{vtable_method}
+fn {impl Modifiable<T> for i32}::modify::{vtable_method}<'_0, '_1, T>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), @2: &'_1 (T)) -> T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let @0: T; // return
+    let @1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // arg #1
+    let @2: &'_1 (T); // arg #2
+    let @3: &'_0 mut (i32); // anonymous local
+
+    storage_live(@0)
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
+    @3 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_0 mut (i32)>(move (@1))
+    @0 := {impl Modifiable<T> for i32}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
+    return
+}
+
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable}
 fn {impl Modifiable<T> for i32}::{vtable}<T>() -> test_crate::Modifiable::{vtable}<T>
 where
@@ -412,7 +467,7 @@ where
 {
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
 
-    ret@0 := test_crate::Modifiable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_modify: const ({impl Modifiable<T> for i32}::modify<T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -449,6 +504,8 @@ where
     let @5: i32; // anonymous local
     let @6: &'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // anonymous local
     let @7: &'_ (T); // anonymous local
+    let @8: *const test_crate::Modifiable::{vtable}<T>; // anonymous local
+    let @9: fn(&'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_ (T)) -> T; // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
@@ -464,7 +521,11 @@ where
     @6 := &two-phase-mut *(x@2)
     storage_live(@7)
     @7 := &*(arg@1)
-    @0 := Modifiable<(dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_), T>::modify<'_, '_>(move (@6), move (@7))
+    storage_live(@8)
+    storage_live(@9)
+    @8 := ptr_metadata(move (@6))
+    @9 := copy ((*(@8)).3)
+    @0 := (move @9)(move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(@5)
@@ -488,7 +549,7 @@ where
 struct test_crate::Both32And64::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_))),
   method_both_operate: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)), &'_0_1 (i32), &'_0_2 (i64)),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::BaseOn::{vtable}<i32>),
@@ -679,7 +740,7 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     storage_live(@2)
     @1 := &{impl BaseOn<i32> for i32}::{vtable}
     @2 := &{impl BaseOn<i64> for i32}::{vtable}
-    ret@0 := test_crate::Both32And64::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_both_operate: const (Opaque(shim for provided methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@1), super_trait_2: move (@2) }
+    ret@0 := test_crate::Both32And64::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@1), super_trait_2: move (@2) }
     return
 }
 
@@ -703,6 +764,99 @@ trait Alias<Self>
     vtable: test_crate::Alias::{vtable}
 }
 
+struct test_crate::LifetimeTrait::{vtable}<Ty0> {
+  size: usize,
+  align: usize,
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0))),
+  method_lifetime_method: fn<'a, '_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)), &'a (LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)>::Ty)) -> &'a (LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)>::Ty),
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
+// Full name: test_crate::LifetimeTrait
+trait LifetimeTrait<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Ty>
+    type Ty
+    fn lifetime_method<'a, '_1> = test_crate::LifetimeTrait::lifetime_method<'a, '_0_1, Self>[Self]
+    vtable: test_crate::LifetimeTrait::{vtable}<Self::Ty>
+}
+
+fn test_crate::LifetimeTrait::lifetime_method<'a, '_1, Self>(@1: &'_1 (Self), @2: &'a (@TraitClause0::Ty)) -> &'a (@TraitClause0::Ty)
+where
+    [@TraitClause0]: LifetimeTrait<Self>,
+
+// Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method
+fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'a (i32)) -> &'a (i32)
+{
+    let @0: &'_ (i32); // return
+    let self@1: &'_ (i32); // arg #1
+    let arg@2: &'_ (i32); // arg #2
+    let @3: (); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: i32; // anonymous local
+    let @6: i32; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := copy (*(self@1))
+    storage_live(@6)
+    @6 := copy (*(arg@2))
+    @4 := move (@5) > move (@6)
+    if move (@4) {
+    }
+    else {
+        storage_dead(@6)
+        storage_dead(@5)
+        panic(core::panicking::panic)
+    }
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@3)
+    @0 := copy (arg@2)
+    return
+}
+
+// Full name: test_crate::{impl LifetimeTrait for i32}
+impl LifetimeTrait for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = Sized<i32>
+    type Ty = i32
+    fn lifetime_method<'a, '_1> = {impl LifetimeTrait for i32}::lifetime_method<'a, '_0_1>
+    vtable: {impl LifetimeTrait for i32}::{vtable}
+}
+
+// Full name: test_crate::use_lifetime_trait
+fn use_lifetime_trait<'a, '_1>(@1: &'_1 ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_1 + @TraitClause1_0::Ty = i32)), @2: &'a (i32)) -> &'a (i32)
+{
+    let @0: &'_ (i32); // return
+    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)); // arg #1
+    let y@2: &'_ (i32); // arg #2
+    let @3: &'_ (i32); // anonymous local
+    let @4: &'_ ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)); // anonymous local
+    let @5: &'_ (i32); // anonymous local
+    let @6: *const test_crate::LifetimeTrait::{vtable}<i32>; // anonymous local
+    let @7: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)), &'_ (i32)) -> &'_ (i32); // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    @4 := &*(x@1)
+    storage_live(@5)
+    @5 := &*(y@2)
+    storage_live(@6)
+    storage_live(@7)
+    @6 := ptr_metadata(move (@4))
+    @7 := copy ((*(@6)).3)
+    @3 := (move @7)(move (@4), move (@5))
+    @0 := &*(@3)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@3)
+    return
+}
+
 // Full name: test_crate::use_alias
 fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_0)))
 {
@@ -716,6 +870,8 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>
     let @7: &'_ (i64); // anonymous local
     let @8: &'_ (i64); // anonymous local
     let @9: i64; // anonymous local
+    let @10: *const test_crate::Both32And64::{vtable}; // anonymous local
+    let @11: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)), &'_ (i32), &'_ (i64)); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -732,7 +888,11 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>
     @9 := const (200 : i64)
     @8 := &@9
     @7 := &*(@8)
-    @2 := Both32And64<(dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)>::both_operate<'_, '_, '_>(move (@3), move (@4), move (@7))
+    storage_live(@10)
+    storage_live(@11)
+    @10 := ptr_metadata(move (@3))
+    @11 := copy ((*(@10)).3)
+    @2 := (move @11)(move (@3), move (@4), move (@7))
     storage_dead(@7)
     storage_dead(@4)
     storage_dead(@3)
@@ -812,6 +972,14 @@ fn main()
     let @60: &'_ (i64); // anonymous local
     let @61: &'_ (i64); // anonymous local
     let @62: i64; // anonymous local
+    let @63: *const test_crate::Checkable::{vtable}<i32>; // anonymous local
+    let @64: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_))) -> bool; // anonymous local
+    let @65: *const test_crate::Modifiable::{vtable}<i32>; // anonymous local
+    let @66: fn(&'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, i32> + _dyn : '_)), &'_ (i32)) -> i32; // anonymous local
+    let @67: *const test_crate::NoParam::{vtable}; // anonymous local
+    let @68: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))); // anonymous local
+    let @69: *const test_crate::Both32And64::{vtable}; // anonymous local
+    let @70: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)), &'_ (i32), &'_ (i64)); // anonymous local
 
     storage_live(@21)
     storage_live(@22)
@@ -855,6 +1023,12 @@ fn main()
     storage_live(@60)
     storage_live(@61)
     storage_live(@62)
+    storage_live(@65)
+    storage_live(@66)
+    storage_live(@67)
+    storage_live(@68)
+    storage_live(@69)
+    storage_live(@70)
     storage_live(x@1)
     storage_live(@2)
     storage_live(@3)
@@ -869,7 +1043,11 @@ fn main()
     storage_live(@6)
     storage_live(@7)
     @7 := &*(x@1)
-    @6 := Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_), i32>::check<'_>(move (@7))
+    storage_live(@63)
+    storage_live(@64)
+    @63 := ptr_metadata(move (@7))
+    @64 := copy ((*(@63)).3)
+    @6 := (move @64)(move (@7))
     if move (@6) {
     }
     else {
@@ -932,7 +1110,11 @@ fn main()
         @28 := const (100 : i32)
         @27 := &mut @28
         @26 := &*(@27)
-        @24 := Modifiable<(dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, i32> + _dyn : '_), i32>::modify<'_, '_>(move (@25), move (@26))
+        storage_live(@65)
+        storage_live(@66)
+        @65 := ptr_metadata(move (@25))
+        @66 := copy ((*(@65)).3)
+        @24 := (move @66)(move (@25), move (@26))
         storage_dead(@26)
         storage_dead(@25)
         @23 := &@24
@@ -1005,7 +1187,11 @@ fn main()
         storage_live(@49)
         storage_live(@50)
         @50 := &*(z@43)
-        @49 := NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>::dummy<'_>(move (@50))
+        storage_live(@67)
+        storage_live(@68)
+        @67 := ptr_metadata(move (@50))
+        @68 := copy ((*(@67)).3)
+        @49 := (move @68)(move (@50))
         storage_dead(@50)
         storage_dead(@49)
         storage_live(a@51)
@@ -1033,7 +1219,11 @@ fn main()
         @62 := const (200 : i64)
         @61 := &@62
         @60 := &*(@61)
-        @55 := Both32And64<(dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)>::both_operate<'_, '_, '_>(move (@56), move (@57), move (@60))
+        storage_live(@69)
+        storage_live(@70)
+        @69 := ptr_metadata(move (@56))
+        @70 := copy ((*(@69)).3)
+        @55 := (move @70)(move (@56), move (@57), move (@60))
         storage_dead(@60)
         storage_dead(@57)
         storage_dead(@56)
