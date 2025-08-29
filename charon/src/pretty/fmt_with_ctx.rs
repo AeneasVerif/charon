@@ -1081,11 +1081,11 @@ impl Display for RawAttribute {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
+impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            RawConstantExpr::Literal(c) => write!(f, "{}", c.to_string()),
-            RawConstantExpr::Adt(variant_id, values) => {
+            ConstantExprKind::Literal(c) => write!(f, "{}", c.to_string()),
+            ConstantExprKind::Adt(variant_id, values) => {
                 // It is a bit annoying: in order to properly format the value,
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
@@ -1096,30 +1096,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "ConstAdt {} [{}]", variant_id, values)
             }
-            RawConstantExpr::Array(values) => {
+            ConstantExprKind::Array(values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
             }
-            RawConstantExpr::Global(global_ref) => {
+            ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
-            RawConstantExpr::TraitConst(trait_ref, name) => {
+            ConstantExprKind::TraitConst(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
-            RawConstantExpr::Ref(cv) => {
+            ConstantExprKind::Ref(cv) => {
                 write!(f, "&{}", cv.with_ctx(ctx))
             }
-            RawConstantExpr::Ptr(rk, cv) => match rk {
+            ConstantExprKind::Ptr(rk, cv) => match rk {
                 RefKind::Mut => write!(f, "&raw mut {}", cv.with_ctx(ctx)),
                 RefKind::Shared => write!(f, "&raw const {}", cv.with_ctx(ctx)),
             },
-            RawConstantExpr::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
-            RawConstantExpr::FnPtr(fp) => {
+            ConstantExprKind::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
+            ConstantExprKind::FnPtr(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
             }
-            RawConstantExpr::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
-            RawConstantExpr::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
-            RawConstantExpr::Opaque(cause) => write!(f, "Opaque({cause})"),
+            ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
+            ConstantExprKind::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
+            ConstantExprKind::Opaque(cause) => write!(f, "Opaque({cause})"),
         }
     }
 }

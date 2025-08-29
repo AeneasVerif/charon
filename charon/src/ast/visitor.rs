@@ -46,7 +46,7 @@ use indexmap::IndexMap;
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
-        Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, RawConstantExpr,
+        Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
         RefKind, RegionId, RegionVar, ScalarValue, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,

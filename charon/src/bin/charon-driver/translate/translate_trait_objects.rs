@@ -483,7 +483,7 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         impl_def: &hax::FullDef,
         item: &hax::ImplAssocItem,
-        mut mk_field: impl FnMut(RawConstantExpr),
+        mut mk_field: impl FnMut(ConstantExprKind),
     ) -> Result<(), Error> {
         // Exit if the item isn't a vtable safe method.
         match self.poly_hax_def(&item.decl_def_id)?.kind() {
@@ -503,9 +503,9 @@ impl ItemTransCtx<'_, '_> {
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
                 let shim_ref =
                     self.translate_item(span, &item_ref, TransItemSourceKind::VTableMethod)?;
-                RawConstantExpr::FnPtr(shim_ref)
+                ConstantExprKind::FnPtr(shim_ref)
             }
-            hax::ImplAssocItemValue::DefaultedFn { .. } => RawConstantExpr::Opaque(
+            hax::ImplAssocItemValue::DefaultedFn { .. } => ConstantExprKind::Opaque(
                 "shim for provided methods \
                     aren't yet supported"
                     .to_string(),
@@ -523,7 +523,7 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         trait_def: &hax::FullDef,
         impl_def: &hax::FullDef,
-        mut mk_field: impl FnMut(RawConstantExpr),
+        mut mk_field: impl FnMut(ConstantExprKind),
     ) -> Result<(), Error> {
         let hax::FullDefKind::TraitImpl {
             implied_impl_exprs, ..
@@ -562,13 +562,13 @@ impl ItemTransCtx<'_, '_> {
                         .erase()
                         .expect("parent trait should be dyn compatible");
                     let global = Box::new(ConstantExpr {
-                        value: RawConstantExpr::Global(vtable_instance_ref),
+                        value: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,
                     });
-                    RawConstantExpr::Ref(global)
+                    ConstantExprKind::Ref(global)
                 }
                 // TODO(dyn): builtin impls
-                _ => RawConstantExpr::Opaque("missing supertrait vtable".into()),
+                _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),
             };
             mk_field(kind);
         }
@@ -633,9 +633,9 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // TODO(dyn): provide values
-        mk_field(RawConstantExpr::Opaque("unknown size".to_string()));
-        mk_field(RawConstantExpr::Opaque("unknown align".to_string()));
-        mk_field(RawConstantExpr::Opaque("unknown drop".to_string()));
+        mk_field(ConstantExprKind::Opaque("unknown size".to_string()));
+        mk_field(ConstantExprKind::Opaque("unknown align".to_string()));
+        mk_field(ConstantExprKind::Opaque("unknown drop".to_string()));
 
         for item in items {
             self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;

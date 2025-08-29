@@ -38,7 +38,7 @@ impl UllbcPass for Transform {
                     let mut new_blocks = vec![];
                     block.dyn_visit_in_body_mut(|op: &mut Operand| {
                         if let Operand::Const(c) = op
-                            && let RawConstantExpr::Global(gref) = &mut c.value
+                            && let ConstantExprKind::Global(gref) = &mut c.value
                             && let Some(inner_body) = anon_consts.get(&gref.id)
                         {
                             // We inline the required body by shifting its local ids and block ids

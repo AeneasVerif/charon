@@ -380,7 +380,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     // A promoted constant that could not be evaluated.
                     let global_ref = self.translate_global_decl_ref(span, item)?;
                     let constant = ConstantExpr {
-                        value: RawConstantExpr::Global(global_ref),
+                        value: ConstantExprKind::Global(global_ref),
                         ty: ty.clone(),
                     };
                     Ok((Operand::Const(Box::new(constant)), ty))
@@ -481,7 +481,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         operand = Operand::Const(Box::new(ConstantExpr {
-                            value: RawConstantExpr::FnPtr(fn_ptr),
+                            value: ConstantExprKind::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
                         }));
                         CastKind::FnPtr(src_ty, tgt_ty)
