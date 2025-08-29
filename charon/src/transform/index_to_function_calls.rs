@@ -27,7 +27,7 @@ struct IndexVisitor<'a> {
 impl<'a> IndexVisitor<'a> {
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         let var = self.locals.new_var(name, ty);
-        let live_kind = RawStatement::StorageLive(var.local_id().unwrap());
+        let live_kind = StatementKind::StorageLive(var.local_id().unwrap());
         self.statements.push(Statement::new(self.span, live_kind));
         var
     }
@@ -87,7 +87,7 @@ impl<'a> IndexVisitor<'a> {
         // `tmp0 = &{mut}p`
         let input_var = {
             let input_var = self.fresh_var(None, input_ty);
-            let kind = RawStatement::Assign(
+            let kind = StatementKind::Assign(
                 input_var.clone(),
                 Rvalue::Ref(subplace.clone(), BorrowKind::mutable(mut_access)),
             );
@@ -116,7 +116,7 @@ impl<'a> IndexVisitor<'a> {
             // `len_var = len(p)`
             let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
             let len_var = self.fresh_var(None, usize_ty.clone());
-            let kind = RawStatement::Assign(
+            let kind = StatementKind::Assign(
                 len_var.clone(),
                 Rvalue::Len(
                     subplace.clone(),
@@ -130,7 +130,7 @@ impl<'a> IndexVisitor<'a> {
             // `index_var = len_var - last_arg`
             // `storage_dead(len_var)`
             let index_var = self.fresh_var(None, usize_ty);
-            let kind = RawStatement::Assign(
+            let kind = StatementKind::Assign(
                 index_var.clone(),
                 Rvalue::BinaryOp(
                     BinOp::Sub(OverflowMode::UB),
@@ -139,7 +139,7 @@ impl<'a> IndexVisitor<'a> {
                 ),
             );
             self.statements.push(Statement::new(self.span, kind));
-            let dead_kind = RawStatement::StorageDead(len_var.local_id().unwrap());
+            let dead_kind = StatementKind::StorageDead(len_var.local_id().unwrap());
             self.statements.push(Statement::new(self.span, dead_kind));
             args.push(Operand::Copy(index_var));
         } else {
@@ -156,7 +156,7 @@ impl<'a> IndexVisitor<'a> {
                 args,
                 dest: output_var.clone(),
             };
-            let kind = RawStatement::Call(index_call);
+            let kind = StatementKind::Call(index_call);
             self.statements.push(Statement::new(self.span, kind));
             output_var
         };
@@ -303,7 +303,7 @@ impl LlbcPass for Transform {
                 place_mutability_stack: Vec::new(),
                 span: st.span,
             };
-            use RawStatement::*;
+            use StatementKind::*;
             match &mut st.content {
                 Assign(..)
                 | SetDiscriminant(..)

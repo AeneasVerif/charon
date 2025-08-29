@@ -140,7 +140,58 @@ and cast_kind =
       (** Reinterprets the bits of a value of one type as another type, i.e.
           exactly what [[std::mem::transmute]] does. *)
 
-and constant_expr = { value : raw_constant_expr; ty : ty }
+and constant_expr = { value : constant_expr_kind; ty : ty }
+
+(** A constant expression.
+
+    Only the [[ConstantExprKind::Literal]] and [[ConstantExprKind::Var]] cases
+    are left in the final LLBC.
+
+    The other cases come from a straight translation from the MIR:
+
+    [[ConstantExprKind::Adt]] case: It is a bit annoying, but rustc treats some
+    ADT and tuple instances as constants when generating MIR:
+    - an enumeration with one variant and no fields is a constant.
+    - a structure with no field is a constant.
+    - sometimes, Rust stores the initialization of an ADT as a constant (if all
+      the fields are constant) rather than as an aggregated value We later
+      desugar those to regular ADTs, see [regularize_constant_adts.rs].
+
+    [[ConstantExprKind::Global]] case: access to a global variable. We later
+    desugar it to a copy of a place global.
+
+    [[ConstantExprKind::Ref]] case: reference to a constant value. We later
+    desugar it to a separate statement.
+
+    [[ConstantExprKind::FnPtr]] case: a function pointer (to a top-level
+    function).
+
+    Remark: MIR seems to forbid more complex expressions like paths. For
+    instance, reading the constant [a.b] is translated to
+    [{ _1 = const a; _2 = (_1.0) }]. *)
+and constant_expr_kind =
+  | CLiteral of literal
+  | CTraitConst of trait_ref * trait_item_name
+      (** A trait constant.
+
+          Ex.:
+          {@rust[
+            impl Foo for Bar {
+              const C : usize = 32; // <-
+            }
+          ]}
+
+          Remark: trait constants can not be used in types, they are necessarily
+          values. *)
+  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
+  | CFnPtr of fn_ptr  (** Function pointer *)
+  | CRawMemory of int list
+      (** Raw memory value obtained from constant evaluation. Used when a more
+          structured representation isn't possible (e.g. for unions) or just
+          isn't implemented yet. *)
+  | COpaque of string
+      (** A constant expression that Charon still doesn't handle, along with the
+          reason why. *)
 
 and field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
@@ -212,57 +263,6 @@ and projection_elem =
           - [from]
           - [to]
           - [from_end] *)
-
-(** A constant expression.
-
-    Only the [[RawConstantExpr::Literal]] and [[RawConstantExpr::Var]] cases are
-    left in the final LLBC.
-
-    The other cases come from a straight translation from the MIR:
-
-    [[RawConstantExpr::Adt]] case: It is a bit annoying, but rustc treats some
-    ADT and tuple instances as constants when generating MIR:
-    - an enumeration with one variant and no fields is a constant.
-    - a structure with no field is a constant.
-    - sometimes, Rust stores the initialization of an ADT as a constant (if all
-      the fields are constant) rather than as an aggregated value We later
-      desugar those to regular ADTs, see [regularize_constant_adts.rs].
-
-    [[RawConstantExpr::Global]] case: access to a global variable. We later
-    desugar it to a copy of a place global.
-
-    [[RawConstantExpr::Ref]] case: reference to a constant value. We later
-    desugar it to a separate statement.
-
-    [[RawConstantExpr::FnPtr]] case: a function pointer (to a top-level
-    function).
-
-    Remark: MIR seems to forbid more complex expressions like paths. For
-    instance, reading the constant [a.b] is translated to
-    [{ _1 = const a; _2 = (_1.0) }]. *)
-and raw_constant_expr =
-  | CLiteral of literal
-  | CTraitConst of trait_ref * trait_item_name
-      (** A trait constant.
-
-          Ex.:
-          {@rust[
-            impl Foo for Bar {
-              const C : usize = 32; // <-
-            }
-          ]}
-
-          Remark: trait constants can not be used in types, they are necessarily
-          values. *)
-  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
-  | CFnPtr of fn_ptr  (** Function pointer *)
-  | CRawMemory of int list
-      (** Raw memory value obtained from constant evaluation. Used when a more
-          structured representation isn't possible (e.g. for unions) or just
-          isn't implemented yet. *)
-  | COpaque of string
-      (** A constant expression that Charon still doesn't handle, along with the
-          reason why. *)
 
 (** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
     We can also factor out the unops, binops with the function calls. TODO: move

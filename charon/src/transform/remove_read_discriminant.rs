@@ -27,7 +27,7 @@ impl Transform {
             match suffix {
                 [
                     Statement {
-                        content: RawStatement::Assign(dest, Rvalue::Discriminant(p)),
+                        content: StatementKind::Assign(dest, Rvalue::Discriminant(p)),
                         ..
                     },
                     rest @ ..,
@@ -67,7 +67,7 @@ impl Transform {
                                 );
                             }
                         }
-                        block.statements[i].content = RawStatement::Error(
+                        block.statements[i].content = StatementKind::Error(
                             "error reading the discriminant of this type".to_owned(),
                         );
                         return;
@@ -78,7 +78,7 @@ impl Transform {
                         [
                             Statement {
                                 content:
-                                    RawStatement::Switch(
+                                    StatementKind::Switch(
                                         switch @ Switch::SwitchInt(Operand::Move(_), ..),
                                     ),
                                 ..
@@ -132,7 +132,7 @@ impl Transform {
                                 Switch::Match(p.clone(), targets, otherwise)
                             });
                             // `Nop` the discriminant read.
-                            block.statements[i].content = RawStatement::Nop;
+                            block.statements[i].content = StatementKind::Nop;
                         }
                         _ => {
                             // The discriminant read is not followed by a `SwitchInt`. This can happen
@@ -145,7 +145,7 @@ impl Transform {
                 // appropriate MIR.
                 [
                     Statement {
-                        content: RawStatement::Call(call),
+                        content: StatementKind::Call(call),
                         ..
                     },
                     ..,
@@ -166,7 +166,7 @@ impl Transform {
                 {
                     let p = p.clone().project(ProjectionElem::Deref, sub_ty.clone());
                     block.statements[i].content =
-                        RawStatement::Assign(call.dest.clone(), Rvalue::Discriminant(p.clone()))
+                        StatementKind::Assign(call.dest.clone(), Rvalue::Discriminant(p.clone()))
                 }
                 _ => {}
             }

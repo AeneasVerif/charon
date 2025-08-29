@@ -14,10 +14,10 @@ module Ast = struct
 
   let rec statement_to_string (env : fmt_env) (indent : string) (st : statement)
       : string =
-    raw_statement_to_string env indent st.content
+    statement_kind_to_string env indent st.content
 
-  and raw_statement_to_string (env : fmt_env) (indent : string)
-      (st : raw_statement) : string =
+  and statement_kind_to_string (env : fmt_env) (indent : string)
+      (st : statement_kind) : string =
     match st with
     | Assign (p, rv) ->
         indent ^ place_to_string env p ^ " := " ^ rvalue_to_string env rv
@@ -60,10 +60,10 @@ module Ast = struct
 
   let rec terminator_to_string (env : fmt_env) (indent : string)
       (st : terminator) : string =
-    raw_terminator_to_string env indent st.content
+    terminator_kind_to_string env indent st.content
 
-  and raw_terminator_to_string (env : fmt_env) (indent : string)
-      (st : raw_terminator) : string =
+  and terminator_kind_to_string (env : fmt_env) (indent : string)
+      (st : terminator_kind) : string =
     match st with
     | Goto bid -> indent ^ "goto " ^ block_id_to_string bid
     | Switch (op, tgts) ->

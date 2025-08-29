@@ -109,7 +109,7 @@ fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId) -> bool {
 /// The terminator of the block is a panic, etc.
 fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
-    use src::RawTerminator::*;
+    use src::TerminatorKind::*;
     match &block.terminator.content {
         Abort(..) => true,
         Goto { .. } | Switch { .. } | Return | Call { .. } | UnwindResume => false,
@@ -141,7 +141,7 @@ fn build_cfg_partial_info_edges(
     // Retrieve the block targets
     let mut targets = body.body.get(block_id).unwrap().targets();
     // Hack: we don't translate unwind paths in llbc so we ignore them here.
-    if let src::RawTerminator::Call { target, .. } =
+    if let src::TerminatorKind::Call { target, .. } =
         body.body.get(block_id).unwrap().terminator.content
     {
         targets = vec![target];
@@ -1425,11 +1425,11 @@ fn translate_child_block(
     // Check if this is a backward call
     match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
         GotoKind::Break(index) => {
-            let st = tgt::RawStatement::Break(index);
+            let st = tgt::StatementKind::Break(index);
             Some(tgt::Statement::new(parent_span, st).into_block())
         }
         GotoKind::Continue(index) => {
-            let st = tgt::RawStatement::Continue(index);
+            let st = tgt::StatementKind::Continue(index);
             Some(tgt::Statement::new(parent_span, st).into_block())
         }
         // If we are going to an exit block we simply ignore the goto
@@ -1449,24 +1449,26 @@ fn translate_child_block(
 }
 
 fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
-    opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::RawStatement::Nop).into_block())
+    opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::StatementKind::Nop).into_block())
 }
 
 fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
     let st = match st.content.clone() {
-        src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
-        src::RawStatement::SetDiscriminant(place, variant_id) => {
-            tgt::RawStatement::SetDiscriminant(place, variant_id)
+        src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
+        src::StatementKind::SetDiscriminant(place, variant_id) => {
+            tgt::StatementKind::SetDiscriminant(place, variant_id)
         }
-        src::RawStatement::CopyNonOverlapping(copy) => tgt::RawStatement::CopyNonOverlapping(copy),
-        src::RawStatement::StorageLive(var_id) => tgt::RawStatement::StorageLive(var_id),
-        src::RawStatement::StorageDead(var_id) => tgt::RawStatement::StorageDead(var_id),
-        src::RawStatement::Deinit(place) => tgt::RawStatement::Deinit(place),
-        src::RawStatement::Drop(place, tref) => tgt::RawStatement::Drop(place, tref),
-        src::RawStatement::Assert(assert) => tgt::RawStatement::Assert(assert),
-        src::RawStatement::Nop => tgt::RawStatement::Nop,
-        src::RawStatement::Error(s) => tgt::RawStatement::Error(s),
+        src::StatementKind::CopyNonOverlapping(copy) => {
+            tgt::StatementKind::CopyNonOverlapping(copy)
+        }
+        src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
+        src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
+        src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
+        src::StatementKind::Drop(place, tref) => tgt::StatementKind::Drop(place, tref),
+        src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
+        src::StatementKind::Nop => tgt::StatementKind::Nop,
+        src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
     };
     Some(tgt::Statement::new(src_span, st))
 }
@@ -1480,17 +1482,17 @@ fn translate_terminator(
     let src_span = terminator.span;
 
     match &terminator.content {
-        src::RawTerminator::Abort(kind) => {
-            tgt::Statement::new(src_span, tgt::RawStatement::Abort(kind.clone())).into_block()
+        src::TerminatorKind::Abort(kind) => {
+            tgt::Statement::new(src_span, tgt::StatementKind::Abort(kind.clone())).into_block()
         }
-        src::RawTerminator::Return => {
-            tgt::Statement::new(src_span, tgt::RawStatement::Return).into_block()
+        src::TerminatorKind::Return => {
+            tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()
         }
-        src::RawTerminator::UnwindResume => {
-            tgt::Statement::new(src_span, tgt::RawStatement::Abort(AbortKind::Panic(None)))
+        src::TerminatorKind::UnwindResume => {
+            tgt::Statement::new(src_span, tgt::StatementKind::Abort(AbortKind::Panic(None)))
                 .into_block()
         }
-        src::RawTerminator::Call {
+        src::TerminatorKind::Call {
             call,
             target,
             on_unwind: _,
@@ -1504,11 +1506,11 @@ fn translate_terminator(
                 *target,
             );
             let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
-            let st = tgt::Statement::new(src_span, tgt::RawStatement::Call(call.clone()));
+            let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
             block.statements.insert(0, st);
             block
         }
-        src::RawTerminator::Goto { target } => {
+        src::TerminatorKind::Goto { target } => {
             let block = translate_child_block(
                 info,
                 parent_loops,
@@ -1519,7 +1521,7 @@ fn translate_terminator(
             let block = opt_block_unwrap_or_nop(terminator.span, block);
             block
         }
-        src::RawTerminator::Switch { discr, targets } => {
+        src::TerminatorKind::Switch { discr, targets } => {
             // Translate the target expressions
             let switch = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
@@ -1615,7 +1617,7 @@ fn translate_terminator(
             // Return
             let span = tgt::combine_switch_targets_span(&switch);
             let span = combine_span(&src_span, &span);
-            let st = tgt::RawStatement::Switch(switch);
+            let st = tgt::StatementKind::Switch(switch);
             tgt::Statement::new(span, st).into_block()
         }
     }
@@ -1702,7 +1704,7 @@ fn translate_block(
 
     if is_loop {
         // Put the loop body inside a `Loop`.
-        block = tgt::Statement::new(block.span, tgt::RawStatement::Loop(block)).into_block()
+        block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block)).into_block()
     } else if !is_switch {
         assert!(next_block.is_none());
     }
