@@ -72,8 +72,14 @@ and switch =
 type block = { statements : statement list; terminator : terminator }
 and blocks = block list
 
+and terminator = {
+  span : span;
+  content : terminator_kind;
+  comments_before : string list;  (** Comments that precede this terminator. *)
+}
+
 (** A raw terminator: a terminator without meta data. *)
-and raw_terminator =
+and terminator_kind =
   | Goto of block_id
       (** Fields:
           - [target] *)
@@ -89,12 +95,6 @@ and raw_terminator =
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
   | UnwindResume
-
-and terminator = {
-  span : span;
-  content : raw_terminator;
-  comments_before : string list;  (** Comments that precede this terminator. *)
-}
 [@@deriving
   show,
   eq,

@@ -81,7 +81,7 @@ pub enum SwitchTargets {
 
 /// A raw terminator: a terminator without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
-pub enum RawTerminator {
+pub enum TerminatorKind {
     Goto {
         target: BlockId,
     },
@@ -103,7 +103,7 @@ pub enum RawTerminator {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Terminator {
     pub span: Span,
-    pub content: RawTerminator,
+    pub content: TerminatorKind,
     /// Comments that precede this terminator.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]

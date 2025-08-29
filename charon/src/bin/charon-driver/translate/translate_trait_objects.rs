@@ -665,7 +665,7 @@ impl ItemTransCtx<'_, '_> {
 
         let block = BlockData {
             statements,
-            terminator: Terminator::new(span, RawTerminator::Return),
+            terminator: Terminator::new(span, TerminatorKind::Return),
         };
 
         Ok(Body::Unstructured(GExprBody {

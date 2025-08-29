@@ -109,7 +109,7 @@ fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId) -> bool {
 /// The terminator of the block is a panic, etc.
 fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
-    use src::RawTerminator::*;
+    use src::TerminatorKind::*;
     match &block.terminator.content {
         Abort(..) => true,
         Goto { .. } | Switch { .. } | Return | Call { .. } | UnwindResume => false,
@@ -141,7 +141,7 @@ fn build_cfg_partial_info_edges(
     // Retrieve the block targets
     let mut targets = body.body.get(block_id).unwrap().targets();
     // Hack: we don't translate unwind paths in llbc so we ignore them here.
-    if let src::RawTerminator::Call { target, .. } =
+    if let src::TerminatorKind::Call { target, .. } =
         body.body.get(block_id).unwrap().terminator.content
     {
         targets = vec![target];
@@ -1482,17 +1482,17 @@ fn translate_terminator(
     let src_span = terminator.span;
 
     match &terminator.content {
-        src::RawTerminator::Abort(kind) => {
+        src::TerminatorKind::Abort(kind) => {
             tgt::Statement::new(src_span, tgt::StatementKind::Abort(kind.clone())).into_block()
         }
-        src::RawTerminator::Return => {
+        src::TerminatorKind::Return => {
             tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()
         }
-        src::RawTerminator::UnwindResume => {
+        src::TerminatorKind::UnwindResume => {
             tgt::Statement::new(src_span, tgt::StatementKind::Abort(AbortKind::Panic(None)))
                 .into_block()
         }
-        src::RawTerminator::Call {
+        src::TerminatorKind::Call {
             call,
             target,
             on_unwind: _,
@@ -1510,7 +1510,7 @@ fn translate_terminator(
             block.statements.insert(0, st);
             block
         }
-        src::RawTerminator::Goto { target } => {
+        src::TerminatorKind::Goto { target } => {
             let block = translate_child_block(
                 info,
                 parent_loops,
@@ -1521,7 +1521,7 @@ fn translate_terminator(
             let block = opt_block_unwrap_or_nop(terminator.span, block);
             block
         }
-        src::RawTerminator::Switch { discr, targets } => {
+        src::TerminatorKind::Switch { discr, targets } => {
             // Translate the target expressions
             let switch = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {

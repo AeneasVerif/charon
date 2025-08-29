@@ -1480,8 +1480,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
         }
         write!(f, "{tab}")?;
         match &self.content {
-            RawTerminator::Goto { target } => write!(f, "goto bb{target}"),
-            RawTerminator::Switch { discr, targets } => match targets {
+            TerminatorKind::Goto { target } => write!(f, "goto bb{target}"),
+            TerminatorKind::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => write!(
                     f,
                     "if {} -> bb{} else -> bb{}",
@@ -1498,7 +1498,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     write!(f, "switch {} -> {}", discr.with_ctx(ctx), maps)
                 }
             },
-            RawTerminator::Call {
+            TerminatorKind::Call {
                 call,
                 target,
                 on_unwind,
@@ -1506,9 +1506,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 let call = call.with_ctx(ctx);
                 write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
             }
-            RawTerminator::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
-            RawTerminator::Return => write!(f, "return"),
-            RawTerminator::UnwindResume => write!(f, "unwind_continue"),
+            TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
+            TerminatorKind::Return => write!(f, "return"),
+            TerminatorKind::UnwindResume => write!(f, "unwind_continue"),
         }
     }
 }

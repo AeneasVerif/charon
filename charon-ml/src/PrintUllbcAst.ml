@@ -60,10 +60,10 @@ module Ast = struct
 
   let rec terminator_to_string (env : fmt_env) (indent : string)
       (st : terminator) : string =
-    raw_terminator_to_string env indent st.content
+    terminator_kind_to_string env indent st.content
 
-  and raw_terminator_to_string (env : fmt_env) (indent : string)
-      (st : raw_terminator) : string =
+  and terminator_kind_to_string (env : fmt_env) (indent : string)
+      (st : terminator_kind) : string =
     match st with
     | Goto bid -> indent ^ "goto " ^ block_id_to_string bid
     | Switch (op, tgts) ->

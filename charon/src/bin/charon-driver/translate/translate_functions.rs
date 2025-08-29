@@ -132,7 +132,7 @@ impl ItemTransCtx<'_, '_> {
         let statement = Statement::new(span, st_kind);
         let block = BlockData {
             statements: vec![statement],
-            terminator: Terminator::new(span, RawTerminator::Return),
+            terminator: Terminator::new(span, TerminatorKind::Return),
         };
         let body = Body::Unstructured(GExprBody {
             span,

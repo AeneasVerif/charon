@@ -62,7 +62,7 @@ impl UllbcPass for Transform {
 
             if let Some(candidate_block) = b.body.get(candidate_block_idx)
                 // If the terminator is a call
-                && let RawTerminator::Call {
+                && let TerminatorKind::Call {
                     target: target_block_idx,
                     call:
                         Call {
@@ -156,7 +156,7 @@ impl UllbcPass for Transform {
                 .get_mut(number_statements - 1)
                 .unwrap()
                 .content = StatementKind::StorageLive(at_5);
-            first_block.terminator.content = RawTerminator::Call {
+            first_block.terminator.content = TerminatorKind::Call {
                 call: Call {
                     func: FnOperand::Regular(FnPtr {
                         func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Builtin(

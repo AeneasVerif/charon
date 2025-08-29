@@ -811,10 +811,10 @@ impl BodyTransCtx<'_, '_, '_> {
 
         // Translate the terminator
         use hax::TerminatorKind;
-        let t_terminator: RawTerminator = match &terminator.kind {
+        let t_terminator: charon_lib::ast::ullbc_ast::TerminatorKind = match &terminator.kind {
             TerminatorKind::Goto { target } => {
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::SwitchInt {
                 discr,
@@ -828,16 +828,20 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(span, &discr_ty, targets, otherwise)?;
 
-                RawTerminator::Switch { discr, targets }
+                charon_lib::ast::ullbc_ast::TerminatorKind::Switch { discr, targets }
             }
-            TerminatorKind::UnwindResume => RawTerminator::UnwindResume,
+            TerminatorKind::UnwindResume => {
+                charon_lib::ast::ullbc_ast::TerminatorKind::UnwindResume
+            }
             TerminatorKind::UnwindTerminate { .. } => {
-                RawTerminator::Abort(AbortKind::UnwindTerminate)
+                charon_lib::ast::ullbc_ast::TerminatorKind::Abort(AbortKind::UnwindTerminate)
             }
-            TerminatorKind::Return => RawTerminator::Return,
+            TerminatorKind::Return => charon_lib::ast::ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
-            TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
+            TerminatorKind::Unreachable => {
+                charon_lib::ast::ullbc_ast::TerminatorKind::Abort(AbortKind::UndefinedBehavior)
+            }
             TerminatorKind::Drop {
                 place,
                 impl_expr,
@@ -849,7 +853,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
                 statements.push(Statement::new(span, StatementKind::Drop(place, tref)));
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::Call {
                 fun,
@@ -874,7 +878,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 };
                 statements.push(Statement::new(span, StatementKind::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -893,7 +897,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Also note that they are used in some passes, and not in some others
                 // (they are present in mir_promoted, but not mir_optimized).
                 let target = self.translate_basic_block_id(*real_target);
-                RawTerminator::Goto { target }
+                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::FalseUnwind {
                 real_target,
@@ -901,7 +905,7 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 // We consider this to be a goto
                 let target = self.translate_basic_block_id(*real_target);
-                RawTerminator::Goto { target }
+                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
                 raise_error!(self, span, "Inline assembly is not supported");
@@ -990,7 +994,7 @@ impl BodyTransCtx<'_, '_, '_> {
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
         unwind: &UnwindAction,
-    ) -> Result<RawTerminator, Error> {
+    ) -> Result<TerminatorKind, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"
         // call to a top-level function identified by its id, or if we
@@ -1018,7 +1022,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     // I don't know in which other cases it can be `None`.
                     assert!(target.is_none());
                     // We ignore the arguments
-                    return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
+                    return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
                 } else {
                     let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
                     FnOperand::Regular(fn_ptr)
@@ -1048,27 +1052,28 @@ impl BodyTransCtx<'_, '_, '_> {
             Some(target) => self.translate_basic_block_id(*target),
             None => {
                 let abort =
-                    Terminator::new(span, RawTerminator::Abort(AbortKind::UndefinedBehavior));
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
                 self.blocks.push(abort.into_block())
             }
         };
         let on_unwind = match unwind {
             UnwindAction::Continue => {
-                let unwind_continue = Terminator::new(span, RawTerminator::UnwindResume);
+                let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
                 self.blocks.push(unwind_continue.into_block())
             }
             UnwindAction::Unreachable => {
                 let abort =
-                    Terminator::new(span, RawTerminator::Abort(AbortKind::UndefinedBehavior));
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
                 self.blocks.push(abort.into_block())
             }
             UnwindAction::Terminate(..) => {
-                let abort = Terminator::new(span, RawTerminator::Abort(AbortKind::UnwindTerminate));
+                let abort =
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
                 self.blocks.push(abort.into_block())
             }
             UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
         };
-        Ok(RawTerminator::Call {
+        Ok(TerminatorKind::Call {
             call,
             target,
             on_unwind,

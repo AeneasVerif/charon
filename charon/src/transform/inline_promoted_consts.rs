@@ -62,8 +62,8 @@ impl UllbcPass for Transform {
                             // it will either be the start block of another inner body, or the
                             // current outer block that we'll push at the end.
                             inner_body.body.dyn_visit_in_body_mut(|t: &mut Terminator| {
-                                if let RawTerminator::Return = t.content {
-                                    t.content = RawTerminator::Goto { target: end_block };
+                                if let TerminatorKind::Return = t.content {
+                                    t.content = TerminatorKind::Goto { target: end_block };
                                 }
                             });
 

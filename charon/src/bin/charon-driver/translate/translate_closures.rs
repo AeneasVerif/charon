@@ -489,9 +489,9 @@ impl ItemTransCtx<'_, '_> {
                 )));
 
                 let start_block = blocks.reserve_slot();
-                let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
-                let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
-                let call = RawTerminator::Call {
+                let ret_block = blocks.push(mk_block(vec![], TerminatorKind::Return));
+                let unwind_block = blocks.push(mk_block(vec![], TerminatorKind::UnwindResume));
+                let call = TerminatorKind::Call {
                     target: ret_block,
                     call: Call {
                         func: fn_op,
@@ -749,9 +749,9 @@ impl ItemTransCtx<'_, '_> {
             )));
 
             let start_block = blocks.reserve_slot();
-            let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
-            let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
-            let call = RawTerminator::Call {
+            let ret_block = blocks.push(mk_block(vec![], TerminatorKind::Return));
+            let unwind_block = blocks.push(mk_block(vec![], TerminatorKind::UnwindResume));
+            let call = TerminatorKind::Call {
                 target: ret_block,
                 call: Call {
                     func: fn_op,
