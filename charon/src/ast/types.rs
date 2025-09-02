@@ -467,6 +467,9 @@ pub struct TypeDecl {
     /// Is `None` for foreign type declarations.
     #[drive(skip)]
     pub repr: Option<ReprOptions>,
+    /// The drop implementation for this type, if any.
+    /// This is `Some` if and only if the given type has a drop implementation.
+    pub drop_glue: Option<TraitImplRef>,
 }
 
 generate_index_type!(VariantId, "Variant");

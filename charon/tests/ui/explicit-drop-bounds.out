@@ -29,15 +29,15 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
-
 // Full name: alloc::string::String::{impl Drop for String}
 impl Drop for String {
     parent_clause0 = MetaSized<String>
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
     non-dyn-compatible
 }
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
 fn UNIT_METADATA()
 {

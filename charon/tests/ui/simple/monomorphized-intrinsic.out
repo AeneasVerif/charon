@@ -1,46 +1,8 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::E1
-enum E1 {
-  A,
-  B,
-}
-
-// Full name: core::intrinsics::discriminant_value::<E1>
-pub fn discriminant_value::<E1><'_0>(@1: &'_0 (E1)) -> isize
-
-// Full name: test_crate::E2
-enum E2 {
-  A,
-  B,
-}
-
-// Full name: core::intrinsics::discriminant_value::<E2>
-pub fn discriminant_value::<E2><'_0>(@1: &'_0 (E2)) -> isize
-
 // Full name: core::marker::MetaSized::<E1>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<E1>
-
-// Full name: core::marker::Sized::<E1>
-#[lang_item("sized")]
-pub trait Sized::<E1>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<E1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<E2>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<E2>
-
-// Full name: core::marker::Sized::<E2>
-#[lang_item("sized")]
-pub trait Sized::<E2>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<E2>
-    non-dyn-compatible
-}
 
 fn UNIT_METADATA()
 {
@@ -51,6 +13,120 @@ fn UNIT_METADATA()
 }
 
 const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::E1
+enum E1 {
+  A,
+  B,
+}
+
+// Full name: core::ops::drop::Drop::<E1>
+#[lang_item("drop")]
+pub trait Drop::<E1>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<E1>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<E1><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<E1>
+}
+
+// Full name: test_crate::E1::{impl Drop::<E1>}
+impl Drop::<E1> {
+    parent_clause0 = MetaSized::<E1>
+    fn drop<'_0> = {impl Drop::<E1>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::E1::{impl Drop::<E1>}::drop
+fn {impl Drop::<E1>}::drop<'_0>(@1: &'_0 mut (E1))
+{
+    let @0: (); // return
+    let @1: *mut E1; // arg #1
+    let @2: &'_ mut (E1); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        E1::A => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
+}
+
+// Full name: core::intrinsics::discriminant_value::<E1>
+pub fn discriminant_value::<E1><'_0>(@1: &'_0 (E1)) -> isize
+
+// Full name: core::marker::MetaSized::<E2>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<E2>
+
+// Full name: test_crate::E2
+enum E2 {
+  A,
+  B,
+}
+
+// Full name: core::ops::drop::Drop::<E2>
+#[lang_item("drop")]
+pub trait Drop::<E2>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<E2>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<E2><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<E2>
+}
+
+// Full name: test_crate::E2::{impl Drop::<E2>}
+impl Drop::<E2> {
+    parent_clause0 = MetaSized::<E2>
+    fn drop<'_0> = {impl Drop::<E2>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::E2::{impl Drop::<E2>}::drop
+fn {impl Drop::<E2>}::drop<'_0>(@1: &'_0 mut (E2))
+{
+    let @0: (); // return
+    let @1: *mut E2; // arg #1
+    let @2: &'_ mut (E2); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        E2::A => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
+}
+
+// Full name: core::intrinsics::discriminant_value::<E2>
+pub fn discriminant_value::<E2><'_0>(@1: &'_0 (E2)) -> isize
+
+// Full name: core::marker::Sized::<E1>
+#[lang_item("sized")]
+pub trait Sized::<E1>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<E1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Sized::<E2>
+#[lang_item("sized")]
+pub trait Sized::<E2>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<E2>
+    non-dyn-compatible
+}
+
+pub fn core::ops::drop::Drop::drop::<E1><'_0>(@1: &'_0 mut (E1))
+
+pub fn core::ops::drop::Drop::drop::<E2><'_0>(@1: &'_0 mut (E2))
 
 // Full name: test_crate::main
 fn main()

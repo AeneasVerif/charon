@@ -1,11 +1,50 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
+{
+    let @0: (); // return
+    let @1: *mut Error; // arg #1
+    let @2: &'_ mut (Error); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -33,6 +72,36 @@ pub enum Count {
   Implied,
 }
 
+// Full name: core::fmt::rt::Count::{impl Drop for Count}
+impl Drop for Count {
+    parent_clause0 = MetaSized<Count>
+    fn drop<'_0> = {impl Drop for Count}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Count::{impl Drop for Count}::drop
+fn {impl Drop for Count}::drop<'_0>(@1: &'_0 mut (Count))
+{
+    let @0: (); // return
+    let @1: *mut Count; // arg #1
+    let @2: &'_ mut (Count); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        Count::Is => {
+        },
+        Count::Param => {
+            return
+        },
+        _ => {
+            return
+        },
+    }
+    return
+}
+
 // Full name: core::fmt::rt::Placeholder
 #[lang_item("format_placeholder")]
 pub struct Placeholder {
@@ -40,6 +109,26 @@ pub struct Placeholder {
   flags: u32,
   precision: Count,
   width: Count,
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}
+impl Drop for Placeholder {
+    parent_clause0 = MetaSized<Placeholder>
+    fn drop<'_0> = {impl Drop for Placeholder}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}::drop
+fn {impl Drop for Placeholder}::drop<'_0>(@1: &'_0 mut (Placeholder))
+{
+    let @0: (); // return
+    let @1: *mut Placeholder; // arg #1
+    let @2: &'_ mut (Placeholder); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: core::ptr::non_null::NonNull
@@ -85,16 +174,6 @@ where
   fmt: Option<&'a (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>],
   args: &'a (Slice<Argument<'a>>),
 }
-
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: core::fmt::rt::{Arguments<'a>}::new_const
 pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
@@ -148,6 +227,10 @@ pub fn MAX() -> usize
 
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::index::Index
 #[lang_item("index")]

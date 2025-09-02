@@ -411,6 +411,7 @@ impl ItemTransCtx<'_, '_> {
         };
         let layout = self.translate_layout(def.this());
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
+        let drop_glue = self.translate_drop_glue(span, def)?;
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
@@ -420,6 +421,7 @@ impl ItemTransCtx<'_, '_> {
             layout,
             ptr_metadata,
             repr,
+            drop_glue,
         };
 
         Ok(type_def)

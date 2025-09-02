@@ -71,8 +71,27 @@ where
     vtable: {impl PartialEq<&'_0 (B)> for &'_1 (A)}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::fmt::Error
 pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -193,6 +212,10 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 fn UNIT_METADATA()
 {
     let @0: (); // return
@@ -207,6 +230,33 @@ const UNIT_METADATA: () = @Fun0()
 enum Enum {
   Some(u8),
   None,
+}
+
+// Full name: test_crate::Enum::{impl Drop for Enum}
+impl Drop for Enum {
+    parent_clause0 = MetaSized<Enum>
+    fn drop<'_0> = {impl Drop for Enum}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Enum::{impl Drop for Enum}::drop
+fn {impl Drop for Enum}::drop<'_0>(@1: &'_0 mut (Enum))
+{
+    let @0: (); // return
+    let @1: *mut Enum; // arg #1
+    let @2: &'_ mut (Enum); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        Enum::Some => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
 }
 
 // Full name: test_crate::{impl StructuralPartialEq for Enum}

@@ -25,12 +25,11 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -79,6 +78,26 @@ const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::Rng
 struct Rng {}
+
+// Full name: test_crate::Rng::{impl Drop for Rng}
+impl Drop for Rng {
+    parent_clause0 = MetaSized<Rng>
+    fn drop<'_0> = {impl Drop for Rng}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Rng::{impl Drop for Rng}::drop
+fn {impl Drop for Rng}::drop<'_0>(@1: &'_0 mut (Rng))
+{
+    let @0: (); // return
+    let @1: *mut Rng; // arg #1
+    let @2: &'_ mut (Rng); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: test_crate::{Rng}::next_u64
 fn next_u64<'_0>(@1: &'_0 mut (Rng))

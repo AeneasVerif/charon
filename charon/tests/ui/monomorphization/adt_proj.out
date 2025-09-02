@@ -12,12 +12,37 @@ pub trait Sized::<u32>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<Result::<u32, u32>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Result::<u32, u32>>
+
+// Full name: core::ops::drop::Drop::<Result::<u32, u32>>
+#[lang_item("drop")]
+pub trait Drop::<Result::<u32, u32>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Result::<u32, u32>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Result::<u32, u32>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Result::<u32, u32>>
+}
+
 // Full name: core::result::Result::<u32, u32>
 #[lang_item("Result")]
 pub enum Result::<u32, u32> {
   Ok(u32),
   Err(u32),
 }
+
+// Full name: core::result::Result::{impl Drop::<Result::<u32, u32>>}::<u32, u32>
+impl Drop::<Result::<u32, u32>> {
+    parent_clause0 = MetaSized::<Result::<u32, u32>>
+    fn drop<'_0> = {impl Drop::<Result::<u32, u32>>}::drop::<u32, u32><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::result::Result::{impl Drop::<Result::<u32, u32>>}::drop::<u32, u32>
+fn {impl Drop::<Result::<u32, u32>>}::drop::<u32, u32><'_0>(@1: &'_0 mut (Result::<u32, u32>))
+
+pub fn core::ops::drop::Drop::drop::<Result::<u32, u32>><'_0>(@1: &'_0 mut (Result::<u32, u32>))
 
 fn UNIT_METADATA()
 {

@@ -12,6 +12,19 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -66,6 +79,26 @@ pub trait Trait<Self, T>
 
 // Full name: test_crate::Foo
 pub struct Foo {}
+
+// Full name: test_crate::Foo::{impl Drop for Foo}
+impl Drop for Foo {
+    parent_clause0 = MetaSized<Foo>
+    fn drop<'_0> = {impl Drop for Foo}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::{impl Drop for Foo}::drop
+fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut (Foo))
+{
+    let @0: (); // return
+    let @1: *mut Foo; // arg #1
+    let @2: &'_ mut (Foo); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for Foo}
 impl<T> Trait<Option<T>[@TraitClause0]> for Foo

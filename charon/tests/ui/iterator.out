@@ -120,8 +120,27 @@ impl Sealed for usize {
     vtable: {impl Sealed for usize}::{vtable}
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::num::niche_types::NonZeroUsizeInner
 pub opaque type NonZeroUsizeInner
+
+// Full name: core::num::niche_types::NonZeroUsizeInner::{impl Drop for NonZeroUsizeInner}
+impl Drop for NonZeroUsizeInner {
+    parent_clause0 = MetaSized<NonZeroUsizeInner>
+    fn drop<'_0> = {impl Drop for NonZeroUsizeInner}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::NonZeroUsizeInner::{impl Drop for NonZeroUsizeInner}::drop
+fn {impl Drop for NonZeroUsizeInner}::drop<'_0>(@1: &'_0 mut (NonZeroUsizeInner))
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone
 pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInner)) -> NonZeroUsizeInner
@@ -360,6 +379,16 @@ pub enum Ordering {
   Equal,
   Greater,
 }
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}
+impl Drop for Ordering {
+    parent_clause0 = MetaSized<Ordering>
+    fn drop<'_0> = {impl Drop for Ordering}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}::drop
+fn {impl Drop for Ordering}::drop<'_0>(@1: &'_0 mut (Ordering))
 
 // Full name: core::cmp::PartialOrd
 #[lang_item("partial_ord")]
@@ -1359,15 +1388,6 @@ where
     vtable: {impl IntoIterator for Array<T, const N : usize>}::{vtable}<T, const N : usize>[@TraitClause0]
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
 // Full name: core::array::iter::{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop
 pub fn {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop<'_0, T, const N : usize>(@1: &'_0 mut (IntoIter<T, const N : usize>[@TraitClause0]))
 where
@@ -2348,6 +2368,16 @@ pub enum AssertKind {
   Ne,
   Match,
 }
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}
+impl Drop for AssertKind {
+    parent_clause0 = MetaSized<AssertKind>
+    fn drop<'_0> = {impl Drop for AssertKind}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}::drop
+fn {impl Drop for AssertKind}::drop<'_0>(@1: &'_0 mut (AssertKind))
 
 // Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]

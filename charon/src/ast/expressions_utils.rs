@@ -105,6 +105,13 @@ impl Operand {
             Operand::Const(constant_expr) => &constant_expr.ty,
         }
     }
+
+    pub fn opaque(msg: String, ty: Ty) -> Self {
+        Operand::Const(Box::new(ConstantExpr {
+            kind: ConstantExprKind::Opaque(msg),
+            ty,
+        }))
+    }
 }
 
 impl Rvalue {

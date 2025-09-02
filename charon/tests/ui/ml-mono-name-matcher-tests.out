@@ -96,16 +96,114 @@ pub trait Sized::<&'_ mut (Slice<bool>)>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<MonoContainer::<i32>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<MonoContainer::<i32>>
+
+// Full name: core::marker::MetaSized::<MonoContainer::<&'_ (Str)>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<MonoContainer::<&'_ (Str)>>
+
 // Full name: core::marker::MetaSized::<Slice<bool>>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<Slice<bool>>
+
+// Full name: core::marker::MetaSized::<Option::<i32>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Option::<i32>>
+
+// Full name: core::marker::MetaSized::<Option::<&'_ (Slice<bool>)>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Option::<&'_ (Slice<bool>)>>
+
+// Full name: core::marker::MetaSized::<Option::<&'_ mut (Slice<bool>)>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Option::<&'_ mut (Slice<bool>)>>
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: core::ops::drop::Drop::<MonoContainer::<i32>>
+#[lang_item("drop")]
+pub trait Drop::<MonoContainer::<i32>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<MonoContainer::<i32>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<MonoContainer::<i32>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<MonoContainer::<i32>>
+}
+
+// Full name: test_crate::MonoContainer::<i32>
+struct MonoContainer::<i32> {
+  item: i32,
+}
+
+// Full name: test_crate::MonoContainer::{impl Drop::<MonoContainer::<i32>>}::<i32>
+impl Drop::<MonoContainer::<i32>> {
+    parent_clause0 = MetaSized::<MonoContainer::<i32>>
+    fn drop<'_0> = {impl Drop::<MonoContainer::<i32>>}::drop::<i32><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::MonoContainer::{impl Drop::<MonoContainer::<i32>>}::drop::<i32>
+fn {impl Drop::<MonoContainer::<i32>>}::drop::<i32><'_0>(@1: &'_0 mut (MonoContainer::<i32>))
+{
+    let @0: (); // return
+    let @1: *mut MonoContainer::<i32>; // arg #1
+    let @2: &'_ mut (MonoContainer::<i32>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: core::ops::drop::Drop::<MonoContainer::<&'_ (Str)>>
+#[lang_item("drop")]
+pub trait Drop::<MonoContainer::<&'_ (Str)>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<MonoContainer::<&'_ (Str)>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<MonoContainer::<&'_ (Str)>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<MonoContainer::<&'_ (Str)>>
+}
+
+// Full name: test_crate::MonoContainer::<&'_ (Str)>
+struct MonoContainer::<&'_ (Str)> {
+  item: &'_ (Str),
+}
+
+// Full name: test_crate::MonoContainer::{impl Drop::<MonoContainer::<&'_ (Str)>>}::<&'_ (Str)>
+impl Drop::<MonoContainer::<&'_ (Str)>> {
+    parent_clause0 = MetaSized::<MonoContainer::<&'_ (Str)>>
+    fn drop<'_0> = {impl Drop::<MonoContainer::<&'_ (Str)>>}::drop::<&'_ (Str)><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::MonoContainer::{impl Drop::<MonoContainer::<&'_ (Str)>>}::drop::<&'_ (Str)>
+fn {impl Drop::<MonoContainer::<&'_ (Str)>>}::drop::<&'_ (Str)><'_0>(@1: &'_0 mut (MonoContainer::<&'_ (Str)>))
+{
+    let @0: (); // return
+    let @1: *mut MonoContainer::<&'_ (Str)>; // arg #1
+    let @2: &'_ mut (MonoContainer::<&'_ (Str)>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: core::ops::drop::Drop::<i32>
 #[lang_item("drop")]
 pub trait Drop::<i32>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<i32>
-    fn drop<'_0> = drop::<i32><'_0_0>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<i32><'_0_0>
     vtable: core::ops::drop::Drop::{vtable}::<i32>
 }
 
@@ -114,21 +212,128 @@ pub trait Drop::<i32>
 pub trait Drop::<&'_ (Str)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<&'_ (Str)>
-    fn drop<'_0> = drop::<&'_ (Str)><'_0_0>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<&'_ (Str)><'_0_0>
     vtable: core::ops::drop::Drop::{vtable}::<&'_ (Str)>
 }
 
-// Full name: core::ops::drop::Drop::drop::<i32>
-pub fn drop::<i32><'_0>(@1: &'_0 mut (i32))
-
-// Full name: core::ops::drop::Drop::drop::<&'_ (Str)>
-pub fn drop::<&'_ (Str)><'_0>(@1: &'_0 mut (&'_ (Str)))
+// Full name: core::ops::drop::Drop::<RangeFrom::<usize>>
+#[lang_item("drop")]
+pub trait Drop::<RangeFrom::<usize>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<RangeFrom::<usize>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<RangeFrom::<usize>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<RangeFrom::<usize>>
+}
 
 // Full name: core::ops::range::RangeFrom::<usize>
 #[lang_item("RangeFrom")]
 pub struct RangeFrom::<usize> {
   start: usize,
 }
+
+// Full name: core::ops::range::RangeFrom::{impl Drop::<RangeFrom::<usize>>}::<usize>
+impl Drop::<RangeFrom::<usize>> {
+    parent_clause0 = MetaSized::<RangeFrom::<usize>>
+    fn drop<'_0> = {impl Drop::<RangeFrom::<usize>>}::drop::<usize><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::ops::range::RangeFrom::{impl Drop::<RangeFrom::<usize>>}::drop::<usize>
+fn {impl Drop::<RangeFrom::<usize>>}::drop::<usize><'_0>(@1: &'_0 mut (RangeFrom::<usize>))
+
+// Full name: core::ops::drop::Drop::<Option::<i32>>
+#[lang_item("drop")]
+pub trait Drop::<Option::<i32>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Option::<i32>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Option::<i32>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Option::<i32>>
+}
+
+// Full name: core::option::Option::<i32>
+#[lang_item("Option")]
+pub enum Option::<i32> {
+  None,
+  Some(i32),
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<i32>>}::<i32>
+impl Drop::<Option::<i32>> {
+    parent_clause0 = MetaSized::<Option::<i32>>
+    fn drop<'_0> = {impl Drop::<Option::<i32>>}::drop::<i32><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<i32>>}::drop::<i32>
+fn {impl Drop::<Option::<i32>>}::drop::<i32><'_0>(@1: &'_0 mut (Option::<i32>))
+
+// Full name: core::ops::drop::Drop::<Option::<&'_ (Slice<bool>)>>
+#[lang_item("drop")]
+pub trait Drop::<Option::<&'_ (Slice<bool>)>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Option::<&'_ (Slice<bool>)>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Option::<&'_ (Slice<bool>)>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Option::<&'_ (Slice<bool>)>>
+}
+
+// Full name: core::option::Option::<&'_ (Slice<bool>)>
+#[lang_item("Option")]
+pub enum Option::<&'_ (Slice<bool>)> {
+  None,
+  Some(&'_ (Slice<bool>)),
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ (Slice<bool>)>>}::<&'_ (Slice<bool>)>
+impl Drop::<Option::<&'_ (Slice<bool>)>> {
+    parent_clause0 = MetaSized::<Option::<&'_ (Slice<bool>)>>
+    fn drop<'_0> = {impl Drop::<Option::<&'_ (Slice<bool>)>>}::drop::<&'_ (Slice<bool>)><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ (Slice<bool>)>>}::drop::<&'_ (Slice<bool>)>
+fn {impl Drop::<Option::<&'_ (Slice<bool>)>>}::drop::<&'_ (Slice<bool>)><'_0>(@1: &'_0 mut (Option::<&'_ (Slice<bool>)>))
+
+// Full name: core::ops::drop::Drop::<Option::<&'_ mut (Slice<bool>)>>
+#[lang_item("drop")]
+pub trait Drop::<Option::<&'_ mut (Slice<bool>)>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Option::<&'_ mut (Slice<bool>)>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Option::<&'_ mut (Slice<bool>)>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Option::<&'_ mut (Slice<bool>)>>
+}
+
+// Full name: core::option::Option::<&'_ mut (Slice<bool>)>
+#[lang_item("Option")]
+pub enum Option::<&'_ mut (Slice<bool>)> {
+  None,
+  Some(&'_ mut (Slice<bool>)),
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ mut (Slice<bool>)>>}::<&'_ mut (Slice<bool>)>
+impl Drop::<Option::<&'_ mut (Slice<bool>)>> {
+    parent_clause0 = MetaSized::<Option::<&'_ mut (Slice<bool>)>>
+    fn drop<'_0> = {impl Drop::<Option::<&'_ mut (Slice<bool>)>>}::drop::<&'_ mut (Slice<bool>)><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ mut (Slice<bool>)>>}::drop::<&'_ mut (Slice<bool>)>
+fn {impl Drop::<Option::<&'_ mut (Slice<bool>)>>}::drop::<&'_ mut (Slice<bool>)><'_0>(@1: &'_0 mut (Option::<&'_ mut (Slice<bool>)>))
+
+pub fn core::ops::drop::Drop::drop::<MonoContainer::<i32>><'_0>(@1: &'_0 mut (MonoContainer::<i32>))
+
+pub fn core::ops::drop::Drop::drop::<MonoContainer::<&'_ (Str)>><'_0>(@1: &'_0 mut (MonoContainer::<&'_ (Str)>))
+
+pub fn core::ops::drop::Drop::drop::<i32><'_0>(@1: &'_0 mut (i32))
+
+pub fn core::ops::drop::Drop::drop::<&'_ (Str)><'_0>(@1: &'_0 mut (&'_ (Str)))
+
+pub fn core::ops::drop::Drop::drop::<RangeFrom::<usize>><'_0>(@1: &'_0 mut (RangeFrom::<usize>))
+
+pub fn core::ops::drop::Drop::drop::<Option::<i32>><'_0>(@1: &'_0 mut (Option::<i32>))
+
+pub fn core::ops::drop::Drop::drop::<Option::<&'_ (Slice<bool>)>><'_0>(@1: &'_0 mut (Option::<&'_ (Slice<bool>)>))
+
+pub fn core::ops::drop::Drop::drop::<Option::<&'_ mut (Slice<bool>)>><'_0>(@1: &'_0 mut (Option::<&'_ mut (Slice<bool>)>))
 
 // Full name: core::ops::index::Index::<Slice<bool>, RangeFrom::<usize>>
 #[lang_item("index")]
@@ -144,13 +349,6 @@ pub fn core::ops::index::Index::index<'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom
 
 pub fn core::ops::index::Index::index::<Slice<bool>, RangeFrom::<usize>><'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom::<usize>) -> &'_0 (Slice<bool>)
 
-// Full name: core::option::Option::<i32>
-#[lang_item("Option")]
-pub enum Option::<i32> {
-  None,
-  Some(i32),
-}
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -159,20 +357,6 @@ where
 {
   None,
   Some(T),
-}
-
-// Full name: core::option::Option::<&'_ (Slice<bool>)>
-#[lang_item("Option")]
-pub enum Option::<&'_ (Slice<bool>)> {
-  None,
-  Some(&'_ (Slice<bool>)),
-}
-
-// Full name: core::option::Option::<&'_ mut (Slice<bool>)>
-#[lang_item("Option")]
-pub enum Option::<&'_ mut (Slice<bool>)> {
-  None,
-  Some(&'_ mut (Slice<bool>)),
 }
 
 // Full name: core::option::{Option::<i32>}::is_some::<i32>
@@ -274,16 +458,6 @@ impl SliceIndex::<RangeFrom::<usize>, Slice<bool>> {
     vtable: {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::{vtable}::<bool>
 }
 
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::foo::bar
 fn bar()
 {
@@ -381,16 +555,6 @@ fn funs_with_disambiguator(@1: bool) -> u32
     }
     storage_dead(@2)
     return
-}
-
-// Full name: test_crate::MonoContainer::<i32>
-struct MonoContainer::<i32> {
-  item: i32,
-}
-
-// Full name: test_crate::MonoContainer::<&'_ (Str)>
-struct MonoContainer::<&'_ (Str)> {
-  item: &'_ (Str),
 }
 
 // Full name: test_crate::MonoContainer

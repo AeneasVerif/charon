@@ -22,6 +22,7 @@ pub mod add_missing_info {
 
 /// Passes that effect some kind of normalization on the crate.
 pub mod normalize {
+    pub mod compute_vtable_metadata;
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
     pub mod monomorphize;
@@ -112,6 +113,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Change trait associated types to be type parameters instead. See the module for details.
     // This also normalizes any use of an associated type that we can resolve.
     NonBody(&normalize::expand_associated_types::Transform),
+    // Compute vtable metadata (size, align, drop)
+    NonBody(&normalize::compute_vtable_metadata::Transform),
 ];
 
 /// Body cleanup passes on the ullbc.

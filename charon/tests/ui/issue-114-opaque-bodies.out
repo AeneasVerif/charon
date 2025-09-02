@@ -125,9 +125,39 @@ impl From<i32> for i64 {
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
   usize,
+}
+
+// Full name: core::num::niche_types::UsizeNoHighBit::{impl Drop for UsizeNoHighBit}
+impl Drop for UsizeNoHighBit {
+    parent_clause0 = MetaSized<UsizeNoHighBit>
+    fn drop<'_0> = {impl Drop for UsizeNoHighBit}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::UsizeNoHighBit::{impl Drop for UsizeNoHighBit}::drop
+fn {impl Drop for UsizeNoHighBit}::drop<'_0>(@1: &'_0 mut (UsizeNoHighBit))
+{
+    let @0: (); // return
+    let @1: *mut UsizeNoHighBit; // arg #1
+    let @2: &'_ mut (UsizeNoHighBit); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: core::num::{usize}::MAX
@@ -174,6 +204,26 @@ pub struct Unique<T> {
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+{
+    let @0: (); // return
+    let @1: *mut Global; // arg #1
+    let @2: &'_ mut (Global); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: alloc::raw_vec::RawVecInner
 struct RawVecInner<A>
@@ -278,16 +328,6 @@ where
     @0 := const (42 : u32)
     return
 }
-
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::use_inlines
 fn use_inlines() -> u32

@@ -1,13 +1,76 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: core::fmt::Error
 pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
+{
+    let @0: (); // return
+    let @1: *mut Error; // arg #1
+    let @2: &'_ mut (Error); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: core::fmt::FormattingOptions
 pub struct FormattingOptions {
   flags: u32,
   width: u16,
   precision: u16,
+}
+
+// Full name: core::fmt::FormattingOptions::{impl Drop for FormattingOptions}
+impl Drop for FormattingOptions {
+    parent_clause0 = MetaSized<FormattingOptions>
+    fn drop<'_0> = {impl Drop for FormattingOptions}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::FormattingOptions::{impl Drop for FormattingOptions}::drop
+fn {impl Drop for FormattingOptions}::drop<'_0>(@1: &'_0 mut (FormattingOptions))
+{
+    let @0: (); // return
+    let @1: *mut FormattingOptions; // arg #1
+    let @2: &'_ mut (FormattingOptions); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: core::fmt::flags::DEBUG_LOWER_HEX_FLAG
@@ -33,10 +96,6 @@ fn DEBUG_UPPER_HEX_FLAG() -> u32
 
 // Full name: core::fmt::flags::DEBUG_UPPER_HEX_FLAG
 const DEBUG_UPPER_HEX_FLAG: u32 = DEBUG_UPPER_HEX_FLAG()
-
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -187,29 +246,9 @@ impl Display for u32 {
     vtable: {impl Display for u32}::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
-
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: core::result::unwrap_failed
 fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_1))) -> !

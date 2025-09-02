@@ -32,23 +32,52 @@ pub trait Tuple::<(u8, u8)>
     vtable: core::marker::Tuple::{vtable}::<(u8, u8)>
 }
 
-// Full name: test_crate::main::closure
-struct closure<'_0, '_1> {
-  &'_0 (u8),
-  &'_1 (u8),
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
 }
+
+const UNIT_METADATA: () = @Fun1()
 
 // Full name: core::ops::drop::Drop::<closure<'_, '_>>
 #[lang_item("drop")]
 pub trait Drop::<closure<'_, '_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
-    fn drop<'_0> = drop::<closure<'_, '_>><'_0_0>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<closure<'_, '_>><'_0_0>
     vtable: core::ops::drop::Drop::{vtable}::<closure<'_, '_>>
 }
 
-// Full name: core::ops::drop::Drop::drop::<closure<'_, '_>>
-pub fn drop::<closure<'_, '_>><'_0>(@1: &'_0 mut (closure<'_, '_>))
+// Full name: test_crate::main::closure
+struct closure<'_0, '_1> {
+  &'_0 (u8),
+  &'_1 (u8),
+}
+
+// Full name: test_crate::main::closure::{impl Drop::<closure<'_, '_>>}
+impl<'_0, '_1> Drop::<closure<'_, '_>> {
+    parent_clause0 = MetaSized::<closure<'_, '_>>
+    fn drop<'_0> = {impl Drop::<closure<'_, '_>>}::drop<'_0, '_1, '_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure::{impl Drop::<closure<'_, '_>>}::drop
+fn {impl Drop::<closure<'_, '_>>}::drop<'_0, '_1, '_2>(@1: &'_2 mut (closure<'_, '_>))
+{
+    let @0: (); // return
+    let @1: *mut closure<'_0, '_1>; // arg #1
+    let @2: &'_ mut (closure<'_0, '_1>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+pub fn core::ops::drop::Drop::drop::<closure<'_, '_>><'_0>(@1: &'_0 mut (closure<'_, '_>))
 
 // Full name: core::ops::function::FnOnce::<closure<'_, '_>, (u8, u8)>
 #[lang_item("fn_once")]
@@ -96,16 +125,6 @@ pub fn core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0>(@1
 pub fn core::ops::function::FnOnce::call_once(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
 
 pub fn core::ops::function::FnOnce::call_once::<closure<'_, '_>, (u8, u8)>(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
-
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::main::{impl Fn::<closure<'_, '_>, (u8, u8)>}::call
 fn {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_2>(@1: &'_2 (closure<'_0, '_1>), @2: (u8, u8)) -> u8

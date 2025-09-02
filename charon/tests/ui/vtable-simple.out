@@ -97,6 +97,17 @@ where
     return
 }
 
+fn {{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_0, T>(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let ret@0: (); // return
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_); // arg #1
+
+    return
+}
+
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify::{vtable_method}
 fn {vtable_method}<'_0, '_1, T>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), @2: &'_1 (T)) -> T
 where
@@ -122,7 +133,7 @@ where
 {
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
 
-    ret@0 := test_crate::Modifiable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_, T>[@TraitClause0, @TraitClause1]), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
