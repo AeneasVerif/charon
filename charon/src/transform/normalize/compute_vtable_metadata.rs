@@ -667,11 +667,19 @@ impl<'a> VtableMetadataComputer<'a> {
             self.impl_ref.id.with_ctx(&self.ctx.into_fmt())
         );
         // Get the generics from the trait impl - drop shims should have the same generics
-        let generics = self.get_trait_impl_generics()?;
+        let generics = self.get_drop_shim_generic_params()?;
 
         // Create the dyn trait type for the parameter
-        // For the drop shim, we need &mut (dyn Trait<...>)
+        // For the drop shim, we need *mut (dyn Trait<...>)
         let dyn_trait_param_ty = self.get_drop_receiver()?;
+        let dyn_trait_param_ty = match dyn_trait_param_ty.kind() {
+            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Ty::new(TyKind::Ref(
+                Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                ty.clone(),
+                RefKind::Mut,
+            )),
+            _ => unreachable!(),
+        };
 
         // Create function signature with proper generics
         let signature = FunSig {
@@ -681,14 +689,8 @@ impl<'a> VtableMetadataComputer<'a> {
             output: Ty::mk_unit(),
         };
 
-        let body = DropShimCtx::create_drop_shim_body(
-            self,
-            &self.get_drop_receiver()?,
-            concrete_ty,
-            drop_case,
-        )?;
-
-        // let body = self.old_create_drop_shim_body(&self.get_drop_receiver()?, concrete_ty, drop_case)?;
+        let body =
+            DropShimCtx::create_drop_shim_body(self, &dyn_trait_param_ty, concrete_ty, drop_case)?;
 
         // Create item meta
         let item_meta = ItemMeta {
@@ -781,7 +783,7 @@ impl<'a> VtableMetadataComputer<'a> {
         }
     }
 
-    fn get_trait_impl_generics(&self) -> Result<GenericParams, Error> {
+    fn get_drop_shim_generic_params(&self) -> Result<GenericParams, Error> {
         let Some(trait_impl) = self.ctx.translated.trait_impls.get(self.impl_ref.id) else {
             raise_error!(
                 self.ctx,
@@ -795,13 +797,15 @@ impl<'a> VtableMetadataComputer<'a> {
         // but with at least one region binder for the receiver
         let mut generics = trait_impl.generics.clone();
 
-        // Ensure we have at least one region for the receiver parameter
-        if generics.regions.is_empty() {
-            let _ = generics.regions.push_with(|id| RegionParam {
-                index: id,
+        // Insert the region for the drop shim receiver
+        generics.regions.iter_mut().for_each(|reg| reg.index += 1);
+        generics.regions.insert_and_shift_ids(
+            RegionId::ZERO,
+            RegionParam {
+                index: RegionId::ZERO,
                 name: None,
-            });
-        }
+            },
+        );
 
         Ok(generics)
     }
@@ -1000,7 +1004,7 @@ impl<'a> DropShimCtx<'a> {
         let drop_place_ref = self.new_var(
             None,
             Ty::new(TyKind::Ref(
-                Region::Erased,
+                Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
                 drop_place.ty().clone(),
                 RefKind::Mut,
             )),
@@ -1151,7 +1155,7 @@ impl<'a> DropShimCtx<'a> {
             element_ty.clone(),
         );
         let working_block =
-            self.creat_drop_case_blocks(new_drop_place, cond_block, element_drop)?;
+            self.create_drop_case_blocks(new_drop_place, cond_block, element_drop)?;
 
         // Furnish the counter increment block
         {
@@ -1200,7 +1204,7 @@ impl<'a> DropShimCtx<'a> {
                 ty.clone(),
             );
             let working_block =
-                self.creat_drop_case_blocks(new_drop_place, current_end_block, case)?;
+                self.create_drop_case_blocks(new_drop_place, current_end_block, case)?;
 
             current_end_block = working_block;
         }
@@ -1216,7 +1220,7 @@ impl<'a> DropShimCtx<'a> {
     /// It is guaranteed that the resulting block is NOT `end_block`
     /// But it is not guaranteed that the `end_block` is reachable from the resulting block, due to panics
     /// But if there is no panic, the `end_block` is always reachable
-    fn creat_drop_case_blocks(
+    fn create_drop_case_blocks(
         &mut self,
         drop_place: Place,
         end_block: BlockId,
@@ -1276,7 +1280,7 @@ impl<'a> DropShimCtx<'a> {
                 let concrete_place = locals.new_var(
                     Some("concrete".into()),
                     Ty::new(TyKind::Ref(
-                        Region::Erased,
+                        Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
                         concrete_ty.clone(),
                         RefKind::Mut,
                     )),
@@ -1289,8 +1293,7 @@ impl<'a> DropShimCtx<'a> {
                         Rvalue::UnaryOp(
                             UnOp::Cast(CastKind::Concretize(
                                 dyn_trait_param_ty.clone(),
-                                TyKind::Ref(Region::Erased, concrete_ty.clone(), RefKind::Mut)
-                                    .into_ty(),
+                                concrete_place.ty.clone(),
                             )),
                             Operand::Move(locals.place_for_var(LocalId::new(1))),
                         ),
@@ -1307,7 +1310,7 @@ impl<'a> DropShimCtx<'a> {
                 let end_block = shim_ctx.func_ret_block();
 
                 let next_block =
-                    shim_ctx.creat_drop_case_blocks(drop_place, end_block, &drop_case)?;
+                    shim_ctx.create_drop_case_blocks(drop_place, end_block, &drop_case)?;
                 shim_ctx.set_init_block_goto(next_block);
 
                 let body = shim_ctx.blocks;

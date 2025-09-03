@@ -301,10 +301,10 @@ fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 (i32)) -> (i32, i32)
     return
 }
 
-fn {{impl Join<i32> for i32}}::{vtable}::{drop_method}<'_0>(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32))
+fn {{impl Join<i32> for i32}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)))
 {
     let ret@0: (); // return
-    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32); // arg #1
+    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)); // arg #1
 
     return
 }

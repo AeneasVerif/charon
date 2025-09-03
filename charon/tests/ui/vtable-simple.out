@@ -97,13 +97,13 @@ where
     return
 }
 
-fn {{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_0, T>(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_))
+fn {{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_0, T>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
     let ret@0: (); // return
-    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_); // arg #1
+    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // arg #1
 
     return
 }
