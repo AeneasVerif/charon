@@ -1,5 +1,18 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::ptr::alignment::AlignmentEnum
 enum AlignmentEnum {
   _Align1Shl0,
@@ -68,9 +81,305 @@ enum AlignmentEnum {
   _Align1Shl63,
 }
 
+// Full name: core::ptr::alignment::AlignmentEnum::{impl Drop for AlignmentEnum}
+impl Drop for AlignmentEnum {
+    parent_clause0 = MetaSized<AlignmentEnum>
+    fn drop<'_0> = {impl Drop for AlignmentEnum}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::ptr::alignment::AlignmentEnum::{impl Drop for AlignmentEnum}::drop
+fn {impl Drop for AlignmentEnum}::drop<'_0>(@1: &'_0 mut (AlignmentEnum))
+{
+    let @0: (); // return
+    let @1: *mut AlignmentEnum; // arg #1
+    let @2: &'_ mut (AlignmentEnum); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    match *(@2) {
+        AlignmentEnum::_Align1Shl0 => {
+        },
+        AlignmentEnum::_Align1Shl1 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl2 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl3 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl4 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl5 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl6 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl7 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl8 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl9 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl10 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl11 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl12 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl13 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl14 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl15 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl16 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl17 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl18 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl19 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl20 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl21 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl22 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl23 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl24 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl25 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl26 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl27 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl28 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl29 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl30 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl31 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl32 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl33 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl34 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl35 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl36 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl37 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl38 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl39 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl40 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl41 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl42 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl43 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl44 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl45 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl46 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl47 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl48 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl49 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl50 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl51 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl52 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl53 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl54 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl55 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl56 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl57 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl58 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl59 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl60 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl61 => {
+            @0 := ()
+            return
+        },
+        AlignmentEnum::_Align1Shl62 => {
+            @0 := ()
+            return
+        },
+        _ => {
+            @0 := ()
+            return
+        },
+    }
+    @0 := ()
+    return
+}
+
 // Full name: core::ptr::alignment::Alignment
 pub struct Alignment {
   AlignmentEnum,
+}
+
+// Full name: core::ptr::alignment::Alignment::{impl Drop for Alignment}
+impl Drop for Alignment {
+    parent_clause0 = MetaSized<Alignment>
+    fn drop<'_0> = {impl Drop for Alignment}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::ptr::alignment::Alignment::{impl Drop for Alignment}::drop
+fn {impl Drop for Alignment}::drop<'_0>(@1: &'_0 mut (Alignment))
+{
+    let @0: (); // return
+    let @1: *mut Alignment; // arg #1
+    let @2: &'_ mut (Alignment); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
 }
 
 // Full name: core::alloc::layout::Layout
@@ -80,9 +389,25 @@ pub struct Layout {
   align: Alignment,
 }
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+// Full name: core::alloc::layout::Layout::{impl Drop for Layout}
+impl Drop for Layout {
+    parent_clause0 = MetaSized<Layout>
+    fn drop<'_0> = {impl Drop for Layout}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::alloc::layout::Layout::{impl Drop for Layout}::drop
+fn {impl Drop for Layout}::drop<'_0>(@1: &'_0 mut (Layout))
+{
+    let @0: (); // return
+    let @1: *mut Layout; // arg #1
+    let @2: &'_ mut (Layout); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -151,15 +476,6 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
     return
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
 pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 where
     [@TraitClause0]: Destruct<usize>,
@@ -201,6 +517,38 @@ pub enum Count {
   Implied,
 }
 
+// Full name: core::fmt::rt::Count::{impl Drop for Count}
+impl Drop for Count {
+    parent_clause0 = MetaSized<Count>
+    fn drop<'_0> = {impl Drop for Count}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Count::{impl Drop for Count}::drop
+fn {impl Drop for Count}::drop<'_0>(@1: &'_0 mut (Count))
+{
+    let @0: (); // return
+    let @1: *mut Count; // arg #1
+    let @2: &'_ mut (Count); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    match *(@2) {
+        Count::Is => {
+        },
+        Count::Param => {
+            @0 := ()
+            return
+        },
+        _ => {
+            @0 := ()
+            return
+        },
+    }
+    @0 := ()
+    return
+}
+
 // Full name: core::fmt::rt::Placeholder
 #[lang_item("format_placeholder")]
 pub struct Placeholder {
@@ -208,6 +556,26 @@ pub struct Placeholder {
   flags: u32,
   precision: Count,
   width: Count,
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}
+impl Drop for Placeholder {
+    parent_clause0 = MetaSized<Placeholder>
+    fn drop<'_0> = {impl Drop for Placeholder}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}::drop
+fn {impl Drop for Placeholder}::drop<'_0>(@1: &'_0 mut (Placeholder))
+{
+    let @0: (); // return
+    let @1: *mut Placeholder; // arg #1
+    let @2: &'_ mut (Placeholder); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
 }
 
 // Full name: core::ptr::non_null::NonNull
@@ -229,6 +597,26 @@ where
 
 // Full name: core::fmt::Error
 pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
+{
+    let @0: (); // return
+    let @1: *mut Error; // arg #1
+    let @2: &'_ mut (Error); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
@@ -482,6 +870,26 @@ fn is_size_align_valid(@1: usize, @2: usize) -> bool
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
+// Full name: core::alloc::AllocError::{impl Drop for AllocError}
+impl Drop for AllocError {
+    parent_clause0 = MetaSized<AllocError>
+    fn drop<'_0> = {impl Drop for AllocError}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::alloc::AllocError::{impl Drop for AllocError}::drop
+fn {impl Drop for AllocError}::drop<'_0>(@1: &'_0 mut (AllocError))
+{
+    let @0: (); // return
+    let @1: *mut AllocError; // arg #1
+    let @2: &'_ mut (AllocError); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
 // Full name: core::alloc::Allocator
 pub trait Allocator<Self>
 {
@@ -513,6 +921,25 @@ where
 
 // Full name: core::convert::Infallible
 pub enum Infallible {
+}
+
+// Full name: core::convert::Infallible::{impl Drop for Infallible}
+impl Drop for Infallible {
+    parent_clause0 = MetaSized<Infallible>
+    fn drop<'_0> = {impl Drop for Infallible}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::convert::Infallible::{impl Drop for Infallible}::drop
+fn {impl Drop for Infallible}::drop<'_0>(@1: &'_0 mut (Infallible))
+{
+    let @0: (); // return
+    let @1: *mut Infallible; // arg #1
+    let @2: &'_ mut (Infallible); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    undefined_behavior
 }
 
 fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool)
@@ -1902,6 +2329,26 @@ pub struct NonZeroUsizeInner {
   usize,
 }
 
+// Full name: core::num::niche_types::NonZeroUsizeInner::{impl Drop for NonZeroUsizeInner}
+impl Drop for NonZeroUsizeInner {
+    parent_clause0 = MetaSized<NonZeroUsizeInner>
+    fn drop<'_0> = {impl Drop for NonZeroUsizeInner}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::NonZeroUsizeInner::{impl Drop for NonZeroUsizeInner}::drop
+fn {impl Drop for NonZeroUsizeInner}::drop<'_0>(@1: &'_0 mut (NonZeroUsizeInner))
+{
+    let @0: (); // return
+    let @1: *mut NonZeroUsizeInner; // arg #1
+    let @2: &'_ mut (NonZeroUsizeInner); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
 // Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone
 pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInner)) -> NonZeroUsizeInner
 {
@@ -2166,6 +2613,26 @@ unsafe fn __rust_no_alloc_shim_is_unstable_v2()
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+{
+    let @0: (); // return
+    let @1: *mut Global; // arg #1
+    let @2: &'_ mut (Global); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: alloc::alloc::{Global}::alloc_impl
 fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]

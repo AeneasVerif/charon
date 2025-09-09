@@ -43,6 +43,60 @@ error: Error during trait resolution: Could not find a clause for `Binder { valu
 18 | struct Flatten<I: MyIterator<Item: Copy>>(I);
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: 3 warnings emitted
+error: Error during trait resolution: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+  --> tests/ui/monomorphization/unsatisfied-method-bounds.rs:18:1
+   |
+18 | struct Flatten<I: MyIterator<Item: Copy>>(I);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-ERROR Charon failed to translate this code (2 errors)
+error: Error during trait resolution: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+  --> tests/ui/monomorphization/unsatisfied-method-bounds.rs:18:1
+   |
+18 | struct Flatten<I: MyIterator<Item: Copy>>(I);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+disabled backtrace
+warning[E9999]: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+   --> /home/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/drop.rs:208:1
+    |
+208 | pub trait Drop {
+    | ^^^^^^^^^^^^^^
+    |
+    = note: ⚠️ This is a bug in Hax's frontend.
+            Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+disabled backtrace
+warning[E9999]: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+   --> /home/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/drop.rs:241:5
+    |
+241 |     fn drop(&mut self);
+    |     ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: ⚠️ This is a bug in Hax's frontend.
+            Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+disabled backtrace
+warning[E9999]: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+   --> /home/ssyram/.rustup/toolchains/nightly-2025-07-08-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/marker.rs:179:1
+    |
+179 | pub trait MetaSized: PointeeSized {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: ⚠️ This is a bug in Hax's frontend.
+            Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+error: Error during trait resolution: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+  --> tests/ui/monomorphization/unsatisfied-method-bounds.rs:18:1
+   |
+18 | struct Flatten<I: MyIterator<Item: Copy>>(I);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Error during trait resolution: Could not find a clause for `Binder { value: <std::string::String as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
+  --> tests/ui/monomorphization/unsatisfied-method-bounds.rs:18:1
+   |
+18 | struct Flatten<I: MyIterator<Item: Copy>>(I);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: 6 warnings emitted
+
+ERROR Charon failed to translate this code (6 errors)

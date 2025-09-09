@@ -78,6 +78,8 @@ and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
   | CastUnsize (src, tgt, _) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
+  | CastConcretize (src, tgt) ->
+      "concretize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
 and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
   match op with

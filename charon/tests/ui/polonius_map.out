@@ -118,7 +118,7 @@ pub trait BuildHasher<Self>
     parent_clause2 : [@TraitClause2]: Hasher<Self::Hasher>
     type Hasher
     fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::hash::BuildHasher::{vtable}<Self::Hasher>
 }
 
 pub fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Hasher
@@ -137,6 +137,19 @@ impl Hash for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx>
@@ -146,7 +159,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-    non-dyn-compatible
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -229,14 +242,34 @@ where
     parent_clause2 = @TraitClause2::parent_clause0
     type Output = V
     fn index<'_0> = {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
-    non-dyn-compatible
+    vtable: {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::{vtable}<'_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
 }
 
 // Full name: std::hash::random::RandomState
 pub opaque type RandomState
 
+// Full name: std::hash::random::RandomState::{impl Drop for RandomState}
+impl Drop for RandomState {
+    parent_clause0 = MetaSized<RandomState>
+    fn drop<'_0> = {impl Drop for RandomState}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: std::hash::random::RandomState::{impl Drop for RandomState}::drop
+fn {impl Drop for RandomState}::drop<'_0>(@1: &'_0 mut (RandomState))
+
 // Full name: std::hash::random::DefaultHasher
 pub opaque type DefaultHasher
+
+// Full name: std::hash::random::DefaultHasher::{impl Drop for DefaultHasher}
+impl Drop for DefaultHasher {
+    parent_clause0 = MetaSized<DefaultHasher>
+    fn drop<'_0> = {impl Drop for DefaultHasher}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: std::hash::random::DefaultHasher::{impl Drop for DefaultHasher}::drop
+fn {impl Drop for DefaultHasher}::drop<'_0>(@1: &'_0 mut (DefaultHasher))
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}::finish
 pub fn {impl Hasher for DefaultHasher}::finish<'_0>(@1: &'_0 (DefaultHasher)) -> u64
@@ -262,7 +295,7 @@ impl BuildHasher for RandomState {
     parent_clause2 = {impl Hasher for DefaultHasher}
     type Hasher = DefaultHasher
     fn build_hasher<'_0> = {impl BuildHasher for RandomState}::build_hasher<'_0_0>
-    non-dyn-compatible
+    vtable: {impl BuildHasher for RandomState}::{vtable}
 }
 
 // Full name: test_crate::get_or_insert

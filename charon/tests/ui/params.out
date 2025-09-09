@@ -12,9 +12,49 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
 
 // Full name: test_crate::test_static
 fn test_static(@1: &'static (u32)) -> &'static (u32)
@@ -29,6 +69,26 @@ fn test_static(@1: &'static (u32)) -> &'static (u32)
 // Full name: test_crate::SStatic
 struct SStatic {
   x: &'static (u32),
+}
+
+// Full name: test_crate::SStatic::{impl Drop for SStatic}
+impl Drop for SStatic {
+    parent_clause0 = MetaSized<SStatic>
+    fn drop<'_0> = {impl Drop for SStatic}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::SStatic::{impl Drop for SStatic}::drop
+fn {impl Drop for SStatic}::drop<'_0>(@1: &'_0 mut (SStatic))
+{
+    let @0: (); // return
+    let @1: *mut SStatic; // arg #1
+    let @2: &'_ mut (SStatic); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
 }
 
 // Full name: test_crate::E0

@@ -1,11 +1,40 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
+{
+    let @0: (); // return
+    let @1: *mut Error; // arg #1
+    let @2: &'_ mut (Error); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -33,6 +62,38 @@ pub enum Count {
   Implied,
 }
 
+// Full name: core::fmt::rt::Count::{impl Drop for Count}
+impl Drop for Count {
+    parent_clause0 = MetaSized<Count>
+    fn drop<'_0> = {impl Drop for Count}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Count::{impl Drop for Count}::drop
+fn {impl Drop for Count}::drop<'_0>(@1: &'_0 mut (Count))
+{
+    let @0: (); // return
+    let @1: *mut Count; // arg #1
+    let @2: &'_ mut (Count); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    match *(@2) {
+        Count::Is => {
+        },
+        Count::Param => {
+            @0 := ()
+            return
+        },
+        _ => {
+            @0 := ()
+            return
+        },
+    }
+    @0 := ()
+    return
+}
+
 // Full name: core::fmt::rt::Placeholder
 #[lang_item("format_placeholder")]
 pub struct Placeholder {
@@ -40,6 +101,26 @@ pub struct Placeholder {
   flags: u32,
   precision: Count,
   width: Count,
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}
+impl Drop for Placeholder {
+    parent_clause0 = MetaSized<Placeholder>
+    fn drop<'_0> = {impl Drop for Placeholder}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}::drop
+fn {impl Drop for Placeholder}::drop<'_0>(@1: &'_0 mut (Placeholder))
+{
+    let @0: (); // return
+    let @1: *mut Placeholder; // arg #1
+    let @2: &'_ mut (Placeholder); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
 }
 
 // Full name: core::ptr::non_null::NonNull
@@ -139,6 +220,10 @@ pub fn MAX() -> usize
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx>
@@ -148,7 +233,7 @@ pub trait Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
-    non-dyn-compatible
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
@@ -251,7 +336,7 @@ pub trait SliceIndex<Self, T>
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
     fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
-    non-dyn-compatible
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
 pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (@TraitClause0::Output)
@@ -285,7 +370,7 @@ where
     parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
-    non-dyn-compatible
+    vtable: {impl Index<I> for Slice<T>}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::slice::index::slice_end_index_len_fail
@@ -953,7 +1038,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeInclusive<usize>[Sized<usize>]}::get
@@ -1466,7 +1551,7 @@ where
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
     fn index<'_0> = {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
     fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[Sized<usize>]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::slice_index_range

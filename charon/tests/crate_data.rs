@@ -490,7 +490,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[4]
+        crate_data.fun_decls[6]
             .item_meta
             .attr_info
             .rename
@@ -623,12 +623,12 @@ fn source_text() -> anyhow::Result<()> {
         "trait Trait {\n            fn method() {}\n        }"
     );
     assert_eq!(sources[2], "impl Trait for () {}");
-    assert_eq!(sources[3], "fn foo() {\n            panic!()\n        }");
+    assert_eq!(sources[4], "fn foo() {\n            panic!()\n        }");
     assert_eq!(
-        sources[4],
+        sources[5],
         "fn baz( x : usize )  ->() { \n            let _ = x;\n                }"
     );
-    assert_eq!(sources[5], "fn quux () {}");
+    assert_eq!(sources[6], "fn quux () {}");
     Ok(())
 }
 
