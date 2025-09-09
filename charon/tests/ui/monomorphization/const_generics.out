@@ -64,13 +64,16 @@ fn main()
     let @0: (); // return
     let _b@1: bool; // local
     let @2: &'_ (Foo::<bool>); // anonymous local
-    let @3: &'_ (Foo::<bool>); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'_ (Foo::<bool>); // anonymous local
 
     storage_live(@3)
+    storage_live(@4)
     storage_live(_b@1)
     storage_live(@2)
-    @3 := &FooBool
-    @2 := move (@3)
+    @3 := ()
+    @4 := &(FooBool, move (@3))
+    @2 := move (@4)
     _b@1 := copy ((*(@2)).value)
     storage_dead(@2)
     @0 := ()

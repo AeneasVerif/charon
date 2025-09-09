@@ -183,16 +183,25 @@ fn takes_closure::<for<'_0> foo::<u32><'_0>>(@1: for<'_0> foo::<u32><'_0_0>)
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: u32; // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
 
     storage_live(@2)
-    @2 := &c@1
+    storage_live(@9)
+    @9 := ()
+    @2 := &(c@1, move (@9))
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := const (13 : u32)
-    @5 := &@6
-    @4 := &*(@5)
+    storage_live(@8)
+    @8 := ()
+    @5 := &(@6, move (@8))
+    storage_live(@7)
+    @7 := ()
+    @4 := &(*(@5), move (@7))
     @3 := (move (@4))
     @0 := Fn::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>::call<'_>(move (@2), move (@3))
     storage_dead(@4)
@@ -236,6 +245,16 @@ fn main()
     let @25: &'_ (char); // anonymous local
     let @26: char; // anonymous local
     let @27: (); // anonymous local
+    let @28: (); // anonymous local
+    let @29: (); // anonymous local
+    let @30: (); // anonymous local
+    let @31: (); // anonymous local
+    let @32: (); // anonymous local
+    let @33: (); // anonymous local
+    let @34: (); // anonymous local
+    let @35: (); // anonymous local
+    let @36: (); // anonymous local
+    let @37: (); // anonymous local
 
     storage_live(fooint1@1)
     fooint1@1 := cast<for<'_0> foo::<u8><'_0_0>, fn<'_0>(&'_0_0 (u8))>(const (foo::<u8><'_>))
@@ -250,8 +269,12 @@ fn main()
     @6 := copy (fooint1@1)
     storage_live(@7)
     storage_live(@8)
-    @8 := &a@4
-    @7 := &*(@8)
+    storage_live(@29)
+    @29 := ()
+    @8 := &(a@4, move (@29))
+    storage_live(@28)
+    @28 := ()
+    @7 := &(*(@8), move (@28))
     @5 := (move @6)(move (@7))
     storage_dead(@7)
     storage_dead(@6)
@@ -264,8 +287,12 @@ fn main()
     @11 := copy (fooint1@1)
     storage_live(@12)
     storage_live(@13)
-    @13 := &a@4
-    @12 := &*(@13)
+    storage_live(@31)
+    @31 := ()
+    @13 := &(a@4, move (@31))
+    storage_live(@30)
+    @30 := ()
+    @12 := &(*(@13), move (@30))
     @10 := (move @11)(move (@12))
     storage_dead(@12)
     storage_dead(@11)
@@ -276,8 +303,12 @@ fn main()
     @15 := copy (fooint1@1)
     storage_live(@16)
     storage_live(@17)
-    @17 := &b@9
-    @16 := &*(@17)
+    storage_live(@33)
+    @33 := ()
+    @17 := &(b@9, move (@33))
+    storage_live(@32)
+    @32 := ()
+    @16 := &(*(@17), move (@32))
     @14 := (move @15)(move (@16))
     storage_dead(@16)
     storage_dead(@15)
@@ -288,8 +319,12 @@ fn main()
     @19 := copy (fooint2@2)
     storage_live(@20)
     storage_live(@21)
-    @21 := &b@9
-    @20 := &*(@21)
+    storage_live(@35)
+    @35 := ()
+    @21 := &(b@9, move (@35))
+    storage_live(@34)
+    @34 := ()
+    @20 := &(*(@21), move (@34))
     @18 := (move @19)(move (@20))
     storage_dead(@20)
     storage_dead(@19)
@@ -302,8 +337,12 @@ fn main()
     storage_live(@25)
     storage_live(@26)
     @26 := const (x)
-    @25 := &@26
-    @24 := &*(@25)
+    storage_live(@37)
+    @37 := ()
+    @25 := &(@26, move (@37))
+    storage_live(@36)
+    @36 := ()
+    @24 := &(*(@25), move (@36))
     @22 := (move @23)(move (@24))
     storage_dead(@24)
     storage_dead(@23)

@@ -216,11 +216,13 @@ where
     let @3: !; // anonymous local
     let @4: &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)); // anonymous local
     let @5: &'_ (E); // anonymous local
+    let @6: (); // anonymous local
 
     storage_live(e@2)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
+    storage_live(@6)
     match self@1 {
         Result::Ok => {
         },
@@ -228,7 +230,9 @@ where
             storage_live(e@2)
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
-            @5 := &e@2
+            storage_live(@6)
+            @6 := ()
+            @5 := &(e@2, move (@6))
             @4 := unsize_cast<&'_ (E), &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), @TraitClause2>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },

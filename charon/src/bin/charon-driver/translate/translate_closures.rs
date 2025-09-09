@@ -485,7 +485,12 @@ impl ItemTransCtx<'_, '_> {
 
                 statements.push(mk_stt(RawStatement::Assign(
                     reborrow.clone(),
-                    Rvalue::Ref(deref_state, BorrowKind::Shared),
+                    // the state must be Sized, hence `()` as ptr-metadata
+                    Rvalue::Ref {
+                        place: deref_state,
+                        kind: BorrowKind::Shared,
+                        ptr_metadata: Operand::mk_const_unit(),
+                    },
                 )));
 
                 let start_block = blocks.reserve_slot();

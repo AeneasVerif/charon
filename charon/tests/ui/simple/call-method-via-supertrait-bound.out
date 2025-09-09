@@ -88,10 +88,13 @@ where
     let x@1: T; // arg #1
     let @2: (); // anonymous local
     let @3: &'_ (T); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &x@1
+    storage_live(@4)
+    @4 := ()
+    @3 := &(x@1, move (@4))
     @2 := {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause1](move (@3))
     storage_dead(@3)
     storage_dead(@2)

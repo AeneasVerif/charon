@@ -161,9 +161,12 @@ where
     let @0: Clause1_Clause1_Assoc; // return
     let x@1: T; // arg #1
     let @2: &'_ (T); // anonymous local
+    let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &x@1
+    storage_live(@3)
+    @3 := ()
+    @2 := &(x@1, move (@3))
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
     drop[Drop<T>] x@1
@@ -179,9 +182,12 @@ where
     let @0: Clause1_Clause1_Assoc; // return
     let x@1: T; // arg #1
     let @2: &'_ (T); // anonymous local
+    let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &x@1
+    storage_live(@3)
+    @3 := ()
+    @2 := &(x@1, move (@3))
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
     drop[Drop<T>] x@1
