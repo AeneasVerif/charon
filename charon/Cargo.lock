@@ -29,7 +29,7 @@ dependencies = [
 [[package]]
 name = "annotate-snippets"
 version = "0.11.5"
-source = "git+https://github.com/rust-lang/annotate-snippets-rs#74964e91d845e39fb549c4028452beffa7c6562b"
+source = "git+https://github.com/rust-lang/annotate-snippets-rs?rev=74964e91d845e39fb549c4028452beffa7c6562b#74964e91d845e39fb549c4028452beffa7c6562b"
 dependencies = [
  "anstyle",
  "unicode-width",
@@ -807,7 +807,7 @@ checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 [[package]]
 name = "hax-adt-into"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#79faad1a6e30de93ddc2769210701d96d1fdd36f"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#24991a867cb5886f3c9ddad7a9ca0ad03b80c629"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -818,7 +818,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#79faad1a6e30de93ddc2769210701d96d1fdd36f"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#24991a867cb5886f3c9ddad7a9ca0ad03b80c629"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -835,7 +835,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.3.1"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#79faad1a6e30de93ddc2769210701d96d1fdd36f"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#24991a867cb5886f3c9ddad7a9ca0ad03b80c629"
 dependencies = [
  "hax-adt-into",
  "schemars",
