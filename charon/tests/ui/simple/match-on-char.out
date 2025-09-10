@@ -1,7 +1,25 @@
-error: Can't match on type char
- --> tests/ui/simple/match-on-char.rs:3:5
-  |
-3 |     match 'x' {
-  |     ^^^^^^^^^
+# Final LLBC before serialization:
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let @1: char; // anonymous local
+
+    storage_live(@1)
+    @1 := const (x)
+    switch copy (@1) {
+        a => {
+            @0 := ()
+        },
+        _ => {
+            @0 := ()
+        },
+    }
+    storage_dead(@1)
+    @0 := ()
+    return
+}
+
+
+

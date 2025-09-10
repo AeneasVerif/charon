@@ -1,6 +1,4 @@
 use super::translate_ctx::*;
-use charon_lib::ast::Literal::*;
-use charon_lib::ast::types::LiteralTy::*;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
@@ -749,14 +747,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<Literal, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
         match *ty.kind() {
-            charon_lib::ast::types::TyKind::Literal(Int(int_ty)) => Ok(Scalar(
-                ScalarValue::from_bits(IntegerTy::Signed(int_ty), discr.val),
-            )),
-            charon_lib::ast::types::TyKind::Literal(UInt(uint_ty)) => Ok(Scalar(
-                ScalarValue::from_bits(IntegerTy::Unsigned(uint_ty), discr.val),
-            )),
-            charon_lib::ast::types::TyKind::Literal(charon_lib::ast::types::LiteralTy::Char) => {
-                Ok(charon_lib::ast::Literal::Char(discr.val as u8 as char))
+            TyKind::Literal(charon_lib::ast::types::LiteralTy::Int(int_ty)) => {
+                Ok(charon_lib::ast::Literal::Scalar(ScalarValue::from_bits(
+                    IntegerTy::Signed(int_ty),
+                    discr.val,
+                )))
+            }
+            TyKind::Literal(charon_lib::ast::types::LiteralTy::UInt(uint_ty)) => {
+                Ok(charon_lib::ast::Literal::Scalar(ScalarValue::from_bits(
+                    IntegerTy::Unsigned(uint_ty),
+                    discr.val,
+                )))
+            }
+            TyKind::Literal(charon_lib::ast::types::LiteralTy::Char) => {
+                Ok(Literal::char_from_le_bytes(discr.val))
             }
             _ => Err(Error {
                 span: def_span,

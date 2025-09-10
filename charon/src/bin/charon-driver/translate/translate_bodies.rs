@@ -12,7 +12,6 @@ use std::panic;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
-use charon_lib::ast::values::Literal::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
@@ -931,8 +930,8 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let b: [u8; 1] = v.data_le_bytes[0..1].try_into().unwrap();
-                        let v = Char(u8::from_le_bytes(b) as char);
+                        let b: u128 = u128::from_le_bytes(v.data_le_bytes);
+                        let v = Literal::char_from_le_bytes(b);
                         let tgt = self.translate_basic_block_id(*tgt);
                         (v, tgt)
                     })
@@ -948,10 +947,9 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = Scalar(ScalarValue::from_le_bytes(
-                            IntegerTy::Signed(int_ty),
-                            v.data_le_bytes,
-                        ));
+                        let v = charon_lib::ast::values::Literal::Scalar(
+                            ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes),
+                        );
                         let tgt = self.translate_basic_block_id(*tgt);
                         (v, tgt)
                     })
@@ -967,10 +965,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = Scalar(ScalarValue::from_le_bytes(
-                            IntegerTy::Unsigned(uint_ty),
-                            v.data_le_bytes,
-                        ));
+                        let v =
+                            charon_lib::ast::values::Literal::Scalar(ScalarValue::from_le_bytes(
+                                IntegerTy::Unsigned(uint_ty),
+                                v.data_le_bytes,
+                            ));
                         let tgt = self.translate_basic_block_id(*tgt);
                         Ok::<(charon_lib::ast::Literal, charon_lib::ullbc_ast::BlockId), Error>((
                             v, tgt,

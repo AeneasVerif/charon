@@ -1,8 +1,6 @@
 //! Implementations for [crate::values]
 use crate::ast::*;
-use crate::raise_error;
-use crate::register_error;
-use crate::transform::TransformCtx;
+
 #[derive(Debug, Clone)]
 pub enum ScalarError {
     /// Attempt to use a signed scalar as an unsigned scalar or vice-versa
@@ -29,28 +27,9 @@ macro_rules! from_le_bytes {
 }
 
 impl Literal {
-    pub fn to_constant(self, span: Span, ctx: &TransformCtx) -> Result<ConstantExpr, Error> {
-        match self {
-            Literal::Scalar(scal) => Ok(scal.to_constant()),
-            Literal::Float(floatval) => Ok(ConstantExpr {
-                value: RawConstantExpr::Literal(Literal::Float(floatval.clone())),
-                ty: TyKind::Literal(LiteralTy::Float(floatval.ty)).into_ty(),
-            }),
-            Literal::Bool(bool) => Ok(ConstantExpr {
-                value: RawConstantExpr::Literal(Literal::Bool(bool)),
-                ty: TyKind::Literal(LiteralTy::Bool).into_ty(),
-            }),
-            Literal::Char(chr) => Ok(ConstantExpr {
-                value: RawConstantExpr::Literal(Literal::Char(chr)),
-                ty: TyKind::Literal(LiteralTy::Char).into_ty(),
-            }),
-            Literal::ByteStr(_vec) => {
-                raise_error!(ctx, span, "Cannot convert Literal::ByteStr to ConstantExpr")
-            }
-            Literal::Str(_str) => {
-                raise_error!(ctx, span, "Cannot convert Literal::Str to ConstantExpr")
-            }
-        }
+    pub fn char_from_le_bytes(bits: u128) -> Self {
+        let b: [u8; 4] = bits.to_le_bytes()[0..4].try_into().unwrap();
+        Literal::Char(std::char::from_u32(u32::from_le_bytes(b)).unwrap())
     }
 }
 

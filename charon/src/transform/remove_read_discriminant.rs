@@ -136,8 +136,7 @@ impl Transform {
                         }
                         _ => {
                             // The discriminant read is not followed by a `SwitchInt`. This can happen
-                            // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
-                            // = 0 }, 1 => { _x = 1; }, .. }`.
+                            // in optimized MIR.
                             continue;
                         }
                     }

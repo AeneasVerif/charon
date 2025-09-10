@@ -1,7 +1,6 @@
 #![feature(box_patterns)]
 
 use charon_lib::llbc_ast::*;
-use charon_lib::values::Literal::Scalar;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::error::Error;
@@ -379,15 +378,15 @@ fn discriminants() -> anyhow::Result<()> {
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[0]),
         vec![
-            Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
-            Scalar(ScalarValue::Signed(IntTy::Isize, 1))
+            charon_lib::values::Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
+            charon_lib::values::Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 1))
         ]
     );
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[1]),
         vec![
-            Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
-            Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
+            charon_lib::values::Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
+            charon_lib::values::Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
         ]
     );
     Ok(())
