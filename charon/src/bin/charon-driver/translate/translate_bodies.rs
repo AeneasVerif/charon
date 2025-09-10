@@ -800,10 +800,10 @@ impl BodyTransCtx<'_, '_, '_> {
 
         // Translate the terminator
         use hax::TerminatorKind;
-        let t_terminator: charon_lib::ast::ullbc_ast::TerminatorKind = match &terminator.kind {
+        let t_terminator: ullbc_ast::TerminatorKind = match &terminator.kind {
             TerminatorKind::Goto { target } => {
                 let target = self.translate_basic_block_id(*target);
-                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::SwitchInt {
                 discr,
@@ -817,19 +817,17 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(span, &discr_ty, targets, otherwise)?;
 
-                charon_lib::ast::ullbc_ast::TerminatorKind::Switch { discr, targets }
+                ullbc_ast::TerminatorKind::Switch { discr, targets }
             }
-            TerminatorKind::UnwindResume => {
-                charon_lib::ast::ullbc_ast::TerminatorKind::UnwindResume
-            }
+            TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
             TerminatorKind::UnwindTerminate { .. } => {
-                charon_lib::ast::ullbc_ast::TerminatorKind::Abort(AbortKind::UnwindTerminate)
+                ullbc_ast::TerminatorKind::Abort(AbortKind::UnwindTerminate)
             }
-            TerminatorKind::Return => charon_lib::ast::ullbc_ast::TerminatorKind::Return,
+            TerminatorKind::Return => ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
             TerminatorKind::Unreachable => {
-                charon_lib::ast::ullbc_ast::TerminatorKind::Abort(AbortKind::UndefinedBehavior)
+                ullbc_ast::TerminatorKind::Abort(AbortKind::UndefinedBehavior)
             }
             TerminatorKind::Drop {
                 place,
@@ -842,7 +840,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
                 statements.push(Statement::new(span, StatementKind::Drop(place, tref)));
                 let target = self.translate_basic_block_id(*target);
-                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::Call {
                 fun,
@@ -867,7 +865,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 };
                 statements.push(Statement::new(span, StatementKind::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
-                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -886,7 +884,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Also note that they are used in some passes, and not in some others
                 // (they are present in mir_promoted, but not mir_optimized).
                 let target = self.translate_basic_block_id(*real_target);
-                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::FalseUnwind {
                 real_target,
@@ -894,7 +892,7 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 // We consider this to be a goto
                 let target = self.translate_basic_block_id(*real_target);
-                charon_lib::ast::ullbc_ast::TerminatorKind::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
                 raise_error!(self, span, "Inline assembly is not supported");
