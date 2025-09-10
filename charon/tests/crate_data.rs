@@ -378,15 +378,15 @@ fn discriminants() -> anyhow::Result<()> {
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[0]),
         vec![
-            charon_lib::values::Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
-            charon_lib::values::Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 1))
+            Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
+            Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 1))
         ]
     );
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[1]),
         vec![
-            charon_lib::values::Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
-            charon_lib::values::Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
+            Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
+            Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
         ]
     );
     Ok(())

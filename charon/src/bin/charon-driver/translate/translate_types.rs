@@ -746,26 +746,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         discr: &hax::DiscriminantValue,
     ) -> Result<Literal, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
-        match *ty.kind() {
-            TyKind::Literal(charon_lib::ast::types::LiteralTy::Int(int_ty)) => {
-                Ok(charon_lib::ast::Literal::Scalar(ScalarValue::from_bits(
-                    IntegerTy::Signed(int_ty),
-                    discr.val,
-                )))
-            }
-            TyKind::Literal(charon_lib::ast::types::LiteralTy::UInt(uint_ty)) => {
-                Ok(charon_lib::ast::Literal::Scalar(ScalarValue::from_bits(
-                    IntegerTy::Unsigned(uint_ty),
-                    discr.val,
-                )))
-            }
-            TyKind::Literal(charon_lib::ast::types::LiteralTy::Char) => {
-                Ok(Literal::char_from_le_bytes(discr.val))
-            }
-            _ => Err(Error {
-                span: def_span,
-                msg: "*ty.kind unsupported as discriminant".to_string(),
-            }),
+        let lit_ty = ty.kind().as_literal().unwrap();
+        match Literal::from_bits(lit_ty, discr.val) {
+            Some(lit) => Ok(lit),
+            None => raise_error!(self, def_span, "*ty.kind unsupported as discriminant",),
         }
     }
 }

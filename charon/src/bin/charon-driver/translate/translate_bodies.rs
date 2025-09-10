@@ -947,35 +947,29 @@ impl BodyTransCtx<'_, '_, '_> {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = charon_lib::ast::values::Literal::Scalar(
-                            ScalarValue::from_le_bytes(IntegerTy::Signed(int_ty), v.data_le_bytes),
-                        );
+                        let v = Literal::Scalar(ScalarValue::from_le_bytes(
+                            IntegerTy::Signed(int_ty),
+                            v.data_le_bytes,
+                        ));
                         let tgt = self.translate_basic_block_id(*tgt);
                         (v, tgt)
                     })
                     .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
-                Ok(SwitchTargets::SwitchInt(
-                    LiteralTy::Int(int_ty),
-                    targets,
-                    otherwise,
-                ))
+                Ok(SwitchTargets::SwitchInt(switch_ty, targets, otherwise))
             }
             LiteralTy::UInt(uint_ty) => {
                 let targets: Vec<(Literal, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
-                        let v =
-                            charon_lib::ast::values::Literal::Scalar(ScalarValue::from_le_bytes(
-                                IntegerTy::Unsigned(uint_ty),
-                                v.data_le_bytes,
-                            ));
+                        let v = Literal::Scalar(ScalarValue::from_le_bytes(
+                            IntegerTy::Unsigned(uint_ty),
+                            v.data_le_bytes,
+                        ));
                         let tgt = self.translate_basic_block_id(*tgt);
-                        Ok::<(charon_lib::ast::Literal, charon_lib::ullbc_ast::BlockId), Error>((
-                            v, tgt,
-                        ))
+                        (v, tgt)
                     })
-                    .try_collect()?;
+                    .collect();
                 let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(
                     LiteralTy::UInt(uint_ty),

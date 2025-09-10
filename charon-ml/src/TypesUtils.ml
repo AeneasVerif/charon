@@ -399,7 +399,7 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
           | Direct -> begin
               assert (discr_layout.tag_ty = Scalars.get_ty tag);
               let discr =
-                match literal_as_integer_opt discr with
+                match integer_type_of_literal discr with
                 | Some intty -> begin
                     match
                       Scalars.mk_scalar ptr_size intty (Scalars.get_val tag)
