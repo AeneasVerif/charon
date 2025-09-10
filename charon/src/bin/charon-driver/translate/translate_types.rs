@@ -749,7 +749,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let lit_ty = ty.kind().as_literal().unwrap();
         match Literal::from_bits(lit_ty, discr.val) {
             Some(lit) => Ok(lit),
-            None => raise_error!(self, def_span, "*ty.kind unsupported as discriminant",),
+            None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
         }
     }
 }
