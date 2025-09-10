@@ -12,6 +12,7 @@ use std::panic;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use charon_lib::ast::ullbc_ast::StatementKind;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
@@ -715,80 +716,68 @@ impl BodyTransCtx<'_, '_, '_> {
             .t_ctx
             .translate_span_from_source_info(&body.source_scopes, &statement.source_info);
 
-        use hax::StatementKind;
-        let t_statement: Option<charon_lib::ast::ullbc_ast::StatementKind> = match &*statement.kind
-        {
-            StatementKind::Assign((place, rvalue)) => {
+        let t_statement: Option<StatementKind> = match &*statement.kind {
+            hax::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_rvalue(span, rvalue)?;
-                Some(charon_lib::ast::ullbc_ast::StatementKind::Assign(
-                    t_place, t_rvalue,
-                ))
+                Some(StatementKind::Assign(t_place, t_rvalue))
             }
-            StatementKind::SetDiscriminant {
+            hax::StatementKind::SetDiscriminant {
                 place,
                 variant_index,
             } => {
                 let t_place = self.translate_place(span, place)?;
                 let variant_id = translate_variant_id(*variant_index);
-                Some(charon_lib::ast::ullbc_ast::StatementKind::SetDiscriminant(
-                    t_place, variant_id,
-                ))
+                Some(StatementKind::SetDiscriminant(t_place, variant_id))
             }
-            StatementKind::StorageLive(local) => {
+            hax::StatementKind::StorageLive(local) => {
                 let var_id = self.translate_local(local).unwrap();
-                Some(charon_lib::ast::ullbc_ast::StatementKind::StorageLive(
-                    var_id,
-                ))
+                Some(StatementKind::StorageLive(var_id))
             }
-            StatementKind::StorageDead(local) => {
+            hax::StatementKind::StorageDead(local) => {
                 let var_id = self.translate_local(local).unwrap();
-                Some(charon_lib::ast::ullbc_ast::StatementKind::StorageDead(
-                    var_id,
-                ))
+                Some(StatementKind::StorageDead(var_id))
             }
-            StatementKind::Deinit(place) => {
+            hax::StatementKind::Deinit(place) => {
                 let t_place = self.translate_place(span, place)?;
-                Some(charon_lib::ast::ullbc_ast::StatementKind::Deinit(t_place))
+                Some(StatementKind::Deinit(t_place))
             }
             // This asserts the operand true on pain of UB. We treat it like a normal assertion.
-            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
+            hax::StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
-                Some(charon_lib::ast::ullbc_ast::StatementKind::Assert(Assert {
+                Some(StatementKind::Assert(Assert {
                     cond: op,
                     expected: true,
                     on_failure: AbortKind::UndefinedBehavior,
                 }))
             }
-            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(
+            hax::StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(
                 hax::CopyNonOverlapping { src, dst, count },
             )) => {
                 let src = self.translate_operand(span, src)?;
                 let dst = self.translate_operand(span, dst)?;
                 let count = self.translate_operand(span, count)?;
-                Some(
-                    charon_lib::ast::ullbc_ast::StatementKind::CopyNonOverlapping(Box::new(
-                        CopyNonOverlapping { src, dst, count },
-                    )),
-                )
+                Some(StatementKind::CopyNonOverlapping(Box::new(
+                    CopyNonOverlapping { src, dst, count },
+                )))
             }
             // This is for the stacked borrows memory model.
-            StatementKind::Retag(_, _) => None,
+            hax::StatementKind::Retag(_, _) => None,
             // These two are only there to make borrow-checking accept less code, and are removed
             // in later MIRs.
-            StatementKind::FakeRead(..) | StatementKind::PlaceMention(..) => None,
+            hax::StatementKind::FakeRead(..) | hax::StatementKind::PlaceMention(..) => None,
             // There are user-provided type annotations with no semantic effect (since we get a
             // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
             // really use promoted MIR)).
-            StatementKind::AscribeUserType(_, _) => None,
+            hax::StatementKind::AscribeUserType(_, _) => None,
             // Used for coverage instrumentation.
-            StatementKind::Coverage(_) => None,
+            hax::StatementKind::Coverage(_) => None,
             // Used in the interpreter to check that const code doesn't run for too long or even
             // indefinitely.
-            StatementKind::ConstEvalCounter => None,
+            hax::StatementKind::ConstEvalCounter => None,
             // Semantically equivalent to `Nop`, used only for rustc lints.
-            StatementKind::BackwardIncompatibleDropHint { .. } => None,
-            StatementKind::Nop => None,
+            hax::StatementKind::BackwardIncompatibleDropHint { .. } => None,
+            hax::StatementKind::Nop => None,
         };
 
         // Add the span information
