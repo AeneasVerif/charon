@@ -71,7 +71,7 @@ impl UllbcPass for Transform {
                     // Introduce an intermediate statement if both the rhs and the lhs contain an
                     // "index" projection element (to avoid introducing too many intermediate
                     // assignments).
-                    RawStatement::Assign(lhs, rhs)
+                    StatementKind::Assign(lhs, rhs)
                         if lhs.contains_index_proj() && rhs.contains_index_proj() =>
                     {
                         // Fresh local variable for the temporary assignment
@@ -81,7 +81,7 @@ impl UllbcPass for Transform {
                         // Introduce the intermediate let-binding
                         vec![Statement::new(
                             st.span,
-                            RawStatement::Assign(tmp_var, tmp_rhs),
+                            StatementKind::Assign(tmp_var, tmp_rhs),
                         )]
                     }
                     _ => vec![],

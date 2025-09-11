@@ -59,7 +59,7 @@ impl UllbcPass for Transform {
             // While the current block is a straight goto, merge the target block back into this
             // one.
             while let Some(source) = body.body.get(id)
-                && let RawTerminator::Goto { target } = source.terminator.content
+                && let TerminatorKind::Goto { target } = source.terminator.content
                 && let Antecedents::One { .. } = antecedents[target]
             {
                 let mut target = body.body.remove(target).unwrap();

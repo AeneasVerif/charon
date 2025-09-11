@@ -12,6 +12,7 @@ use std::panic;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use charon_lib::ast::ullbc_ast::StatementKind;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
@@ -380,7 +381,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     // A promoted constant that could not be evaluated.
                     let global_ref = self.translate_global_decl_ref(span, item)?;
                     let constant = ConstantExpr {
-                        value: RawConstantExpr::Global(global_ref),
+                        value: ConstantExprKind::Global(global_ref),
                         ty: ty.clone(),
                     };
                     Ok((Operand::Const(Box::new(constant)), ty))
@@ -481,7 +482,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         operand = Operand::Const(Box::new(ConstantExpr {
-                            value: RawConstantExpr::FnPtr(fn_ptr),
+                            value: ConstantExprKind::FnPtr(fn_ptr),
                             ty: src_ty.clone(),
                         }));
                         CastKind::FnPtr(src_ty, tgt_ty)
@@ -715,69 +716,68 @@ impl BodyTransCtx<'_, '_, '_> {
             .t_ctx
             .translate_span_from_source_info(&body.source_scopes, &statement.source_info);
 
-        use hax::StatementKind;
-        let t_statement: Option<RawStatement> = match &*statement.kind {
-            StatementKind::Assign((place, rvalue)) => {
+        let t_statement: Option<StatementKind> = match &*statement.kind {
+            hax::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_rvalue(span, rvalue)?;
-                Some(RawStatement::Assign(t_place, t_rvalue))
+                Some(StatementKind::Assign(t_place, t_rvalue))
             }
-            StatementKind::SetDiscriminant {
+            hax::StatementKind::SetDiscriminant {
                 place,
                 variant_index,
             } => {
                 let t_place = self.translate_place(span, place)?;
                 let variant_id = translate_variant_id(*variant_index);
-                Some(RawStatement::SetDiscriminant(t_place, variant_id))
+                Some(StatementKind::SetDiscriminant(t_place, variant_id))
             }
-            StatementKind::StorageLive(local) => {
+            hax::StatementKind::StorageLive(local) => {
                 let var_id = self.translate_local(local).unwrap();
-                Some(RawStatement::StorageLive(var_id))
+                Some(StatementKind::StorageLive(var_id))
             }
-            StatementKind::StorageDead(local) => {
+            hax::StatementKind::StorageDead(local) => {
                 let var_id = self.translate_local(local).unwrap();
-                Some(RawStatement::StorageDead(var_id))
+                Some(StatementKind::StorageDead(var_id))
             }
-            StatementKind::Deinit(place) => {
+            hax::StatementKind::Deinit(place) => {
                 let t_place = self.translate_place(span, place)?;
-                Some(RawStatement::Deinit(t_place))
+                Some(StatementKind::Deinit(t_place))
             }
             // This asserts the operand true on pain of UB. We treat it like a normal assertion.
-            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
+            hax::StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
-                Some(RawStatement::Assert(Assert {
+                Some(StatementKind::Assert(Assert {
                     cond: op,
                     expected: true,
                     on_failure: AbortKind::UndefinedBehavior,
                 }))
             }
-            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(
+            hax::StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(
                 hax::CopyNonOverlapping { src, dst, count },
             )) => {
                 let src = self.translate_operand(span, src)?;
                 let dst = self.translate_operand(span, dst)?;
                 let count = self.translate_operand(span, count)?;
-                Some(RawStatement::CopyNonOverlapping(Box::new(
+                Some(StatementKind::CopyNonOverlapping(Box::new(
                     CopyNonOverlapping { src, dst, count },
                 )))
             }
             // This is for the stacked borrows memory model.
-            StatementKind::Retag(_, _) => None,
+            hax::StatementKind::Retag(_, _) => None,
             // These two are only there to make borrow-checking accept less code, and are removed
             // in later MIRs.
-            StatementKind::FakeRead(..) | StatementKind::PlaceMention(..) => None,
+            hax::StatementKind::FakeRead(..) | hax::StatementKind::PlaceMention(..) => None,
             // There are user-provided type annotations with no semantic effect (since we get a
             // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
             // really use promoted MIR)).
-            StatementKind::AscribeUserType(_, _) => None,
+            hax::StatementKind::AscribeUserType(_, _) => None,
             // Used for coverage instrumentation.
-            StatementKind::Coverage(_) => None,
+            hax::StatementKind::Coverage(_) => None,
             // Used in the interpreter to check that const code doesn't run for too long or even
             // indefinitely.
-            StatementKind::ConstEvalCounter => None,
+            hax::StatementKind::ConstEvalCounter => None,
             // Semantically equivalent to `Nop`, used only for rustc lints.
-            StatementKind::BackwardIncompatibleDropHint { .. } => None,
-            StatementKind::Nop => None,
+            hax::StatementKind::BackwardIncompatibleDropHint { .. } => None,
+            hax::StatementKind::Nop => None,
         };
 
         // Add the span information
@@ -800,10 +800,10 @@ impl BodyTransCtx<'_, '_, '_> {
 
         // Translate the terminator
         use hax::TerminatorKind;
-        let t_terminator: RawTerminator = match &terminator.kind {
+        let t_terminator: ullbc_ast::TerminatorKind = match &terminator.kind {
             TerminatorKind::Goto { target } => {
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::SwitchInt {
                 discr,
@@ -817,16 +817,18 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(span, &discr_ty, targets, otherwise)?;
 
-                RawTerminator::Switch { discr, targets }
+                ullbc_ast::TerminatorKind::Switch { discr, targets }
             }
-            TerminatorKind::UnwindResume => RawTerminator::UnwindResume,
+            TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
             TerminatorKind::UnwindTerminate { .. } => {
-                RawTerminator::Abort(AbortKind::UnwindTerminate)
+                ullbc_ast::TerminatorKind::Abort(AbortKind::UnwindTerminate)
             }
-            TerminatorKind::Return => RawTerminator::Return,
+            TerminatorKind::Return => ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
-            TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
+            TerminatorKind::Unreachable => {
+                ullbc_ast::TerminatorKind::Abort(AbortKind::UndefinedBehavior)
+            }
             TerminatorKind::Drop {
                 place,
                 impl_expr,
@@ -836,9 +838,9 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 let place = self.translate_place(span, place)?;
                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                statements.push(Statement::new(span, RawStatement::Drop(place, tref)));
+                statements.push(Statement::new(span, StatementKind::Drop(place, tref)));
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::Call {
                 fun,
@@ -861,9 +863,9 @@ impl BodyTransCtx<'_, '_, '_> {
                     expected: *expected,
                     on_failure: AbortKind::Panic(None),
                 };
-                statements.push(Statement::new(span, RawStatement::Assert(assert)));
+                statements.push(Statement::new(span, StatementKind::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -882,7 +884,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Also note that they are used in some passes, and not in some others
                 // (they are present in mir_promoted, but not mir_optimized).
                 let target = self.translate_basic_block_id(*real_target);
-                RawTerminator::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::FalseUnwind {
                 real_target,
@@ -890,7 +892,7 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 // We consider this to be a goto
                 let target = self.translate_basic_block_id(*real_target);
-                RawTerminator::Goto { target }
+                ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
                 raise_error!(self, span, "Inline assembly is not supported");
@@ -979,7 +981,7 @@ impl BodyTransCtx<'_, '_, '_> {
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
         unwind: &UnwindAction,
-    ) -> Result<RawTerminator, Error> {
+    ) -> Result<TerminatorKind, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"
         // call to a top-level function identified by its id, or if we
@@ -1007,7 +1009,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     // I don't know in which other cases it can be `None`.
                     assert!(target.is_none());
                     // We ignore the arguments
-                    return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
+                    return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
                 } else {
                     let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
                     FnOperand::Regular(fn_ptr)
@@ -1037,27 +1039,28 @@ impl BodyTransCtx<'_, '_, '_> {
             Some(target) => self.translate_basic_block_id(*target),
             None => {
                 let abort =
-                    Terminator::new(span, RawTerminator::Abort(AbortKind::UndefinedBehavior));
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
                 self.blocks.push(abort.into_block())
             }
         };
         let on_unwind = match unwind {
             UnwindAction::Continue => {
-                let unwind_continue = Terminator::new(span, RawTerminator::UnwindResume);
+                let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
                 self.blocks.push(unwind_continue.into_block())
             }
             UnwindAction::Unreachable => {
                 let abort =
-                    Terminator::new(span, RawTerminator::Abort(AbortKind::UndefinedBehavior));
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
                 self.blocks.push(abort.into_block())
             }
             UnwindAction::Terminate(..) => {
-                let abort = Terminator::new(span, RawTerminator::Abort(AbortKind::UnwindTerminate));
+                let abort =
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
                 self.blocks.push(abort.into_block())
             }
             UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
         };
-        Ok(RawTerminator::Call {
+        Ok(TerminatorKind::Call {
             call,
             target,
             on_unwind,

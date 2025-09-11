@@ -24,7 +24,7 @@ impl UllbcPass for Transform {
                     .statements
                     .iter()
                     .all(|st| st.content.is_storage_live())
-                    && let RawTerminator::Abort(abort) = &block.terminator.content
+                    && let TerminatorKind::Abort(abort) = &block.terminator.content
                 {
                     Some((bid, abort.clone()))
                 } else {
@@ -35,7 +35,7 @@ impl UllbcPass for Transform {
 
         for block in b.body.iter_mut() {
             match &block.terminator.content {
-                RawTerminator::Switch {
+                TerminatorKind::Switch {
                     discr: _,
                     targets: SwitchTargets::If(bid0, bid1),
                 } => {
@@ -49,12 +49,12 @@ impl UllbcPass for Transform {
 
                     let content = std::mem::replace(
                         &mut block.terminator.content,
-                        RawTerminator::Goto { target: nbid },
+                        TerminatorKind::Goto { target: nbid },
                     );
                     let (discr, _) = content.as_switch().unwrap();
                     block.statements.push(Statement::new(
                         block.terminator.span,
-                        RawStatement::Assert(Assert {
+                        StatementKind::Assert(Assert {
                             cond: discr.clone(),
                             expected,
                             on_failure: abort.clone(),

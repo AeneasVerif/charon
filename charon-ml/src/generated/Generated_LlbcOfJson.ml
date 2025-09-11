@@ -14,8 +14,35 @@ and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
         Ok ({ span; statements } : block)
     | _ -> Error "")
 
-and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
-    (raw_statement, string) result =
+and statement_of_json (ctx : of_json_ctx) (js : json) :
+    (statement, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("span", span);
+          ("id", id);
+          ("content", content);
+          ("comments_before", comments_before);
+        ] ->
+        let* span = span_of_json ctx span in
+        let* statement_id = statement_id_of_json ctx id in
+        let* content = statement_kind_of_json ctx content in
+        let* comments_before =
+          list_of_json string_of_json ctx comments_before
+        in
+        Ok ({ span; statement_id; content; comments_before } : statement)
+    | _ -> Error "")
+
+and statement_id_of_json (ctx : of_json_ctx) (js : json) :
+    (statement_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> StatementId.id_of_json ctx x
+    | _ -> Error "")
+
+and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (statement_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
@@ -70,33 +97,6 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (Error error)
-    | _ -> Error "")
-
-and statement_of_json (ctx : of_json_ctx) (js : json) :
-    (statement, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("span", span);
-          ("id", id);
-          ("content", content);
-          ("comments_before", comments_before);
-        ] ->
-        let* span = span_of_json ctx span in
-        let* statement_id = statement_id_of_json ctx id in
-        let* content = raw_statement_of_json ctx content in
-        let* comments_before =
-          list_of_json string_of_json ctx comments_before
-        in
-        Ok ({ span; statement_id; content; comments_before } : statement)
-    | _ -> Error "")
-
-and statement_id_of_json (ctx : of_json_ctx) (js : json) :
-    (statement_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> StatementId.id_of_json ctx x
     | _ -> Error "")
 
 and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =

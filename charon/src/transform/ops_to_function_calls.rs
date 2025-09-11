@@ -10,7 +10,7 @@ use super::ctx::LlbcPass;
 fn transform_st(s: &mut Statement) {
     match &s.content {
         // Transform the ArrayToSlice unop
-        RawStatement::Assign(
+        StatementKind::Assign(
             p,
             Rvalue::UnaryOp(
                 UnOp::Cast(CastKind::Unsize(src_ty, tgt_ty, UnsizingMetadata::Length(_))),
@@ -51,7 +51,7 @@ fn transform_st(s: &mut Statement) {
                     func: Box::new(func),
                     generics: Box::new(generics),
                 });
-                s.content = RawStatement::Call(Call {
+                s.content = StatementKind::Call(Call {
                     func,
                     args: vec![op.clone()],
                     dest: p.clone(),
@@ -59,7 +59,7 @@ fn transform_st(s: &mut Statement) {
             }
         }
         // Transform the array aggregates to function calls
-        RawStatement::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
+        StatementKind::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let id = BuiltinFunId::ArrayRepeat;
@@ -74,14 +74,14 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = RawStatement::Call(Call {
+            s.content = StatementKind::Call(Call {
                 func,
                 args: vec![op.clone()],
                 dest: p.clone(),
             });
         }
         // Transform the raw pointer aggregate to a function call
-        RawStatement::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
+        StatementKind::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
             let id = BuiltinFunId::PtrFromParts(is_mut.clone());
             let func = FunIdOrTraitMethodRef::mk_builtin(id);
             let generics = GenericArgs::new(
@@ -95,7 +95,7 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = RawStatement::Call(Call {
+            s.content = StatementKind::Call(Call {
                 func,
                 args: ops.clone(),
                 dest: p.clone(),
