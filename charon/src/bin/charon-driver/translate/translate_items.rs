@@ -680,6 +680,8 @@ impl ItemTransCtx<'_, '_> {
                     let ty = self.translate_ty(item_span, ty)?;
                     consts.push((item_name.clone(), ty));
                 }
+                // Monomorphic traits have no associated types.
+                hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
                 hax::FullDefKind::AssocTy { param_env, .. }
                     if !param_env.generics.params.is_empty() =>
                 {
@@ -890,6 +892,8 @@ impl ItemTransCtx<'_, '_> {
                     };
                     consts.push((name, gref));
                 }
+                // Monomorphic traits have no associated types.
+                hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
                 hax::FullDefKind::AssocTy { param_env, .. }
                     if !param_env.generics.params.is_empty() =>
                 {
@@ -1057,17 +1061,20 @@ impl ItemTransCtx<'_, '_> {
 
         let mut types = vec![];
         let mut type_clauses = vec![];
-        let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
-            hax::AssocKind::Type { .. } => true,
-            _ => false,
-        });
-        for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
-            let name = self.t_ctx.translate_trait_item_name(&assoc.def_id)?;
-            let ty = self.translate_ty(span, ty)?;
-            types.push((name.clone(), ty.clone()));
-            if !self.monomorphize() {
-                let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
-                type_clauses.push((name.clone(), trait_refs));
+        // Monomorphic traits have no associated types.
+        if !self.monomorphize() {
+            let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
+                hax::AssocKind::Type { .. } => true,
+                _ => false,
+            });
+            for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
+                let name = self.t_ctx.translate_trait_item_name(&assoc.def_id)?;
+                let ty = self.translate_ty(span, ty)?;
+                types.push((name.clone(), ty.clone()));
+                if !self.monomorphize() {
+                    let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
+                    type_clauses.push((name.clone(), trait_refs));
+                }
             }
         }
 
