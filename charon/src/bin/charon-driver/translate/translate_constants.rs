@@ -76,14 +76,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     None
                 };
-                charon_lib::ast::expressions::ConstantExprKind::Adt(vid, fields)
+                expressions::ConstantExprKind::Adt(vid, fields)
             }
             ConstantExprKind::Array { fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|x| self.translate_constant_expr_to_constant_expr(span, x))
                     .try_collect()?;
-                charon_lib::ast::expressions::ConstantExprKind::Array(fields)
+                expressions::ConstantExprKind::Array(fields)
             }
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -91,26 +91,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, f))
                     .try_collect()?;
-                charon_lib::ast::expressions::ConstantExprKind::Adt(None, fields)
+                expressions::ConstantExprKind::Adt(None, fields)
             }
             ConstantExprKind::TraitConst { impl_expr, name } => {
                 let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
                 let name = TraitItemName(name.clone());
-                charon_lib::ast::expressions::ConstantExprKind::TraitConst(trait_ref, name)
+                expressions::ConstantExprKind::TraitConst(trait_ref, name)
             }
             ConstantExprKind::GlobalName(item) => {
                 let global_ref = self.translate_global_decl_ref(span, item)?;
-                charon_lib::ast::expressions::ConstantExprKind::Global(global_ref)
+                expressions::ConstantExprKind::Global(global_ref)
             }
             ConstantExprKind::Borrow(v)
                 if let ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
                     v.contents.as_ref() =>
             {
-                charon_lib::ast::expressions::ConstantExprKind::Literal(Literal::Str(s.clone()))
+                expressions::ConstantExprKind::Literal(Literal::Str(s.clone()))
             }
             ConstantExprKind::Borrow(v) => {
                 let val = self.translate_constant_expr_to_constant_expr(span, v)?;
-                charon_lib::ast::expressions::ConstantExprKind::Ref(Box::new(val))
+                expressions::ConstantExprKind::Ref(Box::new(val))
             }
             ConstantExprKind::Cast { .. } => {
                 register_error!(
@@ -118,29 +118,27 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     span,
                     "Unsupported constant: `ConstantExprKind::Cast {{..}}`",
                 );
-                charon_lib::ast::expressions::ConstantExprKind::Opaque(
-                    "`ConstantExprKind::Cast {{..}}`".into(),
-                )
+                expressions::ConstantExprKind::Opaque("`ConstantExprKind::Cast {{..}}`".into())
             }
             ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr_to_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(*mutability);
-                charon_lib::ast::expressions::ConstantExprKind::Ptr(rk, Box::new(arg))
+                expressions::ConstantExprKind::Ptr(rk, Box::new(arg))
             }
             ConstantExprKind::ConstRef { id } => {
                 let var = self.lookup_const_generic_var(span, id)?;
-                charon_lib::ast::expressions::ConstantExprKind::Var(var)
+                expressions::ConstantExprKind::Var(var)
             }
             ConstantExprKind::FnPtr(item) => {
                 let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
-                charon_lib::ast::expressions::ConstantExprKind::FnPtr(fn_ptr)
+                expressions::ConstantExprKind::FnPtr(fn_ptr)
             }
             ConstantExprKind::Memory(bytes) => {
-                charon_lib::ast::expressions::ConstantExprKind::RawMemory(bytes.clone())
+                expressions::ConstantExprKind::RawMemory(bytes.clone())
             }
             ConstantExprKind::Todo(msg) => {
                 register_error!(self, span, "Unsupported constant: {:?}", msg);
-                charon_lib::ast::expressions::ConstantExprKind::Opaque(msg.into())
+                expressions::ConstantExprKind::Opaque(msg.into())
             }
         };
 
