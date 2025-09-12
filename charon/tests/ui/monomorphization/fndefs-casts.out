@@ -110,7 +110,6 @@ pub trait FnOnce::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'_0> foo::<u32><'_0_0>>
     parent_clause1 : [@TraitClause1]: Sized::<(&'_ (u32))>
     parent_clause2 : [@TraitClause2]: Tuple::<(&'_ (u32))>
-    type Output
     fn call_once = call_once::<for<'_0> foo::<u32><'_0_0>, (&'_ (u32))>
     non-dyn-compatible
 }

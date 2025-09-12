@@ -1,0 +1,11 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:426:14:
+trait should be dyn-compatible
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::{impl#4}`.
+  --> tests/ui/dyn-with-diamond-supertraits.rs:47:1
+   |
+47 | impl Join<i32> for i32 {
+   | ^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
