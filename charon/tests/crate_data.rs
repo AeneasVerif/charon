@@ -1,10 +1,9 @@
 #![feature(box_patterns)]
 
+use charon_lib::llbc_ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::error::Error;
-
-use charon_lib::llbc_ast::*;
 
 mod util;
 use util::*;
@@ -368,26 +367,26 @@ fn discriminants() -> anyhow::Result<()> {
         }
         "#,
     )?;
-    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<ScalarValue> {
+    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<Literal> {
         ty.kind
             .as_enum()
             .unwrap()
             .iter()
-            .map(|v| v.discriminant)
+            .map(|v| v.discriminant.clone())
             .collect()
     }
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[0]),
         vec![
-            ScalarValue::Signed(IntTy::Isize, 0),
-            ScalarValue::Signed(IntTy::Isize, 1)
+            Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
+            Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 1))
         ]
     );
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[1]),
         vec![
-            ScalarValue::Unsigned(UIntTy::U32, 3),
-            ScalarValue::Unsigned(UIntTy::U32, 42)
+            Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
+            Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
         ]
     );
     Ok(())

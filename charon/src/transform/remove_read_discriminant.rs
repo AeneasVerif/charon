@@ -87,9 +87,9 @@ impl Transform {
                         ] => {
                             // Convert between discriminants and variant indices. Remark: the discriminant can
                             // be of any *signed* integer type (`isize`, `i8`, etc.).
-                            let discr_to_id: HashMap<ScalarValue, VariantId> = variants
+                            let discr_to_id: HashMap<Literal, VariantId> = variants
                                 .iter_indexed_values()
-                                .map(|(id, variant)| (variant.discriminant, id))
+                                .map(|(id, variant)| (variant.discriminant.clone(), id))
                                 .collect();
 
                             take_mut::take(switch, |switch| {
@@ -100,7 +100,7 @@ impl Transform {
                                 };
                                 assert!(op_p.is_local() && op_p.local_id() == dest.local_id());
 
-                                let mut covered_discriminants: HashSet<ScalarValue> =
+                                let mut covered_discriminants: HashSet<Literal> =
                                     HashSet::default();
                                 let targets = targets
                                     .into_iter()
@@ -108,7 +108,7 @@ impl Transform {
                                         let targets = v
                                             .into_iter()
                                             .filter_map(|discr| {
-                                                covered_discriminants.insert(discr);
+                                                covered_discriminants.insert(discr.clone());
                                                 discr_to_id.get(&discr).or_else(|| {
                                                     register_error!(
                                                         ctx,
