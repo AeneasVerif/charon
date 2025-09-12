@@ -1531,6 +1531,36 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ target_pointer_size; is_little_endian } : target_info)
     | _ -> Error "")
 
+and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_assoc_const, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("name", name); ("ty", ty); ("default", default) ] ->
+        let* name = trait_item_name_of_json ctx name in
+        let* ty = ty_of_json ctx ty in
+        let* default = option_of_json global_decl_ref_of_json ctx default in
+        Ok ({ name; ty; default } : trait_assoc_const)
+    | _ -> Error "")
+
+and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_assoc_ty, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("name", name); ("default", default); ("implied_clauses", _) ] ->
+        let* name = trait_item_name_of_json ctx name in
+        let* default = option_of_json ty_of_json ctx default in
+        Ok ({ name; default } : trait_assoc_ty)
+    | _ -> Error "")
+
+and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_assoc_ty_impl, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("value", value); ("implied_trait_refs", _) ] ->
+        let* value = ty_of_json ctx value in
+        Ok ({ value } : trait_assoc_ty_impl)
+    | _ -> Error "")
+
 and trait_clause_of_json (ctx : of_json_ctx) (js : json) :
     (trait_clause, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1566,10 +1596,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("generics", generics);
           ("parent_clauses", parent_clauses);
           ("consts", consts);
-          ("const_defaults", _);
           ("types", types);
-          ("type_defaults", _);
-          ("type_clauses", _);
           ("methods", methods);
           ("vtable", vtable);
         ] ->
@@ -1580,17 +1607,10 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
             parent_clauses
         in
-        let* consts =
-          list_of_json
-            (pair_of_json trait_item_name_of_json ty_of_json)
-            ctx consts
-        in
-        let* types = list_of_json trait_item_name_of_json ctx types in
+        let* consts = list_of_json trait_assoc_const_of_json ctx consts in
+        let* types = list_of_json trait_assoc_ty_of_json ctx types in
         let* methods =
-          list_of_json
-            (pair_of_json trait_item_name_of_json
-               (binder_of_json fun_decl_ref_of_json))
-            ctx methods
+          list_of_json (binder_of_json trait_method_of_json) ctx methods
         in
         let* vtable = option_of_json type_decl_ref_of_json ctx vtable in
         Ok
@@ -1637,7 +1657,6 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
           ("parent_trait_refs", parent_trait_refs);
           ("consts", consts);
           ("types", types);
-          ("type_clauses", _);
           ("methods", methods);
           ("vtable", vtable);
         ] ->
@@ -1656,7 +1675,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* types =
           list_of_json
-            (pair_of_json trait_item_name_of_json ty_of_json)
+            (pair_of_json trait_item_name_of_json trait_assoc_ty_impl_of_json)
             ctx types
         in
         let* methods =
@@ -1705,6 +1724,16 @@ and trait_item_name_of_json (ctx : of_json_ctx) (js : json) :
     | x -> string_of_json ctx x
     | _ -> Error "")
 
+and trait_method_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_method, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("name", name); ("item", item) ] ->
+        let* name = trait_item_name_of_json ctx name in
+        let* item = fun_decl_ref_of_json ctx item in
+        Ok ({ name; item } : trait_method)
+    | _ -> Error "")
+
 and trait_ref_of_json (ctx : of_json_ctx) (js : json) :
     (trait_ref, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1746,8 +1775,7 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* types =
           list_of_json
-            (triple_of_json trait_item_name_of_json ty_of_json
-               (vector_of_json trait_clause_id_of_json trait_ref_of_json))
+            (pair_of_json trait_item_name_of_json trait_assoc_ty_impl_of_json)
             ctx types
         in
         Ok (BuiltinOrAuto (parent_trait_refs, types))

@@ -4,7 +4,6 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
 use derive_generic_visitor::{Drive, DriveMut};
-use indexmap::IndexMap;
 use macros::{EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 
@@ -263,32 +262,52 @@ pub struct TraitDecl {
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
     pub parent_clauses: Vector<TraitClauseId, TraitClause>,
-    /// The associated constants declared in the trait, along with their type.
-    pub consts: Vec<(TraitItemName, Ty)>,
-    /// Records associated constants that have a default value.
-    #[charon::opaque]
-    pub const_defaults: IndexMap<TraitItemName, GlobalDeclRef>,
+    /// The associated constants declared in the trait.
+    pub consts: Vec<TraitAssocConst>,
     /// The associated types declared in the trait.
-    pub types: Vec<TraitItemName>,
-    /// Records associated types that have a default value.
-    #[charon::opaque]
-    pub type_defaults: IndexMap<TraitItemName, Ty>,
-    /// List of trait clauses that apply to each associated type. This is used during translation,
-    /// but the `lift_associated_item_clauses` pass moves them to be parent clauses later. Hence
-    /// this is empty after that pass.
-    /// TODO: Do this as we translate to avoid the need to store this vector.
-    #[charon::opaque]
-    pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitClause>)>,
-    /// The methods declared by the trait. The signature of the methods can be found in each
-    /// corresponding `FunDecl`. These `FunDecl` may have a body if the trait provided a default
-    /// implementation for that method; otherwise it has an `Opaque` body.
+    pub types: Vec<TraitAssocTy>,
+    /// The methods declared by the trait. The binder binds the generic parameters of the method.
     ///
-    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
-    /// provides a full list of arguments to the pointed-to function.
-    pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// ```rust
+    /// trait Trait<T> {
+    ///   // The `Binder` for this method binds `'a` and `U`.
+    ///   fn method<'a, U>(x: &'a U);
+    /// }
+    /// ```
+    pub methods: Vec<Binder<TraitMethod>>,
     /// The virtual table struct for this trait, if it has one.
     /// It is guaranteed that the trait has a vtable iff it is dyn-compatible.
     pub vtable: Option<TypeDeclRef>,
+}
+
+/// An associated constant in a trait.
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct TraitAssocConst {
+    pub name: TraitItemName,
+    pub ty: Ty,
+    pub default: Option<GlobalDeclRef>,
+}
+
+/// An associated type in a trait.
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct TraitAssocTy {
+    pub name: TraitItemName,
+    pub default: Option<Ty>,
+    /// List of trait clauses that apply to this type. This is used during translation, but the
+    /// `lift_associated_item_clauses` pass moves them to be parent clauses later. Hence this is
+    /// empty after that pass.
+    #[charon::opaque]
+    pub implied_clauses: Vector<TraitClauseId, TraitClause>,
+}
+
+/// A trait method.
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct TraitMethod {
+    pub name: TraitItemName,
+    /// Each method declaration is represented by a function item. That function contains the
+    /// signature of the method as well as information like attributes. It has a body iff the
+    /// method declaration has a default implementation; otherwise it has an `Opaque` body.
+    pub item: FunDeclRef,
 }
 
 /// A trait **implementation**.
@@ -313,19 +332,25 @@ pub struct TraitImpl {
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
-    /// The associated constants declared in the trait.
+    /// The implemented associated constants.
     pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
-    /// The associated types declared in the trait.
-    pub types: Vec<(TraitItemName, Ty)>,
-    /// The `Vec` corresponds to the same `Vector` in `TraitDecl`. In the same way, this is
-    /// empty after the `lift_associated_item_clauses` pass.
-    #[charon::opaque]
-    pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
+    /// The implemented associated types.
+    pub types: Vec<(TraitItemName, TraitAssocTyImpl)>,
     /// The implemented methods
     pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
     /// The virtual table instance for this trait implementation. This is `Some` iff the trait is
     /// dyn-compatible.
     pub vtable: Option<GlobalDeclRef>,
+}
+
+/// The value of a trait associated type.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+pub struct TraitAssocTyImpl {
+    pub value: Ty,
+    /// The `Vec` corresponds to the same `Vector` in `TraitAssocTy`. In the same way, this is
+    /// empty after the `lift_associated_item_clauses` pass.
+    #[charon::opaque]
+    pub implied_trait_refs: Vector<TraitClauseId, TraitRef>,
 }
 
 /// A function operand is used in function calls.

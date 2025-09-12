@@ -34,12 +34,12 @@ impl TransformPass for Transform {
             // Borrow shared to get access to the rest of the crate.
             let timpl = ctx.translated.trait_impls.get(impl_id).unwrap();
             let mut methods = vec![];
-            for (name, decl_fn_ref) in &tdecl.methods {
-                if let Some(kv) = methods_map.remove_entry(name) {
+            for bound_method in &tdecl.methods {
+                if let Some(kv) = methods_map.remove_entry(bound_method.name()) {
                     methods.push(kv);
                     continue;
                 }
-                let declared_fun_id = decl_fn_ref.skip_binder.id;
+                let declared_fun_id = bound_method.skip_binder.item.id;
                 let declared_fun_name = ctx.translated.item_name(declared_fun_id).unwrap();
                 let new_fun_name = {
                     let mut item_name = timpl.item_meta.name.clone();
@@ -55,7 +55,7 @@ impl TransformPass for Transform {
                     .insert(new_fun_id.into(), new_fun_name.clone());
 
                 // Substitute the method reference to be valid in the context of the impl.
-                let bound_fn = decl_fn_ref
+                let bound_method = bound_method
                     .clone()
                     .substitute_with_self(&timpl.impl_trait.generics, &self_predicate.kind);
                 // The new function item has for params the concatenation of impl params and method
@@ -69,27 +69,29 @@ impl TransformPass for Transform {
                                 .generics
                                 .identity_args_at_depth(DeBruijnId::one())
                                 .concat(
-                                    &bound_fn.params.identity_args_at_depth(DeBruijnId::zero()),
+                                    &bound_method
+                                        .params
+                                        .identity_args_at_depth(DeBruijnId::zero()),
                                 ),
                         ),
                     },
-                    params: bound_fn.params.clone(),
-                    kind: bound_fn.kind.clone(),
+                    params: bound_method.params.clone(),
+                    kind: bound_method.kind.clone(),
                 };
-                methods.push((name.clone(), new_fn_ref));
+                methods.push((bound_method.name().clone(), new_fn_ref));
 
                 if let Some(fun_decl) = ctx.translated.fun_decls.get(declared_fun_id)
                     && !opacity.is_invisible()
                 {
-                    let bound_fn = Binder {
+                    let bound_method = Binder {
                         params: timpl.generics.clone(),
-                        skip_binder: bound_fn,
+                        skip_binder: bound_method,
                         kind: BinderKind::Other,
                     };
                     // Flatten into a single binder level. This gives us the concatenated
                     // parameters that we'll use for the new function item, and the arguments to
                     // pass to the old function item.
-                    let bound_fn = bound_fn.flatten();
+                    let bound_method = bound_method.flatten();
                     // Create a copy of the provided method and update all the relevant data.
                     let FunDecl {
                         def_id: _,
@@ -110,13 +112,13 @@ impl TransformPass for Transform {
                         ..item_meta
                     };
                     let signature = FunSig {
-                        generics: bound_fn.params,
+                        generics: bound_method.params,
                         inputs: signature.inputs.substitute_with_self(
-                            &bound_fn.skip_binder.generics,
+                            &bound_method.skip_binder.item.generics,
                             &self_predicate.kind,
                         ),
                         output: signature.output.substitute_with_self(
-                            &bound_fn.skip_binder.generics,
+                            &bound_method.skip_binder.item.generics,
                             &self_predicate.kind,
                         ),
                         ..signature
@@ -130,7 +132,7 @@ impl TransformPass for Transform {
                         ItemKind::TraitImpl {
                             impl_ref: self_impl_ref.clone(),
                             trait_ref: trait_ref.substitute_with_self(
-                                &bound_fn.skip_binder.generics,
+                                &bound_method.skip_binder.item.generics,
                                 &self_predicate.kind,
                             ),
                             item_name,
@@ -141,7 +143,7 @@ impl TransformPass for Transform {
                     };
                     let body = if opacity.is_transparent() {
                         body.substitute_with_self(
-                            &bound_fn.skip_binder.generics,
+                            &bound_method.skip_binder.item.generics,
                             &self_predicate.kind,
                         )
                     } else {

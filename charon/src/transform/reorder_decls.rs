@@ -401,10 +401,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     generics,
                     parent_clauses,
                     consts,
-                    const_defaults,
                     types,
-                    type_defaults,
-                    type_clauses,
                     methods,
                     vtable,
                 } = d;
@@ -413,22 +410,27 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
 
                 // Visit the parent clauses
                 let _ = parent_clauses.drive(&mut graph);
-                assert!(type_clauses.is_empty());
 
                 // Visit the items
-                let _ = consts.drive(&mut graph);
                 let _ = types.drive(&mut graph);
-                let _ = type_defaults.drive(&mut graph);
                 let _ = vtable.drive(&mut graph);
 
                 // We consider that a trait decl only contains the function/constant signatures.
                 // Therefore we don't explore the default const/method ids.
-                for (_name, gref) in const_defaults {
-                    let _ = gref.generics.drive(&mut graph);
+                for assoc_const in consts {
+                    let TraitAssocConst {
+                        name: _,
+                        ty,
+                        default,
+                    } = assoc_const;
+                    let _ = ty.drive(&mut graph);
+                    if let Some(gref) = default {
+                        let _ = gref.generics.drive(&mut graph);
+                    }
                 }
-                for (_, bound_fn) in methods {
-                    let id = bound_fn.skip_binder.id;
-                    let _ = bound_fn.params.drive(&mut graph);
+                for bound_method in methods {
+                    let id = bound_method.skip_binder.item.id;
+                    let _ = bound_method.params.drive(&mut graph);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
                         let _ = decl.signature.drive(&mut graph);
                     }

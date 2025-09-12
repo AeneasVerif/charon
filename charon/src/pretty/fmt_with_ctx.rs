@@ -132,17 +132,27 @@ impl<C: AstFormatter> FmtWithCtx<C> for Assert {
 }
 
 impl<T> Binder<T> {
-    /// Format the parameters and contents of this binder and returns the resulting strings. Note:
-    /// this assumes the binder fully replaces the existing generics.
+    /// Format the parameters and contents of this binder and returns the resulting strings.
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
         C: AstFormatter,
         T: FmtWithCtx<C::Reborrow<'a>>,
     {
+        self.fmt_split_with(ctx, |ctx, x| x.to_string_with_ctx(ctx))
+    }
+    /// Format the parameters and contents of this binder and returns the resulting strings.
+    fn fmt_split_with<'a, C>(
+        &'a self,
+        ctx: &'a C,
+        fmt_inner: impl FnOnce(&C::Reborrow<'a>, &T) -> String,
+    ) -> (String, String)
+    where
+        C: AstFormatter,
+    {
         let ctx = &ctx.push_binder(Cow::Borrowed(&self.params));
         (
             self.params.fmt_with_ctx_single_line(ctx),
-            self.skip_binder.to_string_with_ctx(ctx),
+            fmt_inner(ctx, &self.skip_binder),
         )
     }
 }
@@ -1533,10 +1543,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         write!(f, "{generics}{clauses}")?;
 
         let any_item = !self.parent_clauses.is_empty()
-            || !self.type_clauses.is_empty()
             || !self.consts.is_empty()
             || !self.types.is_empty()
-            || self.methods().count() > 0;
+            || !self.methods.is_empty();
         if any_item {
             write!(f, "\n{{\n")?;
             for c in &self.parent_clauses {
@@ -1547,25 +1556,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                     c.with_ctx(ctx)
                 )?;
             }
-            for (name, clauses) in &self.type_clauses {
-                for c in clauses {
-                    writeln!(
-                        f,
-                        "{TAB_INCR}item_clause_{name}_{} : {}",
-                        c.clause_id.to_string(),
-                        c.with_ctx(ctx)
-                    )?;
-                }
-            }
-            for (name, ty) in &self.consts {
-                let ty = ty.with_ctx(ctx);
+            for assoc_const in &self.consts {
+                let name = &assoc_const.name;
+                let ty = assoc_const.ty.with_ctx(ctx);
                 writeln!(f, "{TAB_INCR}const {name} : {ty}")?;
             }
-            for name in &self.types {
+            for assoc_ty in &self.types {
+                let name = &assoc_ty.name;
                 writeln!(f, "{TAB_INCR}type {name}")?;
             }
-            for (name, bound_fn) in self.methods() {
-                let (params, fn_ref) = bound_fn.fmt_split(ctx);
+            for method in self.methods() {
+                let name = method.name();
+                let (params, fn_ref) =
+                    method.fmt_split_with(ctx, |ctx, method| method.item.to_string_with_ctx(ctx));
                 writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
             }
             if let Some(vtb_ref) = &self.vtable {
@@ -1630,27 +1633,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         write!(f, "{newline}{{")?;
 
         let any_item = !self.parent_trait_refs.is_empty()
-            || !self.type_clauses.is_empty()
             || !self.consts.is_empty()
             || !self.types.is_empty()
-            || self.methods().count() > 0;
+            || !self.methods.is_empty();
         if any_item {
             writeln!(f)?;
             for (i, c) in self.parent_trait_refs.iter().enumerate() {
                 let i = TraitClauseId::new(i);
                 writeln!(f, "{TAB_INCR}parent_clause{i} = {}", c.with_ctx(ctx))?;
             }
-            for (name, clauses) in &self.type_clauses {
-                for (i, c) in clauses.iter().enumerate() {
-                    let i = TraitClauseId::new(i);
-                    writeln!(f, "{TAB_INCR}item_clause_{name}_{i} = {}", c.with_ctx(ctx))?;
-                }
-            }
             for (name, global) in &self.consts {
                 writeln!(f, "{TAB_INCR}const {name} = {}", global.with_ctx(ctx))?;
             }
-            for (name, ty) in &self.types {
-                writeln!(f, "{TAB_INCR}type {name} = {}", ty.with_ctx(ctx))?;
+            for (name, assoc_ty) in &self.types {
+                writeln!(
+                    f,
+                    "{TAB_INCR}type {name} = {}",
+                    assoc_ty.value.with_ctx(ctx)
+                )?;
             }
             for (name, bound_fn) in self.methods() {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
@@ -1711,8 +1711,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                 if !types.is_empty() {
                     let types = types
                         .iter()
-                        .map(|(name, ty, _)| {
-                            let ty = ty.with_ctx(ctx);
+                        .map(|(name, assoc_ty)| {
+                            let ty = assoc_ty.value.with_ctx(ctx);
                             format!("{name}  = {ty}")
                         })
                         .join(", ");

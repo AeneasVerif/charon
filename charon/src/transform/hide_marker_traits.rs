@@ -55,8 +55,8 @@ impl VisitAstMut for RemoveMarkersVisitor {
         } = x
         {
             self.filter_trait_refs(parent_trait_refs);
-            for (_, _, trait_refs) in types {
-                self.filter_trait_refs(trait_refs);
+            for (_, assoc_ty) in types {
+                self.filter_trait_refs(&mut assoc_ty.implied_trait_refs);
             }
         }
     }

@@ -384,6 +384,9 @@ and region_id = (RegionId.id[@visitors.opaque])
 (** A region variable in a signature or binder. *)
 and region_var = (region_id, string option) indexed_var
 
+(** The value of a trait associated type. *)
+and trait_assoc_ty_impl = { value : ty }
+
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form
     [TraitRefKind::Clause] can refer to. *)
@@ -461,7 +464,7 @@ and trait_instance_id =
           including trait method declarations. Not present in trait
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
-      trait_ref list * (trait_item_name * ty * trait_ref list) list
+      trait_ref list * (trait_item_name * trait_assoc_ty_impl) list
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.

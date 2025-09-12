@@ -17,26 +17,26 @@ impl TransformPass for Transform {
             TraitDeclId,
             HashMap<TraitItemName, Vector<TraitClauseId, TraitClauseId>>,
         > = ctx.translated.trait_decls.map_ref_mut(|decl| {
-            mem::take(&mut decl.type_clauses)
-                .into_iter()
-                .map(|(name, clauses)| {
-                    let id_map = clauses.map(|mut clause| {
+            decl.types
+                .iter_mut()
+                .map(|assoc_ty| {
+                    let id_map = mem::take(&mut assoc_ty.implied_clauses).map(|mut clause| {
                         decl.parent_clauses.push_with(|id| {
                             clause.clause_id = id;
                             clause
                         })
                     });
-                    (name, id_map)
+                    (assoc_ty.name.clone(), id_map)
                 })
                 .collect()
         });
 
         // Move the item-local trait refs to match what we did in the trait declarations.
         for timpl in ctx.translated.trait_impls.iter_mut() {
-            for (_, refs) in mem::take(&mut timpl.type_clauses) {
-                for trait_ref in refs {
-                    // Note: this assumes that we listed the types in the same order as in the trait
-                    // decl, which we do.
+            for (_, assoc_ty) in &mut timpl.types {
+                for trait_ref in mem::take(&mut assoc_ty.implied_trait_refs) {
+                    // Note: this assumes that we listed the types in the same order as in the
+                    // trait decl, which we do.
                     timpl.parent_trait_refs.push(trait_ref);
                 }
             }
@@ -67,8 +67,8 @@ impl TransformPass for Transform {
                     types,
                     ..
                 } => {
-                    for (_, _, ty_trait_refs) in types {
-                        for tref in std::mem::take(ty_trait_refs) {
+                    for (_, assoc_ty) in types {
+                        for tref in std::mem::take(&mut assoc_ty.implied_trait_refs) {
                             // Note: this assumes that we listed the types in the same order as in
                             // the trait decl, which we do.
                             parent_trait_refs.push(tref);

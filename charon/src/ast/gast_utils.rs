@@ -83,12 +83,18 @@ impl std::ops::IndexMut<LocalId> for Locals {
 }
 
 impl TraitDecl {
-    pub fn methods(&self) -> impl Iterator<Item = &(TraitItemName, Binder<FunDeclRef>)> {
+    pub fn methods(&self) -> impl Iterator<Item = &Binder<TraitMethod>> {
         self.methods.iter()
     }
 }
 impl TraitImpl {
     pub fn methods(&self) -> impl Iterator<Item = &(TraitItemName, Binder<FunDeclRef>)> {
         self.methods.iter()
+    }
+}
+
+impl Binder<TraitMethod> {
+    pub fn name(&self) -> &TraitItemName {
+        &self.skip_binder.name
     }
 }

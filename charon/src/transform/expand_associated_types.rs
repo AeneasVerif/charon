@@ -742,8 +742,8 @@ impl<'a> ComputeItemModifications<'a> {
                 if modifications.add_type_params {
                     // Remove all associated types and turn them into new parameters. We add these
                     // before the paths in `replace` because this gives a better output.
-                    for type_name in &tr.types {
-                        let path = TraitRefPath::self_ref().with_assoc_type(type_name.clone());
+                    for assoc_ty in &tr.types {
+                        let path = TraitRefPath::self_ref().with_assoc_type(assoc_ty.name.clone());
                         modifications.replace_path(path);
                     }
                 }
@@ -816,9 +816,9 @@ impl<'a> ComputeItemModifications<'a> {
                 self.impl_assoc_tys[id] = Processing::Processing;
 
                 let mut set = self.compute_constraint_set(&timpl.generics);
-                for (name, ty) in &timpl.types {
+                for (name, assoc_ty) in &timpl.types {
                     let path = TraitRefPath::self_ref().with_assoc_type(name.clone());
-                    set.insert_path(&path, ty.clone());
+                    set.insert_path(&path, assoc_ty.value.clone());
                 }
                 for (clause_id, tref) in timpl.parent_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
@@ -858,9 +858,9 @@ impl<'a> ComputeItemModifications<'a> {
                 types,
                 ..
             } => {
-                for (name, ty, _) in types.iter().cloned() {
+                for (name, assoc_ty) in types.iter().cloned() {
                     let path = TraitRefPath::self_ref().with_assoc_type(name);
-                    out.push((path, ty));
+                    out.push((path, assoc_ty.value));
                 }
                 for (parent_clause_id, parent_ref) in parent_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(parent_clause_id);
@@ -982,8 +982,8 @@ impl UpdateItemBody<'_> {
             } => match path.pop_first_parent() {
                 None => types
                     .iter()
-                    .find(|(name, _, _)| name == &path.type_name)
-                    .map(|(_, ty, _)| ty.clone()),
+                    .find(|(name, _)| name == &path.type_name)
+                    .map(|(_, assoc_ty)| assoc_ty.value.clone()),
                 Some((parent_clause_id, sub_path)) => {
                     let parent_ref = &parent_trait_refs[parent_clause_id];
                     self.lookup_path_on_trait_ref(&sub_path, &parent_ref.kind)
@@ -1255,11 +1255,11 @@ impl TransformPass for Transform {
                 let modifications = computer.compute_item_modifications(item);
                 item_modifications.insert(GenericsSource::Item(id), modifications);
                 if let AnyTransItem::TraitDecl(tdecl) = item {
-                    for (name, bound_fn) in &tdecl.methods {
+                    for method in &tdecl.methods {
                         let modifications =
-                            computer.compute_non_trait_modifications(&bound_fn.params);
+                            computer.compute_non_trait_modifications(&method.params);
                         item_modifications.insert(
-                            GenericsSource::Method(tdecl.def_id, name.clone()),
+                            GenericsSource::Method(tdecl.def_id, method.skip_binder.name.clone()),
                             modifications,
                         );
                     }
@@ -1292,7 +1292,11 @@ impl TransformPass for Transform {
                 };
                 modifications.compute_replacements(|path| {
                     let new_type_name = TraitItemName(path.to_name());
-                    tr.types.push(new_type_name.clone());
+                    tr.types.push(TraitAssocTy {
+                        name: new_type_name.clone(),
+                        default: None,
+                        implied_clauses: Default::default(),
+                    });
                     TyKind::TraitType(self_tref.clone(), new_type_name).into_ty()
                 })
             } else {
@@ -1328,7 +1332,13 @@ impl TransformPass for Transform {
                         let new_type_name = TraitItemName(path.to_name());
                         if let Some((_, ty)) = type_replacements.find(&path) {
                             trace!("Adding associated type {new_type_name} = {ty:?}");
-                            timpl.types.push((new_type_name, ty.clone()));
+                            timpl.types.push((
+                                new_type_name,
+                                TraitAssocTyImpl {
+                                    value: ty.clone(),
+                                    implied_trait_refs: Default::default(),
+                                },
+                            ));
                         } else {
                             register_error!(
                                 ctx,
