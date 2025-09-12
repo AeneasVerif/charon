@@ -316,8 +316,8 @@ type cli_options = {
       (** If activated, this skips borrow-checking of the crate. *)
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
-          in the crate are translated as normal. To only translate a particular
-          call graph, use [--start-from]. This uses a different mechanism than
+          in the crate are skipped. To only translate a particular call graph,
+          use [--start-from]. This uses a different mechanism than
           [--monomorphize-conservative] which should be a lot more complete, but
           doesn't currently support [dyn Trait]. *)
   monomorphize_conservative : bool;
