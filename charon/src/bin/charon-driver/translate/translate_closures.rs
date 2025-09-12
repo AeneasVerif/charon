@@ -47,7 +47,6 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::Vector;
 use charon_lib::ullbc_ast::*;
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {

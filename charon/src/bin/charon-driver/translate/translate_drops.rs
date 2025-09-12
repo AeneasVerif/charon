@@ -2,7 +2,7 @@ use crate::translate::{translate_bodies::BodyTransCtx, translate_crate::TransIte
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use hax_frontend_exporter::{self as hax, FullDefKind};
+use hax::FullDefKind;
 
 impl ItemTransCtx<'_, '_> {
     fn translate_drop_method_body(

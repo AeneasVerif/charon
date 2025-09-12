@@ -4,7 +4,6 @@ use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
 use hax::{HasParamEnv, Visibility};
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {

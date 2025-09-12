@@ -86,8 +86,8 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 wait-timeout = { version = "0.2.0", optional = true }
 which = "7.0"
 
-hax-frontend-exporter = { git = "https://github.com/AeneasVerif/hax", branch = "main", optional = true }
-# hax-frontend-exporter = { path = "../../hax/frontend/exporter", optional = true }
+hax = { package = "hax-frontend-exporter", git = "https://github.com/AeneasVerif/hax", branch = "main", optional = true }
+# hax = { package = "hax-frontend-exporter", path = "../../hax/frontend/exporter", optional = true }
 macros = { path = "./macros" }
 
 [features]
@@ -95,7 +95,7 @@ default = ["rustc"]
 # This feature enables the translation of rust code into charon's format. When
 # disabled, the binaries won't build but the main crate (with the ast
 # definitions) still does. It is enabled by default.
-rustc = ["dep:hax-frontend-exporter"]
+rustc = ["dep:hax"]
 # This feature enables the `popular-crates` test which runs Charon on the most downloaded crates from crates.io.
 popular-crates-test = [
     "dep:crates_io_api",

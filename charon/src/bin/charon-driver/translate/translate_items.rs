@@ -5,7 +5,6 @@ use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
-use hax_frontend_exporter as hax;
 use indexmap::IndexMap;
 use itertools::Itertools;
 use std::mem;

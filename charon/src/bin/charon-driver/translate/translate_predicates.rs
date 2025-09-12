@@ -3,7 +3,6 @@ use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
-use hax_frontend_exporter as hax;
 
 /// The context in which we are translating a clause, used to generate the appropriate ids and
 /// trait references.
