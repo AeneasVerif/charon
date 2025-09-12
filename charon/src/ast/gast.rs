@@ -264,8 +264,10 @@ pub struct TraitDecl {
     pub parent_clauses: Vector<TraitClauseId, TraitClause>,
     /// The associated constants declared in the trait.
     pub consts: Vec<TraitAssocConst>,
-    /// The associated types declared in the trait.
-    pub types: Vec<TraitAssocTy>,
+    /// The associated types declared in the trait. The binder binds the generic parameters of the
+    /// type if it is a GAT (Generic Associated Type). For a plain associated type the binder binds
+    /// nothing.
+    pub types: Vec<Binder<TraitAssocTy>>,
     /// The methods declared by the trait. The binder binds the generic parameters of the method.
     ///
     /// ```rust
@@ -293,10 +295,7 @@ pub struct TraitAssocConst {
 pub struct TraitAssocTy {
     pub name: TraitItemName,
     pub default: Option<Ty>,
-    /// List of trait clauses that apply to this type. This is used during translation, but the
-    /// `lift_associated_item_clauses` pass moves them to be parent clauses later. Hence this is
-    /// empty after that pass.
-    #[charon::opaque]
+    /// List of trait clauses that apply to this type.
     pub implied_clauses: Vector<TraitClauseId, TraitClause>,
 }
 
@@ -335,7 +334,7 @@ pub struct TraitImpl {
     /// The implemented associated constants.
     pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
     /// The implemented associated types.
-    pub types: Vec<(TraitItemName, TraitAssocTyImpl)>,
+    pub types: Vec<(TraitItemName, Binder<TraitAssocTyImpl>)>,
     /// The implemented methods
     pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
     /// The virtual table instance for this trait implementation. This is `Some` iff the trait is

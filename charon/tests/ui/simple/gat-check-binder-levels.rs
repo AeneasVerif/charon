@@ -1,4 +1,3 @@
-//@ known-failure
 // Dummy trait to check we handle variables in clauses correctly.
 pub trait Link<T> {}
 impl<T, U> Link<T> for U {}

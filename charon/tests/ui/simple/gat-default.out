@@ -8,18 +8,6 @@ error: Hax panicked when translating `test_crate::{impl#0}`.
 9 | impl Collection for () {}
   | ^^^^^^^^^^^^^^^^^^^^^^
 
-error: Generic associated types are not supported
- --> tests/ui/simple/gat-default.rs:6:5
-  |
-6 |     type Sibling<U> = Vec<U>;
-  |     ^^^^^^^^^^^^^^^
-
-error: Item `test_crate::Collection` caused errors; ignoring.
- --> tests/ui/simple/gat-default.rs:5:1
-  |
-5 | trait Collection {
-  | ^^^^^^^^^^^^^^^^
-
 
 thread 'rustc' panicked at /rustc-dev/0d9592026226f5a667a0da60c13b955e0b486a07/compiler/rustc_type_ir/src/binder.rs:764:9:
 type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
@@ -35,4 +23,4 @@ error: Item `test_crate::{impl#0}` caused errors; ignoring.
 9 | impl Collection for () {}
   | ^^^^^^^^^^^^^^^^^^^^^^
 
-ERROR Charon failed to translate this code (5 errors)
+ERROR Charon failed to translate this code (3 errors)

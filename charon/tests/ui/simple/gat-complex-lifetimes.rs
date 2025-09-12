@@ -1,4 +1,3 @@
-//@ known-failure
 pub trait Foo<T> {
     fn foo(self) -> T;
 }

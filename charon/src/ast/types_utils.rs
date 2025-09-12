@@ -140,11 +140,54 @@ impl GenericParams {
 }
 
 impl<T> Binder<T> {
+    /// Wrap the value in an empty binder, shifting variables appropriately.
+    pub fn empty(kind: BinderKind, x: T) -> Self
+    where
+        T: TyVisitable,
+    {
+        Binder {
+            params: Default::default(),
+            skip_binder: x.move_under_binder(),
+            kind,
+        }
+    }
     pub fn new(kind: BinderKind, params: GenericParams, skip_binder: T) -> Self {
         Self {
             params,
             skip_binder,
             kind,
+        }
+    }
+
+    /// Whether this binder binds any variables.
+    pub fn binds_anything(&self) -> bool {
+        !self.params.is_empty()
+    }
+
+    /// Retreive the contents of this binder if the binder binds no variables. This is the invers
+    /// of `Binder::empty`.
+    pub fn get_if_binds_nothing(&self) -> Option<T>
+    where
+        T: TyVisitable + Clone,
+    {
+        self.params
+            .is_empty()
+            .then(|| self.skip_binder.clone().move_from_under_binder().unwrap())
+    }
+
+    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Binder<U> {
+        Binder {
+            params: self.params,
+            skip_binder: f(self.skip_binder),
+            kind: self.kind.clone(),
+        }
+    }
+
+    pub fn map_ref<U>(&self, f: impl FnOnce(&T) -> U) -> Binder<U> {
+        Binder {
+            params: self.params.clone(),
+            skip_binder: f(&self.skip_binder),
+            kind: self.kind.clone(),
         }
     }
 

@@ -199,6 +199,10 @@ and binder_kind_of_json (ctx : of_json_ctx) (js : json) :
     (binder_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | `Assoc [ ("TraitType", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = trait_decl_id_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        Ok (BKTraitType (x_0, x_1))
     | `Assoc [ ("TraitMethod", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_decl_id_of_json ctx x_0 in
         let* x_1 = trait_item_name_of_json ctx x_1 in
@@ -1546,10 +1550,19 @@ and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
     (trait_assoc_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("name", name); ("default", default); ("implied_clauses", _) ] ->
+    | `Assoc
+        [
+          ("name", name);
+          ("default", default);
+          ("implied_clauses", implied_clauses);
+        ] ->
         let* name = trait_item_name_of_json ctx name in
         let* default = option_of_json ty_of_json ctx default in
-        Ok ({ name; default } : trait_assoc_ty)
+        let* implied_clauses =
+          vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
+            implied_clauses
+        in
+        Ok ({ name; default; implied_clauses } : trait_assoc_ty)
     | _ -> Error "")
 
 and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
@@ -1608,7 +1621,9 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
             parent_clauses
         in
         let* consts = list_of_json trait_assoc_const_of_json ctx consts in
-        let* types = list_of_json trait_assoc_ty_of_json ctx types in
+        let* types =
+          list_of_json (binder_of_json trait_assoc_ty_of_json) ctx types
+        in
         let* methods =
           list_of_json (binder_of_json trait_method_of_json) ctx methods
         in
@@ -1675,7 +1690,8 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* types =
           list_of_json
-            (pair_of_json trait_item_name_of_json trait_assoc_ty_impl_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json trait_assoc_ty_impl_of_json))
             ctx types
         in
         let* methods =
@@ -1762,6 +1778,11 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = box_of_json trait_ref_of_json ctx x_0 in
         let* x_1 = trait_clause_id_of_json ctx x_1 in
         Ok (ParentClause (x_0, x_1))
+    | `Assoc [ ("ItemClause", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = box_of_json trait_ref_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        let* x_2 = trait_clause_id_of_json ctx x_2 in
+        Ok (ItemClause (x_0, x_1, x_2))
     | `String "SelfId" -> Ok Self
     | `Assoc
         [

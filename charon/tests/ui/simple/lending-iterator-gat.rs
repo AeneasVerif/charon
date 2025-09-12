@@ -1,4 +1,3 @@
-//@ known-failure
 pub trait LendingIterator {
     type Item<'a>
     where

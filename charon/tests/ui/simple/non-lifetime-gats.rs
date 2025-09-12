@@ -1,4 +1,3 @@
-//@ known-failure
 use std::ops::Deref;
 
 pub trait PointerFamily {

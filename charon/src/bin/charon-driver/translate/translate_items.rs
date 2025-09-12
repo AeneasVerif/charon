@@ -701,43 +701,37 @@ impl ItemTransCtx<'_, '_> {
                         default,
                     });
                 }
-                // Monomorphic traits have no associated types.
+                // Monomorphic traits need no associated types.
                 hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
-                hax::FullDefKind::AssocTy { param_env, .. }
-                    if !param_env.generics.params.is_empty() =>
-                {
-                    raise_error!(
-                        self,
-                        item_span,
-                        "Generic associated types are not supported"
-                    );
-                }
                 hax::FullDefKind::AssocTy {
                     value,
                     implied_predicates,
                     ..
                 } => {
-                    // TODO: handle generics (i.e. GATs).
-                    let default = value
-                        .as_ref()
-                        .map(|ty| self.translate_ty(item_span, ty))
-                        .transpose()?;
+                    let binder_kind = BinderKind::TraitType(def_id, item_name.clone());
+                    let assoc_ty =
+                        self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
+                            // Also add the implied predicates.
+                            let mut preds = ctx.translate_predicates(
+                                &implied_predicates,
+                                PredicateOrigin::TraitItem(item_name.clone()),
+                            )?;
+                            let implied_clauses = mem::take(&mut preds.trait_clauses);
+                            // Consider the other predicates as required since the distinction doesn't
+                            // matter for non-trait-clauses.
+                            ctx.innermost_generics_mut().take_predicates_from(preds);
 
-                    // Also add the implied predicates.
-                    let mut preds = self.translate_predicates(
-                        &implied_predicates,
-                        PredicateOrigin::TraitItem(item_name.clone()),
-                    )?;
-                    let implied_clauses = mem::take(&mut preds.trait_clauses);
-                    // Consider the other predicates as required since the distinction doesn't
-                    // matter for non-trait-clauses.
-                    self.innermost_generics_mut().take_predicates_from(preds);
-
-                    types.push(TraitAssocTy {
-                        name: item_name.clone(),
-                        default,
-                        implied_clauses,
-                    });
+                            let default = value
+                                .as_ref()
+                                .map(|ty| ctx.translate_ty(item_span, ty))
+                                .transpose()?;
+                            Ok(TraitAssocTy {
+                                name: item_name.clone(),
+                                default,
+                                implied_clauses,
+                            })
+                        })?;
+                    types.push(assoc_ty);
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
@@ -927,24 +921,25 @@ impl ItemTransCtx<'_, '_> {
                 }
                 // Monomorphic traits have no associated types.
                 hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
-                hax::FullDefKind::AssocTy { param_env, .. }
-                    if !param_env.generics.params.is_empty() =>
-                {
-                    // We don't support GATs; the error was already reported in the trait declaration.
-                }
                 hax::FullDefKind::AssocTy { value, .. } => {
-                    let ty = match &impl_item.value {
-                        Provided { .. } => value.as_ref().unwrap(),
-                        DefaultedTy { ty, .. } => ty,
-                        _ => unreachable!(),
-                    };
-                    let ty = self.translate_ty(item_span, &ty)?;
-                    let trait_refs =
-                        self.translate_trait_impl_exprs(item_span, &impl_item.required_impl_exprs)?;
-                    let assoc_ty = TraitAssocTyImpl {
-                        value: ty,
-                        implied_trait_refs: trait_refs,
-                    };
+                    let binder_kind = BinderKind::TraitType(trait_id, name.clone());
+                    let assoc_ty =
+                        self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
+                            let ty = match &impl_item.value {
+                                Provided { .. } => value.as_ref().unwrap(),
+                                DefaultedTy { ty, .. } => ty,
+                                _ => unreachable!(),
+                            };
+                            let ty = ctx.translate_ty(item_span, &ty)?;
+                            let implied_trait_refs = ctx.translate_trait_impl_exprs(
+                                item_span,
+                                &impl_item.required_impl_exprs,
+                            )?;
+                            Ok(TraitAssocTyImpl {
+                                value: ty,
+                                implied_trait_refs,
+                            })
+                        })?;
                     types.push((name.clone(), assoc_ty));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
@@ -1107,7 +1102,8 @@ impl ItemTransCtx<'_, '_> {
                     value: self.translate_ty(span, ty)?,
                     implied_trait_refs: self.translate_trait_impl_exprs(span, impl_exprs)?,
                 };
-                types.push((name, assoc_ty));
+                let binder_kind = BinderKind::TraitType(implemented_trait.id, name.clone());
+                types.push((name, Binder::empty(binder_kind, assoc_ty)));
             }
         }
 

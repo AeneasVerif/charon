@@ -1,8 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the given predicates and stores them as resuired preciates of the innermost
@@ -246,15 +244,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             ..
                         } => {
                             let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-                            if !item.generic_args.is_empty() {
-                                raise_error!(
-                                    self,
-                                    span,
-                                    "Found unsupported GAT `{}` when resolving trait `{}`",
-                                    name,
-                                    trait_decl_ref.with_ctx(&self.into_fmt())
-                                )
-                            }
                             tref_kind = TraitRefKind::ItemClause(
                                 trait_ref,
                                 name,

@@ -175,7 +175,18 @@ let trait_decl_to_string (env : 'a fmt_env) (indent : string)
     in
     let types =
       List.map
-        (fun (ty : trait_assoc_ty) -> indent1 ^ "type " ^ ty.name ^ "\n")
+        (fun (bound_ty : trait_assoc_ty binder) ->
+          let env =
+            fmt_env_update_generics_and_preds env bound_ty.binder_params
+          in
+          (* TODO: print clauses too *)
+          let params, _clauses =
+            predicates_and_trait_clauses_to_string env "" "  " def.generics
+          in
+          let params =
+            if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
+          in
+          indent1 ^ "type " ^ bound_ty.binder_value.name ^ params ^ "\n")
         def.types
     in
     let methods =
@@ -196,8 +207,6 @@ let trait_impl_to_string (env : 'a fmt_env) (indent : string)
     (indent_incr : string) (def : trait_impl) : string =
   (* Locally update the environment *)
   let env = fmt_env_update_generics_and_preds env def.generics in
-
-  let ty_to_string = ty_to_string env in
 
   (* Name *)
   let name = name_to_string env def.item_meta.name in
@@ -231,8 +240,19 @@ let trait_impl_to_string (env : 'a fmt_env) (indent : string)
     in
     let types =
       List.map
-        (fun (name, ty) ->
-          indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty.value ^ "\n")
+        (fun (name, bound_ty) ->
+          let env =
+            fmt_env_update_generics_and_preds env bound_ty.binder_params
+          in
+          let params, _clauses =
+            predicates_and_trait_clauses_to_string env "" "  " def.generics
+          in
+          let params =
+            if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
+          in
+          indent1 ^ "type " ^ name ^ params ^ " = "
+          ^ ty_to_string env bound_ty.binder_value.value
+          ^ "\n")
         def.types
     in
     let env_method ((name, f) : _ * fun_decl_ref binder) =
