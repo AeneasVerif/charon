@@ -35,7 +35,7 @@ impl<'a> ConstantBuilder<'a> {
         match ty.kind() {
             TyKind::Literal(LiteralTy::UInt(uint_ty)) => {
                 let expr = ConstantExpr {
-                    value: RawConstantExpr::Literal(Literal::Scalar(
+                    value: ConstantExprKind::Literal(Literal::Scalar(
                         ScalarValue::from_uint(
                             self.ctx.translated.target_information.target_pointer_size,
                             *uint_ty,
@@ -62,7 +62,7 @@ impl<'a> ConstantBuilder<'a> {
         match ty.kind() {
             TyKind::Literal(LiteralTy::UInt(uint_ty)) => {
                 let expr = ConstantExpr {
-                    value: RawConstantExpr::Literal(Literal::Scalar(
+                    value: ConstantExprKind::Literal(Literal::Scalar(
                         ScalarValue::from_uint(
                             self.ctx.translated.target_information.target_pointer_size,
                             *uint_ty,
@@ -90,7 +90,7 @@ impl<'a> ConstantBuilder<'a> {
             Either::Left(reason) => Ok(Operand::opaque(reason, Ty::mk_usize())),
             Either::Right(val) => {
                 let expr = ConstantExpr {
-                    value: RawConstantExpr::Literal(Literal::Scalar(
+                    value: ConstantExprKind::Literal(Literal::Scalar(
                         ScalarValue::from_uint(
                             self.ctx.translated.target_information.target_pointer_size,
                             UIntTy::Usize,
@@ -219,7 +219,7 @@ impl<'a> VtableMetadataComputer<'a> {
         // Find the vtable initialization statement
         for block in expr_body.body.iter_mut() {
             for stmt in &mut block.statements {
-                if let RawStatement::Assign(_place, rvalue) = &mut stmt.content {
+                if let StatementKind::Assign(_place, rvalue) = &mut stmt.content {
                     if let Rvalue::Aggregate(AggregateKind::Adt(vtable_ref, None, None), fields) =
                         rvalue
                     {
@@ -391,7 +391,7 @@ impl<'a> VtableMetadataComputer<'a> {
         let drop_fn_type = TyKind::FnPtr(fn_sig).into_ty();
 
         let shim_const = ConstantExpr {
-            value: RawConstantExpr::FnPtr(FnPtr::from(FunDeclRef {
+            value: ConstantExprKind::FnPtr(FnPtr::from(FunDeclRef {
                 id: shim_id,
                 generics: Box::new(self.create_drop_shim_function_generics()?),
             })),
@@ -738,7 +738,7 @@ impl<'a> VtableMetadataComputer<'a> {
                             .ty
                             .clone();
                         Ok(ConstantExpr {
-                            value: RawConstantExpr::Global(GlobalDeclRef {
+                            value: ConstantExprKind::Global(GlobalDeclRef {
                                 id: *global_decl_id,
                                 generics: Box::new(GenericArgs::empty()),
                             }),
@@ -758,7 +758,7 @@ impl<'a> VtableMetadataComputer<'a> {
                             .clone()
                             .into();
                         Ok(ConstantExpr {
-                            value: RawConstantExpr::Var(de_bruijn_var.clone()),
+                            value: ConstantExprKind::Var(de_bruijn_var.clone()),
                             ty,
                         })
                     }
@@ -943,7 +943,7 @@ impl<'a> DropShimCtx<'a> {
                 statements: vec![],
                 terminator: Terminator {
                     span,
-                    content: RawTerminator::Abort(AbortKind::UnwindTerminate),
+                    content: TerminatorKind::Abort(AbortKind::UnwindTerminate),
                     comments_before: vec![],
                 },
             });
@@ -955,7 +955,7 @@ impl<'a> DropShimCtx<'a> {
     fn new_block(&mut self) -> (BlockId, &mut BlockData) {
         self.new_block_with_terminator(Terminator {
             span: self.span(),
-            content: RawTerminator::Return,
+            content: TerminatorKind::Return,
             comments_before: vec![],
         })
     }
@@ -978,7 +978,7 @@ impl<'a> DropShimCtx<'a> {
     fn panic_drop_block(&mut self, msg: &String) -> Result<BlockId, Error> {
         let (block_id, _) = self.new_block_with_terminator(Terminator {
             span: self.span(),
-            content: RawTerminator::Abort(AbortKind::Panic(None)),
+            content: TerminatorKind::Abort(AbortKind::Panic(None)),
             comments_before: vec![format!("Panic: {}", msg)],
         });
         register_error!(self.ctx.ctx, self.span(), "Panic in generating drop shim: {}", msg);
@@ -1010,7 +1010,7 @@ impl<'a> DropShimCtx<'a> {
         );
         let assn_stmt = Statement {
             span: self.span(),
-            content: RawStatement::Assign(
+            content: StatementKind::Assign(
                 drop_place_ref.clone(),
                 Rvalue::Ref(drop_place.clone(), BorrowKind::Mut),
             ),
@@ -1031,7 +1031,7 @@ impl<'a> DropShimCtx<'a> {
         let unwind_block = self.get_unwind_block();
         let terminator = Terminator {
             span: self.span(),
-            content: RawTerminator::Call {
+            content: TerminatorKind::Call {
                 call,
                 target: end_block,
                 on_unwind: unwind_block,
@@ -1088,7 +1088,7 @@ impl<'a> DropShimCtx<'a> {
         {
             let init_counter_stmt = Statement {
                 span: self.span(),
-                content: RawStatement::Assign(
+                content: StatementKind::Assign(
                     counter.clone(),
                     Rvalue::Use(Operand::Const(Box::new(
                         constant_builder.zero_constant(&counter_ty)?,
@@ -1110,7 +1110,7 @@ impl<'a> DropShimCtx<'a> {
 
             let counter_check_stmt = Statement {
                 span: self.span(),
-                content: RawStatement::Assign(
+                content: StatementKind::Assign(
                     counter_check.clone(),
                     Rvalue::BinaryOp(
                         BinOp::Lt,
@@ -1132,7 +1132,7 @@ impl<'a> DropShimCtx<'a> {
             cond_block_data.statements.push(counter_check_stmt);
             cond_block_data.terminator = Terminator {
                 span,
-                content: RawTerminator::Switch {
+                content: TerminatorKind::Switch {
                     discr: Operand::Move(counter_check.clone()),
                     targets: loop_switch,
                 },
@@ -1157,7 +1157,7 @@ impl<'a> DropShimCtx<'a> {
 
             let counter_increment_stmt = Statement {
                 span: self.span(),
-                content: RawStatement::Assign(
+                content: StatementKind::Assign(
                     counter.clone(),
                     Rvalue::BinaryOp(
                         BinOp::Add(OverflowMode::Panic),
@@ -1256,7 +1256,7 @@ impl<'a> DropShimCtx<'a> {
                     statements: vec![],
                     terminator: Terminator {
                         span: ctx.span,
-                        content: RawTerminator::Return,
+                        content: TerminatorKind::Return,
                         comments_before: vec!["Nothing to drop, return".to_string()],
                     },
                 };
@@ -1282,7 +1282,7 @@ impl<'a> DropShimCtx<'a> {
 
                 let concretize_stmt = Statement {
                     span: ctx.span,
-                    content: RawStatement::Assign(
+                    content: StatementKind::Assign(
                         concrete_place.clone(),
                         Rvalue::UnaryOp(
                             UnOp::Cast(CastKind::Concretize(

@@ -1084,11 +1084,11 @@ impl Display for RawAttribute {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
+impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            RawConstantExpr::Literal(c) => write!(f, "{}", c.to_string()),
-            RawConstantExpr::Adt(variant_id, values) => {
+            ConstantExprKind::Literal(c) => write!(f, "{}", c.to_string()),
+            ConstantExprKind::Adt(variant_id, values) => {
                 // It is a bit annoying: in order to properly format the value,
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
@@ -1099,30 +1099,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "ConstAdt {} [{}]", variant_id, values)
             }
-            RawConstantExpr::Array(values) => {
+            ConstantExprKind::Array(values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
             }
-            RawConstantExpr::Global(global_ref) => {
+            ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
-            RawConstantExpr::TraitConst(trait_ref, name) => {
+            ConstantExprKind::TraitConst(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
-            RawConstantExpr::Ref(cv) => {
+            ConstantExprKind::Ref(cv) => {
                 write!(f, "&{}", cv.with_ctx(ctx))
             }
-            RawConstantExpr::Ptr(rk, cv) => match rk {
+            ConstantExprKind::Ptr(rk, cv) => match rk {
                 RefKind::Mut => write!(f, "&raw mut {}", cv.with_ctx(ctx)),
                 RefKind::Shared => write!(f, "&raw const {}", cv.with_ctx(ctx)),
             },
-            RawConstantExpr::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
-            RawConstantExpr::FnPtr(fp) => {
+            ConstantExprKind::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
+            ConstantExprKind::FnPtr(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
             }
-            RawConstantExpr::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
-            RawConstantExpr::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
-            RawConstantExpr::Opaque(cause) => write!(f, "Opaque({cause})"),
+            ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
+            ConstantExprKind::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
+            ConstantExprKind::Opaque(cause) => write!(f, "Opaque({cause})"),
         }
     }
 }
@@ -1297,41 +1297,43 @@ impl Display for ScalarValue {
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
-        use ullbc::RawStatement;
+        use ullbc::StatementKind;
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
         match &self.content {
-            RawStatement::Assign(place, rvalue) => write!(
+            StatementKind::Assign(place, rvalue) => write!(
                 f,
                 "{tab}{} := {}",
                 place.with_ctx(ctx),
                 rvalue.with_ctx(ctx),
             ),
-            RawStatement::SetDiscriminant(place, variant_id) => write!(
+            StatementKind::SetDiscriminant(place, variant_id) => write!(
                 f,
                 "{tab}@discriminant({}) := {}",
                 place.with_ctx(ctx),
                 variant_id
             ),
-            RawStatement::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => write!(
-                f,
-                "{}copy_nonoverlapping({}, {}, {})",
-                tab,
-                src.with_ctx(ctx),
-                dst.with_ctx(ctx),
-                count.with_ctx(ctx),
-            ),
-            RawStatement::StorageLive(var_id) => {
+            StatementKind::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => {
+                write!(
+                    f,
+                    "{}copy_nonoverlapping({}, {}, {})",
+                    tab,
+                    src.with_ctx(ctx),
+                    dst.with_ctx(ctx),
+                    count.with_ctx(ctx),
+                )
+            }
+            StatementKind::StorageLive(var_id) => {
                 write!(f, "{tab}storage_live({})", var_id.with_ctx(ctx))
             }
-            RawStatement::StorageDead(var_id) => {
+            StatementKind::StorageDead(var_id) => {
                 write!(f, "{tab}storage_dead({})", var_id.with_ctx(ctx))
             }
-            RawStatement::Deinit(place) => {
+            StatementKind::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
             }
-            RawStatement::Drop(place, tref) => {
+            StatementKind::Drop(place, tref) => {
                 write!(
                     f,
                     "{tab}drop[{}] {}",
@@ -1339,9 +1341,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                     place.with_ctx(ctx),
                 )
             }
-            RawStatement::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
-            RawStatement::Nop => write!(f, "{tab}nop"),
-            RawStatement::Error(s) => write!(f, "{tab}@Error({})", s),
+            StatementKind::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
+            StatementKind::Nop => write!(f, "{tab}nop"),
+            StatementKind::Error(s) => write!(f, "{tab}@Error({})", s),
         }
     }
 }
@@ -1349,54 +1351,56 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
 impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
-        use llbc::RawStatement;
+        use llbc::StatementKind;
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
         write!(f, "{tab}")?;
         match &self.content {
-            RawStatement::Assign(place, rvalue) => {
+            StatementKind::Assign(place, rvalue) => {
                 write!(f, "{} := {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
             }
-            RawStatement::SetDiscriminant(place, variant_id) => write!(
+            StatementKind::SetDiscriminant(place, variant_id) => write!(
                 f,
                 "@discriminant({}) := {}",
                 place.with_ctx(ctx),
                 variant_id
             ),
-            RawStatement::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => write!(
-                f,
-                "copy_nonoverlapping({}, {}, {})",
-                src.with_ctx(ctx),
-                dst.with_ctx(ctx),
-                count.with_ctx(ctx),
-            ),
-            RawStatement::StorageLive(var_id) => {
+            StatementKind::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => {
+                write!(
+                    f,
+                    "copy_nonoverlapping({}, {}, {})",
+                    src.with_ctx(ctx),
+                    dst.with_ctx(ctx),
+                    count.with_ctx(ctx),
+                )
+            }
+            StatementKind::StorageLive(var_id) => {
                 write!(f, "storage_live({})", var_id.with_ctx(ctx))
             }
-            RawStatement::StorageDead(var_id) => {
+            StatementKind::StorageDead(var_id) => {
                 write!(f, "storage_dead({})", var_id.with_ctx(ctx))
             }
-            RawStatement::Deinit(place) => {
+            StatementKind::Deinit(place) => {
                 write!(f, "deinit({})", place.with_ctx(ctx))
             }
-            RawStatement::Drop(place, tref) => {
+            StatementKind::Drop(place, tref) => {
                 write!(f, "drop[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
             }
-            RawStatement::Assert(assert) => {
+            StatementKind::Assert(assert) => {
                 write!(f, "{}", assert.with_ctx(ctx),)
             }
-            RawStatement::Call(call) => {
+            StatementKind::Call(call) => {
                 write!(f, "{}", call.with_ctx(ctx))
             }
-            RawStatement::Abort(kind) => {
+            StatementKind::Abort(kind) => {
                 write!(f, "{}", kind.with_ctx(ctx))
             }
-            RawStatement::Return => write!(f, "return"),
-            RawStatement::Break(index) => write!(f, "break {index}"),
-            RawStatement::Continue(index) => write!(f, "continue {index}"),
-            RawStatement::Nop => write!(f, "nop"),
-            RawStatement::Switch(switch) => match switch {
+            StatementKind::Return => write!(f, "return"),
+            StatementKind::Break(index) => write!(f, "break {index}"),
+            StatementKind::Continue(index) => write!(f, "continue {index}"),
+            StatementKind::Nop => write!(f, "nop"),
+            StatementKind::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
                     let ctx = &ctx.increase_indent();
                     write!(
@@ -1462,11 +1466,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     write!(f, "{tab}}}")
                 }
             },
-            RawStatement::Loop(body) => {
+            StatementKind::Loop(body) => {
                 let ctx = &ctx.increase_indent();
                 write!(f, "loop {{\n{}{tab}}}", body.with_ctx(ctx))
             }
-            RawStatement::Error(s) => write!(f, "@ERROR({})", s),
+            StatementKind::Error(s) => write!(f, "@ERROR({})", s),
         }
     }
 }
@@ -1479,8 +1483,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
         }
         write!(f, "{tab}")?;
         match &self.content {
-            RawTerminator::Goto { target } => write!(f, "goto bb{target}"),
-            RawTerminator::Switch { discr, targets } => match targets {
+            TerminatorKind::Goto { target } => write!(f, "goto bb{target}"),
+            TerminatorKind::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => write!(
                     f,
                     "if {} -> bb{} else -> bb{}",
@@ -1497,7 +1501,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     write!(f, "switch {} -> {}", discr.with_ctx(ctx), maps)
                 }
             },
-            RawTerminator::Call {
+            TerminatorKind::Call {
                 call,
                 target,
                 on_unwind,
@@ -1505,9 +1509,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 let call = call.with_ctx(ctx);
                 write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
             }
-            RawTerminator::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
-            RawTerminator::Return => write!(f, "return"),
-            RawTerminator::UnwindResume => write!(f, "unwind_continue"),
+            TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
+            TerminatorKind::Return => write!(f, "return"),
+            TerminatorKind::UnwindResume => write!(f, "unwind_continue"),
         }
     }
 }

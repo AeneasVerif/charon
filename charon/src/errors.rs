@@ -10,6 +10,8 @@ use petgraph::prelude::DiGraphMap;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
+const BACKTRACE_ON_ERR: bool = false;
+
 #[macro_export]
 macro_rules! register_error {
     ($ctx:expr, crate($krate:expr), $span: expr, $($fmt:tt)*) => {{
@@ -231,6 +233,10 @@ impl ErrorCtx {
     ) -> Error {
         let error = Error { span, msg };
         anstream::eprintln!("{}\n", error.render(krate, level));
+        if BACKTRACE_ON_ERR {
+            let backtrace = std::backtrace::Backtrace::force_capture();
+            eprintln!("{backtrace}\n");
+        }
         error
     }
 

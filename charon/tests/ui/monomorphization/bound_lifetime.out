@@ -1,0 +1,88 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::<&'_ (u32)>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<&'_ (u32)>
+
+// Full name: core::marker::Sized::<&'_ (u32)>
+#[lang_item("sized")]
+pub trait Sized::<&'_ (u32)>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<&'_ (u32)>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<Option::<&'_ (u32)>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Option::<&'_ (u32)>>
+
+// Full name: core::ops::drop::Drop::<Option::<&'_ (u32)>>
+#[lang_item("drop")]
+pub trait Drop::<Option::<&'_ (u32)>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Option::<&'_ (u32)>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Option::<&'_ (u32)>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Option::<&'_ (u32)>>
+}
+
+// Full name: core::option::Option::<&'_ (u32)>
+#[lang_item("Option")]
+pub enum Option::<&'_ (u32)> {
+  None,
+  Some(&'_ (u32)),
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ (u32)>>}::<&'_ (u32)>
+impl Drop::<Option::<&'_ (u32)>> {
+    parent_clause0 = MetaSized::<Option::<&'_ (u32)>>
+    fn drop<'_0> = {impl Drop::<Option::<&'_ (u32)>>}::drop::<&'_ (u32)><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ (u32)>>}::drop::<&'_ (u32)>
+fn {impl Drop::<Option::<&'_ (u32)>>}::drop::<&'_ (u32)><'_0>(@1: &'_0 mut (Option::<&'_ (u32)>))
+
+pub fn core::ops::drop::Drop::drop::<Option::<&'_ (u32)>><'_0>(@1: &'_0 mut (Option::<&'_ (u32)>))
+
+// Full name: test_crate::foo
+fn foo<'_0>(@1: &'_0 (u32)) -> Option::<&'_ (u32)>
+{
+    let @0: Option::<&'_ (u32)>; // return
+    let x@1: &'_ (u32); // arg #1
+    let @2: &'_ (u32); // anonymous local
+
+    storage_live(@2)
+    @2 := &*(x@1)
+    @0 := Option::<&'_ (u32)>::Some { 0: move (@2) }
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let @1: Option::<&'_ (u32)>; // anonymous local
+    let @2: &'_ (u32); // anonymous local
+    let @3: &'_ (u32); // anonymous local
+    let @4: u32; // anonymous local
+
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @4 := const (42 : u32)
+    @3 := &@4
+    @2 := &*(@3)
+    @1 := foo<'_>(move (@2))
+    storage_dead(@2)
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@1)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+
+

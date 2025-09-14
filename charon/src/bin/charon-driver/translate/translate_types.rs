@@ -106,10 +106,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Float(float_ty) => {
                 use hax::FloatTy;
                 TyKind::Literal(LiteralTy::Float(match float_ty {
-                    FloatTy::F16 => charon_lib::ast::types::FloatTy::F16,
-                    FloatTy::F32 => charon_lib::ast::types::FloatTy::F32,
-                    FloatTy::F64 => charon_lib::ast::types::FloatTy::F64,
-                    FloatTy::F128 => charon_lib::ast::types::FloatTy::F128,
+                    FloatTy::F16 => types::FloatTy::F16,
+                    FloatTy::F32 => types::FloatTy::F32,
+                    FloatTy::F64 => types::FloatTy::F64,
+                    FloatTy::F128 => types::FloatTy::F128,
                 }))
             }
             hax::TyKind::Never => TyKind::Never,

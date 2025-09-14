@@ -69,7 +69,7 @@ impl StatementId {
 }
 
 impl Statement {
-    pub fn new(span: Span, content: RawStatement) -> Self {
+    pub fn new(span: Span, content: StatementKind) -> Self {
         Statement {
             span,
             id: StatementId::fresh(),

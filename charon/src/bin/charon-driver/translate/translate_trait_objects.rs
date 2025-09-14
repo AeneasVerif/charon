@@ -579,7 +579,7 @@ impl ItemTransCtx<'_, '_> {
         dyn_self: &Ty,
         item: &hax::ImplAssocItem,
         mut next_ty: impl FnMut() -> Ty,
-        mut mk_field: impl FnMut(RawConstantExpr, Ty),
+        mut mk_field: impl FnMut(ConstantExprKind, Ty),
     ) -> Result<(), Error> {
         // Exit if the item isn't a vtable safe method.
         match self.poly_hax_def(&item.decl_def_id)?.kind() {
@@ -622,10 +622,10 @@ impl ItemTransCtx<'_, '_> {
                         );
                     }
                 }
-                (RawConstantExpr::FnPtr(shim_ref), ty)
+                (ConstantExprKind::FnPtr(shim_ref), ty)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => (
-                RawConstantExpr::Opaque(
+                ConstantExprKind::Opaque(
                     "shim for default methods \
                     aren't yet supported"
                         .to_string(),
@@ -646,7 +646,7 @@ impl ItemTransCtx<'_, '_> {
         trait_def: &hax::FullDef,
         impl_def: &hax::FullDef,
         mut next_ty: impl FnMut() -> Ty,
-        mut mk_field: impl FnMut(RawConstantExpr, Ty),
+        mut mk_field: impl FnMut(ConstantExprKind, Ty),
     ) -> Result<(), Error> {
         let implied_impl_exprs = match impl_def.kind() {
             hax::FullDefKind::TraitImpl {
@@ -704,10 +704,10 @@ impl ItemTransCtx<'_, '_> {
                         .erase()
                         .expect("parent trait should be dyn compatible");
                     let global = Box::new(ConstantExpr {
-                        value: RawConstantExpr::Global(vtable_instance_ref),
+                        value: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,
                     });
-                    RawConstantExpr::Ref(global)
+                    ConstantExprKind::Ref(global)
                 }
                 hax::ImplExprAtom::Builtin { trait_data, .. } => {
                     // Handle built-in implementations, including closures
@@ -750,10 +750,10 @@ impl ItemTransCtx<'_, '_> {
                             ),
                         )?;
                         let global = Box::new(ConstantExpr {
-                            value: RawConstantExpr::Global(vtable_instance_ref),
+                            value: ConstantExprKind::Global(vtable_instance_ref),
                             ty: fn_ptr_ty,
                         });
-                        RawConstantExpr::Ref(global)
+                        ConstantExprKind::Ref(global)
                     } else if self.translate_vtable_struct_ref(span, impl_expr.r#trait.hax_skip_binder_ref())?.is_some()
                     {
                         // For other builtin traits that are dyn-compatible, try to create a vtable instance
@@ -774,14 +774,14 @@ impl ItemTransCtx<'_, '_> {
                         // Remove the first `Self` argument
                         vtable_instance_ref.generics.types.remove_and_shift_ids(TypeVarId::ZERO);
                         let global = Box::new(ConstantExpr {
-                            value: RawConstantExpr::Global(vtable_instance_ref),
+                            value: ConstantExprKind::Global(vtable_instance_ref),
                             ty: fn_ptr_ty,
                         });
-                        RawConstantExpr::Ref(global)
+                        ConstantExprKind::Ref(global)
                     } else {
                         // For non-dyn-compatible builtin traits, we don't need vtable instances
                         trace!("Non-dyn-compatible builtin trait: {:?}", trait_def.lang_item);
-                        RawConstantExpr::Opaque(format!("non-dyn-compatible builtin trait {:?}", 
+                        ConstantExprKind::Opaque(format!("non-dyn-compatible builtin trait {:?}", 
                                                         trait_def.lang_item.as_deref().unwrap_or("unknown")).into())
                     }
                 }
@@ -796,12 +796,12 @@ impl ItemTransCtx<'_, '_> {
                             "Unexpected `LocalBound` in monomorphized context"
                         )
                     } else {
-                        RawConstantExpr::Opaque("generic supertrait vtable".into())
+                        ConstantExprKind::Opaque("generic supertrait vtable".into())
                     }
                 }
                 hax::ImplExprAtom::Dyn | hax::ImplExprAtom::Error(..) => {
                     // No need to register anything for these cases
-                    RawConstantExpr::Opaque("dyn or error supertrait vtable".into())
+                    ConstantExprKind::Opaque("dyn or error supertrait vtable".into())
                 }
                 hax::ImplExprAtom::SelfImpl { .. } => {
                     raise_error!(
@@ -888,15 +888,15 @@ impl ItemTransCtx<'_, '_> {
 
         // The metadata will be provided later in the `compute_vtable_metadata` pass
         mk_field(
-            RawConstantExpr::Opaque("unknown size".to_string()),
+            ConstantExprKind::Opaque("unknown size".to_string()),
             next_ty(),
         );
         mk_field(
-            RawConstantExpr::Opaque("unknown align".to_string()),
+            ConstantExprKind::Opaque("unknown align".to_string()),
             next_ty(),
         );
         mk_field(
-            RawConstantExpr::Opaque("unknown drop".to_string()),
+            ConstantExprKind::Opaque("unknown drop".to_string()),
             next_ty(),
         );
 
@@ -931,7 +931,7 @@ impl ItemTransCtx<'_, '_> {
         // Construct the final struct.
         statements.push(Statement::new(
             span,
-            RawStatement::Assign(
+            StatementKind::Assign(
                 ret_place,
                 Rvalue::Aggregate(
                     AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
@@ -942,7 +942,7 @@ impl ItemTransCtx<'_, '_> {
 
         let block = BlockData {
             statements,
-            terminator: Terminator::new(span, RawTerminator::Return),
+            terminator: Terminator::new(span, TerminatorKind::Return),
         };
 
         Ok(Body::Unstructured(GExprBody {
@@ -1019,15 +1019,15 @@ impl ItemTransCtx<'_, '_> {
         // Add the standard vtable metadata fields (size, align, drop)
         // like usual instance, the value will be provided in a pass later
         mk_field(
-            RawConstantExpr::Opaque("closure size".to_string()),
+            ConstantExprKind::Opaque("closure size".to_string()),
             next_ty(),
         );
         mk_field(
-            RawConstantExpr::Opaque("closure align".to_string()),
+            ConstantExprKind::Opaque("closure align".to_string()),
             next_ty(),
         );
         mk_field(
-            RawConstantExpr::Opaque("closure drop".to_string()),
+            ConstantExprKind::Opaque("closure drop".to_string()),
             next_ty(),
         );
 
@@ -1058,14 +1058,14 @@ impl ItemTransCtx<'_, '_> {
         );
         statements.push(Statement::new(
             span,
-            RawStatement::Assign(ret_place.clone(), ret_rvalue),
+            StatementKind::Assign(ret_place.clone(), ret_rvalue),
         ));
 
         let block = BlockData {
             statements,
             terminator: Terminator {
                 span,
-                content: RawTerminator::Return,
+                content: TerminatorKind::Return,
                 comments_before: Vec::new(),
             },
         };
@@ -1107,7 +1107,7 @@ impl ItemTransCtx<'_, '_> {
         self_ty: &Ty,
         dyn_self: &Ty,
         closure_kind: ClosureKind,
-    ) -> Result<RawConstantExpr, Error> {
+    ) -> Result<ConstantExprKind, Error> {
         // Register the closure method shim
         let shim_id: FunDeclId = self.register_item(
             span,
@@ -1136,7 +1136,7 @@ impl ItemTransCtx<'_, '_> {
             generics,
         };
 
-        Ok(RawConstantExpr::FnPtr(fn_ptr))
+        Ok(ConstantExprKind::FnPtr(fn_ptr))
     }
 
     fn check_concretization_ty_match(
@@ -1191,7 +1191,7 @@ impl ItemTransCtx<'_, '_> {
             )),
             Operand::Move(shim_self.clone()),
         );
-        let stmt = RawStatement::Assign(target_self.clone(), rval);
+        let stmt = StatementKind::Assign(target_self.clone(), rval);
         statements.push(Statement::new(span, stmt));
 
         Ok(())
@@ -1291,7 +1291,7 @@ impl ItemTransCtx<'_, '_> {
             let ret = locals.new_var(name, ty);
             statements.push(Statement::new(
                 span,
-                RawStatement::StorageLive(ret.as_local().unwrap()),
+                StatementKind::StorageLive(ret.as_local().unwrap()),
             ));
             ret
         };
@@ -1338,19 +1338,19 @@ impl ItemTransCtx<'_, '_> {
 
         let ret_block = BlockData {
             statements: vec![],
-            terminator: Terminator::new(span, RawTerminator::Return),
+            terminator: Terminator::new(span, TerminatorKind::Return),
         };
 
         let unwind_block = BlockData {
             statements: vec![],
-            terminator: Terminator::new(span, RawTerminator::UnwindResume),
+            terminator: Terminator::new(span, TerminatorKind::UnwindResume),
         };
 
         let call_block = BlockData {
             statements,
             terminator: Terminator::new(
                 span,
-                RawTerminator::Call {
+                TerminatorKind::Call {
                     call,
                     target: BlockId::new(1),    // ret_block
                     on_unwind: BlockId::new(2), // unwind_block

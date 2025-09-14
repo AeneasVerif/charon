@@ -257,14 +257,14 @@ impl<'a> DynTraitCallTransformer<'a> {
         // push the storage-live statements for the new locals
         self.statements.push(Statement {
             span: self.span,
-            content: RawStatement::StorageLive(vtable_place.as_local().unwrap()),
+            content: StatementKind::StorageLive(vtable_place.as_local().unwrap()),
             comments_before: vec![],
         });
 
         let method_ptr_place = self.locals.new_var(None, method_ptr_ty.clone());
         self.statements.push(Statement {
             span: self.span,
-            content: RawStatement::StorageLive(method_ptr_place.as_local().unwrap()),
+            content: StatementKind::StorageLive(method_ptr_place.as_local().unwrap()),
             comments_before: vec![],
         });
 
@@ -279,7 +279,7 @@ impl<'a> DynTraitCallTransformer<'a> {
     ) -> Statement {
         Statement {
             span: self.span,
-            content: RawStatement::Assign(
+            content: StatementKind::Assign(
                 vtable_place.clone(),
                 Rvalue::UnaryOp(UnOp::PtrMetadata, dyn_trait_operand.clone()),
             ),
@@ -314,7 +314,7 @@ impl<'a> DynTraitCallTransformer<'a> {
 
         Statement {
             span: self.span,
-            content: RawStatement::Assign(
+            content: StatementKind::Assign(
                 method_ptr_place.clone(),
                 Rvalue::Use(Operand::Copy(method_field_place)),
             ),
@@ -429,7 +429,7 @@ impl UllbcPass for Transform {
             let block_id = BlockId::new(block_id);
 
             // Check terminator for calls
-            if let RawTerminator::Call { call, .. } = &mut block.terminator.content {
+            if let TerminatorKind::Call { call, .. } = &mut block.terminator.content {
                 trace!("Found call in block {}: {:?}", block_id, call.func);
                 let span = block.terminator.span;
                 let mut transformer = DynTraitCallTransformer::new(

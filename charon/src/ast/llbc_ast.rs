@@ -18,7 +18,7 @@ generate_index_type!(StatementId);
 #[derive(
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
 )]
-pub enum RawStatement {
+pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
     /// `y := move x` which is represented as `Assign(y, Rvalue::Use(Operand::Move(x)))`.
     Assign(Place, Rvalue),
@@ -79,7 +79,7 @@ pub struct Statement {
     /// simplify things we generate globally-fresh ids when creating a new `Statement`.
     #[charon::rename("statement_id")]
     pub id: StatementId,
-    pub content: RawStatement,
+    pub content: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]

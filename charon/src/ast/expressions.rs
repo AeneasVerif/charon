@@ -490,12 +490,12 @@ impl From<FunDeclRef> for FnPtr {
 
 /// A constant expression.
 ///
-/// Only the [`RawConstantExpr::Literal`] and [`RawConstantExpr::Var`]
+/// Only the [`ConstantExprKind::Literal`] and [`ConstantExprKind::Var`]
 /// cases are left in the final LLBC.
 ///
 /// The other cases come from a straight translation from the MIR:
 ///
-/// [`RawConstantExpr::Adt`] case:
+/// [`ConstantExprKind::Adt`] case:
 /// It is a bit annoying, but rustc treats some ADT and tuple instances as
 /// constants when generating MIR:
 /// - an enumeration with one variant and no fields is a constant.
@@ -504,13 +504,13 @@ impl From<FunDeclRef> for FnPtr {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// [`RawConstantExpr::Global`] case: access to a global variable. We later desugar it to
+/// [`ConstantExprKind::Global`] case: access to a global variable. We later desugar it to
 /// a copy of a place global.
 ///
-/// [`RawConstantExpr::Ref`] case: reference to a constant value. We later desugar it to a separate
+/// [`ConstantExprKind::Ref`] case: reference to a constant value. We later desugar it to a separate
 /// statement.
 ///
-/// [`RawConstantExpr::FnPtr`] case: a function pointer (to a top-level function).
+/// [`ConstantExprKind::FnPtr`] case: a function pointer (to a top-level function).
 ///
 /// Remark:
 /// MIR seems to forbid more complex expressions like paths. For instance,
@@ -530,7 +530,7 @@ impl From<FunDeclRef> for FnPtr {
     DriveMut,
 )]
 #[charon::variants_prefix("C")]
-pub enum RawConstantExpr {
+pub enum ConstantExprKind {
     Literal(Literal),
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with
@@ -607,7 +607,7 @@ pub enum RawConstantExpr {
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ConstantExpr {
-    pub value: RawConstantExpr,
+    pub value: ConstantExprKind,
     pub ty: Ty,
 }
 

@@ -186,15 +186,15 @@ impl ProjectionElem {
     }
 }
 
-impl From<ConstGeneric> for RawConstantExpr {
+impl From<ConstGeneric> for ConstantExprKind {
     fn from(cg: ConstGeneric) -> Self {
         match cg {
-            ConstGeneric::Global(id) => RawConstantExpr::Global(GlobalDeclRef {
+            ConstGeneric::Global(id) => ConstantExprKind::Global(GlobalDeclRef {
                 id,
                 generics: Box::new(GenericArgs::empty()),
             }),
-            ConstGeneric::Var(var) => RawConstantExpr::Var(var),
-            ConstGeneric::Value(lit) => RawConstantExpr::Literal(lit),
+            ConstGeneric::Var(var) => ConstantExprKind::Var(var),
+            ConstGeneric::Value(lit) => ConstantExprKind::Literal(lit),
         }
     }
 }
@@ -243,7 +243,7 @@ impl Operand {
 
     pub fn opaque(msg: String, ty: Ty) -> Self {
         Operand::Const(Box::new(ConstantExpr {
-            value: RawConstantExpr::Opaque(msg),
+            value: ConstantExprKind::Opaque(msg),
             ty,
         }))
     }

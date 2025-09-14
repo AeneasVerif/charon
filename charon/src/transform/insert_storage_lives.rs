@@ -33,7 +33,8 @@ impl StorageVisitor {
 impl VisitAst for StorageVisitor {
     fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
         match st.content {
-            llbc_ast::RawStatement::StorageDead(loc) | llbc_ast::RawStatement::StorageLive(loc) => {
+            llbc_ast::StatementKind::StorageDead(loc)
+            | llbc_ast::StatementKind::StorageLive(loc) => {
                 self.unmentioned_locals.remove(&loc);
             }
             _ => {}
@@ -43,8 +44,8 @@ impl VisitAst for StorageVisitor {
 
     fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
         match st.content {
-            ullbc_ast::RawStatement::StorageDead(loc)
-            | ullbc_ast::RawStatement::StorageLive(loc) => {
+            ullbc_ast::StatementKind::StorageDead(loc)
+            | ullbc_ast::StatementKind::StorageLive(loc) => {
                 self.unmentioned_locals.remove(&loc);
             }
             _ => {}
@@ -74,7 +75,7 @@ impl TransformPass for Transform {
                     let new_statements = storage_visitor.unmentioned_locals.iter().map(|local| {
                         llbc_ast::Statement::new(
                             first_span,
-                            llbc_ast::RawStatement::StorageLive(*local),
+                            llbc_ast::StatementKind::StorageLive(*local),
                         )
                     });
                     body.body.statements.splice(0..0, new_statements);
@@ -89,7 +90,7 @@ impl TransformPass for Transform {
                     let new_statements = storage_visitor.unmentioned_locals.iter().map(|local| {
                         ullbc_ast::Statement::new(
                             first_span,
-                            ullbc_ast::RawStatement::StorageLive(*local),
+                            ullbc_ast::StatementKind::StorageLive(*local),
                         )
                     });
                     first_block.statements.splice(0..0, new_statements);

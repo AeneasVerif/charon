@@ -28,8 +28,26 @@ and blocks_of_json (ctx : of_json_ctx) (js : json) : (blocks, string) result =
     | x -> vector_of_json block_id_of_json block_of_json ctx x
     | _ -> Error "")
 
-and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
-    (raw_statement, string) result =
+and statement_of_json (ctx : of_json_ctx) (js : json) :
+    (statement, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("span", span);
+          ("content", content);
+          ("comments_before", comments_before);
+        ] ->
+        let* span = span_of_json ctx span in
+        let* content = statement_kind_of_json ctx content in
+        let* comments_before =
+          list_of_json string_of_json ctx comments_before
+        in
+        Ok ({ span; content; comments_before } : statement)
+    | _ -> Error "")
+
+and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (statement_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
@@ -64,54 +82,6 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Nop" -> Ok Nop
     | _ -> Error "")
 
-and raw_terminator_of_json (ctx : of_json_ctx) (js : json) :
-    (raw_terminator, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Goto", `Assoc [ ("target", target) ]) ] ->
-        let* target = block_id_of_json ctx target in
-        Ok (Goto target)
-    | `Assoc [ ("Switch", `Assoc [ ("discr", discr); ("targets", targets) ]) ]
-      ->
-        let* discr = operand_of_json ctx discr in
-        let* targets = switch_of_json ctx targets in
-        Ok (Switch (discr, targets))
-    | `Assoc
-        [
-          ( "Call",
-            `Assoc
-              [ ("call", call); ("target", target); ("on_unwind", on_unwind) ]
-          );
-        ] ->
-        let* call = call_of_json ctx call in
-        let* target = block_id_of_json ctx target in
-        let* on_unwind = block_id_of_json ctx on_unwind in
-        Ok (Call (call, target, on_unwind))
-    | `Assoc [ ("Abort", abort) ] ->
-        let* abort = abort_kind_of_json ctx abort in
-        Ok (Abort abort)
-    | `String "Return" -> Ok Return
-    | `String "UnwindResume" -> Ok UnwindResume
-    | _ -> Error "")
-
-and statement_of_json (ctx : of_json_ctx) (js : json) :
-    (statement, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("span", span);
-          ("content", content);
-          ("comments_before", comments_before);
-        ] ->
-        let* span = span_of_json ctx span in
-        let* content = raw_statement_of_json ctx content in
-        let* comments_before =
-          list_of_json string_of_json ctx comments_before
-        in
-        Ok ({ span; content; comments_before } : statement)
-    | _ -> Error "")
-
 and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -141,9 +111,39 @@ and terminator_of_json (ctx : of_json_ctx) (js : json) :
           ("comments_before", comments_before);
         ] ->
         let* span = span_of_json ctx span in
-        let* content = raw_terminator_of_json ctx content in
+        let* content = terminator_kind_of_json ctx content in
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
         Ok ({ span; content; comments_before } : terminator)
+    | _ -> Error "")
+
+and terminator_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (terminator_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Goto", `Assoc [ ("target", target) ]) ] ->
+        let* target = block_id_of_json ctx target in
+        Ok (Goto target)
+    | `Assoc [ ("Switch", `Assoc [ ("discr", discr); ("targets", targets) ]) ]
+      ->
+        let* discr = operand_of_json ctx discr in
+        let* targets = switch_of_json ctx targets in
+        Ok (Switch (discr, targets))
+    | `Assoc
+        [
+          ( "Call",
+            `Assoc
+              [ ("call", call); ("target", target); ("on_unwind", on_unwind) ]
+          );
+        ] ->
+        let* call = call_of_json ctx call in
+        let* target = block_id_of_json ctx target in
+        let* on_unwind = block_id_of_json ctx on_unwind in
+        Ok (Call (call, target, on_unwind))
+    | `Assoc [ ("Abort", abort) ] ->
+        let* abort = abort_kind_of_json ctx abort in
+        Ok (Abort abort)
+    | `String "Return" -> Ok Return
+    | `String "UnwindResume" -> Ok UnwindResume
     | _ -> Error "")

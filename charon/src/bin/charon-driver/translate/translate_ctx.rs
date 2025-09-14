@@ -133,7 +133,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let def_id = item.def_id();
         let span = self.def_span(def_id);
         if let RustcItem::Mono(item_ref) = item
-            && item_ref.has_param
+            && item_ref.has_non_lt_param
         {
             raise_error!(self, span, "Item is not monomorphic: {item:?}")
         }

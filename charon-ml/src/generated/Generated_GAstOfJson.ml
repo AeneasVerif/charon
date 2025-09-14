@@ -523,9 +523,34 @@ and constant_expr_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("value", value); ("ty", ty) ] ->
-        let* value = raw_constant_expr_of_json ctx value in
+        let* value = constant_expr_kind_of_json ctx value in
         let* ty = ty_of_json ctx ty in
         Ok ({ value; ty } : constant_expr)
+    | _ -> Error "")
+
+and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (constant_expr_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Literal", literal) ] ->
+        let* literal = literal_of_json ctx literal in
+        Ok (CLiteral literal)
+    | `Assoc [ ("TraitConst", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = trait_ref_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        Ok (CTraitConst (x_0, x_1))
+    | `Assoc [ ("Var", var) ] ->
+        let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
+        Ok (CVar var)
+    | `Assoc [ ("FnPtr", fn_ptr) ] ->
+        let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
+        Ok (CFnPtr fn_ptr)
+    | `Assoc [ ("RawMemory", raw_memory) ] ->
+        let* raw_memory = list_of_json int_of_json ctx raw_memory in
+        Ok (CRawMemory raw_memory)
+    | `Assoc [ ("Opaque", opaque) ] ->
+        let* opaque = string_of_json ctx opaque in
+        Ok (COpaque opaque)
     | _ -> Error "")
 
 and copy_non_overlapping_of_json (ctx : of_json_ctx) (js : json) :
@@ -1347,31 +1372,6 @@ and raw_attribute_of_json (ctx : of_json_ctx) (js : json) :
         let* path = string_of_json ctx path in
         let* args = option_of_json string_of_json ctx args in
         Ok ({ path; args } : raw_attribute)
-    | _ -> Error "")
-
-and raw_constant_expr_of_json (ctx : of_json_ctx) (js : json) :
-    (raw_constant_expr, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Literal", literal) ] ->
-        let* literal = literal_of_json ctx literal in
-        Ok (CLiteral literal)
-    | `Assoc [ ("TraitConst", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = trait_ref_of_json ctx x_0 in
-        let* x_1 = trait_item_name_of_json ctx x_1 in
-        Ok (CTraitConst (x_0, x_1))
-    | `Assoc [ ("Var", var) ] ->
-        let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
-        Ok (CVar var)
-    | `Assoc [ ("FnPtr", fn_ptr) ] ->
-        let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
-        Ok (CFnPtr fn_ptr)
-    | `Assoc [ ("RawMemory", raw_memory) ] ->
-        let* raw_memory = list_of_json int_of_json ctx raw_memory in
-        Ok (CRawMemory raw_memory)
-    | `Assoc [ ("Opaque", opaque) ] ->
-        let* opaque = string_of_json ctx opaque in
-        Ok (COpaque opaque)
     | _ -> Error "")
 
 and raw_span_of_json (ctx : of_json_ctx) (js : json) : (raw_span, string) result

@@ -8,8 +8,20 @@ module StatementId = IdGen ()
 
 type block = { span : span; statements : statement list }
 
+and statement = {
+  span : span;
+  statement_id : statement_id;
+      (** Integer uniquely identifying this statement among the statmeents in
+          the current body. To simplify things we generate globally-fresh ids
+          when creating a new [Statement]. *)
+  content : statement_kind;
+  comments_before : string list;  (** Comments that precede this statement. *)
+}
+
+and statement_id = (StatementId.id[@visitors.opaque])
+
 (** A raw statement: a statement without meta data. *)
-and raw_statement =
+and statement_kind =
   | Assign of place * rvalue
       (** Assigns an [Rvalue] to a [Place]. e.g. [let y = x;] could become
           [y := move x] which is represented as
@@ -58,18 +70,6 @@ and raw_statement =
   | Switch of switch
   | Loop of block
   | Error of string
-
-and statement = {
-  span : span;
-  statement_id : statement_id;
-      (** Integer uniquely identifying this statement among the statmeents in
-          the current body. To simplify things we generate globally-fresh ids
-          when creating a new [Statement]. *)
-  content : raw_statement;
-  comments_before : string list;  (** Comments that precede this statement. *)
-}
-
-and statement_id = (StatementId.id[@visitors.opaque])
 
 and switch =
   | If of operand * block * block

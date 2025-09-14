@@ -203,7 +203,7 @@ impl ScalarValue {
             ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
         ConstantExpr {
-            value: RawConstantExpr::Literal(Literal::Scalar(self)),
+            value: ConstantExprKind::Literal(Literal::Scalar(self)),
             ty: TyKind::Literal(literal_ty).into_ty(),
         }
     }
@@ -229,7 +229,7 @@ impl From<Literal> for ConstantExpr {
             ),
         };
         ConstantExpr {
-            value: RawConstantExpr::Literal(lit),
+            value: ConstantExprKind::Literal(lit),
             ty,
         }
     }

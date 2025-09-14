@@ -248,12 +248,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let Some(kind) = self.base_kind_for_item(def_id) else {
             return;
         };
-        let item_src = if self.options.monomorphize_with_hax
-            && let Ok(def) = self.poly_hax_def(def_id)
-            && !def.has_any_generics()
-        {
-            // Monomorphize this item and the items it depends on.
-            TransItemSource::monomorphic(def.this(), kind)
+        let item_src = if self.options.monomorphize_with_hax {
+            if let Ok(def) = self.poly_hax_def(def_id)
+                && !def.has_any_generics()
+            {
+                // Monomorphize this item and the items it depends on.
+                TransItemSource::monomorphic(def.this(), kind)
+            } else {
+                // Skip polymorphic items and items that cause errors.
+                return;
+            }
         } else {
             TransItemSource::polymorphic(def_id, kind)
         };
