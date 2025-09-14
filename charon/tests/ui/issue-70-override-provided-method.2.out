@@ -4,6 +4,19 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
@@ -77,6 +90,26 @@ where
 
 // Full name: test_crate::Foo
 struct Foo {}
+
+// Full name: test_crate::Foo::{impl Drop for Foo}
+impl Drop for Foo {
+    parent_clause0 = MetaSized<Foo>
+    fn drop<'_0> = {impl Drop for Foo}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::{impl Drop for Foo}::drop
+fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut (Foo))
+{
+    let @0: (); // return
+    let @1: *mut Foo; // arg #1
+    let @2: &'_ mut (Foo); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: test_crate::{impl Trait for Foo}::required
 fn {impl Trait for Foo}::required<'_0>(@1: &'_0 (Foo))
@@ -160,6 +193,26 @@ impl Trait for Foo {
 
 // Full name: test_crate::Bar
 struct Bar {}
+
+// Full name: test_crate::Bar::{impl Drop for Bar}
+impl Drop for Bar {
+    parent_clause0 = MetaSized<Bar>
+    fn drop<'_0> = {impl Drop for Bar}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Bar::{impl Drop for Bar}::drop
+fn {impl Drop for Bar}::drop<'_0>(@1: &'_0 mut (Bar))
+{
+    let @0: (); // return
+    let @1: *mut Bar; // arg #1
+    let @2: &'_ mut (Bar); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
 
 // Full name: test_crate::{impl Trait for Bar}::required
 fn {impl Trait for Bar}::required<'_0>(@1: &'_0 (Bar))

@@ -43,7 +43,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -55,7 +55,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::Fn
@@ -67,7 +67,7 @@ pub trait Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
@@ -121,6 +121,16 @@ where
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
 // Full name: test_crate::BoolTrait
 pub trait BoolTrait<Self>
@@ -620,6 +630,26 @@ struct TestType1 {
   u64,
 }
 
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestType1::{impl Drop for TestType1}
+impl Drop for TestType1 {
+    parent_clause0 = MetaSized<TestType1>
+    fn drop<'_0> = {impl Drop for TestType1}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestType1::{impl Drop for TestType1}::drop
+fn {impl Drop for TestType1}::drop<'_0>(@1: &'_0 mut (TestType1))
+{
+    let @0: (); // return
+    let @1: *mut TestType1; // arg #1
+    let @2: &'_ mut (TestType1); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
 // Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}::test
 fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
 {
@@ -706,6 +736,26 @@ impl TestTrait for TestType1 {
 // Full name: test_crate::BoolWrapper
 pub struct BoolWrapper {
   bool,
+}
+
+// Full name: test_crate::BoolWrapper::{impl Drop for BoolWrapper}
+impl Drop for BoolWrapper {
+    parent_clause0 = MetaSized<BoolWrapper>
+    fn drop<'_0> = {impl Drop for BoolWrapper}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::BoolWrapper::{impl Drop for BoolWrapper}::drop
+fn {impl Drop for BoolWrapper}::drop<'_0>(@1: &'_0 mut (BoolWrapper))
+{
+    let @0: (); // return
+    let @1: *mut BoolWrapper; // arg #1
+    let @2: &'_ mut (BoolWrapper); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
 }
 
 // Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type
@@ -893,7 +943,7 @@ pub trait ParentTrait0<Self>
     type W
     fn get_name<'_0> = get_name<'_0_0, Self>[Self]
     fn get_w<'_0> = test_crate::ParentTrait0::get_w<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: test_crate::ParentTrait0::{vtable}<Self::W>
 }
 
 // Full name: test_crate::ParentTrait0::get_name
@@ -918,7 +968,7 @@ pub trait ChildTrait<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: ParentTrait0<Self>
     parent_clause2 : [@TraitClause2]: ParentTrait1<Self>
-    non-dyn-compatible
+    vtable: test_crate::ChildTrait::{vtable}<Self::parent_clause1::W>
 }
 
 // Full name: test_crate::test_child_trait1
@@ -998,7 +1048,7 @@ pub trait Iterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
-    non-dyn-compatible
+    vtable: test_crate::Iterator::{vtable}<Self::Item>
 }
 
 // Full name: test_crate::IntoIterator
@@ -1013,7 +1063,7 @@ where
     type Item
     type IntoIter
     fn into_iter = into_iter<Self>[Self]
-    non-dyn-compatible
+    vtable: test_crate::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
 // Full name: test_crate::IntoIterator::into_iter
@@ -1045,7 +1095,7 @@ pub trait WithTarget<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Target>
     type Target
-    non-dyn-compatible
+    vtable: test_crate::WithTarget::{vtable}<Self::Target>
 }
 
 // Full name: test_crate::ParentTrait2
@@ -1055,7 +1105,7 @@ pub trait ParentTrait2<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::U>
     parent_clause2 : [@TraitClause2]: WithTarget<Self::U>
     type U
-    non-dyn-compatible
+    vtable: test_crate::ParentTrait2::{vtable}<Self::U>
 }
 
 // Full name: test_crate::ChildTrait2
@@ -1076,7 +1126,7 @@ impl WithTarget for u32 {
     parent_clause0 = MetaSized<u32>
     parent_clause1 = Sized<u32>
     type Target = u32
-    non-dyn-compatible
+    vtable: {impl WithTarget for u32}::{vtable}
 }
 
 // Full name: test_crate::{impl ParentTrait2 for u32}
@@ -1085,7 +1135,7 @@ impl ParentTrait2 for u32 {
     parent_clause1 = Sized<u32>
     parent_clause2 = {impl WithTarget for u32}
     type U = u32
-    non-dyn-compatible
+    vtable: {impl ParentTrait2 for u32}::{vtable}
 }
 
 // Full name: test_crate::{impl ChildTrait2 for u32}::convert
@@ -1114,7 +1164,7 @@ pub trait CFnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn call_once = test_crate::CFnOnce::call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: test_crate::CFnOnce::{vtable}<Args, Self::Output>
 }
 
 pub fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
@@ -1128,7 +1178,7 @@ pub trait CFnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: CFnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     fn call_mut<'_0> = test_crate::CFnMut::call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: test_crate::CFnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
@@ -1142,7 +1192,7 @@ pub trait CFn<Self, Args>
     parent_clause1 : [@TraitClause1]: CFnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     fn call<'_0> = test_crate::CFn::call<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: test_crate::CFn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
 pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
@@ -1156,7 +1206,7 @@ pub trait GetTrait<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::W>
     type W
     fn get_w<'_0> = test_crate::GetTrait::get_w<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: test_crate::GetTrait::{vtable}<Self::W>
 }
 
 pub fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
@@ -1321,7 +1371,7 @@ trait RecursiveImpl<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     parent_clause2 : [@TraitClause2]: RecursiveImpl<Self::Item>
     type Item
-    non-dyn-compatible
+    vtable: test_crate::RecursiveImpl::{vtable}<Self::Item>
 }
 
 // Full name: test_crate::{impl RecursiveImpl for ()}
@@ -1330,7 +1380,7 @@ impl RecursiveImpl for () {
     parent_clause1 = Sized<()>
     parent_clause2 = {impl RecursiveImpl for ()}
     type Item = ()
-    non-dyn-compatible
+    vtable: {impl RecursiveImpl for ()}::{vtable}
 }
 
 // Full name: test_crate::flabada
@@ -1377,7 +1427,7 @@ trait SliceIndex<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Output>
     type Output
-    non-dyn-compatible
+    vtable: test_crate::assoc_ty_trait_ref::SliceIndex::{vtable}<Self::Output>
 }
 
 // Full name: test_crate::assoc_ty_trait_ref::index

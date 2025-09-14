@@ -29,13 +29,34 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
-fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
-
 // Full name: alloc::alloc::Global::{impl Drop for Global}
 impl Drop for Global {
     parent_clause0 = MetaSized<Global>
     fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop
+fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Drop<T>,
+    [@TraitClause4]: Drop<A>,
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Drop<T>,
+    [@TraitClause4]: Drop<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
     non-dyn-compatible
 }
 

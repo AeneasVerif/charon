@@ -1,4 +1,3 @@
-//@ known-failure
 /// This tests `dyn` with a diamond hierarchy between supertraits. Fails for now because we don't
 /// support dyn with associated types.
 

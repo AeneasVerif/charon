@@ -3,7 +3,7 @@
 struct core::cmp::PartialEq::{vtable}<Rhs> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_))),
   method_eq: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_)), &'_0_1 (Rhs)) -> bool,
   method_ne: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: PartialEq<_dyn, Rhs> + _dyn : '_)), &'_0_1 (Rhs)) -> bool,
 }
@@ -22,12 +22,31 @@ pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -51,7 +70,7 @@ where
 struct core::fmt::Display::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)),
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_))),
   method_fmt: fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
 }
 
@@ -76,6 +95,10 @@ pub trait Tuple<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -86,7 +109,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -98,7 +121,16 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+}
+
+struct core::ops::function::Fn::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0))),
+  method_call: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0)), Args) -> Fn<(dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0), Args>::parent_clause1::parent_clause1::Output,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (core::ops::function::FnMut::{vtable}<Args, Fn<(dyn exists<_dyn> [@TraitClause0]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Output = Ty0), Args>::parent_clause1::parent_clause1::Output>),
 }
 
 // Full name: core::ops::function::Fn
@@ -110,7 +142,7 @@ pub trait Fn<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call<'_0> = call<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::Fn::call
@@ -142,9 +174,46 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
 // Full name: alloc::string::ToString
 #[lang_item("ToString")]

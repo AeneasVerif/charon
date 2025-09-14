@@ -232,3 +232,19 @@ impl UnOp {
         }
     }
 }
+
+impl Operand {
+    pub fn ty(&self) -> &Ty {
+        match self {
+            Operand::Copy(place) | Operand::Move(place) => &place.ty,
+            Operand::Const(c) => &c.ty,
+        }
+    }
+
+    pub fn opaque(msg: String, ty: Ty) -> Self {
+        Operand::Const(Box::new(ConstantExpr {
+            value: ConstantExprKind::Opaque(msg),
+            ty,
+        }))
+    }
+}

@@ -36,6 +36,144 @@ pub trait Sized::<NonNull::<Node::<u8>>>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<LinkedList::<u8>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<LinkedList::<u8>>
+
+// Full name: core::marker::MetaSized::<Node::<u8>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Node::<u8>>
+
+// Full name: core::marker::MetaSized::<Option::<NonNull::<Node::<u8>>>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Option::<NonNull::<Node::<u8>>>>
+
+// Full name: core::ops::drop::Drop::<NonNull::<Node::<u8>>>
+#[lang_item("drop")]
+pub trait Drop::<NonNull::<Node::<u8>>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<NonNull::<Node::<u8>>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<NonNull::<Node::<u8>>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<NonNull::<Node::<u8>>>
+}
+
+// Full name: core::ptr::non_null::NonNull::<Node::<u8>>
+#[lang_item("NonNull")]
+pub opaque type NonNull::<Node::<u8>>
+
+// Full name: core::ptr::non_null::NonNull::{impl Drop::<NonNull::<Node::<u8>>>}::<Node::<u8>>
+impl Drop::<NonNull::<Node::<u8>>> {
+    parent_clause0 = MetaSized::<NonNull::<Node::<u8>>>
+    fn drop<'_0> = {impl Drop::<NonNull::<Node::<u8>>>}::drop::<Node::<u8>><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::ptr::non_null::NonNull::{impl Drop::<NonNull::<Node::<u8>>>}::drop::<Node::<u8>>
+fn {impl Drop::<NonNull::<Node::<u8>>>}::drop::<Node::<u8>><'_0>(@1: &'_0 mut (NonNull::<Node::<u8>>))
+
+// Full name: core::ops::drop::Drop::<Option::<NonNull::<Node::<u8>>>>
+#[lang_item("drop")]
+pub trait Drop::<Option::<NonNull::<Node::<u8>>>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Option::<NonNull::<Node::<u8>>>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Option::<NonNull::<Node::<u8>>>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Option::<NonNull::<Node::<u8>>>>
+}
+
+// Full name: core::option::Option::<NonNull::<Node::<u8>>>
+#[lang_item("Option")]
+pub enum Option::<NonNull::<Node::<u8>>> {
+  None,
+  Some(NonNull::<Node::<u8>>),
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<NonNull::<Node::<u8>>>>}::<NonNull::<Node::<u8>>>
+impl Drop::<Option::<NonNull::<Node::<u8>>>> {
+    parent_clause0 = MetaSized::<Option::<NonNull::<Node::<u8>>>>
+    fn drop<'_0> = {impl Drop::<Option::<NonNull::<Node::<u8>>>>}::drop::<NonNull::<Node::<u8>>><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<NonNull::<Node::<u8>>>>}::drop::<NonNull::<Node::<u8>>>
+fn {impl Drop::<Option::<NonNull::<Node::<u8>>>>}::drop::<NonNull::<Node::<u8>>><'_0>(@1: &'_0 mut (Option::<NonNull::<Node::<u8>>>))
+
+// Full name: core::ops::drop::Drop::<LinkedList::<u8>>
+#[lang_item("drop")]
+pub trait Drop::<LinkedList::<u8>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<LinkedList::<u8>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<LinkedList::<u8>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<LinkedList::<u8>>
+}
+
+// Full name: test_crate::LinkedList::<u8>
+pub struct LinkedList::<u8> {
+  head: Option::<NonNull::<Node::<u8>>>,
+}
+
+// Full name: test_crate::LinkedList::{impl Drop::<LinkedList::<u8>>}::<u8>
+impl Drop::<LinkedList::<u8>> {
+    parent_clause0 = MetaSized::<LinkedList::<u8>>
+    fn drop<'_0> = {impl Drop::<LinkedList::<u8>>}::drop::<u8><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::LinkedList::{impl Drop::<LinkedList::<u8>>}::drop::<u8>
+fn {impl Drop::<LinkedList::<u8>>}::drop::<u8><'_0>(@1: &'_0 mut (LinkedList::<u8>))
+{
+    let @0: (); // return
+    let @1: *mut LinkedList::<u8>; // arg #1
+    let @2: &'_ mut (LinkedList::<u8>); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
+// Full name: core::ops::drop::Drop::<Node::<u8>>
+#[lang_item("drop")]
+pub trait Drop::<Node::<u8>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Node::<u8>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Node::<u8>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Node::<u8>>
+}
+
+// Full name: test_crate::Node::<u8>
+struct Node::<u8> {
+  next: Option::<NonNull::<Node::<u8>>>,
+  element: u8,
+}
+
+// Full name: test_crate::Node::{impl Drop::<Node::<u8>>}::<u8>
+impl Drop::<Node::<u8>> {
+    parent_clause0 = MetaSized::<Node::<u8>>
+    fn drop<'_0> = {impl Drop::<Node::<u8>>}::drop::<u8><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Node::{impl Drop::<Node::<u8>>}::drop::<u8>
+fn {impl Drop::<Node::<u8>>}::drop::<u8><'_0>(@1: &'_0 mut (Node::<u8>))
+{
+    let @0: (); // return
+    let @1: *mut Node::<u8>; // arg #1
+    let @2: &'_ mut (Node::<u8>); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    @0 := ()
+    return
+}
+
+pub fn core::ops::drop::Drop::drop::<LinkedList::<u8>><'_0>(@1: &'_0 mut (LinkedList::<u8>))
+
+pub fn core::ops::drop::Drop::drop::<NonNull::<Node::<u8>>><'_0>(@1: &'_0 mut (NonNull::<Node::<u8>>))
+
+pub fn core::ops::drop::Drop::drop::<Node::<u8>><'_0>(@1: &'_0 mut (Node::<u8>))
+
+pub fn core::ops::drop::Drop::drop::<Option::<NonNull::<Node::<u8>>>><'_0>(@1: &'_0 mut (Option::<NonNull::<Node::<u8>>>))
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -46,25 +184,9 @@ where
   Some(T),
 }
 
-// Full name: core::ptr::non_null::NonNull::<Node::<u8>>
-#[lang_item("NonNull")]
-pub opaque type NonNull::<Node::<u8>>
-
-// Full name: core::option::Option::<NonNull::<Node::<u8>>>
-#[lang_item("Option")]
-pub enum Option::<NonNull::<Node::<u8>>> {
-  None,
-  Some(NonNull::<Node::<u8>>),
-}
-
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
 pub opaque type NonNull<T>
-
-// Full name: test_crate::LinkedList::<u8>
-pub struct LinkedList::<u8> {
-  head: Option::<NonNull::<Node::<u8>>>,
-}
 
 // Full name: test_crate::Node
 struct Node<T>
@@ -81,12 +203,6 @@ where
     [@TraitClause0]: Sized<T>,
 {
   head: Option<NonNull<Node<T>[@TraitClause0]>>[Sized<NonNull<Node<T>[@TraitClause0]>>],
-}
-
-// Full name: test_crate::Node::<u8>
-struct Node::<u8> {
-  next: Option::<NonNull::<Node::<u8>>>,
-  element: u8,
 }
 
 // Full name: test_crate::{LinkedList::<u8>}::new::<u8>

@@ -48,6 +48,15 @@ pub trait Eq<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
 pub enum Ordering {
@@ -55,6 +64,16 @@ pub enum Ordering {
   Equal,
   Greater,
 }
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}
+impl Drop for Ordering {
+    parent_clause0 = MetaSized<Ordering>
+    fn drop<'_0> = {impl Drop for Ordering}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}::drop
+fn {impl Drop for Ordering}::drop<'_0>(@1: &'_0 mut (Ordering))
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -126,7 +145,7 @@ pub trait Iterator<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn next<'_0> = next<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -174,7 +193,7 @@ where
     type Item
     type IntoIter
     fn into_iter = into_iter<Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -226,7 +245,7 @@ pub trait DoubleEndedIterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
     fn next_back<'_0> = next_back<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
@@ -239,7 +258,7 @@ pub trait ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
-    non-dyn-compatible
+    vtable: core::iter::traits::exact_size::ExactSizeIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 // Full name: core::iter::traits::iterator::Iterator::next
@@ -284,6 +303,10 @@ where
   Break(B),
 }
 
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -294,7 +317,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -306,7 +329,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -373,7 +396,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    non-dyn-compatible
+    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
 }
 
 // Full name: test_crate::Trait
@@ -382,7 +405,7 @@ pub trait Trait<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::AssocType>
     type AssocType
-    non-dyn-compatible
+    vtable: test_crate::Trait::{vtable}<Self::AssocType>
 }
 
 // Full name: test_crate::Alias
