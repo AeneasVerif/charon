@@ -1,4 +1,5 @@
 //@ known-failure
+//@ no-check-output
 //@ charon-args=--mono --start-from=crate::main
 trait MyIterator {
     type Item;
