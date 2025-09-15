@@ -1,5 +1,3 @@
-use crate::translate::translate_predicates::PredicateLocation;
-
 use super::translate_bodies::BodyTransCtx;
 use super::translate_crate::*;
 use super::translate_ctx::*;
@@ -523,11 +521,12 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Register implied predicates.
-        self.register_predicates(
-            implied_predicates,
-            PredicateOrigin::WhereClauseOnTrait,
-            &PredicateLocation::Parent,
-        )?;
+        let mut preds =
+            self.translate_predicates(implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
+        let parent_clauses = mem::take(&mut preds.trait_clauses);
+        // Consider the other predicates as required since the distinction doesn't matter for
+        // non-trait-clauses.
+        self.innermost_generics_mut().take_predicates_from(preds);
 
         let vtable = self.translate_vtable_struct_ref(span, def.this())?;
 
@@ -536,7 +535,7 @@ impl ItemTransCtx<'_, '_> {
             return Ok(TraitDecl {
                 def_id,
                 item_meta,
-                parent_clauses: mem::take(&mut self.parent_trait_clauses),
+                parent_clauses,
                 generics: self.into_generics(),
                 consts: Default::default(),
                 types: Default::default(),
@@ -725,21 +724,19 @@ impl ItemTransCtx<'_, '_> {
                         .transpose()?;
 
                     // Also add the implied predicates.
-                    self.register_predicates(
+                    let mut preds = self.translate_predicates(
                         &implied_predicates,
                         PredicateOrigin::TraitItem(item_name.clone()),
-                        &PredicateLocation::Item(item_name.clone()),
                     )?;
-                    let clauses = self
-                        .item_trait_clauses
-                        .get(item_name)
-                        .cloned()
-                        .unwrap_or_default();
+                    let implied_clauses = mem::take(&mut preds.trait_clauses);
+                    // Consider the other predicates as required since the distinction doesn't
+                    // matter for non-trait-clauses.
+                    self.innermost_generics_mut().take_predicates_from(preds);
 
                     types.push(TraitAssocTy {
                         name: item_name.clone(),
                         default,
-                        implied_clauses: clauses,
+                        implied_clauses,
                     });
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
@@ -752,7 +749,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitDecl {
             def_id,
             item_meta,
-            parent_clauses: mem::take(&mut self.parent_trait_clauses),
+            parent_clauses,
             generics: self.into_generics(),
             consts,
             types,
@@ -997,14 +994,8 @@ impl ItemTransCtx<'_, '_> {
         let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
 
         // Register the trait implied clauses as required clauses for the impl.
-        self.register_predicates(
-            implied_predicates,
-            PredicateOrigin::WhereClauseOnTrait,
-            &PredicateLocation::Parent,
-        )?;
-        let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-        self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
+        self.register_predicates(implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
 
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.

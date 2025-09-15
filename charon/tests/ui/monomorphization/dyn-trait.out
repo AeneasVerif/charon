@@ -97,7 +97,7 @@ note: the error occurred when translating `core::fmt::Display::{vtable}::<alloc:
 12 |     let _ = dyn_to_string(&str);
    |                           ----
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:375:17:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:374:17:
 incorrect `dyn_self`
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `core::fmt::Display`.

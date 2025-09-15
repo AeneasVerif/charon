@@ -1,5 +1,3 @@
-use crate::translate::translate_predicates::PredicateLocation;
-
 use super::translate_ctx::ItemTransCtx;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
@@ -148,7 +146,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         assert_eq!(self.binding_levels.len(), 1);
         self.innermost_binder()
     }
-
     /// Get the only binding level. Panics if there are other binding levels.
     pub(crate) fn the_only_binder_mut(&mut self) -> &mut BindingLevel {
         assert_eq!(self.binding_levels.len(), 1);
@@ -158,15 +155,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn outermost_binder(&self) -> &BindingLevel {
         self.binding_levels.outermost()
     }
-
+    pub(crate) fn outermost_binder_mut(&mut self) -> &mut BindingLevel {
+        self.binding_levels.outermost_mut()
+    }
     pub(crate) fn innermost_binder(&self) -> &BindingLevel {
         self.binding_levels.innermost()
     }
-
     pub(crate) fn innermost_binder_mut(&mut self) -> &mut BindingLevel {
         self.binding_levels.innermost_mut()
     }
 
+    #[expect(dead_code)]
+    pub(crate) fn outermost_generics(&self) -> &GenericParams {
+        &self.outermost_binder().params
+    }
+    #[expect(dead_code)]
+    pub(crate) fn outermost_generics_mut(&mut self) -> &mut GenericParams {
+        &mut self.outermost_binder_mut().params
+    }
+    #[expect(dead_code)]
+    pub(crate) fn innermost_generics(&self) -> &GenericParams {
+        &self.innermost_binder().params
+    }
     pub(crate) fn innermost_generics_mut(&mut self) -> &mut GenericParams {
         &mut self.innermost_binder_mut().params
     }
@@ -370,11 +380,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => panic!("Unexpected def: {def:?}"),
             };
-            self.register_predicates(
-                &param_env.predicates,
-                origin.clone(),
-                &PredicateLocation::Base,
-            )?;
+            self.register_predicates(&param_env.predicates, origin.clone())?;
         }
 
         if let hax::FullDefKind::Closure { args, .. } = def.kind()

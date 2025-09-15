@@ -1,6 +1,5 @@
 use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
-    translate_predicates::PredicateLocation,
 };
 
 use charon_lib::ids::Vector;
@@ -132,7 +131,7 @@ impl ItemTransCtx<'_, '_> {
             .params
             .types_outlive
             .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
-        self.register_predicates(preds, PredicateOrigin::Dyn, &PredicateLocation::Base)?;
+        self.register_predicates(preds, PredicateOrigin::Dyn)?;
 
         let params = self.binding_levels.pop().unwrap().params;
         let binder = Binder {

@@ -2,6 +2,7 @@
 use crate::ast::*;
 use crate::ids::Vector;
 use derive_generic_visitor::*;
+use itertools::Itertools;
 use std::collections::HashSet;
 use std::convert::Infallible;
 use std::fmt::Debug;
@@ -113,6 +114,28 @@ impl GenericParams {
                 .trait_clauses
                 .map_ref(|clause| clause.identity_tref_at_depth(depth)),
         }
+    }
+
+    /// Take the predicates from the another `GenericParams`.
+    pub fn take_predicates_from(&mut self, other: GenericParams) {
+        assert!(!other.has_explicits());
+        let GenericParams {
+            regions: _,
+            types: _,
+            const_generics: _,
+            trait_clauses,
+            regions_outlive,
+            types_outlive,
+            trait_type_constraints,
+        } = other;
+        let num_clauses = self.trait_clauses.slot_count();
+        self.trait_clauses
+            .extend(trait_clauses.into_iter().update(|clause| {
+                clause.clause_id += num_clauses;
+            }));
+        self.regions_outlive.extend(regions_outlive);
+        self.types_outlive.extend(types_outlive);
+        self.trait_type_constraints.extend(trait_type_constraints);
     }
 }
 
