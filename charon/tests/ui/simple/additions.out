@@ -155,18 +155,8 @@ pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
     let @0: (u8, bool); // return
     let self@1: u8; // arg #1
     let rhs@2: u8; // arg #2
-    let @3: u8; // anonymous local
-    let @4: bool; // anonymous local
-    let @5: (u8, bool); // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := copy (self@1) checked.+ copy (rhs@2)
-    @3 := copy ((@5).0)
-    @4 := copy ((@5).1)
-    storage_dead(@5)
-    @0 := (copy (@3), copy (@4))
+    @0 := copy (self@1) checked.+ copy (rhs@2)
     return
 }
 
