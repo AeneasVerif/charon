@@ -5,8 +5,6 @@ use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
-use hax_frontend_exporter as hax;
-use indexmap::IndexMap;
 use itertools::Itertools;
 use std::mem;
 use std::ops::ControlFlow;
@@ -521,11 +519,8 @@ impl ItemTransCtx<'_, '_> {
                 item_meta,
                 parent_clauses: mem::take(&mut self.parent_trait_clauses),
                 generics: self.into_generics(),
-                type_clauses: Default::default(),
                 consts: Default::default(),
-                const_defaults: Default::default(),
                 types: Default::default(),
-                type_defaults: Default::default(),
                 methods: Default::default(),
                 vtable,
             });
@@ -556,10 +551,7 @@ impl ItemTransCtx<'_, '_> {
         // Translate the associated items
         // We do something subtle here: TODO: explain
         let mut consts = Vec::new();
-        let mut const_defaults = IndexMap::new();
         let mut types = Vec::new();
-        let mut type_clauses = Vec::new();
-        let mut type_defaults = IndexMap::new();
         let mut methods = Vec::new();
         for (item_name, hax_item) in &items {
             let item_def_id = &hax_item.def_id;
@@ -590,7 +582,7 @@ impl ItemTransCtx<'_, '_> {
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
                     let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
-                    let mut fn_ref = self.translate_binder_for_def(
+                    let mut method = self.translate_binder_for_def(
                         item_span,
                         binder_kind,
                         &item_def,
@@ -622,9 +614,13 @@ impl ItemTransCtx<'_, '_> {
                                         .params
                                         .identity_args_at_depth(DeBruijnId::zero()),
                                 );
-                            Ok(FunDeclRef {
+                            let fn_ref = FunDeclRef {
                                 id: fun_id,
                                 generics: Box::new(fun_generics),
+                            };
+                            Ok(TraitMethod {
+                                name: item_name.clone(),
+                                item: fn_ref,
                             })
                         },
                     )?;
@@ -651,34 +647,37 @@ impl ItemTransCtx<'_, '_> {
                                 }
                             }
                         }
-                        fn_ref.params.visit_vars(&mut ReplaceSelfVisitor);
-                        fn_ref.skip_binder.visit_vars(&mut ReplaceSelfVisitor);
-                        fn_ref
+                        method.params.visit_vars(&mut ReplaceSelfVisitor);
+                        method.skip_binder.visit_vars(&mut ReplaceSelfVisitor);
+                        method
                             .params
                             .trait_clauses
                             .remove_and_shift_ids(TraitClauseId::ZERO);
-                        fn_ref.params.trait_clauses.iter_mut().for_each(|clause| {
+                        method.params.trait_clauses.iter_mut().for_each(|clause| {
                             clause.clause_id -= 1;
                         });
                     }
-                    methods.push((item_name.clone(), fn_ref));
+                    methods.push(method);
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
                     // Check if the constant has a value (i.e., a body).
-                    if hax_item.has_value {
+                    let default = hax_item.has_value.then(|| {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
                         let id = self.register_and_enqueue(item_span, item_src);
                         let mut generics = self.the_only_binder().params.identity_args();
                         generics.trait_refs.push(self_trait_ref.clone());
-                        let gref = GlobalDeclRef {
+                        GlobalDeclRef {
                             id,
                             generics: Box::new(generics),
-                        };
-                        const_defaults.insert(item_name.clone(), gref);
-                    };
+                        }
+                    });
                     let ty = self.translate_ty(item_span, ty)?;
-                    consts.push((item_name.clone(), ty));
+                    consts.push(TraitAssocConst {
+                        name: item_name.clone(),
+                        ty,
+                        default,
+                    });
                 }
                 // Monomorphic traits have no associated types.
                 hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
@@ -693,14 +692,20 @@ impl ItemTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
                     // TODO: handle generics (i.e. GATs).
-                    if let Some(clauses) = self.item_trait_clauses.get(item_name) {
-                        type_clauses.push((item_name.clone(), clauses.clone()));
-                    }
-                    if let Some(ty) = value {
-                        let ty = self.translate_ty(item_span, &ty)?;
-                        type_defaults.insert(item_name.clone(), ty);
-                    };
-                    types.push(item_name.clone());
+                    let default = value
+                        .as_ref()
+                        .map(|ty| self.translate_ty(item_span, ty))
+                        .transpose()?;
+                    let clauses = self
+                        .item_trait_clauses
+                        .get(item_name)
+                        .cloned()
+                        .unwrap_or_default();
+                    types.push(TraitAssocTy {
+                        name: item_name.clone(),
+                        default,
+                        implied_clauses: clauses,
+                    });
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
@@ -714,11 +719,8 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             parent_clauses: mem::take(&mut self.parent_trait_clauses),
             generics: self.into_generics(),
-            type_clauses,
             consts,
-            const_defaults,
             types,
-            type_defaults,
             methods,
             vtable,
         })
@@ -781,9 +783,8 @@ impl ItemTransCtx<'_, '_> {
 
         // Explore the associated items
         let mut consts = Vec::new();
-        let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
+        let mut types = Vec::new();
         let mut methods = Vec::new();
-        let mut type_clauses = Vec::new();
 
         for impl_item in impl_items {
             use hax::ImplAssocItemValue::*;
@@ -906,15 +907,13 @@ impl ItemTransCtx<'_, '_> {
                         _ => unreachable!(),
                     };
                     let ty = self.translate_ty(item_span, &ty)?;
-                    types.push((name.clone(), ty));
-
-                    if !self.monomorphize() {
-                        let trait_refs = self.translate_trait_impl_exprs(
-                            item_span,
-                            &impl_item.required_impl_exprs,
-                        )?;
-                        type_clauses.push((name, trait_refs));
-                    }
+                    let trait_refs =
+                        self.translate_trait_impl_exprs(item_span, &impl_item.required_impl_exprs)?;
+                    let assoc_ty = TraitAssocTyImpl {
+                        value: ty,
+                        implied_trait_refs: trait_refs,
+                    };
+                    types.push((name.clone(), assoc_ty));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
@@ -926,7 +925,6 @@ impl ItemTransCtx<'_, '_> {
             impl_trait: implemented_trait,
             generics: self.into_generics(),
             parent_trait_refs,
-            type_clauses,
             consts,
             types,
             methods,
@@ -975,7 +973,6 @@ impl ItemTransCtx<'_, '_> {
             impl_trait: implemented_trait,
             generics: self.the_only_binder().params.clone(),
             parent_trait_refs,
-            type_clauses: Default::default(),
             consts: Default::default(),
             types: Default::default(),
             methods: Default::default(),
@@ -1060,7 +1057,6 @@ impl ItemTransCtx<'_, '_> {
         let parent_trait_refs = self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
 
         let mut types = vec![];
-        let mut type_clauses = vec![];
         // Monomorphic traits have no associated types.
         if !self.monomorphize() {
             let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
@@ -1069,12 +1065,11 @@ impl ItemTransCtx<'_, '_> {
             });
             for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
                 let name = self.t_ctx.translate_trait_item_name(&assoc.def_id)?;
-                let ty = self.translate_ty(span, ty)?;
-                types.push((name.clone(), ty.clone()));
-                if !self.monomorphize() {
-                    let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
-                    type_clauses.push((name.clone(), trait_refs));
-                }
+                let assoc_ty = TraitAssocTyImpl {
+                    value: self.translate_ty(span, ty)?,
+                    implied_trait_refs: self.translate_trait_impl_exprs(span, impl_exprs)?,
+                };
+                types.push((name, assoc_ty));
             }
         }
 
@@ -1085,7 +1080,6 @@ impl ItemTransCtx<'_, '_> {
             impl_trait: implemented_trait,
             generics,
             parent_trait_refs,
-            type_clauses,
             consts: vec![],
             types,
             methods: vec![],

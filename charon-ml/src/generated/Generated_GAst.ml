@@ -147,6 +147,16 @@ and global_kind =
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
+(** An associated constant in a trait. *)
+type trait_assoc_const = {
+  name : trait_item_name;
+  ty : ty;
+  default : global_decl_ref option;
+}
+
+(** An associated type in a trait. *)
+and trait_assoc_ty = { name : trait_item_name; default : ty option }
+
 (** A trait **declaration**.
 
     For instance:
@@ -178,7 +188,7 @@ and global_kind =
       helpers like [all], [map], etc. that shouldn't be re-implemented. Of
       course, this forbids other useful use cases such as visitors implemented
       by means of traits. *)
-type trait_decl = {
+and trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
   generics : generic_params;
@@ -195,23 +205,34 @@ type trait_decl = {
           ]}
           TODO: actually, as of today, we consider that all trait clauses of
           trait declarations are parent clauses. *)
-  consts : (trait_item_name * ty) list;
-      (** The associated constants declared in the trait, along with their type.
-      *)
-  types : trait_item_name list;
+  consts : trait_assoc_const list;
+      (** The associated constants declared in the trait. *)
+  types : trait_assoc_ty list;
       (** The associated types declared in the trait. *)
-  methods : (trait_item_name * fun_decl_ref binder) list;
-      (** The methods declared by the trait. The signature of the methods can be
-          found in each corresponding [FunDecl]. These [FunDecl] may have a body
-          if the trait provided a default implementation for that method;
-          otherwise it has an [Opaque] body.
+  methods : trait_method binder list;
+      (** The methods declared by the trait. The binder binds the generic
+          parameters of the method.
 
-          The binder contains the type parameters specific to the method. The
-          [FunDeclRef] then provides a full list of arguments to the pointed-to
-          function. *)
+          {@rust[
+            rust
+            trait Trait<T> {
+              // The [Binder] for this method binds ['a] and [U].
+              fn method<'a, U>(x: &'a U);
+            }
+          ]} *)
   vtable : type_decl_ref option;
       (** The virtual table struct for this trait, if it has one. It is
           guaranteed that the trait has a vtable iff it is dyn-compatible. *)
+}
+
+(** A trait method. *)
+and trait_method = {
+  name : trait_item_name;
+  item : fun_decl_ref;
+      (** Each method declaration is represented by a function item. That
+          function contains the signature of the method as well as information
+          like attributes. It has a body iff the method declaration has a
+          default implementation; otherwise it has an [Opaque] body. *)
 }
 [@@deriving
   show,
@@ -254,9 +275,9 @@ type trait_impl = {
   parent_trait_refs : trait_ref list;
       (** The trait references for the parent clauses (see [TraitDecl]). *)
   consts : (trait_item_name * global_decl_ref) list;
-      (** The associated constants declared in the trait. *)
-  types : (trait_item_name * ty) list;
-      (** The associated types declared in the trait. *)
+      (** The implemented associated constants. *)
+  types : (trait_item_name * trait_assoc_ty_impl) list;
+      (** The implemented associated types. *)
   methods : (trait_item_name * fun_decl_ref binder) list;
       (** The implemented methods *)
   vtable : global_decl_ref option;
@@ -316,8 +337,8 @@ type cli_options = {
       (** If activated, this skips borrow-checking of the crate. *)
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
-          in the crate are translated as normal. To only translate a particular
-          call graph, use [--start-from]. This uses a different mechanism than
+          in the crate are skipped. To only translate a particular call graph,
+          use [--start-from]. This uses a different mechanism than
           [--monomorphize-conservative] which should be a lot more complete, but
           doesn't currently support [dyn Trait]. *)
   monomorphize_conservative : bool;

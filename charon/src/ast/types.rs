@@ -114,7 +114,7 @@ pub enum TraitRefKind {
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
         parent_trait_refs: Vector<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
-        types: Vec<(TraitItemName, Ty, Vector<TraitClauseId, TraitRef>)>,
+        types: Vec<(TraitItemName, TraitAssocTyImpl)>,
     },
 
     /// The automatically-generated implementation for `dyn Trait`.

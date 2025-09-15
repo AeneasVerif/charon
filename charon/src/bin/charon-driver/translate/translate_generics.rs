@@ -3,7 +3,6 @@ use crate::translate::translate_predicates::PredicateLocation;
 use super::translate_ctx::ItemTransCtx;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
-use hax_frontend_exporter as hax;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;

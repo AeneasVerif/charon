@@ -12,7 +12,6 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 impl ItemTransCtx<'_, '_> {

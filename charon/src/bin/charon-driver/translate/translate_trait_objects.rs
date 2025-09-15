@@ -5,7 +5,6 @@ use super::{
 
 use charon_lib::ids::Vector;
 use charon_lib::ullbc_ast::*;
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 fn dummy_public_attr_info() -> AttrInfo {

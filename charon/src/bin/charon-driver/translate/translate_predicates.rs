@@ -3,7 +3,6 @@ use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
-use hax_frontend_exporter as hax;
 
 /// The context in which we are translating a clause, used to generate the appropriate ids and
 /// trait references.
@@ -346,9 +345,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .iter()
                         .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
                             let name = self.t_ctx.translate_trait_item_name(def_id)?;
-                            let ty = self.translate_ty(span, ty)?;
-                            let trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
-                            Ok((name, ty, trait_refs))
+                            let assoc_ty = TraitAssocTyImpl {
+                                value: self.translate_ty(span, ty)?,
+                                implied_trait_refs: self
+                                    .translate_trait_impl_exprs(span, impl_exprs)?,
+                            };
+                            Ok((name, assoc_ty))
                         })
                         .try_collect()?;
                     TraitRefKind::BuiltinOrAuto {

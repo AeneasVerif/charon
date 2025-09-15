@@ -3,7 +3,7 @@ use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
-use hax_frontend_exporter::{self as hax, DefPathItem};
+use hax::DefPathItem;
 use itertools::Itertools;
 use std::cmp::Ord;
 use std::path::{Component, PathBuf};

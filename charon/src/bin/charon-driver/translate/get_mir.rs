@@ -4,7 +4,6 @@ use std::panic;
 use std::rc::Rc;
 
 use hax::{HasParamEnv, UnderOwnerState};
-use hax_frontend_exporter as hax;
 use rustc_hir as hir;
 use rustc_middle::mir::Body;
 use rustc_middle::ty::TyCtxt;

@@ -82,7 +82,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub skip_borrowck: bool,
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
-    /// translated as normal. To only translate a particular call graph, use `--start-from`. This
+    /// skipped. To only translate a particular call graph, use `--start-from`. This
     /// uses a different mechanism than `--monomorphize-conservative` which should be a lot more
     /// complete, but doesn't currently support `dyn Trait`.
     #[clap(long, visible_alias = "mono")]

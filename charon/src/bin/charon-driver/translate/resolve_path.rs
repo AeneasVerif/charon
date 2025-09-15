@@ -1,7 +1,7 @@
 //! Machinery to resolve a string path into a `DefId`. Based on `clippy_utils::def_path_res`.
 use std::sync::Arc;
 
-use hax_frontend_exporter::{self as hax, BaseState, SInto};
+use hax::{BaseState, SInto};
 use itertools::Itertools;
 use rustc_ast::Mutability;
 use rustc_hir::def_id::{CrateNum, DefId, LOCAL_CRATE};

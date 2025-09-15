@@ -184,7 +184,7 @@ impl CheckGenericsVisitor<'_> {
         let Some(trait_decl) = self.ctx.translated.trait_decls.get(trait_id) else {
             return;
         };
-        let Some((_, bound_fn)) = trait_decl.methods().find(|(n, _)| n == method_name) else {
+        let Some(bound_fn) = trait_decl.methods().find(|m| m.name() == method_name) else {
             return;
         };
         let params = &bound_fn.params;
@@ -266,13 +266,13 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                         .types
                         .iter()
                         .zip(types.iter())
-                        .all(|(dname, (iname, _, _))| dname == iname);
+                        .all(|(dty, (iname, _))| &dty.name == iname);
                 if !types_match {
                     let target = target.with_ctx(args_fmt);
-                    let a = tdecl.types.iter().format(", ");
+                    let a = tdecl.types.iter().map(|t| &t.name).format(", ");
                     let b = types
                         .iter()
-                        .map(|(_, ty, _)| ty.with_ctx(args_fmt))
+                        .map(|(_, assoc_ty)| assoc_ty.value.with_ctx(args_fmt))
                         .format(", ");
                     self.error(format!(
                         "Mismatched types in builtin trait ref:\
@@ -324,9 +324,6 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         let Some(tdecl) = self.ctx.translated.trait_decls.get(timpl.impl_trait.id) else {
             return;
         };
-        // See `lift_associated_item_clauses`
-        assert!(timpl.type_clauses.is_empty());
-        assert!(tdecl.type_clauses.is_empty());
 
         let fmt1 = self.ctx.into_fmt();
         let tdecl_fmt = fmt1.push_binder(Cow::Borrowed(&tdecl.generics));
@@ -340,12 +337,13 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             &GenericsSource::item(timpl.impl_trait.id),
             |tclause, tref| self.assert_clause_matches(&tdecl_fmt, tclause, tref),
         );
+        // TODO: check type clauses
         let types_match = timpl.types.len() == tdecl.types.len()
             && tdecl
                 .types
                 .iter()
                 .zip(timpl.types.iter())
-                .all(|(dname, (iname, _))| dname == iname);
+                .all(|(dty, (iname, _))| &dty.name == iname);
         if !types_match {
             self.error(
                 "The associated types supplied by the trait impl don't match the trait decl.",
@@ -353,10 +351,10 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         }
         let consts_match = timpl.consts.len() == tdecl.consts.len()
             && tdecl
-                .types
+                .consts
                 .iter()
-                .zip(timpl.types.iter())
-                .all(|(dname, (iname, _))| dname == iname);
+                .zip(timpl.consts.iter())
+                .all(|(dconst, (iname, _))| &dconst.name == iname);
         if !consts_match {
             self.error(
                 "The associated consts supplied by the trait impl don't match the trait decl.",
@@ -366,7 +364,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         if !methods_match && self.phase != "after translation" {
             let decl_methods = tdecl
                 .methods()
-                .map(|(name, _)| format!("- {name}"))
+                .map(|m| format!("- {}", m.name()))
                 .join("\n");
             let impl_methods = timpl
                 .methods()
