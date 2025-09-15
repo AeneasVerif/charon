@@ -589,7 +589,10 @@ pub fn translate<'tcx, 'ctx>(
         tcx,
         hax::options::Options {
             inline_anon_consts: true,
-            resolve_drop_bounds: options.add_drop_bounds,
+            bounds_options: hax::options::BoundsOptions {
+                resolve_drop: options.add_drop_bounds,
+                prune_sized: false,
+            },
         },
     );
 

@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::any::TypeId
+#[lang_item("type_id")]
 pub opaque type TypeId
 
 // Full name: core::marker::MetaSized
