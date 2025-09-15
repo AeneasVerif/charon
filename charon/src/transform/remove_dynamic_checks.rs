@@ -365,7 +365,7 @@ fn remove_dynamic_checks(
             Statement {
                 content:
                     StatementKind::Assign(
-                        result,
+                        tuple,
                         Rvalue::BinaryOp(
                             binop @ (BinOp::AddChecked | BinOp::SubChecked | BinOp::MulChecked),
                             _,
@@ -375,17 +375,25 @@ fn remove_dynamic_checks(
                 ..
             },
             rest @ ..,
-        ] if let Some(result_local_id) = result.as_local() => {
-            // Look for uses of the overflow boolean.
-            let mut overflow_is_used = false;
+        ] if let Some(tuple_local_id) = tuple.as_local() => {
+            // Check if the result boolean is used in any other way than just getting the integer
+            // result.
+            let mut uses_of_tuple = 0;
+            let mut uses_of_integer = 0;
+            if *tuple == locals.return_place() {
+                uses_of_tuple += 1; // The return place counts as a use.
+            }
             for stmt in rest.iter_mut() {
                 stmt.dyn_visit_in_body(|p: &Place| {
+                    if p == tuple {
+                        uses_of_tuple += 1;
+                    }
                     if let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
                         p.as_projection()
-                        && fid.index() == 1
-                        && sub == result
+                        && fid.index() == 0
+                        && sub == tuple
                     {
-                        overflow_is_used = true;
+                        uses_of_integer += 1;
                     }
                 });
             }
@@ -405,15 +413,14 @@ fn remove_dynamic_checks(
                 && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
                     assert_cond.as_projection()
                 && fid.index() == 1
-                && sub == result
+                && sub == tuple
             {
                 true
             } else {
                 false
             };
-            if overflow_is_used && !followed_by_assert {
-                // The overflow boolean is used in a way that isn't a builtin overflow check; we
-                // change nothing.
+            if uses_of_tuple != uses_of_integer && !followed_by_assert {
+                // The tuple is used either directly or for the overflow check; we change nothing.
                 return;
             }
 
@@ -424,28 +431,28 @@ fn remove_dynamic_checks(
                 // The failure behavior is part of the binop now, so we remove the assert.
                 rest[0].content = StatementKind::Nop;
             } else {
-                // The overflow boolean is not used, we replace the operations with wrapping
-                // semantics.
+                // The tuple is used exclusively to access the integer result, so we replace the
+                // operation with wrapping semantics.
                 *binop = binop.with_overflow(OverflowMode::Wrap);
             }
             // Fixup the local type.
-            let result_local = &mut locals.locals[result_local_id];
+            let result_local = &mut locals.locals[tuple_local_id];
             result_local.ty = result_local.ty.as_tuple().unwrap()[0].clone();
             // Fixup the place type.
-            let new_result_place = locals.place_for_var(result_local_id);
+            let new_result_place = locals.place_for_var(tuple_local_id);
             // Replace uses of `r.0` with `r`.
             for stmt in rest.iter_mut() {
                 stmt.dyn_visit_in_body_mut(|p: &mut Place| {
                     if let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(..), fid))) =
                         p.as_projection()
-                        && sub == result
+                        && sub == tuple
                     {
                         assert_eq!(fid.index(), 0);
                         *p = new_result_place.clone()
                     }
                 });
             }
-            *result = new_result_place;
+            *tuple = new_result_place;
             return;
         }
 
