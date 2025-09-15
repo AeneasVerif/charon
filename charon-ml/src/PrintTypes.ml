@@ -317,6 +317,28 @@ and generic_args_to_string (env : 'a fmt_env) (generics : generic_args) : string
   in
   params ^ trait_refs
 
+and trait_instance_id_to_string (env : 'a fmt_env)
+    (implements : trait_decl_ref region_binder option)
+    (kind : trait_instance_id) : string =
+  match kind with
+  | Self -> "Self"
+  | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
+  | BuiltinOrAuto _ ->
+      region_binder_to_string trait_decl_ref_to_string env
+        (Option.get implements)
+  | Clause id -> trait_db_var_to_string env id
+  | ParentClause (tref, clause_id) ->
+      let inst_id = trait_ref_to_string env tref in
+      let clause_id = trait_clause_id_to_string env clause_id in
+      "parent(" ^ inst_id ^ ")::" ^ clause_id
+  | Dyn ->
+      let trait =
+        region_binder_to_string trait_decl_ref_to_string env
+          (Option.get implements)
+      in
+      "dyn(" ^ trait ^ ")"
+  | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
+
 and trait_ref_to_string (env : 'a fmt_env) (tr : trait_ref) : string =
   match tr.trait_id with
   | Self -> "Self"
@@ -333,20 +355,6 @@ and trait_ref_to_string (env : 'a fmt_env) (tr : trait_ref) : string =
         region_binder_to_string trait_decl_ref_to_string env tr.trait_decl_ref
       in
       "dyn(" ^ trait ^ ")"
-  | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
-
-and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
-    string =
-  match id with
-  | Self -> "Self"
-  | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
-  | BuiltinOrAuto _ -> "builtin/auto"
-  | Clause id -> trait_db_var_to_string env id
-  | ParentClause (tref, clause_id) ->
-      let inst_id = trait_ref_to_string env tref in
-      let clause_id = trait_clause_id_to_string env clause_id in
-      "parent(" ^ inst_id ^ ")::" ^ clause_id
-  | Dyn -> "dyn"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and trait_decl_ref_to_string (env : 'a fmt_env) (tr : trait_decl_ref) : string =
