@@ -12,7 +12,7 @@ impl UllbcPass for Transform {
         // Replace any copy/move of a unit local to a plain const assignment. Note: we don't touch
         // other `Rvalue`s as they might have side-effects (e.g. reading through a pointer).
         body.visit_statements(|st| {
-            if let RawStatement::Assign(_, rvalue) = &mut st.content
+            if let StatementKind::Assign(_, rvalue) = &mut st.content
                 && let Rvalue::Use(Operand::Move(from) | Operand::Copy(from)) = rvalue
                 && from.is_local()
                 && from.ty().is_unit()
@@ -37,7 +37,7 @@ impl UllbcPass for Transform {
                 x: &ullbc_ast::Statement,
             ) -> ControlFlow<Self::Break> {
                 match &x.content {
-                    RawStatement::Assign(place, rvalue) => {
+                    StatementKind::Assign(place, rvalue) => {
                         if place.is_local() && place.ty().is_unit() {
                             // Don't count the assignment as a use.
                         } else {
@@ -63,12 +63,12 @@ impl UllbcPass for Transform {
 
         // Remove side-effect-free assignments into unused places.
         body.visit_statements(|st| {
-            if let RawStatement::Assign(place, rvalue) = &st.content
+            if let StatementKind::Assign(place, rvalue) = &st.content
                 && let Some(var_id) = place.as_local()
                 && unused_unit_locals.contains(&var_id)
                 && rvalue.is_aggregate()
             {
-                st.content = RawStatement::Nop;
+                st.content = StatementKind::Nop;
             }
         });
     }

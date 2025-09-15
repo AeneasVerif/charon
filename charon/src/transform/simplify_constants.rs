@@ -30,12 +30,12 @@ fn transform_constant_expr(
     new_var: &mut impl FnMut(Rvalue, Ty) -> Place,
 ) -> Operand {
     match val.value {
-        RawConstantExpr::Literal(_)
-        | RawConstantExpr::Var(_)
-        | RawConstantExpr::RawMemory(..)
-        | RawConstantExpr::TraitConst(..)
-        | RawConstantExpr::FnPtr(..)
-        | RawConstantExpr::Opaque(_) => {
+        ConstantExprKind::Literal(_)
+        | ConstantExprKind::Var(_)
+        | ConstantExprKind::RawMemory(..)
+        | ConstantExprKind::TraitConst(..)
+        | ConstantExprKind::FnPtr(..)
+        | ConstantExprKind::Opaque(_) => {
             // Nothing to do
             // TODO: for trait const: might come from a top-level impl, so we might
             // want to introduce an intermediate statement to be able to evaluate
@@ -47,10 +47,12 @@ fn transform_constant_expr(
         //     const GLOBAL: usize = 0;
         //     let x = GLOBAL;
         //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
-        RawConstantExpr::Global(global_ref) => Operand::Copy(Place::new_global(global_ref, val.ty)),
-        RawConstantExpr::PtrNoProvenance(ptr) => {
+        ConstantExprKind::Global(global_ref) => {
+            Operand::Copy(Place::new_global(global_ref, val.ty))
+        }
+        ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
-            let ptr_usize = RawConstantExpr::Literal(Literal::Scalar(ScalarValue::Unsigned(
+            let ptr_usize = ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
                 UIntTy::Usize,
                 ptr,
             )));
@@ -67,9 +69,9 @@ fn transform_constant_expr(
             );
             Operand::Move(uvar)
         }
-        RawConstantExpr::Ref(bval) => {
+        ConstantExprKind::Ref(bval) => {
             match bval.value {
-                RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
+                ConstantExprKind::Global(global_ref) => Operand::Move(new_var(
                     Rvalue::Ref(Place::new_global(global_ref, bval.ty), BorrowKind::Shared),
                     val.ty,
                 )),
@@ -88,9 +90,9 @@ fn transform_constant_expr(
                 }
             }
         }
-        RawConstantExpr::Ptr(rk, bval) => {
+        ConstantExprKind::Ptr(rk, bval) => {
             match bval.value {
-                RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
+                ConstantExprKind::Global(global_ref) => Operand::Move(new_var(
                     Rvalue::RawPtr(Place::new_global(global_ref, bval.ty), rk),
                     val.ty,
                 )),
@@ -109,7 +111,7 @@ fn transform_constant_expr(
                 }
             }
         }
-        RawConstantExpr::Adt(variant, fields) => {
+        ConstantExprKind::Adt(variant, fields) => {
             let fields = fields
                 .into_iter()
                 .map(|x| transform_constant_expr(span, Box::new(x), new_var))
@@ -125,7 +127,7 @@ fn transform_constant_expr(
 
             Operand::Move(var)
         }
-        RawConstantExpr::Array(fields) => {
+        ConstantExprKind::Array(fields) => {
             let fields = fields
                 .into_iter()
                 .map(|x| transform_constant_expr(span, Box::new(x), new_var))
@@ -160,7 +162,7 @@ fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>,
                     let var = locals.new_var(None, ty);
                     nst.push(Statement::new(
                         *span,
-                        RawStatement::Assign(var.clone(), rvalue),
+                        StatementKind::Assign(var.clone(), rvalue),
                     ));
                     var
                 }

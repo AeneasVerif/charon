@@ -15,11 +15,11 @@ impl UllbcPass for Transform {
             if let Ok(body) = &mut decl.body {
                 let body = body.as_unstructured_mut().unwrap();
                 for block in &mut body.body {
-                    if let RawTerminator::Return = block.terminator.content {
+                    if let TerminatorKind::Return = block.terminator.content {
                         let return_place = body.locals.return_place();
                         let assign_st = Statement::new(
                             block.terminator.span,
-                            RawStatement::Assign(return_place, Rvalue::unit_value()),
+                            StatementKind::Assign(return_place, Rvalue::unit_value()),
                         );
                         block.statements.push(assign_st)
                     }

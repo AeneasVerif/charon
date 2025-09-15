@@ -23,7 +23,7 @@ error: Found inconsistent generics after transformations:
          charon_lib::ast::expressions::FnPtr
          charon_lib::ast::gast::FnOperand
          charon_lib::ast::gast::Call
-         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::StatementKind
          charon_lib::ast::llbc_ast::Statement
          alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
          charon_lib::ast::llbc_ast::Block

@@ -126,7 +126,6 @@ pub trait FnOnce::<test_crate::main::closure<'_>, (u8)>
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
     parent_clause1 : [@TraitClause1]: Sized::<(u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
-    type Output
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>
     vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure<'_>, (u8)><u8>
 }
@@ -166,7 +165,6 @@ pub trait FnOnce::<test_crate::main::closure#1<'_>, (u8)>
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
     parent_clause1 : [@TraitClause1]: Sized::<(u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
-    type Output
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>
     vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#1<'_>, (u8)><u8>
 }
@@ -198,7 +196,6 @@ pub trait FnOnce::<test_crate::main::closure#2, (u8)>
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
     parent_clause1 : [@TraitClause1]: Sized::<(u8)>
     parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
-    type Output
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>
     vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#2, (u8)><u8>
 }
@@ -439,7 +436,6 @@ impl<'_0> FnOnce::<test_crate::main::closure<'_>, (u8)> {
     parent_clause0 = MetaSized::<test_crate::main::closure<'_>>
     parent_clause1 = Sized::<(u8)>
     parent_clause2 = Tuple::<(u8)>
-    type Output = u8
     fn call_once = {impl FnOnce::<test_crate::main::closure<'_>, (u8)>}::call_once<'_0>
     non-dyn-compatible
 }
@@ -484,7 +480,6 @@ impl<'_0> FnOnce::<test_crate::main::closure#1<'_>, (u8)> {
     parent_clause0 = MetaSized::<test_crate::main::closure#1<'_>>
     parent_clause1 = Sized::<(u8)>
     parent_clause2 = Tuple::<(u8)>
-    type Output = u8
     fn call_once = {impl FnOnce::<test_crate::main::closure#1<'_>, (u8)>}::call_once<'_0>
     non-dyn-compatible
 }
@@ -504,7 +499,6 @@ impl FnOnce::<test_crate::main::closure#2, (u8)> {
     parent_clause0 = MetaSized::<test_crate::main::closure#2>
     parent_clause1 = Sized::<(u8)>
     parent_clause2 = Tuple::<(u8)>
-    type Output = u8
     fn call_once = {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once
     non-dyn-compatible
 }

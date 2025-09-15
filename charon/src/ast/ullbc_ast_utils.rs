@@ -22,7 +22,7 @@ impl SwitchTargets {
 }
 
 impl Statement {
-    pub fn new(span: Span, content: RawStatement) -> Self {
+    pub fn new(span: Span, content: StatementKind) -> Self {
         Statement {
             span,
             content,
@@ -32,7 +32,7 @@ impl Statement {
 }
 
 impl Terminator {
-    pub fn new(span: Span, content: RawTerminator) -> Self {
+    pub fn new(span: Span, content: TerminatorKind) -> Self {
         Terminator {
             span,
             content,
@@ -40,7 +40,7 @@ impl Terminator {
         }
     }
     pub fn goto(span: Span, target: BlockId) -> Self {
-        Self::new(span, RawTerminator::Goto { target })
+        Self::new(span, TerminatorKind::Goto { target })
     }
 
     pub fn into_block(self) -> BlockData {
@@ -62,16 +62,16 @@ impl BlockData {
 
     pub fn targets(&self) -> Vec<BlockId> {
         match &self.terminator.content {
-            RawTerminator::Goto { target } => {
+            TerminatorKind::Goto { target } => {
                 vec![*target]
             }
-            RawTerminator::Switch { targets, .. } => targets.get_targets(),
-            RawTerminator::Call {
+            TerminatorKind::Switch { targets, .. } => targets.get_targets(),
+            TerminatorKind::Call {
                 call: _,
                 target,
                 on_unwind,
             } => vec![*target, *on_unwind],
-            RawTerminator::Abort(..) | RawTerminator::Return | RawTerminator::UnwindResume => {
+            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
                 vec![]
             }
         }

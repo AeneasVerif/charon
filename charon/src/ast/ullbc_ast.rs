@@ -19,7 +19,7 @@ pub type ExprBody = GExprBody<BodyContents>;
 #[derive(
     Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize, Drive, DriveMut,
 )]
-pub enum RawStatement {
+pub enum StatementKind {
     Assign(Place, Rvalue),
     /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
     SetDiscriminant(Place, VariantId),
@@ -50,7 +50,7 @@ pub enum RawStatement {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
-    pub content: RawStatement,
+    pub content: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]
@@ -81,7 +81,7 @@ pub enum SwitchTargets {
 
 /// A raw terminator: a terminator without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
-pub enum RawTerminator {
+pub enum TerminatorKind {
     Goto {
         target: BlockId,
     },
@@ -103,7 +103,7 @@ pub enum RawTerminator {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Terminator {
     pub span: Span,
-    pub content: RawTerminator,
+    pub content: TerminatorKind,
     /// Comments that precede this terminator.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]

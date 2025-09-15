@@ -24,7 +24,7 @@ impl UllbcPass for Transform {
                 if body.body.elem_count() == 1
                     && let Some(block) = body.body.iter().next()
                     && block.statements.is_empty()
-                    && let RawTerminator::Abort(AbortKind::Panic(Some(name))) =
+                    && let TerminatorKind::Abort(AbortKind::Panic(Some(name))) =
                         &block.terminator.content
                 {
                     if name.equals_ref_name(builtins::EXPLICIT_PANIC_NAME) {
@@ -37,7 +37,7 @@ impl UllbcPass for Transform {
         });
 
         let panic_name = Name::from_path(builtins::EXPLICIT_PANIC_NAME);
-        let panic_terminator = RawTerminator::Abort(AbortKind::Panic(Some(panic_name)));
+        let panic_terminator = TerminatorKind::Abort(AbortKind::Panic(Some(panic_name)));
 
         // Replace each call to one such function with a `Panic`.
         ctx.for_each_fun_decl(|_ctx, decl| {
@@ -47,7 +47,7 @@ impl UllbcPass for Transform {
                     let Some(block) = body.body.get_mut(block_id) else {
                         continue;
                     };
-                    if let RawTerminator::Call {
+                    if let TerminatorKind::Call {
                         call:
                             Call {
                                 func:

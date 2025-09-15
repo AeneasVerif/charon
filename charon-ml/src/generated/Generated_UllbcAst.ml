@@ -8,8 +8,14 @@ module BlockId = IdGen ()
 
 type block_id = (BlockId.id[@visitors.opaque])
 
+and statement = {
+  span : span;
+  content : statement_kind;
+  comments_before : string list;  (** Comments that precede this statement. *)
+}
+
 (** A raw statement: a statement without meta data. *)
-and raw_statement =
+and statement_kind =
   | Assign of place * rvalue
   | SetDiscriminant of place * variant_id
       (** A call. For now, we don't support dynamic calls (i.e. to a function
@@ -35,12 +41,6 @@ and raw_statement =
           namely: bounds checks, over/underflow checks, div/rem by zero checks,
           pointer alignement check. *)
   | Nop  (** Does nothing. Useful for passes. *)
-
-and statement = {
-  span : span;
-  content : raw_statement;
-  comments_before : string list;  (** Comments that precede this statement. *)
-}
 
 and switch =
   | If of block_id * block_id  (** Gives the [if] block and the [else] block *)
@@ -72,8 +72,14 @@ and switch =
 type block = { statements : statement list; terminator : terminator }
 and blocks = block list
 
+and terminator = {
+  span : span;
+  content : terminator_kind;
+  comments_before : string list;  (** Comments that precede this terminator. *)
+}
+
 (** A raw terminator: a terminator without meta data. *)
-and raw_terminator =
+and terminator_kind =
   | Goto of block_id
       (** Fields:
           - [target] *)
@@ -89,12 +95,6 @@ and raw_terminator =
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
   | UnwindResume
-
-and terminator = {
-  span : span;
-  content : raw_terminator;
-  comments_before : string list;  (** Comments that precede this terminator. *)
-}
 [@@deriving
   show,
   eq,

@@ -125,14 +125,14 @@ impl ItemTransCtx<'_, '_> {
             hax::CtorOf::Struct => None,
             hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
         };
-        let st_kind = RawStatement::Assign(
+        let st_kind = StatementKind::Assign(
             locals.return_place(),
             Rvalue::Aggregate(AggregateKind::Adt(tref, variant, None), args),
         );
         let statement = Statement::new(span, st_kind);
         let block = BlockData {
             statements: vec![statement],
-            terminator: Terminator::new(span, RawTerminator::Return),
+            terminator: Terminator::new(span, TerminatorKind::Return),
         };
         let body = Body::Unstructured(GExprBody {
             span,
