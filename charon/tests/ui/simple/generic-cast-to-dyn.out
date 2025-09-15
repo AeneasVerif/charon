@@ -34,7 +34,6 @@ where
 pub fn type_id<'_0, Self>(@1: &'_0 (Self)) -> TypeId
 where
     [@TraitClause0]: Any<Self>,
-    Self : 'static,
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]

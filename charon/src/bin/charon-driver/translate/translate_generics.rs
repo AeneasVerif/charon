@@ -337,6 +337,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.push_generics_for_def(span, &parent_def, true)?;
         }
         self.push_generics_for_def_without_parents(span, def, !is_parent, !is_parent)?;
+        if !is_parent {
+            // Also register implied predicates.
+            if let hax::FullDefKind::Trait {
+                implied_predicates, ..
+            }
+            | hax::FullDefKind::TraitAlias {
+                implied_predicates, ..
+            } = &def.kind
+            {
+                self.register_predicates(
+                    implied_predicates,
+                    PredicateOrigin::WhereClauseOnTrait,
+                    &PredicateLocation::Parent,
+                )?;
+            }
+        }
         Ok(())
     }
 
@@ -376,19 +392,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 origin.clone(),
                 &PredicateLocation::Base,
             )?;
-            // Also register implied predicates.
-            if let FullDefKind::Trait {
-                implied_predicates, ..
-            }
-            | FullDefKind::TraitAlias {
-                implied_predicates, ..
-            }
-            | FullDefKind::AssocTy {
-                implied_predicates, ..
-            } = &def.kind
-            {
-                self.register_predicates(implied_predicates, origin, &PredicateLocation::Parent)?;
-            }
 
             if let hax::FullDefKind::Trait { items, .. } = &def.kind
                 && include_assoc_ty_clauses
