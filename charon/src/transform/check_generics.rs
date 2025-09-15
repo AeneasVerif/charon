@@ -225,19 +225,18 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             }
         }
     }
-    fn enter_trait_ref_kind(&mut self, x: &TraitRefKind) {
-        match x {
+    fn enter_trait_ref(&mut self, x: &TraitRef) {
+        match &x.kind {
             TraitRefKind::Clause(var) => {
                 if self.binder_stack.get_var(*var).is_none() {
                     self.error(format!("Found incorrect clause var: {var}"));
                 }
             }
             TraitRefKind::BuiltinOrAuto {
-                trait_decl_ref,
                 parent_trait_refs,
                 types,
             } => {
-                let trait_id = trait_decl_ref.skip_binder.id;
+                let trait_id = x.trait_decl_ref.skip_binder.id;
                 let target = GenericsSource::item(trait_id);
                 let Some(tdecl) = self.ctx.translated.trait_decls.get(trait_id) else {
                     return;

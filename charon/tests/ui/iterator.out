@@ -191,7 +191,7 @@ pub trait FnOnce<Self, Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
     fn call_once = call_once<Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnMut
@@ -203,7 +203,7 @@ pub trait FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
-    non-dyn-compatible
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
 // Full name: core::iter::adapters::map::Map
@@ -323,7 +323,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    non-dyn-compatible
+    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
 }
 
 // Full name: core::default::Default
@@ -424,7 +424,7 @@ where
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
 // Full name: core::iter::traits::iterator::Iterator
@@ -511,7 +511,7 @@ pub trait Iterator<Self>
     fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause1::Output = K> = is_sorted_by_key<Self, F, K>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn __iterator_get_unchecked<'_0, [@TraitClause0]: TrustedRandomAccessNoCoerce<Self>> = core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0_0, Self>[Self, @TraitClause0_0]
-    non-dyn-compatible
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -548,7 +548,7 @@ pub trait DoubleEndedIterator<Self>
     fn try_rfold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::parent_clause1::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause1::Output = R, @TraitClause1_5::Output = B> = try_rfold<'_0_0, Self, B, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
     fn rfold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (B, Self::parent_clause1::Item)>, @TraitClause1_3::parent_clause1::Output = B> = rfold<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
     fn rfind<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::parent_clause1::Item))>, for<'_0> @TraitClause1_2::parent_clause1::Output = bool> = rfind<'_0_0, Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    non-dyn-compatible
+    vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator
@@ -558,7 +558,7 @@ pub trait ExactSizeIterator<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
     fn len<'_0> = len<'_0_0, Self>[Self]
     fn is_empty<'_0> = is_empty<'_0_0, Self>[Self]
-    non-dyn-compatible
+    vtable: core::iter::traits::exact_size::ExactSizeIterator::{vtable}<Self::parent_clause1::Item>
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -1336,7 +1336,7 @@ where
     fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (T), &'_0_1 (T))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::is_sorted_by<T, F, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (T)>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause1::Output = K> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::is_sorted_by_key<T, F, K, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn __iterator_get_unchecked<'_0> = {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::__iterator_get_unchecked<'_0_0, T, const N : usize>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::{vtable}<T, const N : usize>[@TraitClause0]
 }
 
 // Full name: core::array::iter::{impl IntoIterator for Array<T, const N : usize>}::into_iter
@@ -1356,7 +1356,7 @@ where
     type Item = T
     type IntoIter = IntoIter<T, const N : usize>[@TraitClause0]
     fn into_iter = {impl IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl IntoIterator for Array<T, const N : usize>}::{vtable}<T, const N : usize>[@TraitClause0]
 }
 
 // Full name: core::ops::drop::Drop
@@ -1563,7 +1563,7 @@ where
     type Item = @TraitClause1::Item
     type IntoIter = I
     fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
+    vtable: {impl IntoIterator for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: core::iter::traits::collect::Extend::extend
@@ -3064,7 +3064,7 @@ where
     fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'a (T)), &'_0_1 (&'a (T)))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (T))>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause1::Output = K> = core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by_key<'a, T, F, K>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn __iterator_get_unchecked<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: core::slice::iter::Chunks
@@ -3772,7 +3772,7 @@ where
     fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'a (Slice<T>)), &'_0_1 (&'a (Slice<T>)))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (Slice<T>))>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause1::Output = K> = core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::is_sorted_by_key<'a, T, F, K>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn __iterator_get_unchecked<'_0> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Iterator for Chunks<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: core::slice::iter::ChunksExact
@@ -4480,7 +4480,7 @@ where
     fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (&'a (Slice<T>)), &'_0_1 (&'a (Slice<T>)))>, for<'_0, '_1> @TraitClause1_2::parent_clause1::Output = bool> = core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (&'a (Slice<T>))>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause1::Output = K> = core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::is_sorted_by_key<'a, T, F, K>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn __iterator_get_unchecked<'_0> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_0_0, T>[@TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: core::slice::{Slice<T>}::iter

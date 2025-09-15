@@ -224,7 +224,7 @@ mod trait_ref_path {
                 TraitRefKind::ItemClause(..) => unreachable!(),
                 TraitRefKind::TraitImpl(..)
                 | TraitRefKind::BuiltinOrAuto { .. }
-                | TraitRefKind::Dyn(..)
+                | TraitRefKind::Dyn { .. }
                 | TraitRefKind::Unknown(..) => None,
             }
         }
@@ -874,7 +874,7 @@ impl<'a> ComputeItemModifications<'a> {
                     )
                 }
             }
-            TraitRefKind::Dyn(..) => {
+            TraitRefKind::Dyn { .. } => {
                 register_error!(
                     self.ctx,
                     span,
@@ -990,7 +990,7 @@ impl UpdateItemBody<'_> {
                 }
             },
             // TODO: add enough info to recover assoc types.
-            TraitRefKind::Dyn(..) => None,
+            TraitRefKind::Dyn { .. } => None,
             TraitRefKind::Unknown(..) => None,
         }
     }
@@ -1126,23 +1126,9 @@ impl VisitAstMut for UpdateItemBody<'_> {
     // Process trait refs
     fn enter_trait_ref(&mut self, tref: &mut TraitRef) {
         self.process_poly_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
-    }
-    fn enter_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
-        // There are some stray `TraitDeclRef`s that we have to update.
-        // TODO: we should make `TraitRefKind` recursively contain full `TraitRef`s so we have the
-        // implemented trait info at each level. This would require hax to give us more info.
-        let kind_clone = kind.clone();
-        match kind {
-            TraitRefKind::Dyn(tref) => {
-                self.process_poly_trait_decl_ref(tref, kind_clone);
-            }
-            TraitRefKind::BuiltinOrAuto {
-                trait_decl_ref: tref,
-                types,
-                ..
-            } => {
-                self.process_poly_trait_decl_ref(tref, kind_clone);
-                let target = GenericsSource::item(tref.skip_binder.id);
+        match &mut tref.kind {
+            TraitRefKind::BuiltinOrAuto { types, .. } => {
+                let target = GenericsSource::item(tref.trait_decl_ref.skip_binder.id);
                 if let Some(decl_modifs) = self.item_modifications.get(&target) {
                     assert!(decl_modifs.required_extra_assoc_types().count() == 0);
                     if decl_modifs.add_type_params {

@@ -283,7 +283,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
             ImplExprAtom::Dyn => TraitRef {
-                kind: TraitRefKind::Dyn(trait_decl_ref.clone()),
+                kind: TraitRefKind::Dyn,
                 trait_decl_ref,
             },
             ImplExprAtom::Builtin {
@@ -352,7 +352,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         })
                         .try_collect()?;
                     TraitRefKind::BuiltinOrAuto {
-                        trait_decl_ref: trait_decl_ref.clone(),
                         parent_trait_refs,
                         types,
                     }

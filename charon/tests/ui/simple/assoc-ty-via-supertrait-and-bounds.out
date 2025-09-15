@@ -17,14 +17,14 @@ pub trait HasOutput<Self, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Output>
-    non-dyn-compatible
+    vtable: test_crate::HasOutput::{vtable}<Self_Output>
 }
 
 // Full name: test_crate::{impl HasOutput<()> for ()}
 impl HasOutput<()> for () {
     parent_clause0 = MetaSized<()>
     parent_clause1 = Sized<()>
-    non-dyn-compatible
+    vtable: {impl HasOutput<()> for ()}::{vtable}
 }
 
 // Full name: test_crate::HasOutput2
@@ -32,14 +32,14 @@ pub trait HasOutput2<Self, Self_Clause1_Output>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: HasOutput<Self, Self_Clause1_Output>
-    non-dyn-compatible
+    vtable: test_crate::HasOutput2::{vtable}<Self_Clause1_Output>
 }
 
 // Full name: test_crate::{impl HasOutput2<()> for ()}
 impl HasOutput2<()> for () {
     parent_clause0 = MetaSized<()>
     parent_clause1 = {impl HasOutput<()> for ()}
-    non-dyn-compatible
+    vtable: {impl HasOutput2<()> for ()}::{vtable}
 }
 
 // Full name: test_crate::Wrapper
@@ -58,7 +58,7 @@ where
 {
     parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
     parent_clause1 = @TraitClause1::parent_clause1
-    non-dyn-compatible
+    vtable: {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::{impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}
@@ -69,7 +69,7 @@ where
 {
     parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
     parent_clause1 = {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}<T, Clause1_Clause1_Output>[@TraitClause0, @TraitClause1::parent_clause1]
-    non-dyn-compatible
+    vtable: {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::take

@@ -21,7 +21,7 @@ pub trait Add<Self, Rhs>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
-    non-dyn-compatible
+    vtable: core::ops::arith::Add::{vtable}<Rhs, Self::Output>
 }
 
 // Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}::add
@@ -34,7 +34,7 @@ impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {
     parent_clause2 = Sized<u32>
     type Output = u32
     fn add = {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>
-    non-dyn-compatible
+    vtable: {impl Add<&'_0 (u32)> for &'_1 (u32)}::{vtable}<'_0, '_1>
 }
 
 #[lang_item("add")]

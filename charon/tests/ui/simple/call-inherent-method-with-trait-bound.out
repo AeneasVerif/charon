@@ -30,14 +30,14 @@ pub trait Trait<Self, Self_Type>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Type>
-    non-dyn-compatible
+    vtable: test_crate::Trait::{vtable}<Self_Type>
 }
 
 // Full name: test_crate::{impl Trait<()> for ()}
 impl Trait<()> for () {
     parent_clause0 = MetaSized<()>
     parent_clause1 = Sized<()>
-    non-dyn-compatible
+    vtable: {impl Trait<()> for ()}::{vtable}
 }
 
 // Full name: test_crate::HashMap

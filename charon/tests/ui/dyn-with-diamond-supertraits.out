@@ -1,11 +1,357 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:426:14:
-trait should be dyn-compatible
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::{impl#4}`.
-  --> tests/ui/dyn-with-diamond-supertraits.rs:47:1
-   |
-47 | impl Join<i32> for i32 {
-   | ^^^^^^^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::ops::arith::Add
+#[lang_item("add")]
+pub trait Add<Self, Rhs>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Rhs>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    type Output
+    fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
+    vtable: core::ops::arith::Add::{vtable}<Rhs, Self::Output>
+}
+
+// Full name: core::ops::arith::{impl Add<i32> for &'a (i32)}::add
+pub fn {impl Add<i32> for &'a (i32)}::add<'a>(@1: &'a (i32), @2: i32) -> i32
+
+// Full name: core::ops::arith::{impl Add<i32> for &'a (i32)}
+impl<'a> Add<i32> for &'a (i32) {
+    parent_clause0 = MetaSized<&'_ (i32)>
+    parent_clause1 = Sized<i32>
+    parent_clause2 = Sized<i32>
+    type Output = i32
+    fn add = {impl Add<i32> for &'a (i32)}::add<'a>
+    vtable: {impl Add<i32> for &'a (i32)}::{vtable}<'a>
+}
+
+#[lang_item("add")]
+pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
+where
+    [@TraitClause0]: Add<Self, Rhs>,
+
+// Full name: test_crate::Super
+trait Super<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn super_method<'_0> = test_crate::Super::super_method<'_0_0, Self, T>[Self]
+    vtable: test_crate::Super::{vtable}<T>
+}
+
+fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
+where
+    [@TraitClause0]: Super<Self, T>,
+
+// Full name: test_crate::Internal
+trait Internal<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Internal>
+    type Internal
+    fn internal_method<'_0> = test_crate::Internal::internal_method<'_0_0, Self>[Self]
+    vtable: test_crate::Internal::{vtable}<Self::Internal>
+}
+
+fn test_crate::Internal::internal_method<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Internal
+where
+    [@TraitClause0]: Internal<Self>,
+
+// Full name: test_crate::Left
+trait Left<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Internal<Self>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Left>
+    type Left
+    fn left_method<'_0> = test_crate::Left::left_method<'_0_0, Self>[Self]
+    vtable: test_crate::Left::{vtable}<Self::Left, Self::parent_clause1::Internal>
+}
+
+fn test_crate::Left::left_method<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Left
+where
+    [@TraitClause0]: Left<Self>,
+
+// Full name: test_crate::Right
+trait Right<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Internal<Self>
+    parent_clause2 : [@TraitClause2]: Super<Self, T>
+    parent_clause3 : [@TraitClause3]: Sized<T>
+    parent_clause4 : [@TraitClause4]: Sized<Self::Right>
+    type Right
+    fn right_method<'_0> = test_crate::Right::right_method<'_0_0, Self, T>[Self]
+    vtable: test_crate::Right::{vtable}<T, Self::Right, Self::parent_clause1::Internal>
+}
+
+fn test_crate::Right::right_method<'_0, Self, T>(@1: &'_0 (Self)) -> @TraitClause0::Right
+where
+    [@TraitClause0]: Right<Self, T>,
+
+struct test_crate::Join::{vtable}<T, Ty0, Ty1, Ty2, Ty3> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3)),
+  method_join_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3))) -> (Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3), T>::parent_clause1::Left, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3), T>::parent_clause2::Right),
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (test_crate::Left::{vtable}<Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3), T>::parent_clause1::Left, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3), T>::parent_clause1::parent_clause1::Internal>),
+  super_trait_2: &'static (test_crate::Right::{vtable}<T, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3), T>::parent_clause2::Right, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = Ty0 + @TraitClause1_0::parent_clause2::Right = Ty1 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty2 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = Ty3), T>::parent_clause1::parent_clause1::Internal>),
+}
+
+// Full name: test_crate::Join
+trait Join<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Left<Self>
+    parent_clause2 : [@TraitClause2]: Right<Self, T>
+    parent_clause3 : [@TraitClause3]: Sized<T>
+    fn join_method<'_0> = test_crate::Join::join_method<'_0_0, Self, T>[Self]
+    vtable: test_crate::Join::{vtable}<T, Self::parent_clause1::Left, Self::parent_clause1::parent_clause1::Internal, Self::parent_clause2::Right, Self::parent_clause1::parent_clause1::Internal>
+}
+
+fn test_crate::Join::join_method<'_0, Self, T>(@1: &'_0 (Self)) -> (@TraitClause0::parent_clause1::Left, @TraitClause0::parent_clause2::Right)
+where
+    [@TraitClause0]: Join<Self, T>,
+
+// Full name: test_crate::{impl Super<i32> for i32}::super_method
+fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
+{
+    let @0: i32; // return
+    let self@1: &'_ (i32); // arg #1
+    let arg@2: i32; // arg #2
+    let @3: &'_ (i32); // anonymous local
+    let @4: i32; // anonymous local
+
+    storage_live(@3)
+    @3 := copy (self@1)
+    storage_live(@4)
+    @4 := copy (arg@2)
+    @0 := {impl Add<i32> for &'a (i32)}::add<'_>(move (@3), move (@4))
+    storage_dead(@4)
+    storage_dead(@3)
+    return
+}
+
+// Full name: test_crate::{impl Super<i32> for i32}
+impl Super<i32> for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = Sized<i32>
+    fn super_method<'_0> = {impl Super<i32> for i32}::super_method<'_0_0>
+    vtable: {impl Super<i32> for i32}::{vtable}
+}
+
+// Full name: test_crate::{impl Internal for i32}::internal_method
+fn {impl Internal for i32}::internal_method<'_0>(@1: &'_0 (i32)) -> i32
+{
+    let @0: i32; // return
+    let self@1: &'_ (i32); // arg #1
+    let @2: i32; // anonymous local
+    let @3: i32; // anonymous local
+
+    storage_live(@3)
+    storage_live(@2)
+    @2 := copy (*(self@1))
+    @3 := copy (@2) panic.+ const (1 : i32)
+    @0 := move (@3)
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::{impl Internal for i32}
+impl Internal for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = Sized<i32>
+    type Internal = i32
+    fn internal_method<'_0> = {impl Internal for i32}::internal_method<'_0_0>
+    vtable: {impl Internal for i32}::{vtable}
+}
+
+// Full name: test_crate::{impl Left for i32}::left_method
+fn {impl Left for i32}::left_method<'_0>(@1: &'_0 (i32)) -> i32
+{
+    let @0: i32; // return
+    let self@1: &'_ (i32); // arg #1
+    let @2: i32; // anonymous local
+    let @3: i32; // anonymous local
+
+    storage_live(@3)
+    storage_live(@2)
+    @2 := copy (*(self@1))
+    @3 := copy (@2) panic.+ const (2 : i32)
+    @0 := move (@3)
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::{impl Left for i32}
+impl Left for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = {impl Internal for i32}
+    parent_clause2 = Sized<i32>
+    type Left = i32
+    fn left_method<'_0> = {impl Left for i32}::left_method<'_0_0>
+    vtable: {impl Left for i32}::{vtable}
+}
+
+// Full name: test_crate::{impl Right<i32> for i32}::right_method
+fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 (i32)) -> i32
+{
+    let @0: i32; // return
+    let self@1: &'_ (i32); // arg #1
+    let @2: i32; // anonymous local
+    let @3: i32; // anonymous local
+    let @4: i32; // anonymous local
+    let @5: i32; // anonymous local
+    let @6: i32; // anonymous local
+    let @7: &'_ (i32); // anonymous local
+    let @8: i32; // anonymous local
+    let @9: i32; // anonymous local
+    let @10: &'_ (i32); // anonymous local
+    let @11: i32; // anonymous local
+
+    storage_live(@5)
+    storage_live(@8)
+    storage_live(@11)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @4 := copy (*(self@1))
+    @5 := copy (@4) panic.+ const (3 : i32)
+    @3 := move (@5)
+    storage_dead(@4)
+    storage_live(@6)
+    storage_live(@7)
+    @7 := &*(self@1)
+    @6 := {impl Internal for i32}::internal_method<'_>(move (@7))
+    storage_dead(@7)
+    @8 := copy (@3) panic.+ copy (@6)
+    @2 := move (@8)
+    storage_dead(@6)
+    storage_dead(@3)
+    storage_live(@9)
+    storage_live(@10)
+    @10 := &*(self@1)
+    @9 := {impl Super<i32> for i32}::super_method<'_>(move (@10), const (10 : i32))
+    storage_dead(@10)
+    @11 := copy (@2) panic.+ copy (@9)
+    @0 := move (@11)
+    storage_dead(@9)
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::{impl Right<i32> for i32}
+impl Right<i32> for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = {impl Internal for i32}
+    parent_clause2 = {impl Super<i32> for i32}
+    parent_clause3 = Sized<i32>
+    parent_clause4 = Sized<i32>
+    type Right = i32
+    fn right_method<'_0> = {impl Right<i32> for i32}::right_method<'_0_0>
+    vtable: {impl Right<i32> for i32}::{vtable}
+}
+
+// Full name: test_crate::{impl Join<i32> for i32}::join_method
+fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 (i32)) -> (i32, i32)
+{
+    let @0: (i32, i32); // return
+    let self@1: &'_ (i32); // arg #1
+    let @2: i32; // anonymous local
+    let @3: &'_ (i32); // anonymous local
+    let @4: i32; // anonymous local
+    let @5: &'_ (i32); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := &*(self@1)
+    @2 := {impl Left for i32}::left_method<'_>(move (@3))
+    storage_dead(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := &*(self@1)
+    @4 := {impl Right<i32> for i32}::right_method<'_>(move (@5))
+    storage_dead(@5)
+    @0 := (move (@2), move (@4))
+    storage_dead(@4)
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::{impl Join<i32> for i32}::{vtable}
+fn {impl Join<i32> for i32}::{vtable}() -> test_crate::Join::{vtable}<i32, i32, i32, i32, i32>
+{
+    let ret@0: test_crate::Join::{vtable}<i32, i32, i32, i32, i32>; // return
+    let @1: &'static (test_crate::Left::{vtable}<Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32), i32>::parent_clause1::Left, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32), i32>::parent_clause1::parent_clause1::Internal>); // anonymous local
+    let @2: &'static (test_crate::Right::{vtable}<i32, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32), i32>::parent_clause2::Right, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32), i32>::parent_clause1::parent_clause1::Internal>); // anonymous local
+
+    storage_live(@1)
+    storage_live(@2)
+    @1 := &{impl Left for i32}::{vtable}
+    @2 := &{impl Right<i32> for i32}::{vtable}
+    ret@0 := test_crate::Join::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_join_method: const ({impl Join<i32> for i32}::join_method), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@1), super_trait_2: move (@2) }
+    return
+}
+
+// Full name: test_crate::{impl Join<i32> for i32}::{vtable}
+static {impl Join<i32> for i32}::{vtable}: test_crate::Join::{vtable}<i32, i32, i32, i32, i32> = {impl Join<i32> for i32}::{vtable}()
+
+// Full name: test_crate::{impl Join<i32> for i32}
+impl Join<i32> for i32 {
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = {impl Left for i32}
+    parent_clause2 = {impl Right<i32> for i32}
+    parent_clause3 = Sized<i32>
+    fn join_method<'_0> = {impl Join<i32> for i32}::join_method<'_0_0>
+    vtable: {impl Join<i32> for i32}::{vtable}
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let v@1: &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32)); // local
+    let @2: &'_ (i32); // anonymous local
+    let @3: &'_ (i32); // anonymous local
+    let @4: i32; // anonymous local
+    let @5: (i32, i32); // anonymous local
+    let @6: &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32)); // anonymous local
+
+    storage_live(v@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @4 := const (97 : i32)
+    @3 := &@4
+    @2 := &*(@3)
+    v@1 := unsize_cast<&'_ (i32), &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32)), {impl Join<i32> for i32}>(move (@2))
+    storage_dead(@2)
+    storage_dead(@3)
+    storage_live(@5)
+    storage_live(@6)
+    @6 := &*(v@1)
+    @5 := Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Left = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32), i32>::join_method<'_>(move (@6))
+    storage_dead(@6)
+    storage_dead(@5)
+    @0 := ()
+    storage_dead(@4)
+    storage_dead(v@1)
+    @0 := ()
+    return
+}
+
+
+

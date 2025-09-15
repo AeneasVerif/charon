@@ -1687,9 +1687,9 @@ impl Display for TraitItemName {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
+        match &self.kind {
             TraitRefKind::SelfId => write!(f, "Self"),
             TraitRefKind::ParentClause(sub, clause_id) => {
                 let sub = sub.with_ctx(ctx);
@@ -1706,12 +1706,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 write!(f, "{}", impl_ref.with_ctx(ctx))
             }
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
-            TraitRefKind::BuiltinOrAuto {
-                trait_decl_ref: tr,
-                types,
-                ..
-            } => {
-                write!(f, "{}", tr.with_ctx(ctx))?;
+            TraitRefKind::BuiltinOrAuto { types, .. } => {
+                write!(f, "{}", self.trait_decl_ref.with_ctx(ctx))?;
                 if !types.is_empty() {
                     let types = types
                         .iter()
@@ -1724,15 +1720,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 }
                 Ok(())
             }
-            TraitRefKind::Dyn(tr) => write!(f, "{}", tr.with_ctx(ctx)),
+            TraitRefKind::Dyn { .. } => write!(f, "{}", self.trait_decl_ref.with_ctx(ctx)),
             TraitRefKind::Unknown(msg) => write!(f, "UNKNOWN({msg})"),
         }
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.kind.fmt_with_ctx(ctx, f)
     }
 }
 
