@@ -8,10 +8,7 @@ pub opaque type TypeId
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-struct core::any::Any::{vtable}
-where
-    (dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_) : 'static,
-{
+struct core::any::Any::{vtable} {
   size: usize,
   align: usize,
   drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)),

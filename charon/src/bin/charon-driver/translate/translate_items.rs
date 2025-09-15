@@ -1,3 +1,5 @@
+use crate::translate::translate_predicates::PredicateLocation;
+
 use super::translate_bodies::BodyTransCtx;
 use super::translate_crate::*;
 use super::translate_ctx::*;
@@ -510,6 +512,23 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
+        let (hax::FullDefKind::Trait {
+            implied_predicates, ..
+        }
+        | hax::FullDefKind::TraitAlias {
+            implied_predicates, ..
+        }) = def.kind()
+        else {
+            raise_error!(self, span, "Unexpected definition: {def:?}");
+        };
+
+        // Register implied predicates.
+        self.register_predicates(
+            implied_predicates,
+            PredicateOrigin::WhereClauseOnTrait,
+            &PredicateLocation::Parent,
+        )?;
+
         let vtable = self.translate_vtable_struct_ref(span, def.this())?;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
@@ -532,7 +551,7 @@ impl ItemTransCtx<'_, '_> {
             ..
         } = &def.kind
         else {
-            raise_error!(self, span, "Unexpected definition: {def:?}");
+            unreachable!()
         };
         let self_trait_ref = TraitRef {
             kind: TraitRefKind::SelfId,
@@ -567,6 +586,10 @@ impl ItemTransCtx<'_, '_> {
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics() {
+                    // Skip items that have generics of their own (as rustc defines these). This
+                    // skips GAT and generic methods. This does not skip methods with late-bound
+                    // lifetimes as these aren't considered generic arguments to the method itself
+                    // by rustc.
                     continue;
                 } else {
                     let item = def.this().with_def_id(self.hax_state(), item_def_id);
@@ -690,17 +713,29 @@ impl ItemTransCtx<'_, '_> {
                         "Generic associated types are not supported"
                     );
                 }
-                hax::FullDefKind::AssocTy { value, .. } => {
+                hax::FullDefKind::AssocTy {
+                    value,
+                    implied_predicates,
+                    ..
+                } => {
                     // TODO: handle generics (i.e. GATs).
                     let default = value
                         .as_ref()
                         .map(|ty| self.translate_ty(item_span, ty))
                         .transpose()?;
+
+                    // Also add the implied predicates.
+                    self.register_predicates(
+                        &implied_predicates,
+                        PredicateOrigin::TraitItem(item_name.clone()),
+                        &PredicateLocation::Item(item_name.clone()),
+                    )?;
                     let clauses = self
                         .item_trait_clauses
                         .get(item_name)
                         .cloned()
                         .unwrap_or_default();
+
                     types.push(TraitAssocTy {
                         name: item_name.clone(),
                         default,
@@ -952,13 +987,25 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
 
+        let hax::FullDefKind::TraitAlias {
+            implied_predicates, ..
+        } = &def.kind
+        else {
+            raise_error!(self, span, "Unexpected definition: {def:?}");
+        };
+
         let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
 
-        // `translate_def_generics` registers the clauses as implied clauses, but we want them
-        // as required clauses for the impl.
-        assert!(self.innermost_generics_mut().trait_clauses.is_empty());
+        // Register the trait implied clauses as required clauses for the impl.
+        self.register_predicates(
+            implied_predicates,
+            PredicateOrigin::WhereClauseOnTrait,
+            &PredicateLocation::Parent,
+        )?;
         let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
+        assert!(self.innermost_generics_mut().trait_clauses.is_empty());
         self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
+
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
         let parent_trait_refs = mem::take(&mut generics.trait_refs);
