@@ -1,0 +1,61 @@
+error: Generic associated types are not supported
+ --> tests/ui/simple/gat-complex-lifetimes.rs:7:5
+  |
+7 |     type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Item `test_crate::Bar` caused errors; ignoring.
+ --> tests/ui/simple/gat-complex-lifetimes.rs:6:1
+  |
+6 | pub trait Bar<'a> {
+  | ^^^^^^^^^^^^^^^^^
+
+error: Found unsupported GAT `Type` when resolving trait `test_crate::Foo<@TraitClause1::Type, &'_ (&'_ (&'_ (())))>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:14:5
+   |
+14 |     x.foo()
+   |     ^^^^^^^
+
+error: Error during trait resolution: Found unsupported GAT `Type` when resolving trait `test_crate::Foo<@TraitClause1::Type, &'_ (&'_ (&'_ (())))>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:14:5
+   |
+14 |     x.foo()
+   |     ^^^^^^^
+
+error: Found unsupported GAT `Type` when resolving trait `core::marker::MetaSized<@TraitClause1::Type>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:15:1
+   |
+15 | }
+   | ^
+
+error: Error during trait resolution: Found unsupported GAT `Type` when resolving trait `core::marker::MetaSized<@TraitClause1::Type>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:15:1
+   |
+15 | }
+   | ^
+
+error: Found unsupported GAT `Type` when resolving trait `core::marker::MetaSized<@TraitClause1::Type>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:14:11
+   |
+14 |     x.foo()
+   |           ^
+
+error: Error during trait resolution: Found unsupported GAT `Type` when resolving trait `core::marker::MetaSized<@TraitClause1::Type>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:14:11
+   |
+14 |     x.foo()
+   |           ^
+
+error: Found unsupported GAT `Type` when resolving trait `core::marker::MetaSized<@TraitClause1::Type>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:15:1
+   |
+15 | }
+   | ^
+
+error: Error during trait resolution: Found unsupported GAT `Type` when resolving trait `core::marker::MetaSized<@TraitClause1::Type>`
+  --> tests/ui/simple/gat-complex-lifetimes.rs:15:1
+   |
+15 | }
+   | ^
+
+ERROR Charon failed to translate this code (10 errors)

@@ -1,0 +1,157 @@
+error: Generic associated types are not supported
+ --> tests/ui/simple/lending-iterator-gat.rs:3:5
+  |
+3 |     type Item<'a>
+  |     ^^^^^^^^^^^^^
+
+error: Item `test_crate::LendingIterator` caused errors; ignoring.
+ --> tests/ui/simple/lending-iterator-gat.rs:2:1
+  |
+2 | pub trait LendingIterator {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause0::Item>`
+ --> tests/ui/simple/lending-iterator-gat.rs:7:5
+  |
+7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause0::Item>`
+ --> tests/ui/simple/lending-iterator-gat.rs:7:5
+  |
+7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:28:28
+   |
+28 |     while let Some(item) = iter.next() {
+   |                            ^^^^^^^^^^^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:28:28
+   |
+28 |     while let Some(item) = iter.next() {
+   |                            ^^^^^^^^^^^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:29:15
+   |
+29 |         f(item)
+   |               ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:29:15
+   |
+29 |         f(item)
+   |               ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:29:15
+   |
+29 |         f(item)
+   |               ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:29:15
+   |
+29 |         f(item)
+   |               ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::MetaSized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/simple/lending-iterator-gat.rs:30:5
+   |
+30 |     }
+   |     ^
+
+ERROR Charon failed to translate this code (26 errors)
