@@ -459,6 +459,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and enqueue it for translation.
+    ///
+    /// Note: for `FnPtr`s use `translate_fn_ptr` instead, as this handles late-bound variables
+    /// correctly. For `TypeDeclRef`s use `translate_type_decl_ref` instead, as this correctly
+    /// recognizes built-in types.
     pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
         &mut self,
         span: Span,
