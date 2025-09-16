@@ -331,6 +331,10 @@ and trait_instance_id_to_string (env : 'a fmt_env)
       let inst_id = trait_ref_to_string env tref in
       let clause_id = trait_clause_id_to_string env clause_id in
       "parent(" ^ inst_id ^ ")::" ^ clause_id
+  | ItemClause (tref, name, clause_id) ->
+      let inst_id = trait_ref_to_string env tref in
+      let clause_id = trait_clause_id_to_string env clause_id in
+      "item(" ^ inst_id ^ ")::" ^ name ^ "::" ^ clause_id
   | Dyn ->
       let trait =
         region_binder_to_string trait_decl_ref_to_string env

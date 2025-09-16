@@ -1,0 +1,118 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone::clone
+#[lang_item("clone_fn")]
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    type LifetimeGat<'a>
+    where
+        implied_clause_0 : [@TraitClause0]: Sized<Self::LifetimeGat>
+        implied_clause_1 : [@TraitClause1]: Clone<Self::LifetimeGat>
+
+    type NonLifetimeGat<T, [@TraitClause0]: Sized<T>>
+    where
+        implied_clause_0 : [@TraitClause0]: Sized<Self::NonLifetimeGat>
+        implied_clause_1 : [@TraitClause1]: Clone<Self::NonLifetimeGat>
+
+    non-dyn-compatible
+}
+
+// Full name: test_crate::lifetime_gat_bound
+fn lifetime_gat_bound<'_0, X>(@1: @TraitClause1::LifetimeGat)
+where
+    [@TraitClause0]: Sized<X>,
+    [@TraitClause1]: Trait<X>,
+{
+    let @0: (); // return
+    let x@1: @TraitClause1::LifetimeGat; // arg #1
+    let @2: @TraitClause1::LifetimeGat; // anonymous local
+    let @3: &'_ (@TraitClause1::LifetimeGat); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := &x@1
+    @2 := (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
+    storage_dead(@3)
+    drop[Drop<@TraitClause1::LifetimeGat>] @2
+    storage_dead(@2)
+    @0 := ()
+    drop[Drop<@TraitClause1::LifetimeGat>] x@1
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::non_lifetime_gat_bound
+fn non_lifetime_gat_bound<X>(@1: @TraitClause1::NonLifetimeGat)
+where
+    [@TraitClause0]: Sized<X>,
+    [@TraitClause1]: Trait<X>,
+{
+    let @0: (); // return
+    let x@1: @TraitClause1::NonLifetimeGat; // arg #1
+    let @2: @TraitClause1::NonLifetimeGat; // anonymous local
+    let @3: &'_ (@TraitClause1::NonLifetimeGat); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := &x@1
+    @2 := (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
+    storage_dead(@3)
+    drop[Drop<@TraitClause1::NonLifetimeGat>] @2
+    storage_dead(@2)
+    @0 := ()
+    drop[Drop<@TraitClause1::NonLifetimeGat>] x@1
+    @0 := ()
+    return
+}
+
+
+

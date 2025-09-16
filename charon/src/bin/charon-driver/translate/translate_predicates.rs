@@ -1,43 +1,47 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
-
-/// The context in which we are translating a clause, used to generate the appropriate ids and
-/// trait references.
-pub(crate) enum PredicateLocation {
-    /// We're translating the parent clauses of this trait.
-    Parent,
-    /// We're translating the item clauses of this trait.
-    Item(TraitItemName),
-    /// We're translating anything else.
-    Base,
-}
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
+    /// Translates the given predicates and stores them as resuired preciates of the innermost
+    /// binder.
+    ///
     /// This function should be called **after** we translated the generics (type parameters,
     /// regions...).
     pub(crate) fn register_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
-        location: &PredicateLocation,
     ) -> Result<(), Error> {
+        let preds = self.translate_predicates(preds, origin)?;
+        self.innermost_generics_mut().take_predicates_from(preds);
+        Ok(())
+    }
+
+    /// Translates the given predicates. Returns a `GenericParams` that only contains predicates.
+    ///
+    /// This function should be called **after** we translated the generics (type parameters,
+    /// regions...).
+    pub(crate) fn translate_predicates(
+        &mut self,
+        preds: &hax::GenericPredicates,
+        origin: PredicateOrigin,
+    ) -> Result<GenericParams, Error> {
+        let mut out = GenericParams::empty();
         // Translate the trait predicates first, because associated type constraints may refer to
         // them. E.g. in `fn foo<I: Iterator<Item=usize>>()`, the `I: Iterator` clause must be
         // translated before the `<I as Iterator>::Item = usize` predicate.
         for (clause, span) in &preds.predicates {
             if matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.register_predicate(clause, span, origin.clone(), location)?;
+                self.translate_predicate(clause, span, origin.clone(), &mut out)?;
             }
         }
         for (clause, span) in &preds.predicates {
             if !matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.register_predicate(clause, span, origin.clone(), location)?;
+                self.translate_predicate(clause, span, origin.clone(), &mut out)?;
             }
         }
-        Ok(())
+        Ok(out)
     }
 
     pub(crate) fn translate_poly_trait_ref(
@@ -78,12 +82,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.translate_trait_decl_ref(span, trait_ref)
     }
 
-    pub(crate) fn register_predicate(
+    pub(crate) fn translate_predicate(
         &mut self,
         clause: &hax::Clause,
         hspan: &hax::Span,
         origin: PredicateOrigin,
-        location: &PredicateLocation,
+        into: &mut GenericParams,
     ) -> Result<(), Error> {
         use hax::ClauseKind;
         trace!("{:?}", clause);
@@ -93,15 +97,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     ctx.translate_trait_predicate(span, trait_pred)
                 })?;
-                let location = match location {
-                    PredicateLocation::Base => &mut self.innermost_generics_mut().trait_clauses,
-                    PredicateLocation::Parent => &mut self.parent_trait_clauses,
-                    PredicateLocation::Item(item_name) => self
-                        .item_trait_clauses
-                        .entry(item_name.clone())
-                        .or_default(),
-                };
-                location.push_with(|clause_id| TraitClause {
+                into.trait_clauses.push_with(|clause_id| TraitClause {
                     clause_id,
                     origin,
                     span: Some(span),
@@ -114,7 +110,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r1 = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(r0, r1))
                 })?;
-                self.innermost_generics_mut().regions_outlive.push(pred);
+                into.regions_outlive.push(pred);
             }
             ClauseKind::TypeOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
@@ -122,7 +118,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(ty, r))
                 })?;
-                self.innermost_generics_mut().types_outlive.push(pred);
+                into.types_outlive.push(pred);
             }
             ClauseKind::Projection(p) => {
                 // This is used to express constraints over associated types.
@@ -141,9 +137,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ty,
                     })
                 })?;
-                self.innermost_generics_mut()
-                    .trait_type_constraints
-                    .push(pred);
+                into.trait_type_constraints.push(pred);
             }
             ClauseKind::ConstArgHasType(..) => {
                 // I don't really understand that one. Why don't they put
@@ -250,15 +244,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             ..
                         } => {
                             let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-                            if !item.generic_args.is_empty() {
-                                raise_error!(
-                                    self,
-                                    span,
-                                    "Found unsupported GAT `{}` when resolving trait `{}`",
-                                    name,
-                                    trait_decl_ref.with_ctx(&self.into_fmt())
-                                )
-                            }
                             tref_kind = TraitRefKind::ItemClause(
                                 trait_ref,
                                 name,

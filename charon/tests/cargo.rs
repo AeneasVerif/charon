@@ -69,6 +69,8 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         }
         Failure if !success => {
             // Hack to avoid differences between CI and local tests.
+            let current_dir = std::env::current_dir()?;
+            let current_dir = current_dir.to_string_lossy();
             output = output
                 .lines()
                 .filter(|line| {
@@ -76,6 +78,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                         .trim_start()
                         .starts_with("process didn't exit successfully")
                 })
+                .map(|line| line.replace(&*current_dir, "."))
                 .join("\n");
         }
         _ => {}

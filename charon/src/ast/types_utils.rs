@@ -2,6 +2,7 @@
 use crate::ast::*;
 use crate::ids::Vector;
 use derive_generic_visitor::*;
+use itertools::Itertools;
 use std::collections::HashSet;
 use std::convert::Infallible;
 use std::fmt::Debug;
@@ -114,14 +115,79 @@ impl GenericParams {
                 .map_ref(|clause| clause.identity_tref_at_depth(depth)),
         }
     }
+
+    /// Take the predicates from the another `GenericParams`.
+    pub fn take_predicates_from(&mut self, other: GenericParams) {
+        assert!(!other.has_explicits());
+        let GenericParams {
+            regions: _,
+            types: _,
+            const_generics: _,
+            trait_clauses,
+            regions_outlive,
+            types_outlive,
+            trait_type_constraints,
+        } = other;
+        let num_clauses = self.trait_clauses.slot_count();
+        self.trait_clauses
+            .extend(trait_clauses.into_iter().update(|clause| {
+                clause.clause_id += num_clauses;
+            }));
+        self.regions_outlive.extend(regions_outlive);
+        self.types_outlive.extend(types_outlive);
+        self.trait_type_constraints.extend(trait_type_constraints);
+    }
 }
 
 impl<T> Binder<T> {
+    /// Wrap the value in an empty binder, shifting variables appropriately.
+    pub fn empty(kind: BinderKind, x: T) -> Self
+    where
+        T: TyVisitable,
+    {
+        Binder {
+            params: Default::default(),
+            skip_binder: x.move_under_binder(),
+            kind,
+        }
+    }
     pub fn new(kind: BinderKind, params: GenericParams, skip_binder: T) -> Self {
         Self {
             params,
             skip_binder,
             kind,
+        }
+    }
+
+    /// Whether this binder binds any variables.
+    pub fn binds_anything(&self) -> bool {
+        !self.params.is_empty()
+    }
+
+    /// Retreive the contents of this binder if the binder binds no variables. This is the invers
+    /// of `Binder::empty`.
+    pub fn get_if_binds_nothing(&self) -> Option<T>
+    where
+        T: TyVisitable + Clone,
+    {
+        self.params
+            .is_empty()
+            .then(|| self.skip_binder.clone().move_from_under_binder().unwrap())
+    }
+
+    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Binder<U> {
+        Binder {
+            params: self.params,
+            skip_binder: f(self.skip_binder),
+            kind: self.kind.clone(),
+        }
+    }
+
+    pub fn map_ref<U>(&self, f: impl FnOnce(&T) -> U) -> Binder<U> {
+        Binder {
+            params: self.params.clone(),
+            skip_binder: f(&self.skip_binder),
+            kind: self.kind.clone(),
         }
     }
 

@@ -12,7 +12,7 @@ use either::Either;
 use itertools::Itertools;
 use std::{
     borrow::Cow,
-    fmt::{self, Debug, Display},
+    fmt::{self, Debug, Display, Write},
 };
 
 pub struct WithCtx<'a, C, T: ?Sized> {
@@ -1562,8 +1562,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                 writeln!(f, "{TAB_INCR}const {name} : {ty}")?;
             }
             for assoc_ty in &self.types {
-                let name = &assoc_ty.name;
-                writeln!(f, "{TAB_INCR}type {name}")?;
+                let name = assoc_ty.name();
+                let (params, implied_clauses) = assoc_ty.fmt_split_with(ctx, |ctx, assoc_ty| {
+                    let mut out = String::new();
+                    let f = &mut out;
+                    if !assoc_ty.implied_clauses.is_empty() {
+                        let _ = writeln!(f, "\n{TAB_INCR}where",);
+                        for c in &assoc_ty.implied_clauses {
+                            let _ = writeln!(
+                                f,
+                                "{TAB_INCR}{TAB_INCR}implied_clause_{} : {}",
+                                c.clause_id.to_string(),
+                                c.with_ctx(ctx)
+                            );
+                        }
+                    }
+                    out
+                });
+                writeln!(f, "{TAB_INCR}type {name}{params}{implied_clauses}")?;
             }
             for method in self.methods() {
                 let name = method.name();
@@ -1646,11 +1662,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 writeln!(f, "{TAB_INCR}const {name} = {}", global.with_ctx(ctx))?;
             }
             for (name, assoc_ty) in &self.types {
-                writeln!(
-                    f,
-                    "{TAB_INCR}type {name} = {}",
-                    assoc_ty.value.with_ctx(ctx)
-                )?;
+                // TODO: implied trait refs
+                let (params, ty) = assoc_ty
+                    .fmt_split_with(ctx, |ctx, assoc_ty| assoc_ty.value.to_string_with_ctx(ctx));
+                writeln!(f, "{TAB_INCR}type {name}{params} = {ty}",)?;
             }
             for (name, bound_fn) in self.methods() {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);

@@ -1,5 +1,3 @@
-use crate::translate::translate_predicates::PredicateLocation;
-
 use super::translate_ctx::ItemTransCtx;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
@@ -148,7 +146,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         assert_eq!(self.binding_levels.len(), 1);
         self.innermost_binder()
     }
-
     /// Get the only binding level. Panics if there are other binding levels.
     pub(crate) fn the_only_binder_mut(&mut self) -> &mut BindingLevel {
         assert_eq!(self.binding_levels.len(), 1);
@@ -158,15 +155,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn outermost_binder(&self) -> &BindingLevel {
         self.binding_levels.outermost()
     }
-
+    pub(crate) fn outermost_binder_mut(&mut self) -> &mut BindingLevel {
+        self.binding_levels.outermost_mut()
+    }
     pub(crate) fn innermost_binder(&self) -> &BindingLevel {
         self.binding_levels.innermost()
     }
-
     pub(crate) fn innermost_binder_mut(&mut self) -> &mut BindingLevel {
         self.binding_levels.innermost_mut()
     }
 
+    #[expect(dead_code)]
+    pub(crate) fn outermost_generics(&self) -> &GenericParams {
+        &self.outermost_binder().params
+    }
+    #[expect(dead_code)]
+    pub(crate) fn outermost_generics_mut(&mut self) -> &mut GenericParams {
+        &mut self.outermost_binder_mut().params
+    }
+    #[expect(dead_code)]
+    pub(crate) fn innermost_generics(&self) -> &GenericParams {
+        &self.innermost_binder().params
+    }
     pub(crate) fn innermost_generics_mut(&mut self) -> &mut GenericParams {
         &mut self.innermost_binder_mut().params
     }
@@ -336,7 +346,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let parent_def = self.hax_def(&parent_item)?;
             self.push_generics_for_def(span, &parent_def, true)?;
         }
-        self.push_generics_for_def_without_parents(span, def, !is_parent, !is_parent)?;
+        self.push_generics_for_def_without_parents(span, def, !is_parent)?;
         Ok(())
     }
 
@@ -347,7 +357,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         _span: Span,
         def: &hax::FullDef,
         include_late_bound: bool,
-        include_assoc_ty_clauses: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
         if let Some(param_env) = def.param_env() {
@@ -371,50 +380,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => panic!("Unexpected def: {def:?}"),
             };
-            self.register_predicates(
-                &param_env.predicates,
-                origin.clone(),
-                &PredicateLocation::Base,
-            )?;
-            // Also register implied predicates.
-            if let FullDefKind::Trait {
-                implied_predicates, ..
-            }
-            | FullDefKind::TraitAlias {
-                implied_predicates, ..
-            }
-            | FullDefKind::AssocTy {
-                implied_predicates, ..
-            } = &def.kind
-            {
-                self.register_predicates(implied_predicates, origin, &PredicateLocation::Parent)?;
-            }
-
-            if let hax::FullDefKind::Trait { items, .. } = &def.kind
-                && include_assoc_ty_clauses
-                && !self.monomorphize()
-            {
-                // Also add the predicates on associated types.
-                // FIXME(gat): don't skip GATs.
-                // FIXME: don't mix up implied and required predicates.
-                for assoc in items {
-                    let item_def = self.poly_hax_def(&assoc.def_id)?;
-                    if let hax::FullDefKind::AssocTy {
-                        param_env,
-                        implied_predicates,
-                        ..
-                    } = item_def.kind()
-                        && param_env.generics.params.is_empty()
-                    {
-                        let name = self.t_ctx.translate_trait_item_name(item_def.def_id())?;
-                        self.register_predicates(
-                            &implied_predicates,
-                            PredicateOrigin::TraitItem(name.clone()),
-                            &PredicateLocation::Item(name),
-                        )?;
-                    }
-                }
-            }
+            self.register_predicates(&param_env.predicates, origin.clone())?;
         }
 
         if let hax::FullDefKind::Closure { args, .. } = def.kind()
@@ -483,7 +449,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
     ) -> Result<(), Error> {
         self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def_without_parents(span, def, true, true)?;
+        self.push_generics_for_def_without_parents(span, def, true)?;
         self.innermost_binder().params.check_consistency();
         Ok(())
     }

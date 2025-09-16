@@ -1,0 +1,163 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::ops::deref::Deref
+#[lang_item("deref")]
+pub trait Deref<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self::Target>
+    type Target
+    fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>[Self]
+    vtable: core::ops::deref::Deref::{vtable}<Self::Target>
+}
+
+#[lang_item("deref_method")]
+pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Target)
+where
+    [@TraitClause0]: Deref<Self>,
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
+}
+
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
+pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])) -> &'_0 (T)
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = @TraitClause0
+    type Target = T
+    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
+}
+
+// Full name: test_crate::PointerFamily
+pub trait PointerFamily<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    type Pointer<T, [@TraitClause0]: Sized<T>, (Self::Pointer::[@TraitClause1])::Target = T>
+    where
+        implied_clause_0 : [@TraitClause0]: Sized<Self::Pointer>
+        implied_clause_1 : [@TraitClause1]: Deref<Self::Pointer>
+
+    fn new<T, [@TraitClause0]: Sized<T>> = test_crate::PointerFamily::new<Self, T>[Self, @TraitClause0_0]
+    non-dyn-compatible
+}
+
+pub fn test_crate::PointerFamily::new<Self, T>(@1: T) -> @TraitClause0::Pointer
+where
+    [@TraitClause0]: PointerFamily<Self>,
+    [@TraitClause1]: Sized<T>,
+
+// Full name: test_crate::BoxFamily
+pub struct BoxFamily {}
+
+// Full name: test_crate::{impl PointerFamily for BoxFamily}::new
+pub fn {impl PointerFamily for BoxFamily}::new<T>(@1: T) -> alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: alloc::boxed::Box<T>[@TraitClause0::parent_clause0, Sized<Global>]; // return
+    let value@1: T; // arg #1
+    let @2: T; // anonymous local
+
+    storage_live(@2)
+    @2 := move (value@1)
+    @0 := @BoxNew<T>[@TraitClause0](move (@2))
+    storage_dead(@2)
+    drop[Drop<T>] value@1
+    return
+}
+
+// Full name: test_crate::{impl PointerFamily for BoxFamily}
+impl PointerFamily for BoxFamily {
+    parent_clause0 = MetaSized<BoxFamily>
+    type Pointer<U, [@TraitClause0]: Sized<U>> = alloc::boxed::Box<U>[@TraitClause0_0::parent_clause0, Sized<Global>]
+    fn new<T, [@TraitClause0]: Sized<T>> = {impl PointerFamily for BoxFamily}::new<T>[@TraitClause0_0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::make_pointer
+pub fn make_pointer<F, T>(@1: T) -> @TraitClause2::Pointer
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: PointerFamily<F>,
+{
+    let @0: @TraitClause2::Pointer; // return
+    let x@1: T; // arg #1
+    let @2: T; // anonymous local
+
+    storage_live(@2)
+    @2 := move (x@1)
+    @0 := @TraitClause2::new<T>[@TraitClause1](move (@2))
+    storage_dead(@2)
+    drop[Drop<T>] x@1
+    return
+}
+
+// Full name: test_crate::main
+pub fn main()
+{
+    let @0: (); // return
+    let @1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
+
+    storage_live(@1)
+    @1 := make_pointer<BoxFamily, i32>[Sized<BoxFamily>, Sized<i32>, {impl PointerFamily for BoxFamily}](const (42 : i32))
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @1
+    storage_dead(@1)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+
+

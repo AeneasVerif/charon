@@ -221,8 +221,8 @@ mod trait_ref_path {
                     path.parent_path.push(*id);
                     Some(path)
                 }
-                TraitRefKind::ItemClause(..) => unreachable!(),
-                TraitRefKind::TraitImpl(..)
+                TraitRefKind::ItemClause(..)
+                | TraitRefKind::TraitImpl(..)
                 | TraitRefKind::BuiltinOrAuto { .. }
                 | TraitRefKind::Dyn { .. }
                 | TraitRefKind::Unknown(..) => None,
@@ -742,9 +742,12 @@ impl<'a> ComputeItemModifications<'a> {
                 if modifications.add_type_params {
                     // Remove all associated types and turn them into new parameters. We add these
                     // before the paths in `replace` because this gives a better output.
-                    for assoc_ty in &tr.types {
-                        let path = TraitRefPath::self_ref().with_assoc_type(assoc_ty.name.clone());
-                        modifications.replace_path(path);
+                    for bound_assoc_ty in &tr.types {
+                        if !bound_assoc_ty.binds_anything() {
+                            let path = TraitRefPath::self_ref()
+                                .with_assoc_type(bound_assoc_ty.name().clone());
+                            modifications.replace_path(path);
+                        }
                     }
                 }
                 for path in replace {
@@ -817,8 +820,10 @@ impl<'a> ComputeItemModifications<'a> {
 
                 let mut set = self.compute_constraint_set(&timpl.generics);
                 for (name, assoc_ty) in &timpl.types {
-                    let path = TraitRefPath::self_ref().with_assoc_type(name.clone());
-                    set.insert_path(&path, assoc_ty.value.clone());
+                    if let Some(assoc_ty) = assoc_ty.get_if_binds_nothing() {
+                        let path = TraitRefPath::self_ref().with_assoc_type(name.clone());
+                        set.insert_path(&path, assoc_ty.value);
+                    }
                 }
                 for (clause_id, tref) in timpl.parent_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
@@ -966,15 +971,7 @@ impl UpdateItemBody<'_> {
                 let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id));
                 self.lookup_path_on_trait_ref(&path, &parent.kind)
             }
-            TraitRefKind::ItemClause(..) => {
-                register_error!(
-                    self.ctx,
-                    self.span,
-                    "Found unhandled item clause; \
-                    this is a bug unless the clause is coming from a GAT."
-                );
-                None
-            }
+            TraitRefKind::ItemClause(..) => None,
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
                 types,
@@ -1292,11 +1289,14 @@ impl TransformPass for Transform {
                 };
                 modifications.compute_replacements(|path| {
                     let new_type_name = TraitItemName(path.to_name());
-                    tr.types.push(TraitAssocTy {
-                        name: new_type_name.clone(),
-                        default: None,
-                        implied_clauses: Default::default(),
-                    });
+                    tr.types.push(Binder::empty(
+                        BinderKind::TraitType(tr.def_id, new_type_name.clone()),
+                        TraitAssocTy {
+                            name: new_type_name.clone(),
+                            default: None,
+                            implied_clauses: Default::default(),
+                        },
+                    ));
                     TyKind::TraitType(self_tref.clone(), new_type_name).into_ty()
                 })
             } else {
@@ -1333,11 +1333,14 @@ impl TransformPass for Transform {
                         if let Some((_, ty)) = type_replacements.find(&path) {
                             trace!("Adding associated type {new_type_name} = {ty:?}");
                             timpl.types.push((
-                                new_type_name,
-                                TraitAssocTyImpl {
-                                    value: ty.clone(),
-                                    implied_trait_refs: Default::default(),
-                                },
+                                new_type_name.clone(),
+                                Binder::empty(
+                                    BinderKind::TraitType(trait_id, new_type_name.clone()),
+                                    TraitAssocTyImpl {
+                                        value: ty.clone(),
+                                        implied_trait_refs: Default::default(),
+                                    },
+                                ),
                             ));
                         } else {
                             register_error!(

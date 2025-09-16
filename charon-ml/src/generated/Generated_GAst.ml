@@ -155,7 +155,12 @@ type trait_assoc_const = {
 }
 
 (** An associated type in a trait. *)
-and trait_assoc_ty = { name : trait_item_name; default : ty option }
+and trait_assoc_ty = {
+  name : trait_item_name;
+  default : ty option;
+  implied_clauses : trait_clause list;
+      (** List of trait clauses that apply to this type. *)
+}
 
 (** A trait **declaration**.
 
@@ -207,8 +212,10 @@ and trait_decl = {
           trait declarations are parent clauses. *)
   consts : trait_assoc_const list;
       (** The associated constants declared in the trait. *)
-  types : trait_assoc_ty list;
-      (** The associated types declared in the trait. *)
+  types : trait_assoc_ty binder list;
+      (** The associated types declared in the trait. The binder binds the
+          generic parameters of the type if it is a GAT (Generic Associated
+          Type). For a plain associated type the binder binds nothing. *)
   methods : trait_method binder list;
       (** The methods declared by the trait. The binder binds the generic
           parameters of the method.
@@ -276,7 +283,7 @@ type trait_impl = {
       (** The trait references for the parent clauses (see [TraitDecl]). *)
   consts : (trait_item_name * global_decl_ref) list;
       (** The implemented associated constants. *)
-  types : (trait_item_name * trait_assoc_ty_impl) list;
+  types : (trait_item_name * trait_assoc_ty_impl binder) list;
       (** The implemented associated types. *)
   methods : (trait_item_name * fun_decl_ref binder) list;
       (** The implemented methods *)

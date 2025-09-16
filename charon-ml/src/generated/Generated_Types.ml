@@ -215,6 +215,8 @@ type 'a0 binder = {
 }
 
 and binder_kind =
+  | BKTraitType of trait_decl_id * trait_item_name
+      (** The parameters of a generic associated type. *)
   | BKTraitMethod of trait_decl_id * trait_item_name
       (** The parameters of a trait method. Used in the [methods] lists in trait
           decls and trait impls. *)
@@ -457,6 +459,27 @@ and trait_instance_id =
               Parent(Clause(0), 1)::f(x)
                                 ^
                                 parent clause 1 of clause 0
+            }
+          ]} *)
+  | ItemClause of trait_ref * trait_item_name * trait_clause_id
+      (** A clause defined on an associated type. This variant is only used
+          during translation; after the [lift_associated_item_clauses] pass,
+          clauses on items become [ParentClause]s.
+
+          Example:
+          {@rust[
+            trait Foo {
+              type W: Bar0 + Bar1 // Bar1 contains a method bar1
+                             ^^^^
+                          this is the clause 1 applying to W
+            }
+
+            fn f<T : Foo>(x : T::W) {
+              x.bar1();
+              ^^^^^^^
+              ItemClause(Clause(0), W, 1)
+                                    ^^^^
+                                    clause 1 from item W (from local clause 0)
             }
           ]} *)
   | Self

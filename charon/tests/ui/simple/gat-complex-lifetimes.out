@@ -1,0 +1,78 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
+// Full name: test_crate::Foo
+pub trait Foo<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn foo = foo<Self, T>[Self]
+    vtable: test_crate::Foo::{vtable}<T>
+}
+
+// Full name: test_crate::Foo::foo
+pub fn foo<Self, T>(@1: Self) -> T
+where
+    [@TraitClause0]: Foo<Self, T>,
+
+// Full name: test_crate::Bar
+pub trait Bar<'a, Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    type Type<'b>
+    where
+        implied_clause_0 : [@TraitClause0]: Sized<Self::Type>
+        implied_clause_1 : [@TraitClause1]: for<'c> Foo<Self::Type, &'a (&'b (&'c (())))>
+
+    non-dyn-compatible
+}
+
+// Full name: test_crate::bar
+pub fn bar<'x, 'y, 'z, T>(@1: @TraitClause1::Type) -> &'x (&'y (&'z (())))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Bar<'x, T>,
+{
+    let @0: &'_ (&'_ (&'_ (()))); // return
+    let x@1: @TraitClause1::Type; // arg #1
+    let @2: &'_ (&'_ (&'_ (()))); // anonymous local
+    let @3: @TraitClause1::Type; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := move (x@1)
+    @2 := (@TraitClause1::Type::[@TraitClause1])::foo(move (@3))
+    @0 := &*(@2)
+    storage_dead(@3)
+    storage_dead(@2)
+    drop[Drop<@TraitClause1::Type>] x@1
+    return
+}
+
+
+

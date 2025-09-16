@@ -1,4 +1,4 @@
-//! Move clauses on associated types to be parent clauses. The distinction is not semantically
+//! Move clauses on non-gat associated types to be parent clauses. The distinction is not semantically
 //! meaningful. We should ideally to this directly when translating but this is currently
 //! difficult; instead we do this as a post-processing pass.
 use std::collections::HashMap;
@@ -19,14 +19,26 @@ impl TransformPass for Transform {
         > = ctx.translated.trait_decls.map_ref_mut(|decl| {
             decl.types
                 .iter_mut()
+                .filter(|assoc_ty| !assoc_ty.params.has_explicits())
                 .map(|assoc_ty| {
-                    let id_map = mem::take(&mut assoc_ty.implied_clauses).map(|mut clause| {
-                        decl.parent_clauses.push_with(|id| {
-                            clause.clause_id = id;
-                            clause
-                        })
-                    });
-                    (assoc_ty.name.clone(), id_map)
+                    let id_map =
+                        mem::take(&mut assoc_ty.skip_binder.implied_clauses).map(|clause| {
+                            let mut clause = clause.move_from_under_binder().unwrap();
+                            decl.parent_clauses.push_with(|id| {
+                                clause.clause_id = id;
+                                clause
+                            })
+                        });
+                    if assoc_ty.params.trait_clauses.is_empty() {
+                        // Move non-trait-clause-predicates of non-GAT types to be predicates on
+                        // the trait itself.
+                        decl.generics.take_predicates_from(
+                            mem::take(&mut assoc_ty.params)
+                                .move_from_under_binder()
+                                .unwrap(),
+                        );
+                    }
+                    (assoc_ty.name().clone(), id_map)
                 })
                 .collect()
         });
@@ -34,10 +46,13 @@ impl TransformPass for Transform {
         // Move the item-local trait refs to match what we did in the trait declarations.
         for timpl in ctx.translated.trait_impls.iter_mut() {
             for (_, assoc_ty) in &mut timpl.types {
-                for trait_ref in mem::take(&mut assoc_ty.implied_trait_refs) {
-                    // Note: this assumes that we listed the types in the same order as in the
-                    // trait decl, which we do.
-                    timpl.parent_trait_refs.push(trait_ref);
+                if !assoc_ty.params.has_explicits() {
+                    for trait_ref in mem::take(&mut assoc_ty.skip_binder.implied_trait_refs) {
+                        let trait_ref = trait_ref.move_from_under_binder().unwrap();
+                        // Note: this assumes that we listed the types in the same order as in the
+                        // trait decl, which we do.
+                        timpl.parent_trait_refs.push(trait_ref);
+                    }
                 }
             }
         }

@@ -1,6 +1,3 @@
-//@ known-failure
-// See also `non-lifetime-gats.rs`
-
 pub trait LendingIterator {
     type Item<'a>
     where
@@ -18,6 +15,7 @@ impl<'a, T> LendingIterator for Option<&'a T> {
     fn next<'b>(&'b mut self) -> Option<Self::Item<'b>> {
         if let Some(item) = self {
             let item = &**item;
+            *self = None;
             Some(item)
         } else {
             None
@@ -37,21 +35,4 @@ pub fn main() {
     let mut sum = 0;
     for_each(iter, |item| sum += *item);
     assert_eq!(sum, 42);
-}
-
-pub mod lifetimes {
-    pub trait Foo<T> {
-        fn foo(self) -> T;
-    }
-
-    pub trait Bar<'a> {
-        type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
-    }
-
-    pub fn bar<'x, 'y, 'z, T>(x: <T as Bar<'x>>::Type<'y>) -> &'x &'y &'z ()
-    where
-        T: Bar<'x>,
-    {
-        x.foo()
-    }
 }

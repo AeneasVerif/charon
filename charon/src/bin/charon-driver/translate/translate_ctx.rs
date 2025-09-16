@@ -4,7 +4,6 @@ pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSour
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
-use charon_lib::ids::Vector;
 use charon_lib::options::TranslateOptions;
 use hax::SInto;
 use rustc_middle::ty::TyCtxt;
@@ -74,10 +73,6 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// entry in this stack, with the entry as index `0` being the innermost binder. These
     /// parameters are referenced using [`DeBruijnVar`]; see there for details.
     pub binding_levels: BindingStack<BindingLevel>,
-    /// (For traits only) accumulated implied trait clauses.
-    pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
-    /// (For traits only) accumulated trait clauses on associated types.
-    pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -180,8 +175,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             t_ctx,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
-            parent_trait_clauses: Default::default(),
-            item_trait_clauses: Default::default(),
         }
     }
 

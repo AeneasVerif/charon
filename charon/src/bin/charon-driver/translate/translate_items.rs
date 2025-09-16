@@ -510,6 +510,24 @@ impl ItemTransCtx<'_, '_> {
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
 
+        let (hax::FullDefKind::Trait {
+            implied_predicates, ..
+        }
+        | hax::FullDefKind::TraitAlias {
+            implied_predicates, ..
+        }) = def.kind()
+        else {
+            raise_error!(self, span, "Unexpected definition: {def:?}");
+        };
+
+        // Register implied predicates.
+        let mut preds =
+            self.translate_predicates(implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
+        let parent_clauses = mem::take(&mut preds.trait_clauses);
+        // Consider the other predicates as required since the distinction doesn't matter for
+        // non-trait-clauses.
+        self.innermost_generics_mut().take_predicates_from(preds);
+
         let vtable = self.translate_vtable_struct_ref(span, def.this())?;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
@@ -517,7 +535,7 @@ impl ItemTransCtx<'_, '_> {
             return Ok(TraitDecl {
                 def_id,
                 item_meta,
-                parent_clauses: mem::take(&mut self.parent_trait_clauses),
+                parent_clauses,
                 generics: self.into_generics(),
                 consts: Default::default(),
                 types: Default::default(),
@@ -532,7 +550,7 @@ impl ItemTransCtx<'_, '_> {
             ..
         } = &def.kind
         else {
-            raise_error!(self, span, "Unexpected definition: {def:?}");
+            unreachable!()
         };
         let self_trait_ref = TraitRef {
             kind: TraitRefKind::SelfId,
@@ -567,6 +585,10 @@ impl ItemTransCtx<'_, '_> {
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics() {
+                    // Skip items that have generics of their own (as rustc defines these). This
+                    // skips GAT and generic methods. This does not skip methods with late-bound
+                    // lifetimes as these aren't considered generic arguments to the method itself
+                    // by rustc.
                     continue;
                 } else {
                     let item = def.this().with_def_id(self.hax_state(), item_def_id);
@@ -679,33 +701,37 @@ impl ItemTransCtx<'_, '_> {
                         default,
                     });
                 }
-                // Monomorphic traits have no associated types.
+                // Monomorphic traits need no associated types.
                 hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
-                hax::FullDefKind::AssocTy { param_env, .. }
-                    if !param_env.generics.params.is_empty() =>
-                {
-                    raise_error!(
-                        self,
-                        item_span,
-                        "Generic associated types are not supported"
-                    );
-                }
-                hax::FullDefKind::AssocTy { value, .. } => {
-                    // TODO: handle generics (i.e. GATs).
-                    let default = value
-                        .as_ref()
-                        .map(|ty| self.translate_ty(item_span, ty))
-                        .transpose()?;
-                    let clauses = self
-                        .item_trait_clauses
-                        .get(item_name)
-                        .cloned()
-                        .unwrap_or_default();
-                    types.push(TraitAssocTy {
-                        name: item_name.clone(),
-                        default,
-                        implied_clauses: clauses,
-                    });
+                hax::FullDefKind::AssocTy {
+                    value,
+                    implied_predicates,
+                    ..
+                } => {
+                    let binder_kind = BinderKind::TraitType(def_id, item_name.clone());
+                    let assoc_ty =
+                        self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
+                            // Also add the implied predicates.
+                            let mut preds = ctx.translate_predicates(
+                                &implied_predicates,
+                                PredicateOrigin::TraitItem(item_name.clone()),
+                            )?;
+                            let implied_clauses = mem::take(&mut preds.trait_clauses);
+                            // Consider the other predicates as required since the distinction doesn't
+                            // matter for non-trait-clauses.
+                            ctx.innermost_generics_mut().take_predicates_from(preds);
+
+                            let default = value
+                                .as_ref()
+                                .map(|ty| ctx.translate_ty(item_span, ty))
+                                .transpose()?;
+                            Ok(TraitAssocTy {
+                                name: item_name.clone(),
+                                default,
+                                implied_clauses,
+                            })
+                        })?;
+                    types.push(assoc_ty);
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
@@ -717,7 +743,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitDecl {
             def_id,
             item_meta,
-            parent_clauses: mem::take(&mut self.parent_trait_clauses),
+            parent_clauses,
             generics: self.into_generics(),
             consts,
             types,
@@ -895,24 +921,25 @@ impl ItemTransCtx<'_, '_> {
                 }
                 // Monomorphic traits have no associated types.
                 hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
-                hax::FullDefKind::AssocTy { param_env, .. }
-                    if !param_env.generics.params.is_empty() =>
-                {
-                    // We don't support GATs; the error was already reported in the trait declaration.
-                }
                 hax::FullDefKind::AssocTy { value, .. } => {
-                    let ty = match &impl_item.value {
-                        Provided { .. } => value.as_ref().unwrap(),
-                        DefaultedTy { ty, .. } => ty,
-                        _ => unreachable!(),
-                    };
-                    let ty = self.translate_ty(item_span, &ty)?;
-                    let trait_refs =
-                        self.translate_trait_impl_exprs(item_span, &impl_item.required_impl_exprs)?;
-                    let assoc_ty = TraitAssocTyImpl {
-                        value: ty,
-                        implied_trait_refs: trait_refs,
-                    };
+                    let binder_kind = BinderKind::TraitType(trait_id, name.clone());
+                    let assoc_ty =
+                        self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
+                            let ty = match &impl_item.value {
+                                Provided { .. } => value.as_ref().unwrap(),
+                                DefaultedTy { ty, .. } => ty,
+                                _ => unreachable!(),
+                            };
+                            let ty = ctx.translate_ty(item_span, &ty)?;
+                            let implied_trait_refs = ctx.translate_trait_impl_exprs(
+                                item_span,
+                                &impl_item.required_impl_exprs,
+                            )?;
+                            Ok(TraitAssocTyImpl {
+                                value: ty,
+                                implied_trait_refs,
+                            })
+                        })?;
                     types.push((name.clone(), assoc_ty));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
@@ -952,13 +979,19 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
 
+        let hax::FullDefKind::TraitAlias {
+            implied_predicates, ..
+        } = &def.kind
+        else {
+            raise_error!(self, span, "Unexpected definition: {def:?}");
+        };
+
         let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
 
-        // `translate_def_generics` registers the clauses as implied clauses, but we want them
-        // as required clauses for the impl.
+        // Register the trait implied clauses as required clauses for the impl.
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-        let parent_trait_clauses = mem::take(&mut self.parent_trait_clauses);
-        self.innermost_generics_mut().trait_clauses = parent_trait_clauses;
+        self.register_predicates(implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
+
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
         let parent_trait_refs = mem::take(&mut generics.trait_refs);
@@ -1069,7 +1102,8 @@ impl ItemTransCtx<'_, '_> {
                     value: self.translate_ty(span, ty)?,
                     implied_trait_refs: self.translate_trait_impl_exprs(span, impl_exprs)?,
                 };
-                types.push((name, assoc_ty));
+                let binder_kind = BinderKind::TraitType(implemented_trait.id, name.clone());
+                types.push((name, Binder::empty(binder_kind, assoc_ty)));
             }
         }
 
