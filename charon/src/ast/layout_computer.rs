@@ -1,11 +1,15 @@
-use std::{cmp::max, collections::HashMap};
+use std::{
+    cmp::{max, min},
+    collections::HashMap,
+};
 
 use either::Either;
 use serde::Serialize;
 
 use crate::ast::{
-    BuiltinTy, ByteCount, Field, FieldId, GenericParams, Layout, TranslatedCrate, Ty, TyKind,
-    TypeDeclKind, TypeDeclRef, TypeId, TypeVarId, VariantLayout, Vector,
+    AlignRepr, BuiltinTy, ByteCount, ConstGeneric, ConstGenericVarId, Field, FieldId,
+    GenericParams, Layout, TranslatedCrate, Ty, TyKind, TypeDeclKind, TypeDeclRef, TypeId,
+    TypeVarId, VariantLayout, Vector,
 };
 
 type GenericCtx<'a> = Option<&'a GenericParams>;
@@ -20,8 +24,6 @@ pub struct LayoutComputer<'a> {
     memoized_layouts: HashMap<(Ty, Option<GenericParams>), Either<&'a Layout, LayoutHint>>,
     krate: &'a TranslatedCrate,
 }
-
-// TODO: use `repr` information, add FFI-safety information where possible
 
 /// Minimal information about a type's layout that can be known without
 /// querying the rustc type layout algorithm.
@@ -52,67 +54,44 @@ impl<'a> LayoutComputer<'a> {
         }
     }
 
-    /// Compute the layout of a tuple as precise as possible.
-    ///
-    /// If the elements have different sizes and thus might need padding,
-    /// it returns a hint, otherwise the precise layout.
+    /// Compute a layout hint for a tuple.
     fn get_layout_of_tuple<'c, 't>(
         &'c mut self,
         type_decl_ref: &'t TypeDeclRef,
         generic_ctx: GenericCtx,
-    ) -> Option<Either<&'a Layout, LayoutHint>> {
+    ) -> LayoutHint {
         let mut total_min_size = 0;
         let mut max_align = 1;
         let mut uninhabited_part = false;
         let mut possibly_same_size = None;
-        let mut must_have_same_size = true;
 
         for ty_arg in type_decl_ref.generics.types.iter() {
-            uninhabited_part |= ty_arg.is_possibly_uninhabited();
             match self.get_layout_of(ty_arg, generic_ctx) {
                 Some(Either::Left(l)) => {
                     if let Some(size) = l.size {
                         total_min_size += size;
-                        match possibly_same_size {
-                            Some(other_size) => {
-                                if size != other_size {
-                                    must_have_same_size = false;
-                                }
-                            }
-                            None => possibly_same_size = Some(size),
-                        }
+                        if let None = possibly_same_size {
+                            possibly_same_size = Some(size)
+                        };
                     }
                     if let Some(align) = l.align {
                         max_align = max(max_align, align);
                     }
+                    uninhabited_part |= l.uninhabited;
                 }
                 Some(Either::Right(h)) => {
                     total_min_size += h.min_size;
                     max_align = max(max_align, h.min_alignment);
-                    must_have_same_size = false;
+                    uninhabited_part |= h.possibly_uninhabited;
                 }
-                None => (),
+                None => uninhabited_part |= ty_arg.is_possibly_uninhabited(),
             }
         }
-        // If all elements have the same size, there is cannot be any padding between the elements
-        // and we are guaranteed to get a layout (we just don't know the order of elements).
-        Some(
-            if must_have_same_size && let Some(size) = possibly_same_size {
-                let new_layout = Layout::mk_uniform_tuple(
-                    size,
-                    type_decl_ref.generics.types.elem_count(),
-                    max_align,
-                );
-                let layout_ref = Box::leak(Box::new(new_layout));
-                Either::Left(layout_ref)
-            } else {
-                Either::Right(LayoutHint {
-                    min_size: total_min_size,
-                    min_alignment: max_align,
-                    possibly_uninhabited: uninhabited_part,
-                })
-            },
-        )
+        LayoutHint {
+            min_size: total_min_size,
+            min_alignment: max_align,
+            possibly_uninhabited: uninhabited_part,
+        }
     }
 
     /// Approximate a layout for a struct (or enum variant) based on the fields.
@@ -121,13 +100,16 @@ impl<'a> LayoutComputer<'a> {
         fields: &Vector<FieldId, Field>,
         ty_var_map: &HashMap<TypeVarId, Ty>,
         generic_ctx: GenericCtx<'_>,
+        is_transparent: bool,
+        align_repr: Option<AlignRepr>,
+        is_variant: bool,
     ) -> Option<Either<&'a Layout, LayoutHint>> {
         let mut total_min_size = 0;
         let mut max_align = 1;
         let mut uninhabited_part = false;
 
-        // If it is a new-type struct, we should be able to get a layout.
-        if fields.elem_count() == 1 {
+        // If it is a transparent new-type struct, we should be able to get a layout.
+        if fields.elem_count() == 1 && is_transparent {
             let field = fields.get(FieldId::from_raw(0)).unwrap();
             let ty = if field.ty.is_type_var() {
                 let id = field.ty.as_type_var().unwrap().get_raw();
@@ -157,12 +139,17 @@ impl<'a> LayoutComputer<'a> {
             for field in fields {
                 let ty = if field.ty.is_type_var() {
                     let id = field.ty.as_type_var().unwrap().get_raw();
-                    ty_var_map.get(id)?
+                    if let Some(ty) = ty_var_map.get(id) {
+                        ty
+                    } else {
+                        // Don't know about tape variables.
+                        uninhabited_part = true;
+                        continue;
+                    }
                 } else {
                     &field.ty
                 };
 
-                uninhabited_part |= ty.is_possibly_uninhabited();
                 match self.get_layout_of(ty, generic_ctx) {
                     Some(Either::Left(l)) => {
                         if let Some(size) = l.size {
@@ -171,17 +158,36 @@ impl<'a> LayoutComputer<'a> {
                         if let Some(align) = l.align {
                             max_align = max(max_align, align);
                         }
+                        uninhabited_part |= l.uninhabited;
                     }
                     Some(Either::Right(h)) => {
                         total_min_size += h.min_size;
                         max_align = max(max_align, h.min_alignment);
+                        uninhabited_part |= h.possibly_uninhabited;
                     }
-                    None => (),
+                    None => uninhabited_part |= ty.is_possibly_uninhabited(),
                 }
             }
+
+            let min_alignment = match align_repr {
+                None => max_align,
+                // For `repr(align(n))`, the alignment is at least n.
+                Some(AlignRepr::Align(n)) => n,
+                // For `repr(packed(n))`, the alignment is at most n.
+                Some(AlignRepr::Packed(n)) => min(max_align, n),
+            };
+
+            // For uninhabited variants, the size can be 0 (seemingly only for variants with a single uninhabited field).
+            // As far as I can tell, the alignment stays the same as computed above.
+            let min_size = if is_variant && uninhabited_part {
+                0
+            } else {
+                total_min_size
+            };
+
             Some(Either::Right(LayoutHint {
-                min_size: total_min_size,
-                min_alignment: max_align,
+                min_size: min_size,
+                min_alignment,
                 possibly_uninhabited: uninhabited_part,
             }))
         }
@@ -193,98 +199,42 @@ impl<'a> LayoutComputer<'a> {
         fields: &Vector<FieldId, Field>,
         ty_var_map: &HashMap<TypeVarId, Ty>,
         generic_ctx: GenericCtx<'_>,
-    ) -> Either<&'a Layout, LayoutHint> {
+    ) -> LayoutHint {
         let mut total_min_size = 0;
         let mut max_align = 1;
         let mut uninhabited_part = false;
-        let mut only_hint = false;
 
-        let field_infos: Vec<(Option<ByteCount>, Option<ByteCount>)> = fields
-            .iter()
-            .map(|field| {
-                let ty = if field.ty.is_type_var() {
-                    let id = field.ty.as_type_var().unwrap().get_raw();
-                    ty_var_map.get(id).unwrap()
-                } else {
-                    &field.ty
-                };
-                uninhabited_part |= ty.is_possibly_uninhabited();
-                let field_info = match self.get_layout_of(ty, generic_ctx) {
-                    Some(Either::Left(l)) => {
-                        if let Some(size) = l.size {
-                            total_min_size += size;
-                        } else {
-                            only_hint = true;
-                        }
-                        if let Some(align) = l.align {
-                            max_align = max(max_align, align);
-                        } else {
-                            only_hint = true;
-                        }
-                        (l.size, l.align)
-                    }
-                    Some(Either::Right(h)) => {
-                        total_min_size += h.min_size;
-                        max_align = max(max_align, h.min_alignment);
-                        only_hint = true;
-                        (None, None)
-                    }
-                    None => {
-                        only_hint = true;
-                        (None, None)
-                    }
-                };
-                field_info
-            })
-            .collect();
-
-        if only_hint {
-            Either::Right(LayoutHint {
-                min_size: total_min_size,
-                min_alignment: max_align,
-                possibly_uninhabited: uninhabited_part,
-            })
-        } else {
-            let mut size_sum = 0;
-            let mut field_offsets: Vector<FieldId, ByteCount> =
-                Vector::with_capacity(fields.elem_count());
-
-            for field_info in field_infos {
-                let field_size = field_info.0.unwrap();
-                let field_align = field_info.1.unwrap();
-
-                if size_sum % field_align == 0 {
-                    field_offsets.push(size_sum);
-                    size_sum += field_size;
-                } else {
-                    // floor(size_sum / field_align) is n, s.t. n*field_align < size_sum < (n+1)*field_align
-                    let last_aligned = (size_sum / field_align) * field_align;
-                    let next_align = last_aligned + field_align;
-                    size_sum = next_align;
-                    field_offsets.push(size_sum);
-                    size_sum += field_size;
-                }
-            }
-            if size_sum % max_align != 0 {
-                let last_aligned = (size_sum / max_align) * max_align;
-                let next_align = last_aligned + max_align;
-                size_sum = next_align
-            }
-
-            let new_layout = Layout {
-                size: Some(size_sum),
-                align: Some(max_align),
-                discriminant_layout: None,
-                uninhabited: uninhabited_part,
-                variant_layouts: vec![VariantLayout {
-                    field_offsets,
-                    uninhabited: uninhabited_part,
-                    tag: None,
-                }]
-                .into(),
+        for field in fields {
+            let ty = if field.ty.is_type_var() {
+                let id = field.ty.as_type_var().unwrap().get_raw();
+                ty_var_map.get(id).unwrap()
+            } else {
+                &field.ty
             };
-            let layout_ref = Box::leak(Box::new(new_layout));
-            Either::Left(layout_ref)
+
+            match self.get_layout_of(ty, generic_ctx) {
+                Some(Either::Left(l)) => {
+                    if let Some(size) = l.size {
+                        total_min_size += size;
+                    }
+                    if let Some(align) = l.align {
+                        max_align = max(max_align, align);
+                    }
+                    uninhabited_part |= l.uninhabited;
+                }
+                Some(Either::Right(h)) => {
+                    total_min_size += h.min_size;
+                    max_align = max(max_align, h.min_alignment);
+                    uninhabited_part |= h.possibly_uninhabited;
+                }
+                None => uninhabited_part |= ty.is_possibly_uninhabited(),
+            };
+        }
+
+        LayoutHint {
+            min_size: total_min_size,
+            min_alignment: max_align,
+            possibly_uninhabited: uninhabited_part,
         }
     }
 
@@ -319,23 +269,25 @@ impl<'a> LayoutComputer<'a> {
         match &type_decl.kind {
             TypeDeclKind::Struct(fields) => {
                 if type_decl.is_c_repr() {
-                    Some(self.compute_c_layout_from_fields(fields, &ty_var_map, generic_ctx))
+                    Some(Either::Right(self.compute_c_layout_from_fields(fields, &ty_var_map, generic_ctx)))
                 } else {
-                    self.compute_layout_from_fields(fields, &ty_var_map, generic_ctx)
+                    self.compute_layout_from_fields(fields, &ty_var_map, generic_ctx, type_decl.is_transparent(), type_decl.forced_alignment(), false)
                 }
             }
             TypeDeclKind::Enum(variants) => {
                 // Assume that there could be a niche and ignore the discriminant for the hint.
-                let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant| self.compute_layout_from_fields(&variant.fields, &ty_var_map, generic_ctx)).collect();
+                let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant|
+                    self.compute_layout_from_fields(&variant.fields, &ty_var_map, generic_ctx, false,type_decl.forced_alignment(), true)
+                ).collect();
                 // If all variants have at least a layout hint, combine them.
                 if variant_layouts.iter().all(|l| l.is_some()) {
                     let mut max_variant_size = 0;
                     let mut max_variant_align = 1;
-                    let mut all_variants_inhabited = variants.elem_count() == 0;
+                    let mut all_variants_uninhabited = variants.elem_count() == 0;
                     for variant_layout in variant_layouts {
                         match variant_layout {
                             Some(Either::Left(l)) => {
-                                all_variants_inhabited &= !l.uninhabited;
+                                all_variants_uninhabited &= !l.uninhabited;
                                 if let Some(size) = l.size {
                                     max_variant_size = max(max_variant_size,size);
                                 }
@@ -346,7 +298,7 @@ impl<'a> LayoutComputer<'a> {
                             Some(Either::Right(h)) => {
                                 max_variant_size = max(max_variant_size,h.min_size);
                                 max_variant_align = max(max_variant_align, h.min_alignment);
-                                all_variants_inhabited &= !h.possibly_uninhabited;
+                                all_variants_uninhabited &= !h.possibly_uninhabited;
                             }
                             None => (),
                         };
@@ -355,15 +307,15 @@ impl<'a> LayoutComputer<'a> {
                         min_size: max_variant_size,
                         min_alignment: max_variant_align,
                         // Enums are only considered uninhabited if they have no variants or all are uninhabited.
-                        possibly_uninhabited: all_variants_inhabited,
+                        possibly_uninhabited: all_variants_uninhabited,
                     }))
                 } else {
                     None
                 }
             },
+            TypeDeclKind::Alias(aliased_ty) => self.get_layout_of(aliased_ty, generic_ctx),
             TypeDeclKind::Union(_) // No idea about unions
             | TypeDeclKind::Opaque // TODO: maybe hardcode layouts for some opaque types from std?
-            | TypeDeclKind::Alias(_)
             | TypeDeclKind::Error(_) => None,
         }
     }
@@ -378,13 +330,6 @@ impl<'a> LayoutComputer<'a> {
         generic_ctx: GenericCtx,
     ) -> Either<&'a Layout, LayoutHint> {
         match pointee.needs_metadata(&self.krate, generic_ctx) {
-            Some(true) => {
-                let new_layout = Layout::mk_ptr_layout_with_metadata(
-                    self.krate.target_information.target_pointer_size,
-                );
-                let layout_ref = Box::leak(Box::new(new_layout));
-                Either::Left(layout_ref)
-            }
             Some(false) => {
                 let new_layout = Layout::mk_ptr_layout_wo_metadata(
                     self.krate.target_information.target_pointer_size,
@@ -392,11 +337,58 @@ impl<'a> LayoutComputer<'a> {
                 let layout_ref = Box::leak(Box::new(new_layout));
                 Either::Left(layout_ref)
             }
+            Some(true) => Either::Right(LayoutHint {
+                // All metadata is pointer sized
+                min_size: self.krate.target_information.target_pointer_size * 2,
+                min_alignment: self.krate.target_information.target_pointer_size,
+                possibly_uninhabited: false,
+            }),
             None => Either::Right(LayoutHint {
                 min_size: self.krate.target_information.target_pointer_size,
                 min_alignment: self.krate.target_information.target_pointer_size,
                 possibly_uninhabited: false,
             }),
+        }
+    }
+
+    /// Computes the trivial layout of an array, unless it's zero-sized (cf. https://github.com/rust-lang/rust/issues/81996).
+    fn get_layout_of_array(
+        &mut self,
+        elem_ty: &Ty,
+        elem_num: &ConstGeneric,
+        generic_ctx: GenericCtx,
+    ) -> Option<Either<&'a Layout, LayoutHint>> {
+        let elem_num = elem_num.as_value()?.as_scalar()?.as_uint().ok()? as u64;
+        match self.get_layout_of(elem_ty, generic_ctx) {
+            Some(Either::Left(l)) => {
+                // If the array is zero-sized, only give a hint.
+                if l.size == Some(0) || elem_num == 0 {
+                    Some(Either::Right(LayoutHint {
+                        min_size: 0,
+                        min_alignment: l.align?,
+                        possibly_uninhabited: l.uninhabited,
+                    }))
+                } else {
+                    let array_layout = Layout {
+                        size: l.size.map(|s| s * elem_num),
+                        discriminant_layout: None,
+                        variant_layouts: [VariantLayout {
+                            field_offsets: [].into(),
+                            uninhabited: false,
+                            tag: None,
+                        }]
+                        .into(),
+                        ..l.clone()
+                    };
+                    let layout_ref = Box::leak(Box::new(array_layout));
+                    Some(Either::Left(layout_ref))
+                }
+            }
+            Some(Either::Right(h)) => Some(Either::Right(LayoutHint {
+                min_size: h.min_size * elem_num,
+                ..h
+            })),
+            None => None,
         }
     }
 
@@ -438,7 +430,9 @@ impl<'a> LayoutComputer<'a> {
                             let layout_ref = Box::leak(Box::new(new_layout));
                             Some(Either::Left(layout_ref))
                         } else {
-                            self.get_layout_of_tuple(type_decl_ref, generic_ctx)
+                            Some(Either::Right(
+                                self.get_layout_of_tuple(type_decl_ref, generic_ctx),
+                            ))
                         }
                     }
                     TypeId::Builtin(builtin_ty) => {
@@ -455,7 +449,17 @@ impl<'a> LayoutComputer<'a> {
                                 let layout_ref = Box::leak(Box::new(new_layout));
                                 Some(Either::Left(layout_ref))
                             }
-                            BuiltinTy::Array => None,
+                            BuiltinTy::Array => {
+                                // Arrays have one type parameter and one const parameter.
+                                let elem_ty =
+                                    type_decl_ref.generics.types.get(TypeVarId::ZERO).unwrap();
+                                let elem_num = type_decl_ref
+                                    .generics
+                                    .const_generics
+                                    .get(ConstGenericVarId::ZERO)
+                                    .unwrap();
+                                self.get_layout_of_array(elem_ty, elem_num, generic_ctx)
+                            }
                         }
                     }
                 }

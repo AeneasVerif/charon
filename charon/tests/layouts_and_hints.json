@@ -60,9 +60,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -78,9 +76,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -144,21 +140,10 @@
     }
   },
   "(u32, u32)": {
-    "Left": {
-      "size": 8,
-      "align": 4,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            4
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 8,
+      "min_alignment": 4,
+      "possibly_uninhabited": false
     }
   },
   "u64": {
@@ -220,23 +205,26 @@
     }
   },
   "@Type1": null,
-  "GenericC<bool, u32>[Sized<bool>, Sized<u32>]": {
+  "Array<u32, 8 : usize>": {
     "Left": {
-      "size": 8,
+      "size": 32,
       "align": 4,
       "discriminant_layout": null,
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0,
-            1,
-            4
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
       ]
+    }
+  },
+  "GenericC<bool, u32>[Sized<bool>, Sized<u32>]": {
+    "Right": {
+      "min_size": 6,
+      "min_alignment": 4,
+      "possibly_uninhabited": false
     }
   },
   "bool": {
@@ -264,21 +252,10 @@
     }
   },
   "&'static (Str)": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "Str": {
@@ -289,9 +266,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -306,21 +281,10 @@
     }
   },
   "&'_ (Str)": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "GenericC<&'_0 (@Type0), @Type0>[Sized<&'_ (missing(@Type0))>, @TraitClause0]": {
@@ -356,21 +320,10 @@
   },
   "fn(*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": null,
   "*mut (dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "(dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)": {
@@ -381,9 +334,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -409,21 +360,10 @@
   },
   "fn<'_0, '_1, '_2>(&'_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]": null,
   "&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "&'_0_1 mut (Formatter<'_0_2>)": {
@@ -679,21 +619,10 @@
     }
   },
   "&'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_))": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "&'_ (&'_ (&'_ (@Type0)))": {
@@ -784,39 +713,17 @@
     }
   },
   "&'_2 (Str)": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "&'_3 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : missing('_3)))": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "(dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : missing('_3))": {
@@ -827,9 +734,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -854,7 +759,13 @@
       ]
     }
   },
-  "Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]": null,
+  "Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]": {
+    "Right": {
+      "min_size": 0,
+      "min_alignment": 1,
+      "possibly_uninhabited": false
+    }
+  },
   "NonNull<Slice<u8>>": null,
   "Slice<u8>": {
     "Left": {
@@ -864,9 +775,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -1014,43 +923,34 @@
     }
   },
   "(alloc::boxed::Box<N, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}], alloc::boxed::Box<N, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}])": {
-    "Left": {
-      "size": 16,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "N": null,
   "A": null,
   "B": null,
   "GenericC<&'a (T), &'static (Str)>[Sized<&'_ (T)>, Sized<&'_ (Str)>]": {
-    "Left": {
-      "size": 32,
-      "align": 8,
-      "discriminant_layout": null,
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8,
-            16
-          ],
-          "uninhabited": false,
-          "tag": null
-        }
-      ]
+    "Right": {
+      "min_size": 25,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
+  "GenericC<&'a (T), T>[Sized<&'_ (T)>, @TraitClause0]": {
+    "Right": {
+      "min_size": 9,
+      "min_alignment": 8,
+      "possibly_uninhabited": true
+    }
+  },
+  "GenericC<&'a (T), i32>[Sized<&'_ (T)>, Sized<i32>]": {
+    "Right": {
+      "min_size": 13,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
     }
   },
   "fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]": null

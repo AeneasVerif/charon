@@ -790,7 +790,10 @@ impl Ty {
     ///
     /// This is the case if the type is [`!`], contains [`!`], or could
     /// either of these (but is not known to, e.g. because it is an uninstantiated type variable).
-    pub fn is_possibly_uninhabited(&self) -> bool {
+    ///
+    /// This should mostly only be called for non-Adts, otherwise checking the layout should be the
+    /// better way to check for inhabitedness.
+    pub(crate) fn is_possibly_uninhabited(&self) -> bool {
         match self {
             /*  Adts of any kind can only be uninhabited if they would store
                 anything of an uninhabited type. In many cases, this can only
@@ -1178,6 +1181,11 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 }
 
+pub enum AlignRepr {
+    Packed(u64),
+    Align(u64),
+}
+
 impl TypeDecl {
     /// Looks up the variant corresponding to the tag (i.e. the in-memory bytes that represent the discriminant).
     /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).
@@ -1215,6 +1223,20 @@ impl TypeDecl {
     pub fn is_c_repr(&self) -> bool {
         self.repr.as_ref().is_some_and(|repr| repr.c)
     }
+
+    pub fn is_transparent(&self) -> bool {
+        self.repr.as_ref().is_some_and(|repr| repr.transparent)
+    }
+
+    /// Looks up whether the representation annotations of the type
+    /// decl force the type's alignment to be related to a specified number.
+    pub fn forced_alignment(&self) -> Option<AlignRepr> {
+        self.repr.as_ref().and_then(|repr| {
+            repr.pack
+                .map(AlignRepr::Packed)
+                .or(repr.align.map(AlignRepr::Align))
+        })
+    }
 }
 
 impl Layout {
@@ -1249,25 +1271,6 @@ impl Layout {
         Self::mk_simple_layout(ptr_size)
     }
 
-    /// Constructs the layout of a wide pointer.
-    ///
-    /// Assumes that the metadata is pointer-sized.
-    pub fn mk_ptr_layout_with_metadata(ptr_size: ByteCount) -> Self {
-        Self {
-            // I just hope that all kinds of meta data is ptr sized?
-            size: Some(2 * ptr_size),
-            align: Some(ptr_size),
-            discriminant_layout: None,
-            uninhabited: false,
-            variant_layouts: [VariantLayout {
-                field_offsets: [0, ptr_size].into(),
-                uninhabited: false,
-                tag: None,
-            }]
-            .into(),
-        }
-    }
-
     /// Constructs the layout of a 1ZST, i.e. a zero-sized type with alignment 1.
     pub fn mk_1zst_layout() -> Self {
         Self {
@@ -1284,28 +1287,6 @@ impl Layout {
         }
     }
 
-    /// Creates the layout of a tuple where all fields are of the same size.
-    ///
-    /// Assumes that they are ordered linearly.
-    pub fn mk_uniform_tuple(elem_size: ByteCount, elem_count: usize, align: ByteCount) -> Self {
-        let mut field_offsets = Vector::with_capacity(elem_count);
-        for elem in 0..elem_count {
-            field_offsets.push(elem_size * elem as u64);
-        }
-        Self {
-            size: Some(elem_size * elem_count as u64),
-            align: Some(align),
-            discriminant_layout: None,
-            uninhabited: false,
-            variant_layouts: [VariantLayout {
-                field_offsets,
-                uninhabited: false,
-                tag: None,
-            }]
-            .into(),
-        }
-    }
-
     /// Constructs the layout of an unsized type with a single variant,
     /// e.g. [`BuiltinTy::Slice`] or [`TyKind::DynTrait`].
     pub fn mk_unsized_layout() -> Self {
@@ -1315,7 +1296,7 @@ impl Layout {
             discriminant_layout: None,
             uninhabited: false,
             variant_layouts: [VariantLayout {
-                field_offsets: [0].into(),
+                field_offsets: [].into(),
                 uninhabited: false,
                 tag: None,
             }]

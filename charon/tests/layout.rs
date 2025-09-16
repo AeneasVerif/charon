@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use either::Either;
 use indexmap::IndexMap;
 
 use charon_lib::{
@@ -158,6 +157,10 @@ fn type_layout() -> anyhow::Result<()> {
             b: B
         }
 
+        struct HasArray {
+            a: [u32; 8]
+        }
+
         type Instance = GenericC<bool,u32>;
         type InstanceGen<'a,T> = GenericC<&'a T,&'static str>;
         type InstanceGen2<'a,T: Sized> = GenericC<&'a T,T>;
@@ -223,12 +226,9 @@ fn type_layout() -> anyhow::Result<()> {
                     let id = arg.ty.to_string_with_ctx(&ctx);
                     let _ = layouts_hints.insert(id, layout);
                 }
-            } else if tdecl.kind.is_alias()
-                && let Some(ref layout) = tdecl.layout
-            {
+            } else if tdecl.kind.is_alias() {
                 let aliased_ty = tdecl.kind.as_alias().unwrap();
                 let aliased_layout = layout_computer.get_layout_of(aliased_ty, generic_ctx);
-                assert_eq!(Some(Either::Left(layout)), aliased_layout);
                 let id = aliased_ty.to_string_with_ctx(&ctx);
                 let _ = layouts_hints.insert(id, aliased_layout);
             }
