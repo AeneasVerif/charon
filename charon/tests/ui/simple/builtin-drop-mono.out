@@ -1,0 +1,154 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::<Global>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Global>
+
+// Full name: core::marker::Sized::<Global>
+#[lang_item("sized")]
+pub trait Sized::<Global>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Global>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<Array<String, 4 : usize>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Array<String, 4 : usize>>
+
+// Full name: core::marker::MetaSized::<Slice<String>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Slice<String>>
+
+// Full name: core::marker::MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: core::ops::drop::Drop::<Array<String, 4 : usize>>
+#[lang_item("drop")]
+pub trait Drop::<Array<String, 4 : usize>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Array<String, 4 : usize>>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<Array<String, 4 : usize>><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Array<String, 4 : usize>>
+    vtable: core::ops::drop::Drop::{vtable}::<Array<String, 4 : usize>>
+}
+
+// Full name: core::ops::drop::Drop::<Slice<String>>
+#[lang_item("drop")]
+pub trait Drop::<Slice<String>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Slice<String>>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<Slice<String>><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Slice<String>>
+    vtable: core::ops::drop::Drop::{vtable}::<Slice<String>>
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: core::ops::drop::Drop::<Global>
+#[lang_item("drop")]
+pub trait Drop::<Global>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Global>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<Global><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Global>
+    vtable: core::ops::drop::Drop::{vtable}::<Global>
+}
+
+// Full name: alloc::alloc::Global::{impl Drop::<Global>}::drop
+fn {impl Drop::<Global>}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::alloc::Global::{impl Drop::<Global>}::drop_in_place
+fn {impl Drop::<Global>}::drop_in_place(@1: *mut Global)
+
+// Full name: alloc::alloc::Global::{impl Drop::<Global>}
+impl Drop::<Global> {
+    parent_clause0 = MetaSized::<Global>
+    fn drop<'_0_1> = {impl Drop::<Global>}::drop<'_0_1>
+    fn drop_in_place = {impl Drop::<Global>}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: core::ops::drop::Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+#[lang_item("drop")]
+pub trait Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+    vtable: core::ops::drop::Drop::{vtable}::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+}
+
+fn core::ops::drop::Drop::drop_in_place::<Slice<String>>(@1: *mut Slice<String>)
+
+fn core::ops::drop::Drop::drop_in_place::<Global>(@1: *mut Global)
+
+fn core::ops::drop::Drop::drop_in_place::<Array<String, 4 : usize>>(@1: *mut Array<String, 4 : usize>)
+
+fn core::ops::drop::Drop::drop_in_place::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>(@1: *mut alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}])
+
+pub fn core::ops::drop::Drop::drop::<Slice<String>><'_0>(@1: &'_0 mut (Slice<String>))
+
+pub fn core::ops::drop::Drop::drop::<Global><'_0>(@1: &'_0 mut (Global))
+
+pub fn core::ops::drop::Drop::drop::<Array<String, 4 : usize>><'_0>(@1: &'_0 mut (Array<String, 4 : usize>))
+
+pub fn core::ops::drop::Drop::drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]><'_0>(@1: &'_0 mut (alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]))
+
+// Full name: alloc::boxed::{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::drop::<Slice<String>, Global>
+pub fn {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::drop::<Slice<String>, Global><'_0>(@1: &'_0 mut (alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]))
+
+// Full name: alloc::boxed::{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::drop_in_place::<Slice<String>, Global>
+fn {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::drop_in_place::<Slice<String>, Global>(@1: *mut alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}])
+
+// Full name: alloc::boxed::{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::<Slice<String>, Global>
+impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]> {
+    parent_clause0 = MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>
+    fn drop<'_0_1> = {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::drop::<Slice<String>, Global><'_0_1>
+    fn drop_in_place = {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::drop_in_place::<Slice<String>, Global>
+    vtable: {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::{vtable}::<Slice<String>, Global>
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::drop_array
+fn drop_array(@1: Array<String, 4 : usize>)
+{
+    let @0: (); // return
+    let @1: Array<String, 4 : usize>; // arg #1
+
+    @0 := ()
+    @0 := ()
+    drop[Drop::<Array<String, 4 : usize>>] @1
+    return
+}
+
+// Full name: test_crate::drop_slice
+fn drop_slice(@1: alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}])
+{
+    let @0: (); // return
+    let @1: alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]; // arg #1
+
+    @0 := ()
+    @0 := ()
+    drop[{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, Drop::<Slice<String>>, {impl Drop::<Global>}]>}::<Slice<String>, Global>] @1
+    return
+}
+
+
+
