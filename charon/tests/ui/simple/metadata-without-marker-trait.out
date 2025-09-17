@@ -23,12 +23,9 @@ pub fn wrap_shared_in_option<'a, T>(@1: &'a (T)) -> Option<&'a (T)>
     let @0: Option<&'_ (T)>; // return
     let x@1: &'_ (T); // arg #1
     let @2: &'_ (T); // anonymous local
-    let @3: PtrMetadata<T>; // anonymous local
 
     storage_live(@2)
-    storage_live(@3)
-    @3 := ptr_metadata(copy (x@1))
-    @2 := &(*(x@1), move (@3))
+    @2 := &*(x@1)
     @0 := Option::Some { 0: move (@2) }
     storage_dead(@2)
     return

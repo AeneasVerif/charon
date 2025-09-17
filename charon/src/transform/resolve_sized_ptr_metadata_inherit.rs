@@ -6,6 +6,8 @@ pub struct Transform;
 
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        // If we're hiding `Sized`, let's consider everything to be sized.
+        let everything_is_sized = ctx.options.hide_marker_traits;
         let trait_decls = &ctx.translated.trait_decls;
         let mut metadata = vec![];
         for type_decl in &ctx.translated.type_decls {
@@ -14,13 +16,14 @@ impl TransformPass for Transform {
                 PtrMetadata::InheritFrom(ty) => {
                     match ty.kind() {
                         TyKind::TypeVar(..) => {
-                            let is_sized = type_decl.generics.trait_clauses.iter().any(|clause| {
-                                let impl_trait = clause.trait_.clone().erase();
-                                impl_trait.generics.types[0] == *ty && {
-                                    let trait_decl = trait_decls.get(impl_trait.id).unwrap();
-                                    matches!(trait_decl.item_meta.lang_item, Some("sized"))
-                                }
-                            });
+                            let is_sized = everything_is_sized
+                                || type_decl.generics.trait_clauses.iter().any(|clause| {
+                                    let impl_trait = clause.trait_.clone().erase();
+                                    impl_trait.generics.types[0] == *ty && {
+                                        let trait_decl = trait_decls.get(impl_trait.id).unwrap();
+                                        matches!(trait_decl.item_meta.lang_item, Some("sized"))
+                                    }
+                                });
                             if is_sized {
                                 trace!(
                                     "Resolved ptr-metadata for type {}",

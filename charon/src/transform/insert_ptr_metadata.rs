@@ -93,6 +93,10 @@ fn outmost_deref_at_last_field<T: BodyTransformCtx>(
 fn is_sized_type_var<T: BodyTransformCtxWithParams>(ctx: &mut T, ty: &Ty) -> bool {
     match ty.kind() {
         TyKind::TypeVar(..) => {
+            if ctx.get_ctx().options.hide_marker_traits {
+                // If we're hiding `Sized`, let's consider everything to be sized.
+                return true;
+            }
             let params = ctx.get_params();
             for clause in &params.trait_clauses {
                 let tref = clause.trait_.clone().erase();
