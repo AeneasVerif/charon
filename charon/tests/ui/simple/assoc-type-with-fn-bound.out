@@ -94,9 +94,12 @@ where
     let self@1: &'_ (F); // arg #1
     let @2: &'_ (F); // anonymous local
     let @3: (); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
-    @2 := &*(self@1)
+    storage_live(@4)
+    @4 := ()
+    @2 := &(*(self@1), move (@4))
     storage_live(@3)
     @3 := ()
     @0 := @TraitClause0::call<'_>(move (@2), move (@3))

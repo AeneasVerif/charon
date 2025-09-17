@@ -1725,6 +1725,12 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @28: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
     let @29: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
     let @30: usize; // anonymous local
+    let @31: (); // anonymous local
+    let @32: (); // anonymous local
+    let @33: (); // anonymous local
+    let @34: (); // anonymous local
+    let @35: (); // anonymous local
+    let @36: (); // anonymous local
 
     storage_live(@10)
     storage_live(@12)
@@ -1738,6 +1744,12 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_live(@28)
     storage_live(@29)
     storage_live(@30)
+    storage_live(@31)
+    storage_live(@32)
+    storage_live(@33)
+    storage_live(@34)
+    storage_live(@35)
+    storage_live(@36)
     storage_live(s@3)
     s@3 := const (0 : usize)
     storage_live(@4)
@@ -1753,8 +1765,12 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@9)
         storage_live(@10)
         storage_live(@11)
-        @11 := &mut iter@7
-        @10 := &two-phase-mut *(@11)
+        storage_live(@32)
+        @32 := ()
+        @11 := &mut (iter@7, move (@32))
+        storage_live(@31)
+        @31 := ()
+        @10 := &two-phase-mut (*(@11), move (@31))
         @9 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[Sized<i32>, {impl Step for i32}](move (@10))
         storage_dead(@10)
         match @9 {
@@ -1793,8 +1809,12 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@19)
         storage_live(@20)
         storage_live(@21)
-        @21 := &mut iter@17
-        @20 := &two-phase-mut *(@21)
+        storage_live(@34)
+        @34 := ()
+        @21 := &mut (iter@17, move (@34))
+        storage_live(@33)
+        @33 := ()
+        @20 := &two-phase-mut (*(@21), move (@33))
         @19 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@20))
         storage_dead(@20)
         match @19 {
@@ -1817,8 +1837,12 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                     storage_live(@27)
                     storage_live(@28)
                     storage_live(@29)
-                    @29 := &mut iter@25
-                    @28 := &two-phase-mut *(@29)
+                    storage_live(@36)
+                    @36 := ()
+                    @29 := &mut (iter@25, move (@36))
+                    storage_live(@35)
+                    @35 := ()
+                    @28 := &two-phase-mut (*(@29), move (@35))
                     @27 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@28))
                     storage_dead(@28)
                     match @27 {
@@ -1878,6 +1902,8 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
     let i@14: u32; // local
     let @15: u32; // anonymous local
     let @16: u32; // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
 
     storage_live(s@4)
     storage_live(@5)
@@ -1892,6 +1918,8 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
     storage_live(i@14)
     storage_live(@15)
     storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
     storage_live(@3)
     @3 := copy (b@1)
     if move (@3) {
@@ -1913,8 +1941,12 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             storage_live(@11)
             storage_live(@12)
             storage_live(@13)
-            @13 := &mut iter@9
-            @12 := &two-phase-mut *(@13)
+            storage_live(@18)
+            @18 := ()
+            @13 := &mut (iter@9, move (@18))
+            storage_live(@17)
+            @17 := ()
+            @12 := &two-phase-mut (*(@13), move (@17))
             @11 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u32>[Sized<u32>, {impl Step for u32}](move (@12))
             storage_dead(@12)
             match @11 {
@@ -2031,8 +2063,9 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
     let @9: u32; // anonymous local
     let @10: usize; // anonymous local
     let @11: (); // anonymous local
-    let @12: &'_ (Array<u32, const N : usize>); // anonymous local
-    let @13: &'_ (u32); // anonymous local
+    let @12: (); // anonymous local
+    let @13: &'_ (Array<u32, const N : usize>); // anonymous local
+    let @14: &'_ (u32); // anonymous local
 
     storage_live(@7)
     storage_live(@8)
@@ -2040,6 +2073,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
     storage_live(@10)
     storage_live(@12)
     storage_live(@13)
+    storage_live(@14)
     storage_live(i@2)
     i@2 := const (0 : usize)
     storage_live(s@3)
@@ -2056,10 +2090,12 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
             storage_live(@8)
             @8 := copy (i@2)
             storage_live(@12)
-            @12 := &a@1
+            @12 := ()
             storage_live(@13)
-            @13 := @ArrayIndexShared<'_, u32, const N : usize>(move (@12), copy (@8))
-            @7 := copy (*(@13))
+            @13 := &(a@1, move (@12))
+            storage_live(@14)
+            @14 := @ArrayIndexShared<'_, u32, const N : usize>(move (@13), copy (@8))
+            @7 := copy (*(@14))
             @9 := copy (s@3) panic.+ copy (@7)
             s@3 := move (@9)
             storage_dead(@7)
@@ -2099,12 +2135,16 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
     let @11: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
 
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    storage_live(@12)
+    storage_live(@13)
     storage_live(i@2)
     i@2 := const (0 : usize)
     loop {
@@ -2113,7 +2153,9 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
         @4 := copy (i@2)
         storage_live(@5)
         storage_live(@6)
-        @6 := &*(v@1)
+        storage_live(@12)
+        @12 := ()
+        @6 := &(*(v@1), move (@12))
         @5 := alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
         storage_dead(@6)
         @3 := move (@4) < move (@5)
@@ -2126,7 +2168,9 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
         storage_dead(@4)
         storage_live(@7)
         storage_live(@8)
-        @8 := &mut *(v@1)
+        storage_live(@13)
+        @13 := ()
+        @8 := &mut (*(v@1), move (@13))
         storage_live(@9)
         @9 := copy (i@2)
         @7 := {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
@@ -2171,6 +2215,10 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
     let @6: usize; // anonymous local
     let @7: usize; // anonymous local
     let @8: &'_ mut (List<usize>[Sized<usize>]); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
 
     storage_live(y@3)
     storage_live(tl@4)
@@ -2178,13 +2226,21 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
     loop {
         match *(ls@1) {
             List::Cons => {
                 storage_live(y@3)
-                y@3 := &mut (*(ls@1) as variant List::Cons).0
+                storage_live(@10)
+                @10 := ()
+                y@3 := &mut ((*(ls@1) as variant List::Cons).0, move (@10))
                 storage_live(tl@4)
-                tl@4 := &mut (*(ls@1) as variant List::Cons).1
+                storage_live(@9)
+                @9 := ()
+                tl@4 := &mut ((*(ls@1) as variant List::Cons).1, move (@9))
                 storage_live(@5)
                 storage_live(@6)
                 @6 := copy (*(y@3))
@@ -2197,7 +2253,9 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
                     storage_dead(@7)
                     storage_dead(@6)
                     storage_live(@8)
-                    @8 := &mut *(*(tl@4))
+                    storage_live(@12)
+                    @12 := ()
+                    @8 := &mut (*(*(tl@4)), move (@12))
                     ls@1 := move (@8)
                     storage_dead(@8)
                     storage_dead(@5)
@@ -2207,7 +2265,9 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
                 }
                 storage_dead(@7)
                 storage_dead(@6)
-                @0 := &mut *(y@3)
+                storage_live(@11)
+                @11 := ()
+                @0 := &mut (*(y@3), move (@11))
                 storage_dead(@5)
                 storage_dead(tl@4)
                 storage_dead(y@3)
@@ -2236,6 +2296,10 @@ where
     let @8: &'_ mut (List<T>[@TraitClause0]); // anonymous local
     let @9: u32; // anonymous local
     let @10: (); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
 
     storage_live(x@4)
     storage_live(tl@5)
@@ -2244,14 +2308,22 @@ where
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
     storage_live(@3)
     loop {
         match *(ls@1) {
             List::Cons => {
                 storage_live(x@4)
-                x@4 := &mut (*(ls@1) as variant List::Cons).0
+                storage_live(@12)
+                @12 := ()
+                x@4 := &mut ((*(ls@1) as variant List::Cons).0, move (@12))
                 storage_live(tl@5)
-                tl@5 := &mut (*(ls@1) as variant List::Cons).1
+                storage_live(@11)
+                @11 := ()
+                tl@5 := &mut ((*(ls@1) as variant List::Cons).1, move (@11))
                 storage_live(@6)
                 storage_live(@7)
                 @7 := copy (i@2)
@@ -2261,7 +2333,9 @@ where
                 else {
                     storage_dead(@7)
                     storage_live(@8)
-                    @8 := &mut *(*(tl@5))
+                    storage_live(@14)
+                    @14 := ()
+                    @8 := &mut (*(*(tl@5)), move (@14))
                     ls@1 := move (@8)
                     storage_dead(@8)
                     @9 := copy (i@2) panic.- const (1 : u32)
@@ -2272,7 +2346,9 @@ where
                     continue 0
                 }
                 storage_dead(@7)
-                @0 := &mut *(x@4)
+                storage_live(@13)
+                @13 := ()
+                @0 := &mut (*(x@4), move (@13))
                 storage_dead(@6)
                 storage_dead(tl@5)
                 storage_dead(x@4)

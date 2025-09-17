@@ -54,37 +54,49 @@ fn six() -> u32
     let @6: &'_ (u32); // anonymous local
     let @7: &'_ (u32); // anonymous local
     let @8: &'_ (u32); // anonymous local
-    let @9: &'_ (u32); // anonymous local
-    let @10: u32; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: &'_ (u32); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
+    let @11: &'_ (u32); // anonymous local
+    let @12: u32; // anonymous local
     let @13: u32; // anonymous local
-    let @14: u32; // anonymous local
+    let @14: (); // anonymous local
+    let @15: &'_ (u32); // anonymous local
+    let @16: u32; // anonymous local
+    let @17: u32; // anonymous local
+    let @18: (); // anonymous local
 
     storage_live(@2)
     storage_live(@4)
     storage_live(@7)
     storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
     storage_live(@11)
     storage_live(@12)
     storage_live(@13)
-    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
     storage_live(x@1)
     @2 := const (0 : u32) panic.+ const (1 : u32)
-    @11 := const (0 : u32) wrap.+ const (1 : u32)
-    @10 := move (@11)
-    @9 := &@10
-    @8 := move (@9)
-    x@1 := &*(@8)
+    @13 := const (0 : u32) wrap.+ const (1 : u32)
+    @12 := move (@13)
+    storage_live(@14)
+    @14 := ()
+    @11 := &(@12, move (@14))
+    @8 := move (@11)
+    storage_live(@9)
+    @9 := ()
+    x@1 := &(*(@8), move (@9))
     storage_live(y@3)
     @4 := const (2 : u32) panic.+ const (3 : u32)
-    @14 := const (2 : u32) wrap.+ const (3 : u32)
-    @13 := move (@14)
-    @12 := &@13
-    @7 := move (@12)
-    y@3 := &*(@7)
+    @17 := const (2 : u32) wrap.+ const (3 : u32)
+    @16 := move (@17)
+    storage_live(@18)
+    @18 := ()
+    @15 := &(@16, move (@18))
+    @7 := move (@15)
+    storage_live(@10)
+    @10 := ()
+    y@3 := &(*(@7), move (@10))
     storage_live(@5)
     @5 := copy (x@1)
     storage_live(@6)

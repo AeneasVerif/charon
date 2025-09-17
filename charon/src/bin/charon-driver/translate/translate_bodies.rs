@@ -414,7 +414,13 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
                 let borrow_kind = translate_borrow_kind(*borrow_kind);
-                Ok(Rvalue::Ref(place, borrow_kind))
+                Ok(Rvalue::Ref {
+                    place,
+                    kind: borrow_kind,
+                    // Use `()` as a placeholder now.
+                    // Will be fixed by the cleanup pass `insert_ptr_metadata`.
+                    ptr_metadata: Operand::mk_const_unit(),
+                })
             }
             hax::Rvalue::RawPtr(mtbl, place) => {
                 let mtbl = match mtbl {
@@ -423,7 +429,13 @@ impl BodyTransCtx<'_, '_, '_> {
                     hax::RawPtrKind::FakeForPtrMetadata => RefKind::Shared,
                 };
                 let place = self.translate_place(span, place)?;
-                Ok(Rvalue::RawPtr(place, mtbl))
+                Ok(Rvalue::RawPtr {
+                    place,
+                    kind: mtbl,
+                    // Use `()` as a placeholder now.
+                    // Will be fixed by the cleanup pass `insert_ptr_metadata`.
+                    ptr_metadata: Operand::mk_const_unit(),
+                })
             }
             hax::Rvalue::Len(place) => {
                 let place = self.translate_place(span, place)?;

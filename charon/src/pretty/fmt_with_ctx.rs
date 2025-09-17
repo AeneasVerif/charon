@@ -1201,7 +1201,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Rvalue::Use(x) => write!(f, "{}", x.with_ctx(ctx)),
-            Rvalue::Ref(place, borrow_kind) => {
+            Rvalue::Ref {
+                place,
+                kind: borrow_kind,
+                ptr_metadata,
+            } => {
                 let borrow_kind = match borrow_kind {
                     BorrowKind::Shared => "&",
                     BorrowKind::Mut => "&mut ",
@@ -1209,14 +1213,28 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     BorrowKind::UniqueImmutable => "&uniq ",
                     BorrowKind::Shallow => "&shallow ",
                 };
-                write!(f, "{borrow_kind}{}", place.with_ctx(ctx))
+                write!(
+                    f,
+                    "{borrow_kind}({}, {})",
+                    place.with_ctx(ctx),
+                    ptr_metadata.with_ctx(ctx)
+                )
             }
-            Rvalue::RawPtr(place, mutability) => {
+            Rvalue::RawPtr {
+                place,
+                kind: mutability,
+                ptr_metadata,
+            } => {
                 let ptr_kind = match mutability {
                     RefKind::Shared => "&raw const ",
                     RefKind::Mut => "&raw mut ",
                 };
-                write!(f, "{ptr_kind}{}", place.with_ctx(ctx))
+                write!(
+                    f,
+                    "{ptr_kind}({}, {})",
+                    place.with_ctx(ctx),
+                    ptr_metadata.with_ctx(ctx)
+                )
             }
 
             Rvalue::BinaryOp(binop, x, y) => {
@@ -1818,6 +1836,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     write!(f, "for<{regions}> ",)?
                 };
                 write!(f, "{value}",)
+            }
+            TyKind::PtrMetadata(ty) => {
+                write!(f, "PtrMetadata<{}>", ty.with_ctx(ctx))
             }
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }

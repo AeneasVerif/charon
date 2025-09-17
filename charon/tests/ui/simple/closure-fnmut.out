@@ -78,9 +78,12 @@ where
     let f@1: impl FnMut(u8) -> u8; // arg #1
     let @2: &'_ mut (impl FnMut(u8) -> u8); // anonymous local
     let @3: (u8); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
-    @2 := &mut f@1
+    storage_live(@4)
+    @4 := ()
+    @2 := &mut (f@1, move (@4))
     storage_live(@3)
     @3 := (const (0 : u8))
     @0 := @TraitClause1::call_mut<'_>(move (@2), move (@3))
@@ -131,9 +134,12 @@ fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u
     let @1: closure<'_0>; // arg #1
     let @2: (u8); // arg #2
     let @3: &'_ mut (closure<'_0>); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_>(move (@3), move (@2))
     drop[Drop<closure<'_0>>] @1
     return
@@ -168,13 +174,16 @@ fn main()
     let @2: u8; // anonymous local
     let @3: closure<'_>; // anonymous local
     let @4: &'_ mut (u8); // anonymous local
+    let @5: (); // anonymous local
 
     storage_live(z@1)
     z@1 := const (3 : u8)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &mut z@1
+    storage_live(@5)
+    @5 := ()
+    @4 := &mut (z@1, move (@5))
     @3 := closure { 0: move (@4) }
     storage_dead(@4)
     @2 := apply_to_zero_mut<closure<'_>>[Sized<closure<'_>>, {impl FnMut<(u8)> for closure<'_0>}<'_>](move (@3))

@@ -76,10 +76,13 @@ where
     let x@1: @TraitClause1::LifetimeGat; // arg #1
     let @2: @TraitClause1::LifetimeGat; // anonymous local
     let @3: &'_ (@TraitClause1::LifetimeGat); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &x@1
+    storage_live(@4)
+    @4 := ()
+    @3 := &(x@1, move (@4))
     @2 := (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
     storage_dead(@3)
     drop[Drop<@TraitClause1::LifetimeGat>] @2
@@ -100,10 +103,13 @@ where
     let x@1: @TraitClause1::NonLifetimeGat; // arg #1
     let @2: @TraitClause1::NonLifetimeGat; // anonymous local
     let @3: &'_ (@TraitClause1::NonLifetimeGat); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &x@1
+    storage_live(@4)
+    @4 := ()
+    @3 := &(x@1, move (@4))
     @2 := (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
     storage_dead(@3)
     drop[Drop<@TraitClause1::NonLifetimeGat>] @2

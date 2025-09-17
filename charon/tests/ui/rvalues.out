@@ -140,20 +140,32 @@ fn addr_of()
     let @3: &'_ (u32); // anonymous local
     let @4: *const u32; // anonymous local
     let @5: *mut u32; // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
 
     storage_live(x@1)
     x@1 := const (0 : u32)
     storage_live(@2)
     storage_live(@3)
-    @3 := &x@1
-    @2 := &raw const *(@3)
+    storage_live(@9)
+    @9 := ()
+    @3 := &(x@1, move (@9))
+    storage_live(@8)
+    @8 := ()
+    @2 := &raw const (*(@3), move (@8))
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
-    @4 := &raw const x@1
+    storage_live(@7)
+    @7 := ()
+    @4 := &raw const (x@1, move (@7))
     storage_dead(@4)
     storage_live(@5)
-    @5 := &raw mut x@1
+    storage_live(@6)
+    @6 := ()
+    @5 := &raw mut (x@1, move (@6))
     storage_dead(@5)
     @0 := ()
     storage_dead(x@1)
@@ -221,13 +233,21 @@ fn ptr_casts()
     let @15: *const u8; // anonymous local
     let @16: *const u8; // anonymous local
     let @17: fn(); // anonymous local
+    let @18: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: (); // anonymous local
+    let @21: (); // anonymous local
 
     storage_live(array_ptr@1)
     storage_live(@2)
     storage_live(@3)
     @3 := @ArrayRepeat<'_, u32, 64 : usize>(const (0 : u32))
-    @2 := &@3
-    array_ptr@1 := &raw const *(@2)
+    storage_live(@21)
+    @21 := ()
+    @2 := &(@3, move (@21))
+    storage_live(@20)
+    @20 := ()
+    array_ptr@1 := &raw const (*(@2), move (@20))
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
@@ -239,8 +259,12 @@ fn ptr_casts()
     x@6 := const (0 : u8)
     storage_live(x@7)
     storage_live(@8)
-    @8 := &x@6
-    x@7 := &raw const *(@8)
+    storage_live(@19)
+    @19 := ()
+    @8 := &(x@6, move (@19))
+    storage_live(@18)
+    @18 := ()
+    x@7 := &raw const (*(@8), move (@18))
     storage_dead(@8)
     storage_live(@9)
     storage_live(@10)
@@ -322,9 +346,12 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8
     let state@1: &'_0 mut (closure); // arg #1
     let args@2: (u8); // arg #2
     let @3: &'_ (closure); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &*(state@1)
+    storage_live(@4)
+    @4 := ()
+    @3 := &(*(state@1), move (@4))
     @0 := {impl Fn<(u8)> for closure}::call<'_>(move (@3), move (args@2))
     @0 := ()
     return
@@ -337,9 +364,12 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
     let @1: closure; // arg #1
     let @2: (u8); // arg #2
     let @3: &'_ mut (closure); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut<(u8)> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
     @0 := ()
