@@ -212,6 +212,16 @@ pub trait Pointee<Self>
 // Full name: core::ptr::const_ptr::{*const T}::to_raw_parts
 pub fn to_raw_parts<T>(@1: *const T) -> (*const (), Pointee<T>::Metadata)
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::empty_metadata
 fn empty_metadata()
 {
@@ -227,7 +237,7 @@ fn empty_metadata()
     storage_live(@4)
     @4 := const (0 : u32)
     @3 := &@4
-    @2 := &raw const *(@3)
+    @2 := &raw const (*(@3), copy (@Global0))
     @1 := to_raw_parts<u32>(move (@2))
     storage_dead(@2)
     storage_dead(@4)
@@ -255,7 +265,7 @@ fn slice_metadata()
     storage_live(@5)
     @5 := [const (0 : u32), const (1 : u32)]
     @4 := &@5
-    @3 := &raw const *(@4)
+    @3 := &raw const (*(@4), copy (@Global0))
     @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>, 2 : usize>(move (@3))
     storage_dead(@3)
     @1 := to_raw_parts<Slice<u32>>(move (@2))

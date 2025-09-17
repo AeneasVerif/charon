@@ -61,6 +61,16 @@ where
     return
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::write
 fn write<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 (T))
 where
@@ -75,9 +85,9 @@ where
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &raw const *(y@2)
+    @4 := &raw const (*(y@2), copy (@Global0))
     storage_live(@5)
-    @5 := &raw mut *(x@1)
+    @5 := &raw mut (*(x@1), copy (@Global0))
     @3 := copy_nonoverlapping<T>[@TraitClause0](move (@4), move (@5), const (1 : usize))
     storage_dead(@5)
     storage_dead(@4)

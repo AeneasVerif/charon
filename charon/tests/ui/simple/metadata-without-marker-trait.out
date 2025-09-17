@@ -1,0 +1,35 @@
+# Final LLBC before serialization:
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T> {
+  None,
+  Some(T),
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::wrap_shared_in_option
+pub fn wrap_shared_in_option<'a, T>(@1: &'a (T)) -> Option<&'a (T)>
+{
+    let @0: Option<&'_ (T)>; // return
+    let x@1: &'_ (T); // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    storage_live(@2)
+    @2 := &*(x@1)
+    @0 := Option::Some { 0: move (@2) }
+    storage_dead(@2)
+    return
+}
+
+
+

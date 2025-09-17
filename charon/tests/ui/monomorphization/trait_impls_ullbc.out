@@ -61,6 +61,18 @@ pub trait Drop::<bool>
 // Full name: core::ops::drop::Drop::drop::<bool>
 pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    bb0: {
+        @0 := ();
+        return;
+    }
+}
+
+const UNIT_METADATA: () = @Fun1()
+
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(@1: bool, @2: bool)
 {

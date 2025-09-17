@@ -112,6 +112,16 @@ where
     non-dyn-compatible
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::wrap
 fn wrap<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[Sized<&'a (u32)>]
 {

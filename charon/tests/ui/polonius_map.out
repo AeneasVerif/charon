@@ -265,6 +265,16 @@ impl BuildHasher for RandomState {
     vtable: {impl BuildHasher for RandomState}::{vtable}
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::get_or_insert
 pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>])) -> &'_0 (u32)
 {

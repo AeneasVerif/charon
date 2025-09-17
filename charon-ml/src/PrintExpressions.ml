@@ -145,20 +145,22 @@ and operand_to_string (env : 'a fmt_env) (op : operand) : string =
 and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   match rv with
   | Use op -> operand_to_string env op
-  | RvRef (p, bk) -> begin
+  | RvRef (p, bk, op) -> begin
+      let op = operand_to_string env op in
       let p = place_to_string env p in
       match bk with
-      | BShared -> "&" ^ p
-      | BMut -> "&mut " ^ p
-      | BTwoPhaseMut -> "&two-phase " ^ p
-      | BUniqueImmutable -> "&uniq " ^ p
-      | BShallow -> "&shallow " ^ p
+      | BShared -> "&(" ^ p ^ ", " ^ op ^ ")"
+      | BMut -> "&mut (" ^ p ^ ", " ^ op ^ ")"
+      | BTwoPhaseMut -> "&two-phase (" ^ p ^ ", " ^ op ^ ")"
+      | BUniqueImmutable -> "&uniq (" ^ p ^ ", " ^ op ^ ")"
+      | BShallow -> "&shallow (" ^ p ^ ", " ^ op ^ ")"
     end
-  | RawPtr (p, pk) -> begin
+  | RawPtr (p, pk, op) -> begin
+      let op = operand_to_string env op in
       let p = place_to_string env p in
       match pk with
-      | RShared -> "&raw const " ^ p
-      | RMut -> "&raw mut " ^ p
+      | RShared -> "&raw const (" ^ p ^ ", " ^ op ^ ")"
+      | RMut -> "&raw mut (" ^ p ^ ", " ^ op ^ ")"
     end
   | NullaryOp (op, ty) ->
       nullop_to_string env op ^ "<" ^ ty_to_string env ty ^ ">"
