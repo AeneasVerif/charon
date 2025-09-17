@@ -7,9 +7,9 @@ use either::Either;
 use serde::Serialize;
 
 use crate::ast::{
-    AlignRepr, BuiltinTy, ByteCount, ConstGeneric, ConstGenericVarId, Field, FieldId,
-    GenericParams, Layout, TranslatedCrate, Ty, TyKind, TypeDeclKind, TypeDeclRef, TypeId,
-    TypeVarId, VariantLayout, Vector,
+    AlignRepr, AttrInfo, BuiltinTy, ByteCount, ConstGeneric, ConstGenericVarId, Field, FieldId,
+    GenericParams, Layout, Span, TranslatedCrate, Ty, TyKind, TyVisitable, TypeDeclKind,
+    TypeDeclRef, TypeId, TypeVarId, VariantLayout, Vector,
 };
 
 type GenericCtx<'a> = Option<&'a GenericParams>;
@@ -98,7 +98,6 @@ impl<'a> LayoutComputer<'a> {
     fn compute_layout_from_fields(
         &mut self,
         fields: &Vector<FieldId, Field>,
-        ty_var_map: &HashMap<TypeVarId, Ty>,
         generic_ctx: GenericCtx<'_>,
         is_transparent: bool,
         align_repr: Option<AlignRepr>,
@@ -110,15 +109,9 @@ impl<'a> LayoutComputer<'a> {
 
         // If it is a transparent new-type struct, we should be able to get a layout.
         if fields.elem_count() == 1 && is_transparent {
-            let field = fields.get(FieldId::from_raw(0)).unwrap();
-            let ty = if field.ty.is_type_var() {
-                let id = field.ty.as_type_var().unwrap().get_raw();
-                ty_var_map.get(id)?
-            } else {
-                &field.ty
-            };
+            let field = fields.get(FieldId::ZERO).unwrap();
 
-            match self.get_layout_of(ty, generic_ctx) {
+            match self.get_layout_of(&field.ty, generic_ctx) {
                 Some(Either::Left(l)) => {
                     // Simply exchange the field_offsets and variants.
                     let new_layout = Layout {
@@ -137,20 +130,7 @@ impl<'a> LayoutComputer<'a> {
             }
         } else {
             for field in fields {
-                let ty = if field.ty.is_type_var() {
-                    let id = field.ty.as_type_var().unwrap().get_raw();
-                    if let Some(ty) = ty_var_map.get(id) {
-                        ty
-                    } else {
-                        // Don't know about tape variables.
-                        uninhabited_part = true;
-                        continue;
-                    }
-                } else {
-                    &field.ty
-                };
-
-                match self.get_layout_of(ty, generic_ctx) {
+                match self.get_layout_of(&field.ty, generic_ctx) {
                     Some(Either::Left(l)) => {
                         if let Some(size) = l.size {
                             total_min_size += size;
@@ -165,7 +145,7 @@ impl<'a> LayoutComputer<'a> {
                         max_align = max(max_align, h.min_alignment);
                         uninhabited_part |= h.possibly_uninhabited;
                     }
-                    None => uninhabited_part |= ty.is_possibly_uninhabited(),
+                    None => uninhabited_part |= field.ty.is_possibly_uninhabited(),
                 }
             }
 
@@ -197,7 +177,6 @@ impl<'a> LayoutComputer<'a> {
     fn compute_c_layout_from_fields(
         &mut self,
         fields: &Vector<FieldId, Field>,
-        ty_var_map: &HashMap<TypeVarId, Ty>,
         generic_ctx: GenericCtx<'_>,
     ) -> LayoutHint {
         let mut total_min_size = 0;
@@ -205,14 +184,7 @@ impl<'a> LayoutComputer<'a> {
         let mut uninhabited_part = false;
 
         for field in fields {
-            let ty = if field.ty.is_type_var() {
-                let id = field.ty.as_type_var().unwrap().get_raw();
-                ty_var_map.get(id).unwrap()
-            } else {
-                &field.ty
-            };
-
-            match self.get_layout_of(ty, generic_ctx) {
+            match self.get_layout_of(&field.ty, generic_ctx) {
                 Some(Either::Left(l)) => {
                     if let Some(size) = l.size {
                         total_min_size += size;
@@ -227,7 +199,7 @@ impl<'a> LayoutComputer<'a> {
                     max_align = max(max_align, h.min_alignment);
                     uninhabited_part |= h.possibly_uninhabited;
                 }
-                None => uninhabited_part |= ty.is_possibly_uninhabited(),
+                None => uninhabited_part |= field.ty.is_possibly_uninhabited(),
             };
         }
 
@@ -249,35 +221,21 @@ impl<'a> LayoutComputer<'a> {
         let generics = &*type_decl_ref.generics;
         let type_decl_id = type_decl_ref.id.as_adt()?;
         let type_decl = self.krate.type_decls.get(*type_decl_id)?;
+        // Substitute the generic arguments for the generic parameters.
+        let subst_kind = type_decl.kind.clone().substitute_frees(generics);
 
-        // If we certainly can't instantiate all relevant type parameters, fail.
-        /* if generics.types.elem_count() != type_decl.generics.types.elem_count()
-            || generics.types.iter().find(|ty| ty.is_type_var()).is_some()
-        {
-            return None;
-        } */
-
-        // Map the generic type parameter variables to the given instantiations.
-        let ty_var_map: HashMap<TypeVarId, Ty> = type_decl
-            .generics
-            .types
-            .iter()
-            .map(|ty_var| ty_var.index)
-            .zip(generics.types.iter().cloned())
-            .collect();
-
-        match &type_decl.kind {
+        match &subst_kind {
             TypeDeclKind::Struct(fields) => {
                 if type_decl.is_c_repr() {
-                    Some(Either::Right(self.compute_c_layout_from_fields(fields, &ty_var_map, generic_ctx)))
+                    Some(Either::Right(self.compute_c_layout_from_fields(fields, generic_ctx)))
                 } else {
-                    self.compute_layout_from_fields(fields, &ty_var_map, generic_ctx, type_decl.is_transparent(), type_decl.forced_alignment(), false)
+                    self.compute_layout_from_fields(fields, generic_ctx, type_decl.is_transparent(), type_decl.forced_alignment(), false)
                 }
             }
             TypeDeclKind::Enum(variants) => {
                 // Assume that there could be a niche and ignore the discriminant for the hint.
                 let variant_layouts: Vec<Option<Either<&'a Layout, LayoutHint>>> = variants.iter().map(|variant|
-                    self.compute_layout_from_fields(&variant.fields, &ty_var_map, generic_ctx, false,type_decl.forced_alignment(), true)
+                    self.compute_layout_from_fields(&variant.fields, generic_ctx, false,type_decl.forced_alignment(), true)
                 ).collect();
                 // If all variants have at least a layout hint, combine them.
                 if variant_layouts.iter().all(|l| l.is_some()) {
@@ -351,7 +309,7 @@ impl<'a> LayoutComputer<'a> {
         }
     }
 
-    /// Computes the trivial layout of an array, unless it's zero-sized (cf. https://github.com/rust-lang/rust/issues/81996).
+    /// Computes the trivial layout of an array, unless it's zero-sized (cf. <https://github.com/rust-lang/rust/issues/81996>).
     fn get_layout_of_array(
         &mut self,
         elem_ty: &Ty,
@@ -438,10 +396,47 @@ impl<'a> LayoutComputer<'a> {
                     TypeId::Builtin(builtin_ty) => {
                         match builtin_ty {
                             BuiltinTy::Box => {
-                                // Box has only one relevant type parameters: the boxed type.
+                                // Box has two type parameters, the first is the contained type, the second is the allocator.
                                 let boxed_ty =
                                     type_decl_ref.generics.types.get(TypeVarId::ZERO).unwrap();
-                                Some(self.get_layout_of_ptr_type(boxed_ty, generic_ctx))
+                                let allocator_ty =
+                                    type_decl_ref.generics.types.get(TypeVarId::new(1)).unwrap();
+
+                                if let Some(TypeDeclRef {
+                                    id: TypeId::Adt(alloc_td_id),
+                                    ..
+                                }) = allocator_ty.as_adt()
+                                    && let Some(alloc_td) = self.krate.type_decls.get(*alloc_td_id)
+                                    && alloc_td.item_meta.lang_item
+                                        == Some("global_alloc_ty".to_owned())
+                                {
+                                    // If the allocator is `Global`, Box behaves as a pointer.
+                                    Some(self.get_layout_of_ptr_type(boxed_ty, generic_ctx))
+                                } else {
+                                    // Otherwise, it needs to be handled as if it was a struct with two fields (the allocator might be a ZST).
+                                    let pseudo_fields = [
+                                        Field {
+                                            span: Span::dummy(),
+                                            attr_info: AttrInfo::default(),
+                                            name: None,
+                                            ty: boxed_ty.clone(),
+                                        },
+                                        Field {
+                                            span: Span::dummy(),
+                                            attr_info: AttrInfo::default(),
+                                            name: None,
+                                            ty: allocator_ty.clone(),
+                                        },
+                                    ]
+                                    .into();
+                                    self.compute_layout_from_fields(
+                                        &pseudo_fields,
+                                        generic_ctx,
+                                        false,
+                                        None,
+                                        false,
+                                    )
+                                }
                             }
                             // Slices are non-sized and can be handled as such.
                             BuiltinTy::Slice | BuiltinTy::Str => {
@@ -467,7 +462,7 @@ impl<'a> LayoutComputer<'a> {
             TyKind::Literal(literal_ty) => {
                 let size =
                     literal_ty.target_size(self.krate.target_information.target_pointer_size);
-                let new_layout = Layout::mk_simple_layout(size as u64);
+                let new_layout = Layout::mk_literal_layout(size as u64);
                 let layout_ref = Box::leak(Box::new(new_layout));
                 Some(Either::Left(layout_ref))
             }

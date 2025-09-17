@@ -591,13 +591,14 @@
   "test_crate::NestedPointers": null,
   "test_crate::GenericC": null,
   "test_crate::HasArray": {
-    "size": 32,
-    "align": 4,
+    "size": 40,
+    "align": 8,
     "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [
+          8,
           0
         ],
         "uninhabited": false,
@@ -605,6 +606,7 @@
       }
     ]
   },
+  "test_crate::HasBoxWAlloc": null,
   "test_crate::Instance": {
     "size": 8,
     "align": 4,

@@ -963,10 +963,19 @@ pub trait VarsVisitor {
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     self_ref: &'a TraitRefKind,
+    subst_frees: bool,
 }
 impl<'a> SubstVisitor<'a> {
-    pub(crate) fn new(generics: &'a GenericArgs, self_ref: &'a TraitRefKind) -> Self {
-        Self { generics, self_ref }
+    pub(crate) fn new(
+        generics: &'a GenericArgs,
+        self_ref: &'a TraitRefKind,
+        subst_frees: bool,
+    ) -> Self {
+        Self {
+            generics,
+            self_ref,
+            subst_frees,
+        }
     }
 
     /// Returns the value for this variable, if any.
@@ -985,7 +994,13 @@ impl<'a> SubstVisitor<'a> {
                     get(varid).clone()
                 })
             }
-            DeBruijnVar::Free(..) => None,
+            DeBruijnVar::Free(varid) => {
+                if self.subst_frees {
+                    Some(get(varid).clone())
+                } else {
+                    None
+                }
+            }
         }
     }
 }
@@ -1093,7 +1108,20 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 
     fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
-        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref));
+        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref, false));
+        self
+    }
+
+    fn substitute_frees(self, generics: &GenericArgs) -> Self {
+        self.substitute_with_self_frees(generics, &TraitRefKind::SelfId)
+    }
+
+    fn substitute_with_self_frees(
+        mut self,
+        generics: &GenericArgs,
+        self_ref: &TraitRefKind,
+    ) -> Self {
+        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref, true));
         self
     }
 
@@ -1248,17 +1276,17 @@ impl Layout {
         }
     }
 
-    /// Construct a simple layout with a single variant and a single field of `size`.
+    /// Construct a simple layout with a single variant and no fields.
     ///
     /// Assumes that the alignment is the same as the size.
-    pub fn mk_simple_layout(size: ByteCount) -> Self {
+    pub fn mk_literal_layout(size: ByteCount) -> Self {
         Self {
             size: Some(size),
             align: Some(size),
             discriminant_layout: None,
             uninhabited: false,
             variant_layouts: [VariantLayout {
-                field_offsets: [0].into(),
+                field_offsets: [].into(),
                 uninhabited: false,
                 tag: None,
             }]
@@ -1268,7 +1296,7 @@ impl Layout {
 
     /// Constructs the layout of a thin pointer.
     pub fn mk_ptr_layout_wo_metadata(ptr_size: ByteCount) -> Self {
-        Self::mk_simple_layout(ptr_size)
+        Self::mk_literal_layout(ptr_size)
     }
 
     /// Constructs the layout of a 1ZST, i.e. a zero-sized type with alignment 1.
@@ -1279,7 +1307,7 @@ impl Layout {
             discriminant_layout: None,
             uninhabited: false,
             variant_layouts: [VariantLayout {
-                field_offsets: [0].into(),
+                field_offsets: [].into(),
                 uninhabited: false,
                 tag: None,
             }]

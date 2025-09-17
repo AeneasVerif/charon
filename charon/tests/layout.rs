@@ -16,8 +16,11 @@ fn type_layout() -> anyhow::Result<()> {
     let crate_data = translate_rust_text(
         r#"
         #![feature(never_type)]
+        #![feature(allocator_api)]
         use std::num::NonZero;
+        use std::ptr::NonNull;
         use std::fmt::Debug;
+        use std::alloc::Allocator;
 
         struct SimpleStruct {
             x: u32,
@@ -158,7 +161,12 @@ fn type_layout() -> anyhow::Result<()> {
         }
 
         struct HasArray {
-            a: [u32; 8]
+            a: [u32; 8],
+            b: NonNull<u8>,
+        }
+
+        struct HasBoxWAlloc<A: Allocator> {
+            b: Box<HasArray, A>
         }
 
         type Instance = GenericC<bool,u32>;
@@ -166,7 +174,7 @@ fn type_layout() -> anyhow::Result<()> {
         type InstanceGen2<'a,T: Sized> = GenericC<&'a T,T>;
         type InstanceGen3<'a,T: ?Sized> = GenericC<&'a T,i32>;
         "#,
-        &[],
+        &["--include=core::ptr::non_null::*"],
     )?;
 
     // Check whether niche discriminant computations are correct, i.e. reversible.

@@ -25,9 +25,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -43,9 +41,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -115,9 +111,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -154,9 +148,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -171,9 +163,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -220,6 +210,48 @@
       ]
     }
   },
+  "NonNull<u8>": {
+    "Left": {
+      "size": 8,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
+  "alloc::boxed::Box<HasArray, @Type0>[MetaSized<HasArray>, @TraitClause0, @TraitClause1]": {
+    "Right": {
+      "min_size": 40,
+      "min_alignment": 8,
+      "possibly_uninhabited": true
+    }
+  },
+  "HasArray": {
+    "Left": {
+      "size": 40,
+      "align": 8,
+      "discriminant_layout": null,
+      "uninhabited": false,
+      "variant_layouts": [
+        {
+          "field_offsets": [
+            8,
+            0
+          ],
+          "uninhabited": false,
+          "tag": null
+        }
+      ]
+    }
+  },
   "GenericC<bool, u32>[Sized<bool>, Sized<u32>]": {
     "Right": {
       "min_size": 6,
@@ -235,9 +267,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -309,9 +339,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -349,9 +377,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -374,9 +400,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -423,6 +447,13 @@
       ]
     }
   },
+  "*const @Type0": {
+    "Right": {
+      "min_size": 8,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
   "&'_1 (GenericButFixedSize<'_0, @Type0>[@TraitClause0])": {
     "Left": {
       "size": 8,
@@ -431,9 +462,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -485,9 +514,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -520,9 +547,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -574,9 +599,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -609,9 +632,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -633,9 +654,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -650,9 +669,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -685,9 +702,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -761,12 +776,18 @@
   },
   "Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]": {
     "Right": {
-      "min_size": 0,
-      "min_alignment": 1,
+      "min_size": 16,
+      "min_alignment": 8,
       "possibly_uninhabited": false
     }
   },
-  "NonNull<Slice<u8>>": null,
+  "NonNull<Slice<u8>>": {
+    "Right": {
+      "min_size": 16,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  },
   "Slice<u8>": {
     "Left": {
       "size": null,
@@ -797,7 +818,6 @@
       ]
     }
   },
-  "NonNull<u8>": null,
   "&'_0 (NonZeroU32Inner)": {
     "Left": {
       "size": 8,
@@ -806,9 +826,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -840,9 +858,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -857,9 +873,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -894,9 +908,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -913,9 +925,7 @@
       "uninhabited": false,
       "variant_layouts": [
         {
-          "field_offsets": [
-            0
-          ],
+          "field_offsets": [],
           "uninhabited": false,
           "tag": null
         }
@@ -932,6 +942,13 @@
   "N": null,
   "A": null,
   "B": null,
+  "alloc::boxed::Box<HasArray, A>[MetaSized<HasArray>, @TraitClause0, @TraitClause1]": {
+    "Right": {
+      "min_size": 40,
+      "min_alignment": 8,
+      "possibly_uninhabited": true
+    }
+  },
   "GenericC<&'a (T), &'static (Str)>[Sized<&'_ (T)>, Sized<&'_ (Str)>]": {
     "Right": {
       "min_size": 25,
@@ -953,5 +970,12 @@
       "possibly_uninhabited": false
     }
   },
-  "fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]": null
+  "fn<'_0, '_1, '_2>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)), &'_0_1 mut (Formatter<'_0_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]": null,
+  "*const T": {
+    "Right": {
+      "min_size": 8,
+      "min_alignment": 8,
+      "possibly_uninhabited": false
+    }
+  }
 }
