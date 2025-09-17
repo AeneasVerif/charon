@@ -104,12 +104,6 @@ fn charon_cargo_features() -> Result<()> {
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
         );
 
-        let count_fn = stdout.matches("fn").count();
-        ensure!(
-            count_fn == 1,
-            "Output of `{cmd}` is:\n{stdout:?}\nThe count of `fn` should only be one."
-        );
-
         ensure!(
             !stdout.contains(take_mut),
             "Output of `{cmd}` is:\n{stdout:?}\nIt shouldn't contain {take_mut:?}."
@@ -123,7 +117,6 @@ fn charon_cargo_target() -> Result<()> {
     let target = "riscv64gc-unknown-none-elf";
 
     let dir = "tests/cargo/multi-targets";
-    let fn_ = "pub fn";
 
     #[cfg(target_family = "unix")]
     charon(&["cargo", "--print-llbc"], dir, |stdout, cmd| {
@@ -131,12 +124,6 @@ fn charon_cargo_target() -> Result<()> {
         ensure!(
             stdout.contains(main),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
-        );
-
-        let count_fn = stdout.matches(fn_).count();
-        ensure!(
-            count_fn == 1,
-            "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
         );
         Ok(())
     })?;
@@ -148,12 +135,6 @@ fn charon_cargo_target() -> Result<()> {
             stdout.contains(main),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
         );
-
-        let count_fn = stdout.matches(fn_).count();
-        ensure!(
-            count_fn == 1,
-            "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
-        );
         Ok(())
     })?;
 
@@ -163,12 +144,6 @@ fn charon_cargo_target() -> Result<()> {
         ensure!(
             stdout.contains(main),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
-        );
-
-        let count_fn = stdout.matches(fn_).count();
-        ensure!(
-            count_fn == 1,
-            "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
         );
         Ok(())
     })
@@ -186,12 +161,6 @@ fn charon_rustc() -> Result<()> {
         ensure!(
             stdout.contains(fn_),
             "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {fn_:?}."
-        );
-
-        let count_fn = stdout.matches("fn").count();
-        ensure!(
-            count_fn == 1,
-            "Output of `{cmd}` is:\n{stdout:?}\nThe count of `fn` should only be one."
         );
         Ok(())
     })

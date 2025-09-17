@@ -42,6 +42,16 @@ where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun4()
+
 // Full name: core::iter::sources::once::Once
 #[lang_item("IterOnce")]
 pub opaque type Once<T>

@@ -12,6 +12,16 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::choose
 fn choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
 where
@@ -25,42 +35,24 @@ where
     let @5: &'_ mut (T); // anonymous local
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
-    let @8: (); // anonymous local
-    let @9: (); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
 
     storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := copy (b@1)
     if move (@6) {
         storage_live(@7)
-        storage_live(@9)
-        @9 := ()
-        @7 := &mut (*(x@2), move (@9))
-        storage_live(@8)
-        @8 := ()
-        @5 := &mut (*(@7), move (@8))
+        @7 := &mut (*(x@2), copy (@Global0))
+        @5 := &mut (*(@7), copy (@Global0))
         storage_dead(@7)
     }
     else {
-        storage_live(@10)
-        @10 := ()
-        @5 := &mut (*(y@3), move (@10))
+        @5 := &mut (*(y@3), copy (@Global0))
     }
-    storage_live(@12)
-    @12 := ()
-    @4 := &mut (*(@5), move (@12))
+    @4 := &mut (*(@5), copy (@Global0))
     storage_dead(@6)
-    storage_live(@11)
-    @11 := ()
-    @0 := &mut (*(@4), move (@11))
+    @0 := &mut (*(@4), copy (@Global0))
     storage_dead(@5)
     storage_dead(@4)
     return
@@ -90,10 +82,6 @@ pub fn choose_test()
     let @18: (); // anonymous local
     let @19: bool; // anonymous local
     let @20: i32; // anonymous local
-    let @21: (); // anonymous local
-    let @22: (); // anonymous local
-    let @23: (); // anonymous local
-    let @24: (); // anonymous local
 
     storage_live(@8)
     storage_live(x@1)
@@ -103,20 +91,12 @@ pub fn choose_test()
     storage_live(z@3)
     storage_live(@4)
     storage_live(@5)
-    storage_live(@24)
-    @24 := ()
-    @5 := &mut (x@1, move (@24))
-    storage_live(@23)
-    @23 := ()
-    @4 := &two-phase-mut (*(@5), move (@23))
+    @5 := &mut (x@1, copy (@Global0))
+    @4 := &two-phase-mut (*(@5), copy (@Global0))
     storage_live(@6)
     storage_live(@7)
-    storage_live(@22)
-    @22 := ()
-    @7 := &mut (y@2, move (@22))
-    storage_live(@21)
-    @21 := ()
-    @6 := &two-phase-mut (*(@7), move (@21))
+    @7 := &mut (y@2, copy (@Global0))
+    @6 := &two-phase-mut (*(@7), copy (@Global0))
     z@3 := choose<'_, i32>[Sized<i32>](const (true), move (@4), move (@6))
     storage_dead(@6)
     storage_dead(@4)

@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::slice_pattern_end
 fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
 {
@@ -9,12 +19,11 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     let @3: usize; // anonymous local
     let @4: bool; // anonymous local
     let _named@5: &'_ (()); // local
-    let @6: (); // anonymous local
-    let @7: usize; // anonymous local
-    let @8: &'_ (Slice<()>); // anonymous local
+    let @6: usize; // anonymous local
+    let @7: &'_ (Slice<()>); // anonymous local
+    let @8: usize; // anonymous local
     let @9: usize; // anonymous local
-    let @10: usize; // anonymous local
-    let @11: &'_ (()); // anonymous local
+    let @10: &'_ (()); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -31,19 +40,17 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     }
     storage_live(_named@5)
     storage_live(@6)
-    @6 := ()
+    @6 := ptr_metadata(copy (x@1))
     storage_live(@7)
-    @7 := ptr_metadata(copy (x@1))
+    @7 := &(*(x@1), move (@6))
     storage_live(@8)
-    @8 := &(*(x@1), move (@7))
+    @8 := len(*(x@1))
     storage_live(@9)
-    @9 := len(*(x@1))
+    @9 := copy (@8) ub.- const (1 : usize)
+    storage_dead(@8)
     storage_live(@10)
-    @10 := copy (@9) ub.- const (1 : usize)
-    storage_dead(@9)
-    storage_live(@11)
-    @11 := @SliceIndexShared<'_, ()>(move (@8), copy (@10))
-    _named@5 := &(*(@11), move (@6))
+    @10 := @SliceIndexShared<'_, ()>(move (@7), copy (@9))
+    _named@5 := &(*(@10), copy (@Global0))
     @0 := ()
     storage_dead(_named@5)
     @0 := ()

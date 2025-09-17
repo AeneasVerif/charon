@@ -26,6 +26,16 @@ pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::Foo
 pub trait Foo<Self, T>
 {
@@ -62,15 +72,12 @@ where
     let x@1: @TraitClause1::Type; // arg #1
     let @2: &'_ (&'_ (&'_ (()))); // anonymous local
     let @3: @TraitClause1::Type; // anonymous local
-    let @4: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := move (x@1)
     @2 := (@TraitClause1::Type::[@TraitClause1])::foo(move (@3))
-    storage_live(@4)
-    @4 := ()
-    @0 := &(*(@2), move (@4))
+    @0 := &(*(@2), copy (@Global0))
     storage_dead(@3)
     storage_dead(@2)
     drop[Drop<@TraitClause1::Type>] x@1

@@ -104,6 +104,16 @@ pub enum AssertKind {
   Match,
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::LendingIterator
 pub trait LendingIterator<Self>
 {
@@ -131,9 +141,6 @@ where
     let item@3: &'_ (T); // local
     let @4: Option<&'_ (T)>[Sized<&'_ (T)>]; // anonymous local
     let @5: &'_ (T); // anonymous local
-    let @6: (); // anonymous local
-    let @7: (); // anonymous local
-    let @8: (); // anonymous local
 
     match *(self@1) {
         Option::Some => {
@@ -144,21 +151,15 @@ where
         },
     }
     storage_live(item@2)
-    storage_live(@8)
-    @8 := ()
-    item@2 := &mut ((*(self@1) as variant Option::Some).0, move (@8))
+    item@2 := &mut ((*(self@1) as variant Option::Some).0, copy (@Global0))
     storage_live(item@3)
-    storage_live(@7)
-    @7 := ()
-    item@3 := &(*(*(item@2)), move (@7))
+    item@3 := &(*(*(item@2)), copy (@Global0))
     storage_live(@4)
     @4 := Option::None {  }
     *(self@1) := move (@4)
     storage_dead(@4)
     storage_live(@5)
-    storage_live(@6)
-    @6 := ()
-    @5 := &(*(item@3), move (@6))
+    @5 := &(*(item@3), copy (@Global0))
     @0 := Option::Some { 0: move (@5) }
     storage_dead(@5)
     storage_dead(item@3)
@@ -197,8 +198,6 @@ where
     let @8: (@TraitClause2::Item); // anonymous local
     let @9: @TraitClause2::Item; // anonymous local
     let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
 
     storage_live(@3)
     storage_live(@5)
@@ -206,14 +205,10 @@ where
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
-    storage_live(@11)
-    storage_live(@12)
     loop {
         storage_live(@4)
         storage_live(@5)
-        storage_live(@11)
-        @11 := ()
-        @5 := &two-phase-mut (iter@1, move (@11))
+        @5 := &two-phase-mut (iter@1, copy (@Global0))
         @4 := @TraitClause2::next<'_>(move (@5))
         storage_dead(@5)
         match @4 {
@@ -226,9 +221,7 @@ where
         storage_live(item@6)
         item@6 := move ((@4 as variant Option::Some).0)
         storage_live(@7)
-        storage_live(@12)
-        @12 := ()
-        @7 := &mut (f@2, move (@12))
+        @7 := &mut (f@2, copy (@Global0))
         storage_live(@8)
         storage_live(@9)
         @9 := move (item@6)
@@ -290,12 +283,9 @@ fn {impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<
     let @1: closure<'_0>; // arg #1
     let @2: (&'_ (i32)); // arg #2
     let @3: &'_ mut (closure<'_0>); // anonymous local
-    let @4: (); // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    @4 := ()
-    @3 := &mut (@1, move (@4))
+    @3 := &mut (@1, copy (@Global0))
     @0 := {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop[Drop<closure<'_0>>] @1
     @0 := ()
@@ -353,14 +343,6 @@ pub fn main()
     let @24: &'_ (i32); // anonymous local
     let @25: &'_ (i32); // anonymous local
     let @26: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
-    let @27: (); // anonymous local
-    let @28: (); // anonymous local
-    let @29: (); // anonymous local
-    let @30: (); // anonymous local
-    let @31: (); // anonymous local
-    let @32: (); // anonymous local
-    let @33: (); // anonymous local
-    let @34: (); // anonymous local
 
     storage_live(kind@20)
     storage_live(@21)
@@ -369,19 +351,13 @@ pub fn main()
     storage_live(@24)
     storage_live(@25)
     storage_live(@26)
-    storage_live(@31)
-    storage_live(@32)
-    storage_live(@33)
-    storage_live(@34)
     storage_live(x@1)
     x@1 := const (42 : i32)
     storage_live(iter@2)
     storage_live(@3)
     storage_live(@4)
     @4 := const (42 : i32)
-    storage_live(@28)
-    @28 := ()
-    @3 := &(@4, move (@28))
+    @3 := &(@4, copy (@Global0))
     iter@2 := Option::Some { 0: move (@3) }
     storage_dead(@3)
     storage_live(sum@5)
@@ -391,9 +367,7 @@ pub fn main()
     @7 := copy (iter@2)
     storage_live(@8)
     storage_live(@9)
-    storage_live(@27)
-    @27 := ()
-    @9 := &mut (sum@5, move (@27))
+    @9 := &mut (sum@5, copy (@Global0))
     @8 := closure { 0: move (@9) }
     storage_dead(@9)
     @6 := for_each<Option<&'_ (i32)>[Sized<&'_ (i32)>], closure<'_>>[Sized<Option<&'_ (i32)>[Sized<&'_ (i32)>]>, Sized<closure<'_>>, {impl LendingIterator for Option<&'a (T)>[Sized<&'_ (T)>]}<'_, i32>[Sized<i32>], {impl FnMut<(&'_ (i32))> for closure<'_0>}<'_, '_>](move (@7), move (@8))
@@ -403,15 +377,11 @@ pub fn main()
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
-    storage_live(@30)
-    @30 := ()
-    @12 := &(sum@5, move (@30))
+    @12 := &(sum@5, copy (@Global0))
     storage_live(@13)
     storage_live(@14)
     @14 := const (42 : i32)
-    storage_live(@29)
-    @29 := ()
-    @13 := &(@14, move (@29))
+    @13 := &(@14, copy (@Global0))
     @11 := (move (@12), move (@13))
     storage_dead(@13)
     storage_dead(@12)
@@ -436,20 +406,12 @@ pub fn main()
         @21 := move (kind@20)
         storage_live(@22)
         storage_live(@23)
-        storage_live(@34)
-        @34 := ()
-        @23 := &(*(left_val@15), move (@34))
-        storage_live(@33)
-        @33 := ()
-        @22 := &(*(@23), move (@33))
+        @23 := &(*(left_val@15), copy (@Global0))
+        @22 := &(*(@23), copy (@Global0))
         storage_live(@24)
         storage_live(@25)
-        storage_live(@32)
-        @32 := ()
-        @25 := &(*(right_val@16), move (@32))
-        storage_live(@31)
-        @31 := ()
-        @24 := &(*(@25), move (@31))
+        @25 := &(*(right_val@16), copy (@Global0))
+        @24 := &(*(@25), copy (@Global0))
         storage_live(@26)
         @26 := Option::None {  }
         panic(core::panicking::assert_failed)

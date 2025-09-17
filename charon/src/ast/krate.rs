@@ -156,6 +156,9 @@ pub struct TranslatedCrate {
     pub trait_decls: Vector<TraitDeclId, TraitDecl>,
     /// The translated trait declarations
     pub trait_impls: Vector<TraitImplId, TraitImpl>,
+    /// A `const UNIT: () = ();` used whenever we make a thin pointer/reference to avoid creating a
+    /// local `let unit = ();` variable. It is always `Some`.
+    pub unit_metadata: Option<GlobalDeclRef>,
     /// The re-ordered groups of declarations, initialized as empty.
     #[drive(skip)]
     pub ordered_decls: Option<DeclarationsGroups>,

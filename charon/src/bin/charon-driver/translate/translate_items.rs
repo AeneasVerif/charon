@@ -191,6 +191,67 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item = self.translated.get_item(id);
         Ok(item.unwrap())
     }
+
+    /// Add a `const UNIT: () = ();` const, used as metadata for thin pointers/references.
+    pub fn translate_unit_metadata_const(&mut self) {
+        use charon_lib::ullbc_ast::*;
+        let name = Name::from_path(&["UNIT_METADATA"]);
+        let item_meta = ItemMeta {
+            name,
+            span: Span::dummy(),
+            source_text: None,
+            attr_info: AttrInfo::default(),
+            is_local: false,
+            opacity: ItemOpacity::Foreign,
+            lang_item: None,
+        };
+
+        let body = {
+            let mut body = GExprBody {
+                span: Span::dummy(),
+                locals: Locals::new(0),
+                comments: Default::default(),
+                body: Vector::default(),
+            };
+            let _ = body.locals.new_var(None, Ty::mk_unit());
+            body.body.push(BlockData {
+                statements: Default::default(),
+                terminator: Terminator::new(Span::dummy(), TerminatorKind::Return),
+            });
+            body
+        };
+
+        let global_id = self.translated.global_decls.reserve_slot();
+        let initializer = self.translated.fun_decls.push_with(|def_id| FunDecl {
+            def_id,
+            item_meta: item_meta.clone(),
+            kind: ItemKind::TopLevel,
+            is_global_initializer: Some(global_id),
+            signature: FunSig {
+                is_unsafe: false,
+                generics: Default::default(),
+                inputs: vec![],
+                output: Ty::mk_unit(),
+            },
+            body: Ok(Body::Unstructured(body)),
+        });
+        self.translated.global_decls.set_slot(
+            global_id,
+            GlobalDecl {
+                def_id: global_id,
+                item_meta,
+                generics: Default::default(),
+                ty: Ty::mk_unit(),
+                kind: ItemKind::TopLevel,
+                global_kind: GlobalKind::NamedConst,
+                init: initializer,
+            },
+        );
+        self.translated.unit_metadata = Some(GlobalDeclRef {
+            id: global_id,
+            generics: Box::new(GenericArgs::empty()),
+        });
+    }
 }
 
 impl ItemTransCtx<'_, '_> {

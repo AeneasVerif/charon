@@ -13,6 +13,16 @@ pub opaque type NonNull<T>
 // Full name: core::ptr::non_null::{NonNull<T>}::new_unchecked
 pub unsafe fn new_unchecked<T>(@1: *mut T) -> NonNull<T>
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::HasPointerNiche
 enum HasPointerNiche {
   First,
@@ -32,7 +42,6 @@ fn main()
     let a@7: HasPointerNiche; // local
     let @8: NonNull<usize>; // anonymous local
     let @9: *mut usize; // anonymous local
-    let @10: (); // anonymous local
 
     storage_live(@6)
     storage_live(x@1)
@@ -51,9 +60,7 @@ fn main()
     storage_live(a@7)
     storage_live(@8)
     storage_live(@9)
-    storage_live(@10)
-    @10 := ()
-    @9 := &raw mut (x@1, move (@10))
+    @9 := &raw mut (x@1, copy (@Global0))
     @8 := new_unchecked<usize>(move (@9))
     storage_dead(@9)
     a@7 := HasPointerNiche::Second { 0: move (@8) }

@@ -61,6 +61,18 @@ pub trait Drop::<bool>
 // Full name: core::ops::drop::Drop::drop::<bool>
 pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    bb0: {
+        @0 := ();
+        return;
+    }
+}
+
+const UNIT_METADATA: () = @Fun1()
+
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(@1: bool, @2: bool)
 {
@@ -71,20 +83,14 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let @4: bool; // anonymous local
     let @5: &'_ (bool); // anonymous local
     let @6: &'_ (bool); // anonymous local
-    let @7: (); // anonymous local
-    let @8: (); // anonymous local
 
     bb0: {
         storage_live(@3);
         storage_live(@4);
         storage_live(@5);
-        storage_live(@8);
-        @8 := ();
-        @5 := &(expected@2, move (@8));
+        @5 := &(expected@2, copy (@Global0));
         storage_live(@6);
-        storage_live(@7);
-        @7 := ();
-        @6 := &(init@1, move (@7));
+        @6 := &(init@1, copy (@Global0));
         @4 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 

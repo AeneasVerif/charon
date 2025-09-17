@@ -94,6 +94,16 @@ pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) ->
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::Foo
 pub trait Foo<Self>
 {
@@ -116,18 +126,12 @@ pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
     let self@1: &'_ (()); // arg #1
     let @2: &'_ (u32); // anonymous local
     let @3: u32; // anonymous local
-    let @4: (); // anonymous local
-    let @5: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := const (42 : u32)
-    storage_live(@5)
-    @5 := ()
-    @2 := &(@3, move (@5))
-    storage_live(@4)
-    @4 := ()
-    @0 := &(*(@2), move (@4))
+    @2 := &(@3, copy (@Global0))
+    @0 := &(*(@2), copy (@Global0))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -162,8 +166,6 @@ fn use_foo()
     let @3: &'_ (u32); // anonymous local
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (()); // anonymous local
-    let @6: (); // anonymous local
-    let @7: (); // anonymous local
 
     storage_live(foo@1)
     foo@1 := mk_foo()
@@ -171,13 +173,9 @@ fn use_foo()
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
-    storage_live(@6)
-    @6 := ()
-    @5 := &(foo@1, move (@6))
+    @5 := &(foo@1, copy (@Global0))
     @4 := {impl Foo for ()}::get_ty<'_>(move (@5))
-    storage_live(@7)
-    @7 := ()
-    @3 := &(*(@4), move (@7))
+    @3 := &(*(@4), copy (@Global0))
     storage_dead(@5)
     @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
@@ -245,8 +243,7 @@ where
     let @3: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
     let @4: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
     let @5: &'_ (@TraitClause1::); // anonymous local
-    let @6: (); // anonymous local
-    let @7: PtrMetadata<@TraitClause1::parent_clause2::Type>; // anonymous local
+    let @6: PtrMetadata<@TraitClause1::parent_clause2::Type>; // anonymous local
 
     storage_live(foo@1)
     foo@1 := @TraitClause1::make_foo()
@@ -254,13 +251,11 @@ where
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
-    storage_live(@6)
-    @6 := ()
-    @5 := &(foo@1, move (@6))
+    @5 := &(foo@1, copy (@Global0))
     @4 := @TraitClause1::parent_clause2::get_ty<'_>(move (@5))
-    storage_live(@7)
-    @7 := ptr_metadata(copy (@4))
-    @3 := &(*(@4), move (@7))
+    storage_live(@6)
+    @6 := ptr_metadata(copy (@4))
+    @3 := &(*(@4), move (@6))
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
@@ -310,14 +305,11 @@ where
     let tupled_args@2: (&'_0 (U)); // arg #2
     let x@3: &'_ (U); // local
     let @4: &'_ (U); // anonymous local
-    let @5: (); // anonymous local
 
     storage_live(x@3)
     x@3 := move ((tupled_args@2).0)
     storage_live(@4)
-    storage_live(@5)
-    @5 := ()
-    @4 := &(*(x@3), move (@5))
+    @4 := &(*(x@3), copy (@Global0))
     @0 := WrapClone { 0: move (@4) }
     storage_dead(@4)
     return
@@ -348,8 +340,6 @@ pub fn use_wrap()
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
     let @7: u32; // anonymous local
-    let @8: (); // anonymous local
-    let @9: (); // anonymous local
 
     storage_live(f@1)
     f@1 := wrap<u32>[Sized<u32>]()
@@ -361,12 +351,8 @@ pub fn use_wrap()
     storage_live(@6)
     storage_live(@7)
     @7 := const (42 : u32)
-    storage_live(@9)
-    @9 := ()
-    @6 := &(@7, move (@9))
-    storage_live(@8)
-    @8 := ()
-    @5 := &(*(@6), move (@8))
+    @6 := &(@7, copy (@Global0))
+    @5 := &(*(@6), copy (@Global0))
     @4 := (move (@5))
     @2 := {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_, u32>[Sized<u32>](move (@3), move (@4))
     storage_dead(@5)

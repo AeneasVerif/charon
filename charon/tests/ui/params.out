@@ -16,6 +16,16 @@ pub trait Sized<Self>
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::test_static
 fn test_static(@1: &'static (u32)) -> &'static (u32)
 {

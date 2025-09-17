@@ -42,6 +42,16 @@ pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0
 where
     [@TraitClause0]: Add<Self, Rhs>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::Super
 trait Super<Self, T>
 {
@@ -221,8 +231,6 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 (i32)) -> i32
     let @9: i32; // anonymous local
     let @10: &'_ (i32); // anonymous local
     let @11: i32; // anonymous local
-    let @12: (); // anonymous local
-    let @13: (); // anonymous local
 
     storage_live(@5)
     storage_live(@8)
@@ -236,9 +244,7 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 (i32)) -> i32
     storage_dead(@4)
     storage_live(@6)
     storage_live(@7)
-    storage_live(@12)
-    @12 := ()
-    @7 := &(*(self@1), move (@12))
+    @7 := &(*(self@1), copy (@Global0))
     @6 := {impl Internal for i32}::internal_method<'_>(move (@7))
     storage_dead(@7)
     @8 := copy (@3) panic.+ copy (@6)
@@ -247,9 +253,7 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 (i32)) -> i32
     storage_dead(@3)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@13)
-    @13 := ()
-    @10 := &(*(self@1), move (@13))
+    @10 := &(*(self@1), copy (@Global0))
     @9 := {impl Super<i32> for i32}::super_method<'_>(move (@10), const (10 : i32))
     storage_dead(@10)
     @11 := copy (@2) panic.+ copy (@9)
@@ -280,21 +284,15 @@ fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 (i32)) -> (i32, i32)
     let @3: &'_ (i32); // anonymous local
     let @4: i32; // anonymous local
     let @5: &'_ (i32); // anonymous local
-    let @6: (); // anonymous local
-    let @7: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    storage_live(@6)
-    @6 := ()
-    @3 := &(*(self@1), move (@6))
+    @3 := &(*(self@1), copy (@Global0))
     @2 := {impl Left for i32}::left_method<'_>(move (@3))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
-    storage_live(@7)
-    @7 := ()
-    @5 := &(*(self@1), move (@7))
+    @5 := &(*(self@1), copy (@Global0))
     @4 := {impl Right<i32> for i32}::right_method<'_>(move (@5))
     storage_dead(@5)
     @0 := (move (@2), move (@4))
@@ -348,20 +346,14 @@ fn main()
     let @5: (i32, i32); // anonymous local
     let @6: &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)); // anonymous local
     let @7: &'static (test_crate::Join::{vtable}<i32, i32, i32, i32, i32>); // anonymous local
-    let @8: (); // anonymous local
-    let @9: (); // anonymous local
 
     storage_live(v@1)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := const (97 : i32)
-    storage_live(@9)
-    @9 := ()
-    @3 := &(@4, move (@9))
-    storage_live(@8)
-    @8 := ()
-    @2 := &(*(@3), move (@8))
+    @3 := &(@4, copy (@Global0))
+    @2 := &(*(@3), copy (@Global0))
     v@1 := unsize_cast<&'_ (i32), &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)), {impl Join<i32> for i32}>(move (@2))
     storage_dead(@2)
     storage_dead(@3)

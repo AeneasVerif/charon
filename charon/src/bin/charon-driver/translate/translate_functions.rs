@@ -9,7 +9,6 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use itertools::Itertools;
@@ -107,10 +106,7 @@ impl ItemTransCtx<'_, '_> {
         let tref = self
             .translate_type_decl_ref(span, &def.this().with_def_id(self.hax_state(), adt_def_id))?;
         let output_ty = self.translate_ty(span, output_ty)?;
-        let mut locals = Locals {
-            arg_count: fields.len(),
-            locals: Vector::new(),
-        };
+        let mut locals = Locals::new(fields.len());
         locals.new_var(None, output_ty);
         let args: Vec<_> = fields
             .iter()

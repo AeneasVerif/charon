@@ -660,6 +660,8 @@ pub fn translate<'tcx, 'ctx>(
         &ctx.items_to_translate
     );
 
+    ctx.translate_unit_metadata_const();
+
     // Translate.
     //
     // For as long as the queue of items to translate is not empty, we pop the top item and

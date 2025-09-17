@@ -96,6 +96,7 @@ and gtranslated_crate_of_json
           ("global_decls", globals);
           ("trait_decls", trait_decls);
           ("trait_impls", trait_impls);
+          ("unit_metadata", unit_metadata);
           ("ordered_decls", declarations);
         ] ->
         let* ctx = id_to_file_of_json files in
@@ -126,6 +127,7 @@ and gtranslated_crate_of_json
           vector_of_json trait_impl_id_of_json trait_impl_of_json ctx
             trait_impls
         in
+        let* unit_metadata = global_decl_ref_of_json ctx unit_metadata in
 
         let type_decls =
           TypeDeclId.Map.of_list
@@ -159,6 +161,7 @@ and gtranslated_crate_of_json
             global_decls;
             trait_decls;
             trait_impls;
+            unit_metadata;
           }
     | _ -> Error "")
 
