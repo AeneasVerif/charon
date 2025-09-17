@@ -120,8 +120,10 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let @24: u32; // anonymous local
     let @25: u32; // anonymous local
     let @26: u32; // anonymous local
-    let @27: &'_ (Slice<u32>); // anonymous local
-    let @28: &'_ (u32); // anonymous local
+    let @27: usize; // anonymous local
+    let @28: usize; // anonymous local
+    let @29: &'_ (Slice<u32>); // anonymous local
+    let @30: &'_ (u32); // anonymous local
 
     storage_live(@7)
     storage_live(@12)
@@ -134,6 +136,8 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     storage_live(@26)
     storage_live(@27)
     storage_live(@28)
+    storage_live(@29)
+    storage_live(@30)
     storage_live(sum@2)
     // `let sum`
     sum@2 := const (0 : u32)
@@ -161,7 +165,9 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @10 := copy (i@3)
         storage_live(@11)
         storage_live(@12)
-        @12 := &*(s@1)
+        storage_live(@27)
+        @27 := ptr_metadata(copy (s@1))
+        @12 := &(*(s@1), move (@27))
         @11 := len<'_, u32>[Sized<u32>](move (@12))
         storage_dead(@12)
         @9 := move (@10) < move (@11)
@@ -176,11 +182,13 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@14)
         // Add to running sum
         @14 := copy (i@3)
-        storage_live(@27)
-        @27 := &*(s@1)
         storage_live(@28)
-        @28 := @SliceIndexShared<'_, u32>(move (@27), copy (@14))
-        @13 := copy (*(@28))
+        @28 := ptr_metadata(copy (s@1))
+        storage_live(@29)
+        @29 := &(*(s@1), move (@28))
+        storage_live(@30)
+        @30 := @SliceIndexShared<'_, u32>(move (@29), copy (@14))
+        @13 := copy (*(@30))
         @15 := copy (sum@2) panic.+ copy (@13)
         sum@2 := move (@15)
         storage_dead(@13)
@@ -350,8 +358,15 @@ fn foo()
     let @31: &'_ (u32); // anonymous local
     let @32: &'_ (u32); // anonymous local
     let @33: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
-    let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @35: &'_ (u32); // anonymous local
+    let @34: (); // anonymous local
+    let @35: (); // anonymous local
+    let @36: (); // anonymous local
+    let @37: (); // anonymous local
+    let @38: (); // anonymous local
+    let @39: (); // anonymous local
+    let @40: (); // anonymous local
+    let @41: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @42: &'_ (u32); // anonymous local
 
     storage_live(kind@27)
     storage_live(@28)
@@ -360,6 +375,10 @@ fn foo()
     storage_live(@31)
     storage_live(@32)
     storage_live(@33)
+    storage_live(@36)
+    storage_live(@37)
+    storage_live(@38)
+    storage_live(@39)
     storage_live(@3)
     // Call `default` and destructure the result
     @3 := {impl Default for Foo}::default()
@@ -413,15 +432,21 @@ fn foo()
     storage_live(@19)
     // `assert_eq`
     @19 := const (9 : usize)
-    storage_live(@34)
-    @34 := &a@15
     storage_live(@35)
-    @35 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@34), copy (@19))
-    @18 := &*(@35)
+    @35 := ()
+    storage_live(@40)
+    @40 := ()
+    storage_live(@41)
+    @41 := &(a@15, move (@40))
+    storage_live(@42)
+    @42 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@41), copy (@19))
+    @18 := &(*(@42), move (@35))
     storage_live(@20)
     storage_live(@21)
     @21 := const (9 : u32)
-    @20 := &@21
+    storage_live(@34)
+    @34 := ()
+    @20 := &(@21, move (@34))
     @17 := (move (@18), move (@20))
     storage_dead(@20)
     storage_dead(@18)
@@ -446,12 +471,20 @@ fn foo()
         @28 := move (kind@27)
         storage_live(@29)
         storage_live(@30)
-        @30 := &*(left_val@22)
-        @29 := &*(@30)
+        storage_live(@39)
+        @39 := ()
+        @30 := &(*(left_val@22), move (@39))
+        storage_live(@38)
+        @38 := ()
+        @29 := &(*(@30), move (@38))
         storage_live(@31)
         storage_live(@32)
-        @32 := &*(right_val@23)
-        @31 := &*(@32)
+        storage_live(@37)
+        @37 := ()
+        @32 := &(*(right_val@23), move (@37))
+        storage_live(@36)
+        @36 := ()
+        @31 := &(*(@32), move (@36))
         storage_live(@33)
         @33 := Option::None {  }
         panic(core::panicking::assert_failed)

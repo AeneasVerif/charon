@@ -72,12 +72,18 @@ where
     let @3: (); // anonymous local
     let @4: *const T; // anonymous local
     let @5: *mut T; // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &raw const *(y@2)
+    storage_live(@7)
+    @7 := ()
+    @4 := &raw const (*(y@2), move (@7))
     storage_live(@5)
-    @5 := &raw mut *(x@1)
+    storage_live(@6)
+    @6 := ()
+    @5 := &raw mut (*(x@1), move (@6))
     @3 := copy_nonoverlapping<T>[@TraitClause0](move (@4), move (@5), const (1 : usize))
     storage_dead(@5)
     storage_dead(@4)

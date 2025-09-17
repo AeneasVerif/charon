@@ -573,6 +573,9 @@ and ty =
           given that the type here is polymorpohic in the late-bound variables
           (those that could appear in a function pointer type like
           [for<'a> fn(&'a u32)]), we need to bind them here. *)
+  | TPtrMetadata of ty
+      (** As a marker of taking out metadata from a given type The internal type
+          is assumed to be a type variable *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
 (** Reference to a type declaration or builtin type. *)
@@ -841,11 +844,18 @@ and path_elem =
 and ptr_metadata =
   | NoMetadata  (** Types that need no metadata, namely [T: Sized] types. *)
   | Length
-      (** Metadata for [[T]], [str], and user-defined types that directly or
-          indirectly contain one of these two. *)
-  | VTable of v_table
-      (** Metadata for [dyn Trait] and user-defined types that directly or
-          indirectly contain a [dyn Trait]. *)
+      (** Metadata for [[T]] and [str], and user-defined types that directly or
+          indirectly contain one of the two. Of type [usize]. Notably, length
+          for [[T]] denotes the number of elements in the slice. While for [str]
+          it denotes the number of bytes in the string. *)
+  | VTable of type_decl_ref
+      (** Metadata for [dyn Trait], referring to the vtable struct, also for
+          user-defined types that directly or indirectly contain a [dyn Trait].
+          Of type [&'static vtable] *)
+  | InheritFrom of ty
+      (** Unknown due to generics, but will inherit from the given type. This is
+          consistent with [<Ty as Pointee>::Metadata]. Of type
+          [TyKind::Metadata(Ty)]. *)
 
 (** Describes how we represent the active enum variant in memory. *)
 and tag_encoding =
@@ -884,14 +894,8 @@ and type_decl = {
       (** The layout of the type. Information may be partial because of generics
           or dynamically- sized types. If rustc cannot compute a layout, it is
           [None]. *)
-  ptr_metadata : ptr_metadata option;
-      (** The metadata associated with a pointer to the type. This is [None] if
-          we could not compute it because of generics. The information is
-          *accurate* if it is [Some] while if it is [None], it may still be
-          theoretically computable but due to some limitation to be fixed, we
-          are unable to obtain the info. See
-          [translate_types::{impl ItemTransCtx}::translate_ptr_metadata] for
-          more details. *)
+  ptr_metadata : ptr_metadata;
+      (** The metadata associated with a pointer to the type. *)
 }
 
 and type_decl_kind =
@@ -908,10 +912,6 @@ and type_decl_kind =
   | TDeclError of string
       (** Used if an error happened during the extraction, and we don't panic on
           error. *)
-
-(** A placeholder for the vtable of a trait object. To be implemented in the
-    future when [dyn Trait] is fully supported. *)
-and v_table = unit
 
 and variant = {
   span : span;

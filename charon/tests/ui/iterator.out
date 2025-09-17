@@ -4570,6 +4570,24 @@ fn main()
     let @65: &'_ (i32); // anonymous local
     let @66: &'_ (i32); // anonymous local
     let @67: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @68: (); // anonymous local
+    let @69: (); // anonymous local
+    let @70: (); // anonymous local
+    let @71: (); // anonymous local
+    let @72: (); // anonymous local
+    let @73: (); // anonymous local
+    let @74: (); // anonymous local
+    let @75: (); // anonymous local
+    let @76: (); // anonymous local
+    let @77: (); // anonymous local
+    let @78: (); // anonymous local
+    let @79: (); // anonymous local
+    let @80: (); // anonymous local
+    let @81: (); // anonymous local
+    let @82: (); // anonymous local
+    let @83: (); // anonymous local
+    let @84: (); // anonymous local
+    let @85: (); // anonymous local
 
     storage_live(@10)
     storage_live(v@12)
@@ -4591,6 +4609,19 @@ fn main()
     storage_live(@65)
     storage_live(@66)
     storage_live(@67)
+    storage_live(@68)
+    storage_live(@69)
+    storage_live(@71)
+    storage_live(@72)
+    storage_live(@73)
+    storage_live(@75)
+    storage_live(@76)
+    storage_live(@78)
+    storage_live(@79)
+    storage_live(@82)
+    storage_live(@83)
+    storage_live(@84)
+    storage_live(@85)
     storage_live(a@1)
     a@1 := [const (0 : i32), const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
     storage_live(i@2)
@@ -4611,8 +4642,12 @@ fn main()
         storage_live(@9)
         storage_live(@10)
         storage_live(@11)
-        @11 := &mut iter@7
-        @10 := &two-phase-mut *(@11)
+        storage_live(@69)
+        @69 := ()
+        @11 := &mut (iter@7, move (@69))
+        storage_live(@68)
+        @68 := ()
+        @10 := &two-phase-mut (*(@11), move (@68))
         @9 := {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::next<'_, i32, 7 : usize>[Sized<i32>](move (@10))
         storage_dead(@10)
         match @9 {
@@ -4648,7 +4683,9 @@ fn main()
     storage_live(@17)
     storage_live(@18)
     storage_live(@19)
-    @19 := &a@1
+    storage_live(@70)
+    @70 := ()
+    @19 := &(a@1, move (@70))
     @18 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@19))
     storage_dead(@19)
     @17 := iter<'_, i32>[Sized<i32>](move (@18))
@@ -4662,8 +4699,12 @@ fn main()
         storage_live(@22)
         storage_live(@23)
         storage_live(@24)
-        @24 := &mut iter@20
-        @23 := &two-phase-mut *(@24)
+        storage_live(@72)
+        @72 := ()
+        @24 := &mut (iter@20, move (@72))
+        storage_live(@71)
+        @71 := ()
+        @23 := &two-phase-mut (*(@24), move (@71))
         @22 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, i32>[Sized<i32>](move (@23))
         storage_dead(@23)
         match @22 {
@@ -4675,7 +4716,9 @@ fn main()
                 v@25 := copy ((@22 as variant Option::Some).0)
                 storage_live(@26)
                 storage_live(@27)
-                @27 := &two-phase-mut i@2
+                storage_live(@73)
+                @73 := ()
+                @27 := &two-phase-mut (i@2, move (@73))
                 storage_live(@28)
                 @28 := copy (v@25)
                 @26 := {impl AddAssign<&'_0 (i32)> for i32}::add_assign<'_, '_>(move (@27), move (@28))
@@ -4701,7 +4744,9 @@ fn main()
     storage_live(@31)
     storage_live(@32)
     storage_live(@33)
-    @33 := &a@1
+    storage_live(@74)
+    @74 := ()
+    @33 := &(a@1, move (@74))
     @32 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@33))
     storage_dead(@33)
     @31 := chunks<'_, i32>[Sized<i32>](move (@32), const (2 : usize))
@@ -4715,8 +4760,12 @@ fn main()
         storage_live(@36)
         storage_live(@37)
         storage_live(@38)
-        @38 := &mut iter@34
-        @37 := &two-phase-mut *(@38)
+        storage_live(@76)
+        @76 := ()
+        @38 := &mut (iter@34, move (@76))
+        storage_live(@75)
+        @75 := ()
+        @37 := &two-phase-mut (*(@38), move (@75))
         @36 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, i32>[Sized<i32>](move (@37))
         storage_dead(@37)
         match @36 {
@@ -4744,7 +4793,9 @@ fn main()
     storage_live(@42)
     storage_live(@43)
     storage_live(@44)
-    @44 := &a@1
+    storage_live(@77)
+    @77 := ()
+    @44 := &(a@1, move (@77))
     @43 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@44))
     storage_dead(@44)
     @42 := chunks_exact<'_, i32>[Sized<i32>](move (@43), const (2 : usize))
@@ -4758,8 +4809,12 @@ fn main()
         storage_live(@47)
         storage_live(@48)
         storage_live(@49)
-        @49 := &mut iter@45
-        @48 := &two-phase-mut *(@49)
+        storage_live(@79)
+        @79 := ()
+        @49 := &mut (iter@45, move (@79))
+        storage_live(@78)
+        @78 := ()
+        @48 := &two-phase-mut (*(@49), move (@78))
         @47 := {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'_, '_, i32>[Sized<i32>](move (@48))
         storage_dead(@48)
         match @47 {
@@ -4787,9 +4842,13 @@ fn main()
     storage_live(@52)
     storage_live(@53)
     storage_live(@54)
-    @54 := &i@2
+    storage_live(@81)
+    @81 := ()
+    @54 := &(i@2, move (@81))
     storage_live(@55)
-    @55 := &expected@51
+    storage_live(@80)
+    @80 := ()
+    @55 := &(expected@51, move (@80))
     @53 := (move (@54), move (@55))
     storage_dead(@55)
     storage_dead(@54)
@@ -4814,12 +4873,20 @@ fn main()
         @62 := move (kind@61)
         storage_live(@63)
         storage_live(@64)
-        @64 := &*(left_val@56)
-        @63 := &*(@64)
+        storage_live(@85)
+        @85 := ()
+        @64 := &(*(left_val@56), move (@85))
+        storage_live(@84)
+        @84 := ()
+        @63 := &(*(@64), move (@84))
         storage_live(@65)
         storage_live(@66)
-        @66 := &*(right_val@57)
-        @65 := &*(@66)
+        storage_live(@83)
+        @83 := ()
+        @66 := &(*(right_val@57), move (@83))
+        storage_live(@82)
+        @82 := ()
+        @65 := &(*(@66), move (@82))
         storage_live(@67)
         @67 := Option::None {  }
         panic(core::panicking::assert_failed)

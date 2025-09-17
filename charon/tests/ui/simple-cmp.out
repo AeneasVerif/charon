@@ -146,6 +146,9 @@ fn main()
     let @4: &'_ (i32); // anonymous local
     let @5: &'_ (i32); // anonymous local
     let @6: &'_ (i32); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
 
     storage_live(x@1)
     x@1 := const (11 : i32)
@@ -153,11 +156,17 @@ fn main()
     y@2 := const (22 : i32)
     storage_live(@3)
     storage_live(@4)
-    @4 := &x@1
+    storage_live(@9)
+    @9 := ()
+    @4 := &(x@1, move (@9))
     storage_live(@5)
     storage_live(@6)
-    @6 := &y@2
-    @5 := &*(@6)
+    storage_live(@8)
+    @8 := ()
+    @6 := &(y@2, move (@8))
+    storage_live(@7)
+    @7 := ()
+    @5 := &(*(@6), move (@7))
     @3 := {impl Ord for i32}::cmp<'_, '_>(move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)

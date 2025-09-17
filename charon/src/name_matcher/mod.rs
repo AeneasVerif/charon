@@ -130,6 +130,7 @@ impl Pattern {
             | TyKind::DynTrait(..)
             | TyKind::FnPtr(..)
             | TyKind::FnDef(..)
+            | TyKind::PtrMetadata(..)
             | TyKind::Error(..) => false,
         }
     }

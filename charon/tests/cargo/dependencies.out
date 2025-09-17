@@ -111,10 +111,13 @@ fn silly_incr<'_0>(@1: &'_0 mut (u32))
     let @2: (); // anonymous local
     let @3: &'_ mut (u32); // anonymous local
     let @4: closure; // anonymous local
+    let @5: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &two-phase-mut *(x@1)
+    storage_live(@5)
+    @5 := ()
+    @3 := &two-phase-mut (*(x@1), move (@5))
     storage_live(@4)
     @4 := closure {  }
     @2 := take<'_, u32, closure>[Sized<u32>, Sized<closure>, {impl FnOnce<(u32)> for closure}](move (@3), move (@4))
@@ -151,6 +154,14 @@ fn main()
     let @19: &'_ (u32); // anonymous local
     let @20: &'_ (u32); // anonymous local
     let @21: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @22: (); // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
+    let @25: (); // anonymous local
+    let @26: (); // anonymous local
+    let @27: (); // anonymous local
+    let @28: (); // anonymous local
+    let @29: (); // anonymous local
 
     storage_live(kind@15)
     storage_live(@16)
@@ -159,13 +170,21 @@ fn main()
     storage_live(@19)
     storage_live(@20)
     storage_live(@21)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@28)
+    storage_live(@29)
     storage_live(x@1)
     x@1 := const (0 : u32)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &mut x@1
-    @3 := &two-phase-mut *(@4)
+    storage_live(@23)
+    @23 := ()
+    @4 := &mut (x@1, move (@23))
+    storage_live(@22)
+    @22 := ()
+    @3 := &two-phase-mut (*(@4), move (@22))
     @2 := silly_incr<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
@@ -173,11 +192,15 @@ fn main()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := &x@1
+    storage_live(@25)
+    @25 := ()
+    @7 := &(x@1, move (@25))
     storage_live(@8)
     storage_live(@9)
     @9 := const (1 : u32)
-    @8 := &@9
+    storage_live(@24)
+    @24 := ()
+    @8 := &(@9, move (@24))
     @6 := (move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
@@ -202,12 +225,20 @@ fn main()
         @16 := move (kind@15)
         storage_live(@17)
         storage_live(@18)
-        @18 := &*(left_val@10)
-        @17 := &*(@18)
+        storage_live(@29)
+        @29 := ()
+        @18 := &(*(left_val@10), move (@29))
+        storage_live(@28)
+        @28 := ()
+        @17 := &(*(@18), move (@28))
         storage_live(@19)
         storage_live(@20)
-        @20 := &*(right_val@11)
-        @19 := &*(@20)
+        storage_live(@27)
+        @27 := ()
+        @20 := &(*(right_val@11), move (@27))
+        storage_live(@26)
+        @26 := ()
+        @19 := &(*(@20), move (@26))
         storage_live(@21)
         @21 := Option::None {  }
         panic(core::panicking::assert_failed)

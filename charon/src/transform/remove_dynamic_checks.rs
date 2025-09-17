@@ -128,7 +128,14 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [
             Statement {
-                kind: StatementKind::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
+                kind:
+                    StatementKind::Assign(
+                        reborrow,
+                        Rvalue::RawPtr {
+                            kind: RefKind::Shared,
+                            ..
+                        },
+                    ),
                 ..
             },
             Statement {

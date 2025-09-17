@@ -227,11 +227,17 @@ where
     let y@2: &'_ mut (T); // arg #2
     let @3: &'_ mut (T); // anonymous local
     let @4: &'_ mut (T); // anonymous local
+    let @5: (); // anonymous local
+    let @6: (); // anonymous local
 
     storage_live(@3)
-    @3 := &two-phase-mut *(x@1)
+    storage_live(@6)
+    @6 := ()
+    @3 := &two-phase-mut (*(x@1), move (@6))
     storage_live(@4)
-    @4 := &two-phase-mut *(y@2)
+    storage_live(@5)
+    @5 := ()
+    @4 := &two-phase-mut (*(y@2), move (@5))
     @0 := core::mem::swap<'_, '_, T>[@TraitClause0](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
@@ -264,12 +270,15 @@ pub fn test_vec_push()
     let v@1: Vec<u32>[Sized<u32>, Sized<Global>]; // local
     let @2: (); // anonymous local
     let @3: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(v@1)
     v@1 := alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::new<u32>[Sized<u32>]()
     storage_live(@2)
     storage_live(@3)
-    @3 := &two-phase-mut v@1
+    storage_live(@4)
+    @4 := ()
+    @3 := &two-phase-mut (v@1, move (@4))
     @2 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@3), const (0 : u32))
     storage_dead(@3)
     storage_dead(@2)
@@ -286,9 +295,12 @@ pub fn use_get<'_0>(@1: &'_0 (Cell<u32>[MetaSized<u32>])) -> u32
     let @0: u32; // return
     let rc@1: &'_ (Cell<u32>[MetaSized<u32>]); // arg #1
     let @2: &'_ (Cell<u32>[MetaSized<u32>]); // anonymous local
+    let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &*(rc@1)
+    storage_live(@3)
+    @3 := ()
+    @2 := &(*(rc@1), move (@3))
     @0 := get<'_, u32>[Sized<u32>, {impl Copy for u32}](move (@2))
     storage_dead(@2)
     return
@@ -302,11 +314,14 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>[MetaSized<u32>]))
     let @2: &'_ mut (u32); // anonymous local
     let @3: &'_ mut (Cell<u32>[MetaSized<u32>]); // anonymous local
     let @4: u32; // anonymous local
+    let @5: (); // anonymous local
 
     storage_live(@4)
     storage_live(@2)
     storage_live(@3)
-    @3 := &two-phase-mut *(rc@1)
+    storage_live(@5)
+    @5 := ()
+    @3 := &two-phase-mut (*(rc@1), move (@5))
     @2 := get_mut<'_, u32>[MetaSized<u32>](move (@3))
     storage_dead(@3)
     @4 := copy (*(@2)) panic.+ const (1 : u32)

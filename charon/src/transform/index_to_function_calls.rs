@@ -1,5 +1,10 @@
 //! Desugar array/slice index operations to function calls.
+
 use crate::llbc_ast::*;
+use crate::transform::ctx::BodyTransformCtx;
+use crate::transform::insert_ptr_metadata::{
+    place_ptr_metadata_operand, BodyTransformCtxWithParams,
+};
 use crate::transform::TransformCtx;
 use derive_generic_visitor::*;
 
@@ -11,7 +16,7 @@ use super::ctx::LlbcPass;
 /// We accumulate the new assignments as statements in the visitor, and at the end we insert these
 /// statements before the one that was just explored.
 #[derive(Visitor)]
-struct IndexVisitor<'a> {
+struct IndexVisitor<'a, 'b> {
     locals: &'a mut Locals,
     /// Statements to prepend to the statement currently being explored.
     statements: Vec<Statement>,
@@ -22,18 +27,97 @@ struct IndexVisitor<'a> {
     place_mutability_stack: Vec<bool>,
     // Span of the statement.
     span: Span,
+    ctx: &'b TransformCtx,
+    params: &'a GenericParams,
 }
 
-impl<'a> IndexVisitor<'a> {
-    fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
-        let var = self.locals.new_var(name, ty);
-        let live_kind = StatementKind::StorageLive(var.local_id().unwrap());
-        self.statements.push(Statement::new(self.span, live_kind));
-        var
+impl BodyTransformCtx for IndexVisitor<'_, '_> {
+    fn get_locals_mut(&mut self) -> &mut Locals {
+        self.locals
     }
 
+    fn insert_storage_live_stmt(&mut self, local: LocalId) {
+        let statement = StatementKind::StorageLive(local);
+        self.statements.push(Statement::new(self.span, statement));
+    }
+
+    fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
+        let statement = StatementKind::Assign(place, rvalue);
+        self.statements.push(Statement::new(self.span, statement));
+    }
+
+    fn get_ctx(&self) -> &TransformCtx {
+        self.ctx
+    }
+
+    fn insert_storage_dead_stmt(&mut self, local: LocalId) {
+        let statement = StatementKind::StorageDead(local);
+        self.statements.push(Statement::new(self.span, statement));
+    }
+}
+
+impl BodyTransformCtxWithParams for IndexVisitor<'_, '_> {
+    fn get_params(&self) -> &GenericParams {
+        self.params
+    }
+}
+
+/// When `from_end` is true, we need to compute `len(p) - last_arg` instead of just using `last_arg`.
+/// Otherwise, we simply return `last_arg`.
+/// New local variables are created as needed.
+///
+/// The `last_arg` is either the `offset` for `Index` or the `to` for `Subslice` for the projections.
+pub fn compute_to_idx<T: BodyTransformCtx>(
+    ctx: &mut T,
+    len_place: &Place,
+    last_arg: Operand,
+    from_end: bool,
+) -> Operand {
+    if from_end {
+        // `storage_live(len_var)`
+        // `len_var = len(p)`
+        let len_var = ctx.fresh_var(None, Ty::mk_usize());
+        ctx.insert_assn_stmt(
+            len_var.clone(),
+            Rvalue::Len(
+                len_place.clone(),
+                len_place.ty().clone(),
+                len_place
+                    .ty()
+                    .as_adt()
+                    .unwrap()
+                    .generics
+                    .const_generics
+                    .get(0.into())
+                    .cloned(),
+            ),
+        );
+
+        // `storage_live(index_var)`
+        // `index_var = len_var - last_arg`
+        // `storage_dead(len_var)`
+        let index_var = ctx.fresh_var(None, Ty::mk_usize());
+        ctx.insert_assn_stmt(
+            index_var.clone(),
+            Rvalue::BinaryOp(
+                BinOp::Sub(OverflowMode::UB),
+                Operand::Copy(len_var.clone()),
+                last_arg,
+            ),
+        );
+        ctx.insert_storage_dead_stmt(len_var.local_id().unwrap());
+        Operand::Copy(index_var)
+    } else {
+        last_arg
+    }
+}
+
+impl<'a, 'b> IndexVisitor<'a, 'b> {
+    /// transform `place: subplace[i]` into indexing function calls for `subplace` and `i`
     fn transform_place(&mut self, mut_access: bool, place: &mut Place) {
         use ProjectionElem::*;
+        // This function is naturally called recusively, so `subplace` cannot be another `Index` or `Subslice`.
+        // Hence, `subplace`, if still projecting, must be either a `Deref` or a `Field`.
         let Some((subplace, pe @ (Index { .. } | Subslice { .. }))) = place.as_projection() else {
             return;
         };
@@ -82,6 +166,9 @@ impl<'a> IndexVisitor<'a> {
             .into_ty()
         };
 
+        // do something similar to the `input_var` below, but for the metadata.
+        let ptr_metadata = place_ptr_metadata_operand(self, subplace);
+
         // Push the statements:
         // `storage_live(tmp0)`
         // `tmp0 = &{mut}p`
@@ -89,7 +176,11 @@ impl<'a> IndexVisitor<'a> {
             let input_var = self.fresh_var(None, input_ty);
             let kind = StatementKind::Assign(
                 input_var.clone(),
-                Rvalue::Ref(subplace.clone(), BorrowKind::mutable(mut_access)),
+                Rvalue::Ref {
+                    place: subplace.clone(),
+                    kind: BorrowKind::mutable(mut_access),
+                    ptr_metadata,
+                },
             );
             self.statements.push(Statement::new(self.span, kind));
             input_var
@@ -111,40 +202,8 @@ impl<'a> IndexVisitor<'a> {
             } => (x.as_ref().clone(), *from_end),
             _ => unreachable!(),
         };
-        if from_end {
-            // `storage_live(len_var)`
-            // `len_var = len(p)`
-            let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
-            let len_var = self.fresh_var(None, usize_ty.clone());
-            let kind = StatementKind::Assign(
-                len_var.clone(),
-                Rvalue::Len(
-                    subplace.clone(),
-                    subplace.ty().clone(),
-                    tref.generics.const_generics.get(0.into()).cloned(),
-                ),
-            );
-            self.statements.push(Statement::new(self.span, kind));
-
-            // `storage_live(index_var)`
-            // `index_var = len_var - last_arg`
-            // `storage_dead(len_var)`
-            let index_var = self.fresh_var(None, usize_ty);
-            let kind = StatementKind::Assign(
-                index_var.clone(),
-                Rvalue::BinaryOp(
-                    BinOp::Sub(OverflowMode::UB),
-                    Operand::Copy(len_var.clone()),
-                    last_arg,
-                ),
-            );
-            self.statements.push(Statement::new(self.span, kind));
-            let dead_kind = StatementKind::StorageDead(len_var.local_id().unwrap());
-            self.statements.push(Statement::new(self.span, dead_kind));
-            args.push(Operand::Copy(index_var));
-        } else {
-            args.push(last_arg);
-        }
+        let to_idx = compute_to_idx(self, subplace, last_arg, from_end);
+        args.push(to_idx);
 
         // Call the indexing function:
         // `storage_live(tmp1)`
@@ -182,8 +241,8 @@ impl<'a> IndexVisitor<'a> {
 }
 
 /// The visitor methods.
-impl VisitBodyMut for IndexVisitor<'_> {
-    /// We explore places from the inside-out.
+impl VisitBodyMut for IndexVisitor<'_, '_> {
+    /// We explore places from the inside-out --- recursion naturally happens here.
     fn exit_place(&mut self, place: &mut Place) {
         // We have intercepted every traversal that would reach a place and pushed the correct
         // mutability on the stack.
@@ -215,12 +274,21 @@ impl VisitBodyMut for IndexVisitor<'_> {
         match x {
             // `UniqueImmutable` de facto gives mutable access and only shows up if there is nested
             // mutable access.
-            RawPtr(_, RefKind::Mut)
-            | Ref(_, BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable) => {
-                self.visit_inner_with_mutability(x, true)
+            RawPtr {
+                kind: RefKind::Mut, ..
             }
-            RawPtr(_, RefKind::Shared)
-            | Ref(_, BorrowKind::Shared | BorrowKind::Shallow)
+            | Ref {
+                kind: BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable,
+                ..
+            } => self.visit_inner_with_mutability(x, true),
+            RawPtr {
+                kind: RefKind::Shared,
+                ..
+            }
+            | Ref {
+                kind: BorrowKind::Shared | BorrowKind::Shallow,
+                ..
+            }
             | Discriminant(..)
             | Len(..) => self.visit_inner_with_mutability(x, false),
 
@@ -235,6 +303,45 @@ impl VisitBodyMut for IndexVisitor<'_> {
 }
 
 pub struct Transform;
+
+impl Transform {
+    fn transform_body_with_param(
+        &self,
+        ctx: &mut TransformCtx,
+        b: &mut ExprBody,
+        params: &GenericParams,
+    ) {
+        b.body.transform(|st: &mut Statement| {
+            let mut visitor = IndexVisitor {
+                locals: &mut b.locals,
+                statements: Vec::new(),
+                place_mutability_stack: Vec::new(),
+                span: st.span,
+                ctx: &ctx,
+                params,
+            };
+            use StatementKind::*;
+            match &mut st.kind {
+                Assign(..)
+                | SetDiscriminant(..)
+                | CopyNonOverlapping(_)
+                | Drop(..)
+                | Deinit(..)
+                | Call(..) => {
+                    let _ = visitor.visit_inner_with_mutability(st, true);
+                }
+                Switch(..) => {
+                    let _ = visitor.visit_inner_with_mutability(st, false);
+                }
+                Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
+                | Return | Break(..) | Continue(..) | Loop(..) => {
+                    let _ = st.drive_body_mut(&mut visitor);
+                }
+            }
+            visitor.statements
+        });
+    }
+}
 
 /// We do the following.
 ///
@@ -295,33 +402,13 @@ pub struct Transform;
 ///   *tmp1 = x
 /// ```
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.transform(|st: &mut Statement| {
-            let mut visitor = IndexVisitor {
-                locals: &mut b.locals,
-                statements: Vec::new(),
-                place_mutability_stack: Vec::new(),
-                span: st.span,
-            };
-            use StatementKind::*;
-            match &mut st.kind {
-                Assign(..)
-                | SetDiscriminant(..)
-                | CopyNonOverlapping(_)
-                | Drop(..)
-                | Deinit(..)
-                | Call(..) => {
-                    let _ = visitor.visit_inner_with_mutability(st, true);
-                }
-                Switch(..) => {
-                    let _ = visitor.visit_inner_with_mutability(st, false);
-                }
-                Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
-                | Return | Break(..) | Continue(..) | Loop(..) => {
-                    let _ = st.drive_body_mut(&mut visitor);
-                }
-            }
-            visitor.statements
-        });
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+        if let Ok(body) = &mut decl.body {
+            self.transform_body_with_param(
+                ctx,
+                body.as_structured_mut().unwrap(),
+                &decl.signature.generics,
+            )
+        }
     }
 }

@@ -25,24 +25,42 @@ where
     let @5: &'_ mut (T); // anonymous local
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
 
     storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := copy (b@1)
     if move (@6) {
         storage_live(@7)
-        @7 := &mut *(x@2)
-        @5 := &mut *(@7)
+        storage_live(@9)
+        @9 := ()
+        @7 := &mut (*(x@2), move (@9))
+        storage_live(@8)
+        @8 := ()
+        @5 := &mut (*(@7), move (@8))
         storage_dead(@7)
     }
     else {
-        @5 := &mut *(y@3)
+        storage_live(@10)
+        @10 := ()
+        @5 := &mut (*(y@3), move (@10))
     }
-    @4 := &mut *(@5)
+    storage_live(@12)
+    @12 := ()
+    @4 := &mut (*(@5), move (@12))
     storage_dead(@6)
-    @0 := &mut *(@4)
+    storage_live(@11)
+    @11 := ()
+    @0 := &mut (*(@4), move (@11))
     storage_dead(@5)
     storage_dead(@4)
     return
@@ -72,6 +90,10 @@ pub fn choose_test()
     let @18: (); // anonymous local
     let @19: bool; // anonymous local
     let @20: i32; // anonymous local
+    let @21: (); // anonymous local
+    let @22: (); // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
 
     storage_live(@8)
     storage_live(x@1)
@@ -81,12 +103,20 @@ pub fn choose_test()
     storage_live(z@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := &mut x@1
-    @4 := &two-phase-mut *(@5)
+    storage_live(@24)
+    @24 := ()
+    @5 := &mut (x@1, move (@24))
+    storage_live(@23)
+    @23 := ()
+    @4 := &two-phase-mut (*(@5), move (@23))
     storage_live(@6)
     storage_live(@7)
-    @7 := &mut y@2
-    @6 := &two-phase-mut *(@7)
+    storage_live(@22)
+    @22 := ()
+    @7 := &mut (y@2, move (@22))
+    storage_live(@21)
+    @21 := ()
+    @6 := &two-phase-mut (*(@7), move (@21))
     z@3 := choose<'_, i32>[Sized<i32>](const (true), move (@4), move (@6))
     storage_dead(@6)
     storage_dead(@4)

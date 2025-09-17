@@ -1359,8 +1359,11 @@ and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :
     | `String "None" -> Ok NoMetadata
     | `String "Length" -> Ok Length
     | `Assoc [ ("VTable", v_table) ] ->
-        let* v_table = v_table_of_json ctx v_table in
+        let* v_table = type_decl_ref_of_json ctx v_table in
         Ok (VTable v_table)
+    | `Assoc [ ("InheritFrom", inherit_from) ] ->
+        let* inherit_from = ty_of_json ctx inherit_from in
+        Ok (InheritFrom inherit_from)
     | _ -> Error "")
 
 and raw_attribute_of_json (ctx : of_json_ctx) (js : json) :
@@ -1431,14 +1434,30 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
     | `Assoc [ ("Use", use) ] ->
         let* use = operand_of_json ctx use in
         Ok (Use use)
-    | `Assoc [ ("Ref", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = place_of_json ctx x_0 in
-        let* x_1 = borrow_kind_of_json ctx x_1 in
-        Ok (RvRef (x_0, x_1))
-    | `Assoc [ ("RawPtr", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = place_of_json ctx x_0 in
-        let* x_1 = ref_kind_of_json ctx x_1 in
-        Ok (RawPtr (x_0, x_1))
+    | `Assoc
+        [
+          ( "Ref",
+            `Assoc
+              [
+                ("place", place); ("kind", kind); ("ptr_metadata", ptr_metadata);
+              ] );
+        ] ->
+        let* place = place_of_json ctx place in
+        let* kind = borrow_kind_of_json ctx kind in
+        let* ptr_metadata = operand_of_json ctx ptr_metadata in
+        Ok (RvRef (place, kind, ptr_metadata))
+    | `Assoc
+        [
+          ( "RawPtr",
+            `Assoc
+              [
+                ("place", place); ("kind", kind); ("ptr_metadata", ptr_metadata);
+              ] );
+        ] ->
+        let* place = place_of_json ctx place in
+        let* kind = ref_kind_of_json ctx kind in
+        let* ptr_metadata = operand_of_json ctx ptr_metadata in
+        Ok (RawPtr (place, kind, ptr_metadata))
     | `Assoc [ ("BinaryOp", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = binop_of_json ctx x_0 in
         let* x_1 = operand_of_json ctx x_1 in
@@ -1866,6 +1885,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
     | `Assoc [ ("FnDef", fn_def) ] ->
         let* fn_def = region_binder_of_json fn_ptr_of_json ctx fn_def in
         Ok (TFnDef fn_def)
+    | `Assoc [ ("PtrMetadata", ptr_metadata) ] ->
+        let* ptr_metadata = ty_of_json ctx ptr_metadata in
+        Ok (TPtrMetadata ptr_metadata)
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TError error)
@@ -1891,9 +1913,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* src = item_kind_of_json ctx src in
         let* kind = type_decl_kind_of_json ctx kind in
         let* layout = option_of_json layout_of_json ctx layout in
-        let* ptr_metadata =
-          option_of_json ptr_metadata_of_json ctx ptr_metadata
-        in
+        let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
         Ok
           ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
             : type_decl)
@@ -2007,12 +2027,6 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         let* v_table_ptr = trait_ref_of_json ctx v_table_ptr in
         Ok (MetaVTablePtr v_table_ptr)
     | `String "Unknown" -> Ok MetaUnknown
-    | _ -> Error "")
-
-and v_table_of_json (ctx : of_json_ctx) (js : json) : (v_table, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Null -> Ok ()
     | _ -> Error "")
 
 and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =

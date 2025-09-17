@@ -14,6 +14,7 @@ pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
 pub mod inline_promoted_consts;
 pub mod insert_assign_return_unit;
+pub mod insert_ptr_metadata;
 pub mod insert_storage_lives;
 pub mod lift_associated_item_clauses;
 pub mod merge_goto_chains;
@@ -32,6 +33,7 @@ pub mod remove_unused_locals;
 pub mod remove_unused_methods;
 pub mod remove_unused_self_clause;
 pub mod reorder_decls;
+pub mod resolve_sized_ptr_metadata_inherit;
 pub mod simplify_constants;
 pub mod skip_trait_refs_when_known;
 pub mod ullbc_to_llbc;
@@ -70,6 +72,11 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
     // some sources of mutual recursion.
     UnstructuredBody(&skip_trait_refs_when_known::Transform),
+    // For the `PtrMetadata::InheritFrom` case in the type definitions
+    // If the given inherited type var is bounded by `Sized`, we resolve it to `None`.
+    NonBody(&resolve_sized_ptr_metadata_inherit::Transform),
+    // Compute the metadata & insert for Rvalue
+    UnstructuredBody(&insert_ptr_metadata::Transform),
     // Change trait associated types to be type parameters instead. See the module for details.
     NonBody(&expand_associated_types::Transform),
 ];

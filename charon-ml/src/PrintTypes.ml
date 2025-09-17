@@ -289,7 +289,17 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       let env = fmt_env_push_regions env f.binder_regions in
       let fn = fn_ptr_to_string env f.binder_value in
       fn
-  | TDynTrait _ -> "dyn (TODO)"
+  | TDynTrait pred ->
+      let regions, clauses =
+        generic_params_to_strings env pred.binder.binder_params
+      in
+      let reg_str =
+        match regions with
+        | [] -> ""
+        | r :: _ -> " + " ^ r
+      in
+      "dyn (" ^ String.concat " + " clauses ^ reg_str ^ ")"
+  | TPtrMetadata ty -> "PtrMetadata(" ^ ty_to_string env ty ^ ")"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"
 
 (** Return two lists:
@@ -402,14 +412,14 @@ and raw_attribute_to_string (attr : raw_attribute) : string =
   in
   attr.path ^ args
 
-let trait_param_to_string (env : 'a fmt_env) (clause : trait_param) : string =
+and trait_param_to_string (env : 'a fmt_env) (clause : trait_param) : string =
   let clause_id = trait_clause_id_to_string env clause.clause_id in
   let trait =
     region_binder_to_string trait_decl_ref_to_string env clause.trait
   in
   "[" ^ clause_id ^ "]: " ^ trait
 
-let generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
+and generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
     string list * string list =
   let ({ regions; types; const_generics; trait_clauses; _ } : generic_params) =
     generics

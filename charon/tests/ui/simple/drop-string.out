@@ -81,9 +81,12 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
     let @0: (); // return
     let @1: *mut String; // arg #1
     let @2: &'_ mut (String); // anonymous local
+    let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &mut *(@1)
+    storage_live(@3)
+    @3 := ()
+    @2 := &mut (*(@1), move (@3))
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}]] (*(@2)).vec
     @0 := ()
     return

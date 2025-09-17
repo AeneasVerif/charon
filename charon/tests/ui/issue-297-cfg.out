@@ -440,10 +440,12 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
     let @11: usize; // anonymous local
-    let @12: &'_ (Slice<u8>); // anonymous local
-    let @13: &'_ (u8); // anonymous local
-    let @14: &'_ (Slice<u8>); // anonymous local
-    let @15: &'_ (u8); // anonymous local
+    let @12: usize; // anonymous local
+    let @13: &'_ (Slice<u8>); // anonymous local
+    let @14: &'_ (u8); // anonymous local
+    let @15: usize; // anonymous local
+    let @16: &'_ (Slice<u8>); // anonymous local
+    let @17: &'_ (u8); // anonymous local
 
     storage_live(@8)
     storage_live(@9)
@@ -451,6 +453,7 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     storage_live(@11)
     storage_live(@12)
     storage_live(@13)
+    storage_live(@14)
     storage_live(sampled@2)
     sampled@2 := const (0 : usize)
     storage_live(@3)
@@ -458,11 +461,13 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     storage_live(@5)
     storage_live(@6)
     @6 := const (0 : usize)
-    storage_live(@14)
-    @14 := &*(a@1)
     storage_live(@15)
-    @15 := @SliceIndexShared<'_, u8>(move (@14), copy (@6))
-    @5 := copy (*(@15))
+    @15 := ptr_metadata(copy (a@1))
+    storage_live(@16)
+    @16 := &(*(a@1), move (@15))
+    storage_live(@17)
+    @17 := @SliceIndexShared<'_, u8>(move (@16), copy (@6))
+    @5 := copy (*(@17))
     @4 := move (@5) < const (42 : u8)
     if move (@4) {
         storage_dead(@6)
@@ -472,10 +477,12 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
         storage_live(@9)
         @9 := const (1 : usize)
         storage_live(@12)
-        @12 := &*(a@1)
+        @12 := ptr_metadata(copy (a@1))
         storage_live(@13)
-        @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@9))
-        @8 := copy (*(@13))
+        @13 := &(*(a@1), move (@12))
+        storage_live(@14)
+        @14 := @SliceIndexShared<'_, u8>(move (@13), copy (@9))
+        @8 := copy (*(@14))
         @7 := move (@8) < const (16 : u8)
         if move (@7) {
             storage_dead(@9)
@@ -565,16 +572,26 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
     let @45: i16; // anonymous local
     let @46: usize; // anonymous local
     let @47: usize; // anonymous local
-    let @48: &'_ mut (Slice<i16>); // anonymous local
-    let @49: &'_ mut (i16); // anonymous local
-    let @50: &'_ mut (Slice<i16>); // anonymous local
-    let @51: &'_ mut (i16); // anonymous local
-    let @52: &'_ (Slice<u8>); // anonymous local
-    let @53: &'_ (u8); // anonymous local
-    let @54: &'_ (Slice<u8>); // anonymous local
-    let @55: &'_ (u8); // anonymous local
-    let @56: &'_ (Slice<u8>); // anonymous local
-    let @57: &'_ (u8); // anonymous local
+    let @48: usize; // anonymous local
+    let @49: (); // anonymous local
+    let @50: (); // anonymous local
+    let @51: usize; // anonymous local
+    let @52: usize; // anonymous local
+    let @53: usize; // anonymous local
+    let @54: &'_ mut (Slice<i16>); // anonymous local
+    let @55: &'_ mut (i16); // anonymous local
+    let @56: usize; // anonymous local
+    let @57: &'_ mut (Slice<i16>); // anonymous local
+    let @58: &'_ mut (i16); // anonymous local
+    let @59: usize; // anonymous local
+    let @60: &'_ (Slice<u8>); // anonymous local
+    let @61: &'_ (u8); // anonymous local
+    let @62: usize; // anonymous local
+    let @63: &'_ (Slice<u8>); // anonymous local
+    let @64: &'_ (u8); // anonymous local
+    let @65: usize; // anonymous local
+    let @66: &'_ (Slice<u8>); // anonymous local
+    let @67: &'_ (u8); // anonymous local
 
     storage_live(@11)
     storage_live(bytes@13)
@@ -612,7 +629,6 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
     storage_live(@45)
     storage_live(@46)
     storage_live(@47)
-    storage_live(@48)
     storage_live(@49)
     storage_live(@50)
     storage_live(@51)
@@ -622,13 +638,25 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
     storage_live(@55)
     storage_live(@56)
     storage_live(@57)
+    storage_live(@58)
+    storage_live(@59)
+    storage_live(@60)
+    storage_live(@61)
+    storage_live(@62)
+    storage_live(@63)
+    storage_live(@64)
+    storage_live(@65)
+    storage_live(@66)
+    storage_live(@67)
     storage_live(sampled@3)
     sampled@3 := const (0 : usize)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := &*(a@1)
+    storage_live(@48)
+    @48 := ptr_metadata(copy (a@1))
+    @7 := &(*(a@1), move (@48))
     @6 := chunks<'_, u8>[Sized<u8>](move (@7), const (3 : usize))
     storage_dead(@7)
     @5 := {impl IntoIterator for I}::into_iter<Chunks<'_, u8>[Sized<u8>]>[Sized<Chunks<'_, u8>[Sized<u8>]>, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, u8>[Sized<u8>]](move (@6))
@@ -640,8 +668,12 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
         storage_live(@10)
         storage_live(@11)
         storage_live(@12)
-        @12 := &mut iter@8
-        @11 := &two-phase-mut *(@12)
+        storage_live(@50)
+        @50 := ()
+        @12 := &mut (iter@8, move (@50))
+        storage_live(@49)
+        @49 := ()
+        @11 := &two-phase-mut (*(@12), move (@49))
         @10 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, u8>[Sized<u8>](move (@11))
         storage_dead(@11)
         match @10 {
@@ -655,11 +687,13 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@15)
                 storage_live(@16)
                 @16 := const (0 : usize)
-                storage_live(@56)
-                @56 := &*(bytes@13)
-                storage_live(@57)
-                @57 := @SliceIndexShared<'_, u8>(move (@56), copy (@16))
-                @15 := copy (*(@57))
+                storage_live(@65)
+                @65 := ptr_metadata(copy (bytes@13))
+                storage_live(@66)
+                @66 := &(*(bytes@13), move (@65))
+                storage_live(@67)
+                @67 := @SliceIndexShared<'_, u8>(move (@66), copy (@16))
+                @15 := copy (*(@67))
                 b1@14 := cast<u8, i16>(move (@15))
                 storage_dead(@15)
                 storage_dead(@16)
@@ -667,11 +701,13 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@18)
                 storage_live(@19)
                 @19 := const (1 : usize)
-                storage_live(@54)
-                @54 := &*(bytes@13)
-                storage_live(@55)
-                @55 := @SliceIndexShared<'_, u8>(move (@54), copy (@19))
-                @18 := copy (*(@55))
+                storage_live(@62)
+                @62 := ptr_metadata(copy (bytes@13))
+                storage_live(@63)
+                @63 := &(*(bytes@13), move (@62))
+                storage_live(@64)
+                @64 := @SliceIndexShared<'_, u8>(move (@63), copy (@19))
+                @18 := copy (*(@64))
                 b2@17 := cast<u8, i16>(move (@18))
                 storage_dead(@18)
                 storage_dead(@19)
@@ -679,11 +715,13 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@21)
                 storage_live(@22)
                 @22 := const (2 : usize)
-                storage_live(@52)
-                @52 := &*(bytes@13)
-                storage_live(@53)
-                @53 := @SliceIndexShared<'_, u8>(move (@52), copy (@22))
-                @21 := copy (*(@53))
+                storage_live(@59)
+                @59 := ptr_metadata(copy (bytes@13))
+                storage_live(@60)
+                @60 := &(*(bytes@13), move (@59))
+                storage_live(@61)
+                @61 := @SliceIndexShared<'_, u8>(move (@60), copy (@22))
+                @21 := copy (*(@61))
                 b3@20 := cast<u8, i16>(move (@21))
                 storage_dead(@21)
                 storage_dead(@22)
@@ -732,11 +770,15 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         @38 := copy (d1@23)
                         storage_live(@39)
                         @39 := copy (sampled@3)
-                        storage_live(@48)
-                        @48 := &mut *(result@2)
-                        storage_live(@49)
-                        @49 := @SliceIndexMut<'_, i16>(move (@48), copy (@39))
-                        *(@49) := move (@38)
+                        storage_live(@51)
+                        @51 := ptr_metadata(copy (result@2))
+                        storage_live(@53)
+                        @53 := ptr_metadata(copy (result@2))
+                        storage_live(@54)
+                        @54 := &mut (*(result@2), move (@53))
+                        storage_live(@55)
+                        @55 := @SliceIndexMut<'_, i16>(move (@54), copy (@39))
+                        *(@55) := move (@38)
                         storage_dead(@38)
                         storage_dead(@39)
                         @40 := copy (sampled@3) panic.+ const (1 : usize)
@@ -768,11 +810,15 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         @45 := copy (d2@28)
                         storage_live(@46)
                         @46 := copy (sampled@3)
-                        storage_live(@50)
-                        @50 := &mut *(result@2)
-                        storage_live(@51)
-                        @51 := @SliceIndexMut<'_, i16>(move (@50), copy (@46))
-                        *(@51) := move (@45)
+                        storage_live(@52)
+                        @52 := ptr_metadata(copy (result@2))
+                        storage_live(@56)
+                        @56 := ptr_metadata(copy (result@2))
+                        storage_live(@57)
+                        @57 := &mut (*(result@2), move (@56))
+                        storage_live(@58)
+                        @58 := @SliceIndexMut<'_, i16>(move (@57), copy (@46))
+                        *(@58) := move (@45)
                         storage_dead(@45)
                         storage_dead(@46)
                         @47 := copy (sampled@3) panic.+ const (1 : usize)

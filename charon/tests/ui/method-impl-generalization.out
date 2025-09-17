@@ -158,6 +158,11 @@ fn main()
     let @9: &'_ (()); // anonymous local
     let @10: &'_ (()); // anonymous local
     let @11: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
+    let @16: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
@@ -166,8 +171,12 @@ fn main()
     storage_live(@4)
     storage_live(@5)
     @5 := const (1 : u32)
-    @4 := &@5
-    @3 := &*(@4)
+    storage_live(@13)
+    @13 := ()
+    @4 := &(@5, move (@13))
+    storage_live(@12)
+    @12 := ()
+    @3 := &(*(@4), move (@12))
     @1 := {impl Trait for ()}::method1(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
@@ -182,13 +191,19 @@ fn main()
     // Not allowed to use the more precise signature.
     // let _ = ().method2(String::new());
     @8 := ()
-    @7 := &@8
+    storage_live(@16)
+    @16 := ()
+    @7 := &(@8, move (@16))
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
     @11 := ()
-    @10 := &@11
-    @9 := &*(@10)
+    storage_live(@15)
+    @15 := ()
+    @10 := &(@11, move (@15))
+    storage_live(@14)
+    @14 := ()
+    @9 := &(*(@10), move (@14))
     @6 := {impl MyCompare<&'a (())> for &'a (())}::compare<'_>(move (@7), move (@9))
     storage_dead(@9)
     storage_dead(@7)
@@ -241,19 +256,31 @@ fn call_foo<'e>(@1: &'e (())) -> &'e (())
     let @4: &'_ (()); // anonymous local
     let @5: &'_ (()); // anonymous local
     let @6: (); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
+    storage_live(@9)
     // Calls have erased lifetimes so we can't notice the discrepancy if there is one.
-    @3 := &*(x@1)
+    @9 := ()
+    @3 := &(*(x@1), move (@9))
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := ()
-    @5 := &@6
-    @4 := &*(@5)
+    storage_live(@8)
+    @8 := ()
+    @5 := &(@6, move (@8))
+    storage_live(@7)
+    @7 := ()
+    @4 := &(*(@5), move (@7))
     @2 := {impl Foo for ()}::foo<'_, '_>(move (@3), move (@4))
-    @0 := &*(@2)
+    storage_live(@10)
+    @10 := ()
+    @0 := &(*(@2), move (@10))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@6)

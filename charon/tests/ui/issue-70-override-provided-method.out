@@ -118,16 +118,22 @@ fn main()
     let @3: Option<i32>[Sized<i32>]; // anonymous local
     let @4: &'_ (Option<i32>[Sized<i32>]); // anonymous local
     let @5: Option<i32>[Sized<i32>]; // anonymous local
+    let @6: (); // anonymous local
+    let @7: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     @3 := Option::Some { 0: const (1 : i32) }
-    @2 := &@3
+    storage_live(@7)
+    @7 := ()
+    @2 := &(@3, move (@7))
     storage_live(@4)
     storage_live(@5)
     @5 := Option::Some { 0: const (1 : i32) }
-    @4 := &@5
+    storage_live(@6)
+    @6 := ()
+    @4 := &(@5, move (@6))
     @1 := {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_, '_, i32>[Sized<i32>, {impl PartialEq<i32> for i32}](move (@2), move (@4))
     storage_dead(@4)
     storage_dead(@2)
@@ -185,15 +191,27 @@ pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 (Foo), @2:
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &(*(self@1)).0
-    @3 := &*(@4)
+    storage_live(@10)
+    @10 := ()
+    @4 := &((*(self@1)).0, move (@10))
+    storage_live(@9)
+    @9 := ()
+    @3 := &(*(@4), move (@9))
     storage_live(@5)
     storage_live(@6)
-    @6 := &(*(other@2)).0
-    @5 := &*(@6)
+    storage_live(@8)
+    @8 := ()
+    @6 := &((*(other@2)).0, move (@8))
+    storage_live(@7)
+    @7 := ()
+    @5 := &(*(@6), move (@7))
     @0 := {impl PartialOrd<u32> for u32}::partial_cmp<'_, '_>(move (@3), move (@5))
     storage_dead(@6)
     storage_dead(@5)

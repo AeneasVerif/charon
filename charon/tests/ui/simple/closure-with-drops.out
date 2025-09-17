@@ -196,9 +196,12 @@ fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut (te
     let state@1: &'_0 mut (test_crate::bar::closure); // arg #1
     let args@2: (); // arg #2
     let @3: &'_ (test_crate::bar::closure); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &*(state@1)
+    storage_live(@4)
+    @4 := ()
+    @3 := &(*(state@1), move (@4))
     @0 := {impl Fn<()> for test_crate::bar::closure}::call<'_>(move (@3), move (args@2))
     @0 := ()
     return
@@ -211,9 +214,12 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
     let @1: test_crate::bar::closure; // arg #1
     let @2: (); // arg #2
     let @3: &'_ mut (test_crate::bar::closure); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<test_crate::bar::closure>] @1
     @0 := ()

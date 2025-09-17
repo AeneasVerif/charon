@@ -128,11 +128,14 @@ where
     let @3: closure<Self>[@TraitClause0]; // anonymous local
     let @4: (@TraitClause0::Item); // anonymous local
     let @5: @TraitClause0::Item; // anonymous local
+    let @6: (); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := closure {  }
-    @2 := &@3
+    storage_live(@6)
+    @6 := ()
+    @2 := &(@3, move (@6))
     storage_live(@4)
     storage_live(@5)
     @5 := move (i@1)
@@ -157,9 +160,12 @@ where
     let state@1: &'_0 mut (closure<Self>[@TraitClause0]); // arg #1
     let args@2: (@TraitClause0::Item); // arg #2
     let @3: &'_ (closure<Self>[@TraitClause0]); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &*(state@1)
+    storage_live(@4)
+    @4 := ()
+    @3 := &(*(state@1), move (@4))
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@3), move (args@2))
     @0 := ()
     return
@@ -174,9 +180,12 @@ where
     let @1: closure<Self>[@TraitClause0]; // arg #1
     let @2: (@TraitClause0::Item); // arg #2
     let @3: &'_ mut (closure<Self>[@TraitClause0]); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
     drop[Drop<closure<Self>[@TraitClause0]>] @1
     @0 := ()

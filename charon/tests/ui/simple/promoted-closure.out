@@ -93,20 +93,32 @@ pub fn foo() -> &'static (closure)
     let @1: &'_ (closure); // anonymous local
     let @2: &'_ (closure); // anonymous local
     let @3: &'_ (closure); // anonymous local
-    let @4: &'_ (closure); // anonymous local
-    let @5: closure; // anonymous local
+    let @4: (); // anonymous local
+    let @5: (); // anonymous local
+    let @6: (); // anonymous local
+    let @7: &'_ (closure); // anonymous local
+    let @8: closure; // anonymous local
+    let @9: (); // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := closure {  }
-    @4 := &@5
+    storage_live(@7)
+    storage_live(@8)
+    @8 := closure {  }
+    storage_live(@9)
+    @9 := ()
+    @7 := &(@8, move (@9))
     storage_live(@1)
     storage_live(@2)
-    @3 := move (@4)
-    @2 := &*(@3)
-    @1 := &*(@2)
-    @0 := &*(@1)
+    @3 := move (@7)
+    storage_live(@6)
+    @6 := ()
+    @2 := &(*(@3), move (@6))
+    storage_live(@5)
+    @5 := ()
+    @1 := &(*(@2), move (@5))
+    storage_live(@4)
+    @4 := ()
+    @0 := &(*(@1), move (@4))
     storage_dead(@2)
     storage_dead(@1)
     return
@@ -133,9 +145,12 @@ fn {impl FnMut<(u32)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u
     let state@1: &'_0 mut (closure); // arg #1
     let args@2: (u32); // arg #2
     let @3: &'_ (closure); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &*(state@1)
+    storage_live(@4)
+    @4 := ()
+    @3 := &(*(state@1), move (@4))
     @0 := {impl Fn<(u32)> for closure}::call<'_>(move (@3), move (args@2))
     return
 }
@@ -147,9 +162,12 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     let @1: closure; // arg #1
     let @2: (u32); // arg #2
     let @3: &'_ mut (closure); // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(@3)
-    @3 := &mut @1
+    storage_live(@4)
+    @4 := ()
+    @3 := &mut (@1, move (@4))
     @0 := {impl FnMut<(u32)> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
     return

@@ -29,24 +29,42 @@ where
     let @5: &'_ mut (T); // anonymous local
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
 
     storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := copy (b@1)
     if move (@6) {
         storage_live(@7)
-        @7 := &mut *(x@2)
-        @5 := &mut *(@7)
+        storage_live(@9)
+        @9 := ()
+        @7 := &mut (*(x@2), move (@9))
+        storage_live(@8)
+        @8 := ()
+        @5 := &mut (*(@7), move (@8))
         storage_dead(@7)
     }
     else {
-        @5 := &mut *(y@3)
+        storage_live(@10)
+        @10 := ()
+        @5 := &mut (*(y@3), move (@10))
     }
-    @4 := &mut *(@5)
+    storage_live(@12)
+    @12 := ()
+    @4 := &mut (*(@5), move (@12))
     storage_dead(@6)
-    @0 := &mut *(@4)
+    storage_live(@11)
+    @11 := ()
+    @0 := &mut (*(@4), move (@11))
     storage_dead(@5)
     storage_dead(@4)
     return
@@ -134,14 +152,24 @@ pub fn use_incr()
     let @8: (); // anonymous local
     let @9: &'_ mut (u32); // anonymous local
     let @10: &'_ mut (u32); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
+    let @16: (); // anonymous local
 
     storage_live(x@1)
     x@1 := const (0 : u32)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &mut x@1
-    @3 := &two-phase-mut *(@4)
+    storage_live(@12)
+    @12 := ()
+    @4 := &mut (x@1, move (@12))
+    storage_live(@11)
+    @11 := ()
+    @3 := &two-phase-mut (*(@4), move (@11))
     @2 := test_crate::incr<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
@@ -149,8 +177,12 @@ pub fn use_incr()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := &mut x@1
-    @6 := &two-phase-mut *(@7)
+    storage_live(@14)
+    @14 := ()
+    @7 := &mut (x@1, move (@14))
+    storage_live(@13)
+    @13 := ()
+    @6 := &two-phase-mut (*(@7), move (@13))
     @5 := test_crate::incr<'_>(move (@6))
     storage_dead(@6)
     storage_dead(@7)
@@ -158,8 +190,12 @@ pub fn use_incr()
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
-    @10 := &mut x@1
-    @9 := &two-phase-mut *(@10)
+    storage_live(@16)
+    @16 := ()
+    @10 := &mut (x@1, move (@16))
+    storage_live(@15)
+    @15 := ()
+    @9 := &two-phase-mut (*(@10), move (@15))
     @8 := test_crate::incr<'_>(move (@9))
     storage_dead(@9)
     storage_dead(@10)
@@ -196,12 +232,20 @@ where
     let @9: u32; // anonymous local
     let @10: u32; // anonymous local
     let @11: u32; // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
+    let @16: (); // anonymous local
 
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
     match *(l@1) {
         CList::CCons => {
         },
@@ -210,22 +254,30 @@ where
         },
     }
     storage_live(x@3)
-    x@3 := &(*(l@1) as variant CList::CCons).0
+    storage_live(@13)
+    @13 := ()
+    x@3 := &((*(l@1) as variant CList::CCons).0, move (@13))
     storage_live(tl@4)
-    tl@4 := &(*(l@1) as variant CList::CCons).1
+    storage_live(@12)
+    @12 := ()
+    tl@4 := &((*(l@1) as variant CList::CCons).1, move (@12))
     storage_live(@5)
     storage_live(@6)
     @6 := copy (i@2)
     @5 := move (@6) == const (0 : u32)
     if move (@5) {
         storage_dead(@6)
-        @0 := &*(x@3)
+        storage_live(@14)
+        @14 := ()
+        @0 := &(*(x@3), move (@14))
     }
     else {
         storage_dead(@6)
         storage_live(@7)
         storage_live(@8)
-        @8 := &*(*(tl@4))
+        storage_live(@15)
+        @15 := ()
+        @8 := &(*(*(tl@4)), move (@15))
         storage_live(@9)
         storage_live(@10)
         @10 := copy (i@2)
@@ -233,7 +285,9 @@ where
         @9 := move (@11)
         storage_dead(@10)
         @7 := list_nth<'_, T>[@TraitClause0](move (@8), move (@9))
-        @0 := &*(@7)
+        storage_live(@16)
+        @16 := ()
+        @0 := &(*(@7), move (@16))
         storage_dead(@9)
         storage_dead(@8)
         storage_dead(@7)
@@ -266,6 +320,16 @@ where
     let @14: u32; // anonymous local
     let @15: u32; // anonymous local
     let @16: u32; // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: (); // anonymous local
+    let @21: (); // anonymous local
+    let @22: (); // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
+    let @25: (); // anonymous local
+    let @26: (); // anonymous local
 
     storage_live(@11)
     storage_live(@12)
@@ -273,6 +337,10 @@ where
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
+    storage_live(@26)
     storage_live(@3)
     storage_live(@4)
     match *(l@1) {
@@ -283,9 +351,13 @@ where
         },
     }
     storage_live(x@5)
-    x@5 := &mut (*(l@1) as variant CList::CCons).0
+    storage_live(@18)
+    @18 := ()
+    x@5 := &mut ((*(l@1) as variant CList::CCons).0, move (@18))
     storage_live(tl@6)
-    tl@6 := &mut (*(l@1) as variant CList::CCons).1
+    storage_live(@17)
+    @17 := ()
+    tl@6 := &mut ((*(l@1) as variant CList::CCons).1, move (@17))
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
@@ -295,15 +367,21 @@ where
     if move (@9) {
         storage_dead(@10)
         storage_live(@11)
-        @11 := &mut *(x@5)
-        @8 := &mut *(@11)
+        storage_live(@20)
+        @20 := ()
+        @11 := &mut (*(x@5), move (@20))
+        storage_live(@19)
+        @19 := ()
+        @8 := &mut (*(@11), move (@19))
         storage_dead(@11)
     }
     else {
         storage_dead(@10)
         storage_live(@12)
         storage_live(@13)
-        @13 := &two-phase-mut *(*(tl@6))
+        storage_live(@21)
+        @21 := ()
+        @13 := &two-phase-mut (*(*(tl@6)), move (@21))
         storage_live(@14)
         storage_live(@15)
         @15 := copy (i@2)
@@ -311,20 +389,30 @@ where
         @14 := move (@16)
         storage_dead(@15)
         @12 := list_nth_mut<'_, T>[@TraitClause0](move (@13), move (@14))
-        @8 := &mut *(@12)
+        storage_live(@26)
+        @26 := ()
+        @8 := &mut (*(@12), move (@26))
         storage_dead(@14)
         storage_dead(@13)
         storage_dead(@12)
     }
-    @7 := &mut *(@8)
+    storage_live(@25)
+    @25 := ()
+    @7 := &mut (*(@8), move (@25))
     storage_dead(@9)
-    @4 := &mut *(@7)
+    storage_live(@24)
+    @24 := ()
+    @4 := &mut (*(@7), move (@24))
     storage_dead(@8)
     storage_dead(@7)
     storage_dead(tl@6)
     storage_dead(x@5)
-    @3 := &mut *(@4)
-    @0 := &mut *(@3)
+    storage_live(@23)
+    @23 := ()
+    @3 := &mut (*(@4), move (@23))
+    storage_live(@22)
+    @22 := ()
+    @0 := &mut (*(@3), move (@22))
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -347,6 +435,10 @@ where
     let @9: u32; // anonymous local
     let @10: &'_ mut (CList<T>[@TraitClause0]); // anonymous local
     let @11: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
 
     storage_live(x@4)
     storage_live(tl@5)
@@ -356,14 +448,22 @@ where
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
     storage_live(@3)
     loop {
         match *(l@1) {
             CList::CCons => {
                 storage_live(x@4)
-                x@4 := &mut (*(l@1) as variant CList::CCons).0
+                storage_live(@13)
+                @13 := ()
+                x@4 := &mut ((*(l@1) as variant CList::CCons).0, move (@13))
                 storage_live(tl@5)
-                tl@5 := &mut (*(l@1) as variant CList::CCons).1
+                storage_live(@12)
+                @12 := ()
+                tl@5 := &mut ((*(l@1) as variant CList::CCons).1, move (@12))
                 storage_live(@6)
                 storage_live(@7)
                 storage_live(@8)
@@ -378,7 +478,9 @@ where
                     @9 := copy (i@2) panic.- const (1 : u32)
                     i@2 := move (@9)
                     storage_live(@10)
-                    @10 := &mut *(*(tl@5))
+                    storage_live(@15)
+                    @15 := ()
+                    @10 := &mut (*(*(tl@5)), move (@15))
                     l@1 := move (@10)
                     storage_dead(@10)
                     storage_dead(tl@5)
@@ -386,7 +488,9 @@ where
                     continue 0
                 }
                 storage_dead(@8)
-                @0 := &mut *(x@4)
+                storage_live(@14)
+                @14 := ()
+                @0 := &mut (*(x@4), move (@14))
                 storage_dead(@7)
                 storage_dead(@6)
                 storage_dead(tl@5)
@@ -461,21 +565,35 @@ where
     let tl@4: &'_ mut (alloc::boxed::Box<CList<T>[@TraitClause0]>[MetaSized<CList<T>[@TraitClause0]>, Sized<Global>]); // local
     let @5: &'_ mut (CList<T>[@TraitClause0]); // anonymous local
     let @6: &'_ mut (CList<T>[@TraitClause0]); // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
+    let @10: (); // anonymous local
+    let @11: (); // anonymous local
 
     storage_live(tl@4)
     storage_live(@5)
     storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@11)
     storage_live(@2)
     storage_live(@3)
     match *(l@1) {
         CList::CCons => {
             storage_live(tl@4)
-            tl@4 := &mut (*(l@1) as variant CList::CCons).1
+            storage_live(@8)
+            @8 := ()
+            tl@4 := &mut ((*(l@1) as variant CList::CCons).1, move (@8))
             storage_live(@5)
             storage_live(@6)
-            @6 := &two-phase-mut *(*(tl@4))
+            storage_live(@7)
+            @7 := ()
+            @6 := &two-phase-mut (*(*(tl@4)), move (@7))
             @5 := list_tail<'_, T>[@TraitClause0](move (@6))
-            @3 := &mut *(@5)
+            storage_live(@11)
+            @11 := ()
+            @3 := &mut (*(@5), move (@11))
             storage_dead(@6)
             storage_dead(@5)
             storage_dead(tl@4)
@@ -484,8 +602,12 @@ where
             @3 := move (l@1)
         },
     }
-    @2 := &mut *(@3)
-    @0 := &mut *(@2)
+    storage_live(@10)
+    @10 := ()
+    @2 := &mut (*(@3), move (@10))
+    storage_live(@9)
+    @9 := ()
+    @0 := &mut (*(@2), move (@9))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -537,9 +659,12 @@ where
     let @0: usize; // return
     let cnt@1: &'_ mut (T); // arg #1
     let @2: &'_ mut (T); // anonymous local
+    let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &two-phase-mut *(cnt@1)
+    storage_live(@3)
+    @3 := ()
+    @2 := &two-phase-mut (*(cnt@1), move (@3))
     @0 := @TraitClause1::incr<'_>(move (@2))
     storage_dead(@2)
     return

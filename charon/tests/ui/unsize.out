@@ -203,14 +203,24 @@ fn foo()
     let @20: Rc<String>[MetaSized<String>, Sized<Global>]; // anonymous local
     let @21: String; // anonymous local
     let @22: &'_ (String); // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
+    let @25: (); // anonymous local
+    let @26: (); // anonymous local
+    let @27: (); // anonymous local
+    let @28: (); // anonymous local
 
     storage_live(array@1)
     array@1 := @ArrayRepeat<'_, i32, 2 : usize>(const (0 : i32))
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &array@1
-    @3 := &*(@4)
+    storage_live(@24)
+    @24 := ()
+    @4 := &(array@1, move (@24))
+    storage_live(@23)
+    @23 := ()
+    @3 := &(*(@4), move (@23))
     @2 := @ArrayToSliceShared<'_, i32, 2 : usize>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
@@ -242,8 +252,12 @@ fn foo()
     storage_live(@12)
     storage_live(@13)
     storage_live(@14)
-    @14 := &string@11
-    @13 := &*(@14)
+    storage_live(@27)
+    @27 := ()
+    @14 := &(string@11, move (@27))
+    storage_live(@26)
+    @26 := ()
+    @13 := &(*(@14), move (@26))
     @12 := unsize_cast<&'_ (String), &'_ ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)), {impl Display for String}>(move (@13))
     storage_dead(@13)
     storage_dead(@14)
@@ -252,7 +266,9 @@ fn foo()
     storage_live(@16)
     storage_live(@17)
     storage_live(@18)
-    @18 := &string@11
+    storage_live(@25)
+    @25 := ()
+    @18 := &(string@11, move (@25))
     @17 := {impl Clone for String}::clone<'_>(move (@18))
     storage_dead(@18)
     @16 := @BoxNew<String>[Sized<String>](move (@17))
@@ -266,7 +282,9 @@ fn foo()
     storage_live(@20)
     storage_live(@21)
     storage_live(@22)
-    @22 := &string@11
+    storage_live(@28)
+    @28 := ()
+    @22 := &(string@11, move (@28))
     @21 := {impl Clone for String}::clone<'_>(move (@22))
     storage_dead(@22)
     @20 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, Sized<Global>]}::new<String>[Sized<String>](move (@21))

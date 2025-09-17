@@ -265,12 +265,15 @@ fn main()
     let a@1: Array<u32, 2 : usize>; // local
     let @2: *const Slice<u32>; // anonymous local
     let @3: *const Array<u32, 2 : usize>; // anonymous local
+    let @4: (); // anonymous local
 
     storage_live(a@1)
     a@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (1 : u32))
     storage_live(@2)
     storage_live(@3)
-    @3 := &raw const a@1
+    storage_live(@4)
+    @4 := ()
+    @3 := &raw const (a@1, move (@4))
     @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[Sized<Array<u32, 2 : usize>>, {impl#0}<Array<u32, 2 : usize>>[Pointee<Array<u32, 2 : usize>> where Metadata  = ()]](move (@3), const (2 : usize))
     storage_dead(@3)
     storage_dead(@2)
