@@ -110,13 +110,13 @@ pub fn foo() -> &'static (closure)
     storage_live(@4)
     storage_live(@5)
     @5 := closure {  }
-    @4 := &(@5, copy (@Global0))
+    @4 := &@5
     storage_live(@1)
     storage_live(@2)
     @3 := move (@4)
-    @2 := &(*(@3), copy (@Global0))
-    @1 := &(*(@2), copy (@Global0))
-    @0 := &(*(@1), copy (@Global0))
+    @2 := &*(@3)
+    @1 := &*(@2)
+    @0 := &*(@1)
     storage_dead(@2)
     storage_dead(@1)
     return
@@ -145,7 +145,7 @@ fn {impl FnMut<(u32)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u
     let @3: &'_ (closure); // anonymous local
 
     storage_live(@3)
-    @3 := &(*(state@1), copy (@Global0))
+    @3 := &*(state@1)
     @0 := {impl Fn<(u32)> for closure}::call<'_>(move (@3), move (args@2))
     return
 }
@@ -159,7 +159,7 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     let @3: &'_ mut (closure); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<(u32)> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
     return

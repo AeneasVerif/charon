@@ -37,7 +37,7 @@ fn foo<'_0>(@1: &'_0 (u32)) -> Option::<&'_ (u32)>
     let @2: &'_ (u32); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(x@1), copy (@Global0))
+    @2 := &*(x@1)
     @0 := Option::<&'_ (u32)>::Some { 0: move (@2) }
     storage_dead(@2)
     return
@@ -57,8 +57,8 @@ fn main()
     storage_live(@3)
     storage_live(@4)
     @4 := const (42 : u32)
-    @3 := &(@4, copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &@4
+    @2 := &*(@3)
     @1 := foo<'_>(move (@2))
     storage_dead(@2)
     storage_dead(@4)

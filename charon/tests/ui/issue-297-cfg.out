@@ -674,8 +674,8 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
         storage_live(@10)
         storage_live(@11)
         storage_live(@12)
-        @12 := &mut (iter@8, copy (@Global0))
-        @11 := &two-phase-mut (*(@12), copy (@Global0))
+        @12 := &mut iter@8
+        @11 := &two-phase-mut *(@12)
         @10 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, u8>[Sized<u8>](move (@11))
         storage_dead(@11)
         match @10 {

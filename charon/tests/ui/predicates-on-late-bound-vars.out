@@ -130,7 +130,7 @@ fn wrap<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[Sized<&'a (u32)>]
     let @2: &'_ (u32); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(x@1), copy (@Global0))
+    @2 := &*(x@1)
     @0 := Option::Some { 0: move (@2) }
     storage_dead(@2)
     return
@@ -146,7 +146,7 @@ where
     let @2: &'_ (u32); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(x@1), copy (@Global0))
+    @2 := &*(x@1)
     @0 := Option::Some { 0: move (@2) }
     storage_dead(@2)
     return
@@ -165,7 +165,7 @@ fn foo()
     storage_live(@2)
     storage_live(@3)
     // `try_borrow` has a type that includes predicates on late bound regions.
-    @3 := &(ref_b@1, copy (@Global0))
+    @3 := &ref_b@1
     @2 := try_borrow<'_, bool>[MetaSized<bool>](move (@3))
     storage_dead(@3)
     drop[{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]] @2

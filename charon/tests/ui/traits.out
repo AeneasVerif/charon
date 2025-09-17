@@ -196,12 +196,12 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     storage_live(@4)
     storage_live(@2)
     storage_live(@3)
-    @3 := &(x@1, copy (@Global0))
+    @3 := &x@1
     @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
-        @4 := &(x@1, copy (@Global0))
+        @4 := &x@1
         @0 := test_crate::{impl BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
     }
@@ -269,12 +269,12 @@ where
     storage_live(@4)
     storage_live(@2)
     storage_live(@3)
-    @3 := &(x@1, copy (@Global0))
+    @3 := &x@1
     @2 := {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
-        @4 := &(x@1, copy (@Global0))
+        @4 := &x@1
         @0 := test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
         storage_dead(@4)
     }
@@ -298,7 +298,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     storage_live(@2)
-    @2 := &(x@1, copy (@Global0))
+    @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
     drop[Drop<T>] x@1
@@ -679,7 +679,7 @@ where
     if move (@6) {
         storage_dead(@7)
         storage_live(@8)
-        @8 := &(y@5, copy (@Global0))
+        @8 := &y@5
         @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
         storage_dead(@8)
     }
@@ -942,7 +942,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(x@1), copy (@Global0))
+    @2 := &*(x@1)
     @0 := @TraitClause1::parent_clause1::get_name<'_>(move (@2))
     storage_dead(@2)
     return
@@ -959,7 +959,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(x@1), copy (@Global0))
+    @2 := &*(x@1)
     @0 := @TraitClause1::parent_clause1::get_w<'_>(move (@2))
     storage_dead(@2)
     return
@@ -1184,7 +1184,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(x@1), copy (@Global0))
+    @2 := &*(x@1)
     @0 := @TraitClause1::get_w<'_>(move (@2))
     storage_dead(@2)
     return

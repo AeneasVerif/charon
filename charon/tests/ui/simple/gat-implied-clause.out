@@ -89,7 +89,7 @@ where
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &(x@1, copy (@Global0))
+    @3 := &x@1
     @2 := (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
     storage_dead(@3)
     drop[Drop<@TraitClause1::LifetimeGat>] @2
@@ -113,7 +113,7 @@ where
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &(x@1, copy (@Global0))
+    @3 := &x@1
     @2 := (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
     storage_dead(@3)
     drop[Drop<@TraitClause1::NonLifetimeGat>] @2

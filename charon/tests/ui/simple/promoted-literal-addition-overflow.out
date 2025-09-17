@@ -36,10 +36,10 @@ fn overflow() -> &'static (u32)
     @2 := copy (MAX) panic.+ const (1 : u32)
     @6 := copy (MAX) wrap.+ const (1 : u32)
     @5 := move (@6)
-    @4 := &(@5, copy (@Global0))
+    @4 := &@5
     @3 := move (@4)
-    @1 := &(*(@3), copy (@Global0))
-    @0 := &(*(@1), copy (@Global0))
+    @1 := &*(@3)
+    @0 := &*(@1)
     storage_dead(@1)
     return
 }

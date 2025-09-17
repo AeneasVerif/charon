@@ -122,7 +122,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
     drop[{impl Drop for String}] _x@2
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
-    @3 := &mut (b@1, copy (@Global0))
+    @3 := &mut b@1
     @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_, String, Global>[MetaSized<String>, Sized<Global>](move (@3))
     @0 := ()
     return

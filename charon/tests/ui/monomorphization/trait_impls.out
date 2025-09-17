@@ -72,7 +72,7 @@ fn do_test::<bool>(@1: bool)
     let @2: &'_ (bool); // anonymous local
 
     storage_live(@2)
-    @2 := &(x@1, copy (@Global0))
+    @2 := &x@1
     @0 := {impl Trait::<bool>}::method<'_>(move (@2))
     storage_dead(@2)
     drop[Drop::<bool>] x@1

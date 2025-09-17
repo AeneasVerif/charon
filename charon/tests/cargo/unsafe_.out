@@ -12,6 +12,16 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: unsafe::main
 fn main()
 {
@@ -22,8 +32,6 @@ fn main()
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @7: (); // anonymous local
-    let @8: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
@@ -32,12 +40,8 @@ fn main()
     storage_live(@5)
     storage_live(@6)
     @6 := [const ("Hello, world!\n")]
-    storage_live(@8)
-    @8 := ()
-    @5 := &(@6, move (@8))
-    storage_live(@7)
-    @7 := ()
-    @4 := &(*(@5), move (@7))
+    @5 := &@6
+    @4 := &*(@5)
     @3 := new_const<'_, 1 : usize>(move (@4))
     storage_dead(@4)
     @2 := _print<'_>(move (@3))

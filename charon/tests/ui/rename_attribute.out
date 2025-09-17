@@ -88,12 +88,12 @@ where
     storage_live(@4)
     storage_live(@2)
     storage_live(@3)
-    @3 := &(x@1, copy (@Global0))
+    @3 := &x@1
     @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
-        @4 := &(x@1, copy (@Global0))
+        @4 := &x@1
         @0 := test_crate::{impl BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
     }

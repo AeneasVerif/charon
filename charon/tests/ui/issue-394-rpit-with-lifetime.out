@@ -123,7 +123,7 @@ fn {impl FnOnce<()> for closure<'_>}::call_once<'a>(@1: closure<'_>, @2: ()) -> 
     let @3: &'_ mut (closure<'_>); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<()> for closure<'_>}::call_mut<'_, '_>(move (@3), move (@2))
     drop[Drop<closure<'_>>] @1
     return

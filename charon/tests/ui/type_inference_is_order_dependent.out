@@ -178,8 +178,8 @@ where
     storage_live(@6)
     storage_live(@7)
     @7 := @TraitClause4::default()
-    @6 := &(@7, copy (@Global0))
-    @5 := &(*(@6), copy (@Global0))
+    @6 := &@7
+    @5 := &*(@6)
     @4 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@5))
     storage_dead(@5)
     args@3 := [move (@4)]
@@ -188,12 +188,12 @@ where
     storage_live(@9)
     storage_live(@10)
     @10 := [const (""), const ("\n")]
-    @9 := &(@10, copy (@Global0))
-    @8 := &(*(@9), copy (@Global0))
+    @9 := &@10
+    @8 := &*(@9)
     storage_live(@11)
     storage_live(@12)
-    @12 := &(args@3, copy (@Global0))
-    @11 := &(*(@12), copy (@Global0))
+    @12 := &args@3
+    @11 := &*(@12)
     @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@8), move (@11))
     storage_dead(@12)
     storage_dead(@11)

@@ -1211,12 +1211,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     BorrowKind::UniqueImmutable => "&uniq ",
                     BorrowKind::Shallow => "&shallow ",
                 };
-                write!(
-                    f,
-                    "{borrow_kind}({}, {})",
-                    place.with_ctx(ctx),
-                    ptr_metadata.with_ctx(ctx)
-                )
+                if ptr_metadata.ty().is_unit() {
+                    // Hide unit metadata
+                    write!(f, "{borrow_kind}{}", place.with_ctx(ctx))?;
+                } else {
+                    write!(
+                        f,
+                        "{borrow_kind}({}, {})",
+                        place.with_ctx(ctx),
+                        ptr_metadata.with_ctx(ctx)
+                    )?;
+                }
+                Ok(())
             }
             Rvalue::RawPtr {
                 place,

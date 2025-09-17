@@ -106,7 +106,7 @@ where
     let @3: (u8, u8); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(f@1), copy (@Global0))
+    @2 := &*(f@1)
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
     @0 := @TraitClause1::call<'_>(move (@2), move (@3))
@@ -128,7 +128,7 @@ where
     let @3: (u8, u8); // anonymous local
 
     storage_live(@2)
-    @2 := &mut (*(f@1), copy (@Global0))
+    @2 := &mut *(f@1)
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
     @0 := @TraitClause1::call_mut<'_>(move (@2), move (@3))
@@ -225,7 +225,7 @@ fn {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_
     let @3: &'_ (closure<'_0, '_1>); // anonymous local
 
     storage_live(@3)
-    @3 := &(*(state@1), copy (@Global0))
+    @3 := &*(state@1)
     @0 := {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_0, '_1, '_>(move (@3), move (args@2))
     return
 }
@@ -239,7 +239,7 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
     let @3: &'_ mut (closure<'_0, '_1>); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop[Drop<closure<'_0, '_1>>] @1
     return
@@ -303,15 +303,15 @@ fn main()
     z@2 := const (1 : u8)
     storage_live(f@3)
     storage_live(@4)
-    @4 := &(v@1, copy (@Global0))
+    @4 := &v@1
     storage_live(@5)
-    @5 := &(z@2, copy (@Global0))
+    @5 := &z@2
     f@3 := closure { 0: move (@4), 1: move (@5) }
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
     storage_live(@7)
-    @7 := &(f@3, copy (@Global0))
+    @7 := &f@3
     storage_live(@8)
     @8 := (const (10 : u8), const (20 : u8))
     @6 := {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_, '_, '_>(move (@7), move (@8))
@@ -321,8 +321,8 @@ fn main()
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
-    @11 := &(f@3, copy (@Global0))
-    @10 := &(*(@11), copy (@Global0))
+    @11 := &f@3
+    @10 := &*(@11)
     @9 := apply_to<'_, closure<'_, '_>>[Sized<closure<'_, '_>>, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@10))
     storage_dead(@10)
     storage_dead(@11)
@@ -330,8 +330,8 @@ fn main()
     storage_live(@12)
     storage_live(@13)
     storage_live(@14)
-    @14 := &mut (f@3, copy (@Global0))
-    @13 := &two-phase-mut (*(@14), copy (@Global0))
+    @14 := &mut f@3
+    @13 := &two-phase-mut *(@14)
     @12 := apply_to_mut<'_, closure<'_, '_>>[Sized<closure<'_, '_>>, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@13))
     storage_dead(@13)
     storage_dead(@14)

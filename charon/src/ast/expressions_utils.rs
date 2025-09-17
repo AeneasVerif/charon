@@ -99,6 +99,13 @@ impl Operand {
             ty: Ty::mk_unit(),
         }))
     }
+
+    pub fn ty(&self) -> &Ty {
+        match self {
+            Operand::Copy(place) | Operand::Move(place) => place.ty(),
+            Operand::Const(constant_expr) => &constant_expr.ty,
+        }
+    }
 }
 
 impl Rvalue {

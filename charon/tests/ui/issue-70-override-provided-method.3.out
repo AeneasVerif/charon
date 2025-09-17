@@ -138,9 +138,9 @@ where
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &(y@2, copy (@Global0))
+    @4 := &y@2
     storage_live(@5)
-    @5 := &(x@1, copy (@Global0))
+    @5 := &x@1
     @3 := @TraitClause2::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)
@@ -197,9 +197,9 @@ where
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &(y@2, copy (@Global0))
+    @4 := &y@2
     storage_live(@5)
-    @5 := &(x@1, copy (@Global0))
+    @5 := &x@1
     @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)
@@ -268,9 +268,9 @@ where
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &(y@2, copy (@Global0))
+    @4 := &y@2
     storage_live(@5)
-    @5 := &(x@1, copy (@Global0))
+    @5 := &x@1
     @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)

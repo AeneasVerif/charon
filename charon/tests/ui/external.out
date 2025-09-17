@@ -239,9 +239,9 @@ where
     let @4: &'_ mut (T); // anonymous local
 
     storage_live(@3)
-    @3 := &two-phase-mut (*(x@1), copy (@Global0))
+    @3 := &two-phase-mut *(x@1)
     storage_live(@4)
-    @4 := &two-phase-mut (*(y@2), copy (@Global0))
+    @4 := &two-phase-mut *(y@2)
     @0 := core::mem::swap<'_, '_, T>[@TraitClause0](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
@@ -279,7 +279,7 @@ pub fn test_vec_push()
     v@1 := alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::new<u32>[Sized<u32>]()
     storage_live(@2)
     storage_live(@3)
-    @3 := &two-phase-mut (v@1, copy (@Global0))
+    @3 := &two-phase-mut v@1
     @2 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@3), const (0 : u32))
     storage_dead(@3)
     storage_dead(@2)
@@ -298,7 +298,7 @@ pub fn use_get<'_0>(@1: &'_0 (Cell<u32>[MetaSized<u32>])) -> u32
     let @2: &'_ (Cell<u32>[MetaSized<u32>]); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(rc@1), copy (@Global0))
+    @2 := &*(rc@1)
     @0 := get<'_, u32>[Sized<u32>, {impl Copy for u32}](move (@2))
     storage_dead(@2)
     return
@@ -316,7 +316,7 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>[MetaSized<u32>]))
     storage_live(@4)
     storage_live(@2)
     storage_live(@3)
-    @3 := &two-phase-mut (*(rc@1), copy (@Global0))
+    @3 := &two-phase-mut *(rc@1)
     @2 := get_mut<'_, u32>[MetaSized<u32>](move (@3))
     storage_dead(@3)
     @4 := copy (*(@2)) panic.+ const (1 : u32)

@@ -44,10 +44,10 @@ where
     storage_live(@4)
     // This can't be evaluated generically.
     @4 := size_of<T>[@TraitClause0]()
-    @3 := &(@4, copy (@Global0))
+    @3 := &@4
     storage_live(@1)
     @2 := move (@3)
-    @1 := &(*(@2), copy (@Global0))
+    @1 := &*(@2)
     storage_dead(@1)
     @0 := ()
     @0 := ()

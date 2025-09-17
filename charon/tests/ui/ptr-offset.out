@@ -172,7 +172,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     storage_live(@6)
     storage_live(@8)
     @8 := [const ("unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@7 := &(@8, copy (@Global0))
+    pieces@7 := &@8
     storage_live(@25)
     @25 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@7))
     storage_live(@26)
@@ -241,7 +241,7 @@ fn main()
     storage_live(ptr@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &(s@1, copy (@Global0))
+    @4 := &s@1
     @3 := @ArrayToSliceShared<'_, i32, 2 : usize>(move (@4))
     storage_dead(@4)
     ptr@2 := as_ptr<'_, i32>[Sized<i32>](move (@3))

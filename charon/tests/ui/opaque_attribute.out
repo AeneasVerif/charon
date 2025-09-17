@@ -79,9 +79,9 @@ where
         },
         Option::Some => {
             storage_live(x@2)
-            x@2 := &((*(self@1) as variant Option::Some).0, copy (@Global0))
+            x@2 := &(*(self@1) as variant Option::Some).0
             storage_live(@3)
-            @3 := &(*(x@2), copy (@Global0))
+            @3 := &*(x@2)
             @0 := @TraitClause1::get_bool<'_>(move (@3))
             storage_dead(@3)
             storage_dead(x@2)

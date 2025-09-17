@@ -572,7 +572,7 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
     let @3: &'_ mut (closure); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<(i32)> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
     return
@@ -661,8 +661,8 @@ fn cbd(@1: Array<u8, 33 : usize>)
         storage_live(@6)
         storage_live(@7)
         storage_live(@8)
-        @8 := &mut (iter@4, copy (@Global0))
-        @7 := &two-phase-mut (*(@8), copy (@Global0))
+        @8 := &mut iter@4
+        @7 := &two-phase-mut *(@8)
         @6 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[Sized<u8>, {impl Step for u8}](move (@7))
         storage_dead(@7)
         match @6 {
@@ -677,7 +677,7 @@ fn cbd(@1: Array<u8, 33 : usize>)
                 storage_live(@11)
                 @11 := const (0 : usize)
                 storage_live(@12)
-                @12 := &mut (prf_input@1, const (@Global0))
+                @12 := &mut prf_input@1
                 storage_live(@13)
                 @13 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@12), copy (@11))
                 *(@13) := move (@10)
@@ -768,7 +768,7 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         @9 := &(*(lhs@1), move (@25))
         @8 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@9))
         storage_dead(@9)
-        @7 := &(@8, copy (@Global0))
+        @7 := &@8
         storage_live(@10)
         storage_live(@11)
         storage_live(@12)
@@ -777,7 +777,7 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         @12 := &(*(rhs@2), move (@26))
         @11 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@12))
         storage_dead(@12)
-        @10 := &(@11, copy (@Global0))
+        @10 := &@11
         @6 := (move (@7), move (@10))
         storage_dead(@10)
         storage_dead(@7)
@@ -802,12 +802,12 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
             @19 := move (kind@18)
             storage_live(@20)
             storage_live(@21)
-            @21 := &(*(left_val@13), copy (@Global0))
-            @20 := &(*(@21), copy (@Global0))
+            @21 := &*(left_val@13)
+            @20 := &*(@21)
             storage_live(@22)
             storage_live(@23)
-            @23 := &(*(right_val@14), copy (@Global0))
-            @22 := &(*(@23), copy (@Global0))
+            @23 := &*(right_val@14)
+            @22 := &*(@23)
             storage_live(@24)
             @24 := Option::None {  }
             panic(core::panicking::assert_failed)

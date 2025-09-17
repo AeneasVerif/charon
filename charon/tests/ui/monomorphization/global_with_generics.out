@@ -82,7 +82,7 @@ fn main()
     storage_live(_b@1)
     storage_live(@2)
     @3 := ()
-    @4 := &(FooBool, move (@3))
+    @4 := &FooBool
     @2 := move (@4)
     _b@1 := copy ((*(@2)).value)
     storage_dead(@2)

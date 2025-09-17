@@ -77,7 +77,7 @@ where
     storage_live(@3)
     @3 := move (x@1)
     @2 := (@TraitClause1::Type::[@TraitClause1])::foo(move (@3))
-    @0 := &(*(@2), copy (@Global0))
+    @0 := &*(@2)
     storage_dead(@3)
     storage_dead(@2)
     drop[Drop<@TraitClause1::Type>] x@1
