@@ -106,7 +106,7 @@ where
     let @3: (); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(self@1), copy (@Global0))
+    @2 := &*(self@1)
     storage_live(@3)
     @3 := ()
     @0 := @TraitClause0::call<'_>(move (@2), move (@3))

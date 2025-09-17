@@ -70,7 +70,7 @@ where
     let @2: &'_ (Option<T>[@TraitClause0]); // anonymous local
 
     storage_live(@2)
-    @2 := &(*(opt@1), copy (@Global0))
+    @2 := &*(opt@1)
     @0 := @discriminant(*(@2))
     storage_dead(@2)
     return
@@ -90,8 +90,8 @@ where
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &(opt@1, copy (@Global0))
-    @3 := &(*(@4), copy (@Global0))
+    @4 := &opt@1
+    @3 := &*(@4)
     @2 := discriminant_value<'_, T>[@TraitClause0](move (@3))
     storage_dead(@3)
     @0 := move (@2) != const (0 : isize)

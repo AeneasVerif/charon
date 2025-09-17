@@ -142,7 +142,7 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := closure {  }
-    @2 := &(@3, copy (@Global0))
+    @2 := &@3
     storage_live(@4)
     storage_live(@5)
     @5 := move (i@1)
@@ -169,7 +169,7 @@ where
     let @3: &'_ (closure<Self>[@TraitClause0]); // anonymous local
 
     storage_live(@3)
-    @3 := &(*(state@1), copy (@Global0))
+    @3 := &*(state@1)
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@3), move (args@2))
     @0 := ()
     return
@@ -186,7 +186,7 @@ where
     let @3: &'_ mut (closure<Self>[@TraitClause0]); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
     drop[Drop<closure<Self>[@TraitClause0]>] @1
     @0 := ()

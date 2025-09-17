@@ -392,7 +392,7 @@ pub fn S2() -> u32
     storage_live(@1)
     storage_live(@2)
     @3 := ()
-    @4 := &(S1, move (@3))
+    @4 := &S1
     @2 := move (@4)
     @1 := copy (*(@2))
     @0 := incr(move (@1))

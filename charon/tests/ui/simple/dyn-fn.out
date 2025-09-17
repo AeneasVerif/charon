@@ -125,8 +125,8 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := &mut (counter@2, copy (@Global0))
-    @6 := &two-phase-mut (*(@7), copy (@Global0))
+    @7 := &mut counter@2
+    @6 := &two-phase-mut *(@7)
     @5 := (move (@6))
     @3 := Fn<(dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause1_0::parent_clause1::parent_clause1::Output = bool), (&'_ mut (u32))>::call<'_>(move (@4), move (@5))
     if move (@3) {
@@ -179,7 +179,7 @@ fn {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_1>(@1: &'_1 mut (c
     let @3: &'_ (closure); // anonymous local
 
     storage_live(@3)
-    @3 := &(*(state@1), copy (@Global0))
+    @3 := &*(state@1)
     @0 := {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '_>(move (@3), move (args@2))
     return
 }
@@ -193,7 +193,7 @@ fn {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>(@1: closure, @2: (
     let @3: &'_ mut (closure); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_>(move (@3), move (@2))
     drop[Drop<closure>] @1
     return
@@ -244,8 +244,8 @@ fn gives_fn()
     storage_live(@3)
     storage_live(@4)
     @4 := closure {  }
-    @3 := &(@4, copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &@4
+    @2 := &*(@3)
     @1 := unsize_cast<&'_ (closure), &'_ ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause1_0::parent_clause1::parent_clause1::Output = bool)), {impl Fn<(&'_ mut (u32))> for closure}<'_>>(move (@2))
     storage_dead(@2)
     @0 := takes_fn<'_>(move (@1))

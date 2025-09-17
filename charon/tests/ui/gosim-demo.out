@@ -555,8 +555,8 @@ where
         storage_live(@6)
         storage_live(@7)
         storage_live(@8)
-        @8 := &mut (iter@4, copy (@Global0))
-        @7 := &two-phase-mut (*(@8), copy (@Global0))
+        @8 := &mut iter@4
+        @7 := &two-phase-mut *(@8)
         @6 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, T>[@TraitClause0](move (@7))
         storage_dead(@7)
         match @6 {
@@ -573,8 +573,8 @@ where
                 storage_live(@14)
                 storage_live(@15)
                 storage_live(@16)
-                @16 := &(x@9, copy (@Global0))
-                @15 := &(*(@16), copy (@Global0))
+                @16 := &x@9
+                @15 := &*(@16)
                 @14 := new_debug<'_, '_, &'_ (T)>[Sized<&'_ (T)>, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
                 storage_dead(@15)
                 args@13 := [move (@14)]
@@ -583,12 +583,12 @@ where
                 storage_live(@18)
                 storage_live(@19)
                 @19 := [const ("- "), const ("\n")]
-                @18 := &(@19, copy (@Global0))
-                @17 := &(*(@18), copy (@Global0))
+                @18 := &@19
+                @17 := &*(@18)
                 storage_live(@20)
                 storage_live(@21)
-                @21 := &(args@13, copy (@Global0))
-                @20 := &(*(@21), copy (@Global0))
+                @21 := &args@13
+                @20 := &*(@21)
                 @12 := new_v1<'_, 2 : usize, 1 : usize>(move (@17), move (@20))
                 storage_dead(@21)
                 storage_dead(@20)
@@ -635,8 +635,8 @@ fn main()
     storage_live(@4)
     storage_live(@5)
     @5 := [const (0 : i32), const (1 : i32), const (2 : i32)]
-    @4 := &(@5, copy (@Global0))
-    @3 := &(*(@4), copy (@Global0))
+    @4 := &@5
+    @3 := &*(@4)
     @2 := @ArrayToSliceShared<'_, i32, 3 : usize>(move (@3))
     storage_dead(@3)
     @1 := debug_slice<'_, i32>[Sized<i32>, {impl Debug for i32}](move (@2))

@@ -88,9 +88,9 @@ fn do_test::<bool>(@1: bool, @2: bool)
         storage_live(@3);
         storage_live(@4);
         storage_live(@5);
-        @5 := &(expected@2, copy (@Global0));
+        @5 := &expected@2;
         storage_live(@6);
-        @6 := &(init@1, copy (@Global0));
+        @6 := &init@1;
         @4 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 

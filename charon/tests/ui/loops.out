@@ -1763,8 +1763,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@9)
         storage_live(@10)
         storage_live(@11)
-        @11 := &mut (iter@7, copy (@Global0))
-        @10 := &two-phase-mut (*(@11), copy (@Global0))
+        @11 := &mut iter@7
+        @10 := &two-phase-mut *(@11)
         @9 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[Sized<i32>, {impl Step for i32}](move (@10))
         storage_dead(@10)
         match @9 {
@@ -1803,8 +1803,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@19)
         storage_live(@20)
         storage_live(@21)
-        @21 := &mut (iter@17, copy (@Global0))
-        @20 := &two-phase-mut (*(@21), copy (@Global0))
+        @21 := &mut iter@17
+        @20 := &two-phase-mut *(@21)
         @19 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@20))
         storage_dead(@20)
         match @19 {
@@ -1827,8 +1827,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                     storage_live(@27)
                     storage_live(@28)
                     storage_live(@29)
-                    @29 := &mut (iter@25, copy (@Global0))
-                    @28 := &two-phase-mut (*(@29), copy (@Global0))
+                    @29 := &mut iter@25
+                    @28 := &two-phase-mut *(@29)
                     @27 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@28))
                     storage_dead(@28)
                     match @27 {
@@ -1923,8 +1923,8 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             storage_live(@11)
             storage_live(@12)
             storage_live(@13)
-            @13 := &mut (iter@9, copy (@Global0))
-            @12 := &two-phase-mut (*(@13), copy (@Global0))
+            @13 := &mut iter@9
+            @12 := &two-phase-mut *(@13)
             @11 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u32>[Sized<u32>, {impl Step for u32}](move (@12))
             storage_dead(@12)
             match @11 {
@@ -2066,7 +2066,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
             storage_live(@8)
             @8 := copy (i@2)
             storage_live(@12)
-            @12 := &(a@1, const (@Global0))
+            @12 := &a@1
             storage_live(@13)
             @13 := @ArrayIndexShared<'_, u32, const N : usize>(move (@12), copy (@8))
             @7 := copy (*(@13))
@@ -2123,7 +2123,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
         @4 := copy (i@2)
         storage_live(@5)
         storage_live(@6)
-        @6 := &(*(v@1), copy (@Global0))
+        @6 := &*(v@1)
         @5 := alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@6))
         storage_dead(@6)
         @3 := move (@4) < move (@5)
@@ -2136,7 +2136,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
         storage_dead(@4)
         storage_live(@7)
         storage_live(@8)
-        @8 := &mut (*(v@1), copy (@Global0))
+        @8 := &mut *(v@1)
         storage_live(@9)
         @9 := copy (i@2)
         @7 := {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[Sized<u32>, Sized<usize>, Sized<Global>, {impl SliceIndex<Slice<T>> for usize}<u32>[Sized<u32>]](move (@8), move (@9))
@@ -2192,9 +2192,9 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
         match *(ls@1) {
             List::Cons => {
                 storage_live(y@3)
-                y@3 := &mut ((*(ls@1) as variant List::Cons).0, copy (@Global0))
+                y@3 := &mut (*(ls@1) as variant List::Cons).0
                 storage_live(tl@4)
-                tl@4 := &mut ((*(ls@1) as variant List::Cons).1, copy (@Global0))
+                tl@4 := &mut (*(ls@1) as variant List::Cons).1
                 storage_live(@5)
                 storage_live(@6)
                 @6 := copy (*(y@3))
@@ -2207,7 +2207,7 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
                     storage_dead(@7)
                     storage_dead(@6)
                     storage_live(@8)
-                    @8 := &mut (*(*(tl@4)), copy (@Global0))
+                    @8 := &mut *(*(tl@4))
                     ls@1 := move (@8)
                     storage_dead(@8)
                     storage_dead(@5)
@@ -2217,7 +2217,7 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[Sized<usize>]), @2: usize) ->
                 }
                 storage_dead(@7)
                 storage_dead(@6)
-                @0 := &mut (*(y@3), copy (@Global0))
+                @0 := &mut *(y@3)
                 storage_dead(@5)
                 storage_dead(tl@4)
                 storage_dead(y@3)
@@ -2259,9 +2259,9 @@ where
         match *(ls@1) {
             List::Cons => {
                 storage_live(x@4)
-                x@4 := &mut ((*(ls@1) as variant List::Cons).0, copy (@Global0))
+                x@4 := &mut (*(ls@1) as variant List::Cons).0
                 storage_live(tl@5)
-                tl@5 := &mut ((*(ls@1) as variant List::Cons).1, copy (@Global0))
+                tl@5 := &mut (*(ls@1) as variant List::Cons).1
                 storage_live(@6)
                 storage_live(@7)
                 @7 := copy (i@2)
@@ -2271,7 +2271,7 @@ where
                 else {
                     storage_dead(@7)
                     storage_live(@8)
-                    @8 := &mut (*(*(tl@5)), copy (@Global0))
+                    @8 := &mut *(*(tl@5))
                     ls@1 := move (@8)
                     storage_dead(@8)
                     @9 := copy (i@2) panic.- const (1 : u32)
@@ -2282,7 +2282,7 @@ where
                     continue 0
                 }
                 storage_dead(@7)
-                @0 := &mut (*(x@4), copy (@Global0))
+                @0 := &mut *(x@4)
                 storage_dead(@6)
                 storage_dead(tl@5)
                 storage_dead(x@4)

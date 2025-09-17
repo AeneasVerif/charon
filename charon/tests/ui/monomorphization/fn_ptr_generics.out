@@ -49,7 +49,7 @@ fn init_option()
     storage_live(@4)
     @4 := const (0 : usize)
     storage_live(@5)
-    @5 := &(a@1, const (@Global0))
+    @5 := &a@1
     storage_live(@6)
     @6 := @ArrayIndexShared<'_, Option::<u8>, 6 : usize>(move (@5), copy (@4))
     b@3 := copy (*(@6))

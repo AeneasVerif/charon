@@ -93,7 +93,7 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
     let @2: &'_ mut (String); // anonymous local
 
     storage_live(@2)
-    @2 := &mut (*(@1), copy (@Global0))
+    @2 := &mut *(@1)
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}]] (*(@2)).vec
     @0 := ()
     return

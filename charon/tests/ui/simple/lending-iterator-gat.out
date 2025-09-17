@@ -151,15 +151,15 @@ where
         },
     }
     storage_live(item@2)
-    item@2 := &mut ((*(self@1) as variant Option::Some).0, copy (@Global0))
+    item@2 := &mut (*(self@1) as variant Option::Some).0
     storage_live(item@3)
-    item@3 := &(*(*(item@2)), copy (@Global0))
+    item@3 := &*(*(item@2))
     storage_live(@4)
     @4 := Option::None {  }
     *(self@1) := move (@4)
     storage_dead(@4)
     storage_live(@5)
-    @5 := &(*(item@3), copy (@Global0))
+    @5 := &*(item@3)
     @0 := Option::Some { 0: move (@5) }
     storage_dead(@5)
     storage_dead(item@3)
@@ -208,7 +208,7 @@ where
     loop {
         storage_live(@4)
         storage_live(@5)
-        @5 := &two-phase-mut (iter@1, copy (@Global0))
+        @5 := &two-phase-mut iter@1
         @4 := @TraitClause2::next<'_>(move (@5))
         storage_dead(@5)
         match @4 {
@@ -221,7 +221,7 @@ where
         storage_live(item@6)
         item@6 := move ((@4 as variant Option::Some).0)
         storage_live(@7)
-        @7 := &mut (f@2, copy (@Global0))
+        @7 := &mut f@2
         storage_live(@8)
         storage_live(@9)
         @9 := move (item@6)
@@ -285,7 +285,7 @@ fn {impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<
     let @3: &'_ mut (closure<'_0>); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop[Drop<closure<'_0>>] @1
     @0 := ()
@@ -357,7 +357,7 @@ pub fn main()
     storage_live(@3)
     storage_live(@4)
     @4 := const (42 : i32)
-    @3 := &(@4, copy (@Global0))
+    @3 := &@4
     iter@2 := Option::Some { 0: move (@3) }
     storage_dead(@3)
     storage_live(sum@5)
@@ -367,7 +367,7 @@ pub fn main()
     @7 := copy (iter@2)
     storage_live(@8)
     storage_live(@9)
-    @9 := &mut (sum@5, copy (@Global0))
+    @9 := &mut sum@5
     @8 := closure { 0: move (@9) }
     storage_dead(@9)
     @6 := for_each<Option<&'_ (i32)>[Sized<&'_ (i32)>], closure<'_>>[Sized<Option<&'_ (i32)>[Sized<&'_ (i32)>]>, Sized<closure<'_>>, {impl LendingIterator for Option<&'a (T)>[Sized<&'_ (T)>]}<'_, i32>[Sized<i32>], {impl FnMut<(&'_ (i32))> for closure<'_0>}<'_, '_>](move (@7), move (@8))
@@ -377,11 +377,11 @@ pub fn main()
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
-    @12 := &(sum@5, copy (@Global0))
+    @12 := &sum@5
     storage_live(@13)
     storage_live(@14)
     @14 := const (42 : i32)
-    @13 := &(@14, copy (@Global0))
+    @13 := &@14
     @11 := (move (@12), move (@13))
     storage_dead(@13)
     storage_dead(@12)
@@ -406,12 +406,12 @@ pub fn main()
         @21 := move (kind@20)
         storage_live(@22)
         storage_live(@23)
-        @23 := &(*(left_val@15), copy (@Global0))
-        @22 := &(*(@23), copy (@Global0))
+        @23 := &*(left_val@15)
+        @22 := &*(@23)
         storage_live(@24)
         storage_live(@25)
-        @25 := &(*(right_val@16), copy (@Global0))
-        @24 := &(*(@25), copy (@Global0))
+        @25 := &*(right_val@16)
+        @24 := &*(@25)
         storage_live(@26)
         @26 := Option::None {  }
         panic(core::panicking::assert_failed)

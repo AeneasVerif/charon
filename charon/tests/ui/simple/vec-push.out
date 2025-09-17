@@ -111,9 +111,9 @@ where
     storage_live(@4)
     storage_live(@5)
     storage_live(self@6)
-    self@6 := &((*(self@1)).buf, copy (@Global0))
+    self@6 := &(*(self@1)).buf
     storage_live(self@12)
-    self@12 := &(((*(self@1)).buf).0, copy (@Global0))
+    self@12 := &((*(self@1)).buf).0
     storage_live(elem_size@13)
     elem_size@13 := size_of<T>
     switch move (elem_size@13) {
@@ -134,7 +134,7 @@ where
     if move (@4) {
         storage_dead(@5)
         storage_live(@8)
-        @8 := &two-phase-mut ((*(self@1)).buf, copy (@Global0))
+        @8 := &two-phase-mut (*(self@1)).buf
         @7 := grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@8))
         storage_dead(@8)
     }
@@ -166,7 +166,7 @@ fn vec<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
     let @2: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
 
     storage_live(@2)
-    @2 := &two-phase-mut (*(x@1), copy (@Global0))
+    @2 := &two-phase-mut *(x@1)
     @0 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@2), const (42 : u32))
     storage_dead(@2)
     @0 := ()

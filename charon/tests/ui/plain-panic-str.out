@@ -33,8 +33,8 @@ fn main()
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("O no")]
-    @3 := &(@4, copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &@4
+    @2 := &*(@3)
     @1 := new_const<'_, 1 : usize>(move (@2))
     storage_dead(@2)
     panic(core::panicking::panic_fmt)

@@ -43,16 +43,16 @@ where
     @6 := copy (b@1)
     if move (@6) {
         storage_live(@7)
-        @7 := &mut (*(x@2), copy (@Global0))
-        @5 := &mut (*(@7), copy (@Global0))
+        @7 := &mut *(x@2)
+        @5 := &mut *(@7)
         storage_dead(@7)
     }
     else {
-        @5 := &mut (*(y@3), copy (@Global0))
+        @5 := &mut *(y@3)
     }
-    @4 := &mut (*(@5), copy (@Global0))
+    @4 := &mut *(@5)
     storage_dead(@6)
-    @0 := &mut (*(@4), copy (@Global0))
+    @0 := &mut *(@4)
     storage_dead(@5)
     storage_dead(@4)
     return
@@ -91,12 +91,12 @@ pub fn choose_test()
     storage_live(z@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := &mut (x@1, copy (@Global0))
-    @4 := &two-phase-mut (*(@5), copy (@Global0))
+    @5 := &mut x@1
+    @4 := &two-phase-mut *(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := &mut (y@2, copy (@Global0))
-    @6 := &two-phase-mut (*(@7), copy (@Global0))
+    @7 := &mut y@2
+    @6 := &two-phase-mut *(@7)
     z@3 := choose<'_, i32>[Sized<i32>](const (true), move (@4), move (@6))
     storage_dead(@6)
     storage_dead(@4)

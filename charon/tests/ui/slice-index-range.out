@@ -475,7 +475,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     storage_live(@7)
     storage_live(@9)
     @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@8 := &(@9, copy (@Global0))
+    pieces@8 := &@9
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
@@ -584,7 +584,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     storage_live(@7)
     storage_live(@9)
     @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@8 := &(@9, copy (@Global0))
+    pieces@8 := &@9
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
@@ -869,7 +869,7 @@ fn main()
     storage_live(slice@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &(array@1, copy (@Global0))
+    @4 := &array@1
     storage_live(@5)
     @5 := Range { start: const (2 : usize), end: const (5 : usize) }
     @3 := {impl Index<I> for Array<T, const N : usize>}::index<'_, i32, Range<usize>[Sized<usize>], 6 : usize>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I> for Slice<T>}<i32, Range<usize>[Sized<usize>]>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}<i32>[Sized<i32>]]](move (@4), move (@5))

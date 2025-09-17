@@ -30,7 +30,7 @@ fn main()
     storage_live(y@1)
     @7 := [const (0 : u8), const (1 : u8), const (2 : u8)]
     @8 := ()
-    @9 := &(@7, move (@8))
+    @9 := &@7
     y@1 := move (@9)
     storage_live(z@2)
     storage_live(@3)

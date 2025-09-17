@@ -48,8 +48,8 @@ fn panic2()
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("O no!")]
-    @3 := &(@4, copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &@4
+    @2 := &*(@3)
     @1 := new_const<'_, 1 : usize>(move (@2))
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
@@ -72,14 +72,14 @@ fn panic3()
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("O no!")]
-    @3 := &(@4, copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &@4
+    @2 := &*(@3)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     @7 := []
-    @6 := &(@7, copy (@Global0))
-    @5 := &(*(@6), copy (@Global0))
+    @6 := &@7
+    @5 := &*(@6)
     @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
     storage_dead(@5)
     storage_dead(@2)
@@ -130,8 +130,8 @@ fn panic5()
         storage_live(@5)
         storage_live(@6)
         @6 := [const ("assert failed")]
-        @5 := &(@6, copy (@Global0))
-        @4 := &(*(@5), copy (@Global0))
+        @5 := &@6
+        @4 := &*(@5)
         @3 := new_const<'_, 1 : usize>(move (@4))
         storage_dead(@4)
         panic(core::panicking::panic_fmt)
@@ -168,14 +168,14 @@ fn panic7()
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("internal error: entered unreachable code: can't reach this")]
-    @3 := &(@4, copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &@4
+    @2 := &*(@3)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     @7 := []
-    @6 := &(@7, copy (@Global0))
-    @5 := &(*(@6), copy (@Global0))
+    @6 := &@7
+    @5 := &*(@6)
     @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
     storage_dead(@5)
     storage_dead(@2)

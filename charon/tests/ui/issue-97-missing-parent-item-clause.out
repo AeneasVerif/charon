@@ -65,7 +65,7 @@ pub fn test(@1: AVLTree<u32>[Sized<u32>])
 
     storage_live(@2)
     storage_live(@3)
-    @3 := &two-phase-mut (tree@1, copy (@Global0))
+    @3 := &two-phase-mut tree@1
     @2 := insert<'_, u32>[Sized<u32>, {impl Ord for u32}](move (@3))
     storage_dead(@3)
     storage_dead(@2)

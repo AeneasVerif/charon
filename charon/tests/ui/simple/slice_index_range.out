@@ -111,7 +111,7 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
     storage_live(@5)
     storage_live(@6)
     @5 := []
-    @4 := &(@5, copy (@Global0))
+    @4 := &@5
     storage_live(@2)
     @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
     storage_live(@3)
@@ -345,13 +345,13 @@ fn slice_end_index_overflow_fail() -> !
     storage_live(@5)
     storage_live(@6)
     @6 := [const ("attempted to index slice up to maximum usize")]
-    @5 := &(@6, copy (@Global0))
+    @5 := &@6
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     @4 := move (@5)
-    @3 := &(*(@4), copy (@Global0))
-    @2 := &(*(@3), copy (@Global0))
+    @3 := &*(@4)
+    @2 := &*(@3)
     @1 := new_const<'_, 1 : usize>(move (@2))
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
@@ -617,11 +617,11 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     else {
     }
     @13 := []
-    @12 := &(@13, copy (@Global0))
+    @12 := &@13
     storage_live(@7)
     storage_live(@9)
     @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@8 := &(@9, copy (@Global0))
+    pieces@8 := &@9
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
@@ -732,11 +732,11 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     else {
     }
     @13 := []
-    @12 := &(@13, copy (@Global0))
+    @12 := &@13
     storage_live(@7)
     storage_live(@9)
     @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@8 := &(@9, copy (@Global0))
+    pieces@8 := &@9
     storage_live(@10)
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
@@ -1049,7 +1049,7 @@ where
     storage_live(@23)
     storage_live(@3)
     storage_live(self@5)
-    self@5 := &(self@1, copy (@Global0))
+    self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
     @3 := copy (self@4) == copy (MAX)
@@ -1174,7 +1174,7 @@ where
     storage_live(@23)
     storage_live(@3)
     storage_live(self@5)
-    self@5 := &(self@1, copy (@Global0))
+    self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
     @3 := copy (self@4) == copy (MAX)
@@ -1409,7 +1409,7 @@ where
     storage_live(self@12)
     storage_live(@3)
     storage_live(self@5)
-    self@5 := &(self@1, copy (@Global0))
+    self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
     @3 := copy (self@4) == copy (MAX)
@@ -1473,7 +1473,7 @@ where
     storage_live(self@12)
     storage_live(@3)
     storage_live(self@5)
-    self@5 := &(self@1, copy (@Global0))
+    self@5 := &self@1
     storage_dead(self@5)
     self@4 := copy ((self@1).end)
     @3 := copy (self@4) == copy (MAX)

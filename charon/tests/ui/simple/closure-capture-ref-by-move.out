@@ -112,12 +112,12 @@ fn foo()
     storage_live(x@1)
     x@1 := const (0 : i32)
     storage_live(rx@2)
-    rx@2 := &mut (x@1, copy (@Global0))
+    rx@2 := &mut x@1
     storage_live(closure@3)
     closure@3 := closure { 0: move (rx@2) }
     storage_live(@4)
     storage_live(@5)
-    @5 := &mut (closure@3, copy (@Global0))
+    @5 := &mut closure@3
     storage_live(@6)
     @6 := ()
     @4 := {impl FnMut<()> for closure<'_0>}::call_mut<'_, '_>(move (@5), move (@6))
@@ -141,7 +141,7 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
     let @3: &'_ mut (closure<'_0>); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move (@3), move (@2))
     drop[Drop<closure<'_0>>] @1
     @0 := ()

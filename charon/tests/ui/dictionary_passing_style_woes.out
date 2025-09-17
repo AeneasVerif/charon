@@ -173,7 +173,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     storage_live(@2)
-    @2 := &(x@1, copy (@Global0))
+    @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
     drop[Drop<T>] x@1
@@ -191,7 +191,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     storage_live(@2)
-    @2 := &(x@1, copy (@Global0))
+    @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
     drop[Drop<T>] x@1

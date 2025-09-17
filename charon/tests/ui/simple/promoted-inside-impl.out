@@ -46,10 +46,10 @@ where
     storage_live(@3)
     storage_live(@4)
     @4 := const (0 : i32)
-    @3 := &(@4, copy (@Global0))
+    @3 := &@4
     storage_live(_promoted@1)
     @2 := move (@3)
-    _promoted@1 := &(*(@2), copy (@Global0))
+    _promoted@1 := &*(@2)
     @0 := ()
     storage_dead(_promoted@1)
     @0 := ()

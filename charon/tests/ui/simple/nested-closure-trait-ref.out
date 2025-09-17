@@ -198,7 +198,7 @@ where
     let @3: &'_ (T); // anonymous local
 
     storage_live(@3)
-    @3 := &((*(@1)).0, copy (@Global0))
+    @3 := &(*(@1)).0
     @0 := @TraitClause1::clone<'_>(move (@3))
     storage_dead(@3)
     return
@@ -216,7 +216,7 @@ where
     let @3: &'_ (test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]); // anonymous local
 
     storage_live(@3)
-    @3 := &(*(state@1), copy (@Global0))
+    @3 := &*(state@1)
     @0 := {impl Fn<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
     return
 }
@@ -233,7 +233,7 @@ where
     let @3: &'_ mut (test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]); // anonymous local
 
     storage_live(@3)
-    @3 := &mut (@1, copy (@Global0))
+    @3 := &mut @1
     @0 := {impl FnMut<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
     drop[Drop<test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]>] @1
     return

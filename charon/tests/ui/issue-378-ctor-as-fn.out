@@ -94,7 +94,7 @@ fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut (Foo))
     let @2: &'_ mut (Foo); // anonymous local
 
     storage_live(@2)
-    @2 := &mut (*(@1), copy (@Global0))
+    @2 := &mut *(@1)
     drop[{impl Drop for String}] (*(@2)).1
     @0 := ()
     return
@@ -202,8 +202,8 @@ fn main()
     storage_live(@16)
     storage_live(@17)
     @17 := const (42 : i32)
-    @16 := &(@17, copy (@Global0))
-    @15 := &(*(@16), copy (@Global0))
+    @16 := &@17
+    @15 := &*(@16)
     @13 := Variant<'_, i32>[Sized<i32>](move (@15))
     storage_dead(@15)
     storage_dead(@14)
