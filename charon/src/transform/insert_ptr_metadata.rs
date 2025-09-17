@@ -154,9 +154,8 @@ fn get_ptr_metadata_aux<T: BodyTransformCtxWithParams>(
 /// No metadata, use unit, but as const ADT (for `()`) is not allowed
 /// Introduce a new local to hold this
 fn no_metadata<T: BodyTransformCtx>(ctx: &mut T) -> Operand {
-    let new_place = ctx.fresh_var(None, Ty::mk_unit());
-    ctx.insert_assn_stmt(new_place.clone(), Rvalue::unit_value());
-    Operand::Move(new_place)
+    let unit_meta = ctx.get_ctx().translated.unit_metadata.clone().unwrap();
+    Operand::Copy(Place::new_global(unit_meta, Ty::mk_unit()))
 }
 
 /// When a place is to be referred to as a reference or a raw pointer, we compute the metadata required

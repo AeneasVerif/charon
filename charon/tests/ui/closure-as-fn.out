@@ -83,6 +83,16 @@ pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) ->
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::main::closure
 struct closure {}
 
@@ -109,12 +119,9 @@ fn {impl FnMut<()> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: ())
     let state@1: &'_0 mut (closure); // arg #1
     let args@2: (); // arg #2
     let @3: &'_ (closure); // anonymous local
-    let @4: (); // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    @4 := ()
-    @3 := &(*(state@1), move (@4))
+    @3 := &(*(state@1), copy (@Global0))
     @0 := {impl Fn<()> for closure}::call<'_>(move (@3), move (args@2))
     @0 := ()
     return
@@ -127,12 +134,9 @@ fn {impl FnOnce<()> for closure}::call_once(@1: closure, @2: ())
     let @1: closure; // arg #1
     let @2: (); // arg #2
     let @3: &'_ mut (closure); // anonymous local
-    let @4: (); // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    @4 := ()
-    @3 := &mut (@1, move (@4))
+    @3 := &mut (@1, copy (@Global0))
     @0 := {impl FnMut<()> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
     @0 := ()

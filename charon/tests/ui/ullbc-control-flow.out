@@ -547,6 +547,18 @@ where
     vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    bb0: {
+        @0 := ();
+        return;
+    }
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::nested_loops_enum
 pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 {
@@ -587,12 +599,6 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @34: (); // anonymous local
     let @35: bool; // anonymous local
     let @36: usize; // anonymous local
-    let @37: (); // anonymous local
-    let @38: (); // anonymous local
-    let @39: (); // anonymous local
-    let @40: (); // anonymous local
-    let @41: (); // anonymous local
-    let @42: (); // anonymous local
 
     bb0: {
         storage_live(@12);
@@ -625,12 +631,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@9);
         storage_live(@10);
         storage_live(@11);
-        storage_live(@38);
-        @38 := ();
-        @11 := &mut (iter@7, move (@38));
-        storage_live(@37);
-        @37 := ();
-        @10 := &two-phase-mut (*(@11), move (@37));
+        @11 := &mut (iter@7, copy (@Global0));
+        @10 := &two-phase-mut (*(@11), copy (@Global0));
         @9 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[Sized<i32>, {impl Step for i32}](move (@10)) -> bb4 (unwind: bb2);
     }
 
@@ -682,12 +684,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@20);
         storage_live(@21);
         storage_live(@22);
-        storage_live(@40);
-        @40 := ();
-        @22 := &mut (iter@18, move (@40));
-        storage_live(@39);
-        @39 := ();
-        @21 := &two-phase-mut (*(@22), move (@39));
+        @22 := &mut (iter@18, copy (@Global0));
+        @21 := &two-phase-mut (*(@22), copy (@Global0));
         @20 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@21)) -> bb10 (unwind: bb2);
     }
 
@@ -736,12 +734,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@29);
         storage_live(@30);
         storage_live(@31);
-        storage_live(@42);
-        @42 := ();
-        @31 := &mut (iter@27, move (@42));
-        storage_live(@41);
-        @41 := ();
-        @30 := &two-phase-mut (*(@31), move (@41));
+        @31 := &mut (iter@27, copy (@Global0));
+        @30 := &two-phase-mut (*(@31), copy (@Global0));
         @29 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@30)) -> bb16 (unwind: bb2);
     }
 

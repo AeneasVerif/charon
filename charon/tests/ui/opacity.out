@@ -111,6 +111,16 @@ where
     return
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::foo
 fn foo()
 {
@@ -123,17 +133,12 @@ fn foo()
     let @6: &'_ (i32); // anonymous local
     let @7: &'_ (i32); // anonymous local
     let @8: i32; // anonymous local
-    let @9: (); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     @3 := Option::Some { 0: const (0 : i32) }
-    storage_live(@9)
-    @9 := ()
-    @2 := &(@3, move (@9))
+    @2 := &(@3, copy (@Global0))
     @1 := is_some<'_, i32>[Sized<i32>](move (@2))
     storage_dead(@2)
     storage_dead(@3)
@@ -146,12 +151,8 @@ fn foo()
     storage_live(@7)
     storage_live(@8)
     @8 := const (0 : i32)
-    storage_live(@11)
-    @11 := ()
-    @7 := &(@8, move (@11))
-    storage_live(@10)
-    @10 := ()
-    @6 := &(*(@7), move (@10))
+    @7 := &(@8, copy (@Global0))
+    @6 := &(*(@7), copy (@Global0))
     @5 := from_ref<'_, i32>[Sized<i32>](move (@6))
     storage_dead(@6)
     storage_dead(@8)

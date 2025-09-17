@@ -79,6 +79,16 @@ pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: Sized<T>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::function_call
 fn function_call(@1: u32)
 {
@@ -358,15 +368,8 @@ fn foo()
     let @31: &'_ (u32); // anonymous local
     let @32: &'_ (u32); // anonymous local
     let @33: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
-    let @34: (); // anonymous local
-    let @35: (); // anonymous local
-    let @36: (); // anonymous local
-    let @37: (); // anonymous local
-    let @38: (); // anonymous local
-    let @39: (); // anonymous local
-    let @40: (); // anonymous local
-    let @41: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @42: &'_ (u32); // anonymous local
+    let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @35: &'_ (u32); // anonymous local
 
     storage_live(kind@27)
     storage_live(@28)
@@ -375,10 +378,6 @@ fn foo()
     storage_live(@31)
     storage_live(@32)
     storage_live(@33)
-    storage_live(@36)
-    storage_live(@37)
-    storage_live(@38)
-    storage_live(@39)
     storage_live(@3)
     // Call `default` and destructure the result
     @3 := {impl Default for Foo}::default()
@@ -432,21 +431,15 @@ fn foo()
     storage_live(@19)
     // `assert_eq`
     @19 := const (9 : usize)
+    storage_live(@34)
+    @34 := &(a@15, const (@Global0))
     storage_live(@35)
-    @35 := ()
-    storage_live(@40)
-    @40 := ()
-    storage_live(@41)
-    @41 := &(a@15, move (@40))
-    storage_live(@42)
-    @42 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@41), copy (@19))
-    @18 := &(*(@42), move (@35))
+    @35 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@34), copy (@19))
+    @18 := &(*(@35), copy (@Global0))
     storage_live(@20)
     storage_live(@21)
     @21 := const (9 : u32)
-    storage_live(@34)
-    @34 := ()
-    @20 := &(@21, move (@34))
+    @20 := &(@21, copy (@Global0))
     @17 := (move (@18), move (@20))
     storage_dead(@20)
     storage_dead(@18)
@@ -471,20 +464,12 @@ fn foo()
         @28 := move (kind@27)
         storage_live(@29)
         storage_live(@30)
-        storage_live(@39)
-        @39 := ()
-        @30 := &(*(left_val@22), move (@39))
-        storage_live(@38)
-        @38 := ()
-        @29 := &(*(@30), move (@38))
+        @30 := &(*(left_val@22), copy (@Global0))
+        @29 := &(*(@30), copy (@Global0))
         storage_live(@31)
         storage_live(@32)
-        storage_live(@37)
-        @37 := ()
-        @32 := &(*(right_val@23), move (@37))
-        storage_live(@36)
-        @36 := ()
-        @31 := &(*(@32), move (@36))
+        @32 := &(*(right_val@23), copy (@Global0))
+        @31 := &(*(@32), copy (@Global0))
         storage_live(@33)
         @33 := Option::None {  }
         panic(core::panicking::assert_failed)

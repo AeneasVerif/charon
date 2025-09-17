@@ -16,6 +16,16 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
 // Full name: core::fmt::rt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::panic1
 fn panic1()
 {
@@ -32,20 +42,14 @@ fn panic2()
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @5: (); // anonymous local
-    let @6: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("O no!")]
-    storage_live(@6)
-    @6 := ()
-    @3 := &(@4, move (@6))
-    storage_live(@5)
-    @5 := ()
-    @2 := &(*(@3), move (@5))
+    @3 := &(@4, copy (@Global0))
+    @2 := &(*(@3), copy (@Global0))
     @1 := new_const<'_, 1 : usize>(move (@2))
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
@@ -62,32 +66,20 @@ fn panic3()
     let @5: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @8: (); // anonymous local
-    let @9: (); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("O no!")]
-    storage_live(@11)
-    @11 := ()
-    @3 := &(@4, move (@11))
-    storage_live(@10)
-    @10 := ()
-    @2 := &(*(@3), move (@10))
+    @3 := &(@4, copy (@Global0))
+    @2 := &(*(@3), copy (@Global0))
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     @7 := []
-    storage_live(@9)
-    @9 := ()
-    @6 := &(@7, move (@9))
-    storage_live(@8)
-    @8 := ()
-    @5 := &(*(@6), move (@8))
+    @6 := &(@7, copy (@Global0))
+    @5 := &(*(@6), copy (@Global0))
     @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
     storage_dead(@5)
     storage_dead(@2)
@@ -122,15 +114,11 @@ fn panic5()
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @7: (); // anonymous local
-    let @8: (); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
     storage_live(@1)
     storage_live(@2)
     @2 := const (false)
@@ -142,12 +130,8 @@ fn panic5()
         storage_live(@5)
         storage_live(@6)
         @6 := [const ("assert failed")]
-        storage_live(@8)
-        @8 := ()
-        @5 := &(@6, move (@8))
-        storage_live(@7)
-        @7 := ()
-        @4 := &(*(@5), move (@7))
+        @5 := &(@6, copy (@Global0))
+        @4 := &(*(@5), copy (@Global0))
         @3 := new_const<'_, 1 : usize>(move (@4))
         storage_dead(@4)
         panic(core::panicking::panic_fmt)
@@ -178,32 +162,20 @@ fn panic7()
     let @5: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @8: (); // anonymous local
-    let @9: (); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := [const ("internal error: entered unreachable code: can't reach this")]
-    storage_live(@11)
-    @11 := ()
-    @3 := &(@4, move (@11))
-    storage_live(@10)
-    @10 := ()
-    @2 := &(*(@3), move (@10))
+    @3 := &(@4, copy (@Global0))
+    @2 := &(*(@3), copy (@Global0))
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     @7 := []
-    storage_live(@9)
-    @9 := ()
-    @6 := &(@7, move (@9))
-    storage_live(@8)
-    @8 := ()
-    @5 := &(*(@6), move (@8))
+    @6 := &(@7, copy (@Global0))
+    @5 := &(*(@6), copy (@Global0))
     @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
     storage_dead(@5)
     storage_dead(@2)

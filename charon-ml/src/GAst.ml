@@ -53,5 +53,6 @@ type 'fun_body gcrate = {
   global_decls : global_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
+  unit_metadata : global_decl_ref;
 }
 [@@deriving show]

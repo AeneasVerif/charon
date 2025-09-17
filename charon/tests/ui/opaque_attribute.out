@@ -22,6 +22,16 @@ where
   Some(T),
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::BoolTrait
 pub trait BoolTrait<Self>
 {
@@ -61,25 +71,17 @@ where
     let self@1: &'_ (Option<T>[@TraitClause0]); // arg #1
     let x@2: &'_ (T); // local
     let @3: &'_ (T); // anonymous local
-    let @4: (); // anonymous local
-    let @5: (); // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
     match *(self@1) {
         Option::None => {
         },
         Option::Some => {
             storage_live(x@2)
-            storage_live(@5)
-            @5 := ()
-            x@2 := &((*(self@1) as variant Option::Some).0, move (@5))
+            x@2 := &((*(self@1) as variant Option::Some).0, copy (@Global0))
             storage_live(@3)
-            storage_live(@4)
-            @4 := ()
-            @3 := &(*(x@2), move (@4))
+            @3 := &(*(x@2), copy (@Global0))
             @0 := @TraitClause1::get_bool<'_>(move (@3))
             storage_dead(@3)
             storage_dead(x@2)

@@ -16,7 +16,7 @@ impl PathElem {
 impl Name {
     /// Convert a path like `["std", "alloc", "Box"]` to a name. Needed on occasion when crafting
     /// names that were not present in the original code.
-    pub(crate) fn from_path(path: &[&str]) -> Name {
+    pub fn from_path(path: &[&str]) -> Name {
         Name {
             name: path
                 .iter()

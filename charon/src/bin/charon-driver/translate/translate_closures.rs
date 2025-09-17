@@ -467,10 +467,7 @@ impl ItemTransCtx<'_, '_> {
                     })),
                 });
 
-                let mut locals = Locals {
-                    arg_count: 2,
-                    locals: Vector::new(),
-                };
+                let mut locals = Locals::new(2);
                 let mut statements = vec![];
                 let mut blocks = Vector::default();
 
@@ -721,10 +718,7 @@ impl ItemTransCtx<'_, '_> {
                 generics: impl_ref.generics.clone(),
             });
 
-            let mut locals = Locals {
-                arg_count: signature.inputs.len(),
-                locals: Vector::new(),
-            };
+            let mut locals = Locals::new(signature.inputs.len());
             let mut statements = vec![];
             let mut blocks = Vector::default();
 

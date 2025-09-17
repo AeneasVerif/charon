@@ -43,6 +43,13 @@ impl Body {
 }
 
 impl Locals {
+    pub fn new(arg_count: usize) -> Self {
+        Self {
+            arg_count,
+            locals: Default::default(),
+        }
+    }
+
     /// Creates a new variable and returns a place pointing to it.
     pub fn new_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         let local_id = self.locals.push_with(|index| Local {
