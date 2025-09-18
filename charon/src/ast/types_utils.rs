@@ -1103,6 +1103,7 @@ pub trait TyVisitable: Sized + AstVisitable {
         });
     }
 
+    /// Substitutes all bound variables with the corresponding arguments.
     fn substitute(self, generics: &GenericArgs) -> Self {
         self.substitute_with_self(generics, &TraitRefKind::SelfId)
     }
@@ -1112,6 +1113,7 @@ pub trait TyVisitable: Sized + AstVisitable {
         self
     }
 
+    /// Same as [`TyVisitable::substitute`], but also substitutes free variables.
     fn substitute_frees(self, generics: &GenericArgs) -> Self {
         self.substitute_with_self_frees(generics, &TraitRefKind::SelfId)
     }
