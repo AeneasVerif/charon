@@ -368,7 +368,6 @@ pub struct Layout {
     #[drive(skip)]
     pub align: Option<ByteCount>,
     /// The discriminant's layout, if any. Only relevant for types with multiple variants.
-    ///
     #[drive(skip)]
     pub discriminant_layout: Option<DiscriminantLayout>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
@@ -400,6 +399,24 @@ pub enum PtrMetadata {
     /// Metadata for `dyn Trait` and user-defined types
     /// that directly or indirectly contain a `dyn Trait`.
     VTable(VTable),
+}
+
+/// The representation options as annotated by the user.
+///
+/// If all are false/None, then this is equivalent to `#[repr(Rust)]`.
+/// Some combinations are ruled out by the compiler, e.g. align and pack.
+///
+/// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
+/// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
+/// are encoded in [`Variant::discriminant`] and [`DiscriminantLayout`] instead.
+/// This only stores whether the discriminant type was derived from an explicit annotation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReprOptions {
+    pub align: Option<ByteCount>,
+    pub pack: Option<ByteCount>,
+    pub c: bool,
+    pub transparent: bool,
+    pub explicit_discr_type: bool,
 }
 
 /// A type declaration.
@@ -436,6 +453,10 @@ pub struct TypeDecl {
     ///     but due to some limitation to be fixed, we are unable to obtain the info.
     /// See `translate_types::{impl ItemTransCtx}::translate_ptr_metadata` for more details.
     pub ptr_metadata: Option<PtrMetadata>,
+    /// The representation options of this type declaration as annotated by the user.
+    /// Is `None` for foreign type declarations.
+    #[drive(skip)]
+    pub repr: Option<ReprOptions>,
 }
 
 generate_index_type!(VariantId, "Variant");
@@ -469,8 +490,8 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
-    /// The discriminant value outputted by `std::mem::discriminant` for this variant. This is
-    /// different than the discriminant stored in memory (the one controlled by `repr`).
+    /// The discriminant value outputted by `std::mem::discriminant` for this variant.
+    /// This can be different than the discriminant stored in memory (called `tag`).
     /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: ScalarValue,
 }
