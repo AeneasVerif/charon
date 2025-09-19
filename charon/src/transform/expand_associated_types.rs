@@ -1163,8 +1163,8 @@ impl VisitAstMut for UpdateItemBody<'_> {
             ItemKind::TopLevel
             | ItemKind::Closure { .. }
             | ItemKind::VTableTy { .. }
-            | ItemKind::VTableInstance { .. } => {}
-            // Inside method declarations, the implicit `Self` clause is the first clause.
+            | ItemKind::VTableInstance { .. }
+            | ItemKind::VTableMethodShim => {}
             ItemKind::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,
                 TraitRefKind::Clause(DeBruijnVar::new_at_zero(TraitClauseId::ZERO)),

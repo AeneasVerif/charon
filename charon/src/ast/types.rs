@@ -194,7 +194,9 @@ pub type BoxedArgs = Box<GenericArgs>;
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
 /// TODO: merge with `binder`
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     pub regions: Vector<RegionId, RegionVar>,
@@ -204,7 +206,9 @@ pub struct RegionBinder<T> {
     pub skip_binder: T,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 #[charon::variants_prefix("BK")]
 pub enum BinderKind {
     /// The parameters of a generic associated type.
@@ -260,7 +264,9 @@ pub struct GenericParams {
 }
 
 /// Where a given predicate came from.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, PartialOrd, Ord,
+)]
 pub enum PredicateOrigin {
     // Note: we use this for globals too, but that's only available with an unstable feature.
     // ```
@@ -696,6 +702,8 @@ pub enum LiteralTy {
     Drive,
     DriveMut,
     Hash,
+    PartialOrd,
+    Ord,
 )]
 #[charon::variants_prefix("Cg")]
 pub enum ConstGeneric {

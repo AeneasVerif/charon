@@ -87,7 +87,7 @@ wait-timeout = { version = "0.2.0", optional = true }
 which = "7.0"
 
 hax = { package = "hax-frontend-exporter", git = "https://github.com/AeneasVerif/hax", branch = "main", optional = true }
-# hax = { package = "hax-frontend-exporter", path = "../../hax/frontend/exporter", optional = true }
+# hax = { package = "hax-frontend-exporter", path = "../hax-dev/frontend/exporter", optional = true }
 macros = { path = "./macros" }
 
 [features]

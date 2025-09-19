@@ -64,6 +64,21 @@ impl BaseOn<i64> for i32 {
 impl Both32And64 for i32 {}
 trait Alias = Both32And64;
 
+trait LifetimeTrait {
+    type Ty;
+    fn lifetime_method<'a>(&self, arg: &'a Self::Ty) -> &'a Self::Ty;
+}
+impl LifetimeTrait for i32 {
+    type Ty = i32;
+    fn lifetime_method<'a>(&self, arg: &'a Self::Ty) -> &'a Self::Ty {
+        assert!(*self > *arg);
+        arg
+    }
+}
+fn use_lifetime_trait<'a>(x: &dyn LifetimeTrait<Ty = i32>, y: &'a i32) -> &'a i32 {
+    x.lifetime_method(y)
+}
+
 fn use_alias(x: &dyn Alias) {
     x.both_operate(&100, &200);
 }

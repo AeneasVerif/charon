@@ -750,6 +750,7 @@ and item_kind =
 
           Fields:
           - [impl_ref] *)
+  | VTableMethodShimItem
 
 (** Meta information about an item (function, trait decl, trait impl, type decl,
     global). *)
