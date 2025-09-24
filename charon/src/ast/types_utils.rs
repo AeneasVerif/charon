@@ -947,11 +947,11 @@ pub trait TyVisitable: Sized + AstVisitable {
                 }
             }
             fn exit_constant_expr(&mut self, ce: &mut ConstantExpr) {
-                if let ConstantExprKind::Var(var) = &mut ce.value
+                if let ConstantExprKind::Var(var) = &mut ce.kind
                     && let Some(var) = var.move_out_from_depth(self.depth)
                     && let Some(new_cg) = self.v.visit_const_generic_var(var)
                 {
-                    ce.value = new_cg.move_under_binders(self.depth).into();
+                    ce.kind = new_cg.move_under_binders(self.depth).into();
                 }
             }
             fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {

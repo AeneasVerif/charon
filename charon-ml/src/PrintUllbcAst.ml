@@ -60,7 +60,7 @@ module Ast = struct
 
   let rec terminator_to_string (env : fmt_env) (indent : string)
       (st : terminator) : string =
-    terminator_kind_to_string env indent st.content
+    terminator_kind_to_string env indent st.kind
 
   and terminator_kind_to_string (env : fmt_env) (indent : string)
       (st : terminator_kind) : string =

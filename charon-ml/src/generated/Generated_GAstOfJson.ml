@@ -522,10 +522,10 @@ and constant_expr_of_json (ctx : of_json_ctx) (js : json) :
     (constant_expr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("value", value); ("ty", ty) ] ->
-        let* value = constant_expr_kind_of_json ctx value in
+    | `Assoc [ ("kind", kind); ("ty", ty) ] ->
+        let* kind = constant_expr_kind_of_json ctx kind in
         let* ty = ty_of_json ctx ty in
-        Ok ({ value; ty } : constant_expr)
+        Ok ({ kind; ty } : constant_expr)
     | _ -> Error "")
 
 and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :

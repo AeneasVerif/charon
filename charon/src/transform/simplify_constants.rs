@@ -29,7 +29,7 @@ fn transform_constant_expr(
     val: Box<ConstantExpr>,
     new_var: &mut impl FnMut(Rvalue, Ty) -> Place,
 ) -> Operand {
-    match val.value {
+    match val.kind {
         ConstantExprKind::Literal(_)
         | ConstantExprKind::Var(_)
         | ConstantExprKind::RawMemory(..)
@@ -61,7 +61,7 @@ fn transform_constant_expr(
                 Rvalue::UnaryOp(
                     cast,
                     Operand::Const(Box::new(ConstantExpr {
-                        value: ptr_usize,
+                        kind: ptr_usize,
                         ty: usize_ty,
                     })),
                 ),
@@ -70,7 +70,7 @@ fn transform_constant_expr(
             Operand::Move(uvar)
         }
         ConstantExprKind::Ref(bval) => {
-            match bval.value {
+            match bval.kind {
                 ConstantExprKind::Global(global_ref) => Operand::Move(new_var(
                     Rvalue::Ref(Place::new_global(global_ref, bval.ty), BorrowKind::Shared),
                     val.ty,
@@ -91,7 +91,7 @@ fn transform_constant_expr(
             }
         }
         ConstantExprKind::Ptr(rk, bval) => {
-            match bval.value {
+            match bval.kind {
                 ConstantExprKind::Global(global_ref) => Operand::Move(new_var(
                     Rvalue::RawPtr(Place::new_global(global_ref, bval.ty), rk),
                     val.ty,

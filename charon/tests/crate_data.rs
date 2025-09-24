@@ -103,11 +103,7 @@ fn spans() -> anyhow::Result<()> {
     // Span of the function body
     assert_eq!(repr_span(body.span), "3:16-10:9");
 
-    let the_loop = body
-        .statements
-        .iter()
-        .find(|st| st.kind.is_loop())
-        .unwrap();
+    let the_loop = body.statements.iter().find(|st| st.kind.is_loop()).unwrap();
     assert_eq!(repr_span(the_loop.span), "5:12-8:13");
 
     Ok(())

@@ -566,7 +566,7 @@ pub enum ConstantExprKind {
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ConstantExpr {
-    pub value: ConstantExprKind,
+    pub kind: ConstantExprKind,
     pub ty: Ty,
 }
 

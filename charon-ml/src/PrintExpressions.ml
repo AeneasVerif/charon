@@ -124,7 +124,7 @@ and binop_to_string (binop : binop) : string =
   | Offset -> "offset"
 
 and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
-  match cv.value with
+  match cv.kind with
   | CLiteral lit ->
       "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
   | CVar var -> const_generic_db_var_to_string env var

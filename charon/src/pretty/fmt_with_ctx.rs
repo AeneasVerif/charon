@@ -302,7 +302,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ClauseDbVar {
 impl_display_via_ctx!(ConstantExpr);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value.with_ctx(ctx))
+        write!(f, "{}", self.kind.with_ctx(ctx))
     }
 }
 
@@ -1489,7 +1489,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             writeln!(f, "{tab}// {line}")?;
         }
         write!(f, "{tab}")?;
-        match &self.content {
+        match &self.kind {
             TerminatorKind::Goto { target } => write!(f, "goto bb{target}"),
             TerminatorKind::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => write!(

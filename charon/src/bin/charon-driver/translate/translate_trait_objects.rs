@@ -609,7 +609,7 @@ impl ItemTransCtx<'_, '_> {
                         .erase()
                         .expect("parent trait should be dyn compatible");
                     let global = Box::new(ConstantExpr {
-                        value: ConstantExprKind::Global(vtable_instance_ref),
+                        kind: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,
                     });
                     ConstantExprKind::Ref(global)
@@ -676,7 +676,7 @@ impl ItemTransCtx<'_, '_> {
         let mut field_ty_iter = field_tys.into_iter();
         let mut mk_field = |kind| {
             let ty = field_ty_iter.next().unwrap();
-            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { value: kind, ty })));
+            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
         };
 
         // TODO(dyn): provide values

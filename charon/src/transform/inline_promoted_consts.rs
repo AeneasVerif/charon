@@ -38,7 +38,7 @@ impl UllbcPass for Transform {
                     let mut new_blocks = vec![];
                     block.dyn_visit_in_body_mut(|op: &mut Operand| {
                         if let Operand::Const(c) = op
-                            && let ConstantExprKind::Global(gref) = &mut c.value
+                            && let ConstantExprKind::Global(gref) = &mut c.kind
                             && let Some(inner_body) = anon_consts.get(&gref.id)
                         {
                             // We inline the required body by shifting its local ids and block ids
@@ -62,8 +62,8 @@ impl UllbcPass for Transform {
                             // it will either be the start block of another inner body, or the
                             // current outer block that we'll push at the end.
                             inner_body.body.dyn_visit_in_body_mut(|t: &mut Terminator| {
-                                if let TerminatorKind::Return = t.content {
-                                    t.content = TerminatorKind::Goto { target: end_block };
+                                if let TerminatorKind::Return = t.kind {
+                                    t.kind = TerminatorKind::Goto { target: end_block };
                                 }
                             });
 

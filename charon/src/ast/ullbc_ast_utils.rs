@@ -32,10 +32,10 @@ impl Statement {
 }
 
 impl Terminator {
-    pub fn new(span: Span, content: TerminatorKind) -> Self {
+    pub fn new(span: Span, kind: TerminatorKind) -> Self {
         Terminator {
             span,
-            content,
+            kind,
             comments_before: vec![],
         }
     }
@@ -61,7 +61,7 @@ impl BlockData {
     }
 
     pub fn targets(&self) -> Vec<BlockId> {
-        match &self.terminator.content {
+        match &self.terminator.kind {
             TerminatorKind::Goto { target } => {
                 vec![*target]
             }
@@ -92,7 +92,7 @@ impl BlockData {
 
         // Explore the terminator
         self.terminator
-            .content
+            .kind
             .dyn_visit_in_body_mut(|op: &mut Operand| {
                 f(&self.terminator.span, &mut self.statements, op)
             });

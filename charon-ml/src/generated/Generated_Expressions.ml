@@ -140,7 +140,7 @@ and cast_kind =
       (** Reinterprets the bits of a value of one type as another type, i.e.
           exactly what [[std::mem::transmute]] does. *)
 
-and constant_expr = { value : constant_expr_kind; ty : ty }
+and constant_expr = { kind : constant_expr_kind; ty : ty }
 
 (** A constant expression.
 

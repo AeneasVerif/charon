@@ -71,7 +71,7 @@ impl UllbcPass for Transform {
                             dest: malloc_dest,
                         },
                         on_unwind,
-                } = &candidate_block.terminator.content
+                } = &candidate_block.terminator.kind
                 // The call has two move arguments
                 && let [Operand::Move(arg0), Operand::Move(arg1)] = malloc_args.as_slice()
                 && let [ .., Statement {
@@ -156,7 +156,7 @@ impl UllbcPass for Transform {
                 .get_mut(number_statements - 1)
                 .unwrap()
                 .kind = StatementKind::StorageLive(at_5);
-            first_block.terminator.content = TerminatorKind::Call {
+            first_block.terminator.kind = TerminatorKind::Call {
                 call: Call {
                     func: FnOperand::Regular(FnPtr {
                         func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Builtin(

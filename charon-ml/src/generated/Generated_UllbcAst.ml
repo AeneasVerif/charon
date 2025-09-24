@@ -74,7 +74,7 @@ and blocks = block list
 
 and terminator = {
   span : span;
-  content : terminator_kind;
+  kind : terminator_kind;
   comments_before : string list;  (** Comments that precede this terminator. *)
 }
 
