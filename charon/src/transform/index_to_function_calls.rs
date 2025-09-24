@@ -51,7 +51,7 @@ impl<'a> IndexVisitor<'a> {
             let mut generics = tref.generics.clone();
             generics.regions = [Region::Erased].into();
             FnOperand::Regular(FnPtr {
-                func: Box::new(FnPtrKind::mk_builtin(builtin_fun)),
+                kind: Box::new(FnPtrKind::mk_builtin(builtin_fun)),
                 generics,
             })
         };

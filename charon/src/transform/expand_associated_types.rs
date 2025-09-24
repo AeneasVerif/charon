@@ -1189,7 +1189,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         self.update_item_generics(x.id, &mut x.generics);
     }
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        match x.func.as_ref() {
+        match x.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.update_item_generics(*id, &mut x.generics),
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(trait_ref, method_name, _) => {

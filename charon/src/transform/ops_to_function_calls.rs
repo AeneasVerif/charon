@@ -48,7 +48,7 @@ fn transform_st(s: &mut Statement) {
                     [].into(),
                 );
                 let func = FnOperand::Regular(FnPtr {
-                    func: Box::new(func),
+                    kind: Box::new(func),
                     generics: Box::new(generics),
                 });
                 s.kind = StatementKind::Call(Call {
@@ -71,7 +71,7 @@ fn transform_st(s: &mut Statement) {
                 [].into(),
             );
             let func = FnOperand::Regular(FnPtr {
-                func: Box::new(func),
+                kind: Box::new(func),
                 generics: Box::new(generics),
             });
             s.kind = StatementKind::Call(Call {
@@ -92,7 +92,7 @@ fn transform_st(s: &mut Statement) {
             );
 
             let func = FnOperand::Regular(FnPtr {
-                func: Box::new(func),
+                kind: Box::new(func),
                 generics: Box::new(generics),
             });
             s.kind = StatementKind::Call(Call {

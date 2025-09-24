@@ -361,7 +361,7 @@ impl TryFrom<ItemRef<AnyTransId>> for FnPtr {
     fn try_from(item: ItemRef<AnyTransId>) -> Result<Self, ()> {
         let id: FunId = item.id.try_into()?;
         Ok(FnPtr {
-            func: Box::new(id.into()),
+            kind: Box::new(id.into()),
             generics: item.generics,
         })
     }
@@ -552,7 +552,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
         Ok(bound_generics.map(|generics| FnPtr {
-            func: Box::new(fun_id),
+            kind: Box::new(fun_id),
             generics: Box::new(generics),
         }))
     }

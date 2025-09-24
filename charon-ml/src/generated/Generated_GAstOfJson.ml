@@ -752,10 +752,10 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
 and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("func", func); ("generics", generics) ] ->
-        let* func = box_of_json fn_ptr_kind_of_json ctx func in
+    | `Assoc [ ("kind", kind); ("generics", generics) ] ->
+        let* kind = box_of_json fn_ptr_kind_of_json ctx kind in
         let* generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ func; generics } : fn_ptr)
+        Ok ({ kind; generics } : fn_ptr)
     | _ -> Error "")
 
 and fn_ptr_kind_of_json (ctx : of_json_ctx) (js : json) :

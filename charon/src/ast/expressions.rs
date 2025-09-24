@@ -434,14 +434,14 @@ impl From<FunDeclId> for FnPtrKind {
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash)]
 pub struct FnPtr {
-    pub func: Box<FnPtrKind>,
+    pub kind: Box<FnPtrKind>,
     pub generics: BoxedArgs,
 }
 
 impl From<FunDeclRef> for FnPtr {
     fn from(fn_ref: FunDeclRef) -> Self {
         FnPtr {
-            func: Box::new(fn_ref.id.into()),
+            kind: Box::new(fn_ref.id.into()),
             generics: fn_ref.generics,
         }
     }

@@ -299,7 +299,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         self.assert_matches_item(x.id, &x.generics);
     }
     fn enter_fn_ptr(&mut self, x: &FnPtr) {
-        match x.func.as_ref() {
+        match x.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &x.generics),
             // TODO: check builtin generics.
             FnPtrKind::Fun(FunId::Builtin(_)) => {}

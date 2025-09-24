@@ -306,7 +306,7 @@ and dyn_predicate = {
           this trait in the [dyn Trait] pointer metadata. *)
 }
 
-and fn_ptr = { func : fn_ptr_kind; generics : generic_args }
+and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
 
 and fn_ptr_kind =
   | FunId of fun_id

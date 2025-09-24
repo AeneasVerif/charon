@@ -684,7 +684,7 @@ let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
 
 let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
     (func : T.fn_ptr) : bool =
-  match func.func with
+  match func.kind with
   | FunId (FBuiltin fid) -> (
       let to_name (s : string list) : T.name =
         List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s
@@ -1113,7 +1113,7 @@ let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
   let m = compute_constraints_map params in
   let args = generic_args_to_pattern ctx c m func.generics in
   let pat =
-    match func.func with
+    match func.kind with
     | FunId (FBuiltin fid) -> (
         match fid with
         | BoxNew ->

@@ -159,7 +159,7 @@ impl UllbcPass for Transform {
             first_block.terminator.kind = TerminatorKind::Call {
                 call: Call {
                     func: FnOperand::Regular(FnPtr {
-                        func: Box::new(FnPtrKind::Fun(FunId::Builtin(BuiltinFunId::BoxNew))),
+                        kind: Box::new(FnPtrKind::Fun(FunId::Builtin(BuiltinFunId::BoxNew))),
                         generics: box_generics,
                     }),
                     args: vec![value_to_write],

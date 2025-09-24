@@ -642,7 +642,7 @@ let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
 (* Lookup the signature of a `Ty::FnDef`. *)
 let lookup_fndef_sig (crate : 'a gcrate) (fn_def : fn_ptr region_binder) :
     (ty list * ty) region_binder option =
-  match fn_def.binder_value.func with
+  match fn_def.binder_value.kind with
   | FunId (FRegular fun_decl_id) ->
       let* fun_decl =
         LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls

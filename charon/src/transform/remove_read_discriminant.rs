@@ -152,7 +152,7 @@ impl Transform {
                 ] if let Some(discriminant_intrinsic) = discriminant_intrinsic
                         // Detect a call to the intrinsic...
                         && let FnOperand::Regular(fn_ptr) = &call.func
-                        && let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.func.as_ref()
+                        && let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref()
                         && *fun_id == discriminant_intrinsic
                         // on a known enum...
                         && let ty = &fn_ptr.generics.types[0]

@@ -257,7 +257,7 @@ and fn_ptr_kind_to_string (env : 'a fmt_env) (r : fn_ptr_kind) : string =
 
 and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
   let generics = generic_args_to_string env ptr.generics in
-  fn_ptr_kind_to_string env ptr.func ^ generics
+  fn_ptr_kind_to_string env ptr.kind ^ generics
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with

@@ -145,7 +145,7 @@ impl VisitAst for UsageVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        match fn_ptr.func.as_ref() {
+        match fn_ptr.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.found_use_fn(&id, &fn_ptr.generics),
             FnPtrKind::Trait(t_ref, name, id) => {
                 let Some((trait_impl, impl_gargs)) = self.krate.find_trait_impl_and_gargs(t_ref)
@@ -234,12 +234,12 @@ impl VisitAstMut for SubstVisitor<'_> {
             TyKind::FnDef(binder) => {
                 // erase the FnPtr binder, as we'll monomorphise its content
                 if let FnPtr {
-                    func: box FnPtrKind::Fun(FunId::Regular(id)),
+                    kind: box FnPtrKind::Fun(FunId::Regular(id)),
                     generics,
                 } = binder.clone().erase()
                 {
                     *binder = RegionBinder::empty(FnPtr {
-                        func: Box::new(FnPtrKind::Fun(FunId::Regular(id))),
+                        kind: Box::new(FnPtrKind::Fun(FunId::Regular(id))),
                         generics,
                     });
                 }
@@ -249,7 +249,7 @@ impl VisitAstMut for SubstVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &mut FnPtr) {
-        match fn_ptr.func.as_mut() {
+        match fn_ptr.kind.as_mut() {
             FnPtrKind::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }

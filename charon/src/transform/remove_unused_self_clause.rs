@@ -64,7 +64,7 @@ impl VisitAstMut for RemoveSelfVisitor {
         self.process_item(x.id, &mut x.generics);
     }
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        match x.func.as_ref() {
+        match x.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.process_item(*id, &mut x.generics),
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(..) => {}
