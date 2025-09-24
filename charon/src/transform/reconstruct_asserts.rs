@@ -20,10 +20,7 @@ impl UllbcPass for Transform {
             .body
             .iter_indexed()
             .filter_map(|(bid, block)| {
-                if block
-                    .statements
-                    .iter()
-                    .all(|st| st.content.is_storage_live())
+                if block.statements.iter().all(|st| st.kind.is_storage_live())
                     && let TerminatorKind::Abort(abort) = &block.terminator.content
                 {
                     Some((bid, abort.clone()))

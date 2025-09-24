@@ -10,7 +10,7 @@ type block_id = (BlockId.id[@visitors.opaque])
 
 and statement = {
   span : span;
-  content : statement_kind;
+  kind : statement_kind;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
 

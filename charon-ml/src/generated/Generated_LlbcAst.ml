@@ -14,7 +14,7 @@ and statement = {
       (** Integer uniquely identifying this statement among the statmeents in
           the current body. To simplify things we generate globally-fresh ids
           when creating a new [Statement]. *)
-  content : statement_kind;
+  kind : statement_kind;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
 

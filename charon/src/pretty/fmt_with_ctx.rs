@@ -1308,7 +1308,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
-        match &self.content {
+        match &self.kind {
             StatementKind::Assign(place, rvalue) => write!(
                 f,
                 "{tab}{} := {}",
@@ -1363,7 +1363,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             writeln!(f, "{tab}// {line}")?;
         }
         write!(f, "{tab}")?;
-        match &self.content {
+        match &self.kind {
             StatementKind::Assign(place, rvalue) => {
                 write!(f, "{} := {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
             }

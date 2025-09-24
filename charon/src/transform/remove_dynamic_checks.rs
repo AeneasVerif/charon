@@ -95,7 +95,7 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         len,
                         Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op)),
@@ -103,7 +103,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         is_in_bounds,
                         Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
@@ -111,7 +111,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assert(Assert {
                         cond: Operand::Move(cond),
                         expected: true,
@@ -128,11 +128,11 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [
             Statement {
-                content: StatementKind::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
+                kind: StatementKind::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         len,
                         Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op)),
@@ -140,7 +140,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         is_in_bounds,
                         Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
@@ -148,7 +148,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assert(Assert {
                         cond: Operand::Move(cond),
                         expected: true,
@@ -177,7 +177,7 @@ fn remove_dynamic_checks(
         //   res := -x;
         [
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         is_zero,
                         Rvalue::BinaryOp(BinOp::Eq, y_op, Operand::Const(_zero)),
@@ -185,7 +185,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assert(Assert {
                         cond: Operand::Move(cond),
                         expected: false,
@@ -216,16 +216,15 @@ fn remove_dynamic_checks(
         // by the previous pass for division by zero.
         [
             Statement {
-                content:
-                    StatementKind::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
+                kind: StatementKind::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
                 ..
             },
             Statement {
-                content: StatementKind::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _int_min)),
+                kind: StatementKind::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _int_min)),
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         has_overflow,
                         Rvalue::BinaryOp(
@@ -237,7 +236,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assert(Assert {
                         cond: Operand::Move(cond),
                         expected: false,
@@ -256,11 +255,11 @@ fn remove_dynamic_checks(
         //   res := x {<<,>>} y;
         [
             Statement {
-                content: StatementKind::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), y_op)),
+                kind: StatementKind::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), y_op)),
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         has_overflow,
                         Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lhs), Operand::Const(..)),
@@ -268,7 +267,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assert(Assert {
                         cond: Operand::Move(cond),
                         expected: true,
@@ -305,7 +304,7 @@ fn remove_dynamic_checks(
         //   res := a[y];
         [
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         has_overflow,
                         Rvalue::BinaryOp(BinOp::Lt, y_op, Operand::Const(..)),
@@ -313,7 +312,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                content:
+                kind:
                     StatementKind::Assert(Assert {
                         cond: Operand::Move(cond),
                         expected: true,
@@ -363,7 +362,7 @@ fn remove_dynamic_checks(
         // without assert. In that case we replace it with its wrapping equivalent.
         [
             Statement {
-                content:
+                kind:
                     StatementKind::Assign(
                         tuple,
                         Rvalue::BinaryOp(
@@ -400,7 +399,7 @@ fn remove_dynamic_checks(
             // Check if the operation is followed by an assert.
             let followed_by_assert = if let [
                 Statement {
-                    content:
+                    kind:
                         StatementKind::Assert(Assert {
                             cond: Operand::Move(assert_cond),
                             expected: false,
@@ -429,7 +428,7 @@ fn remove_dynamic_checks(
                 // panic-on-overflow semantics.
                 *binop = binop.with_overflow(OverflowMode::Panic);
                 // The failure behavior is part of the binop now, so we remove the assert.
-                rest[0].content = StatementKind::Nop;
+                rest[0].kind = StatementKind::Nop;
             } else {
                 // The tuple is used exclusively to access the integer result, so we replace the
                 // operation with wrapping semantics.
@@ -462,7 +461,7 @@ fn remove_dynamic_checks(
     // Remove the statements we're not keeping.
     let keep_len = statements_to_keep.len();
     for i in 0..statements.len() - keep_len {
-        statements[i].content = StatementKind::Nop;
+        statements[i].kind = StatementKind::Nop;
     }
 }
 

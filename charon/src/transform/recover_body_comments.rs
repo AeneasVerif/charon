@@ -79,7 +79,7 @@ impl TransformPass for Transform {
                             for st in &mut block.statements {
                                 // Many assignments have a `storage_live` before them; we don't
                                 // want to put the comment there.
-                                if !st.content.is_storage_live() {
+                                if !st.kind.is_storage_live() {
                                     ctx.visit(st);
                                 }
                             }
@@ -87,7 +87,7 @@ impl TransformPass for Transform {
                         }
                     }
                     Body::Structured(b) => b.body.visit_statements(|st| {
-                        if !st.content.is_storage_live() {
+                        if !st.kind.is_storage_live() {
                             ctx.visit(st);
                         }
                     }),

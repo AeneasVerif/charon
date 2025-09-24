@@ -1454,7 +1454,7 @@ fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Bl
 
 fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
-    let st = match st.content.clone() {
+    let st = match st.kind.clone() {
         src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
         src::StatementKind::SetDiscriminant(place, variant_id) => {
             tgt::StatementKind::SetDiscriminant(place, variant_id)

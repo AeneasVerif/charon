@@ -69,11 +69,11 @@ impl StatementId {
 }
 
 impl Statement {
-    pub fn new(span: Span, content: StatementKind) -> Self {
+    pub fn new(span: Span, kind: StatementKind) -> Self {
         Statement {
             span,
             id: StatementId::fresh(),
-            content,
+            kind,
             comments_before: vec![],
         }
     }

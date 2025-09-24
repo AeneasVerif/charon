@@ -8,7 +8,7 @@ use crate::transform::TransformCtx;
 use super::ctx::LlbcPass;
 
 fn transform_st(s: &mut Statement) {
-    match &s.content {
+    match &s.kind {
         // Transform the ArrayToSlice unop
         StatementKind::Assign(
             p,
@@ -51,7 +51,7 @@ fn transform_st(s: &mut Statement) {
                     func: Box::new(func),
                     generics: Box::new(generics),
                 });
-                s.content = StatementKind::Call(Call {
+                s.kind = StatementKind::Call(Call {
                     func,
                     args: vec![op.clone()],
                     dest: p.clone(),
@@ -74,7 +74,7 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = StatementKind::Call(Call {
+            s.kind = StatementKind::Call(Call {
                 func,
                 args: vec![op.clone()],
                 dest: p.clone(),
@@ -95,7 +95,7 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = StatementKind::Call(Call {
+            s.kind = StatementKind::Call(Call {
                 func,
                 args: ops.clone(),
                 dest: p.clone(),

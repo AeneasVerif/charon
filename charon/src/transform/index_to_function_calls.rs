@@ -304,7 +304,7 @@ impl LlbcPass for Transform {
                 span: st.span,
             };
             use StatementKind::*;
-            match &mut st.content {
+            match &mut st.kind {
                 Assign(..)
                 | SetDiscriminant(..)
                 | CopyNonOverlapping(_)

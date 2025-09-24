@@ -22,10 +22,10 @@ impl SwitchTargets {
 }
 
 impl Statement {
-    pub fn new(span: Span, content: StatementKind) -> Self {
+    pub fn new(span: Span, kind: StatementKind) -> Self {
         Statement {
             span,
-            content,
+            kind,
             comments_before: vec![],
         }
     }
@@ -84,7 +84,7 @@ impl BlockData {
     ) {
         // Explore the operands in the statements
         for mut st in mem::take(&mut self.statements) {
-            st.content
+            st.kind
                 .dyn_visit_in_body_mut(|op: &mut Operand| f(&st.span, &mut self.statements, op));
             // Add the statement to the vector of statements
             self.statements.push(st)

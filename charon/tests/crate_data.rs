@@ -106,7 +106,7 @@ fn spans() -> anyhow::Result<()> {
     let the_loop = body
         .statements
         .iter()
-        .find(|st| st.content.is_loop())
+        .find(|st| st.kind.is_loop())
         .unwrap();
     assert_eq!(repr_span(the_loop.span), "5:12-8:13");
 
@@ -653,7 +653,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let [first_stmt, ..] = body.statements.as_slice() else {
         panic!()
     };
-    let StatementKind::Call(call) = &first_stmt.content else {
+    let StatementKind::Call(call) = &first_stmt.kind else {
         panic!()
     };
     let FnOperand::Regular(fn_ptr) = &call.func else {
