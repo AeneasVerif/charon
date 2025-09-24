@@ -146,10 +146,8 @@ impl VisitAst for UsageVisitor<'_> {
 
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
         match fn_ptr.func.as_ref() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.found_use_fn(&id, &fn_ptr.generics)
-            }
-            FunIdOrTraitMethodRef::Trait(t_ref, name, id) => {
+            FnPtrKind::Fun(FunId::Regular(id)) => self.found_use_fn(&id, &fn_ptr.generics),
+            FnPtrKind::Trait(t_ref, name, id) => {
                 let Some((trait_impl, impl_gargs)) = self.krate.find_trait_impl_and_gargs(t_ref)
                 else {
                     return;
@@ -170,7 +168,7 @@ impl VisitAst for UsageVisitor<'_> {
                 self.found_use_fn_hinted(&id, &gargs_key, (fn_ref.id, fn_ref.generics))
             }
             // These can't be monomorphized, since they're builtins
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+            FnPtrKind::Fun(FunId::Builtin(..)) => {}
         }
     }
 
@@ -236,12 +234,12 @@ impl VisitAstMut for SubstVisitor<'_> {
             TyKind::FnDef(binder) => {
                 // erase the FnPtr binder, as we'll monomorphise its content
                 if let FnPtr {
-                    func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(id)),
+                    func: box FnPtrKind::Fun(FunId::Regular(id)),
                     generics,
                 } = binder.clone().erase()
                 {
                     *binder = RegionBinder::empty(FnPtr {
-                        func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(id))),
+                        func: Box::new(FnPtrKind::Fun(FunId::Regular(id))),
                         generics,
                     });
                 }
@@ -252,10 +250,10 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn enter_fn_ptr(&mut self, fn_ptr: &mut FnPtr) {
         match fn_ptr.func.as_mut() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
+            FnPtrKind::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }
-            FunIdOrTraitMethodRef::Trait(t_ref, _, fun_id) => {
+            FnPtrKind::Trait(t_ref, _, fun_id) => {
                 let mut gargs_key = fn_ptr
                     .generics
                     .clone()
@@ -264,7 +262,7 @@ impl VisitAstMut for SubstVisitor<'_> {
                 fn_ptr.generics = Box::new(gargs_key);
             }
             // These can't be monomorphized, since they're builtins
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+            FnPtrKind::Fun(FunId::Builtin(..)) => {}
         }
     }
 

@@ -52,7 +52,7 @@ impl UllbcPass for Transform {
                             Call {
                                 func:
                                     FnOperand::Regular(FnPtr {
-                                        func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                                        func: box FnPtrKind::Fun(FunId::Regular(fun_id)),
                                         ..
                                     }),
                                 ..

@@ -753,9 +753,23 @@ and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("func", func); ("generics", generics) ] ->
-        let* func = box_of_json fun_id_or_trait_method_ref_of_json ctx func in
+        let* func = box_of_json fn_ptr_kind_of_json ctx func in
         let* generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ func; generics } : fn_ptr)
+    | _ -> Error "")
+
+and fn_ptr_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (fn_ptr_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Fun", fun_) ] ->
+        let* fun_ = fun_id_of_json ctx fun_ in
+        Ok (FunId fun_)
+    | `Assoc [ ("Trait", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = trait_ref_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        let* x_2 = fun_decl_id_of_json ctx x_2 in
+        Ok (TraitMethod (x_0, x_1, x_2))
     | _ -> Error "")
 
 and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -784,20 +798,6 @@ and fun_id_of_json (ctx : of_json_ctx) (js : json) : (fun_id, string) result =
     | `Assoc [ ("Builtin", builtin) ] ->
         let* builtin = builtin_fun_id_of_json ctx builtin in
         Ok (FBuiltin builtin)
-    | _ -> Error "")
-
-and fun_id_or_trait_method_ref_of_json (ctx : of_json_ctx) (js : json) :
-    (fun_id_or_trait_method_ref, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Fun", fun_) ] ->
-        let* fun_ = fun_id_of_json ctx fun_ in
-        Ok (FunId fun_)
-    | `Assoc [ ("Trait", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = trait_ref_of_json ctx x_0 in
-        let* x_1 = trait_item_name_of_json ctx x_1 in
-        let* x_2 = fun_decl_id_of_json ctx x_2 in
-        Ok (TraitMethod (x_0, x_1, x_2))
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =

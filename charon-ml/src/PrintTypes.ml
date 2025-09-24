@@ -249,8 +249,7 @@ and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
   | FRegular fid -> fun_decl_id_to_string env fid
   | FBuiltin aid -> builtin_fun_id_to_string aid
 
-and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
-    (r : fun_id_or_trait_method_ref) : string =
+and fn_ptr_kind_to_string (env : 'a fmt_env) (r : fn_ptr_kind) : string =
   match r with
   | TraitMethod (trait_ref, method_name, _) ->
       trait_ref_to_string env trait_ref ^ "::" ^ method_name
@@ -258,7 +257,7 @@ and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
 
 and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
   let generics = generic_args_to_string env ptr.generics in
-  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
+  fn_ptr_kind_to_string env ptr.func ^ generics
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with

@@ -300,12 +300,10 @@ impl VisitAst for CheckGenericsVisitor<'_> {
     }
     fn enter_fn_ptr(&mut self, x: &FnPtr) {
         match x.func.as_ref() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.assert_matches_item(*id, &x.generics)
-            }
+            FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &x.generics),
             // TODO: check builtin generics.
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
-            FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
+            FnPtrKind::Fun(FunId::Builtin(_)) => {}
+            FnPtrKind::Trait(trait_ref, method_name, _) => {
                 let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
                 self.assert_matches_method(trait_id, method_name, &x.generics);
             }

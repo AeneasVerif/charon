@@ -40,7 +40,7 @@ fn transform_st(s: &mut Statement) {
                     RefKind::Mut => BuiltinFunId::ArrayToSliceMut,
                     RefKind::Shared => BuiltinFunId::ArrayToSliceShared,
                 };
-                let func = FunIdOrTraitMethodRef::mk_builtin(id);
+                let func = FnPtrKind::mk_builtin(id);
                 let generics = GenericArgs::new(
                     [Region::Erased].into(),
                     tref1.generics.types.clone(),
@@ -63,7 +63,7 @@ fn transform_st(s: &mut Statement) {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let id = BuiltinFunId::ArrayRepeat;
-            let func = FunIdOrTraitMethodRef::mk_builtin(id);
+            let func = FnPtrKind::mk_builtin(id);
             let generics = GenericArgs::new(
                 [Region::Erased].into(),
                 [ty.clone()].into(),
@@ -83,7 +83,7 @@ fn transform_st(s: &mut Statement) {
         // Transform the raw pointer aggregate to a function call
         StatementKind::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
             let id = BuiltinFunId::PtrFromParts(is_mut.clone());
-            let func = FunIdOrTraitMethodRef::mk_builtin(id);
+            let func = FnPtrKind::mk_builtin(id);
             let generics = GenericArgs::new(
                 [Region::Erased].into(),
                 [ty.clone()].into(),

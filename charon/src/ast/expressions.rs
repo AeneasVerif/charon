@@ -411,7 +411,7 @@ pub struct TraitMethodRef {
 #[derive(
     Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut, Hash,
 )]
-pub enum FunIdOrTraitMethodRef {
+pub enum FnPtrKind {
     #[charon::rename("FunId")]
     Fun(FunId),
     /// If a trait: the reference to the trait and the id of the trait method.
@@ -421,12 +421,12 @@ pub enum FunIdOrTraitMethodRef {
     Trait(TraitRef, TraitItemName, FunDeclId),
 }
 
-impl From<FunId> for FunIdOrTraitMethodRef {
+impl From<FunId> for FnPtrKind {
     fn from(id: FunId) -> Self {
         Self::Fun(id)
     }
 }
-impl From<FunDeclId> for FunIdOrTraitMethodRef {
+impl From<FunDeclId> for FnPtrKind {
     fn from(id: FunDeclId) -> Self {
         Self::Fun(id.into())
     }
@@ -434,7 +434,7 @@ impl From<FunDeclId> for FunIdOrTraitMethodRef {
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash)]
 pub struct FnPtr {
-    pub func: Box<FunIdOrTraitMethodRef>,
+    pub func: Box<FnPtrKind>,
     pub generics: BoxedArgs,
 }
 

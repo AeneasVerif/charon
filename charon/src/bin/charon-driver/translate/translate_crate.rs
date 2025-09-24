@@ -539,7 +539,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.append_late_bound_to_generics(span, *fun_item.generics, late_bound)?;
         let fun_id = match &item.in_trait {
             // Direct function call
-            None => FunIdOrTraitMethodRef::Fun(fun_item.id),
+            None => FnPtrKind::Fun(fun_item.id),
             // Trait method
             Some(impl_expr) => {
                 let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
@@ -548,7 +548,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .id
                     .as_regular()
                     .expect("methods are not builtin functions");
-                FunIdOrTraitMethodRef::Trait(trait_ref.move_under_binder(), name, method_decl_id)
+                FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
         Ok(bound_generics.map(|generics| FnPtr {

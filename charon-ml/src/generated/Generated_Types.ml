@@ -306,7 +306,14 @@ and dyn_predicate = {
           this trait in the [dyn Trait] pointer metadata. *)
 }
 
-and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
+and fn_ptr = { func : fn_ptr_kind; generics : generic_args }
+
+and fn_ptr_kind =
+  | FunId of fun_id
+  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
+      (** If a trait: the reference to the trait and the id of the trait method.
+          The fun decl id is not really necessary - we put it here for
+          convenience purposes. *)
 
 (** Reference to a function declaration. *)
 and fun_decl_ref = {
@@ -322,13 +329,6 @@ and fun_id =
   | FBuiltin of builtin_fun_id
       (** A primitive function, coming from a standard library (for instance:
           [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
-
-and fun_id_or_trait_method_ref =
-  | FunId of fun_id
-  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
-      (** If a trait: the reference to the trait and the id of the trait method.
-          The fun decl id is not really necessary - we put it here for
-          convenience purposes. *)
 
 (** A set of generic arguments. *)
 and generic_args = {

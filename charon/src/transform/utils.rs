@@ -60,11 +60,11 @@ impl FunId {
         }
     }
 }
-impl FunIdOrTraitMethodRef {
+impl FnPtrKind {
     pub fn generics_target(&self) -> GenericsSource {
         match self {
-            FunIdOrTraitMethodRef::Fun(fun_id) => fun_id.generics_target(),
-            FunIdOrTraitMethodRef::Trait(trait_ref, name, _) => {
+            FnPtrKind::Fun(fun_id) => fun_id.generics_target(),
+            FnPtrKind::Trait(trait_ref, name, _) => {
                 GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.id, name.clone())
             }
         }

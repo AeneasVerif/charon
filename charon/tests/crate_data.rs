@@ -656,7 +656,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
         panic!()
     };
     // Assert that this call referes to the method directly, without using a trait ref.
-    let FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) = fn_ptr.func.as_ref() else {
+    let FnPtrKind::Fun(FunId::Regular(id)) = fn_ptr.func.as_ref() else {
         panic!()
     };
     // This is the function that gets called.
