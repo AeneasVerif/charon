@@ -51,7 +51,7 @@ module Ast = struct
         let branches =
           List.map
             (fun (sv, bid) ->
-              scalar_value_to_string sv ^ " -> " ^ block_id_to_string bid ^ "; ")
+              literal_to_string sv ^ " -> " ^ block_id_to_string bid ^ "; ")
             branches
         in
         let branches = String.concat "" branches in

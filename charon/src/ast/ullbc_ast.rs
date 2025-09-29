@@ -76,7 +76,7 @@ pub enum SwitchTargets {
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
-    SwitchInt(IntegerTy, Vec<(ScalarValue, BlockId)>, BlockId),
+    SwitchInt(LiteralTy, Vec<(Literal, BlockId)>, BlockId),
 }
 
 /// A raw terminator: a terminator without meta data.

@@ -1,6 +1,7 @@
 open Collections
 open Types
 open Utils
+open ValuesUtils
 
 module RegionOrderedType : OrderedType with type t = region = struct
   type t = region
@@ -386,7 +387,7 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
       match variants with
       | [] -> None
       | hd_variant :: _ -> (
-          let discr_ty = Scalars.get_ty hd_variant.discriminant in
+          let discr = hd_variant.discriminant in
           let rec find_mapi f i = function
             | [] -> None
             | v :: tl ->
@@ -398,11 +399,15 @@ let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
           | Direct -> begin
               assert (discr_layout.tag_ty = Scalars.get_ty tag);
               let discr =
-                match
-                  Scalars.mk_scalar ptr_size discr_ty (Scalars.get_val tag)
-                with
-                | Ok sv -> Some sv
-                | Error _ -> None
+                match integer_type_of_literal discr with
+                | Some intty -> begin
+                    match
+                      Scalars.mk_scalar ptr_size intty (Scalars.get_val tag)
+                    with
+                    | Ok sv -> Some (Values.VScalar sv)
+                    | Error _ -> None
+                  end
+                | None -> None
               in
               find_mapi (fun i v -> Some v.discriminant = discr) 0 variants
             end

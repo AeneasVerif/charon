@@ -26,6 +26,28 @@ macro_rules! from_le_bytes {
     }
 }
 
+impl Literal {
+    pub fn char_from_le_bytes(bits: u128) -> Self {
+        let b: [u8; 4] = bits.to_le_bytes()[0..4].try_into().unwrap();
+        Literal::Char(std::char::from_u32(u32::from_le_bytes(b)).unwrap())
+    }
+
+    pub fn from_bits(lit_ty: &LiteralTy, bits: u128) -> Option<Self> {
+        match *lit_ty {
+            LiteralTy::Int(int_ty) => Some(Literal::Scalar(ScalarValue::from_bits(
+                IntegerTy::Signed(int_ty),
+                bits,
+            ))),
+            LiteralTy::UInt(uint_ty) => Some(Literal::Scalar(ScalarValue::from_bits(
+                IntegerTy::Unsigned(uint_ty),
+                bits,
+            ))),
+            LiteralTy::Char => Some(Literal::char_from_le_bytes(bits)),
+            _ => None,
+        }
+    }
+}
+
 impl ScalarValue {
     fn ptr_size_max(ptr_size: ByteCount, signed: bool) -> ScalarResult<u128> {
         match ptr_size {
