@@ -77,7 +77,7 @@ pub struct Span {
     ///     macro!(); // <-- `span` refers to this location
     /// }
     /// ```
-    pub span: SpanData,
+    pub data: SpanData,
     /// Where the code actually comes from, in case of macro expansion/inlining/etc.
     pub generated_from_span: Option<SpanData>,
 }

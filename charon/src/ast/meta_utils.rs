@@ -87,7 +87,7 @@ impl Ord for SpanData {
 impl Span {
     pub fn dummy() -> Self {
         Span {
-            span: SpanData::dummy(),
+            data: SpanData::dummy(),
             generated_from_span: None,
         }
     }
@@ -97,18 +97,18 @@ impl Span {
 /// span-information of, say, a sequence).
 pub fn combine_span(m0: &Span, m1: &Span) -> Span {
     // Merge the spans
-    if m0.span.file_id == m1.span.file_id {
-        let span = SpanData {
-            file_id: m0.span.file_id,
-            beg: Loc::min(&m0.span.beg, &m1.span.beg),
-            end: Loc::max(&m0.span.end, &m1.span.end),
+    if m0.data.file_id == m1.data.file_id {
+        let data = SpanData {
+            file_id: m0.data.file_id,
+            beg: Loc::min(&m0.data.beg, &m1.data.beg),
+            end: Loc::max(&m0.data.end, &m1.data.end),
         };
 
         // We don't attempt to merge the "generated from" spans: they might
         // come from different files, and even if they come from the same files
         // they might come from different macros, etc.
         Span {
-            span,
+            data,
             generated_from_span: None,
         }
     } else {

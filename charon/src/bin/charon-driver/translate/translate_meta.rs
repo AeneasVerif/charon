@@ -120,7 +120,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         source_info: &hax::SourceInfo,
     ) -> Span {
         // Translate the span
-        let span = self.translate_span_data(&source_info.span);
+        let data = self.translate_span_data(&source_info.span);
 
         // Lookup the top-most inlined parent scope.
         let mut parent_span = None;
@@ -133,12 +133,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         if let Some(parent_span) = parent_span {
             let parent_span = self.translate_span_data(parent_span);
             Span {
-                span: parent_span,
-                generated_from_span: Some(span),
+                data: parent_span,
+                generated_from_span: Some(data),
             }
         } else {
             Span {
-                span,
+                data,
                 generated_from_span: None,
             }
         }
@@ -146,7 +146,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_span_from_hax(&mut self, span: &hax::Span) -> Span {
         Span {
-            span: self.translate_span_data(span),
+            data: self.translate_span_data(span),
             generated_from_span: None,
         }
     }

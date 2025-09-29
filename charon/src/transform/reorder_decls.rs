@@ -369,7 +369,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
     );
     sorted_items.sort_by_key(|item| {
         let item_meta = item.item_meta();
-        let span = item_meta.span.span;
+        let span = item_meta.span.data;
         let file_name_order = sorted_file_ids[span.file_id];
         (item_meta.is_local, file_name_order, span.beg)
     });

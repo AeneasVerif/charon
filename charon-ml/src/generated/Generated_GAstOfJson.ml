@@ -1492,12 +1492,12 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("generated_from_span", generated_from_span) ] ->
-        let* span = span_data_of_json ctx span in
+    | `Assoc [ ("data", data); ("generated_from_span", generated_from_span) ] ->
+        let* data = span_data_of_json ctx data in
         let* generated_from_span =
           option_of_json span_data_of_json ctx generated_from_span
         in
-        Ok ({ span; generated_from_span } : span)
+        Ok ({ data; generated_from_span } : span)
     | _ -> Error "")
 
 and span_data_of_json (ctx : of_json_ctx) (js : json) :

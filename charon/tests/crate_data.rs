@@ -73,7 +73,7 @@ fn file_name() -> anyhow::Result<()> {
         repr_name(&crate_data, &crate_data.type_decls[1].item_meta.name),
         "core::option::Option"
     );
-    let file_id = crate_data.type_decls[1].item_meta.span.span.file_id;
+    let file_id = crate_data.type_decls[1].item_meta.span.data.file_id;
     let file = &crate_data.files[file_id];
     assert_eq!(file.name.to_string(), "/rustc/library/core/src/option.rs");
     Ok(())

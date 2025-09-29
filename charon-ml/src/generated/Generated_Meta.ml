@@ -95,7 +95,7 @@ and raw_attribute = {
 
 (** Meta information about a piece of code (block, statement, etc.) *)
 and span = {
-  span : span_data;
+  data : span_data;
       (** The source code span.
 
           If this meta information is for a statement/terminator coming from a

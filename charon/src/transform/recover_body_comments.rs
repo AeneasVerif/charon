@@ -41,7 +41,7 @@ struct CommentsCtx {
 }
 impl CommentsCtx {
     fn visit<St: IsStatement>(&mut self, st: &mut St) {
-        let st_line = st.get_span().span.beg.line;
+        let st_line = st.get_span().data.beg.line;
         self.comments = mem::take(&mut self.comments)
             .into_iter()
             .filter_map(|(line, comments)| {

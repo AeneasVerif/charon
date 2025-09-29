@@ -81,7 +81,7 @@ pub struct Error {
 impl Error {
     pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
         use annotate_snippets::*;
-        let span = self.span.span;
+        let span = self.span.data;
 
         let mut group = Group::with_title(level.title(&self.msg));
         let origin;
@@ -310,7 +310,7 @@ impl ErrorCtx {
                 DepNode::External(_) => None,
                 DepNode::Local(_, span) => Some(*span),
             })
-            .into_group_map_by(|span| span.span.file_id);
+            .into_group_map_by(|span| span.data.file_id);
 
         // Collect to a `Vec` to be able to sort it and to borrow `origin` (needed by
         // `Snippet::source`).
@@ -335,7 +335,7 @@ impl ErrorCtx {
                 .annotations(
                     spans
                         .iter()
-                        .map(|span| AnnotationKind::Context.span(span.span.to_byte_range(source))),
+                        .map(|span| AnnotationKind::Context.span(span.data.to_byte_range(source))),
                 )
         });
 
