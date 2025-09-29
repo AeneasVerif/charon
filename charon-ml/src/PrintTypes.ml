@@ -57,7 +57,7 @@ let const_generic_db_var_to_pretty_string (var : const_generic_db_var) : string
     =
   "C@" ^ de_bruijn_var_to_pretty_string ConstGenericVarId.to_string var
 
-let const_generic_var_to_string (v : const_generic_var) : string = v.name
+let const_generic_param_to_string (v : const_generic_param) : string = v.name
 
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
@@ -130,12 +130,12 @@ let const_generic_db_var_to_string (env : 'a fmt_env)
     (var : const_generic_db_var) : string =
   let find (generics : generic_params) varid =
     List.find_opt
-      (fun (v : const_generic_var) -> v.index = varid)
+      (fun (v : const_generic_param) -> v.index = varid)
       generics.const_generics
   in
   match lookup_var_in_env env find var with
   | None -> const_generic_db_var_to_pretty_string var
-  | Some r -> const_generic_var_to_string r
+  | Some r -> const_generic_param_to_string r
 
 let trait_db_var_to_string (env : 'a fmt_env) (var : trait_db_var) : string =
   let find (generics : generic_params) varid =
@@ -416,7 +416,7 @@ let generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
   in
   let regions = List.map region_param_to_string regions in
   let types = List.map type_param_to_string types in
-  let cgs = List.map const_generic_var_to_string const_generics in
+  let cgs = List.map const_generic_param_to_string const_generics in
   let params = List.flatten [ regions; types; cgs ] in
   let trait_clauses = List.map (trait_clause_to_string env) trait_clauses in
   (params, trait_clauses)

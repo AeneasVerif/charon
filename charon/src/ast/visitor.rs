@@ -42,7 +42,7 @@ use indexmap::IndexMap;
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
-        CastKind, ClosureInfo, ClosureKind, ConstGenericVar, ConstGenericVarId,
+        CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,

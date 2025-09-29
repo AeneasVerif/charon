@@ -319,10 +319,10 @@ let make_const_generic_subst (var_ids : ConstGenericVarId.id list)
   let map = ConstGenericVarId.Map.of_list (List.combine var_ids cgs) in
   fun varid -> ConstGenericVarId.Map.find varid map
 
-let make_const_generic_subst_from_vars (vars : const_generic_var list)
+let make_const_generic_subst_from_vars (vars : const_generic_param list)
     (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
   make_const_generic_subst
-    (List.map (fun (x : const_generic_var) -> x.index) vars)
+    (List.map (fun (x : const_generic_param) -> x.index) vars)
     cgs
 
 (** Create a trait substitution from a list of trait clause ids and a list of
@@ -532,7 +532,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
   let shift_ty_param (var : type_param) =
     { var with index = shift_ty_varid var.index }
   in
-  let shift_cg_var (var : const_generic_var) =
+  let shift_cg_param (var : const_generic_param) =
     { var with index = shift_cg_varid var.index }
   in
   let shift_clause_var (var : trait_clause) =
@@ -545,7 +545,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
       types = outer_params.types @ List.map shift_ty_param inner_params.types;
       const_generics =
         outer_params.const_generics
-        @ List.map shift_cg_var inner_params.const_generics;
+        @ List.map shift_cg_param inner_params.const_generics;
       trait_clauses =
         outer_params.trait_clauses
         @ List.map shift_clause_var inner_params.trait_clauses;
@@ -682,7 +682,7 @@ let bound_identity_args (params : generic_params) : generic_args =
         params.types;
     const_generics =
       List.map
-        (fun (var : const_generic_var) -> s.cg_sb_subst var.index)
+        (fun (var : const_generic_param) -> s.cg_sb_subst var.index)
         params.const_generics;
     trait_refs =
       List.map

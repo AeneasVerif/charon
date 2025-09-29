@@ -125,7 +125,7 @@ pub struct RegionParam {
 
 /// A const generic variable in a signature or binder.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ConstGenericVar {
+pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
     /// Const generic name

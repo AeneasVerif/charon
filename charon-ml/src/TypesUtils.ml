@@ -225,7 +225,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   in
   let const_generics =
     List.map
-      (fun (v : const_generic_var) -> CgVar (Free v.index))
+      (fun (v : const_generic_param) -> CgVar (Free v.index))
       generics.const_generics
   in
   let trait_refs =

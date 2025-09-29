@@ -286,7 +286,7 @@ and builtin_ty =
   | TStr  (** Primitive type *)
 
 (** A const generic variable in a signature or binder. *)
-and const_generic_var = {
+and const_generic_param = {
   index : const_generic_var_id;
       (** Index identifying the variable among other variables bound at the same
           level. *)
@@ -347,7 +347,7 @@ and generic_args = {
 and generic_params = {
   regions : region_param list;
   types : type_param list;
-  const_generics : const_generic_var list;
+  const_generics : const_generic_param list;
   trait_clauses : trait_clause list;
   regions_outlive : (region, region) outlives_pred region_binder list;
       (** The first region in the pair outlives the second region *)

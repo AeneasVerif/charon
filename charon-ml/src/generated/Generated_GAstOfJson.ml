@@ -500,15 +500,15 @@ and const_generic_of_json (ctx : of_json_ctx) (js : json) :
         Ok (CgValue value)
     | _ -> Error "")
 
-and const_generic_var_of_json (ctx : of_json_ctx) (js : json) :
-    (const_generic_var, string) result =
+and const_generic_param_of_json (ctx : of_json_ctx) (js : json) :
+    (const_generic_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
         let* index = const_generic_var_id_of_json ctx index in
         let* name = string_of_json ctx name in
         let* ty = literal_type_of_json ctx ty in
-        Ok ({ index; name; ty } : const_generic_var)
+        Ok ({ index; name; ty } : const_generic_param)
     | _ -> Error "")
 
 and const_generic_var_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -899,8 +899,8 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           vector_of_json type_var_id_of_json type_param_of_json ctx types
         in
         let* const_generics =
-          vector_of_json const_generic_var_id_of_json const_generic_var_of_json
-            ctx const_generics
+          vector_of_json const_generic_var_id_of_json
+            const_generic_param_of_json ctx const_generics
         in
         let* trait_clauses =
           vector_of_json trait_clause_id_of_json trait_clause_of_json ctx

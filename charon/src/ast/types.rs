@@ -248,7 +248,7 @@ pub struct Binder<T> {
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionParam>,
     pub types: Vector<TypeVarId, TypeParam>,
-    pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
+    pub const_generics: Vector<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// The first region in the pair outlives the second region

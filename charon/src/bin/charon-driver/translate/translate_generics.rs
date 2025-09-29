@@ -115,7 +115,7 @@ impl BindingLevel {
         let var_id = self
             .params
             .const_generics
-            .push_with(|index| ConstGenericVar { index, name, ty });
+            .push_with(|index| ConstGenericParam { index, name, ty });
         self.const_generic_vars_map.insert(rid, var_id);
     }
 

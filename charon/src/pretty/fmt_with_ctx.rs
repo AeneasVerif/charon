@@ -322,8 +322,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
     }
 }
 
-impl_display_via_ctx!(ConstGenericVar);
-impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericVar {
+impl_display_via_ctx!(ConstGenericParam);
+impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "const {} : {}", self.name, self.ty)
     }
