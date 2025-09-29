@@ -87,11 +87,9 @@ and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =
         let* x_1 = block_id_of_json ctx x_1 in
         Ok (If (x_0, x_1))
     | `Assoc [ ("SwitchInt", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = integer_type_of_json ctx x_0 in
+        let* x_0 = literal_type_of_json ctx x_0 in
         let* x_1 =
-          list_of_json
-            (pair_of_json scalar_value_of_json block_id_of_json)
-            ctx x_1
+          list_of_json (pair_of_json literal_of_json block_id_of_json) ctx x_1
         in
         let* x_2 = block_id_of_json ctx x_2 in
         Ok (SwitchInt (x_0, x_1, x_2))

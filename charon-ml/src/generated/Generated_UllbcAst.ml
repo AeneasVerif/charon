@@ -44,7 +44,7 @@ and statement_kind =
 
 and switch =
   | If of block_id * block_id  (** Gives the [if] block and the [else] block *)
-  | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
+  | SwitchInt of literal_type * (literal * block_id) list * block_id
       (** Gives the integer type, a map linking values to switch branches, and
           the otherwise block. Note that matches over enumerations are performed
           by switching over the discriminant, which is an integer. *)

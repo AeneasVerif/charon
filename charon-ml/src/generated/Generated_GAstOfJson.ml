@@ -2032,7 +2032,7 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
         let* fields =
           vector_of_json field_id_of_json field_of_json ctx fields
         in
-        let* discriminant = scalar_value_of_json ctx discriminant in
+        let* discriminant = literal_of_json ctx discriminant in
         Ok ({ span; attr_info; variant_name; fields; discriminant } : variant)
     | _ -> Error "")
 
