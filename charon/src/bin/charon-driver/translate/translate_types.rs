@@ -607,17 +607,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def_span: Span,
         item_meta: &ItemMeta,
         def: &hax::FullDef,
-    ) -> Result<TypeDeclKind, Error> {
+    ) -> Result<(TypeDeclKind, Option<ReprOptions>), Error> {
         use hax::AdtKind;
         let hax::FullDefKind::Adt {
-            adt_kind, variants, ..
+            adt_kind,
+            variants,
+            repr,
+            ..
         } = def.kind()
         else {
             unreachable!()
         };
 
         if item_meta.opacity.is_opaque() {
-            return Ok(TypeDeclKind::Opaque);
+            return Ok((TypeDeclKind::Opaque, None));
         }
 
         trace!("{}", trans_id);
@@ -643,7 +646,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .with_content_visibility(contents_are_public)
             .is_opaque()
         {
-            return Ok(TypeDeclKind::Opaque);
+            return Ok((TypeDeclKind::Opaque, None));
         }
 
         // The type is transparent: explore the variants
@@ -735,8 +738,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             AdtKind::Enum => TypeDeclKind::Enum(translated_variants),
             AdtKind::Union => TypeDeclKind::Union(translated_variants[0].fields.clone()),
         };
+        let repr = Self::translate_repr_options(repr);
 
-        Ok(type_def_kind)
+        Ok((type_def_kind, Some(repr)))
     }
 
     fn translate_discriminant(
@@ -749,6 +753,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         match Literal::from_bits(lit_ty, discr.val) {
             Some(lit) => Ok(lit),
             None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
+        }
+    }
+
+    pub fn translate_repr_options(hax_repr: &hax::ReprOptions) -> ReprOptions {
+        ReprOptions {
+            align: hax_repr.align.clone().map(|a| a.bytes),
+            pack: hax_repr.pack.clone().map(|a| a.bytes),
+            c: hax_repr.flags.is_c,
+            transparent: hax_repr.flags.is_transparent,
+            explicit_discr_type: hax_repr.int_specified,
         }
     }
 }
