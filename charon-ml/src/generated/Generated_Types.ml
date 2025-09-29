@@ -345,7 +345,7 @@ and generic_args = {
     predicates which are not trait clauses, because those enforce constraints
     but do not need to be filled with witnesses/instances. *)
 and generic_params = {
-  regions : region_var list;
+  regions : region_param list;
   types : type_param list;
   const_generics : const_generic_var list;
   trait_clauses : trait_clause list;
@@ -375,7 +375,7 @@ and region =
     this causes name clash issues in the derived ocaml visitors. TODO: merge
     with [binder] *)
 and 'a0 region_binder = {
-  binder_regions : region_var list;
+  binder_regions : region_param list;
   binder_value : 'a0;
       (** Named this way to highlight accesses to the inner value that might be
           handling parameters incorrectly. Prefer using helper methods. *)
@@ -384,7 +384,7 @@ and 'a0 region_binder = {
 and region_id = (RegionId.id[@visitors.opaque])
 
 (** A region variable in a signature or binder. *)
-and region_var = (region_id, string option) indexed_var
+and region_param = (region_id, string option) indexed_var
 
 (** The value of a trait associated type. *)
 and trait_assoc_ty_impl = { value : ty }

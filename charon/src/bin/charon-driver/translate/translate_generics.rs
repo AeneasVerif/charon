@@ -69,7 +69,7 @@ impl BindingLevel {
         let rid = self
             .params
             .regions
-            .push_with(|index| RegionVar { index, name });
+            .push_with(|index| RegionParam { index, name });
         self.early_region_vars.insert(region, rid);
         rid
     }
@@ -85,7 +85,7 @@ impl BindingLevel {
         let rid = self
             .params
             .regions
-            .push_with(|index| RegionVar { index, name });
+            .push_with(|index| RegionParam { index, name });
         self.bound_region_vars.push(rid);
         rid
     }
@@ -97,7 +97,7 @@ impl BindingLevel {
         let region_id = self
             .params
             .regions
-            .push_with(|index| RegionVar { index, name: None });
+            .push_with(|index| RegionParam { index, name: None });
         self.by_ref_upvar_regions.push(region_id);
         region_id
     }

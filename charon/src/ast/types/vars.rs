@@ -115,7 +115,7 @@ pub struct TypeParam {
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
 )]
-pub struct RegionVar {
+pub struct RegionParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
     /// Region name

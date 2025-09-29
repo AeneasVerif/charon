@@ -1040,7 +1040,7 @@ fn generate_ml(
         ("FileId", "file"),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
-        ("RegionVar", "(region_id, string option) indexed_var"),
+        ("RegionParam", "(region_id, string option) indexed_var"),
         ("TypeParam", "(type_var_id, string) indexed_var"),
     ];
     let manual_json_impls = &[

@@ -189,7 +189,7 @@ let st_substitute_visitor =
       (* Crucial: we shift the substitution to be valid under this binder. *)
       let subst = shift_subst subst in
       let binder_regions =
-        self#visit_list self#visit_region_var subst binder_regions
+        self#visit_list self#visit_region_param subst binder_regions
       in
       let binder_value = visit_value subst binder_value in
       { binder_regions; binder_value }
@@ -296,9 +296,9 @@ let make_region_subst (var_ids : RegionId.id list) (regions : region list) :
   let map = RegionId.Map.of_list (List.combine var_ids regions) in
   fun varid -> RegionId.Map.find varid map
 
-let make_region_subst_from_vars (vars : region_var list) (regions : region list)
-    : RegionId.id -> region =
-  make_region_subst (List.map (fun (x : region_var) -> x.index) vars) regions
+let make_region_subst_from_vars (vars : region_param list)
+    (regions : region list) : RegionId.id -> region =
+  make_region_subst (List.map (fun (x : region_param) -> x.index) vars) regions
 
 (** Create a type substitution from a list of type variable ids and a list of
     types (with which to substitute the type variable ids) *)
@@ -526,10 +526,10 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
   in
 
   (* Finally, merge the two levels. *)
-  let shift_region_var (var : region_var) =
+  let shift_region_param (var : region_param) =
     { var with index = shift_region_varid var.index }
   in
-  let shift_ty_var (var : type_param) =
+  let shift_ty_param (var : type_param) =
     { var with index = shift_ty_varid var.index }
   in
   let shift_cg_var (var : const_generic_var) =
@@ -541,8 +541,8 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
   let params =
     {
       regions =
-        outer_params.regions @ List.map shift_region_var inner_params.regions;
-      types = outer_params.types @ List.map shift_ty_var inner_params.types;
+        outer_params.regions @ List.map shift_region_param inner_params.regions;
+      types = outer_params.types @ List.map shift_ty_param inner_params.types;
       const_generics =
         outer_params.const_generics
         @ List.map shift_cg_var inner_params.const_generics;

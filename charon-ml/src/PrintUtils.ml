@@ -29,7 +29,7 @@ let fmt_env_update_generics_and_preds (env : 'a fmt_env)
     (generics : generic_params) : 'a fmt_env =
   { env with generics = generics :: env.generics }
 
-let fmt_env_push_regions (env : 'a fmt_env) (regions : region_var list) :
+let fmt_env_push_regions (env : 'a fmt_env) (regions : region_param list) :
     'a fmt_env =
   {
     env with

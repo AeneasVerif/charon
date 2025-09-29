@@ -47,7 +47,7 @@ use indexmap::IndexMap;
         FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
-        RefKind, RegionId, RegionVar, ScalarValue, TraitItemName,
+        RefKind, RegionId, RegionParam, ScalarValue, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,

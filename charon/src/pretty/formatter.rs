@@ -28,7 +28,7 @@ pub trait AstFormatter: Sized {
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
     fn push_bound_regions<'a>(
         &'a self,
-        regions: &'a Vector<RegionId, RegionVar>,
+        regions: &'a Vector<RegionId, RegionParam>,
     ) -> Self::Reborrow<'a> {
         self.push_binder(Cow::Owned(GenericParams {
             regions: regions.clone(),

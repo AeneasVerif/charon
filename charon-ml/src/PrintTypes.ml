@@ -7,7 +7,7 @@ open TypesUtils
 open GAst
 open PrintUtils
 
-let region_var_to_string (rv : region_var) : string =
+let region_param_to_string (rv : region_param) : string =
   match rv.name with
   | Some name -> name
   | None -> RegionId.to_string rv.index
@@ -48,7 +48,7 @@ let type_db_var_to_pretty_string (var : type_db_var) : string =
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
 
-let type_var_to_string (tv : type_param) : string = tv.name
+let type_param_to_string (tv : type_param) : string = tv.name
 
 let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
   "C@" ^ ConstGenericVarId.to_string id
@@ -112,11 +112,11 @@ let lookup_var_in_env (env : 'a fmt_env)
 let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
   (* Note that the regions are not necessarily ordered following their indices *)
   let find (generics : generic_params) varid =
-    List.find_opt (fun (v : region_var) -> v.index = varid) generics.regions
+    List.find_opt (fun (v : region_param) -> v.index = varid) generics.regions
   in
   match lookup_var_in_env env find var with
   | None -> region_db_var_to_pretty_string var
-  | Some r -> region_var_to_string r
+  | Some r -> region_param_to_string r
 
 let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
   let find (generics : generic_params) varid =
@@ -124,7 +124,7 @@ let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
   in
   match lookup_var_in_env env find var with
   | None -> type_db_var_to_pretty_string var
-  | Some r -> type_var_to_string r
+  | Some r -> type_param_to_string r
 
 let const_generic_db_var_to_string (env : 'a fmt_env)
     (var : const_generic_db_var) : string =
@@ -161,7 +161,7 @@ let region_binder_to_string (value_to_string : 'a fmt_env -> 'c -> string)
   | [] -> value
   | _ ->
       "for <"
-      ^ String.concat "," (List.map region_var_to_string rb.binder_regions)
+      ^ String.concat "," (List.map region_param_to_string rb.binder_regions)
       ^ "> " ^ value
 
 let rec type_id_to_string (env : 'a fmt_env) (id : type_id) : string =
@@ -414,8 +414,8 @@ let generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
   let ({ regions; types; const_generics; trait_clauses; _ } : generic_params) =
     generics
   in
-  let regions = List.map region_var_to_string regions in
-  let types = List.map type_var_to_string types in
+  let regions = List.map region_param_to_string regions in
+  let types = List.map type_param_to_string types in
   let cgs = List.map const_generic_var_to_string const_generics in
   let params = List.flatten [ regions; types; cgs ] in
   let trait_clauses = List.map (trait_clause_to_string env) trait_clauses in

@@ -1184,8 +1184,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionDbVar {
     }
 }
 
-impl_display_via_ctx!(RegionVar);
-impl<C: AstFormatter> FmtWithCtx<C> for RegionVar {
+impl_display_via_ctx!(RegionParam);
+impl<C: AstFormatter> FmtWithCtx<C> for RegionParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.name {
             Some(name) => write!(f, "{name}"),

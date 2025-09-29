@@ -836,7 +836,7 @@ let const_generic_var_to_pattern (m : constraints)
     (fun varid map -> T.ConstGenericVarId.Map.find_opt varid map.cmap)
     var
 
-let constraints_map_compute_regions_map (regions : T.region_var list) :
+let constraints_map_compute_regions_map (regions : T.region_param list) :
     var option T.RegionId.Map.t =
   let fresh_id (gen : int ref) : int =
     let id = !gen in
@@ -846,7 +846,7 @@ let constraints_map_compute_regions_map (regions : T.region_var list) :
   let rid_gen = ref 0 in
   T.RegionId.Map.of_list
     (List.map
-       (fun (r : T.region_var) ->
+       (fun (r : T.region_param) ->
          let v =
            match r.name with
            | None -> VarIndex (fresh_id rid_gen)
@@ -872,14 +872,14 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
   [ { rmap; tmap; cmap } ]
 
 let constraints_map_push_regions_map (m : constraints)
-    (regions : T.region_var list) : constraints =
+    (regions : T.region_param list) : constraints =
   let rmap = constraints_map_compute_regions_map regions in
   { empty_vars_map with rmap } :: m
 
 (** Push a regions map to the constraints map, if the group of regions is
     non-empty - TODO: do something more precise *)
 let constraints_map_push_regions_map_if_nonempty (m : constraints)
-    (regions : T.region_var list) : constraints =
+    (regions : T.region_param list) : constraints =
   match regions with
   | [] -> m
   | _ -> constraints_map_push_regions_map m regions

@@ -310,7 +310,7 @@ impl ItemTransCtx<'_, '_> {
                 let rid = self
                     .innermost_generics_mut()
                     .regions
-                    .push_with(|index| RegionVar { index, name: None });
+                    .push_with(|index| RegionParam { index, name: None });
                 let r = Region::Var(DeBruijnVar::new_at_zero(rid));
                 let mutability = if target_kind == ClosureKind::Fn {
                     RefKind::Shared
@@ -631,7 +631,7 @@ impl ItemTransCtx<'_, '_> {
                 ClosureKind::FnMut | ClosureKind::Fn => {
                     method_params
                         .regions
-                        .push_with(|index| RegionVar { index, name: None });
+                        .push_with(|index| RegionParam { index, name: None });
                 }
             };
 
