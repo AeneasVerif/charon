@@ -97,7 +97,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     ctx.translate_trait_predicate(span, trait_pred)
                 })?;
-                into.trait_clauses.push_with(|clause_id| TraitClause {
+                into.trait_clauses.push_with(|clause_id| TraitParam {
                     clause_id,
                     origin,
                     span: Some(span),

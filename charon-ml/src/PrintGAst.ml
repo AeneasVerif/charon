@@ -162,7 +162,7 @@ let trait_decl_to_string (env : 'a fmt_env) (indent : string)
           indent1 ^ "parent_clause_"
           ^ TraitClauseId.to_string clause.clause_id
           ^ " : "
-          ^ trait_clause_to_string env clause
+          ^ trait_param_to_string env clause
           ^ "\n")
         def.parent_clauses
     in

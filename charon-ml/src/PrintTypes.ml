@@ -140,7 +140,7 @@ let const_generic_db_var_to_string (env : 'a fmt_env)
 let trait_db_var_to_string (env : 'a fmt_env) (var : trait_db_var) : string =
   let find (generics : generic_params) varid =
     List.find_opt
-      (fun (v : trait_clause) -> v.clause_id = varid)
+      (fun (v : trait_param) -> v.clause_id = varid)
       generics.trait_clauses
   in
   match lookup_var_in_env env find var with
@@ -402,7 +402,7 @@ and raw_attribute_to_string (attr : raw_attribute) : string =
   in
   attr.path ^ args
 
-let trait_clause_to_string (env : 'a fmt_env) (clause : trait_clause) : string =
+let trait_param_to_string (env : 'a fmt_env) (clause : trait_param) : string =
   let clause_id = trait_clause_id_to_string env clause.clause_id in
   let trait =
     region_binder_to_string trait_decl_ref_to_string env clause.trait
@@ -418,7 +418,7 @@ let generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
   let types = List.map type_param_to_string types in
   let cgs = List.map const_generic_param_to_string const_generics in
   let params = List.flatten [ regions; types; cgs ] in
-  let trait_clauses = List.map (trait_clause_to_string env) trait_clauses in
+  let trait_clauses = List.map (trait_param_to_string env) trait_clauses in
   (params, trait_clauses)
 
 let field_to_string env (f : field) : string =

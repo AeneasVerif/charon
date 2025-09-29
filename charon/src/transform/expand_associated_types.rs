@@ -776,7 +776,7 @@ impl<'a> ComputeItemModifications<'a> {
 
     fn compute_extra_params_for_clause<'b>(
         &'b mut self,
-        clause: &TraitClause,
+        clause: &TraitParam,
         clause_to_path: fn(TraitClauseId) -> TraitRefPath,
     ) -> impl Iterator<Item = AssocTypePath> + use<'a, 'b> {
         let trait_id = clause.trait_.skip_binder.id;

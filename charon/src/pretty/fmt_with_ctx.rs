@@ -1521,7 +1521,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitParam {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let clause_id = self.clause_id.to_pretty_string();
         let trait_ = self.trait_.with_ctx(ctx);

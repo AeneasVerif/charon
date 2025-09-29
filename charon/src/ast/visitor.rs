@@ -67,7 +67,7 @@ use indexmap::IndexMap;
     override(
         DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
         TypeDeclRef, FunDeclRef, MaybeBuiltinFunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
-        GenericArgs, GenericParams, TraitClause, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
+        GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
@@ -675,7 +675,7 @@ mod wrappers {
         {
             x.drive(self.inner())
         }
-        fn visit_trait_clause(&mut self, x: &TraitClause) -> ControlFlow<Self::Break> {
+        fn visit_trait_param(&mut self, x: &TraitParam) -> ControlFlow<Self::Break> {
             match x.span {
                 Some(span) => self.visit_inner_track_span(x, span),
                 None => self.visit_inner(x),
@@ -704,7 +704,7 @@ mod wrappers {
         {
             x.drive_mut(self.inner())
         }
-        fn visit_trait_clause(&mut self, x: &mut TraitClause) -> ControlFlow<Self::Break> {
+        fn visit_trait_param(&mut self, x: &mut TraitParam) -> ControlFlow<Self::Break> {
             match x.span {
                 Some(span) => self.visit_inner_mut_track_span(x, span),
                 None => self.visit_inner(x),

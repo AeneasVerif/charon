@@ -241,7 +241,7 @@ let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     regions;
     types;
     const_generics;
-    trait_clauses = List.map (visitor#visit_trait_clause subst) trait_clauses;
+    trait_clauses = List.map (visitor#visit_trait_param subst) trait_clauses;
     regions_outlive =
       List.map
         (visitor#visit_region_binder
@@ -332,10 +332,10 @@ let make_trait_subst (var_ids : TraitClauseId.id list)
   let map = TraitClauseId.Map.of_list (List.combine var_ids trs) in
   fun varid -> TraitClauseId.Map.find varid map
 
-let make_trait_subst_from_clauses (clauses : trait_clause list)
+let make_trait_subst_from_clauses (clauses : trait_param list)
     (trs : trait_ref list) : TraitClauseId.id -> trait_instance_id =
   make_trait_subst
-    (List.map (fun (x : trait_clause) -> x.clause_id) clauses)
+    (List.map (fun (x : trait_param) -> x.clause_id) clauses)
     (List.map (fun (x : trait_ref) -> x.trait_id) trs)
 
 let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
@@ -535,7 +535,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
   let shift_cg_param (var : const_generic_param) =
     { var with index = shift_cg_varid var.index }
   in
-  let shift_clause_var (var : trait_clause) =
+  let shift_clause_var (var : trait_param) =
     { var with clause_id = shift_clause_varid var.clause_id }
   in
   let params =
@@ -686,7 +686,7 @@ let bound_identity_args (params : generic_params) : generic_args =
         params.const_generics;
     trait_refs =
       List.map
-        (fun (clause : trait_clause) ->
+        (fun (clause : trait_param) ->
           let trait_id = s.tr_sb_subst clause.clause_id in
           { trait_id; trait_decl_ref = clause.trait })
         params.trait_clauses;

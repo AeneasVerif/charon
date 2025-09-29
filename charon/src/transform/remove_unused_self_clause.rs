@@ -24,7 +24,7 @@ impl VisitAst for UsesClauseVisitor {
             Continue(())
         }
     }
-    fn visit_trait_clause(&mut self, _: &TraitClause) -> ControlFlow<Self::Break> {
+    fn visit_trait_param(&mut self, _: &TraitParam) -> ControlFlow<Self::Break> {
         // Don't look inside the clause declaration as this will always contain the
         // `TraitClauseId`.
         Continue(())

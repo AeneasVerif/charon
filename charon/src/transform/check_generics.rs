@@ -99,7 +99,7 @@ impl CheckGenericsVisitor<'_> {
     fn assert_clause_matches(
         &self,
         params_fmt: &FmtCtx<'_>,
-        tclause: &TraitClause,
+        tclause: &TraitParam,
         tref: &TraitRef,
     ) {
         let clause_trait_id = tclause.trait_.skip_binder.id;

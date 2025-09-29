@@ -231,7 +231,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   in
   let trait_refs =
     List.map
-      (fun (c : trait_clause) ->
+      (fun (c : trait_param) ->
         { trait_id = Clause (Free c.clause_id); trait_decl_ref = c.trait })
       generics.trait_clauses
   in

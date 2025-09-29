@@ -250,7 +250,7 @@ pub struct GenericParams {
     pub types: Vector<TypeVarId, TypeParam>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: Vector<TraitClauseId, TraitClause>,
+    pub trait_clauses: Vector<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
     pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region

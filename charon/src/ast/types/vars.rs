@@ -138,7 +138,7 @@ pub struct ConstGenericParam {
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct TraitClause {
+pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
     // TODO: does not need to be an option.
@@ -152,14 +152,14 @@ pub struct TraitClause {
     pub trait_: PolyTraitDeclRef,
 }
 
-impl PartialEq for TraitClause {
+impl PartialEq for TraitParam {
     fn eq(&self, other: &Self) -> bool {
         // Skip `span` and `origin`
         self.clause_id == other.clause_id && self.trait_ == other.trait_
     }
 }
 
-impl std::hash::Hash for TraitClause {
+impl std::hash::Hash for TraitParam {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.clause_id.hash(state);
         self.trait_.hash(state);

@@ -348,7 +348,7 @@ and generic_params = {
   regions : region_param list;
   types : type_param list;
   const_generics : const_generic_param list;
-  trait_clauses : trait_clause list;
+  trait_clauses : trait_param list;
   regions_outlive : (region, region) outlives_pred region_binder list;
       (** The first region in the pair outlives the second region *)
   types_outlive : (ty, region) outlives_pred region_binder list;
@@ -389,17 +389,6 @@ and region_param = (region_id, string option) indexed_var
 (** The value of a trait associated type. *)
 and trait_assoc_ty_impl = { value : ty }
 
-(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
-    functions like a variable binder, to which variables of the form
-    [TraitRefKind::Clause] can refer to. *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** Index identifying the clause among other clauses bound at the same
-          level. *)
-  span : span option;
-  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
-}
-
 (** A predicate of the form [Type: Trait<Args>].
 
     About the generics, if we write:
@@ -414,6 +403,17 @@ and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
 and trait_item_name = string
+
+(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
+    functions like a variable binder, to which variables of the form
+    [TraitRefKind::Clause] can refer to. *)
+and trait_param = {
+  clause_id : trait_clause_id;
+      (** Index identifying the clause among other clauses bound at the same
+          level. *)
+  span : span option;
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
+}
 
 (** A reference to a trait *)
 and trait_ref = {

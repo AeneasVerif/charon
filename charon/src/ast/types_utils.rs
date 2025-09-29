@@ -9,7 +9,7 @@ use std::fmt::Debug;
 use std::iter::Iterator;
 use std::mem;
 
-impl TraitClause {
+impl TraitParam {
     /// Constructs the trait ref that refers to this clause.
     pub fn identity_tref(&self) -> TraitRef {
         self.identity_tref_at_depth(DeBruijnId::zero())
@@ -1118,7 +1118,7 @@ impl Layout {
 
 impl<T: AstVisitable> TyVisitable for T {}
 
-impl Eq for TraitClause {}
+impl Eq for TraitParam {}
 
 mk_index_impls!(GenericArgs.regions[RegionId]: Region);
 mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
@@ -1127,4 +1127,4 @@ mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: TraitRef);
 mk_index_impls!(GenericParams.regions[RegionId]: RegionParam);
 mk_index_impls!(GenericParams.types[TypeVarId]: TypeParam);
 mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericParam);
-mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitClause);
+mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitParam);

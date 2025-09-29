@@ -155,7 +155,7 @@ type trait_assoc_const = {
 and trait_assoc_ty = {
   name : trait_item_name;
   default : ty option;
-  implied_clauses : trait_clause list;
+  implied_clauses : trait_param list;
       (** List of trait clauses that apply to this type. *)
 }
 
@@ -194,7 +194,7 @@ and trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
   generics : generic_params;
-  parent_clauses : trait_clause list;
+  parent_clauses : trait_param list;
       (** The "parent" clauses: the supertraits.
 
           Supertraits are actually regular where clauses, but we decided to have

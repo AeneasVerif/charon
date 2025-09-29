@@ -80,13 +80,13 @@ class ['self] map_crate_with_span =
       in
       super#visit_variant decl_span_info variant
 
-    method! visit_trait_clause decl_span_info (clause : trait_clause) =
+    method! visit_trait_param decl_span_info (clause : trait_param) =
       let decl_span_info =
         match (decl_span_info, clause.span) with
         | Some (decl_id, _), Some span -> Some (decl_id, span)
         | _ -> decl_span_info
       in
-      super#visit_trait_clause decl_span_info clause
+      super#visit_trait_param decl_span_info clause
 
     method! visit_field decl_span_info (field : field) =
       let decl_span_info =
@@ -267,13 +267,13 @@ class ['self] iter_crate_with_span =
       in
       super#visit_variant decl_span_info variant
 
-    method! visit_trait_clause decl_span_info (clause : trait_clause) =
+    method! visit_trait_param decl_span_info (clause : trait_param) =
       let decl_span_info =
         match (decl_span_info, clause.span) with
         | Some (decl_id, _), Some span -> Some (decl_id, span)
         | _ -> decl_span_info
       in
-      super#visit_trait_clause decl_span_info clause
+      super#visit_trait_param decl_span_info clause
 
     method! visit_field decl_span_info (field : field) =
       let decl_span_info =

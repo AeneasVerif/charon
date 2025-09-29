@@ -903,7 +903,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
             const_generic_param_of_json ctx const_generics
         in
         let* trait_clauses =
-          vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
+          vector_of_json trait_clause_id_of_json trait_param_of_json ctx
             trait_clauses
         in
         let* regions_outlive =
@@ -1559,7 +1559,7 @@ and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
         let* name = trait_item_name_of_json ctx name in
         let* default = option_of_json ty_of_json ctx default in
         let* implied_clauses =
-          vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
+          vector_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses
         in
         Ok ({ name; default; implied_clauses } : trait_assoc_ty)
@@ -1572,23 +1572,6 @@ and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("value", value); ("implied_trait_refs", _) ] ->
         let* value = ty_of_json ctx value in
         Ok ({ value } : trait_assoc_ty_impl)
-    | _ -> Error "")
-
-and trait_clause_of_json (ctx : of_json_ctx) (js : json) :
-    (trait_clause, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("clause_id", clause_id);
-          ("span", span);
-          ("origin", _);
-          ("trait_", trait);
-        ] ->
-        let* clause_id = trait_clause_id_of_json ctx clause_id in
-        let* span = option_of_json span_of_json ctx span in
-        let* trait = region_binder_of_json trait_decl_ref_of_json ctx trait in
-        Ok ({ clause_id; span; trait } : trait_clause)
     | _ -> Error "")
 
 and trait_clause_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1617,7 +1600,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* parent_clauses =
-          vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
+          vector_of_json trait_clause_id_of_json trait_param_of_json ctx
             parent_clauses
         in
         let* consts = list_of_json trait_assoc_const_of_json ctx consts in
@@ -1748,6 +1731,23 @@ and trait_method_of_json (ctx : of_json_ctx) (js : json) :
         let* name = trait_item_name_of_json ctx name in
         let* item = fun_decl_ref_of_json ctx item in
         Ok ({ name; item } : trait_method)
+    | _ -> Error "")
+
+and trait_param_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_param, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("clause_id", clause_id);
+          ("span", span);
+          ("origin", _);
+          ("trait_", trait);
+        ] ->
+        let* clause_id = trait_clause_id_of_json ctx clause_id in
+        let* span = option_of_json span_of_json ctx span in
+        let* trait = region_binder_of_json trait_decl_ref_of_json ctx trait in
+        Ok ({ clause_id; span; trait } : trait_param)
     | _ -> Error "")
 
 and trait_ref_of_json (ctx : of_json_ctx) (js : json) :
