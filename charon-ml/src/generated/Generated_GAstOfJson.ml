@@ -1336,6 +1336,7 @@ and projection_elem_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = field_proj_kind_of_json ctx x_0 in
         let* x_1 = field_id_of_json ctx x_1 in
         Ok (Field (x_0, x_1))
+    | `String "PtrMetadata" -> Ok PtrMetadata
     | `Assoc
         [ ("Index", `Assoc [ ("offset", offset); ("from_end", from_end) ]) ] ->
         let* offset = box_of_json operand_of_json ctx offset in
@@ -2010,7 +2011,6 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
     | `Assoc [ ("Neg", neg) ] ->
         let* neg = overflow_mode_of_json ctx neg in
         Ok (Neg neg)
-    | `String "PtrMetadata" -> Ok PtrMetadata
     | `Assoc [ ("Cast", cast) ] ->
         let* cast = cast_kind_of_json ctx cast in
         Ok (Cast cast)

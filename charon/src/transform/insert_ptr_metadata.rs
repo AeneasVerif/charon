@@ -53,17 +53,25 @@ fn no_metadata<T: BodyTransformCtx>(ctx: &T) -> Operand {
 }
 
 /// Compute the metadata for a place. Return `None` if the place has no metadata.
-fn compute_place_metadata_inner<T: BodyTransformCtx>(ctx: &mut T, place: &Place) -> Option<Rvalue> {
+fn compute_place_metadata_inner<T: BodyTransformCtx>(
+    ctx: &mut T,
+    place: &Place,
+    metadata_ty: &Ty,
+) -> Option<Rvalue> {
     let (subplace, proj) = place.as_projection()?;
     match proj {
         // The outermost deref we encountered gives us the metadata of the place.
-        ProjectionElem::Deref => Some(Rvalue::UnaryOp(
-            UnOp::PtrMetadata,
-            Operand::Copy(subplace.clone()),
-        )),
-        ProjectionElem::Field { .. } => compute_place_metadata_inner(ctx, subplace),
+        ProjectionElem::Deref => {
+            let metadata_place = subplace
+                .clone()
+                .project(ProjectionElem::PtrMetadata, metadata_ty.clone());
+            Some(Rvalue::Use(Operand::Copy(metadata_place)))
+        }
+        ProjectionElem::Field { .. } => compute_place_metadata_inner(ctx, subplace, metadata_ty),
         // Indexing for array & slice will only result in sized types, hence no metadata
         ProjectionElem::Index { .. } => None,
+        // Ptr metadata is always sized.
+        ProjectionElem::PtrMetadata { .. } => None,
         // Subslice must have metadata length, compute the metadata here as `to` - `from`
         ProjectionElem::Subslice { from, to, from_end } => {
             let to_idx = compute_subslice_end_idx(ctx, subplace, *to.clone(), *from_end);
@@ -102,7 +110,7 @@ pub fn compute_place_metadata<T: BodyTransformCtxWithParams>(
         "computed metadata type: {}",
         metadata_ty.with_ctx(&ctx.get_ctx().into_fmt())
     );
-    match compute_place_metadata_inner(ctx, place) {
+    match compute_place_metadata_inner(ctx, place, &metadata_ty) {
         Some(rvalue) => {
             let new_place = ctx.fresh_var(None, metadata_ty);
             ctx.insert_assn_stmt(new_place.clone(), rvalue);

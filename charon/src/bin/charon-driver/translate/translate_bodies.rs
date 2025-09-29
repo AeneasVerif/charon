@@ -396,7 +396,12 @@ impl BodyTransCtx<'_, '_, '_> {
     }
 
     /// Translate an rvalue
-    fn translate_rvalue(&mut self, span: Span, rvalue: &hax::Rvalue) -> Result<Rvalue, Error> {
+    fn translate_rvalue(
+        &mut self,
+        span: Span,
+        rvalue: &hax::Rvalue,
+        tgt_ty: &Ty,
+    ) -> Result<Rvalue, Error> {
         match rvalue {
             hax::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
             hax::Rvalue::CopyForDeref(place) => {
@@ -568,15 +573,20 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::NullaryOp(op, ty))
             }
             hax::Rvalue::UnaryOp(unop, operand) => {
+                let operand = self.translate_operand(span, operand)?;
                 let unop = match unop {
                     hax::UnOp::Not => UnOp::Not,
                     hax::UnOp::Neg => UnOp::Neg(OverflowMode::Wrap),
-                    hax::UnOp::PtrMetadata => UnOp::PtrMetadata,
+                    hax::UnOp::PtrMetadata => match operand {
+                        Operand::Copy(p) | Operand::Move(p) => {
+                            return Ok(Rvalue::Use(Operand::Copy(
+                                p.project(ProjectionElem::PtrMetadata, tgt_ty.clone()),
+                            )));
+                        }
+                        Operand::Const(_) => panic!("const metadata"),
+                    },
                 };
-                Ok(Rvalue::UnaryOp(
-                    unop,
-                    self.translate_operand(span, operand)?,
-                ))
+                Ok(Rvalue::UnaryOp(unop, operand))
             }
             hax::Rvalue::Discriminant(place) => {
                 let place = self.translate_place(span, place)?;
@@ -730,7 +740,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let t_statement: Option<StatementKind> = match &*statement.kind {
             hax::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
-                let t_rvalue = self.translate_rvalue(span, rvalue)?;
+                let t_rvalue = self.translate_rvalue(span, rvalue, t_place.ty())?;
                 Some(StatementKind::Assign(t_place, t_rvalue))
             }
             hax::StatementKind::SetDiscriminant {

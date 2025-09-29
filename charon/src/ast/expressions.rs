@@ -66,6 +66,13 @@ pub enum ProjectionElem {
     /// We should never have projections to fields of symbolic variants (they
     /// should have been expanded before through a match).
     Field(FieldProjKind, FieldId),
+    /// A built-in pointer (a reference, raw pointer, or `Box`) in Rust is always a fat pointer: it
+    /// contains an address and metadata for the pointed-to place. This metadata is empty for sized
+    /// types, it's the length for slices, and the vtable for `dyn Trait`.
+    ///
+    /// We consider such pointers to be like a struct with two fields; this represent access to the
+    /// metadata "field".
+    PtrMetadata,
     /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
     /// We **eliminate** this variant in a micro-pass for LLBC.
@@ -157,8 +164,6 @@ pub enum UnOp {
     /// This can overflow, for `-i::MIN`.
     #[drive(skip)]
     Neg(OverflowMode),
-    /// Retreive the metadata part of a fat pointer. For slices, this retreives their length.
-    PtrMetadata,
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
 }
@@ -626,18 +631,8 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Length of a memory location. The run-time length of e.g. a vector or a slice is
-    /// represented differently (but pretty-prints the same, FIXME).
-    /// Should be seen as a function of signature:
-    /// - `fn<T;N>(&[T;N]) -> usize`
-    /// - `fn<T>(&[T]) -> usize`
-    ///
-    /// We store the type argument and the const generic (the latter only for arrays).
-    ///
-    /// `Len` is automatically introduced by rustc, notably for the bound checks:
-    /// we eliminate it together with the bounds checks whenever possible.
-    /// There are however occurrences that we don't eliminate (yet).
-    /// For instance, for the following Rust code:
+    /// Length of a place of type `[T]` or `[T; N]`. This applies to the place itself, not to a
+    /// pointer value. This is inserted by rustc in a single case: slice patterns.
     /// ```text
     /// fn slice_pattern_4(x: &[()]) {
     ///     match x {
@@ -646,8 +641,6 @@ pub enum Rvalue {
     ///     }
     /// }
     /// ```
-    /// rustc introduces a check that the length of the slice is exactly equal
-    /// to 1 and that we preserve.
     Len(Place, Ty, Option<ConstGeneric>),
     /// `Repeat(x, n)` creates an array where `x` is copied `n` times.
     ///

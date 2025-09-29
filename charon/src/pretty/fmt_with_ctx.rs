@@ -1045,6 +1045,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                             write!(f, "({sub}).{field_id}")
                         }
                     },
+                    ProjectionElem::PtrMetadata => {
+                        write!(f, "{sub}.metadata")
+                    }
                     ProjectionElem::Index {
                         offset,
                         from_end: true,
@@ -1198,6 +1201,13 @@ impl_display_via_ctx!(Rvalue);
 impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            // HACK: reproduce old output to ensure we didn't change anything.
+            Rvalue::Use(Operand::Copy(p))
+                if let Some((sub, ProjectionElem::PtrMetadata)) = p.as_projection() =>
+            {
+                let sub = sub.with_ctx(ctx);
+                write!(f, "ptr_metadata(copy ({sub}))")
+            }
             Rvalue::Use(x) => write!(f, "{}", x.with_ctx(ctx)),
             Rvalue::Ref {
                 place,
@@ -1946,7 +1956,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
         match self {
             UnOp::Not => write!(f, "~"),
             UnOp::Neg(mode) => write!(f, "{}.-", mode),
-            UnOp::PtrMetadata => write!(f, "ptr_metadata"),
             UnOp::Cast(kind) => write!(f, "{}", kind.with_ctx(ctx)),
         }
     }
