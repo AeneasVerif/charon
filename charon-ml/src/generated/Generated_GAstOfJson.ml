@@ -1373,17 +1373,6 @@ and raw_attribute_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ path; args } : raw_attribute)
     | _ -> Error "")
 
-and raw_span_of_json (ctx : of_json_ctx) (js : json) : (raw_span, string) result
-    =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("file_id", file_id); ("beg", beg); ("end", end_) ] ->
-        let* file = file_id_of_json ctx file_id in
-        let* beg_loc = loc_of_json ctx beg in
-        let* end_loc = loc_of_json ctx end_ in
-        Ok ({ file; beg_loc; end_loc } : raw_span)
-    | _ -> Error "")
-
 and ref_kind_of_json (ctx : of_json_ctx) (js : json) : (ref_kind, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -1504,11 +1493,22 @@ and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("span", span); ("generated_from_span", generated_from_span) ] ->
-        let* span = raw_span_of_json ctx span in
+        let* span = span_data_of_json ctx span in
         let* generated_from_span =
-          option_of_json raw_span_of_json ctx generated_from_span
+          option_of_json span_data_of_json ctx generated_from_span
         in
         Ok ({ span; generated_from_span } : span)
+    | _ -> Error "")
+
+and span_data_of_json (ctx : of_json_ctx) (js : json) :
+    (span_data, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("file_id", file_id); ("beg", beg); ("end", end_) ] ->
+        let* file = file_id_of_json ctx file_id in
+        let* beg_loc = loc_of_json ctx beg in
+        let* end_loc = loc_of_json ctx end_ in
+        Ok ({ file; beg_loc; end_loc } : span_data)
     | _ -> Error "")
 
 and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
