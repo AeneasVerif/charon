@@ -103,7 +103,7 @@ generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
 /// A type variable in a signature or binder.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
-pub struct TypeVar {
+pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
     /// Variable name
@@ -286,9 +286,9 @@ where
     }
 }
 
-impl TypeVar {
-    pub fn new(index: TypeVarId, name: String) -> TypeVar {
-        TypeVar { index, name }
+impl TypeParam {
+    pub fn new(index: TypeVarId, name: String) -> TypeParam {
+        TypeParam { index, name }
     }
 }
 

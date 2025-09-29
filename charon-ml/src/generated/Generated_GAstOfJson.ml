@@ -896,7 +896,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           vector_of_json region_id_of_json region_var_of_json ctx regions
         in
         let* types =
-          vector_of_json type_var_id_of_json type_var_of_json ctx types
+          vector_of_json type_var_id_of_json type_param_of_json ctx types
         in
         let* const_generics =
           vector_of_json const_generic_var_id_of_json const_generic_var_of_json
@@ -1954,14 +1954,14 @@ and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =
         Ok (TBuiltin builtin)
     | _ -> Error "")
 
-and type_var_of_json (ctx : of_json_ctx) (js : json) : (type_var, string) result
-    =
+and type_param_of_json (ctx : of_json_ctx) (js : json) :
+    (type_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("index", index); ("name", name) ] ->
         let* index = type_var_id_of_json ctx index in
         let* name = string_of_json ctx name in
-        Ok ({ index; name } : type_var)
+        Ok ({ index; name } : type_param)
     | _ -> Error "")
 
 and type_var_id_of_json (ctx : of_json_ctx) (js : json) :

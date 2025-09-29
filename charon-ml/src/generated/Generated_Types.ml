@@ -346,7 +346,7 @@ and generic_args = {
     but do not need to be filled with witnesses/instances. *)
 and generic_params = {
   regions : region_var list;
-  types : type_var list;
+  types : type_param list;
   const_generics : const_generic_var list;
   trait_clauses : trait_clause list;
   regions_outlive : (region, region) outlives_pred region_binder list;
@@ -596,7 +596,7 @@ and type_id =
           as it allows for more uniform treatment throughout the codebase. *)
 
 (** A type variable in a signature or binder. *)
-and type_var = (type_var_id, string) indexed_var
+and type_param = (type_var_id, string) indexed_var
 [@@deriving
   show,
   eq,

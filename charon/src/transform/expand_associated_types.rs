@@ -1108,7 +1108,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         let replacements = modifications.compute_replacements(|path| {
             let var_id = generics
                 .types
-                .push_with(|id| TypeVar::new(id, path.to_name()));
+                .push_with(|id| TypeParam::new(id, path.to_name()));
             TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
         });
         self.under_binder(replacements, |this| this.visit_inner(binder))
@@ -1302,7 +1302,7 @@ impl TransformPass for Transform {
                     let var_id = item
                         .generic_params()
                         .types
-                        .push_with(|id| TypeVar::new(id, path.to_name()));
+                        .push_with(|id| TypeParam::new(id, path.to_name()));
                     TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
                 })
             };

@@ -247,7 +247,7 @@ pub struct Binder<T> {
 #[derive(Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
-    pub types: Vector<TypeVarId, TypeVar>,
+    pub types: Vector<TypeVarId, TypeParam>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,

@@ -1125,6 +1125,6 @@ mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
 mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstGeneric);
 mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: TraitRef);
 mk_index_impls!(GenericParams.regions[RegionId]: RegionVar);
-mk_index_impls!(GenericParams.types[TypeVarId]: TypeVar);
+mk_index_impls!(GenericParams.types[TypeVarId]: TypeParam);
 mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericVar);
 mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitClause);

@@ -388,7 +388,7 @@ impl ItemTransCtx<'_, '_> {
                     .the_only_binder_mut()
                     .params
                     .types
-                    .push_with(|index| TypeVar { index, name });
+                    .push_with(|index| TypeParam { index, name });
                 // Moving that type under two levels of binders: the `DynPredicate` binder and the
                 // type constraint binder.
                 let new_ty =

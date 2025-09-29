@@ -307,9 +307,9 @@ let make_type_subst (var_ids : TypeVarId.id list) (tys : ty list) :
   let map = TypeVarId.Map.of_list (List.combine var_ids tys) in
   fun varid -> TypeVarId.Map.find varid map
 
-let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
+let make_type_subst_from_vars (vars : type_param list) (tys : ty list) :
     TypeVarId.id -> ty =
-  make_type_subst (List.map (fun (x : type_var) -> x.index) vars) tys
+  make_type_subst (List.map (fun (x : type_param) -> x.index) vars) tys
 
 (** Create a const generic substitution from a list of const generic variable
     ids and a list of const generics (with which to substitute the const generic
@@ -529,7 +529,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
   let shift_region_var (var : region_var) =
     { var with index = shift_region_varid var.index }
   in
-  let shift_ty_var (var : type_var) =
+  let shift_ty_var (var : type_param) =
     { var with index = shift_ty_varid var.index }
   in
   let shift_cg_var (var : const_generic_var) =

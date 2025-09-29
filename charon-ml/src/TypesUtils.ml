@@ -221,7 +221,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
     List.map (fun (v : region_var) -> RVar (Free v.index)) generics.regions
   in
   let types =
-    List.map (fun (v : type_var) -> TVar (Free v.index)) generics.types
+    List.map (fun (v : type_param) -> TVar (Free v.index)) generics.types
   in
   let const_generics =
     List.map

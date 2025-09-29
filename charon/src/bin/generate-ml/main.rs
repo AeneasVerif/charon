@@ -1041,7 +1041,7 @@ fn generate_ml(
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(region_id, string option) indexed_var"),
-        ("TypeVar", "(type_var_id, string) indexed_var"),
+        ("TypeParam", "(type_var_id, string) indexed_var"),
     ];
     let manual_json_impls = &[
         // Hand-written because we filter out `None` values.

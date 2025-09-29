@@ -48,7 +48,7 @@ let type_db_var_to_pretty_string (var : type_db_var) : string =
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
 
-let type_var_to_string (tv : type_var) : string = tv.name
+let type_var_to_string (tv : type_param) : string = tv.name
 
 let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
   "C@" ^ ConstGenericVarId.to_string id
@@ -120,7 +120,7 @@ let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
 
 let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
   let find (generics : generic_params) varid =
-    List.find_opt (fun (v : type_var) -> v.index = varid) generics.types
+    List.find_opt (fun (v : type_param) -> v.index = varid) generics.types
   in
   match lookup_var_in_env env find var with
   | None -> type_db_var_to_pretty_string var

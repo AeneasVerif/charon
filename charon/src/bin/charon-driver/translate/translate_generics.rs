@@ -103,7 +103,10 @@ impl BindingLevel {
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
-        let var_id = self.params.types.push_with(|index| TypeVar { index, name });
+        let var_id = self
+            .params
+            .types
+            .push_with(|index| TypeParam { index, name });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }

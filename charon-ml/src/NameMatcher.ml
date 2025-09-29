@@ -860,7 +860,7 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
   let tmap =
     T.TypeVarId.Map.of_list
       (List.map
-         (fun (x : T.type_var) -> (x.index, Some (VarName x.name)))
+         (fun (x : T.type_param) -> (x.index, Some (VarName x.name)))
          generics.types)
   in
   let cmap =

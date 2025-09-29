@@ -1907,8 +1907,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     }
 }
 
-impl_display_via_ctx!(TypeVar);
-impl<C: AstFormatter> FmtWithCtx<C> for TypeVar {
+impl_display_via_ctx!(TypeParam);
+impl<C: AstFormatter> FmtWithCtx<C> for TypeParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)
     }
