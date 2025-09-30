@@ -52,7 +52,7 @@ impl Pattern {
         self.matches_with_generics(ctx, name, None)
     }
 
-    pub fn matches_item(&self, ctx: &TranslatedCrate, item: AnyTransItem<'_>) -> bool {
+    pub fn matches_item(&self, ctx: &TranslatedCrate, item: ItemRef<'_>) -> bool {
         let generics = item.identity_args();
         let name = &item.item_meta().name;
         self.matches_with_generics(ctx, name, Some(&generics))

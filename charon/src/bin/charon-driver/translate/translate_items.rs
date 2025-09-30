@@ -177,7 +177,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     /// While translating an item you may need the contents of another. Use this to retreive the
     /// translated version of this item. Use with care as this could create cycles.
-    pub(crate) fn get_or_translate(&mut self, id: ItemId) -> Result<AnyTransItem<'_>, Error> {
+    pub(crate) fn get_or_translate(&mut self, id: ItemId) -> Result<krate::ItemRef<'_>, Error> {
         // We have to call `get_item` a few times because we're running into the classic `Polonius`
         // problem case.
         if self.translated.get_item(id).is_none() {

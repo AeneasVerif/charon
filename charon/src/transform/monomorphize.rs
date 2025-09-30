@@ -286,7 +286,7 @@ impl VisitAstMut for SubstVisitor<'_> {
 #[allow(dead_code)]
 struct MissingIndexChecker<'a> {
     krate: &'a TranslatedCrate,
-    current_item: Option<AnyTransItem<'a>>,
+    current_item: Option<ItemRef<'a>>,
 }
 impl VisitAst for MissingIndexChecker<'_> {
     fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
@@ -326,7 +326,7 @@ impl VisitAst for MissingIndexChecker<'_> {
     }
 }
 
-fn find_uses(data: &mut PassData, krate: &TranslatedCrate, item: &AnyTransItem) {
+fn find_uses(data: &mut PassData, krate: &TranslatedCrate, item: &ItemRef) {
     let mut visitor = UsageVisitor { data, krate };
     let _ = item.drive(&mut visitor);
 }
@@ -395,7 +395,7 @@ impl TransformPass for Transform {
         // Find the roots of the mono item graph
         for (id, item) in ctx.translated.all_items_with_ids() {
             match item {
-                AnyTransItem::Fun(f) if f.signature.generics.is_empty() => {
+                ItemRef::Fun(f) if f.signature.generics.is_empty() => {
                     data.items
                         .insert((id, empty_gargs.clone()), OptionHint::Some(id));
                     data.worklist.push(id);
@@ -534,11 +534,11 @@ impl TransformPass for Transform {
                 panic!("Couldn't find item {:} in translated items.", id)
             };
             match item {
-                AnyTransItemMut::Fun(f) => subst_uses(&data, f),
-                AnyTransItemMut::Type(t) => subst_uses(&data, t),
-                AnyTransItemMut::TraitImpl(t) => subst_uses(&data, t),
-                AnyTransItemMut::Global(g) => subst_uses(&data, g),
-                AnyTransItemMut::TraitDecl(t) => subst_uses(&data, t),
+                ItemRefMut::Fun(f) => subst_uses(&data, f),
+                ItemRefMut::Type(t) => subst_uses(&data, t),
+                ItemRefMut::TraitImpl(t) => subst_uses(&data, t),
+                ItemRefMut::Global(g) => subst_uses(&data, g),
+                ItemRefMut::TraitDecl(t) => subst_uses(&data, t),
             };
         }
 

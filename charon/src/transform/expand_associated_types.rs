@@ -626,14 +626,14 @@ impl<'a> ComputeItemModifications<'a> {
         }
     }
 
-    fn compute_item_modifications(&mut self, item: AnyTransItem<'_>) -> ItemModifications {
-        if let AnyTransItem::TraitDecl(tdecl) = item {
+    fn compute_item_modifications(&mut self, item: ItemRef<'_>) -> ItemModifications {
+        if let ItemRef::TraitDecl(tdecl) = item {
             // The complex case is traits: we call `compute_extra_params_for_trait` to
             // compute the right thing.
             let id = tdecl.def_id;
             let _ = self.compute_extra_params_for_trait(id);
             self.trait_modifications[id].as_processed().unwrap().clone()
-        } else if let AnyTransItem::TraitImpl(timpl) = item {
+        } else if let ItemRef::TraitImpl(timpl) = item {
             let _ = self.compute_assoc_tys_for_impl(timpl.def_id);
             let type_constraints = self.impl_assoc_tys[timpl.def_id]
                 .as_processed()
@@ -1249,7 +1249,7 @@ impl TransformPass for Transform {
             for (id, item) in ctx.translated.all_items_with_ids() {
                 let modifications = computer.compute_item_modifications(item);
                 item_modifications.insert(GenericsSource::Item(id), modifications);
-                if let AnyTransItem::TraitDecl(tdecl) = item {
+                if let ItemRef::TraitDecl(tdecl) = item {
                     for method in &tdecl.methods {
                         let modifications =
                             computer.compute_non_trait_modifications(&method.params);
@@ -1271,8 +1271,7 @@ impl TransformPass for Transform {
 
             // Add new parameters or associated types in order to have types to fill in all the
             // replaced paths. We then collect the replaced paths and their associated value.
-            let type_replacements: TypeConstraintSet = if let AnyTransItemMut::TraitDecl(tr) =
-                &mut item
+            let type_replacements: TypeConstraintSet = if let ItemRefMut::TraitDecl(tr) = &mut item
                 && !modifications.add_type_params
             {
                 // If we're self-referential, instead of adding new type parameters to pass to our
@@ -1313,14 +1312,14 @@ impl TransformPass for Transform {
             }
 
             // Remove trait associated types.
-            if let AnyTransItemMut::TraitDecl(tr) = &mut item
+            if let ItemRefMut::TraitDecl(tr) = &mut item
                 && modifications.add_type_params
             {
                 tr.types.clear();
             }
 
             // Adjust impl associated types.
-            if let AnyTransItemMut::TraitImpl(timpl) = &mut item {
+            if let ItemRefMut::TraitImpl(timpl) = &mut item {
                 let trait_id = timpl.impl_trait.id;
                 if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
                     if decl_modifs.add_type_params {

@@ -192,7 +192,7 @@ impl<'a> FmtCtx<'a> {
         FmtCtx::default()
     }
 
-    pub fn get_item(&self, id: ItemId) -> Result<AnyTransItem<'_>, Option<&Name>> {
+    pub fn get_item(&self, id: ItemId) -> Result<ItemRef<'_>, Option<&Name>> {
         let Some(translated) = &self.translated else {
             return Err(None);
         };

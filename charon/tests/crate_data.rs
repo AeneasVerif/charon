@@ -18,7 +18,7 @@ struct Item<'c> {
     // Not a ref because we do a little hack.
     generics: GenericParams,
     #[expect(dead_code)]
-    kind: AnyTransItem<'c>,
+    kind: ItemRef<'c>,
 }
 
 /// Get all the items for this crate.
@@ -27,7 +27,7 @@ fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c
         .all_items()
         .map(|item| {
             let mut generics = item.generic_params().clone();
-            if let AnyTransItem::TraitDecl(tdecl) = &item {
+            if let ItemRef::TraitDecl(tdecl) = &item {
                 // We do a little hack.
                 assert!(generics.trait_clauses.is_empty());
                 generics.trait_clauses = tdecl.parent_clauses.clone();

@@ -379,10 +379,10 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         let id = item.id();
         graph.set_current_id(ctx, id);
         match item {
-            AnyTransItem::Type(..) | AnyTransItem::TraitImpl(..) | AnyTransItem::Global(..) => {
+            ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
                 let _ = item.drive(&mut graph);
             }
-            AnyTransItem::Fun(d) => {
+            ItemRef::Fun(d) => {
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemKind`.
                 let _ = d.signature.drive(&mut graph);
@@ -394,7 +394,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     graph.insert_edge(trait_ref.id.into());
                 }
             }
-            AnyTransItem::TraitDecl(d) => {
+            ItemRef::TraitDecl(d) => {
                 let TraitDecl {
                     def_id: _,
                     item_meta: _,

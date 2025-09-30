@@ -108,14 +108,14 @@ impl Display for ItemId {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for AnyTransItem<'_> {
+impl<C: AstFormatter> FmtWithCtx<C> for ItemRef<'_> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AnyTransItem::Type(d) => write!(f, "{}", d.with_ctx(ctx)),
-            AnyTransItem::Fun(d) => write!(f, "{}", d.with_ctx(ctx)),
-            AnyTransItem::Global(d) => write!(f, "{}", d.with_ctx(ctx)),
-            AnyTransItem::TraitDecl(d) => write!(f, "{}", d.with_ctx(ctx)),
-            AnyTransItem::TraitImpl(d) => write!(f, "{}", d.with_ctx(ctx)),
+            ItemRef::Type(d) => write!(f, "{}", d.with_ctx(ctx)),
+            ItemRef::Fun(d) => write!(f, "{}", d.with_ctx(ctx)),
+            ItemRef::Global(d) => write!(f, "{}", d.with_ctx(ctx)),
+            ItemRef::TraitDecl(d) => write!(f, "{}", d.with_ctx(ctx)),
+            ItemRef::TraitImpl(d) => write!(f, "{}", d.with_ctx(ctx)),
         }
     }
 }

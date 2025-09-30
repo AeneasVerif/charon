@@ -654,8 +654,7 @@ impl ItemTransCtx<'_, '_> {
         // substitutions.
         let field_tys = {
             let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
-            let AnyTransItem::Type(vtable_def) =
-                self.t_ctx.get_or_translate(vtable_decl_id.into())?
+            let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
             else {
                 unreachable!()
             };
