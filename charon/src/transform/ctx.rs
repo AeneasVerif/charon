@@ -154,7 +154,7 @@ impl<'ctx> TransformCtx {
 
     pub(crate) fn with_def_id<F, T>(
         &mut self,
-        def_id: impl Into<AnyTransId>,
+        def_id: impl Into<ItemId>,
         def_id_is_local: bool,
         f: F,
     ) -> T

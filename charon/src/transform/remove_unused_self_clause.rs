@@ -41,11 +41,11 @@ impl VisitAst for UsesClauseVisitor {
 
 #[derive(Visitor)]
 struct RemoveSelfVisitor {
-    remove_in: HashSet<AnyTransId>,
+    remove_in: HashSet<ItemId>,
 }
 
 impl RemoveSelfVisitor {
-    fn process_item(&self, id: impl Into<AnyTransId>, args: &mut GenericArgs) {
+    fn process_item(&self, id: impl Into<ItemId>, args: &mut GenericArgs) {
         if self.remove_in.contains(&id.into()) {
             args.trait_refs
                 .remove_and_shift_ids(TraitClauseId::from_raw(0));
@@ -85,7 +85,7 @@ impl TransformPass for Transform {
             return;
         }
         let self_clause_id = TraitClauseId::from_raw(0);
-        let mut doesnt_use_self: HashSet<AnyTransId> = Default::default();
+        let mut doesnt_use_self: HashSet<ItemId> = Default::default();
 
         // We explore only items with an explicit `Self` clause, namely method and associated const
         // declarations.

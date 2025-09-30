@@ -1038,7 +1038,7 @@ impl UpdateItemBody<'_> {
             args.types.push(ty);
         }
     }
-    fn update_item_generics(&mut self, id: impl Into<AnyTransId>, args: &mut GenericArgs) {
+    fn update_item_generics(&mut self, id: impl Into<ItemId>, args: &mut GenericArgs) {
         self.update_generics(args, GenericsSource::item(id), None);
     }
 

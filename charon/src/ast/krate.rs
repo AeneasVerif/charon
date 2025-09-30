@@ -39,7 +39,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
 )]
 #[charon::rename("AnyDeclId")]
 #[charon::variants_prefix("Id")]
-pub enum AnyTransId {
+pub enum ItemId {
     Type(TypeDeclId),
     Fun(FunDeclId),
     Global(GlobalDeclId),
@@ -68,20 +68,20 @@ macro_rules! wrap_unwrap_enum {
     };
 }
 
-wrap_unwrap_enum!(AnyTransId::Fun(FunDeclId));
-wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
-wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
-wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
-wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
-impl TryFrom<AnyTransId> for TypeId {
+wrap_unwrap_enum!(ItemId::Fun(FunDeclId));
+wrap_unwrap_enum!(ItemId::Global(GlobalDeclId));
+wrap_unwrap_enum!(ItemId::Type(TypeDeclId));
+wrap_unwrap_enum!(ItemId::TraitDecl(TraitDeclId));
+wrap_unwrap_enum!(ItemId::TraitImpl(TraitImplId));
+impl TryFrom<ItemId> for TypeId {
     type Error = ();
-    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+    fn try_from(x: ItemId) -> Result<Self, Self::Error> {
         Ok(TypeId::Adt(x.try_into()?))
     }
 }
-impl TryFrom<AnyTransId> for FunId {
+impl TryFrom<ItemId> for FunId {
     type Error = ();
-    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+    fn try_from(x: ItemId) -> Result<Self, Self::Error> {
         Ok(FunId::Regular(x.try_into()?))
     }
 }
@@ -135,13 +135,13 @@ pub struct TranslatedCrate {
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
-    /// Invariant: after translation, any existing `AnyTransId` must have an associated name, even
+    /// Invariant: after translation, any existing `ItemId` must have an associated name, even
     /// if the corresponding item wasn't translated.
-    #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
-    pub item_names: HashMap<AnyTransId, Name>,
+    #[serde(with = "HashMapToArray::<ItemId, Name>")]
+    pub item_names: HashMap<ItemId, Name>,
     /// Short names, for items whose last PathElem is unique.
-    #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
-    pub short_names: HashMap<AnyTransId, Name>,
+    #[serde(with = "HashMapToArray::<ItemId, Name>")]
+    pub short_names: HashMap<ItemId, Name>,
 
     /// The translated files.
     #[drive(skip)]
@@ -162,47 +162,43 @@ pub struct TranslatedCrate {
 }
 
 impl TranslatedCrate {
-    pub fn item_name(&self, id: impl Into<AnyTransId>) -> Option<&Name> {
+    pub fn item_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
         self.item_names.get(&id.into())
     }
 
-    pub fn item_short_name(&self, id: impl Into<AnyTransId>) -> Option<&Name> {
+    pub fn item_short_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
         let id = id.into();
         self.short_names.get(&id).or_else(|| self.item_name(id))
     }
 
-    pub fn get_item(&self, trans_id: impl Into<AnyTransId>) -> Option<AnyTransItem<'_>> {
+    pub fn get_item(&self, trans_id: impl Into<ItemId>) -> Option<AnyTransItem<'_>> {
         match trans_id.into() {
-            AnyTransId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
-            AnyTransId::Fun(id) => self.fun_decls.get(id).map(AnyTransItem::Fun),
-            AnyTransId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),
-            AnyTransId::TraitDecl(id) => self.trait_decls.get(id).map(AnyTransItem::TraitDecl),
-            AnyTransId::TraitImpl(id) => self.trait_impls.get(id).map(AnyTransItem::TraitImpl),
+            ItemId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
+            ItemId::Fun(id) => self.fun_decls.get(id).map(AnyTransItem::Fun),
+            ItemId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),
+            ItemId::TraitDecl(id) => self.trait_decls.get(id).map(AnyTransItem::TraitDecl),
+            ItemId::TraitImpl(id) => self.trait_impls.get(id).map(AnyTransItem::TraitImpl),
         }
     }
 
-    pub fn get_item_mut(&mut self, trans_id: AnyTransId) -> Option<AnyTransItemMut<'_>> {
+    pub fn get_item_mut(&mut self, trans_id: ItemId) -> Option<AnyTransItemMut<'_>> {
         match trans_id {
-            AnyTransId::Type(id) => self.type_decls.get_mut(id).map(AnyTransItemMut::Type),
-            AnyTransId::Fun(id) => self.fun_decls.get_mut(id).map(AnyTransItemMut::Fun),
-            AnyTransId::Global(id) => self.global_decls.get_mut(id).map(AnyTransItemMut::Global),
-            AnyTransId::TraitDecl(id) => {
-                self.trait_decls.get_mut(id).map(AnyTransItemMut::TraitDecl)
-            }
-            AnyTransId::TraitImpl(id) => {
-                self.trait_impls.get_mut(id).map(AnyTransItemMut::TraitImpl)
-            }
+            ItemId::Type(id) => self.type_decls.get_mut(id).map(AnyTransItemMut::Type),
+            ItemId::Fun(id) => self.fun_decls.get_mut(id).map(AnyTransItemMut::Fun),
+            ItemId::Global(id) => self.global_decls.get_mut(id).map(AnyTransItemMut::Global),
+            ItemId::TraitDecl(id) => self.trait_decls.get_mut(id).map(AnyTransItemMut::TraitDecl),
+            ItemId::TraitImpl(id) => self.trait_impls.get_mut(id).map(AnyTransItemMut::TraitImpl),
         }
     }
 
-    pub fn all_ids(&self) -> impl Iterator<Item = AnyTransId> + use<> {
+    pub fn all_ids(&self) -> impl Iterator<Item = ItemId> + use<> {
         self.type_decls
             .all_indices()
-            .map(AnyTransId::Type)
-            .chain(self.trait_decls.all_indices().map(AnyTransId::TraitDecl))
-            .chain(self.trait_impls.all_indices().map(AnyTransId::TraitImpl))
-            .chain(self.global_decls.all_indices().map(AnyTransId::Global))
-            .chain(self.fun_decls.all_indices().map(AnyTransId::Fun))
+            .map(ItemId::Type)
+            .chain(self.trait_decls.all_indices().map(ItemId::TraitDecl))
+            .chain(self.trait_impls.all_indices().map(ItemId::TraitImpl))
+            .chain(self.global_decls.all_indices().map(ItemId::Global))
+            .chain(self.fun_decls.all_indices().map(ItemId::Fun))
     }
     pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
         self.type_decls
@@ -222,13 +218,13 @@ impl TranslatedCrate {
             .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
             .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
     }
-    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (AnyTransId, AnyTransItem<'_>)> {
+    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (ItemId, AnyTransItem<'_>)> {
         self.all_items().map(|item| (item.id(), item))
     }
 }
 
 impl<'ctx> AnyTransItem<'ctx> {
-    pub fn id(&self) -> AnyTransId {
+    pub fn id(&self) -> ItemId {
         match self {
             AnyTransItem::Type(d) => d.def_id.into(),
             AnyTransItem::Fun(d) => d.def_id.into(),

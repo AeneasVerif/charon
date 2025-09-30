@@ -192,7 +192,7 @@ impl<'a> FmtCtx<'a> {
         FmtCtx::default()
     }
 
-    pub fn get_item(&self, id: AnyTransId) -> Result<AnyTransItem<'_>, Option<&Name>> {
+    pub fn get_item(&self, id: ItemId) -> Result<AnyTransItem<'_>, Option<&Name>> {
         let Some(translated) = &self.translated else {
             return Err(None);
         };
@@ -202,7 +202,7 @@ impl<'a> FmtCtx<'a> {
     }
 
     /// Print the whole definition.
-    pub fn format_decl_id(&self, id: impl Into<AnyTransId>) -> String {
+    pub fn format_decl_id(&self, id: impl Into<ItemId>) -> String {
         let id = id.into();
         match self.get_item(id) {
             Ok(d) => d.to_string_with_ctx(self),

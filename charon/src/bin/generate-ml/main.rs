@@ -1194,7 +1194,7 @@ fn generate_ml(
                     "ConstGeneric",
                     "TraitClauseId",
                     "DeBruijnVar",
-                    "AnyTransId",
+                    "ItemId",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.

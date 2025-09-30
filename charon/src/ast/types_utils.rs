@@ -617,7 +617,7 @@ where
         args: ItemBinder<OtherItem, &GenericArgs>,
     ) -> ItemBinder<OtherItem, T>
     where
-        ItemId: Into<AnyTransId>,
+        ItemId: Into<ItemId>,
         T: TyVisitable,
     {
         args.map_bound(|args| self.val.substitute(args))

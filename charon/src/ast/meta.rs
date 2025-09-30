@@ -198,7 +198,7 @@ pub enum ItemOpacity {
     /// declared opaque via a command-line argument.
     Opaque,
     /// Translate nothing of this item. The corresponding map will not have an entry for the
-    /// `AnyTransId`. Useful when even the signature of the item causes errors.
+    /// `ItemId`. Useful when even the signature of the item causes errors.
     Invisible,
 }
 

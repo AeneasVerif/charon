@@ -10,7 +10,7 @@ use std::fmt::Debug;
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, EnumIsA, Deserialize, Drive, DriveMut)]
 pub enum GenericsSource {
     /// A top-level item.
-    Item(AnyTransId),
+    Item(ItemId),
     /// A trait method.
     Method(TraitDeclId, TraitItemName),
     /// A builtin item like `Box`.
@@ -20,7 +20,7 @@ pub enum GenericsSource {
 }
 
 impl GenericsSource {
-    pub fn item<I: Into<AnyTransId>>(id: I) -> Self {
+    pub fn item<I: Into<ItemId>>(id: I) -> Self {
         Self::Item(id.into())
     }
 

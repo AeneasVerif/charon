@@ -44,17 +44,9 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord, eq]
 
-(** The id of a translated item. *)
-type any_decl_id =
-  | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
-
 (** Const Generic Values. Either a primitive value, or a variable corresponding
     to a primitve value *)
-and const_generic =
+type const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -110,6 +102,15 @@ and 'a0 de_bruijn_var =
 
 and fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
+
+(** The id of a translated item. *)
+and any_decl_id =
+  | IdType of type_decl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
+
 and trait_clause_id = (TraitClauseId.id[@visitors.opaque])
 and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
 and trait_impl_id = (TraitImplId.id[@visitors.opaque])

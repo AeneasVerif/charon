@@ -83,7 +83,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for AnyTransId {
+impl<C: AstFormatter> FmtWithCtx<C> for ItemId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match ctx
             .get_crate()
@@ -95,14 +95,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for AnyTransId {
     }
 }
 
-impl Display for AnyTransId {
+impl Display for ItemId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         let s = match self {
-            AnyTransId::Type(x) => x.to_pretty_string(),
-            AnyTransId::Fun(x) => x.to_pretty_string(),
-            AnyTransId::Global(x) => x.to_pretty_string(),
-            AnyTransId::TraitDecl(x) => x.to_pretty_string(),
-            AnyTransId::TraitImpl(x) => x.to_pretty_string(),
+            ItemId::Type(x) => x.to_pretty_string(),
+            ItemId::Fun(x) => x.to_pretty_string(),
+            ItemId::Global(x) => x.to_pretty_string(),
+            ItemId::TraitDecl(x) => x.to_pretty_string(),
+            ItemId::TraitImpl(x) => x.to_pretty_string(),
         };
         f.write_str(&s)
     }
@@ -483,7 +483,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
 
 impl<C: AstFormatter> FmtWithCtx<C> for FunDeclId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+        ItemId::from(*self).fmt_with_ctx(ctx, f)
     }
 }
 
@@ -791,7 +791,7 @@ where
 
 impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+        ItemId::from(*self).fmt_with_ctx(ctx, f)
     }
 }
 
@@ -886,7 +886,7 @@ impl ItemMeta {
         f: &mut fmt::Formatter<'_>,
         ctx: &C,
         keyword: &str,
-        id: impl Into<AnyTransId>,
+        id: impl Into<ItemId>,
     ) -> fmt::Result {
         let tab = ctx.indent();
         let full_name = self.name.with_ctx(ctx);
@@ -1598,7 +1598,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+        ItemId::from(*self).fmt_with_ctx(ctx, f)
     }
 }
 
@@ -1682,7 +1682,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImplId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+        ItemId::from(*self).fmt_with_ctx(ctx, f)
     }
 }
 
@@ -1885,7 +1885,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TypeDeclId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+        ItemId::from(*self).fmt_with_ctx(ctx, f)
     }
 }
 

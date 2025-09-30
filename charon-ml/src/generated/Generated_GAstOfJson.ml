@@ -65,27 +65,6 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedRawPtr (x_0, x_1))
     | _ -> Error "")
 
-and any_decl_id_of_json (ctx : of_json_ctx) (js : json) :
-    (any_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Type", type_) ] ->
-        let* type_ = type_decl_id_of_json ctx type_ in
-        Ok (IdType type_)
-    | `Assoc [ ("Fun", fun_) ] ->
-        let* fun_ = fun_decl_id_of_json ctx fun_ in
-        Ok (IdFun fun_)
-    | `Assoc [ ("Global", global) ] ->
-        let* global = global_decl_id_of_json ctx global in
-        Ok (IdGlobal global)
-    | `Assoc [ ("TraitDecl", trait_decl) ] ->
-        let* trait_decl = trait_decl_id_of_json ctx trait_decl in
-        Ok (IdTraitDecl trait_decl)
-    | `Assoc [ ("TraitImpl", trait_impl) ] ->
-        let* trait_impl = trait_impl_id_of_json ctx trait_impl in
-        Ok (IdTraitImpl trait_impl)
-    | _ -> Error "")
-
 and assertion_of_json (ctx : of_json_ctx) (js : json) :
     (assertion, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1030,6 +1009,27 @@ and integer_type_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Unsigned", unsigned) ] ->
         let* unsigned = u_int_ty_of_json ctx unsigned in
         Ok (Unsigned unsigned)
+    | _ -> Error "")
+
+and any_decl_id_of_json (ctx : of_json_ctx) (js : json) :
+    (any_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Type", type_) ] ->
+        let* type_ = type_decl_id_of_json ctx type_ in
+        Ok (IdType type_)
+    | `Assoc [ ("Fun", fun_) ] ->
+        let* fun_ = fun_decl_id_of_json ctx fun_ in
+        Ok (IdFun fun_)
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_id_of_json ctx global in
+        Ok (IdGlobal global)
+    | `Assoc [ ("TraitDecl", trait_decl) ] ->
+        let* trait_decl = trait_decl_id_of_json ctx trait_decl in
+        Ok (IdTraitDecl trait_decl)
+    | `Assoc [ ("TraitImpl", trait_impl) ] ->
+        let* trait_impl = trait_impl_id_of_json ctx trait_impl in
+        Ok (IdTraitImpl trait_impl)
     | _ -> Error "")
 
 and item_kind_of_json (ctx : of_json_ctx) (js : json) :

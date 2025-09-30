@@ -163,7 +163,7 @@ impl CheckGenericsVisitor<'_> {
         );
     }
 
-    fn assert_matches_item(&self, id: impl Into<AnyTransId>, args: &GenericArgs) {
+    fn assert_matches_item(&self, id: impl Into<ItemId>, args: &GenericArgs) {
         let id = id.into();
         let Some(item) = self.ctx.translated.get_item(id) else {
             return;
