@@ -345,7 +345,6 @@ fn main()
     let @4: i32; // anonymous local
     let @5: (i32, i32); // anonymous local
     let @6: &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)); // anonymous local
-    let @7: &'static (test_crate::Join::{vtable}<i32, i32, i32, i32, i32>); // anonymous local
 
     storage_live(v@1)
     storage_live(@2)
@@ -359,9 +358,7 @@ fn main()
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    @7 := ptr_metadata(copy (v@1))
-    @6 := &(*(v@1), move (@7))
+    @6 := &(*(v@1), copy (v@1.metadata))
     @5 := Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32), i32>::join_method<'_>(move (@6))
     storage_dead(@6)
     storage_dead(@5)

@@ -260,9 +260,7 @@ where
     let @13: usize; // anonymous local
     let @14: *const T; // anonymous local
     let @15: *const T; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: usize; // anonymous local
-    let @18: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // anonymous local
+    let @16: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -275,8 +273,6 @@ where
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -285,8 +281,8 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
-        @18 := Option::None {  }
-        @0 := move (@18)
+        @16 := Option::None {  }
+        @0 := move (@16)
     }
     else {
         storage_live(@13)
@@ -297,15 +293,13 @@ where
         new_len@6 := copy ((@3 as variant Option::Some).0)
         storage_live(@7)
         storage_live(@8)
-        @8 := ptr_metadata(copy (slice@2))
+        @8 := copy (slice@2.metadata)
         @7 := copy (self@4) <= move (@8)
         if move (@7) {
             storage_dead(@8)
             storage_live(@10)
             storage_live(@11)
-            storage_live(@17)
-            @17 := ptr_metadata(copy (slice@2))
-            @11 := &raw const (*(slice@2), move (@17))
+            @11 := &raw const (*(slice@2), copy (slice@2.metadata))
             storage_live(@14)
             storage_live(@15)
             @14 := cast<*const Slice<T>, *const T>(copy (@11))
@@ -314,9 +308,7 @@ where
             storage_dead(@15)
             storage_dead(@14)
             storage_dead(@11)
-            storage_live(@16)
-            @16 := ptr_metadata(copy (@10))
-            @9 := &(*(@10), move (@16))
+            @9 := &(*(@10), copy (@10.metadata))
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
@@ -324,8 +316,8 @@ where
         else {
             storage_dead(@8)
             storage_dead(@3)
-            @18 := Option::None {  }
-            @0 := move (@18)
+            @16 := Option::None {  }
+            @0 := move (@16)
         }
     }
     storage_dead(@7)
@@ -353,9 +345,7 @@ where
     let @13: usize; // anonymous local
     let @14: *mut T; // anonymous local
     let @15: *mut T; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: usize; // anonymous local
-    let @18: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // anonymous local
+    let @16: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -368,8 +358,6 @@ where
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -378,8 +366,8 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
-        @18 := Option::None {  }
-        @0 := move (@18)
+        @16 := Option::None {  }
+        @0 := move (@16)
     }
     else {
         storage_live(@13)
@@ -390,15 +378,13 @@ where
         new_len@6 := copy ((@3 as variant Option::Some).0)
         storage_live(@7)
         storage_live(@8)
-        @8 := ptr_metadata(copy (slice@2))
+        @8 := copy (slice@2.metadata)
         @7 := copy (self@4) <= move (@8)
         if move (@7) {
             storage_dead(@8)
             storage_live(@10)
             storage_live(ptr@11)
-            storage_live(@17)
-            @17 := ptr_metadata(copy (slice@2))
-            ptr@11 := &raw mut (*(slice@2), move (@17))
+            ptr@11 := &raw mut (*(slice@2), copy (slice@2.metadata))
             storage_live(@14)
             storage_live(@15)
             @14 := cast<*mut Slice<T>, *mut T>(copy (ptr@11))
@@ -407,9 +393,7 @@ where
             storage_dead(@15)
             storage_dead(@14)
             storage_dead(ptr@11)
-            storage_live(@16)
-            @16 := ptr_metadata(copy (@10))
-            @9 := &mut (*(@10), move (@16))
+            @9 := &mut (*(@10), copy (@10.metadata))
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
@@ -417,8 +401,8 @@ where
         else {
             storage_dead(@8)
             storage_dead(@3)
-            @18 := Option::None {  }
-            @0 := move (@18)
+            @16 := Option::None {  }
+            @0 := move (@16)
         }
     }
     storage_dead(@7)
@@ -520,7 +504,7 @@ where
         storage_live(@6)
         @6 := copy ((self@1).end)
         storage_live(@7)
-        @7 := ptr_metadata(copy (slice@2))
+        @7 := copy (slice@2.metadata)
         @4 := {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::precondition_check(move (@5), move (@6), move (@7))
         storage_dead(@7)
         storage_dead(@6)
@@ -629,7 +613,7 @@ where
         storage_live(@6)
         @6 := copy ((self@1).end)
         storage_live(@7)
-        @7 := ptr_metadata(copy (slice@2))
+        @7 := copy (slice@2.metadata)
         @4 := {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut::precondition_check(move (@5), move (@6), move (@7))
         storage_dead(@7)
         storage_dead(@6)
@@ -675,8 +659,6 @@ where
     let @14: usize; // anonymous local
     let @15: *const T; // anonymous local
     let @16: *const T; // anonymous local
-    let @17: usize; // anonymous local
-    let @18: usize; // anonymous local
 
     storage_live(@3)
     storage_live(new_len@4)
@@ -690,8 +672,6 @@ where
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
     storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
@@ -708,7 +688,7 @@ where
         new_len@4 := copy ((@5 as variant Option::Some).0)
         storage_dead(@5)
         storage_live(@8)
-        @9 := ptr_metadata(copy (slice@2))
+        @9 := copy (slice@2.metadata)
         @8 := copy (self@6) > copy (@9)
         if move (@8) {
         }
@@ -716,9 +696,7 @@ where
             storage_dead(@8)
             storage_live(@11)
             storage_live(@12)
-            storage_live(@18)
-            @18 := ptr_metadata(copy (slice@2))
-            @12 := &raw const (*(slice@2), move (@18))
+            @12 := &raw const (*(slice@2), copy (slice@2.metadata))
             storage_live(@15)
             storage_live(@16)
             @15 := cast<*const Slice<T>, *const T>(copy (@12))
@@ -727,9 +705,7 @@ where
             storage_dead(@16)
             storage_dead(@15)
             storage_dead(@12)
-            storage_live(@17)
-            @17 := ptr_metadata(copy (@11))
-            @0 := &(*(@11), move (@17))
+            @0 := &(*(@11), copy (@11.metadata))
             storage_dead(@11)
             return
         }
@@ -762,8 +738,6 @@ where
     let @14: usize; // anonymous local
     let @15: *mut T; // anonymous local
     let @16: *mut T; // anonymous local
-    let @17: usize; // anonymous local
-    let @18: usize; // anonymous local
 
     storage_live(@3)
     storage_live(new_len@4)
@@ -777,8 +751,6 @@ where
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
     storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
@@ -795,7 +767,7 @@ where
         new_len@4 := copy ((@5 as variant Option::Some).0)
         storage_dead(@5)
         storage_live(@8)
-        @9 := ptr_metadata(copy (slice@2))
+        @9 := copy (slice@2.metadata)
         @8 := copy (self@6) > copy (@9)
         if move (@8) {
         }
@@ -803,9 +775,7 @@ where
             storage_dead(@8)
             storage_live(@11)
             storage_live(ptr@12)
-            storage_live(@18)
-            @18 := ptr_metadata(copy (slice@2))
-            ptr@12 := &raw mut (*(slice@2), move (@18))
+            ptr@12 := &raw mut (*(slice@2), copy (slice@2.metadata))
             storage_live(@15)
             storage_live(@16)
             @15 := cast<*mut Slice<T>, *mut T>(copy (ptr@12))
@@ -814,9 +784,7 @@ where
             storage_dead(@16)
             storage_dead(@15)
             storage_dead(ptr@12)
-            storage_live(@17)
-            @17 := ptr_metadata(copy (@11))
-            @0 := &mut (*(@11), move (@17))
+            @0 := &mut (*(@11), copy (@11.metadata))
             storage_dead(@11)
             return
         }
@@ -859,10 +827,8 @@ fn main()
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
     let @9: usize; // anonymous local
-    let @10: usize; // anonymous local
-    let @11: usize; // anonymous local
-    let @12: &'_ (Slice<i32>); // anonymous local
-    let @13: &'_ (i32); // anonymous local
+    let @10: &'_ (Slice<i32>); // anonymous local
+    let @11: &'_ (i32); // anonymous local
 
     storage_live(array@1)
     array@1 := [const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
@@ -875,21 +841,17 @@ fn main()
     @3 := {impl Index<I> for Array<T, const N : usize>}::index<'_, i32, Range<usize>[Sized<usize>], 6 : usize>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I> for Slice<T>}<i32, Range<usize>[Sized<usize>]>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}<i32>[Sized<i32>]]](move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)
-    storage_live(@10)
-    @10 := ptr_metadata(copy (@3))
-    slice@2 := &(*(@3), move (@10))
+    slice@2 := &(*(@3), copy (@3.metadata))
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
     @9 := const (0 : usize)
+    storage_live(@10)
+    @10 := &(*(slice@2), copy (slice@2.metadata))
     storage_live(@11)
-    @11 := ptr_metadata(copy (slice@2))
-    storage_live(@12)
-    @12 := &(*(slice@2), move (@11))
-    storage_live(@13)
-    @13 := @SliceIndexShared<'_, i32>(move (@12), copy (@9))
-    @8 := copy (*(@13))
+    @11 := @SliceIndexShared<'_, i32>(move (@10), copy (@9))
+    @8 := copy (*(@11))
     @7 := move (@8) == const (3 : i32)
     if move (@7) {
     }

@@ -360,7 +360,6 @@ where
     let @2: &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // anonymous local
     let @3: &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // anonymous local
     let @4: &'_ (T); // anonymous local
-    let @5: &'static (test_crate::NoParam::{vtable}); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -368,9 +367,7 @@ where
     @4 := &*(arg@1)
     @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
     storage_dead(@4)
-    storage_live(@5)
-    @5 := ptr_metadata(copy (@3))
-    @2 := &(*(@3), move (@5))
+    @2 := &(*(@3), copy (@3.metadata))
     @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
@@ -465,7 +462,6 @@ where
     let @5: i32; // anonymous local
     let @6: &'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // anonymous local
     let @7: &'_ (T); // anonymous local
-    let @8: &'static (test_crate::Modifiable::{vtable}<T>); // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
@@ -478,9 +474,7 @@ where
     storage_dead(@3)
     storage_dead(@4)
     storage_live(@6)
-    storage_live(@8)
-    @8 := ptr_metadata(copy (x@2))
-    @6 := &two-phase-mut (*(x@2), move (@8))
+    @6 := &two-phase-mut (*(x@2), copy (x@2.metadata))
     storage_live(@7)
     @7 := &*(arg@1)
     @0 := Modifiable<(dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_), T>::modify<'_, '_>(move (@6), move (@7))
@@ -539,14 +533,10 @@ where
     let @7: (); // anonymous local
     let @8: &'_ (Self); // anonymous local
     let @9: &'_ (i64); // anonymous local
-    let @10: PtrMetadata<Self>; // anonymous local
-    let @11: PtrMetadata<Self>; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
-    storage_live(@10)
-    @10 := ptr_metadata(copy (self@1))
-    @5 := &(*(self@1), move (@10))
+    @5 := &(*(self@1), copy (self@1.metadata))
     storage_live(@6)
     @6 := &*(t32@2)
     @4 := @TraitClause0::parent_clause1::operate_on<'_, '_>(move (@5), move (@6))
@@ -555,9 +545,7 @@ where
     storage_dead(@4)
     storage_live(@7)
     storage_live(@8)
-    storage_live(@11)
-    @11 := ptr_metadata(copy (self@1))
-    @8 := &(*(self@1), move (@11))
+    @8 := &(*(self@1), copy (self@1.metadata))
     storage_live(@9)
     @9 := &*(t64@3)
     @7 := @TraitClause0::parent_clause2::operate_on<'_, '_>(move (@8), move (@9))
@@ -747,13 +735,10 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>
     let @7: &'_ (i64); // anonymous local
     let @8: &'_ (i64); // anonymous local
     let @9: i64; // anonymous local
-    let @10: &'static (test_crate::Both32And64::{vtable}); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    storage_live(@10)
-    @10 := ptr_metadata(copy (x@1))
-    @3 := &(*(x@1), move (@10))
+    @3 := &(*(x@1), copy (x@1.metadata))
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -846,12 +831,6 @@ fn main()
     let @60: &'_ (i64); // anonymous local
     let @61: &'_ (i64); // anonymous local
     let @62: i64; // anonymous local
-    let @63: &'static (test_crate::Checkable::{vtable}<i32>); // anonymous local
-    let @64: usize; // anonymous local
-    let @65: &'static (test_crate::Modifiable::{vtable}<i32>); // anonymous local
-    let @66: &'static (test_crate::NoParam::{vtable}); // anonymous local
-    let @67: &'static (test_crate::NoParam::{vtable}); // anonymous local
-    let @68: &'static (test_crate::Both32And64::{vtable}); // anonymous local
 
     storage_live(@21)
     storage_live(@22)
@@ -895,10 +874,6 @@ fn main()
     storage_live(@60)
     storage_live(@61)
     storage_live(@62)
-    storage_live(@65)
-    storage_live(@66)
-    storage_live(@67)
-    storage_live(@68)
     storage_live(x@1)
     storage_live(@2)
     storage_live(@3)
@@ -912,9 +887,7 @@ fn main()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    storage_live(@63)
-    @63 := ptr_metadata(copy (x@1))
-    @7 := &(*(x@1), move (@63))
+    @7 := &(*(x@1), copy (x@1.metadata))
     @6 := Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_), i32>::check<'_>(move (@7))
     if move (@6) {
     }
@@ -945,9 +918,7 @@ fn main()
     storage_live(@19)
     storage_live(@20)
     @20 := const ("Hello")
-    storage_live(@64)
-    @64 := ptr_metadata(copy (@20))
-    @19 := &(*(@20), move (@64))
+    @19 := &(*(@20), copy (@20.metadata))
     @18 := {impl ToString for T}::to_string<'_, Str>[MetaSized<Str>, {impl Display for Str}](move (@19))
     storage_dead(@19)
     @17 := &@18
@@ -973,9 +944,7 @@ fn main()
         storage_live(@23)
         storage_live(@24)
         storage_live(@25)
-        storage_live(@65)
-        @65 := ptr_metadata(copy (y@8))
-        @25 := &two-phase-mut (*(y@8), move (@65))
+        @25 := &two-phase-mut (*(y@8), copy (y@8.metadata))
         storage_live(@26)
         storage_live(@27)
         storage_live(@28)
@@ -1045,9 +1014,7 @@ fn main()
         @47 := &@48
         @46 := &*(@47)
         @45 := to_dyn_obj<'_, i32>[Sized<i32>, {impl NoParam for i32}](move (@46))
-        storage_live(@67)
-        @67 := ptr_metadata(copy (@45))
-        @44 := &(*(@45), move (@67))
+        @44 := &(*(@45), copy (@45.metadata))
         z@43 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>>(move (@44))
         storage_dead(@46)
         storage_dead(@44)
@@ -1056,9 +1023,7 @@ fn main()
         storage_dead(@45)
         storage_live(@49)
         storage_live(@50)
-        storage_live(@66)
-        @66 := ptr_metadata(copy (z@43))
-        @50 := &(*(z@43), move (@66))
+        @50 := &(*(z@43), copy (z@43.metadata))
         @49 := NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>::dummy<'_>(move (@50))
         storage_dead(@50)
         storage_dead(@49)
@@ -1074,9 +1039,7 @@ fn main()
         storage_dead(@53)
         storage_live(@55)
         storage_live(@56)
-        storage_live(@68)
-        @68 := ptr_metadata(copy (a@51))
-        @56 := &(*(a@51), move (@68))
+        @56 := &(*(a@51), copy (a@51.metadata))
         storage_live(@57)
         storage_live(@58)
         storage_live(@59)

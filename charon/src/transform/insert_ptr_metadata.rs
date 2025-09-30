@@ -57,7 +57,7 @@ fn compute_place_metadata_inner<T: BodyTransformCtx>(
     ctx: &mut T,
     place: &Place,
     metadata_ty: &Ty,
-) -> Option<Rvalue> {
+) -> Option<Operand> {
     let (subplace, proj) = place.as_projection()?;
     match proj {
         // The outermost deref we encountered gives us the metadata of the place.
@@ -65,7 +65,7 @@ fn compute_place_metadata_inner<T: BodyTransformCtx>(
             let metadata_place = subplace
                 .clone()
                 .project(ProjectionElem::PtrMetadata, metadata_ty.clone());
-            Some(Rvalue::Use(Operand::Copy(metadata_place)))
+            Some(Operand::Copy(metadata_place))
         }
         ProjectionElem::Field { .. } => compute_place_metadata_inner(ctx, subplace, metadata_ty),
         // Indexing for array & slice will only result in sized types, hence no metadata
@@ -81,7 +81,7 @@ fn compute_place_metadata_inner<T: BodyTransformCtx>(
                 // Overflow is UB and should have been prevented by a bound check beforehand.
                 Rvalue::BinaryOp(BinOp::Sub(OverflowMode::UB), to_idx, *from.clone()),
             );
-            Some(Rvalue::Use(Operand::Copy(diff_place)))
+            Some(Operand::Copy(diff_place))
         }
     }
 }
@@ -110,14 +110,7 @@ pub fn compute_place_metadata<T: BodyTransformCtxWithParams>(
         "computed metadata type: {}",
         metadata_ty.with_ctx(&ctx.get_ctx().into_fmt())
     );
-    match compute_place_metadata_inner(ctx, place, &metadata_ty) {
-        Some(rvalue) => {
-            let new_place = ctx.fresh_var(None, metadata_ty);
-            ctx.insert_assn_stmt(new_place.clone(), rvalue);
-            Operand::Move(new_place)
-        }
-        None => no_metadata(ctx),
-    }
+    compute_place_metadata_inner(ctx, place, &metadata_ty).unwrap_or_else(|| no_metadata(ctx))
 }
 
 pub trait BodyTransformCtxWithParams: BodyTransformCtx {

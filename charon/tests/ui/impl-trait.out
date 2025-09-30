@@ -243,7 +243,6 @@ where
     let @3: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
     let @4: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
     let @5: &'_ (@TraitClause1::); // anonymous local
-    let @6: PtrMetadata<@TraitClause1::parent_clause2::Type>; // anonymous local
 
     storage_live(foo@1)
     foo@1 := @TraitClause1::make_foo()
@@ -253,9 +252,7 @@ where
     storage_live(@5)
     @5 := &foo@1
     @4 := @TraitClause1::parent_clause2::get_ty<'_>(move (@5))
-    storage_live(@6)
-    @6 := ptr_metadata(copy (@4))
-    @3 := &(*(@4), move (@6))
+    @3 := &(*(@4), copy (@4.metadata))
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)

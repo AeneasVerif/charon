@@ -729,8 +729,6 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @22: &'_ (usize); // anonymous local
     let @23: &'_ (usize); // anonymous local
     let @24: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
-    let @25: usize; // anonymous local
-    let @26: usize; // anonymous local
 
     storage_live(@5)
     storage_live(@6)
@@ -752,8 +750,6 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     storage_live(@22)
     storage_live(@23)
     storage_live(@24)
-    storage_live(@25)
-    storage_live(@26)
     storage_live(@3)
     storage_live(@4)
     @4 := const (true)
@@ -763,18 +759,14 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@7)
         storage_live(@8)
         storage_live(@9)
-        storage_live(@25)
-        @25 := ptr_metadata(copy (lhs@1))
-        @9 := &(*(lhs@1), move (@25))
+        @9 := &(*(lhs@1), copy (lhs@1.metadata))
         @8 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@9))
         storage_dead(@9)
         @7 := &@8
         storage_live(@10)
         storage_live(@11)
         storage_live(@12)
-        storage_live(@26)
-        @26 := ptr_metadata(copy (rhs@2))
-        @12 := &(*(rhs@2), move (@26))
+        @12 := &(*(rhs@2), copy (rhs@2.metadata))
         @11 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@12))
         storage_dead(@12)
         @10 := &@11
