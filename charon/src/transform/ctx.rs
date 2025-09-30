@@ -154,7 +154,7 @@ impl<'ctx> TransformCtx {
 
     pub(crate) fn with_def_id<F, T>(
         &mut self,
-        def_id: impl Into<AnyTransId>,
+        def_id: impl Into<ItemId>,
         def_id_is_local: bool,
         f: F,
     ) -> T
@@ -205,15 +205,12 @@ impl<'ctx> TransformCtx {
 
     /// Iterate mutably over all items, keeping access to `self`. To make this work, we move out
     /// each item before iterating over it.
-    pub fn for_each_item_mut(
-        &mut self,
-        mut f: impl for<'a> FnMut(&'a mut Self, AnyTransItemMut<'a>),
-    ) {
+    pub fn for_each_item_mut(&mut self, mut f: impl for<'a> FnMut(&'a mut Self, ItemRefMut<'a>)) {
         macro_rules! for_each {
             ($vector:ident, $kind:ident) => {
                 for id in self.translated.$vector.all_indices() {
                     if let Some(mut decl) = self.translated.$vector.remove(id) {
-                        f(self, AnyTransItemMut::$kind(&mut decl));
+                        f(self, ItemRefMut::$kind(&mut decl));
                         self.translated.$vector.set_slot(id, decl);
                     }
                 }

@@ -11,11 +11,11 @@ impl Transform {
         // `inline_local_panic_functions`.
         if let [
             Statement {
-                content: StatementKind::Abort(_),
+                kind: StatementKind::Abort(_),
                 ..
             },
             Statement {
-                content: second_abort @ StatementKind::Abort(_),
+                kind: second_abort @ StatementKind::Abort(_),
                 ..
             },
             ..,
@@ -26,11 +26,11 @@ impl Transform {
         }
         if let [
             Statement {
-                content: StatementKind::Call(call),
+                kind: StatementKind::Call(call),
                 ..
             },
             Statement {
-                content: second_abort @ StatementKind::Abort(_),
+                kind: second_abort @ StatementKind::Abort(_),
                 ..
             },
             ..,

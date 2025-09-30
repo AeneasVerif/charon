@@ -41,7 +41,7 @@ impl UllbcPass for Transform {
             .body
             .iter_indexed()
             .filter_map(|(bid, block)| {
-                if block.statements.is_empty() && block.terminator.content.is_return() {
+                if block.statements.is_empty() && block.terminator.kind.is_return() {
                     Some((bid, block.terminator.span))
                 } else {
                     None

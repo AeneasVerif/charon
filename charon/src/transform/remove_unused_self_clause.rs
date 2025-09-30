@@ -24,7 +24,7 @@ impl VisitAst for UsesClauseVisitor {
             Continue(())
         }
     }
-    fn visit_trait_clause(&mut self, _: &TraitClause) -> ControlFlow<Self::Break> {
+    fn visit_trait_param(&mut self, _: &TraitParam) -> ControlFlow<Self::Break> {
         // Don't look inside the clause declaration as this will always contain the
         // `TraitClauseId`.
         Continue(())
@@ -41,11 +41,11 @@ impl VisitAst for UsesClauseVisitor {
 
 #[derive(Visitor)]
 struct RemoveSelfVisitor {
-    remove_in: HashSet<AnyTransId>,
+    remove_in: HashSet<ItemId>,
 }
 
 impl RemoveSelfVisitor {
-    fn process_item(&self, id: impl Into<AnyTransId>, args: &mut GenericArgs) {
+    fn process_item(&self, id: impl Into<ItemId>, args: &mut GenericArgs) {
         if self.remove_in.contains(&id.into()) {
             args.trait_refs
                 .remove_and_shift_ids(TraitClauseId::from_raw(0));
@@ -64,12 +64,10 @@ impl VisitAstMut for RemoveSelfVisitor {
         self.process_item(x.id, &mut x.generics);
     }
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        match x.func.as_ref() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.process_item(*id, &mut x.generics)
-            }
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
-            FunIdOrTraitMethodRef::Trait(..) => {}
+        match x.kind.as_ref() {
+            FnPtrKind::Fun(FunId::Regular(id)) => self.process_item(*id, &mut x.generics),
+            FnPtrKind::Fun(FunId::Builtin(_)) => {}
+            FnPtrKind::Trait(..) => {}
         }
     }
     fn enter_global_decl_ref(&mut self, x: &mut GlobalDeclRef) {
@@ -87,7 +85,7 @@ impl TransformPass for Transform {
             return;
         }
         let self_clause_id = TraitClauseId::from_raw(0);
-        let mut doesnt_use_self: HashSet<AnyTransId> = Default::default();
+        let mut doesnt_use_self: HashSet<ItemId> = Default::default();
 
         // We explore only items with an explicit `Self` clause, namely method and associated const
         // declarations.

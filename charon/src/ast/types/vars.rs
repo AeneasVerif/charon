@@ -103,7 +103,7 @@ generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
 /// A type variable in a signature or binder.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
-pub struct TypeVar {
+pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
     /// Variable name
@@ -115,7 +115,7 @@ pub struct TypeVar {
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
 )]
-pub struct RegionVar {
+pub struct RegionParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
     /// Region name
@@ -125,7 +125,7 @@ pub struct RegionVar {
 
 /// A const generic variable in a signature or binder.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ConstGenericVar {
+pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
     /// Const generic name
@@ -138,7 +138,7 @@ pub struct ConstGenericVar {
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct TraitClause {
+pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
     // TODO: does not need to be an option.
@@ -152,14 +152,14 @@ pub struct TraitClause {
     pub trait_: PolyTraitDeclRef,
 }
 
-impl PartialEq for TraitClause {
+impl PartialEq for TraitParam {
     fn eq(&self, other: &Self) -> bool {
         // Skip `span` and `origin`
         self.clause_id == other.clause_id && self.trait_ == other.trait_
     }
 }
 
-impl std::hash::Hash for TraitClause {
+impl std::hash::Hash for TraitParam {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.clause_id.hash(state);
         self.trait_.hash(state);
@@ -286,9 +286,9 @@ where
     }
 }
 
-impl TypeVar {
-    pub fn new(index: TypeVarId, name: String) -> TypeVar {
-        TypeVar { index, name }
+impl TypeParam {
+    pub fn new(index: TypeVarId, name: String) -> TypeParam {
+        TypeParam { index, name }
     }
 }
 

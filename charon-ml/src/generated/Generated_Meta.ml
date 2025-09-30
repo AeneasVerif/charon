@@ -93,12 +93,9 @@ and raw_attribute = {
           different delimiters or the [path = lit] case. *)
 }
 
-(** Span information *)
-and raw_span = { file : file_id; beg_loc : loc; end_loc : loc }
-
 (** Meta information about a piece of code (block, statement, etc.) *)
 and span = {
-  span : raw_span;
+  data : span_data;
       (** The source code span.
 
           If this meta information is for a statement/terminator coming from a
@@ -118,8 +115,11 @@ and span = {
                 macro!(); // <-- [span] refers to this location
             }
           ]} *)
-  generated_from_span : raw_span option;
+  generated_from_span : span_data option;
       (** Where the code actually comes from, in case of macro
           expansion/inlining/etc. *)
 }
+
+(** Span information *)
+and span_data = { file : file_id; beg_loc : loc; end_loc : loc }
 [@@deriving show, ord, eq]

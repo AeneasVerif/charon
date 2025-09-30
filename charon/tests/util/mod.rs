@@ -125,8 +125,8 @@ pub fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
 }
 
 pub fn repr_span(span: Span) -> String {
-    let raw_span = span.span;
-    format!("{}-{}", raw_span.beg, raw_span.end)
+    let span_data = span.data;
+    format!("{}-{}", span_data.beg, span_data.end)
 }
 
 pub fn trait_name(crate_data: &TranslatedCrate, trait_id: TraitDeclId) -> &str {

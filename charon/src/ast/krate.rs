@@ -39,7 +39,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
 )]
 #[charon::rename("AnyDeclId")]
 #[charon::variants_prefix("Id")]
-pub enum AnyTransId {
+pub enum ItemId {
     Type(TypeDeclId),
     Fun(FunDeclId),
     Global(GlobalDeclId),
@@ -68,20 +68,20 @@ macro_rules! wrap_unwrap_enum {
     };
 }
 
-wrap_unwrap_enum!(AnyTransId::Fun(FunDeclId));
-wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
-wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
-wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
-wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
-impl TryFrom<AnyTransId> for TypeId {
+wrap_unwrap_enum!(ItemId::Fun(FunDeclId));
+wrap_unwrap_enum!(ItemId::Global(GlobalDeclId));
+wrap_unwrap_enum!(ItemId::Type(TypeDeclId));
+wrap_unwrap_enum!(ItemId::TraitDecl(TraitDeclId));
+wrap_unwrap_enum!(ItemId::TraitImpl(TraitImplId));
+impl TryFrom<ItemId> for TypeId {
     type Error = ();
-    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+    fn try_from(x: ItemId) -> Result<Self, Self::Error> {
         Ok(TypeId::Adt(x.try_into()?))
     }
 }
-impl TryFrom<AnyTransId> for FunId {
+impl TryFrom<ItemId> for FunId {
     type Error = ();
-    fn try_from(x: AnyTransId) -> Result<Self, Self::Error> {
+    fn try_from(x: ItemId) -> Result<Self, Self::Error> {
         Ok(FunId::Regular(x.try_into()?))
     }
 }
@@ -90,7 +90,7 @@ impl TryFrom<AnyTransId> for FunId {
 #[derive(
     Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
 )]
-pub enum AnyTransItem<'ctx> {
+pub enum ItemRef<'ctx> {
     Type(&'ctx TypeDecl),
     Fun(&'ctx FunDecl),
     Global(&'ctx GlobalDecl),
@@ -100,7 +100,7 @@ pub enum AnyTransItem<'ctx> {
 
 /// A mutable reference to a translated item.
 #[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
-pub enum AnyTransItemMut<'ctx> {
+pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),
     Fun(&'ctx mut FunDecl),
     Global(&'ctx mut GlobalDecl),
@@ -135,13 +135,13 @@ pub struct TranslatedCrate {
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
-    /// Invariant: after translation, any existing `AnyTransId` must have an associated name, even
+    /// Invariant: after translation, any existing `ItemId` must have an associated name, even
     /// if the corresponding item wasn't translated.
-    #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
-    pub item_names: HashMap<AnyTransId, Name>,
+    #[serde(with = "HashMapToArray::<ItemId, Name>")]
+    pub item_names: HashMap<ItemId, Name>,
     /// Short names, for items whose last PathElem is unique.
-    #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
-    pub short_names: HashMap<AnyTransId, Name>,
+    #[serde(with = "HashMapToArray::<ItemId, Name>")]
+    pub short_names: HashMap<ItemId, Name>,
 
     /// The translated files.
     #[drive(skip)]
@@ -162,111 +162,105 @@ pub struct TranslatedCrate {
 }
 
 impl TranslatedCrate {
-    pub fn item_name(&self, id: impl Into<AnyTransId>) -> Option<&Name> {
+    pub fn item_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
         self.item_names.get(&id.into())
     }
 
-    pub fn item_short_name(&self, id: impl Into<AnyTransId>) -> Option<&Name> {
+    pub fn item_short_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
         let id = id.into();
         self.short_names.get(&id).or_else(|| self.item_name(id))
     }
 
-    pub fn get_item(&self, trans_id: impl Into<AnyTransId>) -> Option<AnyTransItem<'_>> {
+    pub fn get_item(&self, trans_id: impl Into<ItemId>) -> Option<ItemRef<'_>> {
         match trans_id.into() {
-            AnyTransId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
-            AnyTransId::Fun(id) => self.fun_decls.get(id).map(AnyTransItem::Fun),
-            AnyTransId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),
-            AnyTransId::TraitDecl(id) => self.trait_decls.get(id).map(AnyTransItem::TraitDecl),
-            AnyTransId::TraitImpl(id) => self.trait_impls.get(id).map(AnyTransItem::TraitImpl),
+            ItemId::Type(id) => self.type_decls.get(id).map(ItemRef::Type),
+            ItemId::Fun(id) => self.fun_decls.get(id).map(ItemRef::Fun),
+            ItemId::Global(id) => self.global_decls.get(id).map(ItemRef::Global),
+            ItemId::TraitDecl(id) => self.trait_decls.get(id).map(ItemRef::TraitDecl),
+            ItemId::TraitImpl(id) => self.trait_impls.get(id).map(ItemRef::TraitImpl),
         }
     }
 
-    pub fn get_item_mut(&mut self, trans_id: AnyTransId) -> Option<AnyTransItemMut<'_>> {
+    pub fn get_item_mut(&mut self, trans_id: ItemId) -> Option<ItemRefMut<'_>> {
         match trans_id {
-            AnyTransId::Type(id) => self.type_decls.get_mut(id).map(AnyTransItemMut::Type),
-            AnyTransId::Fun(id) => self.fun_decls.get_mut(id).map(AnyTransItemMut::Fun),
-            AnyTransId::Global(id) => self.global_decls.get_mut(id).map(AnyTransItemMut::Global),
-            AnyTransId::TraitDecl(id) => {
-                self.trait_decls.get_mut(id).map(AnyTransItemMut::TraitDecl)
-            }
-            AnyTransId::TraitImpl(id) => {
-                self.trait_impls.get_mut(id).map(AnyTransItemMut::TraitImpl)
-            }
+            ItemId::Type(id) => self.type_decls.get_mut(id).map(ItemRefMut::Type),
+            ItemId::Fun(id) => self.fun_decls.get_mut(id).map(ItemRefMut::Fun),
+            ItemId::Global(id) => self.global_decls.get_mut(id).map(ItemRefMut::Global),
+            ItemId::TraitDecl(id) => self.trait_decls.get_mut(id).map(ItemRefMut::TraitDecl),
+            ItemId::TraitImpl(id) => self.trait_impls.get_mut(id).map(ItemRefMut::TraitImpl),
         }
     }
 
-    pub fn all_ids(&self) -> impl Iterator<Item = AnyTransId> + use<> {
+    pub fn all_ids(&self) -> impl Iterator<Item = ItemId> + use<> {
         self.type_decls
             .all_indices()
-            .map(AnyTransId::Type)
-            .chain(self.trait_decls.all_indices().map(AnyTransId::TraitDecl))
-            .chain(self.trait_impls.all_indices().map(AnyTransId::TraitImpl))
-            .chain(self.global_decls.all_indices().map(AnyTransId::Global))
-            .chain(self.fun_decls.all_indices().map(AnyTransId::Fun))
+            .map(ItemId::Type)
+            .chain(self.trait_decls.all_indices().map(ItemId::TraitDecl))
+            .chain(self.trait_impls.all_indices().map(ItemId::TraitImpl))
+            .chain(self.global_decls.all_indices().map(ItemId::Global))
+            .chain(self.fun_decls.all_indices().map(ItemId::Fun))
     }
-    pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
+    pub fn all_items(&self) -> impl Iterator<Item = ItemRef<'_>> {
         self.type_decls
             .iter()
-            .map(AnyTransItem::Type)
-            .chain(self.trait_decls.iter().map(AnyTransItem::TraitDecl))
-            .chain(self.trait_impls.iter().map(AnyTransItem::TraitImpl))
-            .chain(self.global_decls.iter().map(AnyTransItem::Global))
-            .chain(self.fun_decls.iter().map(AnyTransItem::Fun))
+            .map(ItemRef::Type)
+            .chain(self.trait_decls.iter().map(ItemRef::TraitDecl))
+            .chain(self.trait_impls.iter().map(ItemRef::TraitImpl))
+            .chain(self.global_decls.iter().map(ItemRef::Global))
+            .chain(self.fun_decls.iter().map(ItemRef::Fun))
     }
-    pub fn all_items_mut(&mut self) -> impl Iterator<Item = AnyTransItemMut<'_>> {
+    pub fn all_items_mut(&mut self) -> impl Iterator<Item = ItemRefMut<'_>> {
         self.type_decls
             .iter_mut()
-            .map(AnyTransItemMut::Type)
-            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
-            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
-            .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
-            .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
+            .map(ItemRefMut::Type)
+            .chain(self.trait_impls.iter_mut().map(ItemRefMut::TraitImpl))
+            .chain(self.trait_decls.iter_mut().map(ItemRefMut::TraitDecl))
+            .chain(self.fun_decls.iter_mut().map(ItemRefMut::Fun))
+            .chain(self.global_decls.iter_mut().map(ItemRefMut::Global))
     }
-    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (AnyTransId, AnyTransItem<'_>)> {
+    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (ItemId, ItemRef<'_>)> {
         self.all_items().map(|item| (item.id(), item))
     }
 }
 
-impl<'ctx> AnyTransItem<'ctx> {
-    pub fn id(&self) -> AnyTransId {
+impl<'ctx> ItemRef<'ctx> {
+    pub fn id(&self) -> ItemId {
         match self {
-            AnyTransItem::Type(d) => d.def_id.into(),
-            AnyTransItem::Fun(d) => d.def_id.into(),
-            AnyTransItem::Global(d) => d.def_id.into(),
-            AnyTransItem::TraitDecl(d) => d.def_id.into(),
-            AnyTransItem::TraitImpl(d) => d.def_id.into(),
+            ItemRef::Type(d) => d.def_id.into(),
+            ItemRef::Fun(d) => d.def_id.into(),
+            ItemRef::Global(d) => d.def_id.into(),
+            ItemRef::TraitDecl(d) => d.def_id.into(),
+            ItemRef::TraitImpl(d) => d.def_id.into(),
         }
     }
 
     pub fn item_meta(&self) -> &'ctx ItemMeta {
         match self {
-            AnyTransItem::Type(d) => &d.item_meta,
-            AnyTransItem::Fun(d) => &d.item_meta,
-            AnyTransItem::Global(d) => &d.item_meta,
-            AnyTransItem::TraitDecl(d) => &d.item_meta,
-            AnyTransItem::TraitImpl(d) => &d.item_meta,
+            ItemRef::Type(d) => &d.item_meta,
+            ItemRef::Fun(d) => &d.item_meta,
+            ItemRef::Global(d) => &d.item_meta,
+            ItemRef::TraitDecl(d) => &d.item_meta,
+            ItemRef::TraitImpl(d) => &d.item_meta,
         }
     }
 
     /// The generic parameters of this item.
     pub fn generic_params(&self) -> &'ctx GenericParams {
         match self {
-            AnyTransItem::Type(d) => &d.generics,
-            AnyTransItem::Fun(d) => &d.signature.generics,
-            AnyTransItem::Global(d) => &d.generics,
-            AnyTransItem::TraitDecl(d) => &d.generics,
-            AnyTransItem::TraitImpl(d) => &d.generics,
+            ItemRef::Type(d) => &d.generics,
+            ItemRef::Fun(d) => &d.signature.generics,
+            ItemRef::Global(d) => &d.generics,
+            ItemRef::TraitDecl(d) => &d.generics,
+            ItemRef::TraitImpl(d) => &d.generics,
         }
     }
 
     /// Get information about the parent of this item, if any.
     pub fn parent_info(&self) -> &'ctx ItemKind {
         match self {
-            AnyTransItem::Fun(d) => &d.kind,
-            AnyTransItem::Global(d) => &d.kind,
-            AnyTransItem::Type(_) | AnyTransItem::TraitDecl(_) | AnyTransItem::TraitImpl(_) => {
-                &ItemKind::TopLevel
-            }
+            ItemRef::Fun(d) => &d.kind,
+            ItemRef::Global(d) => &d.kind,
+            ItemRef::Type(_) | ItemRef::TraitDecl(_) | ItemRef::TraitImpl(_) => &ItemKind::TopLevel,
         }
     }
 
@@ -276,80 +270,80 @@ impl<'ctx> AnyTransItem<'ctx> {
     }
 
     /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
-    /// `AnyTransItem` isn't contained in any of our types.
+    /// `ItemRef` isn't contained in any of our types.
     pub fn drive<V: VisitAst>(&self, visitor: &mut V) -> ControlFlow<V::Break> {
         match *self {
-            AnyTransItem::Type(d) => visitor.visit(d),
-            AnyTransItem::Fun(d) => visitor.visit(d),
-            AnyTransItem::Global(d) => visitor.visit(d),
-            AnyTransItem::TraitDecl(d) => visitor.visit(d),
-            AnyTransItem::TraitImpl(d) => visitor.visit(d),
+            ItemRef::Type(d) => visitor.visit(d),
+            ItemRef::Fun(d) => visitor.visit(d),
+            ItemRef::Global(d) => visitor.visit(d),
+            ItemRef::TraitDecl(d) => visitor.visit(d),
+            ItemRef::TraitImpl(d) => visitor.visit(d),
         }
     }
 
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     pub fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T)) {
         match *self {
-            AnyTransItem::Type(d) => d.dyn_visit(f),
-            AnyTransItem::Fun(d) => d.dyn_visit(f),
-            AnyTransItem::Global(d) => d.dyn_visit(f),
-            AnyTransItem::TraitDecl(d) => d.dyn_visit(f),
-            AnyTransItem::TraitImpl(d) => d.dyn_visit(f),
+            ItemRef::Type(d) => d.dyn_visit(f),
+            ItemRef::Fun(d) => d.dyn_visit(f),
+            ItemRef::Global(d) => d.dyn_visit(f),
+            ItemRef::TraitDecl(d) => d.dyn_visit(f),
+            ItemRef::TraitImpl(d) => d.dyn_visit(f),
         }
     }
 }
 
-impl<'ctx> AnyTransItemMut<'ctx> {
-    pub fn as_ref(&self) -> AnyTransItem<'_> {
+impl<'ctx> ItemRefMut<'ctx> {
+    pub fn as_ref(&self) -> ItemRef<'_> {
         match self {
-            AnyTransItemMut::Type(d) => AnyTransItem::Type(d),
-            AnyTransItemMut::Fun(d) => AnyTransItem::Fun(d),
-            AnyTransItemMut::Global(d) => AnyTransItem::Global(d),
-            AnyTransItemMut::TraitDecl(d) => AnyTransItem::TraitDecl(d),
-            AnyTransItemMut::TraitImpl(d) => AnyTransItem::TraitImpl(d),
+            ItemRefMut::Type(d) => ItemRef::Type(d),
+            ItemRefMut::Fun(d) => ItemRef::Fun(d),
+            ItemRefMut::Global(d) => ItemRef::Global(d),
+            ItemRefMut::TraitDecl(d) => ItemRef::TraitDecl(d),
+            ItemRefMut::TraitImpl(d) => ItemRef::TraitImpl(d),
         }
     }
-    pub fn reborrow(&mut self) -> AnyTransItemMut<'_> {
+    pub fn reborrow(&mut self) -> ItemRefMut<'_> {
         match self {
-            AnyTransItemMut::Type(d) => AnyTransItemMut::Type(d),
-            AnyTransItemMut::Fun(d) => AnyTransItemMut::Fun(d),
-            AnyTransItemMut::Global(d) => AnyTransItemMut::Global(d),
-            AnyTransItemMut::TraitDecl(d) => AnyTransItemMut::TraitDecl(d),
-            AnyTransItemMut::TraitImpl(d) => AnyTransItemMut::TraitImpl(d),
+            ItemRefMut::Type(d) => ItemRefMut::Type(d),
+            ItemRefMut::Fun(d) => ItemRefMut::Fun(d),
+            ItemRefMut::Global(d) => ItemRefMut::Global(d),
+            ItemRefMut::TraitDecl(d) => ItemRefMut::TraitDecl(d),
+            ItemRefMut::TraitImpl(d) => ItemRefMut::TraitImpl(d),
         }
     }
 
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {
-            AnyTransItemMut::Type(d) => &mut d.generics,
-            AnyTransItemMut::Fun(d) => &mut d.signature.generics,
-            AnyTransItemMut::Global(d) => &mut d.generics,
-            AnyTransItemMut::TraitDecl(d) => &mut d.generics,
-            AnyTransItemMut::TraitImpl(d) => &mut d.generics,
+            ItemRefMut::Type(d) => &mut d.generics,
+            ItemRefMut::Fun(d) => &mut d.signature.generics,
+            ItemRefMut::Global(d) => &mut d.generics,
+            ItemRefMut::TraitDecl(d) => &mut d.generics,
+            ItemRefMut::TraitImpl(d) => &mut d.generics,
         }
     }
 
     /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
-    /// `AnyTransItemMut` isn't contained in any of our types.
+    /// `ItemRefMut` isn't contained in any of our types.
     pub fn drive_mut<V: VisitAstMut>(&mut self, visitor: &mut V) -> ControlFlow<V::Break> {
         match self {
-            AnyTransItemMut::Type(d) => visitor.visit(*d),
-            AnyTransItemMut::Fun(d) => visitor.visit(*d),
-            AnyTransItemMut::Global(d) => visitor.visit(*d),
-            AnyTransItemMut::TraitDecl(d) => visitor.visit(*d),
-            AnyTransItemMut::TraitImpl(d) => visitor.visit(*d),
+            ItemRefMut::Type(d) => visitor.visit(*d),
+            ItemRefMut::Fun(d) => visitor.visit(*d),
+            ItemRefMut::Global(d) => visitor.visit(*d),
+            ItemRefMut::TraitDecl(d) => visitor.visit(*d),
+            ItemRefMut::TraitImpl(d) => visitor.visit(*d),
         }
     }
 
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     pub fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T)) {
         match self {
-            AnyTransItemMut::Type(d) => d.dyn_visit_mut(f),
-            AnyTransItemMut::Fun(d) => d.dyn_visit_mut(f),
-            AnyTransItemMut::Global(d) => d.dyn_visit_mut(f),
-            AnyTransItemMut::TraitDecl(d) => d.dyn_visit_mut(f),
-            AnyTransItemMut::TraitImpl(d) => d.dyn_visit_mut(f),
+            ItemRefMut::Type(d) => d.dyn_visit_mut(f),
+            ItemRefMut::Fun(d) => d.dyn_visit_mut(f),
+            ItemRefMut::Global(d) => d.dyn_visit_mut(f),
+            ItemRefMut::TraitDecl(d) => d.dyn_visit_mut(f),
+            ItemRefMut::TraitImpl(d) => d.dyn_visit_mut(f),
         }
     }
 }

@@ -7,7 +7,7 @@ open TypesUtils
 open GAst
 open PrintUtils
 
-let region_var_to_string (rv : region_var) : string =
+let region_param_to_string (rv : region_param) : string =
   match rv.name with
   | Some name -> name
   | None -> RegionId.to_string rv.index
@@ -48,7 +48,7 @@ let type_db_var_to_pretty_string (var : type_db_var) : string =
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
 
-let type_var_to_string (tv : type_var) : string = tv.name
+let type_param_to_string (tv : type_param) : string = tv.name
 
 let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
   "C@" ^ ConstGenericVarId.to_string id
@@ -57,7 +57,7 @@ let const_generic_db_var_to_pretty_string (var : const_generic_db_var) : string
     =
   "C@" ^ de_bruijn_var_to_pretty_string ConstGenericVarId.to_string var
 
-let const_generic_var_to_string (v : const_generic_var) : string = v.name
+let const_generic_param_to_string (v : const_generic_param) : string = v.name
 
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
@@ -112,35 +112,35 @@ let lookup_var_in_env (env : 'a fmt_env)
 let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
   (* Note that the regions are not necessarily ordered following their indices *)
   let find (generics : generic_params) varid =
-    List.find_opt (fun (v : region_var) -> v.index = varid) generics.regions
+    List.find_opt (fun (v : region_param) -> v.index = varid) generics.regions
   in
   match lookup_var_in_env env find var with
   | None -> region_db_var_to_pretty_string var
-  | Some r -> region_var_to_string r
+  | Some r -> region_param_to_string r
 
 let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
   let find (generics : generic_params) varid =
-    List.find_opt (fun (v : type_var) -> v.index = varid) generics.types
+    List.find_opt (fun (v : type_param) -> v.index = varid) generics.types
   in
   match lookup_var_in_env env find var with
   | None -> type_db_var_to_pretty_string var
-  | Some r -> type_var_to_string r
+  | Some r -> type_param_to_string r
 
 let const_generic_db_var_to_string (env : 'a fmt_env)
     (var : const_generic_db_var) : string =
   let find (generics : generic_params) varid =
     List.find_opt
-      (fun (v : const_generic_var) -> v.index = varid)
+      (fun (v : const_generic_param) -> v.index = varid)
       generics.const_generics
   in
   match lookup_var_in_env env find var with
   | None -> const_generic_db_var_to_pretty_string var
-  | Some r -> const_generic_var_to_string r
+  | Some r -> const_generic_param_to_string r
 
 let trait_db_var_to_string (env : 'a fmt_env) (var : trait_db_var) : string =
   let find (generics : generic_params) varid =
     List.find_opt
-      (fun (v : trait_clause) -> v.clause_id = varid)
+      (fun (v : trait_param) -> v.clause_id = varid)
       generics.trait_clauses
   in
   match lookup_var_in_env env find var with
@@ -161,7 +161,7 @@ let region_binder_to_string (value_to_string : 'a fmt_env -> 'c -> string)
   | [] -> value
   | _ ->
       "for <"
-      ^ String.concat "," (List.map region_var_to_string rb.binder_regions)
+      ^ String.concat "," (List.map region_param_to_string rb.binder_regions)
       ^ "> " ^ value
 
 let rec type_id_to_string (env : 'a fmt_env) (id : type_id) : string =
@@ -249,8 +249,7 @@ and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
   | FRegular fid -> fun_decl_id_to_string env fid
   | FBuiltin aid -> builtin_fun_id_to_string aid
 
-and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
-    (r : fun_id_or_trait_method_ref) : string =
+and fn_ptr_kind_to_string (env : 'a fmt_env) (r : fn_ptr_kind) : string =
   match r with
   | TraitMethod (trait_ref, method_name, _) ->
       trait_ref_to_string env trait_ref ^ "::" ^ method_name
@@ -258,7 +257,7 @@ and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
 
 and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
   let generics = generic_args_to_string env ptr.generics in
-  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
+  fn_ptr_kind_to_string env ptr.kind ^ generics
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with
@@ -403,7 +402,7 @@ and raw_attribute_to_string (attr : raw_attribute) : string =
   in
   attr.path ^ args
 
-let trait_clause_to_string (env : 'a fmt_env) (clause : trait_clause) : string =
+let trait_param_to_string (env : 'a fmt_env) (clause : trait_param) : string =
   let clause_id = trait_clause_id_to_string env clause.clause_id in
   let trait =
     region_binder_to_string trait_decl_ref_to_string env clause.trait
@@ -415,11 +414,11 @@ let generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
   let ({ regions; types; const_generics; trait_clauses; _ } : generic_params) =
     generics
   in
-  let regions = List.map region_var_to_string regions in
-  let types = List.map type_var_to_string types in
-  let cgs = List.map const_generic_var_to_string const_generics in
+  let regions = List.map region_param_to_string regions in
+  let types = List.map type_param_to_string types in
+  let cgs = List.map const_generic_param_to_string const_generics in
   let params = List.flatten [ regions; types; cgs ] in
-  let trait_clauses = List.map (trait_clause_to_string env) trait_clauses in
+  let trait_clauses = List.map (trait_param_to_string env) trait_clauses in
   (params, trait_clauses)
 
 let field_to_string env (f : field) : string =

@@ -33,17 +33,14 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [
-          ("span", span);
-          ("content", content);
-          ("comments_before", comments_before);
-        ] ->
+        [ ("span", span); ("kind", kind); ("comments_before", comments_before) ]
+      ->
         let* span = span_of_json ctx span in
-        let* content = statement_kind_of_json ctx content in
+        let* kind = statement_kind_of_json ctx kind in
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
-        Ok ({ span; content; comments_before } : statement)
+        Ok ({ span; kind; comments_before } : statement)
     | _ -> Error "")
 
 and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -103,17 +100,14 @@ and terminator_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [
-          ("span", span);
-          ("content", content);
-          ("comments_before", comments_before);
-        ] ->
+        [ ("span", span); ("kind", kind); ("comments_before", comments_before) ]
+      ->
         let* span = span_of_json ctx span in
-        let* content = terminator_kind_of_json ctx content in
+        let* kind = terminator_kind_of_json ctx kind in
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
-        Ok ({ span; content; comments_before } : terminator)
+        Ok ({ span; kind; comments_before } : terminator)
     | _ -> Error "")
 
 and terminator_kind_of_json (ctx : of_json_ctx) (js : json) :

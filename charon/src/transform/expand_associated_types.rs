@@ -626,14 +626,14 @@ impl<'a> ComputeItemModifications<'a> {
         }
     }
 
-    fn compute_item_modifications(&mut self, item: AnyTransItem<'_>) -> ItemModifications {
-        if let AnyTransItem::TraitDecl(tdecl) = item {
+    fn compute_item_modifications(&mut self, item: ItemRef<'_>) -> ItemModifications {
+        if let ItemRef::TraitDecl(tdecl) = item {
             // The complex case is traits: we call `compute_extra_params_for_trait` to
             // compute the right thing.
             let id = tdecl.def_id;
             let _ = self.compute_extra_params_for_trait(id);
             self.trait_modifications[id].as_processed().unwrap().clone()
-        } else if let AnyTransItem::TraitImpl(timpl) = item {
+        } else if let ItemRef::TraitImpl(timpl) = item {
             let _ = self.compute_assoc_tys_for_impl(timpl.def_id);
             let type_constraints = self.impl_assoc_tys[timpl.def_id]
                 .as_processed()
@@ -776,7 +776,7 @@ impl<'a> ComputeItemModifications<'a> {
 
     fn compute_extra_params_for_clause<'b>(
         &'b mut self,
-        clause: &TraitClause,
+        clause: &TraitParam,
         clause_to_path: fn(TraitClauseId) -> TraitRefPath,
     ) -> impl Iterator<Item = AssocTypePath> + use<'a, 'b> {
         let trait_id = clause.trait_.skip_binder.id;
@@ -1038,7 +1038,7 @@ impl UpdateItemBody<'_> {
             args.types.push(ty);
         }
     }
-    fn update_item_generics(&mut self, id: impl Into<AnyTransId>, args: &mut GenericArgs) {
+    fn update_item_generics(&mut self, id: impl Into<ItemId>, args: &mut GenericArgs) {
         self.update_generics(args, GenericsSource::item(id), None);
     }
 
@@ -1108,7 +1108,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         let replacements = modifications.compute_replacements(|path| {
             let var_id = generics
                 .types
-                .push_with(|id| TypeVar::new(id, path.to_name()));
+                .push_with(|id| TypeParam::new(id, path.to_name()));
             TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
         });
         self.under_binder(replacements, |this| this.visit_inner(binder))
@@ -1189,12 +1189,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
         self.update_item_generics(x.id, &mut x.generics);
     }
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        match x.func.as_ref() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.update_item_generics(*id, &mut x.generics)
-            }
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
-            FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
+        match x.kind.as_ref() {
+            FnPtrKind::Fun(FunId::Regular(id)) => self.update_item_generics(*id, &mut x.generics),
+            FnPtrKind::Fun(FunId::Builtin(_)) => {}
+            FnPtrKind::Trait(trait_ref, method_name, _) => {
                 let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
                 self.update_generics(
                     &mut x.generics,
@@ -1251,7 +1249,7 @@ impl TransformPass for Transform {
             for (id, item) in ctx.translated.all_items_with_ids() {
                 let modifications = computer.compute_item_modifications(item);
                 item_modifications.insert(GenericsSource::Item(id), modifications);
-                if let AnyTransItem::TraitDecl(tdecl) = item {
+                if let ItemRef::TraitDecl(tdecl) = item {
                     for method in &tdecl.methods {
                         let modifications =
                             computer.compute_non_trait_modifications(&method.params);
@@ -1273,8 +1271,7 @@ impl TransformPass for Transform {
 
             // Add new parameters or associated types in order to have types to fill in all the
             // replaced paths. We then collect the replaced paths and their associated value.
-            let type_replacements: TypeConstraintSet = if let AnyTransItemMut::TraitDecl(tr) =
-                &mut item
+            let type_replacements: TypeConstraintSet = if let ItemRefMut::TraitDecl(tr) = &mut item
                 && !modifications.add_type_params
             {
                 // If we're self-referential, instead of adding new type parameters to pass to our
@@ -1304,7 +1301,7 @@ impl TransformPass for Transform {
                     let var_id = item
                         .generic_params()
                         .types
-                        .push_with(|id| TypeVar::new(id, path.to_name()));
+                        .push_with(|id| TypeParam::new(id, path.to_name()));
                     TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
                 })
             };
@@ -1315,14 +1312,14 @@ impl TransformPass for Transform {
             }
 
             // Remove trait associated types.
-            if let AnyTransItemMut::TraitDecl(tr) = &mut item
+            if let ItemRefMut::TraitDecl(tr) = &mut item
                 && modifications.add_type_params
             {
                 tr.types.clear();
             }
 
             // Adjust impl associated types.
-            if let AnyTransItemMut::TraitImpl(timpl) = &mut item {
+            if let ItemRefMut::TraitImpl(timpl) = &mut item {
                 let trait_id = timpl.impl_trait.id;
                 if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
                     if decl_modifs.add_type_params {

@@ -50,7 +50,7 @@ pub enum StatementKind {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
-    pub content: StatementKind,
+    pub kind: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]
@@ -103,7 +103,7 @@ pub enum TerminatorKind {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Terminator {
     pub span: Span,
-    pub content: TerminatorKind,
+    pub kind: TerminatorKind,
     /// Comments that precede this terminator.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]

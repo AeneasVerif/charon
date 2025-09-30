@@ -21,7 +21,7 @@ impl RemoveMarkersVisitor {
         }
     }
 
-    fn filter_trait_clauses(&mut self, trait_clauses: &mut Vector<TraitClauseId, TraitClause>) {
+    fn filter_trait_clauses(&mut self, trait_clauses: &mut Vector<TraitClauseId, TraitParam>) {
         for i in trait_clauses.all_indices() {
             let clause = &trait_clauses[i];
             if self.exclude.contains(&clause.trait_.skip_binder.id) {

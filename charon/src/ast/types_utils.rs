@@ -9,7 +9,7 @@ use std::fmt::Debug;
 use std::iter::Iterator;
 use std::mem;
 
-impl TraitClause {
+impl TraitParam {
     /// Constructs the trait ref that refers to this clause.
     pub fn identity_tref(&self) -> TraitRef {
         self.identity_tref_at_depth(DeBruijnId::zero())
@@ -617,7 +617,7 @@ where
         args: ItemBinder<OtherItem, &GenericArgs>,
     ) -> ItemBinder<OtherItem, T>
     where
-        ItemId: Into<AnyTransId>,
+        ItemId: Into<ItemId>,
         T: TyVisitable,
     {
         args.map_bound(|args| self.val.substitute(args))
@@ -947,11 +947,11 @@ pub trait TyVisitable: Sized + AstVisitable {
                 }
             }
             fn exit_constant_expr(&mut self, ce: &mut ConstantExpr) {
-                if let ConstantExprKind::Var(var) = &mut ce.value
+                if let ConstantExprKind::Var(var) = &mut ce.kind
                     && let Some(var) = var.move_out_from_depth(self.depth)
                     && let Some(new_cg) = self.v.visit_const_generic_var(var)
                 {
-                    ce.value = new_cg.move_under_binders(self.depth).into();
+                    ce.kind = new_cg.move_under_binders(self.depth).into();
                 }
             }
             fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
@@ -1118,13 +1118,13 @@ impl Layout {
 
 impl<T: AstVisitable> TyVisitable for T {}
 
-impl Eq for TraitClause {}
+impl Eq for TraitParam {}
 
 mk_index_impls!(GenericArgs.regions[RegionId]: Region);
 mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
 mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstGeneric);
 mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: TraitRef);
-mk_index_impls!(GenericParams.regions[RegionId]: RegionVar);
-mk_index_impls!(GenericParams.types[TypeVarId]: TypeVar);
-mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericVar);
-mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitClause);
+mk_index_impls!(GenericParams.regions[RegionId]: RegionParam);
+mk_index_impls!(GenericParams.types[TypeVarId]: TypeParam);
+mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericParam);
+mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitParam);

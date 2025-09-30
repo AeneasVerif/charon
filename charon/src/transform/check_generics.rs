@@ -99,7 +99,7 @@ impl CheckGenericsVisitor<'_> {
     fn assert_clause_matches(
         &self,
         params_fmt: &FmtCtx<'_>,
-        tclause: &TraitClause,
+        tclause: &TraitParam,
         tref: &TraitRef,
     ) {
         let clause_trait_id = tclause.trait_.skip_binder.id;
@@ -163,7 +163,7 @@ impl CheckGenericsVisitor<'_> {
         );
     }
 
-    fn assert_matches_item(&self, id: impl Into<AnyTransId>, args: &GenericArgs) {
+    fn assert_matches_item(&self, id: impl Into<ItemId>, args: &GenericArgs) {
         let id = id.into();
         let Some(item) = self.ctx.translated.get_item(id) else {
             return;
@@ -299,13 +299,11 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         self.assert_matches_item(x.id, &x.generics);
     }
     fn enter_fn_ptr(&mut self, x: &FnPtr) {
-        match x.func.as_ref() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.assert_matches_item(*id, &x.generics)
-            }
+        match x.kind.as_ref() {
+            FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &x.generics),
             // TODO: check builtin generics.
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
-            FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
+            FnPtrKind::Fun(FunId::Builtin(_)) => {}
+            FnPtrKind::Trait(trait_ref, method_name, _) => {
                 let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
                 self.assert_matches_method(trait_id, method_name, &x.generics);
             }

@@ -32,7 +32,7 @@ pub struct Loc {
 
 /// Span information
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
-pub struct RawSpan {
+pub struct SpanData {
     #[charon::rename("file")]
     pub file_id: FileId,
     #[charon::rename("beg_loc")]
@@ -77,9 +77,9 @@ pub struct Span {
     ///     macro!(); // <-- `span` refers to this location
     /// }
     /// ```
-    pub span: RawSpan,
+    pub data: SpanData,
     /// Where the code actually comes from, in case of macro expansion/inlining/etc.
-    pub generated_from_span: Option<RawSpan>,
+    pub generated_from_span: Option<SpanData>,
 }
 
 /// `#[inline]` built-in attribute.
@@ -198,7 +198,7 @@ pub enum ItemOpacity {
     /// declared opaque via a command-line argument.
     Opaque,
     /// Translate nothing of this item. The corresponding map will not have an entry for the
-    /// `AnyTransId`. Useful when even the signature of the item causes errors.
+    /// `ItemId`. Useful when even the signature of the item causes errors.
     Invisible,
 }
 

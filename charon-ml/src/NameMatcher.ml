@@ -684,7 +684,7 @@ let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
 
 let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
     (func : T.fn_ptr) : bool =
-  match func.func with
+  match func.kind with
   | FunId (FBuiltin fid) -> (
       let to_name (s : string list) : T.name =
         List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s
@@ -836,7 +836,7 @@ let const_generic_var_to_pattern (m : constraints)
     (fun varid map -> T.ConstGenericVarId.Map.find_opt varid map.cmap)
     var
 
-let constraints_map_compute_regions_map (regions : T.region_var list) :
+let constraints_map_compute_regions_map (regions : T.region_param list) :
     var option T.RegionId.Map.t =
   let fresh_id (gen : int ref) : int =
     let id = !gen in
@@ -846,7 +846,7 @@ let constraints_map_compute_regions_map (regions : T.region_var list) :
   let rid_gen = ref 0 in
   T.RegionId.Map.of_list
     (List.map
-       (fun (r : T.region_var) ->
+       (fun (r : T.region_param) ->
          let v =
            match r.name with
            | None -> VarIndex (fresh_id rid_gen)
@@ -860,26 +860,26 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
   let tmap =
     T.TypeVarId.Map.of_list
       (List.map
-         (fun (x : T.type_var) -> (x.index, Some (VarName x.name)))
+         (fun (x : T.type_param) -> (x.index, Some (VarName x.name)))
          generics.types)
   in
   let cmap =
     T.ConstGenericVarId.Map.of_list
       (List.map
-         (fun (x : T.const_generic_var) -> (x.index, Some (VarName x.name)))
+         (fun (x : T.const_generic_param) -> (x.index, Some (VarName x.name)))
          generics.const_generics)
   in
   [ { rmap; tmap; cmap } ]
 
 let constraints_map_push_regions_map (m : constraints)
-    (regions : T.region_var list) : constraints =
+    (regions : T.region_param list) : constraints =
   let rmap = constraints_map_compute_regions_map regions in
   { empty_vars_map with rmap } :: m
 
 (** Push a regions map to the constraints map, if the group of regions is
     non-empty - TODO: do something more precise *)
 let constraints_map_push_regions_map_if_nonempty (m : constraints)
-    (regions : T.region_var list) : constraints =
+    (regions : T.region_param list) : constraints =
   match regions with
   | [] -> m
   | _ -> constraints_map_push_regions_map m regions
@@ -1113,7 +1113,7 @@ let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
   let m = compute_constraints_map params in
   let args = generic_args_to_pattern ctx c m func.generics in
   let pat =
-    match func.func with
+    match func.kind with
     | FunId (FBuiltin fid) -> (
         match fid with
         | BoxNew ->

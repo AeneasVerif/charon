@@ -22,16 +22,16 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("span", span);
           ("id", id);
-          ("content", content);
+          ("kind", kind);
           ("comments_before", comments_before);
         ] ->
         let* span = span_of_json ctx span in
         let* statement_id = statement_id_of_json ctx id in
-        let* content = statement_kind_of_json ctx content in
+        let* kind = statement_kind_of_json ctx kind in
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
-        Ok ({ span; statement_id; content; comments_before } : statement)
+        Ok ({ span; statement_id; kind; comments_before } : statement)
     | _ -> Error "")
 
 and statement_id_of_json (ctx : of_json_ctx) (js : json) :

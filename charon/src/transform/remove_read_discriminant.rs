@@ -27,7 +27,7 @@ impl Transform {
             match suffix {
                 [
                     Statement {
-                        content: StatementKind::Assign(dest, Rvalue::Discriminant(p)),
+                        kind: StatementKind::Assign(dest, Rvalue::Discriminant(p)),
                         ..
                     },
                     rest @ ..,
@@ -67,7 +67,7 @@ impl Transform {
                                 );
                             }
                         }
-                        block.statements[i].content = StatementKind::Error(
+                        block.statements[i].kind = StatementKind::Error(
                             "error reading the discriminant of this type".to_owned(),
                         );
                         return;
@@ -77,7 +77,7 @@ impl Transform {
                     match rest {
                         [
                             Statement {
-                                content:
+                                kind:
                                     StatementKind::Switch(
                                         switch @ Switch::SwitchInt(Operand::Move(_), ..),
                                     ),
@@ -132,7 +132,7 @@ impl Transform {
                                 Switch::Match(p.clone(), targets, otherwise)
                             });
                             // `Nop` the discriminant read.
-                            block.statements[i].content = StatementKind::Nop;
+                            block.statements[i].kind = StatementKind::Nop;
                         }
                         _ => {
                             // The discriminant read is not followed by a `SwitchInt`. This can happen
@@ -145,14 +145,14 @@ impl Transform {
                 // appropriate MIR.
                 [
                     Statement {
-                        content: StatementKind::Call(call),
+                        kind: StatementKind::Call(call),
                         ..
                     },
                     ..,
                 ] if let Some(discriminant_intrinsic) = discriminant_intrinsic
                         // Detect a call to the intrinsic...
                         && let FnOperand::Regular(fn_ptr) = &call.func
-                        && let FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) = fn_ptr.func.as_ref()
+                        && let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref()
                         && *fun_id == discriminant_intrinsic
                         // on a known enum...
                         && let ty = &fn_ptr.generics.types[0]
@@ -165,7 +165,7 @@ impl Transform {
                         && let TyKind::Ref(_, sub_ty, _) = p.ty().kind() =>
                 {
                     let p = p.clone().project(ProjectionElem::Deref, sub_ty.clone());
-                    block.statements[i].content =
+                    block.statements[i].kind =
                         StatementKind::Assign(call.dest.clone(), Rvalue::Discriminant(p.clone()))
                 }
                 _ => {}

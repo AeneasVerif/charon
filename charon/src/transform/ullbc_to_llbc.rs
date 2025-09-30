@@ -103,14 +103,14 @@ fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
 
 fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
-    block.terminator.content.is_switch()
+    block.terminator.kind.is_switch()
 }
 
 /// The terminator of the block is a panic, etc.
 fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
     use src::TerminatorKind::*;
-    match &block.terminator.content {
+    match &block.terminator.kind {
         Abort(..) => true,
         Goto { .. } | Switch { .. } | Return | Call { .. } | UnwindResume => false,
     }
@@ -142,7 +142,7 @@ fn build_cfg_partial_info_edges(
     let mut targets = body.body.get(block_id).unwrap().targets();
     // Hack: we don't translate unwind paths in llbc so we ignore them here.
     if let src::TerminatorKind::Call { target, .. } =
-        body.body.get(block_id).unwrap().terminator.content
+        body.body.get(block_id).unwrap().terminator.kind
     {
         targets = vec![target];
     }
@@ -1454,7 +1454,7 @@ fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Bl
 
 fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
-    let st = match st.content.clone() {
+    let st = match st.kind.clone() {
         src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
         src::StatementKind::SetDiscriminant(place, variant_id) => {
             tgt::StatementKind::SetDiscriminant(place, variant_id)
@@ -1481,7 +1481,7 @@ fn translate_terminator(
 ) -> tgt::Block {
     let src_span = terminator.span;
 
-    match &terminator.content {
+    match &terminator.kind {
         src::TerminatorKind::Abort(kind) => {
             tgt::Statement::new(src_span, tgt::StatementKind::Abort(kind.clone())).into_block()
         }
@@ -1657,7 +1657,7 @@ fn translate_block(
     // If we enter a switch or a loop, we need to check if we own the exit
     // block, in which case we need to append it to the loop/switch body
     // in a sequence
-    let is_switch = block.terminator.content.is_switch();
+    let is_switch = block.terminator.kind.is_switch();
     let next_block = if is_loop {
         *info.exits_info.owned_loop_exits.get(&block_id).unwrap()
     } else if is_switch {

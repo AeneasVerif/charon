@@ -127,7 +127,7 @@ impl ItemTransCtx<'_, '_> {
             let mut method_params = GenericParams::empty();
             method_params
                 .regions
-                .push_with(|index| RegionVar { index, name: None });
+                .push_with(|index| RegionParam { index, name: None });
 
             let generics = self
                 .outermost_binder()

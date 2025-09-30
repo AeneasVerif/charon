@@ -197,7 +197,7 @@ pub type BoxedArgs = Box<GenericArgs>;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
-    pub regions: Vector<RegionId, RegionVar>,
+    pub regions: Vector<RegionId, RegionParam>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -246,11 +246,11 @@ pub struct Binder<T> {
 /// be filled with witnesses/instances.
 #[derive(Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
-    pub regions: Vector<RegionId, RegionVar>,
-    pub types: Vector<TypeVarId, TypeVar>,
-    pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
+    pub regions: Vector<RegionId, RegionParam>,
+    pub types: Vector<TypeVarId, TypeParam>,
+    pub const_generics: Vector<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: Vector<TraitClauseId, TraitClause>,
+    pub trait_clauses: Vector<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
     pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region

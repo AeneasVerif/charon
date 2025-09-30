@@ -18,10 +18,10 @@ impl UllbcPass for Transform {
         b.visit_statements(|st: &mut Statement| {
             // Remove any `Storage{Live,Dead}(x)` where `x` has type `!`. Otherwise leave it unchanged.
             if let StatementKind::StorageLive(var_id) | StatementKind::StorageDead(var_id) =
-                &st.content
+                &st.kind
                 && locals[*var_id].ty.is_never()
             {
-                st.content = StatementKind::Nop;
+                st.kind = StatementKind::Nop;
             }
         });
     }

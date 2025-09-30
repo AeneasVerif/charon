@@ -42,13 +42,13 @@ use indexmap::IndexMap;
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
-        CastKind, ClosureInfo, ClosureKind, ConstGenericVar, ConstGenericVarId,
+        CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
-        FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
+        FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
-        RefKind, RegionId, RegionVar, ScalarValue, TraitItemName,
-        TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId, llbc_ast::StatementId,
+        RefKind, RegionId, RegionParam, ScalarValue, TraitItemName,
+        TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata, VTable,
@@ -67,7 +67,7 @@ use indexmap::IndexMap;
     override(
         DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
         TypeDeclRef, FunDeclRef, MaybeBuiltinFunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
-        GenericArgs, GenericParams, TraitClause, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
+        GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
@@ -144,7 +144,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
-        TypeDeclRef, FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
+        TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
         TraitRef, LiteralTy, Literal,
     ),
@@ -410,9 +410,9 @@ mod wrappers {
     }
 
     pub trait VisitorWithItem: VisitAst {
-        fn enter_item(&mut self, _item: AnyTransItem<'_>) {}
-        fn exit_item(&mut self, _item: AnyTransItem<'_>) {}
-        fn visit_item(&mut self, item: AnyTransItem<'_>) -> ControlFlow<Self::Break> {
+        fn enter_item(&mut self, _item: ItemRef<'_>) {}
+        fn exit_item(&mut self, _item: ItemRef<'_>) {}
+        fn visit_item(&mut self, item: ItemRef<'_>) -> ControlFlow<Self::Break> {
             self.enter_item(item);
             item.drive(self)?;
             self.exit_item(item);
@@ -420,9 +420,9 @@ mod wrappers {
         }
     }
     pub trait VisitorWithItemMut: VisitAstMut {
-        fn enter_item(&mut self, _item: AnyTransItemMut<'_>) {}
-        fn exit_item(&mut self, _item: AnyTransItemMut<'_>) {}
-        fn visit_item(&mut self, mut item: AnyTransItemMut<'_>) -> ControlFlow<Self::Break> {
+        fn enter_item(&mut self, _item: ItemRefMut<'_>) {}
+        fn exit_item(&mut self, _item: ItemRefMut<'_>) {}
+        fn visit_item(&mut self, mut item: ItemRefMut<'_>) -> ControlFlow<Self::Break> {
             self.enter_item(item.reborrow());
             item.drive_mut(self)?;
             self.exit_item(item);
@@ -441,19 +441,19 @@ mod wrappers {
             x.drive(self.inner())
         }
         fn visit_fun_decl(&mut self, x: &FunDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItem::Fun(x))
+            self.0.visit_item(ItemRef::Fun(x))
         }
         fn visit_type_decl(&mut self, x: &TypeDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItem::Type(x))
+            self.0.visit_item(ItemRef::Type(x))
         }
         fn visit_global_decl(&mut self, x: &GlobalDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItem::Global(x))
+            self.0.visit_item(ItemRef::Global(x))
         }
         fn visit_trait_decl(&mut self, x: &TraitDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItem::TraitDecl(x))
+            self.0.visit_item(ItemRef::TraitDecl(x))
         }
         fn visit_trait_impl(&mut self, x: &TraitImpl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItem::TraitImpl(x))
+            self.0.visit_item(ItemRef::TraitImpl(x))
         }
     }
     impl<V: VisitAstMut + VisitorWithItemMut> VisitAstMut for VisitWithItem<V> {
@@ -464,19 +464,19 @@ mod wrappers {
             x.drive_mut(self.inner())
         }
         fn visit_fun_decl(&mut self, x: &mut FunDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItemMut::Fun(x))
+            self.0.visit_item(ItemRefMut::Fun(x))
         }
         fn visit_type_decl(&mut self, x: &mut TypeDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItemMut::Type(x))
+            self.0.visit_item(ItemRefMut::Type(x))
         }
         fn visit_global_decl(&mut self, x: &mut GlobalDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItemMut::Global(x))
+            self.0.visit_item(ItemRefMut::Global(x))
         }
         fn visit_trait_decl(&mut self, x: &mut TraitDecl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItemMut::TraitDecl(x))
+            self.0.visit_item(ItemRefMut::TraitDecl(x))
         }
         fn visit_trait_impl(&mut self, x: &mut TraitImpl) -> ControlFlow<Self::Break> {
-            self.0.visit_item(AnyTransItemMut::TraitImpl(x))
+            self.0.visit_item(ItemRefMut::TraitImpl(x))
         }
     }
 
@@ -509,26 +509,26 @@ mod wrappers {
     impl<V: VisitAst + VisitorWithBinderStack> VisitorWithItem
         for DontLeakImplDetails<VisitWithBinderStack<V>>
     {
-        fn enter_item(&mut self, item: AnyTransItem<'_>) {
+        fn enter_item(&mut self, item: ItemRef<'_>) {
             self.0
                 .0
                 .binder_stack_mut()
                 .push(item.generic_params().clone());
         }
-        fn exit_item(&mut self, _item: AnyTransItem<'_>) {
+        fn exit_item(&mut self, _item: ItemRef<'_>) {
             self.0.0.binder_stack_mut().pop();
         }
     }
     impl<V: VisitAstMut + VisitorWithBinderStack> VisitorWithItemMut
         for DontLeakImplDetails<VisitWithBinderStack<V>>
     {
-        fn enter_item(&mut self, item: AnyTransItemMut<'_>) {
+        fn enter_item(&mut self, item: ItemRefMut<'_>) {
             self.0
                 .0
                 .binder_stack_mut()
                 .push(item.as_ref().generic_params().clone());
         }
-        fn exit_item(&mut self, _item: AnyTransItemMut<'_>) {
+        fn exit_item(&mut self, _item: ItemRefMut<'_>) {
             self.0.0.binder_stack_mut().pop();
         }
     }
@@ -622,7 +622,7 @@ mod wrappers {
     }
 
     impl<V: VisitAst + VisitorWithSpan> VisitorWithItem for DontLeakImplDetails<VisitWithSpan<V>> {
-        fn visit_item(&mut self, item: AnyTransItem<'_>) -> ControlFlow<Self::Break> {
+        fn visit_item(&mut self, item: ItemRef<'_>) -> ControlFlow<Self::Break> {
             let old_span = mem::replace(self.0.0.current_span(), item.item_meta().span);
             item.drive(self)?;
             *self.0.0.current_span() = old_span;
@@ -632,7 +632,7 @@ mod wrappers {
     impl<V: VisitAstMut + VisitorWithSpan> VisitorWithItemMut
         for DontLeakImplDetails<VisitWithSpan<V>>
     {
-        fn visit_item(&mut self, mut item: AnyTransItemMut<'_>) -> ControlFlow<Self::Break> {
+        fn visit_item(&mut self, mut item: ItemRefMut<'_>) -> ControlFlow<Self::Break> {
             let span = item.as_ref().item_meta().span;
             let old_span = mem::replace(self.0.0.current_span(), span);
             item.drive_mut(self)?;
@@ -675,7 +675,7 @@ mod wrappers {
         {
             x.drive(self.inner())
         }
-        fn visit_trait_clause(&mut self, x: &TraitClause) -> ControlFlow<Self::Break> {
+        fn visit_trait_param(&mut self, x: &TraitParam) -> ControlFlow<Self::Break> {
             match x.span {
                 Some(span) => self.visit_inner_track_span(x, span),
                 None => self.visit_inner(x),
@@ -704,7 +704,7 @@ mod wrappers {
         {
             x.drive_mut(self.inner())
         }
-        fn visit_trait_clause(&mut self, x: &mut TraitClause) -> ControlFlow<Self::Break> {
+        fn visit_trait_param(&mut self, x: &mut TraitParam) -> ControlFlow<Self::Break> {
             match x.span {
                 Some(span) => self.visit_inner_mut_track_span(x, span),
                 None => self.visit_inner(x),

@@ -67,7 +67,7 @@ impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in &mut b.body {
             block.transform(|st: &mut Statement| {
-                match &mut st.content {
+                match &mut st.kind {
                     // Introduce an intermediate statement if both the rhs and the lhs contain an
                     // "index" projection element (to avoid introducing too many intermediate
                     // assignments).

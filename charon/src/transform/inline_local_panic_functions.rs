@@ -25,7 +25,7 @@ impl UllbcPass for Transform {
                     && let Some(block) = body.body.iter().next()
                     && block.statements.is_empty()
                     && let TerminatorKind::Abort(AbortKind::Panic(Some(name))) =
-                        &block.terminator.content
+                        &block.terminator.kind
                 {
                     if name.equals_ref_name(builtins::EXPLICIT_PANIC_NAME) {
                         // FIXME: also check that the name of the function is
@@ -52,16 +52,16 @@ impl UllbcPass for Transform {
                             Call {
                                 func:
                                     FnOperand::Regular(FnPtr {
-                                        func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                                        kind: box FnPtrKind::Fun(FunId::Regular(fun_id)),
                                         ..
                                     }),
                                 ..
                             },
                         ..
-                    } = &block.terminator.content
+                    } = &block.terminator.kind
                         && panic_fns.contains(fun_id)
                     {
-                        block.terminator.content = panic_terminator.clone();
+                        block.terminator.kind = panic_terminator.clone();
                     }
                 }
             }

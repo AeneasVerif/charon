@@ -310,7 +310,7 @@ impl ItemTransCtx<'_, '_> {
                 let rid = self
                     .innermost_generics_mut()
                     .regions
-                    .push_with(|index| RegionVar { index, name: None });
+                    .push_with(|index| RegionParam { index, name: None });
                 let r = Region::Var(DeBruijnVar::new_at_zero(rid));
                 let mutability = if target_kind == ClosureKind::Fn {
                     RefKind::Shared
@@ -460,7 +460,7 @@ impl ItemTransCtx<'_, '_> {
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
                 // TODO: can we ask hax for the trait ref?
                 let fn_op = FnOperand::Regular(FnPtr {
-                    func: Box::new(fun_id.into()),
+                    kind: Box::new(fun_id.into()),
                     generics: Box::new(impl_ref.generics.concat(&GenericArgs {
                         regions: vec![Region::Erased].into(),
                         ..GenericArgs::empty()
@@ -631,7 +631,7 @@ impl ItemTransCtx<'_, '_> {
                 ClosureKind::FnMut | ClosureKind::Fn => {
                     method_params
                         .regions
-                        .push_with(|index| RegionVar { index, name: None });
+                        .push_with(|index| RegionParam { index, name: None });
                 }
             };
 
@@ -712,7 +712,7 @@ impl ItemTransCtx<'_, '_> {
             );
             let impl_ref = self.translate_closure_impl_ref(span, closure, ClosureKind::FnOnce)?;
             let fn_op = FnOperand::Regular(FnPtr {
-                func: Box::new(fun_id.into()),
+                kind: Box::new(fun_id.into()),
                 generics: impl_ref.generics.clone(),
             });
 

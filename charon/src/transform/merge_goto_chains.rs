@@ -39,7 +39,7 @@ impl UllbcPass for Transform {
         let mut antecedents: Vector<BlockId, Antecedents> =
             body.body.map_ref(|_| Antecedents::Zero);
         for (block_id, block) in body.body.iter_indexed() {
-            let is_goto = block.terminator.content.is_goto();
+            let is_goto = block.terminator.kind.is_goto();
             for target in block.targets() {
                 antecedents.get_mut(target).unwrap().add(block_id, is_goto);
             }
@@ -59,7 +59,7 @@ impl UllbcPass for Transform {
             // While the current block is a straight goto, merge the target block back into this
             // one.
             while let Some(source) = body.body.get(id)
-                && let TerminatorKind::Goto { target } = source.terminator.content
+                && let TerminatorKind::Goto { target } = source.terminator.kind
                 && let Antecedents::One { .. } = antecedents[target]
             {
                 let mut target = body.body.remove(target).unwrap();

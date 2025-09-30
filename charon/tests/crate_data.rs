@@ -18,7 +18,7 @@ struct Item<'c> {
     // Not a ref because we do a little hack.
     generics: GenericParams,
     #[expect(dead_code)]
-    kind: AnyTransItem<'c>,
+    kind: ItemRef<'c>,
 }
 
 /// Get all the items for this crate.
@@ -27,7 +27,7 @@ fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c
         .all_items()
         .map(|item| {
             let mut generics = item.generic_params().clone();
-            if let AnyTransItem::TraitDecl(tdecl) = &item {
+            if let ItemRef::TraitDecl(tdecl) = &item {
                 // We do a little hack.
                 assert!(generics.trait_clauses.is_empty());
                 generics.trait_clauses = tdecl.parent_clauses.clone();
@@ -72,7 +72,7 @@ fn file_name() -> anyhow::Result<()> {
         repr_name(&crate_data, &crate_data.type_decls[1].item_meta.name),
         "core::option::Option"
     );
-    let file_id = crate_data.type_decls[1].item_meta.span.span.file_id;
+    let file_id = crate_data.type_decls[1].item_meta.span.data.file_id;
     let file = &crate_data.files[file_id];
     assert_eq!(file.name.to_string(), "/rustc/library/core/src/option.rs");
     Ok(())
@@ -102,11 +102,7 @@ fn spans() -> anyhow::Result<()> {
     // Span of the function body
     assert_eq!(repr_span(body.span), "3:16-10:9");
 
-    let the_loop = body
-        .statements
-        .iter()
-        .find(|st| st.content.is_loop())
-        .unwrap();
+    let the_loop = body.statements.iter().find(|st| st.kind.is_loop()).unwrap();
     assert_eq!(repr_span(the_loop.span), "5:12-8:13");
 
     Ok(())
@@ -652,14 +648,14 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let [first_stmt, ..] = body.statements.as_slice() else {
         panic!()
     };
-    let StatementKind::Call(call) = &first_stmt.content else {
+    let StatementKind::Call(call) = &first_stmt.kind else {
         panic!()
     };
     let FnOperand::Regular(fn_ptr) = &call.func else {
         panic!()
     };
     // Assert that this call referes to the method directly, without using a trait ref.
-    let FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) = fn_ptr.func.as_ref() else {
+    let FnPtrKind::Fun(FunId::Regular(id)) = fn_ptr.kind.as_ref() else {
         panic!()
     };
     // This is the function that gets called.

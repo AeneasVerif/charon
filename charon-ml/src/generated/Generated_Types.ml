@@ -44,17 +44,9 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord, eq]
 
-(** The id of a translated item. *)
-type any_decl_id =
-  | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
-
 (** Const Generic Values. Either a primitive value, or a variable corresponding
     to a primitve value *)
-and const_generic =
+type const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -110,6 +102,15 @@ and 'a0 de_bruijn_var =
 
 and fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
+
+(** The id of a translated item. *)
+and any_decl_id =
+  | IdType of type_decl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
+
 and trait_clause_id = (TraitClauseId.id[@visitors.opaque])
 and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
 and trait_impl_id = (TraitImplId.id[@visitors.opaque])
@@ -286,7 +287,7 @@ and builtin_ty =
   | TStr  (** Primitive type *)
 
 (** A const generic variable in a signature or binder. *)
-and const_generic_var = {
+and const_generic_param = {
   index : const_generic_var_id;
       (** Index identifying the variable among other variables bound at the same
           level. *)
@@ -306,7 +307,14 @@ and dyn_predicate = {
           this trait in the [dyn Trait] pointer metadata. *)
 }
 
-and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
+and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
+
+and fn_ptr_kind =
+  | FunId of fun_id
+  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
+      (** If a trait: the reference to the trait and the id of the trait method.
+          The fun decl id is not really necessary - we put it here for
+          convenience purposes. *)
 
 (** Reference to a function declaration. *)
 and fun_decl_ref = {
@@ -323,13 +331,6 @@ and fun_id =
       (** A primitive function, coming from a standard library (for instance:
           [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
 
-and fun_id_or_trait_method_ref =
-  | FunId of fun_id
-  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
-      (** If a trait: the reference to the trait and the id of the trait method.
-          The fun decl id is not really necessary - we put it here for
-          convenience purposes. *)
-
 (** A set of generic arguments. *)
 and generic_args = {
   regions : region list;
@@ -345,10 +346,10 @@ and generic_args = {
     predicates which are not trait clauses, because those enforce constraints
     but do not need to be filled with witnesses/instances. *)
 and generic_params = {
-  regions : region_var list;
-  types : type_var list;
-  const_generics : const_generic_var list;
-  trait_clauses : trait_clause list;
+  regions : region_param list;
+  types : type_param list;
+  const_generics : const_generic_param list;
+  trait_clauses : trait_param list;
   regions_outlive : (region, region) outlives_pred region_binder list;
       (** The first region in the pair outlives the second region *)
   types_outlive : (ty, region) outlives_pred region_binder list;
@@ -375,7 +376,7 @@ and region =
     this causes name clash issues in the derived ocaml visitors. TODO: merge
     with [binder] *)
 and 'a0 region_binder = {
-  binder_regions : region_var list;
+  binder_regions : region_param list;
   binder_value : 'a0;
       (** Named this way to highlight accesses to the inner value that might be
           handling parameters incorrectly. Prefer using helper methods. *)
@@ -384,21 +385,10 @@ and 'a0 region_binder = {
 and region_id = (RegionId.id[@visitors.opaque])
 
 (** A region variable in a signature or binder. *)
-and region_var = (region_id, string option) indexed_var
+and region_param = (region_id, string option) indexed_var
 
 (** The value of a trait associated type. *)
 and trait_assoc_ty_impl = { value : ty }
-
-(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
-    functions like a variable binder, to which variables of the form
-    [TraitRefKind::Clause] can refer to. *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** Index identifying the clause among other clauses bound at the same
-          level. *)
-  span : span option;
-  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
-}
 
 (** A predicate of the form [Type: Trait<Args>].
 
@@ -414,6 +404,17 @@ and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
 and trait_item_name = string
+
+(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
+    functions like a variable binder, to which variables of the form
+    [TraitRefKind::Clause] can refer to. *)
+and trait_param = {
+  clause_id : trait_clause_id;
+      (** Index identifying the clause among other clauses bound at the same
+          level. *)
+  span : span option;
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
+}
 
 (** A reference to a trait *)
 and trait_ref = {
@@ -596,7 +597,7 @@ and type_id =
           as it allows for more uniform treatment throughout the codebase. *)
 
 (** A type variable in a signature or binder. *)
-and type_var = (type_var_id, string) indexed_var
+and type_param = (type_var_id, string) indexed_var
 [@@deriving
   show,
   eq,

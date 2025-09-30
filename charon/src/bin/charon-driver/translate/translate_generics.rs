@@ -69,7 +69,7 @@ impl BindingLevel {
         let rid = self
             .params
             .regions
-            .push_with(|index| RegionVar { index, name });
+            .push_with(|index| RegionParam { index, name });
         self.early_region_vars.insert(region, rid);
         rid
     }
@@ -85,7 +85,7 @@ impl BindingLevel {
         let rid = self
             .params
             .regions
-            .push_with(|index| RegionVar { index, name });
+            .push_with(|index| RegionParam { index, name });
         self.bound_region_vars.push(rid);
         rid
     }
@@ -97,13 +97,16 @@ impl BindingLevel {
         let region_id = self
             .params
             .regions
-            .push_with(|index| RegionVar { index, name: None });
+            .push_with(|index| RegionParam { index, name: None });
         self.by_ref_upvar_regions.push(region_id);
         region_id
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
-        let var_id = self.params.types.push_with(|index| TypeVar { index, name });
+        let var_id = self
+            .params
+            .types
+            .push_with(|index| TypeParam { index, name });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }
@@ -112,7 +115,7 @@ impl BindingLevel {
         let var_id = self
             .params
             .const_generics
-            .push_with(|index| ConstGenericVar { index, name, ty });
+            .push_with(|index| ConstGenericParam { index, name, ty });
         self.const_generic_vars_map.insert(rid, var_id);
     }
 

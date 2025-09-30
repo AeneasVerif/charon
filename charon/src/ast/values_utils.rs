@@ -223,7 +223,7 @@ impl ScalarValue {
             ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
         ConstantExpr {
-            value: ConstantExprKind::Literal(Literal::Scalar(self)),
+            kind: ConstantExprKind::Literal(Literal::Scalar(self)),
             ty: TyKind::Literal(literal_ty).into_ty(),
         }
     }

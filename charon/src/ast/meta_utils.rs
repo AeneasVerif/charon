@@ -53,16 +53,16 @@ impl Loc {
     }
 }
 
-impl RawSpan {
+impl SpanData {
     pub fn dummy() -> Self {
-        RawSpan {
+        SpanData {
             file_id: FileId::from_raw(0),
             beg: Loc::dummy(),
             end: Loc::dummy(),
         }
     }
 
-    /// Value with which we order `RawSpans`s.
+    /// Value with which we order `SpanDatas`s.
     fn sort_key(&self) -> impl Ord {
         (self.file_id, self.beg, self.end)
     }
@@ -73,12 +73,12 @@ impl RawSpan {
 }
 
 /// Manual impls because `SpanData` is not orderable.
-impl PartialOrd for RawSpan {
+impl PartialOrd for SpanData {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
-impl Ord for RawSpan {
+impl Ord for SpanData {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.sort_key().cmp(&other.sort_key())
     }
@@ -87,7 +87,7 @@ impl Ord for RawSpan {
 impl Span {
     pub fn dummy() -> Self {
         Span {
-            span: RawSpan::dummy(),
+            data: SpanData::dummy(),
             generated_from_span: None,
         }
     }
@@ -97,18 +97,18 @@ impl Span {
 /// span-information of, say, a sequence).
 pub fn combine_span(m0: &Span, m1: &Span) -> Span {
     // Merge the spans
-    if m0.span.file_id == m1.span.file_id {
-        let span = RawSpan {
-            file_id: m0.span.file_id,
-            beg: Loc::min(&m0.span.beg, &m1.span.beg),
-            end: Loc::max(&m0.span.end, &m1.span.end),
+    if m0.data.file_id == m1.data.file_id {
+        let data = SpanData {
+            file_id: m0.data.file_id,
+            beg: Loc::min(&m0.data.beg, &m1.data.beg),
+            end: Loc::max(&m0.data.end, &m1.data.end),
         };
 
         // We don't attempt to merge the "generated from" spans: they might
         // come from different files, and even if they come from the same files
         // they might come from different macros, etc.
         Span {
-            span,
+            data,
             generated_from_span: None,
         }
     } else {

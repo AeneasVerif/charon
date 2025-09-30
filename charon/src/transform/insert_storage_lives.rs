@@ -32,7 +32,7 @@ impl StorageVisitor {
 
 impl VisitAst for StorageVisitor {
     fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
-        match st.content {
+        match st.kind {
             llbc_ast::StatementKind::StorageDead(loc)
             | llbc_ast::StatementKind::StorageLive(loc) => {
                 self.unmentioned_locals.remove(&loc);
@@ -43,7 +43,7 @@ impl VisitAst for StorageVisitor {
     }
 
     fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
-        match st.content {
+        match st.kind {
             ullbc_ast::StatementKind::StorageDead(loc)
             | ullbc_ast::StatementKind::StorageLive(loc) => {
                 self.unmentioned_locals.remove(&loc);

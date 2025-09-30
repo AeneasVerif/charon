@@ -388,7 +388,7 @@ impl ItemTransCtx<'_, '_> {
                     .the_only_binder_mut()
                     .params
                     .types
-                    .push_with(|index| TypeVar { index, name });
+                    .push_with(|index| TypeParam { index, name });
                 // Moving that type under two levels of binders: the `DynPredicate` binder and the
                 // type constraint binder.
                 let new_ty =
@@ -609,7 +609,7 @@ impl ItemTransCtx<'_, '_> {
                         .erase()
                         .expect("parent trait should be dyn compatible");
                     let global = Box::new(ConstantExpr {
-                        value: ConstantExprKind::Global(vtable_instance_ref),
+                        kind: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,
                     });
                     ConstantExprKind::Ref(global)
@@ -654,8 +654,7 @@ impl ItemTransCtx<'_, '_> {
         // substitutions.
         let field_tys = {
             let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
-            let AnyTransItem::Type(vtable_def) =
-                self.t_ctx.get_or_translate(vtable_decl_id.into())?
+            let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
             else {
                 unreachable!()
             };
@@ -676,7 +675,7 @@ impl ItemTransCtx<'_, '_> {
         let mut field_ty_iter = field_tys.into_iter();
         let mut mk_field = |kind| {
             let ty = field_ty_iter.next().unwrap();
-            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { value: kind, ty })));
+            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
         };
 
         // TODO(dyn): provide values

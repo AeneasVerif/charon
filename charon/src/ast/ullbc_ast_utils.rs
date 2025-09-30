@@ -22,20 +22,20 @@ impl SwitchTargets {
 }
 
 impl Statement {
-    pub fn new(span: Span, content: StatementKind) -> Self {
+    pub fn new(span: Span, kind: StatementKind) -> Self {
         Statement {
             span,
-            content,
+            kind,
             comments_before: vec![],
         }
     }
 }
 
 impl Terminator {
-    pub fn new(span: Span, content: TerminatorKind) -> Self {
+    pub fn new(span: Span, kind: TerminatorKind) -> Self {
         Terminator {
             span,
-            content,
+            kind,
             comments_before: vec![],
         }
     }
@@ -61,7 +61,7 @@ impl BlockData {
     }
 
     pub fn targets(&self) -> Vec<BlockId> {
-        match &self.terminator.content {
+        match &self.terminator.kind {
             TerminatorKind::Goto { target } => {
                 vec![*target]
             }
@@ -84,7 +84,7 @@ impl BlockData {
     ) {
         // Explore the operands in the statements
         for mut st in mem::take(&mut self.statements) {
-            st.content
+            st.kind
                 .dyn_visit_in_body_mut(|op: &mut Operand| f(&st.span, &mut self.statements, op));
             // Add the statement to the vector of statements
             self.statements.push(st)
@@ -92,7 +92,7 @@ impl BlockData {
 
         // Explore the terminator
         self.terminator
-            .content
+            .kind
             .dyn_visit_in_body_mut(|op: &mut Operand| {
                 f(&self.terminator.span, &mut self.statements, op)
             });

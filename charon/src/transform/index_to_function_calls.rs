@@ -51,7 +51,7 @@ impl<'a> IndexVisitor<'a> {
             let mut generics = tref.generics.clone();
             generics.regions = [Region::Erased].into();
             FnOperand::Regular(FnPtr {
-                func: Box::new(FunIdOrTraitMethodRef::mk_builtin(builtin_fun)),
+                kind: Box::new(FnPtrKind::mk_builtin(builtin_fun)),
                 generics,
             })
         };
@@ -304,7 +304,7 @@ impl LlbcPass for Transform {
                 span: st.span,
             };
             use StatementKind::*;
-            match &mut st.content {
+            match &mut st.kind {
                 Assign(..)
                 | SetDiscriminant(..)
                 | CopyNonOverlapping(_)

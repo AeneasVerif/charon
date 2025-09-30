@@ -219,19 +219,19 @@ let empty_generic_params : generic_params =
 
 let generic_args_of_params span (generics : generic_params) : generic_args =
   let regions =
-    List.map (fun (v : region_var) -> RVar (Free v.index)) generics.regions
+    List.map (fun (v : region_param) -> RVar (Free v.index)) generics.regions
   in
   let types =
-    List.map (fun (v : type_var) -> TVar (Free v.index)) generics.types
+    List.map (fun (v : type_param) -> TVar (Free v.index)) generics.types
   in
   let const_generics =
     List.map
-      (fun (v : const_generic_var) -> CgVar (Free v.index))
+      (fun (v : const_generic_param) -> CgVar (Free v.index))
       generics.const_generics
   in
   let trait_refs =
     List.map
-      (fun (c : trait_clause) ->
+      (fun (c : trait_param) ->
         { trait_id = Clause (Free c.clause_id); trait_decl_ref = c.trait })
       generics.trait_clauses
   in

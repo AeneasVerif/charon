@@ -7,7 +7,7 @@ use super::{TransformCtx, ctx::TransformPass};
 enum FoundName<'a> {
     Unique {
         long: &'a [PathElem],
-        ids: Vec<AnyTransId>,
+        ids: Vec<ItemId>,
     },
     Multiple,
 }

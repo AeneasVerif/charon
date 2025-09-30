@@ -12,16 +12,16 @@ impl TransformPass for Transform {
                 match body {
                     Body::Unstructured(body) => {
                         for blk in &mut body.body {
-                            if blk.statements.iter().any(|st| st.content.is_nop()) {
-                                blk.statements.retain(|st| !st.content.is_nop())
+                            if blk.statements.iter().any(|st| st.kind.is_nop()) {
+                                blk.statements.retain(|st| !st.kind.is_nop())
                             }
                         }
                     }
                     Body::Structured(body) => {
                         body.body.visit_blocks_bwd(|blk: &mut llbc_ast::Block| {
                             // Remove all the `Nop`s from this sequence.
-                            if blk.statements.iter().any(|st| st.content.is_nop()) {
-                                blk.statements.retain(|st| !st.content.is_nop())
+                            if blk.statements.iter().any(|st| st.kind.is_nop()) {
+                                blk.statements.retain(|st| !st.kind.is_nop())
                             }
                         });
                     }

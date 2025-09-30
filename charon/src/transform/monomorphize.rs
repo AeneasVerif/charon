@@ -37,9 +37,9 @@ impl<T, H> OptionHint<T, H> {
 struct PassData {
     // Map of (poly item, generic args) -> mono item
     // None indicates the item hasn't been monomorphized yet
-    items: IndexMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>>,
-    worklist: Vec<AnyTransId>,
-    visited: HashSet<AnyTransId>,
+    items: IndexMap<(ItemId, GenericArgs), OptionHint<ItemId, (ItemId, BoxedArgs)>>,
+    worklist: Vec<ItemId>,
+    visited: HashSet<ItemId>,
 }
 
 impl PassData {
@@ -77,9 +77,9 @@ struct UsageVisitor<'a> {
 impl UsageVisitor<'_> {
     fn found_use(
         &mut self,
-        id: &AnyTransId,
+        id: &ItemId,
         gargs: &GenericArgs,
-        default: OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>,
+        default: OptionHint<ItemId, (ItemId, BoxedArgs)>,
     ) {
         trace!("Mono: Found use: {:?} / {:?}", id, gargs);
         self.data
@@ -89,17 +89,15 @@ impl UsageVisitor<'_> {
     }
     fn found_use_ty(&mut self, tref: &TypeDeclRef) {
         match tref.id {
-            TypeId::Adt(id) => {
-                self.found_use(&AnyTransId::Type(id), &tref.generics, OptionHint::None)
-            }
+            TypeId::Adt(id) => self.found_use(&ItemId::Type(id), &tref.generics, OptionHint::None),
             _ => {}
         }
     }
     fn found_use_fn(&mut self, id: &FunDeclId, gargs: &GenericArgs) {
-        self.found_use(&AnyTransId::Fun(*id), gargs, OptionHint::None);
+        self.found_use(&ItemId::Fun(*id), gargs, OptionHint::None);
     }
     fn found_use_global_decl_ref(&mut self, id: &GlobalDeclId, gargs: &GenericArgs) {
-        self.found_use(&AnyTransId::Global(*id), gargs, OptionHint::None);
+        self.found_use(&ItemId::Global(*id), gargs, OptionHint::None);
     }
     fn found_use_fn_hinted(
         &mut self,
@@ -108,9 +106,9 @@ impl UsageVisitor<'_> {
         (h_id, h_args): (FunDeclId, BoxedArgs),
     ) {
         self.found_use(
-            &AnyTransId::Fun(*id),
+            &ItemId::Fun(*id),
             gargs,
-            OptionHint::Hint((AnyTransId::Fun(h_id), h_args)),
+            OptionHint::Hint((ItemId::Fun(h_id), h_args)),
         );
     }
 }
@@ -145,11 +143,9 @@ impl VisitAst for UsageVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        match fn_ptr.func.as_ref() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.found_use_fn(&id, &fn_ptr.generics)
-            }
-            FunIdOrTraitMethodRef::Trait(t_ref, name, id) => {
+        match fn_ptr.kind.as_ref() {
+            FnPtrKind::Fun(FunId::Regular(id)) => self.found_use_fn(&id, &fn_ptr.generics),
+            FnPtrKind::Trait(t_ref, name, id) => {
                 let Some((trait_impl, impl_gargs)) = self.krate.find_trait_impl_and_gargs(t_ref)
                 else {
                     return;
@@ -170,7 +166,7 @@ impl VisitAst for UsageVisitor<'_> {
                 self.found_use_fn_hinted(&id, &gargs_key, (fn_ref.id, fn_ref.generics))
             }
             // These can't be monomorphized, since they're builtins
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+            FnPtrKind::Fun(FunId::Builtin(..)) => {}
         }
     }
 
@@ -189,8 +185,8 @@ struct SubstVisitor<'a> {
 impl SubstVisitor<'_> {
     fn subst_use<T, F>(&mut self, id: &mut T, gargs: &mut GenericArgs, of: F)
     where
-        T: Into<AnyTransId> + Debug + Copy,
-        F: Fn(&AnyTransId) -> Option<&T>,
+        T: Into<ItemId> + Debug + Copy,
+        F: Fn(&ItemId) -> Option<&T>,
     {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
         // Erase regions.
@@ -209,16 +205,16 @@ impl SubstVisitor<'_> {
     fn subst_use_ty(&mut self, tref: &mut TypeDeclRef) {
         match &mut tref.id {
             TypeId::Adt(id) => {
-                self.subst_use(id, &mut tref.generics, AnyTransId::as_type);
+                self.subst_use(id, &mut tref.generics, ItemId::as_type);
             }
             _ => {}
         }
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
-        self.subst_use(id, gargs, AnyTransId::as_fun);
+        self.subst_use(id, gargs, ItemId::as_fun);
     }
     fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
-        self.subst_use(id, gargs, AnyTransId::as_global);
+        self.subst_use(id, gargs, ItemId::as_global);
     }
 }
 
@@ -236,12 +232,12 @@ impl VisitAstMut for SubstVisitor<'_> {
             TyKind::FnDef(binder) => {
                 // erase the FnPtr binder, as we'll monomorphise its content
                 if let FnPtr {
-                    func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(id)),
+                    kind: box FnPtrKind::Fun(FunId::Regular(id)),
                     generics,
                 } = binder.clone().erase()
                 {
                     *binder = RegionBinder::empty(FnPtr {
-                        func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(id))),
+                        kind: Box::new(FnPtrKind::Fun(FunId::Regular(id))),
                         generics,
                     });
                 }
@@ -251,11 +247,11 @@ impl VisitAstMut for SubstVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &mut FnPtr) {
-        match fn_ptr.func.as_mut() {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
+        match fn_ptr.kind.as_mut() {
+            FnPtrKind::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }
-            FunIdOrTraitMethodRef::Trait(t_ref, _, fun_id) => {
+            FnPtrKind::Trait(t_ref, _, fun_id) => {
                 let mut gargs_key = fn_ptr
                     .generics
                     .clone()
@@ -264,7 +260,7 @@ impl VisitAstMut for SubstVisitor<'_> {
                 fn_ptr.generics = Box::new(gargs_key);
             }
             // These can't be monomorphized, since they're builtins
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+            FnPtrKind::Fun(FunId::Builtin(..)) => {}
         }
     }
 
@@ -290,7 +286,7 @@ impl VisitAstMut for SubstVisitor<'_> {
 #[allow(dead_code)]
 struct MissingIndexChecker<'a> {
     krate: &'a TranslatedCrate,
-    current_item: Option<AnyTransItem<'a>>,
+    current_item: Option<ItemRef<'a>>,
 }
 impl VisitAst for MissingIndexChecker<'_> {
     fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
@@ -330,7 +326,7 @@ impl VisitAst for MissingIndexChecker<'_> {
     }
 }
 
-fn find_uses(data: &mut PassData, krate: &TranslatedCrate, item: &AnyTransItem) {
+fn find_uses(data: &mut PassData, krate: &TranslatedCrate, item: &ItemRef) {
     let mut visitor = UsageVisitor { data, krate };
     let _ = item.drive(&mut visitor);
 }
@@ -399,7 +395,7 @@ impl TransformPass for Transform {
         // Find the roots of the mono item graph
         for (id, item) in ctx.translated.all_items_with_ids() {
             match item {
-                AnyTransItem::Fun(f) if f.signature.generics.is_empty() => {
+                ItemRef::Fun(f) if f.signature.generics.is_empty() => {
                     data.items
                         .insert((id, empty_gargs.clone()), OptionHint::Some(id));
                     data.worklist.push(id);
@@ -433,9 +429,9 @@ impl TransformPass for Transform {
                     *id
                 } else {
                     match id {
-                        AnyTransId::Fun(_) => {
+                        ItemId::Fun(_) => {
                             let key_pair = (id.clone(), Box::new(gargs.clone()));
-                            let (AnyTransId::Fun(fun_id), gargs) = mono.hint_or(&key_pair) else {
+                            let (ItemId::Fun(fun_id), gargs) = mono.hint_or(&key_pair) else {
                                 panic!("Unexpected ID type in hint_or");
                             };
                             let fun = ctx.translated.fun_decls.get(*fun_id).unwrap();
@@ -452,9 +448,9 @@ impl TransformPass for Transform {
                                 fun_sub
                             });
 
-                            AnyTransId::Fun(fun_id_sub)
+                            ItemId::Fun(fun_id_sub)
                         }
-                        AnyTransId::Type(typ_id) => {
+                        ItemId::Type(typ_id) => {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
                             typ_sub.generics = GenericParams::empty();
@@ -469,9 +465,9 @@ impl TransformPass for Transform {
                                 typ_sub
                             });
 
-                            AnyTransId::Type(typ_id_sub)
+                            ItemId::Type(typ_id_sub)
                         }
-                        AnyTransId::Global(g_id) => {
+                        ItemId::Global(g_id) => {
                             let Some(glob) = ctx.translated.global_decls.get(*g_id) else {
                                 // Something odd happened -- we ignore and move on
                                 *mono = OptionHint::Some(*id);
@@ -506,9 +502,9 @@ impl TransformPass for Transform {
                                 glob_sub
                             });
 
-                            data.worklist.push(AnyTransId::Fun(init_id_sub));
+                            data.worklist.push(ItemId::Fun(init_id_sub));
 
-                            AnyTransId::Global(g_id_sub)
+                            ItemId::Global(g_id_sub)
                         }
                         _ => todo!("Unhandled monomorphization target ID {:?}", id),
                     }
@@ -538,11 +534,11 @@ impl TransformPass for Transform {
                 panic!("Couldn't find item {:} in translated items.", id)
             };
             match item {
-                AnyTransItemMut::Fun(f) => subst_uses(&data, f),
-                AnyTransItemMut::Type(t) => subst_uses(&data, t),
-                AnyTransItemMut::TraitImpl(t) => subst_uses(&data, t),
-                AnyTransItemMut::Global(g) => subst_uses(&data, g),
-                AnyTransItemMut::TraitDecl(t) => subst_uses(&data, t),
+                ItemRefMut::Fun(f) => subst_uses(&data, f),
+                ItemRefMut::Type(t) => subst_uses(&data, t),
+                ItemRefMut::TraitImpl(t) => subst_uses(&data, t),
+                ItemRefMut::Global(g) => subst_uses(&data, g),
+                ItemRefMut::TraitDecl(t) => subst_uses(&data, t),
             };
         }
 
@@ -550,13 +546,13 @@ impl TransformPass for Transform {
         // uses have been monomorphized and substituted
         ctx.translated
             .fun_decls
-            .retain(|f| data.visited.contains(&AnyTransId::Fun(f.def_id)));
+            .retain(|f| data.visited.contains(&ItemId::Fun(f.def_id)));
         ctx.translated
             .type_decls
-            .retain(|t| data.visited.contains(&AnyTransId::Type(t.def_id)));
+            .retain(|t| data.visited.contains(&ItemId::Type(t.def_id)));
         ctx.translated
             .global_decls
-            .retain(|g| data.visited.contains(&AnyTransId::Global(g.def_id)));
+            .retain(|g| data.visited.contains(&ItemId::Global(g.def_id)));
         // ctx.translated.trait_impls.retain(|t| t.generics.is_empty());
 
         // TODO: Currently we don't update all TraitImpls/TraitDecls with the monomorphized versions

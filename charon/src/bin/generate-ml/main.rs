@@ -1040,8 +1040,8 @@ fn generate_ml(
         ("FileId", "file"),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
-        ("RegionVar", "(region_id, string option) indexed_var"),
-        ("TypeVar", "(type_var_id, string) indexed_var"),
+        ("RegionParam", "(region_id, string option) indexed_var"),
+        ("TypeParam", "(type_var_id, string) indexed_var"),
     ];
     let manual_json_impls = &[
         // Hand-written because we filter out `None` values.
@@ -1194,7 +1194,7 @@ fn generate_ml(
                     "ConstGeneric",
                     "TraitClauseId",
                     "DeBruijnVar",
-                    "AnyTransId",
+                    "ItemId",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.

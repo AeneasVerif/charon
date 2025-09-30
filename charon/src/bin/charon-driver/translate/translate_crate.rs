@@ -3,7 +3,7 @@
 //! Translation works as follows: we translate each `TransItemSource` of interest into an
 //! appropriate item. In the process of translating an item we may find more `hax::DefId`s of
 //! interest; we register those as an appropriate `TransItemSource`, which will 1/ enqueue the item
-//! so that it eventually gets translated too, and 2/ return an `AnyTransId` we can use to refer to
+//! so that it eventually gets translated too, and 2/ return an `ItemId` we can use to refer to
 //! it.
 //!
 //! We start with the DefId of the current crate (or of anything passed to `--start-from`) and
@@ -258,10 +258,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         } else {
             TransItemSource::polymorphic(def_id, kind)
         };
-        let _: Option<AnyTransId> = self.register_and_enqueue(&None, item_src);
+        let _: Option<ItemId> = self.register_and_enqueue(&None, item_src);
     }
 
-    pub(crate) fn register_no_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         dep_src: &Option<DepSource>,
         src: &TransItemSource,
@@ -271,20 +271,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             None => {
                 use TransItemSourceKind::*;
                 let trans_id = match src.kind {
-                    Type | VTable => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
-                    TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
-                    TraitImpl(..) => {
-                        AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
-                    }
+                    Type | VTable => ItemId::Type(self.translated.type_decls.reserve_slot()),
+                    TraitDecl => ItemId::TraitDecl(self.translated.trait_decls.reserve_slot()),
+                    TraitImpl(..) => ItemId::TraitImpl(self.translated.trait_impls.reserve_slot()),
                     Global | VTableInstance(..) => {
-                        AnyTransId::Global(self.translated.global_decls.reserve_slot())
+                        ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
                     Fun
                     | ClosureMethod(..)
                     | ClosureAsFnCast
                     | DropGlueMethod
                     | VTableInstanceInitializer(..)
-                    | VTableMethod => AnyTransId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableMethod => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -304,7 +302,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 
     /// Register this item source and enqueue it for translation.
-    pub(crate) fn register_and_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_and_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         dep_src: &Option<DepSource>,
         item_src: TransItemSource,
@@ -331,9 +329,9 @@ pub struct ItemRef<Id> {
 // Implement `ItemRef<_>` -> `FooDeclRef` conversions.
 macro_rules! convert_item_ref {
     ($item_ref_ty:ident($id:ident)) => {
-        impl TryFrom<ItemRef<AnyTransId>> for $item_ref_ty {
+        impl TryFrom<ItemRef<ItemId>> for $item_ref_ty {
             type Error = ();
-            fn try_from(item: ItemRef<AnyTransId>) -> Result<Self, ()> {
+            fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
                 Ok($item_ref_ty {
                     id: item.id.try_into()?,
                     generics: item.generics,
@@ -356,12 +354,12 @@ convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
 convert_item_ref!(GlobalDeclRef(GlobalDeclId));
 convert_item_ref!(TraitDeclRef(TraitDeclId));
 convert_item_ref!(TraitImplRef(TraitImplId));
-impl TryFrom<ItemRef<AnyTransId>> for FnPtr {
+impl TryFrom<ItemRef<ItemId>> for FnPtr {
     type Error = ();
-    fn try_from(item: ItemRef<AnyTransId>) -> Result<Self, ()> {
+    fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
         let id: FunId = item.id.try_into()?;
         Ok(FnPtr {
-            func: Box::new(id.into()),
+            kind: Box::new(id.into()),
             generics: item.generics,
         })
     }
@@ -377,7 +375,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item source and enqueue it for translation.
-    pub(crate) fn register_and_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_and_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
         item_src: TransItemSource,
@@ -386,7 +384,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_and_enqueue(&dep_src, item_src).unwrap()
     }
 
-    pub(crate) fn register_no_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
         src: &TransItemSource,
@@ -396,7 +394,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and maybe enqueue it for translation.
-    pub(crate) fn register_item_maybe_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_item_maybe_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
         enqueue: bool,
@@ -417,7 +415,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and enqueue it for translation.
-    pub(crate) fn register_item<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_item<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -428,7 +426,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Register this item without enqueueing it for translation.
     #[expect(dead_code)]
-    pub(crate) fn register_item_no_enqueue<T: TryFrom<AnyTransId>>(
+    pub(crate) fn register_item_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -438,14 +436,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and maybe enqueue it for translation.
-    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<ItemRef<AnyTransId>>>(
+    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<ItemRef<ItemId>>>(
         &mut self,
         span: Span,
         enqueue: bool,
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
-        let id: AnyTransId = self.register_item_maybe_enqueue(span, enqueue, item, kind);
+        let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, item, kind);
         let generics = if self.monomorphize() {
             Ok(GenericArgs::empty())
         } else {
@@ -463,7 +461,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Note: for `FnPtr`s use `translate_fn_ptr` instead, as this handles late-bound variables
     /// correctly. For `TypeDeclRef`s use `translate_type_decl_ref` instead, as this correctly
     /// recognizes built-in types.
-    pub(crate) fn translate_item<T: TryFrom<ItemRef<AnyTransId>>>(
+    pub(crate) fn translate_item<T: TryFrom<ItemRef<ItemId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -473,7 +471,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and don't enqueue it for translation.
-    pub(crate) fn translate_item_no_enqueue<T: TryFrom<ItemRef<AnyTransId>>>(
+    pub(crate) fn translate_item_no_enqueue<T: TryFrom<ItemRef<ItemId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -539,7 +537,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.append_late_bound_to_generics(span, *fun_item.generics, late_bound)?;
         let fun_id = match &item.in_trait {
             // Direct function call
-            None => FunIdOrTraitMethodRef::Fun(fun_item.id),
+            None => FnPtrKind::Fun(fun_item.id),
             // Trait method
             Some(impl_expr) => {
                 let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
@@ -548,11 +546,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .id
                     .as_regular()
                     .expect("methods are not builtin functions");
-                FunIdOrTraitMethodRef::Trait(trait_ref.move_under_binder(), name, method_decl_id)
+                FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
         Ok(bound_generics.map(|generics| FnPtr {
-            func: Box::new(fun_id),
+            kind: Box::new(fun_id),
             generics: Box::new(generics),
         }))
     }

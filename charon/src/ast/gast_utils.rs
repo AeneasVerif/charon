@@ -4,7 +4,7 @@ use crate::ast::*;
 use crate::llbc_ast;
 use crate::ullbc_ast;
 
-impl FunIdOrTraitMethodRef {
+impl FnPtrKind {
     pub fn mk_builtin(aid: BuiltinFunId) -> Self {
         Self::Fun(FunId::Builtin(aid))
     }

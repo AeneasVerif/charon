@@ -60,7 +60,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
         let ty = self.translate_ty(span, &v.ty)?;
-        let value = match v.contents.as_ref() {
+        let kind = match v.contents.as_ref() {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_constant_expr_kind(span, lit)?
             }
@@ -141,7 +141,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
 
-        Ok(ConstantExpr { value, ty })
+        Ok(ConstantExpr { kind, ty })
     }
 
     /// Remark: [hax::ConstantExpr] contains span information, but it is often
@@ -153,10 +153,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstGeneric, Error> {
         // Remark: we can't user globals as constant generics (meaning
         // the user provided type annotation should always be none).
-        let value = self
-            .translate_constant_expr_to_constant_expr(span, v)?
-            .value;
-        match value {
+        let kind = self.translate_constant_expr_to_constant_expr(span, v)?.kind;
+        match kind {
             ConstantExprKind::Var(v) => Ok(ConstGeneric::Var(v)),
             ConstantExprKind::Literal(v) => Ok(ConstGeneric::Value(v)),
             ConstantExprKind::Global(global_ref) => {
@@ -174,7 +172,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | ConstantExprKind::FnPtr { .. }
             | ConstantExprKind::Opaque(_)
             | ConstantExprKind::PtrNoProvenance(..) => {
-                raise_error!(self, span, "Unexpected constant generic: {:?}", value)
+                raise_error!(self, span, "Unexpected constant generic: {:?}", kind)
             }
         }
     }

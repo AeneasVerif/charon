@@ -14,7 +14,7 @@ module Ast = struct
 
   let rec statement_to_string (env : fmt_env) (indent : string) (st : statement)
       : string =
-    statement_kind_to_string env indent st.content
+    statement_kind_to_string env indent st.kind
 
   and statement_kind_to_string (env : fmt_env) (indent : string)
       (st : statement_kind) : string =
@@ -60,7 +60,7 @@ module Ast = struct
 
   let rec terminator_to_string (env : fmt_env) (indent : string)
       (st : terminator) : string =
-    terminator_kind_to_string env indent st.content
+    terminator_kind_to_string env indent st.kind
 
   and terminator_kind_to_string (env : fmt_env) (indent : string)
       (st : terminator_kind) : string =

@@ -54,7 +54,7 @@ pub enum DeclarationGroup {
     ///
     TraitImpl(GDeclarationGroup<TraitImplId>),
     /// Anything that doesn't fit into these categories.
-    Mixed(GDeclarationGroup<AnyTransId>),
+    Mixed(GDeclarationGroup<ItemId>),
 }
 
 impl<Id: Copy> GDeclarationGroup<Id> {
@@ -66,16 +66,16 @@ impl<Id: Copy> GDeclarationGroup<Id> {
         }
     }
 
-    pub fn get_any_trans_ids(&self) -> Vec<AnyTransId>
+    pub fn get_any_trans_ids(&self) -> Vec<ItemId>
     where
-        Id: Into<AnyTransId>,
+        Id: Into<ItemId>,
     {
         self.get_ids().iter().copied().map(|id| id.into()).collect()
     }
 
-    fn make_group(is_rec: bool, gr: impl Iterator<Item = AnyTransId>) -> Self
+    fn make_group(is_rec: bool, gr: impl Iterator<Item = ItemId>) -> Self
     where
-        Id: TryFrom<AnyTransId>,
+        Id: TryFrom<ItemId>,
         Id::Error: Debug,
     {
         let gr: Vec<_> = gr.map(|x| x.try_into().unwrap()).collect();
@@ -87,9 +87,9 @@ impl<Id: Copy> GDeclarationGroup<Id> {
         }
     }
 
-    fn to_mixed(&self) -> GDeclarationGroup<AnyTransId>
+    fn to_mixed(&self) -> GDeclarationGroup<ItemId>
     where
-        Id: Into<AnyTransId>,
+        Id: Into<ItemId>,
     {
         match self {
             GDeclarationGroup::NonRec(x) => GDeclarationGroup::NonRec((*x).into()),
@@ -99,7 +99,7 @@ impl<Id: Copy> GDeclarationGroup<Id> {
 }
 
 impl DeclarationGroup {
-    pub fn to_mixed_group(&self) -> GDeclarationGroup<AnyTransId> {
+    pub fn to_mixed_group(&self) -> GDeclarationGroup<ItemId> {
         use DeclarationGroup::*;
         match self {
             Type(gr) => gr.to_mixed(),
@@ -111,7 +111,7 @@ impl DeclarationGroup {
         }
     }
 
-    pub fn get_ids(&self) -> Vec<AnyTransId> {
+    pub fn get_ids(&self) -> Vec<ItemId> {
         use DeclarationGroup::*;
         match self {
             Type(gr) => gr.get_any_trans_ids(),
@@ -161,11 +161,11 @@ impl Display for DeclarationGroup {
 
 #[derive(Visitor)]
 pub struct Deps {
-    dgraph: DiGraphMap<AnyTransId, ()>,
+    dgraph: DiGraphMap<ItemId, ()>,
     // Want to make sure we remember the order of insertion
-    graph: IndexMap<AnyTransId, IndexSet<AnyTransId>>,
+    graph: IndexMap<ItemId, IndexSet<ItemId>>,
     // We use this when computing the graph
-    current_id: Option<AnyTransId>,
+    current_id: Option<ItemId>,
     // We use this to track the trait impl block the current item belongs to
     // (if relevant).
     //
@@ -229,12 +229,12 @@ impl Deps {
             _ => {}
         }
     }
-    fn set_current_id(&mut self, ctx: &TransformCtx, id: AnyTransId) {
+    fn set_current_id(&mut self, ctx: &TransformCtx, id: ItemId) {
         self.insert_node(id);
         self.current_id = Some(id);
 
         // Add the id of the impl/trait this item belongs to, if necessary
-        use AnyTransId::*;
+        use ItemId::*;
         match id {
             TraitDecl(_) | TraitImpl(_) | Type(_) => (),
             Global(id) => {
@@ -256,7 +256,7 @@ impl Deps {
         self.parent_trait_decl = None;
     }
 
-    fn insert_node(&mut self, id: AnyTransId) {
+    fn insert_node(&mut self, id: ItemId) {
         // We have to be careful about duplicate nodes
         if !self.dgraph.contains_node(id) {
             self.dgraph.add_node(id);
@@ -265,7 +265,7 @@ impl Deps {
         }
     }
 
-    fn insert_edge(&mut self, id1: AnyTransId) {
+    fn insert_edge(&mut self, id1: ItemId) {
         let id0 = self.current_id.unwrap();
         self.insert_node(id1);
         if !self.dgraph.contains_edge(id0, id1) {
@@ -369,7 +369,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
     );
     sorted_items.sort_by_key(|item| {
         let item_meta = item.item_meta();
-        let span = item_meta.span.span;
+        let span = item_meta.span.data;
         let file_name_order = sorted_file_ids[span.file_id];
         (item_meta.is_local, file_name_order, span.beg)
     });
@@ -379,10 +379,10 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         let id = item.id();
         graph.set_current_id(ctx, id);
         match item {
-            AnyTransItem::Type(..) | AnyTransItem::TraitImpl(..) | AnyTransItem::Global(..) => {
+            ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
                 let _ = item.drive(&mut graph);
             }
-            AnyTransItem::Fun(d) => {
+            ItemRef::Fun(d) => {
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemKind`.
                 let _ = d.signature.drive(&mut graph);
@@ -394,7 +394,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     graph.insert_edge(trait_ref.id.into());
                 }
             }
-            AnyTransItem::TraitDecl(d) => {
+            ItemRef::TraitDecl(d) => {
                 let TraitDecl {
                     def_id: _,
                     item_meta: _,
@@ -445,7 +445,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
 fn group_declarations_from_scc(
     _ctx: &TransformCtx,
     graph: Deps,
-    reordered_sccs: SCCs<AnyTransId>,
+    reordered_sccs: SCCs<ItemId>,
 ) -> DeclarationsGroups {
     let reordered_sccs = &reordered_sccs.sccs;
     let mut reordered_decls: DeclarationsGroups = Vec::new();
@@ -477,14 +477,12 @@ fn group_declarations_from_scc(
             _ if !all_same_kind => {
                 DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
             }
-            AnyTransId::Type(_) => {
-                DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids))
-            }
-            AnyTransId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
-            AnyTransId::Global(_) => {
+            ItemId::Type(_) => DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids)),
+            ItemId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
+            ItemId::Global(_) => {
                 DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
             }
-            AnyTransId::TraitDecl(_) => {
+            ItemId::TraitDecl(_) => {
                 let gr: Vec<_> = ids.map(|x| x.try_into().unwrap()).collect();
                 // Trait declarations often refer to `Self`, like below,
                 // which means they are often considered as recursive by our
@@ -498,7 +496,7 @@ fn group_declarations_from_scc(
                     DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
                 }
             }
-            AnyTransId::TraitImpl(_) => {
+            ItemId::TraitImpl(_) => {
                 DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
             }
         };
@@ -525,14 +523,14 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     // Remark: the [get_id_dependencies] function will be called once per id, meaning
     // it is ok if it is not very efficient and clones values.
     let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
-    let all_ids: Vec<AnyTransId> = graph
+    let all_ids: Vec<ItemId> = graph
         .graph
         .keys()
         .copied()
         // Don't list ids that weren't translated.
         .filter(|id| ctx.translated.get_item(*id).is_some())
         .collect();
-    let reordered_sccs = reorder_sccs::<AnyTransId>(get_id_dependencies, &all_ids, &sccs);
+    let reordered_sccs = reorder_sccs::<ItemId>(get_id_dependencies, &all_ids, &sccs);
 
     // Finally, generate the list of declarations
     let reordered_decls = group_declarations_from_scc(ctx, graph, reordered_sccs);

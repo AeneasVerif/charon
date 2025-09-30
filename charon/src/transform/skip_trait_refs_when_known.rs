@@ -7,7 +7,7 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
     let FnOperand::Regular(fn_ptr) = &mut call.func else {
         return;
     };
-    let FunIdOrTraitMethodRef::Trait(trait_ref, name, _) = fn_ptr.func.as_ref() else {
+    let FnPtrKind::Trait(trait_ref, name, _) = fn_ptr.kind.as_ref() else {
         return;
     };
     let TraitRefKind::TraitImpl(impl_ref) = &trait_ref.kind else {
@@ -42,14 +42,14 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
     // Substitute the appropriate generics into the function call.
     let fn_ref = fn_ref.apply(&impl_ref.generics).apply(method_generics);
     fn_ptr.generics = fn_ref.generics;
-    fn_ptr.func = Box::new(FunIdOrTraitMethodRef::Fun(FunId::Regular(fn_ref.id)));
+    fn_ptr.kind = Box::new(FnPtrKind::Fun(FunId::Regular(fn_ref.id)));
 }
 
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in b.body.iter_mut() {
-            if let TerminatorKind::Call { call, .. } = &mut block.terminator.content {
+            if let TerminatorKind::Call { call, .. } = &mut block.terminator.kind {
                 transform_call(ctx, block.terminator.span, call)
             }
         }

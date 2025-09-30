@@ -89,7 +89,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub fn translate_raw_span(&mut self, rspan: &hax::Span) -> meta::RawSpan {
+    pub fn translate_span_data(&mut self, rspan: &hax::Span) -> meta::SpanData {
         let filename = self.translate_filename(&rspan.filename);
         let rust_span = rspan.rust_span_data.unwrap().span();
         let file_id = match &filename {
@@ -110,7 +110,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let end = convert_loc(&rspan.hi);
 
         // Put together
-        meta::RawSpan { file_id, beg, end }
+        meta::SpanData { file_id, beg, end }
     }
 
     /// Compute span data from a Rust source scope
@@ -120,7 +120,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         source_info: &hax::SourceInfo,
     ) -> Span {
         // Translate the span
-        let span = self.translate_raw_span(&source_info.span);
+        let data = self.translate_span_data(&source_info.span);
 
         // Lookup the top-most inlined parent scope.
         let mut parent_span = None;
@@ -131,14 +131,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
 
         if let Some(parent_span) = parent_span {
-            let parent_span = self.translate_raw_span(parent_span);
+            let parent_span = self.translate_span_data(parent_span);
             Span {
-                span: parent_span,
-                generated_from_span: Some(span),
+                data: parent_span,
+                generated_from_span: Some(data),
             }
         } else {
             Span {
-                span,
+                data,
                 generated_from_span: None,
             }
         }
@@ -146,7 +146,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_span_from_hax(&mut self, span: &hax::Span) -> Span {
         Span {
-            span: self.translate_raw_span(span),
+            data: self.translate_span_data(span),
             generated_from_span: None,
         }
     }

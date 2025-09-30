@@ -79,7 +79,7 @@ pub struct Statement {
     /// simplify things we generate globally-fresh ids when creating a new `Statement`.
     #[charon::rename("statement_id")]
     pub id: StatementId,
-    pub content: StatementKind,
+    pub kind: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
     #[drive(skip)]
