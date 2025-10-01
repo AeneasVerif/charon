@@ -225,7 +225,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let initializer = self.translated.fun_decls.push_with(|def_id| FunDecl {
             def_id,
             item_meta: item_meta.clone(),
-            kind: ItemSource::TopLevel,
+            src: ItemSource::TopLevel,
             is_global_initializer: Some(global_id),
             signature: FunSig {
                 is_unsafe: false,
@@ -242,7 +242,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 item_meta,
                 generics: Default::default(),
                 ty: Ty::mk_unit(),
-                kind: ItemSource::TopLevel,
+                src: ItemSource::TopLevel,
                 global_kind: GlobalKind::NamedConst,
                 init: initializer,
             },
@@ -436,8 +436,8 @@ impl ItemTransCtx<'_, '_> {
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = self.get_item_source(span, def)?;
-        let is_trait_method_decl_without_default = match &kind {
+        let src = self.get_item_source(span, def)?;
+        let is_trait_method_decl_without_default = match &src {
             ItemSource::TraitDecl { has_default, .. } => !has_default,
             _ => false,
         };
@@ -491,7 +491,7 @@ impl ItemTransCtx<'_, '_> {
             def_id,
             item_meta,
             signature,
-            kind,
+            src,
             is_global_initializer,
             body,
         })
@@ -547,7 +547,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             generics: self.into_generics(),
             ty,
-            kind: item_source,
+            src: item_source,
             global_kind,
             init: initializer,
         })

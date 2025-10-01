@@ -31,7 +31,7 @@ type 'body gfun_decl = {
   def_id : FunDeclId.id;
   item_meta : item_meta;
   signature : fun_sig;
-  kind : item_source;
+  src : item_source;
   is_global_initializer : GlobalDeclId.id option;
   body : 'body gexpr_body option;
 }

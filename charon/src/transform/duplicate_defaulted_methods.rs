@@ -97,7 +97,7 @@ impl TransformPass for Transform {
                         def_id: _,
                         item_meta,
                         signature,
-                        kind,
+                        src: kind,
                         is_global_initializer,
                         body,
                     } = fun_decl.clone();
@@ -155,7 +155,7 @@ impl TransformPass for Transform {
                             def_id: new_fun_id,
                             item_meta,
                             signature,
-                            kind,
+                            src: kind,
                             is_global_initializer,
                             body,
                         },

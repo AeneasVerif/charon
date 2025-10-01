@@ -239,12 +239,12 @@ impl Deps {
             TraitDecl(_) | TraitImpl(_) | Type(_) => (),
             Global(id) => {
                 if let Some(decl) = ctx.translated.global_decls.get(id) {
-                    self.set_impl_or_trait_id(&decl.kind);
+                    self.set_impl_or_trait_id(&decl.src);
                 }
             }
             Fun(id) => {
                 if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                    self.set_impl_or_trait_id(&decl.kind);
+                    self.set_impl_or_trait_id(&decl.src);
                 }
             }
         }
@@ -390,7 +390,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
-                if let ItemSource::TraitDecl { trait_ref, .. } = &d.kind {
+                if let ItemSource::TraitDecl { trait_ref, .. } = &d.src {
                     graph.insert_edge(trait_ref.id.into());
                 }
             }

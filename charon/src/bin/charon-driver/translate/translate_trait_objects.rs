@@ -517,7 +517,7 @@ impl ItemTransCtx<'_, '_> {
             def_id: global_id,
             item_meta,
             generics: self.into_generics(),
-            kind: ItemSource::VTableInstance { impl_ref },
+            src: ItemSource::VTableInstance { impl_ref },
             // it should be static to have its own address
             global_kind: GlobalKind::Static,
             ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
@@ -764,7 +764,7 @@ impl ItemTransCtx<'_, '_> {
             def_id: init_func_id,
             item_meta: item_meta,
             signature: sig,
-            kind: ItemSource::VTableInstance { impl_ref },
+            src: ItemSource::VTableInstance { impl_ref },
             is_global_initializer: Some(init_for),
             body,
         })

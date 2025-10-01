@@ -261,8 +261,8 @@ impl<'ctx> ItemRef<'ctx> {
     /// Get information about the parent of this item, if any.
     pub fn parent_info(&self) -> &'ctx ItemSource {
         match self {
-            ItemRef::Fun(d) => &d.kind,
-            ItemRef::Global(d) => &d.kind,
+            ItemRef::Fun(d) => &d.src,
+            ItemRef::Global(d) => &d.src,
             ItemRef::Type(_) | ItemRef::TraitDecl(_) | ItemRef::TraitImpl(_) => {
                 &ItemSource::TopLevel
             }

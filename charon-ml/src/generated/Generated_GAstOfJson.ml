@@ -925,7 +925,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("generics", generics);
           ("ty", ty);
-          ("kind", kind);
+          ("src", src);
           ("global_kind", global_kind);
           ("init", init);
         ] ->
@@ -933,11 +933,11 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* ty = ty_of_json ctx ty in
-        let* kind = item_source_of_json ctx kind in
+        let* src = item_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
         let* body = fun_decl_id_of_json ctx init in
         Ok
-          ({ def_id; item_meta; generics; ty; kind; global_kind; body }
+          ({ def_id; item_meta; generics; ty; src; global_kind; body }
             : global_decl)
     | _ -> Error "")
 
