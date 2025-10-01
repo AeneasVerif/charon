@@ -443,7 +443,7 @@ fn main()
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
-    @8 := &(*(slice@1), copy (slice@1.metadata))
+    @8 := &*(slice@1) with_metadata(copy (slice@1.metadata))
     @7 := iter<'_, i32>[Sized<i32>](move (@8))
     @6 := &two-phase-mut @7
     storage_dead(@8)

@@ -118,7 +118,7 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (
     counter@2 := const (0 : u32)
     storage_live(@3)
     storage_live(@4)
-    @4 := &(*(f@1), copy (f@1.metadata))
+    @4 := &*(f@1) with_metadata(copy (f@1.metadata))
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)

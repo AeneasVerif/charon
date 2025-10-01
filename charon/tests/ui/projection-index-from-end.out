@@ -39,7 +39,7 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     }
     storage_live(_named@5)
     storage_live(@6)
-    @6 := &(*(x@1), copy (x@1.metadata))
+    @6 := &*(x@1) with_metadata(copy (x@1.metadata))
     storage_live(@7)
     @7 := len(*(x@1))
     storage_live(@8)

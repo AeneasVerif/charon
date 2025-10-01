@@ -280,7 +280,7 @@ fn main()
     a@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (1 : u32))
     storage_live(@2)
     storage_live(@3)
-    @3 := &raw const (a@1, copy (@Global0))
+    @3 := &raw const a@1
     @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[Sized<Array<u32, 2 : usize>>, {impl#0}<Array<u32, 2 : usize>>[Pointee<Array<u32, 2 : usize>> where Metadata  = ()]](move (@3), const (2 : usize))
     storage_dead(@3)
     storage_dead(@2)

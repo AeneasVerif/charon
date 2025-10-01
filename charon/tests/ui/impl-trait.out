@@ -252,7 +252,7 @@ where
     storage_live(@5)
     @5 := &foo@1
     @4 := @TraitClause1::parent_clause2::get_ty<'_>(move (@5))
-    @3 := &(*(@4), copy (@4.metadata))
+    @3 := &*(@4) with_metadata(copy (@4.metadata))
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)

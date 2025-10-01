@@ -1220,7 +1220,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 } else {
                     write!(
                         f,
-                        "{borrow_kind}({}, {})",
+                        "{borrow_kind}{} with_metadata({})",
                         place.with_ctx(ctx),
                         ptr_metadata.with_ctx(ctx)
                     )?;
@@ -1236,12 +1236,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     RefKind::Shared => "&raw const ",
                     RefKind::Mut => "&raw mut ",
                 };
-                write!(
-                    f,
-                    "{ptr_kind}({}, {})",
-                    place.with_ctx(ctx),
-                    ptr_metadata.with_ctx(ctx)
-                )
+                if ptr_metadata.ty().is_unit() {
+                    // Hide unit metadata
+                    write!(f, "{ptr_kind}{}", place.with_ctx(ctx))?;
+                } else {
+                    write!(
+                        f,
+                        "{ptr_kind}{} with_metadata({})",
+                        place.with_ctx(ctx),
+                        ptr_metadata.with_ctx(ctx)
+                    )?;
+                }
+                Ok(())
             }
 
             Rvalue::BinaryOp(binop, x, y) => {

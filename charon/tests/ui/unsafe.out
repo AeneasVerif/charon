@@ -363,7 +363,7 @@ fn access_mutable_static()
     storage_live(@4)
     storage_live(@1)
     @3 := ()
-    @4 := &raw mut (COUNTER, move (@3))
+    @4 := &raw mut COUNTER
     @1 := move (@4)
     @2 := copy (*(@1)) panic.+ const (1 : usize)
     *(@1) := move (@2)

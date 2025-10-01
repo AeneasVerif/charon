@@ -85,9 +85,9 @@ where
 
     storage_live(@3)
     storage_live(@4)
-    @4 := &raw const (*(y@2), copy (@Global0))
+    @4 := &raw const *(y@2)
     storage_live(@5)
-    @5 := &raw mut (*(x@1), copy (@Global0))
+    @5 := &raw mut *(x@1)
     @3 := copy_nonoverlapping<T>[@TraitClause0](move (@4), move (@5), const (1 : usize))
     storage_dead(@5)
     storage_dead(@4)
