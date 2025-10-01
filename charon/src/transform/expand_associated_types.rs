@@ -1158,18 +1158,18 @@ impl VisitAstMut for UpdateItemBody<'_> {
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }
     }
-    fn enter_item_kind(&mut self, kind: &mut ItemKind) {
+    fn enter_item_source(&mut self, kind: &mut ItemSource) {
         match kind {
-            ItemKind::TopLevel
-            | ItemKind::Closure { .. }
-            | ItemKind::VTableTy { .. }
-            | ItemKind::VTableInstance { .. } => {}
+            ItemSource::TopLevel
+            | ItemSource::Closure { .. }
+            | ItemSource::VTableTy { .. }
+            | ItemSource::VTableInstance { .. } => {}
             // Inside method declarations, the implicit `Self` clause is the first clause.
-            ItemKind::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
+            ItemSource::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,
                 TraitRefKind::Clause(DeBruijnVar::new_at_zero(TraitClauseId::ZERO)),
             ),
-            ItemKind::TraitImpl {
+            ItemSource::TraitImpl {
                 impl_ref,
                 trait_ref,
                 ..

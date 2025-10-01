@@ -665,7 +665,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
         repr_name(&crate_data, &function.item_meta.name),
         "test_crate::<impl Default for ??>::default"
     );
-    let ItemKind::TraitImpl { .. } = &function.kind else {
+    let ItemSource::TraitImpl { .. } = &function.src else {
         panic!()
     };
     Ok(())

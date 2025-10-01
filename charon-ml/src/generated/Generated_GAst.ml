@@ -104,7 +104,7 @@ type global_decl = {
   item_meta : item_meta;  (** The meta data associated with the declaration. *)
   generics : generic_params;
   ty : ty;
-  kind : item_kind;
+  src : item_source;
       (** The context of the global: distinguishes top-level items from
           trait-associated items. *)
   global_kind : global_kind;  (** The kind of global (static or const). *)

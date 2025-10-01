@@ -107,20 +107,20 @@ class ['self] map_crate_with_span =
 
     method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl) :
         fun_decl =
-      let { def_id; item_meta; signature; kind; is_global_initializer; body } =
+      let { def_id; item_meta; signature; src; is_global_initializer; body } =
         decl
       in
       let decl_span_info = Some (IdFun def_id, item_meta.span) in
       let def_id = self#visit_fun_decl_id decl_span_info def_id in
       let item_meta = self#visit_item_meta decl_span_info item_meta in
       let signature = self#visit_fun_sig decl_span_info signature in
-      let kind = self#visit_item_kind decl_span_info kind in
+      let src = self#visit_item_source decl_span_info src in
       let is_global_initializer =
         self#visit_option self#visit_global_decl_id decl_span_info
           is_global_initializer
       in
       let body = self#visit_option self#visit_expr_body decl_span_info body in
-      { def_id; item_meta; signature; kind; is_global_initializer; body }
+      { def_id; item_meta; signature; src; is_global_initializer; body }
 
     method! visit_global_decl (_ : (any_decl_id * span) option)
         (decl : global_decl) =
@@ -298,14 +298,14 @@ class ['self] iter_crate_with_span =
 
     method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl) :
         unit =
-      let { def_id; item_meta; signature; kind; is_global_initializer; body } =
+      let { def_id; item_meta; signature; src; is_global_initializer; body } =
         decl
       in
       let decl_span_info = Some (IdFun def_id, item_meta.span) in
       self#visit_fun_decl_id decl_span_info def_id;
       self#visit_item_meta decl_span_info item_meta;
       self#visit_fun_sig decl_span_info signature;
-      self#visit_item_kind decl_span_info kind;
+      self#visit_item_source decl_span_info src;
       self#visit_option self#visit_global_decl_id decl_span_info
         is_global_initializer;
       self#visit_option self#visit_expr_body decl_span_info body

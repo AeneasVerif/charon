@@ -925,7 +925,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("generics", generics);
           ("ty", ty);
-          ("kind", kind);
+          ("src", src);
           ("global_kind", global_kind);
           ("init", init);
         ] ->
@@ -933,11 +933,11 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* ty = ty_of_json ctx ty in
-        let* kind = item_kind_of_json ctx kind in
+        let* src = item_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
         let* body = fun_decl_id_of_json ctx init in
         Ok
-          ({ def_id; item_meta; generics; ty; kind; global_kind; body }
+          ({ def_id; item_meta; generics; ty; src; global_kind; body }
             : global_decl)
     | _ -> Error "")
 
@@ -1032,8 +1032,33 @@ and any_decl_id_of_json (ctx : of_json_ctx) (js : json) :
         Ok (IdTraitImpl trait_impl)
     | _ -> Error "")
 
-and item_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (item_kind, string) result =
+and item_meta_of_json (ctx : of_json_ctx) (js : json) :
+    (item_meta, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("name", name);
+          ("span", span);
+          ("source_text", source_text);
+          ("attr_info", attr_info);
+          ("is_local", is_local);
+          ("opacity", _);
+          ("lang_item", lang_item);
+        ] ->
+        let* name = name_of_json ctx name in
+        let* span = span_of_json ctx span in
+        let* source_text = option_of_json string_of_json ctx source_text in
+        let* attr_info = attr_info_of_json ctx attr_info in
+        let* is_local = bool_of_json ctx is_local in
+        let* lang_item = option_of_json string_of_json ctx lang_item in
+        Ok
+          ({ name; span; source_text; attr_info; is_local; lang_item }
+            : item_meta)
+    | _ -> Error "")
+
+and item_source_of_json (ctx : of_json_ctx) (js : json) :
+    (item_source, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "TopLevel" -> Ok TopLevelItem
@@ -1076,31 +1101,6 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
         let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
         Ok (VTableInstanceItem impl_ref)
-    | _ -> Error "")
-
-and item_meta_of_json (ctx : of_json_ctx) (js : json) :
-    (item_meta, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("name", name);
-          ("span", span);
-          ("source_text", source_text);
-          ("attr_info", attr_info);
-          ("is_local", is_local);
-          ("opacity", _);
-          ("lang_item", lang_item);
-        ] ->
-        let* name = name_of_json ctx name in
-        let* span = span_of_json ctx span in
-        let* source_text = option_of_json string_of_json ctx source_text in
-        let* attr_info = attr_info_of_json ctx attr_info in
-        let* is_local = bool_of_json ctx is_local in
-        let* lang_item = option_of_json string_of_json ctx lang_item in
-        Ok
-          ({ name; span; source_text; attr_info; is_local; lang_item }
-            : item_meta)
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
@@ -1911,7 +1911,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
-        let* src = item_kind_of_json ctx src in
+        let* src = item_source_of_json ctx src in
         let* kind = type_decl_kind_of_json ctx kind in
         let* layout = option_of_json layout_of_json ctx layout in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in

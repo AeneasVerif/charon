@@ -726,7 +726,7 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
       in
       (* Match the pattern on the trait implementation and method name, if applicable. *)
       let match_trait_ref =
-        match d.kind with
+        match d.src with
         | TraitImplItem (_, trait_ref, method_name, _)
           when c.match_with_trait_decl_refs ->
             (* FIXME: this is a hack to circumvent the fact that sometimes

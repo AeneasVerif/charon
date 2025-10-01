@@ -559,7 +559,7 @@ impl ItemTransCtx<'_, '_> {
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
 
         let impl_ref = self.translate_closure_impl_ref(span, args, target_kind)?;
-        let kind = ItemKind::TraitImpl {
+        let src = ItemSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
             item_name: TraitItemName(target_kind.method_name().to_owned()),
@@ -579,7 +579,7 @@ impl ItemTransCtx<'_, '_> {
             def_id,
             item_meta,
             signature,
-            kind,
+            src,
             is_global_initializer: None,
             body,
         })
@@ -773,7 +773,7 @@ impl ItemTransCtx<'_, '_> {
             def_id,
             item_meta,
             signature,
-            kind: ItemKind::TopLevel,
+            src: ItemSource::TopLevel,
             is_global_initializer: None,
             body,
         })

@@ -60,7 +60,7 @@ impl ItemTransCtx<'_, '_> {
             generics: Box::new(self.the_only_binder().params.identity_args()),
         };
 
-        let kind = ItemKind::TraitImpl {
+        let src = ItemSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
             item_name: TraitItemName("drop".to_owned()),
@@ -96,7 +96,7 @@ impl ItemTransCtx<'_, '_> {
             def_id,
             item_meta,
             signature,
-            kind,
+            src,
             is_global_initializer: None,
             body,
         })
