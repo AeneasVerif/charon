@@ -1,11 +1,9 @@
 //! Desugar array/slice index operations to function calls.
 
 use crate::llbc_ast::*;
-use crate::transform::ctx::BodyTransformCtx;
-use crate::transform::insert_ptr_metadata::{
-    place_ptr_metadata_operand, BodyTransformCtxWithParams,
-};
 use crate::transform::TransformCtx;
+use crate::transform::ctx::BodyTransformCtx;
+use crate::transform::insert_ptr_metadata::{BodyTransformCtxWithParams, compute_place_metadata};
 use derive_generic_visitor::*;
 
 use super::ctx::LlbcPass;
@@ -67,7 +65,7 @@ impl BodyTransformCtxWithParams for IndexVisitor<'_, '_> {
 /// New local variables are created as needed.
 ///
 /// The `last_arg` is either the `offset` for `Index` or the `to` for `Subslice` for the projections.
-pub fn compute_to_idx<T: BodyTransformCtx>(
+pub fn compute_subslice_end_idx<T: BodyTransformCtx>(
     ctx: &mut T,
     len_place: &Place,
     last_arg: Operand,
@@ -167,7 +165,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         };
 
         // do something similar to the `input_var` below, but for the metadata.
-        let ptr_metadata = place_ptr_metadata_operand(self, subplace);
+        let ptr_metadata = compute_place_metadata(self, subplace);
 
         // Push the statements:
         // `storage_live(tmp0)`
@@ -202,7 +200,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             } => (x.as_ref().clone(), *from_end),
             _ => unreachable!(),
         };
-        let to_idx = compute_to_idx(self, subplace, last_arg, from_end);
+        let to_idx = compute_subslice_end_idx(self, subplace, last_arg, from_end);
         args.push(to_idx);
 
         // Call the indexing function:

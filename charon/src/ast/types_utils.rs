@@ -857,14 +857,16 @@ impl TraitRef {
 }
 
 impl PtrMetadata {
-    /// Substitute the type in `InheritFrom` with the given generic arguments.
-    pub fn substitute(&self, args: &GenericArgs) -> Self {
+    pub fn into_type(self) -> Ty {
         match self {
-            PtrMetadata::InheritFrom(ty) => PtrMetadata::InheritFrom(ty.clone().substitute(args)),
-            PtrMetadata::VTable(vtable_ref) => {
-                PtrMetadata::VTable(vtable_ref.clone().substitute(args))
-            }
-            PtrMetadata::Length | PtrMetadata::None => self.clone(),
+            PtrMetadata::None => Ty::mk_unit(),
+            PtrMetadata::Length => Ty::mk_usize(),
+            PtrMetadata::VTable(type_decl_ref) => Ty::new(TyKind::Ref(
+                Region::Static,
+                Ty::new(TyKind::Adt(type_decl_ref)),
+                RefKind::Shared,
+            )),
+            PtrMetadata::InheritFrom(ty) => Ty::new(TyKind::PtrMetadata(ty)),
         }
     }
 }
