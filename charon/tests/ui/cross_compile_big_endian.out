@@ -9,6 +9,16 @@ pub const MAX: usize = MAX()
 // Full name: core::num::{u128}::to_ne_bytes
 pub fn to_ne_bytes(@1: u128) -> Array<u8, 16 : usize>
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::S
 fn S() -> Array<u8, 16 : usize>
 {

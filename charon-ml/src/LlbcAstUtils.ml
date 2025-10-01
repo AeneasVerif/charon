@@ -207,6 +207,7 @@ class ['self] map_crate_with_span =
         global_decls;
         trait_decls;
         trait_impls;
+        unit_metadata;
       } =
         crate
       in
@@ -235,6 +236,9 @@ class ['self] map_crate_with_span =
       let trait_impls =
         TraitImplId.Map.map (self#visit_trait_impl decl_span_info) trait_impls
       in
+      let unit_metadata =
+        self#visit_global_decl_ref decl_span_info unit_metadata
+      in
       {
         name;
         options;
@@ -245,6 +249,7 @@ class ['self] map_crate_with_span =
         global_decls;
         trait_decls;
         trait_impls;
+        unit_metadata;
       }
   end
 
@@ -386,6 +391,7 @@ class ['self] iter_crate_with_span =
         global_decls;
         trait_decls;
         trait_impls;
+        unit_metadata;
       } =
         crate
       in
@@ -404,7 +410,8 @@ class ['self] iter_crate_with_span =
         trait_decls;
       TraitImplId.Map.iter
         (fun _ -> self#visit_trait_impl decl_span_info)
-        trait_impls
+        trait_impls;
+      self#visit_global_decl_ref decl_span_info unit_metadata
   end
 
 (** For error reporting: compute which local definitions (transitively) depend

@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::neg_test
 pub fn neg_test(@1: i32) -> i32
 {
@@ -594,6 +604,23 @@ fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
     return
 }
 
+// Full name: test_crate::index_slice_ignore_value
+fn index_slice_ignore_value<'_0>(@1: &'_0 (Slice<u32>))
+{
+    let @0: (); // return
+    let x@1: &'_ (Slice<u32>); // arg #1
+    let @2: usize; // anonymous local
+
+    storage_live(@2)
+    // FIXME: Bug: the bound check is removed but the place is not mentioned, so the translated
+    // function doesn't panic on empty slices anymore.
+    @2 := const (0 : usize)
+    storage_dead(@2)
+    @0 := ()
+    @0 := ()
+    return
+}
+
 pub fn test_crate::_() -> isize
 {
     let @0: isize; // return
@@ -807,7 +834,7 @@ fn div_unsigned_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     storage_live(@4)
     @4 := const (0 : usize)
     storage_live(@5)
-    @5 := &mut *(result@1)
+    @5 := &mut *(result@1) with_metadata(copy (result@1.metadata))
     storage_live(@6)
     @6 := @SliceIndexMut<'_, u32>(move (@5), copy (@4))
     *(@6) := move (@3) panic./ const (3329 : u32)
@@ -834,7 +861,7 @@ fn div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     storage_live(@4)
     @4 := const (0 : usize)
     storage_live(@5)
-    @5 := &mut *(result@1)
+    @5 := &mut *(result@1) with_metadata(copy (result@1.metadata))
     storage_live(@6)
     @6 := @SliceIndexMut<'_, i32>(move (@5), copy (@4))
     *(@6) := move (@3) panic./ const (3329 : i32)
@@ -864,7 +891,7 @@ fn add_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     storage_live(@5)
     @5 := const (0 : usize)
     storage_live(@6)
-    @6 := &mut *(result@1)
+    @6 := &mut *(result@1) with_metadata(copy (result@1.metadata))
     storage_live(@7)
     @7 := @SliceIndexMut<'_, u32>(move (@6), copy (@5))
     *(@7) := move (@4)
@@ -902,7 +929,7 @@ fn add_to_slice2<'_0>(@1: &'_0 mut (Slice<u8>), @2: usize, @3: u8)
     @6 := move (@8)
     storage_dead(@7)
     storage_live(@9)
-    @9 := &mut *(result@1)
+    @9 := &mut *(result@1) with_metadata(copy (result@1.metadata))
     storage_live(@10)
     @10 := @SliceIndexMut<'_, u8>(move (@9), copy (@6))
     *(@10) := move (@5)

@@ -180,6 +180,16 @@ where
     [@TraitClause1]: Sized<E>,
     [@TraitClause2]: Debug<E>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::trait_error
 pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
 {
@@ -192,7 +202,7 @@ pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
     storage_live(_array@2)
     storage_live(@3)
     storage_live(@4)
-    @4 := &*(s@1)
+    @4 := &*(s@1) with_metadata(copy (s@1.metadata))
     @3 := {impl TryInto<U> for T}::try_into<&'_ (Slice<u8>), Array<u8, 4 : usize>>[Sized<&'_ (Slice<u8>)>, Sized<Array<u8, 4 : usize>>, {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}<'_, u8, 4 : usize>[Sized<u8>, {impl Copy for u8}]](move (@4))
     storage_dead(@4)
     _array@2 := unwrap<Array<u8, 4 : usize>, TryFromSliceError>[Sized<Array<u8, 4 : usize>>, Sized<TryFromSliceError>, {impl Debug for TryFromSliceError}](move (@3))

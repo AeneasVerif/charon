@@ -186,6 +186,16 @@ where
     vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::construct
 fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : 'static)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Sized<Global>]
 where
@@ -201,7 +211,7 @@ fn destruct<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _d
     let @2: &'_ ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)); // anonymous local
 
     storage_live(@2)
-    @2 := &*(x@1)
+    @2 := &*(x@1) with_metadata(copy (x@1.metadata))
     @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>, Display<(dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)>](move (@2))
     storage_dead(@2)
     return

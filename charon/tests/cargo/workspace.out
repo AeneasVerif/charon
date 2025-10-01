@@ -9,6 +9,16 @@ pub fn random_number() -> u32
     return
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: crate2::extra_random_number
 pub fn extra_random_number() -> u32
 {

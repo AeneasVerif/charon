@@ -182,6 +182,16 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::foo::bar
 fn bar()
 {
@@ -294,13 +304,13 @@ fn foo()
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
-    @10 := &*(slice@4)
+    @10 := &*(slice@4) with_metadata(copy (slice@4.metadata))
     storage_live(@11)
     @11 := RangeFrom { start: const (1 : usize) }
     @9 := {impl Index<I> for Slice<T>}::index<'_, bool, RangeFrom<usize>[Sized<usize>]>[Sized<bool>, Sized<RangeFrom<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for RangeFrom<usize>[Sized<usize>]}<bool>[Sized<bool>]](move (@10), move (@11))
     storage_dead(@11)
     storage_dead(@10)
-    @8 := &*(@9)
+    @8 := &*(@9) with_metadata(copy (@9.metadata))
     storage_dead(@8)
     @0 := ()
     storage_dead(@9)

@@ -406,6 +406,16 @@ pub fn iter<'_0, T>(@1: &'_0 (Slice<T>)) -> Iter<'_0, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::main
 fn main()
 {
@@ -433,7 +443,7 @@ fn main()
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
-    @8 := &*(slice@1)
+    @8 := &*(slice@1) with_metadata(copy (slice@1.metadata))
     @7 := iter<'_, i32>[Sized<i32>](move (@8))
     @6 := &two-phase-mut @7
     storage_dead(@8)

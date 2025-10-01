@@ -467,10 +467,7 @@ impl ItemTransCtx<'_, '_> {
                     })),
                 });
 
-                let mut locals = Locals {
-                    arg_count: 2,
-                    locals: Vector::new(),
-                };
+                let mut locals = Locals::new(2);
                 let mut statements = vec![];
                 let mut blocks = Vector::default();
 
@@ -484,7 +481,12 @@ impl ItemTransCtx<'_, '_> {
 
                 statements.push(mk_stt(StatementKind::Assign(
                     reborrow.clone(),
-                    Rvalue::Ref(deref_state, BorrowKind::Shared),
+                    // the state must be Sized, hence `()` as ptr-metadata
+                    Rvalue::Ref {
+                        place: deref_state,
+                        kind: BorrowKind::Shared,
+                        ptr_metadata: Operand::mk_const_unit(),
+                    },
                 )));
 
                 let start_block = blocks.reserve_slot();
@@ -716,10 +718,7 @@ impl ItemTransCtx<'_, '_> {
                 generics: impl_ref.generics.clone(),
             });
 
-            let mut locals = Locals {
-                arg_count: signature.inputs.len(),
-                locals: Vector::new(),
-            };
+            let mut locals = Locals::new(signature.inputs.len());
             let mut statements = vec![];
             let mut blocks = Vector::default();
 

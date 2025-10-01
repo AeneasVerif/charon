@@ -12,6 +12,16 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: unsafe::main
 fn main()
 {

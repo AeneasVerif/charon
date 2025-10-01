@@ -50,6 +50,16 @@ where
     non-dyn-compatible
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::discriminant_value
 fn discriminant_value<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> isize
 where

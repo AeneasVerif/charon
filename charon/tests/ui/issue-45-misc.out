@@ -536,6 +536,16 @@ pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: Sized<T>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::map::closure
 struct closure {}
 
@@ -749,14 +759,14 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@7)
         storage_live(@8)
         storage_live(@9)
-        @9 := &*(lhs@1)
+        @9 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
         @8 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@9))
         storage_dead(@9)
         @7 := &@8
         storage_live(@10)
         storage_live(@11)
         storage_live(@12)
-        @12 := &*(rhs@2)
+        @12 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
         @11 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@12))
         storage_dead(@12)
         @10 := &@11

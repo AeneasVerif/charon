@@ -218,6 +218,16 @@ where
     vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 pub fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))
 where
     [@TraitClause0]: Sized<T>,

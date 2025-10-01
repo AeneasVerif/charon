@@ -361,7 +361,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate a Dynamically Sized Type metadata kind.
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
-    pub fn translate_ptr_metadata(&self, item: &hax::ItemRef) -> Option<PtrMetadata> {
+    pub fn translate_ptr_metadata(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+    ) -> Result<PtrMetadata, Error> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
@@ -373,23 +377,46 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .instantiate(tcx, item.rustc_args(hax_state));
 
         // call the key method
-        match tcx
-            .struct_tail_raw(
-                ty,
-                |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
-                || {},
-            )
-            .kind()
-        {
-            ty::Foreign(..) => Some(PtrMetadata::None),
-            ty::Str | ty::Slice(..) => Some(PtrMetadata::Length),
-            ty::Dynamic(..) => Some(PtrMetadata::VTable(VTable)),
-            // This is NOT accurate -- if there is no generic clause that states `?Sized`
-            // Then it will be safe to return `Some(PtrMetadata::None)`.
-            // TODO: inquire the generic clause to get the accurate info.
-            ty::Placeholder(..) | ty::Infer(..) | ty::Param(..) | ty::Bound(..) => None,
-            _ => Some(PtrMetadata::None),
-        }
+        let raw_ty = tcx.struct_tail_raw(
+            ty,
+            |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
+            || {},
+        );
+        let hax_ty: &hax::Ty = &self.t_ctx.catch_sinto(hax_state, span, &raw_ty)?;
+
+        let ret = match raw_ty.kind() {
+            ty::Foreign(..) => PtrMetadata::None,
+            ty::Str | ty::Slice(..) => PtrMetadata::Length,
+            ty::Dynamic(..) => match hax_ty.kind() {
+                hax::TyKind::Dynamic(_, preds, _) => {
+                    let vtable = self
+                        .translate_region_binder(
+                            span,
+                            &preds.predicates[0].0.kind,
+                            |ctx, kind: &hax::ClauseKind| {
+                                let hax::ClauseKind::Trait(trait_predicate) = kind else {
+                                    unreachable!()
+                                };
+                                Ok(ctx
+                                    .translate_vtable_struct_ref(span, &trait_predicate.trait_ref)?
+                                    .unwrap())
+                            },
+                        )?
+                        .erase();
+                    PtrMetadata::VTable(vtable)
+                }
+                _ => unreachable!("Unexpected hax type {hax_ty:?} for dynamic type: {ty:?}"),
+            },
+            ty::Param(..) => PtrMetadata::InheritFrom(self.translate_ty(span, hax_ty)?),
+            ty::Placeholder(..) | ty::Infer(..) | ty::Bound(..) => {
+                panic!(
+                    "We should never encounter a placeholder, infer, or bound type from ptr_metadata translation. Got: {raw_ty:?}"
+                )
+            }
+            _ => PtrMetadata::None,
+        };
+
+        Ok(ret)
     }
 
     /// Translate a type layout.

@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::slice_pat1
 fn slice_pat1()
 {
@@ -110,16 +120,19 @@ fn slice_pat3()
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
     let @10: bool; // anonymous local
-    let @11: &'_ (Slice<i32>); // anonymous local
+    let @11: usize; // anonymous local
     let @12: usize; // anonymous local
     let @13: usize; // anonymous local
-    let @14: &'_ (i32); // anonymous local
-    let @15: &'_ (Slice<i32>); // anonymous local
+    let @14: &'_ (Slice<i32>); // anonymous local
+    let @15: usize; // anonymous local
     let @16: usize; // anonymous local
-    let @17: usize; // anonymous local
+    let @17: &'_ (i32); // anonymous local
     let @18: &'_ (Slice<i32>); // anonymous local
-    let @19: &'_ (Slice<i32>); // anonymous local
-    let @20: &'_ (i32); // anonymous local
+    let @19: usize; // anonymous local
+    let @20: usize; // anonymous local
+    let @21: &'_ (Slice<i32>); // anonymous local
+    let @22: &'_ (Slice<i32>); // anonymous local
+    let @23: &'_ (i32); // anonymous local
 
     storage_live(@8)
     storage_live(@9)
@@ -148,37 +161,123 @@ fn slice_pat3()
         storage_dead(_a@5)
         panic(core::panicking::panic_explicit)
     }
-    storage_live(@19)
-    @19 := &*(slice@1)
-    storage_live(@20)
-    @20 := @SliceIndexShared<'_, i32>(move (@19), const (0 : usize))
-    _a@5 := &*(@20)
-    storage_live(@15)
-    @15 := &*(slice@1)
-    storage_live(@16)
-    @16 := len(*(slice@1))
-    storage_live(@17)
-    @17 := copy (@16) ub.- const (1 : usize)
-    storage_dead(@16)
-    storage_live(@18)
-    @18 := @SliceSubSliceShared<'_, i32>(move (@15), const (1 : usize), copy (@17))
-    _b@6 := &*(@18)
+    storage_live(@22)
+    @22 := &*(slice@1) with_metadata(copy (slice@1.metadata))
+    storage_live(@23)
+    @23 := @SliceIndexShared<'_, i32>(move (@22), const (0 : usize))
+    _a@5 := &*(@23)
     storage_live(@11)
-    @11 := &*(slice@1)
+    @11 := len(*(slice@1))
     storage_live(@12)
-    @12 := len(*(slice@1))
+    @12 := copy (@11) ub.- const (1 : usize)
+    storage_dead(@11)
     storage_live(@13)
     @13 := copy (@12) ub.- const (1 : usize)
-    storage_dead(@12)
+    storage_live(@18)
+    @18 := &*(slice@1) with_metadata(copy (slice@1.metadata))
+    storage_live(@19)
+    @19 := len(*(slice@1))
+    storage_live(@20)
+    @20 := copy (@19) ub.- const (1 : usize)
+    storage_dead(@19)
+    storage_live(@21)
+    @21 := @SliceSubSliceShared<'_, i32>(move (@18), const (1 : usize), copy (@20))
+    _b@6 := &*(@21) with_metadata(copy (@13))
     storage_live(@14)
-    @14 := @SliceIndexShared<'_, i32>(move (@11), copy (@13))
-    _c@7 := &*(@14)
+    @14 := &*(slice@1) with_metadata(copy (slice@1.metadata))
+    storage_live(@15)
+    @15 := len(*(slice@1))
+    storage_live(@16)
+    @16 := copy (@15) ub.- const (1 : usize)
+    storage_dead(@15)
+    storage_live(@17)
+    @17 := @SliceIndexShared<'_, i32>(move (@14), copy (@16))
+    _c@7 := &*(@17)
     @0 := ()
     storage_dead(_c@7)
     storage_dead(_b@6)
     storage_dead(_a@5)
     storage_dead(@4)
     storage_dead(slice@1)
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::slice_pat4
+fn slice_pat4<'_0>(@1: &'_0 (Slice<u32>))
+{
+    let @0: (); // return
+    let x@1: &'_ (Slice<u32>); // arg #1
+    let @2: usize; // anonymous local
+    let @3: usize; // anonymous local
+    let @4: bool; // anonymous local
+    let _y@5: &'_ (u32); // local
+    let @6: &'_ (Slice<u32>); // anonymous local
+    let @7: &'_ (u32); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @2 := len(*(x@1))
+    @3 := const (1 : usize)
+    @4 := move (@2) == move (@3)
+    if move (@4) {
+    }
+    else {
+        @0 := ()
+        @0 := ()
+        return
+    }
+    storage_live(_y@5)
+    storage_live(@6)
+    @6 := &*(x@1) with_metadata(copy (x@1.metadata))
+    storage_live(@7)
+    @7 := @SliceIndexShared<'_, u32>(move (@6), const (0 : usize))
+    _y@5 := &*(@7)
+    @0 := ()
+    storage_dead(_y@5)
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::Unsized
+struct Unsized {
+  Slice<u32>,
+}
+
+// Full name: test_crate::slice_pat5
+fn slice_pat5<'_0>(@1: &'_0 (Unsized))
+{
+    let @0: (); // return
+    let x@1: &'_ (Unsized); // arg #1
+    let @2: usize; // anonymous local
+    let @3: usize; // anonymous local
+    let @4: bool; // anonymous local
+    let _y@5: u32; // local
+    let @6: &'_ (Slice<u32>); // anonymous local
+    let @7: &'_ (u32); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @2 := len((*(x@1)).0)
+    @3 := const (1 : usize)
+    @4 := move (@2) == move (@3)
+    if move (@4) {
+    }
+    else {
+        @0 := ()
+        @0 := ()
+        return
+    }
+    storage_live(_y@5)
+    storage_live(@6)
+    @6 := &(*(x@1)).0 with_metadata(copy (x@1.metadata))
+    storage_live(@7)
+    @7 := @SliceIndexShared<'_, u32>(move (@6), const (0 : usize))
+    _y@5 := copy (*(@7))
+    @0 := ()
+    storage_dead(_y@5)
     @0 := ()
     return
 }

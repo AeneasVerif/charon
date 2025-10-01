@@ -1,6 +1,5 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
 use crate::ast::*;
-use crate::ids::Vector;
 
 impl Place {
     pub fn new(local_id: LocalId, ty: Ty) -> Place {
@@ -56,11 +55,11 @@ impl Place {
 
     pub fn project_auto_ty(
         self,
-        type_decls: &Vector<TypeDeclId, TypeDecl>,
+        krate: &TranslatedCrate,
         proj: ProjectionElem,
     ) -> Result<Self, ()> {
         Ok(Place {
-            ty: proj.project_type(type_decls, &self.ty)?,
+            ty: proj.project_type(krate, &self.ty)?,
             kind: PlaceKind::Projection(Box::new(self), proj),
         })
     }
@@ -74,7 +73,7 @@ impl Place {
                 tref.generics.types[0].clone()
             }
             Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
-            | FnPtr(..) | FnDef(..) | Error(..) => panic!("internal type error"),
+            | FnPtr(..) | FnDef(..) | PtrMetadata(..) | Error(..) => panic!("internal type error"),
         };
         Place {
             ty: proj_ty,
@@ -89,6 +88,22 @@ impl Place {
             place = new_place;
             Some(proj)
         })
+    }
+}
+
+impl Operand {
+    pub fn mk_const_unit() -> Self {
+        Operand::Const(Box::new(ConstantExpr {
+            kind: ConstantExprKind::Adt(None, Vec::new()),
+            ty: Ty::mk_unit(),
+        }))
+    }
+
+    pub fn ty(&self) -> &Ty {
+        match self {
+            Operand::Copy(place) | Operand::Move(place) => place.ty(),
+            Operand::Const(constant_expr) => &constant_expr.ty,
+        }
     }
 }
 
@@ -116,11 +131,7 @@ impl BorrowKind {
 
 impl ProjectionElem {
     /// Compute the type obtained when applying the current projection to a place of type `ty`.
-    pub fn project_type(
-        &self,
-        type_decls: &Vector<TypeDeclId, TypeDecl>,
-        ty: &Ty,
-    ) -> Result<Ty, ()> {
+    pub fn project_type(&self, krate: &TranslatedCrate, ty: &Ty) -> Result<Ty, ()> {
         use ProjectionElem::*;
         Ok(match self {
             Deref => {
@@ -131,7 +142,7 @@ impl ProjectionElem {
                         tref.generics.types[0].clone()
                     }
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
-                    | FnPtr(..) | FnDef(..) | Error(..) => {
+                    | FnPtr(..) | FnDef(..) | PtrMetadata(..) | Error(..) => {
                         // Type error
                         return Err(());
                     }
@@ -143,7 +154,7 @@ impl ProjectionElem {
                 match pkind {
                     Adt(type_decl_id, variant_id) => {
                         // Can fail if the type declaration was not translated.
-                        let type_decl = type_decls.get(*type_decl_id).ok_or(())?;
+                        let type_decl = krate.type_decls.get(*type_decl_id).ok_or(())?;
                         let tref = ty.as_adt().ok_or(())?;
                         assert!(TypeId::Adt(*type_decl_id) == tref.id);
                         use TypeDeclKind::*;
@@ -181,6 +192,7 @@ impl ProjectionElem {
                         .clone(),
                 }
             }
+            PtrMetadata => ty.get_ptr_metadata(krate).into_type(),
             Index { .. } | Subslice { .. } => ty.as_array_or_slice().ok_or(())?.clone(),
         })
     }

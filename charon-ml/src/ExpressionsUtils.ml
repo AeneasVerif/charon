@@ -1,7 +1,7 @@
 open Expressions
 
 let unop_can_fail : unop -> bool = function
-  | Neg (OPanic | OUB) | Cast _ | PtrMetadata -> true
+  | Neg (OPanic | OUB) | Cast _ -> true
   | Neg OWrap | Not -> false
 
 let binop_can_fail : binop -> bool = function

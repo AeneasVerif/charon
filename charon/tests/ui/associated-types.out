@@ -145,6 +145,16 @@ pub fn to_owned<'_0, Self, Clause0_Owned>(@1: &'_0 (Self)) -> Clause0_Owned
 where
     [@TraitClause0]: ToOwned<Self, Clause0_Owned>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 trait test_crate::Foo<'a, Self, Self_Item>
 where
     Self_Item : 'a,

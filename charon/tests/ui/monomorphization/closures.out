@@ -208,6 +208,16 @@ pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (
 
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>(@1: test_crate::main::closure#1<'_>, @2: (u8)) -> u8
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun1()
+
 // Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8)>}::call
 fn {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '_1>(@1: &'_1 (test_crate::main::closure<'_0>), @2: (u8)) -> u8
 {

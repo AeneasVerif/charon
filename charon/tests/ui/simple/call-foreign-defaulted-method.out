@@ -4,6 +4,16 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 pub fn test_crate::foo::{impl Trait for ()}::defaulted<'_0>(@1: &'_0 (()))
 {
     let @0: (); // return

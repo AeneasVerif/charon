@@ -54,6 +54,16 @@ pub struct String {
   vec: Vec<u8>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}],
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop
 pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]))
 where

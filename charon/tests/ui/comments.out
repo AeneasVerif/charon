@@ -79,6 +79,16 @@ pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: Sized<T>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::function_call
 fn function_call(@1: u32)
 {
@@ -161,7 +171,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @10 := copy (i@3)
         storage_live(@11)
         storage_live(@12)
-        @12 := &*(s@1)
+        @12 := &*(s@1) with_metadata(copy (s@1.metadata))
         @11 := len<'_, u32>[Sized<u32>](move (@12))
         storage_dead(@12)
         @9 := move (@10) < move (@11)
@@ -177,7 +187,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         // Add to running sum
         @14 := copy (i@3)
         storage_live(@27)
-        @27 := &*(s@1)
+        @27 := &*(s@1) with_metadata(copy (s@1.metadata))
         storage_live(@28)
         @28 := @SliceIndexShared<'_, u32>(move (@27), copy (@14))
         @13 := copy (*(@28))

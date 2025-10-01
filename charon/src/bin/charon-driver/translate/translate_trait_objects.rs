@@ -430,7 +430,8 @@ impl ItemTransCtx<'_, '_> {
             },
             kind,
             layout: Some(layout),
-            ptr_metadata: None,
+            // A vtable struct is always sized
+            ptr_metadata: PtrMetadata::None,
         })
     }
 }
@@ -635,10 +636,7 @@ impl ItemTransCtx<'_, '_> {
         impl_def: &hax::FullDef,
         vtable_struct_ref: TypeDeclRef,
     ) -> Result<Body, Error> {
-        let mut locals = Locals {
-            arg_count: 0,
-            locals: Vector::new(),
-        };
+        let mut locals = Locals::new(0);
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let ret_place = locals.new_var(Some("ret".into()), ret_ty.clone());
 

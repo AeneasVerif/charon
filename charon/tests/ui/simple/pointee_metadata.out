@@ -212,6 +212,16 @@ pub trait Pointee<Self>
 // Full name: core::ptr::const_ptr::{*const T}::to_raw_parts
 pub fn to_raw_parts<T>(@1: *const T) -> (*const (), Pointee<T>::Metadata)
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::empty_metadata
 fn empty_metadata()
 {

@@ -490,6 +490,16 @@ where
 // Full name: std::io::stdio::_eprint
 pub fn _eprint<'_0>(@1: Arguments<'_0>)
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::debug_slice
 fn debug_slice<'_0, T>(@1: &'_0 (Slice<T>))
 where

@@ -425,6 +425,16 @@ pub fn chunks<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> Chunks<'_0, T>[@TraitCl
 where
     [@TraitClause0]: Sized<T>,
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::f1
 fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
 {
@@ -459,7 +469,7 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     storage_live(@6)
     @6 := const (0 : usize)
     storage_live(@14)
-    @14 := &*(a@1)
+    @14 := &*(a@1) with_metadata(copy (a@1.metadata))
     storage_live(@15)
     @15 := @SliceIndexShared<'_, u8>(move (@14), copy (@6))
     @5 := copy (*(@15))
@@ -472,7 +482,7 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
         storage_live(@9)
         @9 := const (1 : usize)
         storage_live(@12)
-        @12 := &*(a@1)
+        @12 := &*(a@1) with_metadata(copy (a@1.metadata))
         storage_live(@13)
         @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@9))
         @8 := copy (*(@13))
@@ -628,7 +638,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := &*(a@1)
+    @7 := &*(a@1) with_metadata(copy (a@1.metadata))
     @6 := chunks<'_, u8>[Sized<u8>](move (@7), const (3 : usize))
     storage_dead(@7)
     @5 := {impl IntoIterator for I}::into_iter<Chunks<'_, u8>[Sized<u8>]>[Sized<Chunks<'_, u8>[Sized<u8>]>, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, u8>[Sized<u8>]](move (@6))
@@ -656,7 +666,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@16)
                 @16 := const (0 : usize)
                 storage_live(@56)
-                @56 := &*(bytes@13)
+                @56 := &*(bytes@13) with_metadata(copy (bytes@13.metadata))
                 storage_live(@57)
                 @57 := @SliceIndexShared<'_, u8>(move (@56), copy (@16))
                 @15 := copy (*(@57))
@@ -668,7 +678,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@19)
                 @19 := const (1 : usize)
                 storage_live(@54)
-                @54 := &*(bytes@13)
+                @54 := &*(bytes@13) with_metadata(copy (bytes@13.metadata))
                 storage_live(@55)
                 @55 := @SliceIndexShared<'_, u8>(move (@54), copy (@19))
                 @18 := copy (*(@55))
@@ -680,7 +690,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@22)
                 @22 := const (2 : usize)
                 storage_live(@52)
-                @52 := &*(bytes@13)
+                @52 := &*(bytes@13) with_metadata(copy (bytes@13.metadata))
                 storage_live(@53)
                 @53 := @SliceIndexShared<'_, u8>(move (@52), copy (@22))
                 @21 := copy (*(@53))
@@ -733,7 +743,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         storage_live(@39)
                         @39 := copy (sampled@3)
                         storage_live(@48)
-                        @48 := &mut *(result@2)
+                        @48 := &mut *(result@2) with_metadata(copy (result@2.metadata))
                         storage_live(@49)
                         @49 := @SliceIndexMut<'_, i16>(move (@48), copy (@39))
                         *(@49) := move (@38)
@@ -769,7 +779,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         storage_live(@46)
                         @46 := copy (sampled@3)
                         storage_live(@50)
-                        @50 := &mut *(result@2)
+                        @50 := &mut *(result@2) with_metadata(copy (result@2.metadata))
                         storage_live(@51)
                         @51 := @SliceIndexMut<'_, i16>(move (@50), copy (@46))
                         *(@51) := move (@45)

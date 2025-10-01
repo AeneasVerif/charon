@@ -93,7 +93,7 @@ fn spans() -> anyhow::Result<()> {
         }
         ",
     )?;
-    let function = &crate_data.fun_decls[0];
+    let function = &crate_data.fun_decls[1];
     // Span of the whole function.
     assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
 
@@ -292,20 +292,20 @@ fn attributes() -> anyhow::Result<()> {
         vec!["clippy::foo"]
     );
     assert_eq!(
-        unknown_attrs(&crate_data.global_decls[0].item_meta),
-        vec!["clippy::foo"]
-    );
-    assert_eq!(
         unknown_attrs(&crate_data.global_decls[1].item_meta),
         vec!["clippy::foo"]
     );
-    assert!(unknown_attrs(&crate_data.fun_decls[0].item_meta).is_empty());
     assert_eq!(
-        crate_data.fun_decls[0].item_meta.attr_info.inline,
+        unknown_attrs(&crate_data.global_decls[2].item_meta),
+        vec!["clippy::foo"]
+    );
+    assert!(unknown_attrs(&crate_data.fun_decls[1].item_meta).is_empty());
+    assert_eq!(
+        crate_data.fun_decls[1].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
     );
     assert_eq!(
-        crate_data.fun_decls[0]
+        crate_data.fun_decls[1]
             .item_meta
             .attr_info
             .attributes
@@ -458,7 +458,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[0]
+        crate_data.fun_decls[1]
             .item_meta
             .attr_info
             .rename
@@ -467,7 +467,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[1]
+        crate_data.fun_decls[2]
             .item_meta
             .attr_info
             .rename
@@ -476,7 +476,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[2]
+        crate_data.fun_decls[3]
             .item_meta
             .attr_info
             .rename
@@ -485,7 +485,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[4]
+        crate_data.fun_decls[5]
             .item_meta
             .attr_info
             .rename
@@ -539,7 +539,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.global_decls[0]
+        crate_data.global_decls[1]
             .item_meta
             .attr_info
             .rename
@@ -580,10 +580,11 @@ fn declaration_groups() -> anyhow::Result<()> {
         "#,
     )?;
 
-    // There are two function items: one for `foo`, one for the initializer of `Trait::FOO`.
-    assert_eq!(crate_data.fun_decls.iter().count(), 2);
+    // There are 3 function items: one for `foo`, one for the initializer of `Trait::FOO`, and
+    // one for the initializer of UNIT_METADATA (always included).
+    assert_eq!(crate_data.fun_decls.iter().count(), 3);
     let decl_groups = crate_data.ordered_decls.unwrap();
-    assert_eq!(decl_groups.len(), 6);
+    assert_eq!(decl_groups.len(), 8);
 
     Ok(())
 }
@@ -638,7 +639,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
         }
         "#,
     )?;
-    let function = &crate_data.fun_decls[0];
+    let function = &crate_data.fun_decls[1];
     assert_eq!(
         repr_name(&crate_data, &function.item_meta.name),
         "test_crate::use_default"

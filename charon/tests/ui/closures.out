@@ -146,6 +146,16 @@ where
     non-dyn-compatible
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::incr_u32
 pub fn incr_u32(@1: u32) -> u32
 {

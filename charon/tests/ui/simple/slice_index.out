@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: test_crate::first
 pub fn first<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 {
@@ -12,7 +22,7 @@ pub fn first<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     storage_live(@2)
     @2 := const (0 : usize)
     storage_live(@3)
-    @3 := &*(s@1)
+    @3 := &*(s@1) with_metadata(copy (s@1.metadata))
     storage_live(@4)
     @4 := @SliceIndexShared<'_, u32>(move (@3), copy (@2))
     @0 := copy (*(@4))

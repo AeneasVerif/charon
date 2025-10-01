@@ -257,6 +257,16 @@ where
   args: &'a (Slice<Argument<'a>>),
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
 fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 {
@@ -719,7 +729,7 @@ where
     self@7 := cast<*mut Slice<u8>, *mut u8>(copy (@13))
     storage_dead(self@8)
     storage_live(count@9)
-    count@9 := ptr_metadata(copy (@13))
+    count@9 := copy (@13.metadata)
     storage_live(@17)
     @17 := ub_checks<bool>
     if copy (@17) {
@@ -4212,7 +4222,7 @@ where
     @2 := ManuallyDrop { value: copy (b@1) }
     @3 := copy ((@2).value)
     @4 := transmute<NonNull<T>, *const T>(copy (((@3).0).pointer))
-    @0 := &raw mut *(@4)
+    @0 := &raw mut *(@4) with_metadata(copy (@4.metadata))
     storage_dead(@2)
     return
 }
@@ -4236,10 +4246,10 @@ where
     storage_live(@3)
     @4 := copy (((b@1).0).pointer)
     @3 := transmute<NonNull<T>, *const T>(copy (@4))
-    @2 := &raw mut *(@3)
+    @2 := &raw mut *(@3) with_metadata(copy (@3.metadata))
     storage_dead(@3)
     storage_dead(@4)
-    @0 := &mut *(@2)
+    @0 := &mut *(@2) with_metadata(copy (@2.metadata))
     return
 }
 

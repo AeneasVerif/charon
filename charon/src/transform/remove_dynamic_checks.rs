@@ -90,16 +90,12 @@ fn remove_dynamic_checks(
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
     let statements_to_keep = match statements {
         // Bounds checks for slices. They look like:
-        //   l := ptr_metadata(copy a)
+        //   l := use(copy a.metadata)
         //   b := copy x < copy l
         //   assert(move b == true)
         [
             Statement {
-                kind:
-                    StatementKind::Assign(
-                        len,
-                        Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op)),
-                    ),
+                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op))),
                 ..
             },
             Statement {
@@ -120,23 +116,31 @@ fn remove_dynamic_checks(
                 ..
             },
             rest @ ..,
-        ] if lt_op2 == len && cond == is_in_bounds && len_op.ty().is_ref() => rest,
+        ] if lt_op2 == len
+            && cond == is_in_bounds
+            && let Some((_, ProjectionElem::PtrMetadata)) = len_op.as_projection() =>
+        {
+            rest
+        }
         // Sometimes that instead looks like:
         //   a := &raw const *z
-        //   l := ptr_metadata(move a)
+        //   l := use(copy a.metadata)
         //   b := copy x < copy l
         //   assert(move b == true)
         [
             Statement {
-                kind: StatementKind::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
+                kind:
+                    StatementKind::Assign(
+                        reborrow,
+                        Rvalue::RawPtr {
+                            kind: RefKind::Shared,
+                            ..
+                        },
+                    ),
                 ..
             },
             Statement {
-                kind:
-                    StatementKind::Assign(
-                        len,
-                        Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op)),
-                    ),
+                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op))),
                 ..
             },
             Statement {
@@ -157,7 +161,13 @@ fn remove_dynamic_checks(
                 ..
             },
             rest @ ..,
-        ] if reborrow == len_op && lt_op2 == len && cond == is_in_bounds => rest,
+        ] if lt_op2 == len
+            && cond == is_in_bounds
+            && let Some((slice_place, ProjectionElem::PtrMetadata)) = len_op.as_projection()
+            && reborrow == slice_place =>
+        {
+            rest
+        }
 
         // Zero checks for division and remainder. They look like:
         //   b := copy y == const 0
