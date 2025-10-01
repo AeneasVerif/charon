@@ -209,13 +209,8 @@ let
         echo '<details><summary>'"❌ expected: $expected; got: $got"'</summary>'
         grep "expected: $expected.*got: $got" charon-results | cut -d':' -f1 | while read f; do
             echo
-            echo "<details><summary>$f</summary>"
-            echo
-            echo '```text'
-            cat "$f.charon-output"
-            echo '```'
-            echo
-            echo '</details>'
+            echo '`'"$f"'`:'
+            head -1 "$f.charon-output"
         done || true
         echo
         echo '</details>'
