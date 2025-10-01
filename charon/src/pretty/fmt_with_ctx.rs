@@ -1573,13 +1573,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{generics}{clauses}")?;
 
-        let any_item = !self.parent_clauses.is_empty()
+        let any_item = !self.implied_clauses.is_empty()
             || !self.consts.is_empty()
             || !self.types.is_empty()
             || !self.methods.is_empty();
         if any_item {
             write!(f, "\n{{\n")?;
-            for c in &self.parent_clauses {
+            for c in &self.implied_clauses {
                 writeln!(
                     f,
                     "{TAB_INCR}parent_clause{} : {}",

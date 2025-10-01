@@ -164,7 +164,7 @@ let trait_decl_to_string (env : 'a fmt_env) (indent : string)
           ^ " : "
           ^ trait_param_to_string env clause
           ^ "\n")
-        def.parent_clauses
+        def.implied_clauses
     in
     let consts =
       List.map

@@ -30,7 +30,7 @@ fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c
             if let ItemRef::TraitDecl(tdecl) = &item {
                 // We do a little hack.
                 assert!(generics.trait_clauses.is_empty());
-                generics.trait_clauses = tdecl.parent_clauses.clone();
+                generics.trait_clauses = tdecl.implied_clauses.clone();
             }
             Item {
                 name_str: repr_name(crate_data, &item.item_meta().name),

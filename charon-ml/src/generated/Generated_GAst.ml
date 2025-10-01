@@ -194,7 +194,7 @@ and trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
   generics : generic_params;
-  parent_clauses : trait_param list;
+  implied_clauses : trait_param list;
       (** The "parent" clauses: the supertraits.
 
           Supertraits are actually regular where clauses, but we decided to have
