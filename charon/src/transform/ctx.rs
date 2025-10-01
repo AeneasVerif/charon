@@ -240,12 +240,15 @@ impl fmt::Display for TransformCtx {
 
 /// A helper trait that captures the usual operation in body transformation.
 pub trait BodyTransformCtx {
-    /// Create a local & return the place pointing to it
+    fn get_ctx(&self) -> &TransformCtx;
+    fn get_params(&self) -> &GenericParams;
     fn get_locals_mut(&mut self) -> &mut Locals;
+
     fn insert_storage_live_stmt(&mut self, local: LocalId);
     fn insert_storage_dead_stmt(&mut self, local: LocalId);
     fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue);
-    fn get_ctx(&self) -> &TransformCtx;
+
+    /// Create a local & return the place pointing to it
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         let var = self.get_locals_mut().new_var(name, ty);
         self.insert_storage_live_stmt(var.local_id().unwrap());

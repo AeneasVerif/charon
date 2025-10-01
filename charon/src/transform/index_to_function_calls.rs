@@ -3,7 +3,7 @@
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::BodyTransformCtx;
-use crate::transform::insert_ptr_metadata::{BodyTransformCtxWithParams, compute_place_metadata};
+use crate::transform::insert_ptr_metadata::compute_place_metadata;
 use derive_generic_visitor::*;
 
 use super::ctx::LlbcPass;
@@ -30,6 +30,12 @@ struct IndexVisitor<'a, 'b> {
 }
 
 impl BodyTransformCtx for IndexVisitor<'_, '_> {
+    fn get_ctx(&self) -> &TransformCtx {
+        self.ctx
+    }
+    fn get_params(&self) -> &GenericParams {
+        self.params
+    }
     fn get_locals_mut(&mut self) -> &mut Locals {
         self.locals
     }
@@ -44,19 +50,9 @@ impl BodyTransformCtx for IndexVisitor<'_, '_> {
         self.statements.push(Statement::new(self.span, statement));
     }
 
-    fn get_ctx(&self) -> &TransformCtx {
-        self.ctx
-    }
-
     fn insert_storage_dead_stmt(&mut self, local: LocalId) {
         let statement = StatementKind::StorageDead(local);
         self.statements.push(Statement::new(self.span, statement));
-    }
-}
-
-impl BodyTransformCtxWithParams for IndexVisitor<'_, '_> {
-    fn get_params(&self) -> &GenericParams {
-        self.params
     }
 }
 

@@ -16,7 +16,7 @@ struct BodyVisitor<'a, 'b> {
     params: &'a GenericParams,
 }
 
-fn is_sized_type_var<T: BodyTransformCtxWithParams>(ctx: &mut T, ty: &Ty) -> bool {
+fn is_sized_type_var<T: BodyTransformCtx>(ctx: &mut T, ty: &Ty) -> bool {
     match ty.kind() {
         TyKind::TypeVar(..) => {
             if ctx.get_ctx().options.hide_marker_traits {
@@ -88,10 +88,7 @@ fn compute_place_metadata_inner<T: BodyTransformCtx>(
 
 /// Emit statements that compute the metadata of the given place. Returns an operand containing the
 /// metadata value.
-pub fn compute_place_metadata<T: BodyTransformCtxWithParams>(
-    ctx: &mut T,
-    place: &Place,
-) -> Operand {
+pub fn compute_place_metadata<T: BodyTransformCtx>(ctx: &mut T, place: &Place) -> Operand {
     trace!(
         "getting ptr metadata for place: {}",
         place.with_ctx(&ctx.get_ctx().into_fmt())
@@ -101,7 +98,7 @@ pub fn compute_place_metadata<T: BodyTransformCtxWithParams>(
         .get_ptr_metadata(&ctx.get_ctx().translated)
         .into_type();
     if metadata_ty.is_unit()
-        || matches!(metadata_ty.kind(),  TyKind::PtrMetadata(ty) if is_sized_type_var(ctx, ty))
+        || matches!(metadata_ty.kind(), TyKind::PtrMetadata(ty) if is_sized_type_var(ctx, ty))
     {
         // If the type var is known to be `Sized`, then no metadata is needed
         return no_metadata(ctx);
@@ -113,17 +110,13 @@ pub fn compute_place_metadata<T: BodyTransformCtxWithParams>(
     compute_place_metadata_inner(ctx, place, &metadata_ty).unwrap_or_else(|| no_metadata(ctx))
 }
 
-pub trait BodyTransformCtxWithParams: BodyTransformCtx {
-    fn get_params(&self) -> &GenericParams;
-}
-
-impl BodyTransformCtxWithParams for BodyVisitor<'_, '_> {
+impl BodyTransformCtx for BodyVisitor<'_, '_> {
+    fn get_ctx(&self) -> &TransformCtx {
+        self.ctx
+    }
     fn get_params(&self) -> &GenericParams {
         self.params
     }
-}
-
-impl BodyTransformCtx for BodyVisitor<'_, '_> {
     fn get_locals_mut(&mut self) -> &mut Locals {
         self.locals
     }
@@ -138,10 +131,6 @@ impl BodyTransformCtx for BodyVisitor<'_, '_> {
             self.span,
             StatementKind::Assign(place, rvalue),
         ));
-    }
-
-    fn get_ctx(&self) -> &TransformCtx {
-        self.ctx
     }
 
     fn insert_storage_dead_stmt(&mut self, local: LocalId) {
