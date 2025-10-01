@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.131"
+version = "0.1.132"
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
