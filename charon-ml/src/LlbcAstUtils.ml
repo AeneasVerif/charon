@@ -114,7 +114,7 @@ class ['self] map_crate_with_span =
       let def_id = self#visit_fun_decl_id decl_span_info def_id in
       let item_meta = self#visit_item_meta decl_span_info item_meta in
       let signature = self#visit_fun_sig decl_span_info signature in
-      let kind = self#visit_item_kind decl_span_info kind in
+      let kind = self#visit_item_source decl_span_info kind in
       let is_global_initializer =
         self#visit_option self#visit_global_decl_id decl_span_info
           is_global_initializer
@@ -305,7 +305,7 @@ class ['self] iter_crate_with_span =
       self#visit_fun_decl_id decl_span_info def_id;
       self#visit_item_meta decl_span_info item_meta;
       self#visit_fun_sig decl_span_info signature;
-      self#visit_item_kind decl_span_info kind;
+      self#visit_item_source decl_span_info kind;
       self#visit_option self#visit_global_decl_id decl_span_info
         is_global_initializer;
       self#visit_option self#visit_expr_body decl_span_info body

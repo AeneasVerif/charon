@@ -222,10 +222,10 @@ impl Deps {
         }
     }
 
-    fn set_impl_or_trait_id(&mut self, kind: &ItemKind) {
+    fn set_impl_or_trait_id(&mut self, kind: &ItemSource) {
         match kind {
-            ItemKind::TraitDecl { trait_ref, .. } => self.parent_trait_decl = Some(trait_ref.id),
-            ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.id),
+            ItemSource::TraitDecl { trait_ref, .. } => self.parent_trait_decl = Some(trait_ref.id),
+            ItemSource::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.id),
             _ => {}
         }
     }
@@ -317,7 +317,7 @@ impl VisitAst for Deps {
         // Don't look inside because trait impls contain their own id in their name.
         Continue(())
     }
-    fn visit_item_kind(&mut self, _: &ItemKind) -> ControlFlow<Self::Break> {
+    fn visit_item_source(&mut self, _: &ItemSource) -> ControlFlow<Self::Break> {
         // Don't look inside to avoid recording a dependency from a method impl to the impl block
         // it belongs to.
         Continue(())
@@ -390,7 +390,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
-                if let ItemKind::TraitDecl { trait_ref, .. } = &d.kind {
+                if let ItemSource::TraitDecl { trait_ref, .. } = &d.kind {
                     graph.insert_edge(trait_ref.id.into());
                 }
             }

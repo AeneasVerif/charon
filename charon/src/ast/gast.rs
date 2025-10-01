@@ -93,7 +93,7 @@ pub enum Body {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq)]
 #[charon::variants_suffix("Item")]
-pub enum ItemKind {
+pub enum ItemSource {
     /// This item stands on its own.
     TopLevel,
     /// This is a closure in a function body.
@@ -146,7 +146,7 @@ pub struct FunDecl {
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
     /// The function kind: "regular" function, trait method declaration, etc.
-    pub kind: ItemKind,
+    pub kind: ItemSource,
     /// Whether this function is in fact the body of a constant/static that we turned into an
     /// initializer function.
     pub is_global_initializer: Option<GlobalDeclId>,
@@ -187,7 +187,7 @@ pub struct GlobalDecl {
     pub generics: GenericParams,
     pub ty: Ty,
     /// The context of the global: distinguishes top-level items from trait-associated items.
-    pub kind: ItemKind,
+    pub kind: ItemSource,
     /// The kind of global (static or const).
     #[drive(skip)]
     pub global_kind: GlobalKind,

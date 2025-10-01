@@ -73,7 +73,7 @@ use indexmap::IndexMap;
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
+        AggregateKind, FnPtr, ItemSource, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

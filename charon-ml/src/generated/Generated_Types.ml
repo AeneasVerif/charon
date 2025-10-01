@@ -696,6 +696,21 @@ and field_id = (FieldId.id[@visitors.opaque])
     } *)
 and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
+(** Meta information about an item (function, trait decl, trait impl, type decl,
+    global). *)
+and item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** [true] if the type decl is a local type decl, [false] if it comes from
+          an external crate. *)
+  lang_item : string option;
+      (** If the item is built-in, record its internal builtin identifier. *)
+}
+
 (** Item kind: whether this function/const is part of a trait declaration, trait
     implementation, or neither.
 
@@ -717,7 +732,7 @@ and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
           fn test(...) { ... } // regular
       }
     ]} *)
-and item_kind =
+and item_source =
   | TopLevelItem  (** This item stands on its own. *)
   | ClosureItem of closure_info
       (** This is a closure in a function body.
@@ -754,21 +769,6 @@ and item_kind =
 
           Fields:
           - [impl_ref] *)
-
-(** Meta information about an item (function, trait decl, trait impl, type decl,
-    global). *)
-and item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** [true] if the type decl is a local type decl, [false] if it comes from
-          an external crate. *)
-  lang_item : string option;
-      (** If the item is built-in, record its internal builtin identifier. *)
-}
 
 (** Simplified type layout information.
 
@@ -886,7 +886,7 @@ and type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
-  src : item_kind;
+  src : item_source;
       (** The context of the type: distinguishes top-level items from
           closure-related items. *)
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)

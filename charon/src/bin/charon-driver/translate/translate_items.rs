@@ -225,7 +225,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let initializer = self.translated.fun_decls.push_with(|def_id| FunDecl {
             def_id,
             item_meta: item_meta.clone(),
-            kind: ItemKind::TopLevel,
+            kind: ItemSource::TopLevel,
             is_global_initializer: Some(global_id),
             signature: FunSig {
                 is_unsafe: false,
@@ -242,7 +242,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 item_meta,
                 generics: Default::default(),
                 ty: Ty::mk_unit(),
-                kind: ItemKind::TopLevel,
+                kind: ItemSource::TopLevel,
                 global_kind: GlobalKind::NamedConst,
                 init: initializer,
             },
@@ -283,11 +283,11 @@ impl ItemTransCtx<'_, '_> {
         }
     }
 
-    pub(crate) fn get_item_kind(
+    pub(crate) fn get_item_source(
         &mut self,
         span: Span,
         def: &hax::FullDef,
-    ) -> Result<ItemKind, Error> {
+    ) -> Result<ItemSource, Error> {
         let assoc = match def.kind() {
             hax::FullDefKind::AssocTy {
                 associated_item, ..
@@ -300,9 +300,9 @@ impl ItemTransCtx<'_, '_> {
             } => associated_item,
             hax::FullDefKind::Closure { args, .. } => {
                 let info = self.translate_closure_info(span, args)?;
-                return Ok(ItemKind::Closure { info });
+                return Ok(ItemSource::Closure { info });
             }
-            _ => return Ok(ItemKind::TopLevel),
+            _ => return Ok(ItemSource::TopLevel),
         };
         Ok(match &assoc.container {
             // E.g.:
@@ -311,7 +311,7 @@ impl ItemTransCtx<'_, '_> {
             //   fn new() -> Self { ... } <- inherent method
             // }
             // ```
-            hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::TopLevel,
+            hax::AssocItemContainer::InherentImplContainer { .. } => ItemSource::TopLevel,
             // E.g.:
             // ```
             // impl Foo for Bar {
@@ -336,7 +336,7 @@ impl ItemTransCtx<'_, '_> {
                         self.register_item(span, implemented_trait_item, TransItemSourceKind::Fun);
                 }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
-                ItemKind::TraitImpl {
+                ItemSource::TraitImpl {
                     impl_ref,
                     trait_ref,
                     item_name,
@@ -355,7 +355,7 @@ impl ItemTransCtx<'_, '_> {
                 // don't have associated items.
                 let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
-                ItemKind::TraitDecl {
+                ItemSource::TraitDecl {
                     trait_ref,
                     item_name,
                     has_default: assoc.has_value,
@@ -382,7 +382,7 @@ impl ItemTransCtx<'_, '_> {
         self.translate_def_generics(span, def)?;
 
         // Get the kind of the type decl -- is it a closure?
-        let src = self.get_item_kind(span, def)?;
+        let src = self.get_item_source(span, def)?;
 
         // Translate type body
         let kind = match &def.kind {
@@ -436,9 +436,9 @@ impl ItemTransCtx<'_, '_> {
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = self.get_item_kind(span, def)?;
+        let kind = self.get_item_source(span, def)?;
         let is_trait_method_decl_without_default = match &kind {
-            ItemKind::TraitDecl { has_default, .. } => !has_default,
+            ItemSource::TraitDecl { has_default, .. } => !has_default,
             _ => false,
         };
 
@@ -518,7 +518,7 @@ impl ItemTransCtx<'_, '_> {
         self.translate_def_generics(span, def)?;
 
         // Retrieve the kind
-        let item_kind = self.get_item_kind(span, def)?;
+        let item_source = self.get_item_source(span, def)?;
 
         trace!("Translating global type");
         let ty = match &def.kind {
@@ -547,7 +547,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             generics: self.into_generics(),
             ty,
-            kind: item_kind,
+            kind: item_source,
             global_kind,
             init: initializer,
         })

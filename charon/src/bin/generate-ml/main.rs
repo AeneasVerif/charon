@@ -1250,7 +1250,7 @@ fn generate_ml(
                 })), &[
                     "Call",
                     "Assert",
-                    "ItemKind",
+                    "ItemSource",
                     "Locals",
                     "FunSig",
                     "CopyNonOverlapping",
