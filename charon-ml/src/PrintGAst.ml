@@ -229,7 +229,7 @@ let trait_impl_to_string (env : 'a fmt_env) (indent : string)
           indent1 ^ "parent_clause" ^ string_of_int i ^ " = "
           ^ trait_ref_to_string env trait_ref
           ^ "\n")
-        def.parent_trait_refs
+        def.implied_trait_refs
     in
     let consts =
       List.map

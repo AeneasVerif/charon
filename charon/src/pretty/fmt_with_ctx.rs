@@ -1679,13 +1679,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         };
         write!(f, "{newline}{{")?;
 
-        let any_item = !self.parent_trait_refs.is_empty()
+        let any_item = !self.implied_trait_refs.is_empty()
             || !self.consts.is_empty()
             || !self.types.is_empty()
             || !self.methods.is_empty();
         if any_item {
             writeln!(f)?;
-            for (i, c) in self.parent_trait_refs.iter().enumerate() {
+            for (i, c) in self.implied_trait_refs.iter().enumerate() {
                 let i = TraitClauseId::new(i);
                 writeln!(f, "{TAB_INCR}parent_clause{i} = {}", c.with_ctx(ctx))?;
             }

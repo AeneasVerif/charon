@@ -825,7 +825,7 @@ impl<'a> ComputeItemModifications<'a> {
                         set.insert_path(&path, assoc_ty.value);
                     }
                 }
-                for (clause_id, tref) in timpl.parent_trait_refs.iter_indexed() {
+                for (clause_id, tref) in timpl.implied_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
                     for (path, ty) in self.compute_assoc_tys_for_tref(timpl.item_meta.span, tref) {
                         let path = path.on_tref(&clause_path);

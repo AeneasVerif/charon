@@ -45,7 +45,7 @@ impl VisitAstMut for RemoveMarkersVisitor {
         self.filter_trait_clauses(&mut tdecl.implied_clauses);
     }
     fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
-        self.filter_trait_refs(&mut timpl.parent_trait_refs);
+        self.filter_trait_refs(&mut timpl.implied_trait_refs);
     }
     fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
         if let TraitRefKind::BuiltinOrAuto {

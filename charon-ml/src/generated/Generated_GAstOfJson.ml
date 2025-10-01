@@ -1672,7 +1672,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("impl_trait", impl_trait);
           ("generics", generics);
-          ("parent_trait_refs", parent_trait_refs);
+          ("implied_trait_refs", implied_trait_refs);
           ("consts", consts);
           ("types", types);
           ("methods", methods);
@@ -1682,9 +1682,9 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* impl_trait = trait_decl_ref_of_json ctx impl_trait in
         let* generics = generic_params_of_json ctx generics in
-        let* parent_trait_refs =
+        let* implied_trait_refs =
           vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
-            parent_trait_refs
+            implied_trait_refs
         in
         let* consts =
           list_of_json
@@ -1710,7 +1710,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
              item_meta;
              impl_trait;
              generics;
-             parent_trait_refs;
+             implied_trait_refs;
              consts;
              types;
              methods;

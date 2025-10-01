@@ -328,7 +328,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         let args_fmt = &self.val_fmt_ctx();
         self.zip_assert_match(
             &tdecl.implied_clauses,
-            &timpl.parent_trait_refs,
+            &timpl.implied_trait_refs,
             &tdecl_fmt,
             args_fmt,
             "trait parent clauses",

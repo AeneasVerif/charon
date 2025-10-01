@@ -51,7 +51,7 @@ impl TransformPass for Transform {
                         let trait_ref = trait_ref.move_from_under_binder().unwrap();
                         // Note: this assumes that we listed the types in the same order as in the
                         // trait decl, which we do.
-                        timpl.parent_trait_refs.push(trait_ref);
+                        timpl.implied_trait_refs.push(trait_ref);
                     }
                 }
             }
