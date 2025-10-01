@@ -1,15 +1,11 @@
 use indexmap::IndexSet;
-use std::collections::BTreeSet as OrdSet;
 use std::collections::HashMap;
-use std::iter::FromIterator;
 use std::vec::Vec;
 
 /// A structure containing information about SCCs (Strongly Connected Components)
 pub struct SCCs<Id> {
     /// The SCCs themselves
     pub sccs: Vec<Vec<Id>>,
-    /// The dependencies between SCCs
-    pub scc_deps: Vec<OrdSet<usize>>,
 }
 
 /// The order in which Tarjan's algorithm generates the SCCs is arbitrary,
@@ -20,11 +16,9 @@ pub struct SCCs<Id> {
 /// first (in which case we have reordering to do). This is what this function
 /// does: we add an SCC and its dependencies to the list of reordered SCCs by
 /// doing a depth-first search.
-/// We also compute the SCC dependencies while performing this exploration.
 fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
     get_id_dependencies: &dyn Fn(Id) -> Vec<Id>,
     reordered_sccs: &mut IndexSet<usize>,
-    scc_deps: &mut Vec<OrdSet<usize>>,
     sccs: &Vec<Vec<Id>>,
     id_to_scc: &HashMap<Id, usize>,
     scc_id: usize,
@@ -46,14 +40,10 @@ fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
             if *dep_scc_id == scc_id {
                 continue;
             } else {
-                // Insert the dependency
-                scc_deps[scc_id].insert(*dep_scc_id);
-
                 // Explore the parent SCC
                 insert_scc_with_deps(
                     get_id_dependencies,
                     reordered_sccs,
-                    scc_deps,
                     sccs,
                     id_to_scc,
                     *dep_scc_id,
@@ -98,11 +88,6 @@ fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
 /// were defined, and the SCCs of the call graph, return an order suitable for
 /// translation and where the amount of reorderings is minimal with regards to
 /// the initial order.
-///
-/// This function is also used to generate the backward functions in a stable
-/// manner: the order is provided by the order in which the user listed the
-/// region parameters in the function signature, and the graph is the hierarchy
-/// graph (or region subtyping graph) between those regions.
 pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     get_id_dependencies: &dyn Fn(Id) -> Vec<Id>,
     ids: &Vec<Id>,
@@ -132,13 +117,11 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     // Reorder the SCCs themselves - just do a depth first search. Iterate over
     // the def ids, and add the corresponding SCCs (with their dependencies).
     let mut reordered_sccs_ids = IndexSet::<usize>::new();
-    let mut scc_deps: Vec<OrdSet<usize>> = reordered_sccs.iter().map(|_| OrdSet::new()).collect();
     for id in ids {
         let scc_id = id_to_scc.get(id).unwrap();
         insert_scc_with_deps(
             get_id_dependencies,
             &mut reordered_sccs_ids,
-            &mut scc_deps,
             &reordered_sccs,
             &id_to_scc,
             *scc_id,
@@ -159,15 +142,5 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
         .map(|scc_id| reordered_sccs[*scc_id].clone())
         .collect();
 
-    // Compute the dependencies with the new indices
-    let mut tgt_deps: Vec<OrdSet<usize>> = reordered_sccs.iter().map(|_| OrdSet::new()).collect();
-    for (old_id, deps) in scc_deps.iter().enumerate() {
-        let new_id = old_id_to_new_id[old_id];
-        tgt_deps[new_id] = OrdSet::from_iter(deps.iter().map(|old| old_id_to_new_id[*old]));
-    }
-
-    SCCs {
-        sccs: tgt_sccs,
-        scc_deps: tgt_deps,
-    }
+    SCCs { sccs: tgt_sccs }
 }

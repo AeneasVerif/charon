@@ -89,11 +89,6 @@ impl DeclarationGroup {
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct DeclInfo {
-    pub is_transparent: bool,
-}
-
 impl<Id: Display> Display for GDeclarationGroup<Id> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
@@ -514,7 +509,6 @@ impl TransformPass for Transform {
 mod tests {
     #[test]
     fn test_reorder_sccs1() {
-        use std::collections::BTreeSet as OrdSet;
         let sccs = vec![vec![0], vec![1, 2], vec![3, 4, 5]];
         let ids = vec![0, 1, 2, 3, 4, 5];
 
@@ -526,8 +520,5 @@ mod tests {
         let reordered = super::reorder_sccs(get_deps, &ids, &sccs);
 
         assert!(reordered.sccs == vec![vec![3, 4, 5], vec![0], vec![1, 2],]);
-        assert!(reordered.scc_deps[0] == OrdSet::from([]));
-        assert!(reordered.scc_deps[1] == OrdSet::from([0]));
-        assert!(reordered.scc_deps[2] == OrdSet::from([0, 1]));
     }
 }
