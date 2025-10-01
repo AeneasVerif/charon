@@ -1,44 +1,75 @@
 pub mod check_generics;
-pub mod compute_short_names;
 pub mod ctx;
-pub mod duplicate_defaulted_methods;
-pub mod duplicate_return;
-pub mod expand_associated_types;
-pub mod filter_invisible_trait_impls;
-pub mod filter_unreachable_blocks;
-pub mod graphs;
-pub mod hide_allocator_param;
-pub mod hide_marker_traits;
-pub mod index_intermediate_assigns;
-pub mod index_to_function_calls;
-pub mod inline_local_panic_functions;
-pub mod inline_promoted_consts;
-pub mod insert_assign_return_unit;
-pub mod insert_ptr_metadata;
-pub mod insert_storage_lives;
-pub mod lift_associated_item_clauses;
-pub mod merge_goto_chains;
-pub mod monomorphize;
-pub mod ops_to_function_calls;
-pub mod prettify_cfg;
-pub mod reconstruct_asserts;
-pub mod reconstruct_boxes;
-pub mod recover_body_comments;
-pub mod remove_drop_never;
-pub mod remove_dynamic_checks;
-pub mod remove_nops;
-pub mod remove_read_discriminant;
-pub mod remove_unit_locals;
-pub mod remove_unused_locals;
-pub mod remove_unused_methods;
-pub mod remove_unused_self_clause;
-pub mod reorder_decls;
-pub mod simplify_constants;
-pub mod skip_trait_refs_when_known;
-pub mod ullbc_to_llbc;
-pub mod unbind_item_vars;
-pub mod update_block_indices;
 pub mod utils;
+
+/// Passes that finish translation, i.e. required for the output to be a valid output.
+pub use finish_translation::*;
+mod finish_translation {
+    pub mod duplicate_defaulted_methods;
+    pub mod filter_invisible_trait_impls;
+    pub mod insert_assign_return_unit;
+    pub mod insert_ptr_metadata;
+    pub mod insert_storage_lives;
+    pub mod recover_body_comments;
+    pub mod remove_unused_methods;
+    pub mod update_block_indices;
+}
+
+/// Passes that compute extra info to be stored in the crate.
+pub use add_missing_info::*;
+mod add_missing_info {
+    pub mod compute_short_names;
+    pub mod reorder_decls;
+    pub mod sccs;
+}
+
+/// Passes that effect some kind of normalization on the crate.
+pub use normalize::*;
+mod normalize {
+    pub mod expand_associated_types;
+    pub mod filter_unreachable_blocks;
+    pub mod monomorphize;
+    pub mod skip_trait_refs_when_known;
+}
+
+/// Passes that undo some lowering done by rustc to recover an operation closer to what the user
+/// wrote.
+pub use resugar::*;
+mod resugar {
+    pub mod inline_local_panic_functions;
+    pub mod reconstruct_asserts;
+    pub mod reconstruct_boxes;
+    pub mod reconstruct_fallible_operations;
+    pub mod remove_read_discriminant;
+}
+
+/// Passes that make the output simpler/easier to consume.
+pub use simplify_output::*;
+mod simplify_output {
+    pub mod hide_allocator_param;
+    pub mod hide_marker_traits;
+    pub mod index_intermediate_assigns;
+    pub mod index_to_function_calls;
+    pub mod inline_promoted_consts;
+    pub mod lift_associated_item_clauses;
+    pub mod ops_to_function_calls;
+    pub mod remove_drop_never;
+    pub mod remove_nops;
+    pub mod remove_unit_locals;
+    pub mod remove_unused_locals;
+    pub mod remove_unused_self_clause;
+    pub mod simplify_constants;
+    pub mod unbind_item_vars;
+}
+
+/// Passes that manipulate the control flow and reconstruct its structure.
+pub use control_flow::*;
+mod control_flow {
+    pub mod duplicate_return;
+    pub mod merge_goto_chains;
+    pub mod prettify_cfg;
+    pub mod ullbc_to_llbc;
+}
 
 use Pass::*;
 pub use ctx::TransformCtx;
@@ -91,7 +122,7 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
     // it must happen before passes that insert statements like [simplify_constants].
-    UnstructuredBody(&remove_dynamic_checks::Transform),
+    UnstructuredBody(&reconstruct_fallible_operations::Transform),
     // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
     // macro.
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
