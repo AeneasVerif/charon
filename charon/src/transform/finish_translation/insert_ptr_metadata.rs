@@ -1,8 +1,5 @@
-use crate::formatter::IntoFormatter;
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::BodyTransformCtx;
-use crate::transform::index_to_function_calls::compute_subslice_end_idx;
 use crate::{transform::ctx::UllbcPass, ullbc_ast::*};
 use derive_generic_visitor::*;
 
@@ -14,100 +11,6 @@ struct BodyVisitor<'a, 'b> {
     span: Span,
     ctx: &'b TransformCtx,
     params: &'a GenericParams,
-}
-
-fn is_sized_type_var<T: BodyTransformCtx>(ctx: &mut T, ty: &Ty) -> bool {
-    match ty.kind() {
-        TyKind::TypeVar(..) => {
-            if ctx.get_ctx().options.hide_marker_traits {
-                // If we're hiding `Sized`, let's consider everything to be sized.
-                return true;
-            }
-            let params = ctx.get_params();
-            for clause in &params.trait_clauses {
-                let tref = clause.trait_.clone().erase();
-                // Check if it is `Sized<T>`
-                if tref.generics.types[0] == *ty
-                    && ctx
-                        .get_ctx()
-                        .translated
-                        .trait_decls
-                        .get(tref.id)
-                        .and_then(|decl| decl.item_meta.lang_item.clone())
-                        == Some("sized".into())
-                {
-                    return true;
-                }
-            }
-            false
-        }
-        _ => false,
-    }
-}
-
-/// No metadata. We use the `unit_metadata` global to avoid having to define unit locals
-/// everywhere.
-fn no_metadata<T: BodyTransformCtx>(ctx: &T) -> Operand {
-    let unit_meta = ctx.get_ctx().translated.unit_metadata.clone().unwrap();
-    Operand::Copy(Place::new_global(unit_meta, Ty::mk_unit()))
-}
-
-/// Compute the metadata for a place. Return `None` if the place has no metadata.
-fn compute_place_metadata_inner<T: BodyTransformCtx>(
-    ctx: &mut T,
-    place: &Place,
-    metadata_ty: &Ty,
-) -> Option<Operand> {
-    let (subplace, proj) = place.as_projection()?;
-    match proj {
-        // The outermost deref we encountered gives us the metadata of the place.
-        ProjectionElem::Deref => {
-            let metadata_place = subplace
-                .clone()
-                .project(ProjectionElem::PtrMetadata, metadata_ty.clone());
-            Some(Operand::Copy(metadata_place))
-        }
-        ProjectionElem::Field { .. } => compute_place_metadata_inner(ctx, subplace, metadata_ty),
-        // Indexing for array & slice will only result in sized types, hence no metadata
-        ProjectionElem::Index { .. } => None,
-        // Ptr metadata is always sized.
-        ProjectionElem::PtrMetadata { .. } => None,
-        // Subslice must have metadata length, compute the metadata here as `to` - `from`
-        ProjectionElem::Subslice { from, to, from_end } => {
-            let to_idx = compute_subslice_end_idx(ctx, subplace, *to.clone(), *from_end);
-            let diff_place = ctx.fresh_var(None, Ty::mk_usize());
-            ctx.insert_assn_stmt(
-                diff_place.clone(),
-                // Overflow is UB and should have been prevented by a bound check beforehand.
-                Rvalue::BinaryOp(BinOp::Sub(OverflowMode::UB), to_idx, *from.clone()),
-            );
-            Some(Operand::Copy(diff_place))
-        }
-    }
-}
-
-/// Emit statements that compute the metadata of the given place. Returns an operand containing the
-/// metadata value.
-pub fn compute_place_metadata<T: BodyTransformCtx>(ctx: &mut T, place: &Place) -> Operand {
-    trace!(
-        "getting ptr metadata for place: {}",
-        place.with_ctx(&ctx.get_ctx().into_fmt())
-    );
-    let metadata_ty = place
-        .ty()
-        .get_ptr_metadata(&ctx.get_ctx().translated)
-        .into_type();
-    if metadata_ty.is_unit()
-        || matches!(metadata_ty.kind(), TyKind::PtrMetadata(ty) if is_sized_type_var(ctx, ty))
-    {
-        // If the type var is known to be `Sized`, then no metadata is needed
-        return no_metadata(ctx);
-    }
-    trace!(
-        "computed metadata type: {}",
-        metadata_ty.with_ctx(&ctx.get_ctx().into_fmt())
-    );
-    compute_place_metadata_inner(ctx, place, &metadata_ty).unwrap_or_else(|| no_metadata(ctx))
 }
 
 impl BodyTransformCtx for BodyVisitor<'_, '_> {
@@ -152,7 +55,7 @@ impl VisitBodyMut for BodyVisitor<'_, '_> {
             ..
         } = x
         {
-            *ptr_metadata = compute_place_metadata(self, place);
+            *ptr_metadata = self.compute_place_metadata(place);
         }
         Continue(())
     }

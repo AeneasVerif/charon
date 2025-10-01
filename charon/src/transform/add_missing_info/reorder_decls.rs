@@ -14,48 +14,13 @@ use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
-use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
 use super::sccs::*;
 use crate::transform::ctx::TransformPass;
-
-/// A (group of) top-level declaration(s), properly reordered.
-/// "G" stands for "generic"
-#[derive(
-    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
-)]
-#[charon::variants_suffix("Group")]
-pub enum GDeclarationGroup<Id> {
-    /// A non-recursive declaration
-    NonRec(Id),
-    /// A (group of mutually) recursive declaration(s)
-    Rec(Vec<Id>),
-}
-
-/// A (group of) top-level declaration(s), properly reordered.
-#[derive(
-    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
-)]
-#[charon::variants_suffix("Group")]
-pub enum DeclarationGroup {
-    /// A type declaration group
-    Type(GDeclarationGroup<TypeDeclId>),
-    /// A function declaration group
-    Fun(GDeclarationGroup<FunDeclId>),
-    /// A global declaration group
-    Global(GDeclarationGroup<GlobalDeclId>),
-    ///
-    TraitDecl(GDeclarationGroup<TraitDeclId>),
-    ///
-    TraitImpl(GDeclarationGroup<TraitImplId>),
-    /// Anything that doesn't fit into these categories.
-    Mixed(GDeclarationGroup<ItemId>),
-}
 
 impl<Id: Copy> GDeclarationGroup<Id> {
     pub fn get_ids(&self) -> &[Id] {
@@ -128,8 +93,6 @@ impl DeclarationGroup {
 pub struct DeclInfo {
     pub is_transparent: bool,
 }
-
-pub type DeclarationsGroups = Vec<DeclarationGroup>;
 
 impl<Id: Display> Display for GDeclarationGroup<Id> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), Error> {
@@ -560,7 +523,7 @@ mod tests {
             1 => vec![0, 3],
             _ => vec![],
         };
-        let reordered = crate::reorder_decls::reorder_sccs(get_deps, &ids, &sccs);
+        let reordered = super::reorder_sccs(get_deps, &ids, &sccs);
 
         assert!(reordered.sccs == vec![vec![3, 4, 5], vec![0], vec![1, 2],]);
         assert!(reordered.scc_deps[0] == OrdSet::from([]));

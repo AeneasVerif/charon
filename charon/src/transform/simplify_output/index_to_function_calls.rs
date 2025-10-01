@@ -3,7 +3,6 @@
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::BodyTransformCtx;
-use crate::transform::insert_ptr_metadata::compute_place_metadata;
 use derive_generic_visitor::*;
 
 use crate::transform::ctx::LlbcPass;
@@ -53,56 +52,6 @@ impl BodyTransformCtx for IndexVisitor<'_, '_> {
     fn insert_storage_dead_stmt(&mut self, local: LocalId) {
         let statement = StatementKind::StorageDead(local);
         self.statements.push(Statement::new(self.span, statement));
-    }
-}
-
-/// When `from_end` is true, we need to compute `len(p) - last_arg` instead of just using `last_arg`.
-/// Otherwise, we simply return `last_arg`.
-/// New local variables are created as needed.
-///
-/// The `last_arg` is either the `offset` for `Index` or the `to` for `Subslice` for the projections.
-pub fn compute_subslice_end_idx<T: BodyTransformCtx>(
-    ctx: &mut T,
-    len_place: &Place,
-    last_arg: Operand,
-    from_end: bool,
-) -> Operand {
-    if from_end {
-        // `storage_live(len_var)`
-        // `len_var = len(p)`
-        let len_var = ctx.fresh_var(None, Ty::mk_usize());
-        ctx.insert_assn_stmt(
-            len_var.clone(),
-            Rvalue::Len(
-                len_place.clone(),
-                len_place.ty().clone(),
-                len_place
-                    .ty()
-                    .as_adt()
-                    .unwrap()
-                    .generics
-                    .const_generics
-                    .get(0.into())
-                    .cloned(),
-            ),
-        );
-
-        // `storage_live(index_var)`
-        // `index_var = len_var - last_arg`
-        // `storage_dead(len_var)`
-        let index_var = ctx.fresh_var(None, Ty::mk_usize());
-        ctx.insert_assn_stmt(
-            index_var.clone(),
-            Rvalue::BinaryOp(
-                BinOp::Sub(OverflowMode::UB),
-                Operand::Copy(len_var.clone()),
-                last_arg,
-            ),
-        );
-        ctx.insert_storage_dead_stmt(len_var.local_id().unwrap());
-        Operand::Copy(index_var)
-    } else {
-        last_arg
     }
 }
 
@@ -161,7 +110,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         };
 
         // do something similar to the `input_var` below, but for the metadata.
-        let ptr_metadata = compute_place_metadata(self, subplace);
+        let ptr_metadata = self.compute_place_metadata(subplace);
 
         // Push the statements:
         // `storage_live(tmp0)`
@@ -196,7 +145,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             } => (x.as_ref().clone(), *from_end),
             _ => unreachable!(),
         };
-        let to_idx = compute_subslice_end_idx(self, subplace, last_arg, from_end);
+        let to_idx = self.compute_subslice_end_idx(subplace, last_arg, from_end);
         args.push(to_idx);
 
         // Call the indexing function:
