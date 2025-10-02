@@ -428,26 +428,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     #[tracing::instrument(skip(self))]
     pub fn translate_layout(&self, item: &hax::ItemRef) -> Option<Layout> {
         use rustc_abi as r_abi;
-        // Panics if the fields layout is not `Arbitrary`.
+
         fn translate_variant_layout(
             variant_layout: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
             tag: Option<ScalarValue>,
         ) -> VariantLayout {
-            match &variant_layout.fields {
+            let field_offsets = match &variant_layout.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
-                    let mut v = Vector::with_capacity(offsets.len());
-                    for o in offsets.iter() {
-                        v.push(o.bytes());
-                    }
-                    VariantLayout {
-                        field_offsets: v,
-                        uninhabited: variant_layout.is_uninhabited(),
-                        tag,
-                    }
+                    offsets.iter().map(|o| o.bytes()).collect()
                 }
-                r_abi::FieldsShape::Primitive
-                | r_abi::FieldsShape::Union(_)
-                | r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
+                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Union(_) => Vector::default(),
+                r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
+            };
+            VariantLayout {
+                field_offsets,
+                uninhabited: variant_layout.is_uninhabited(),
+                tag,
             }
         }
 
@@ -534,7 +530,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };
 
-        let mut variant_layouts = Vector::new();
+        let mut variant_layouts: Vector<VariantId, VariantLayout> = Vector::new();
+
         match layout.variants() {
             r_abi::Variants::Multiple { variants, .. } => {
                 let tag_ty = discriminant_layout
@@ -564,11 +561,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
             r_abi::Variants::Single { index } => {
-                assert!(*index == r_abi::VariantIdx::ZERO);
-                // For structs we add a single variant that has the field offsets. Unions don't
-                // have field offsets.
                 if let r_abi::FieldsShape::Arbitrary { .. } = layout.fields() {
-                    variant_layouts.push(translate_variant_layout(&layout, None));
+                    let n_variants = match ty.kind() {
+                        _ if let Some(range) = ty.variant_range(tcx) => range.end.index(),
+                        _ => 1,
+                    };
+                    // All the variants not initialized below are uninhabited.
+                    variant_layouts = (0..n_variants)
+                        .map(|_| VariantLayout {
+                            field_offsets: Vector::default(),
+                            uninhabited: true,
+                            tag: None,
+                        })
+                        .collect();
+                    variant_layouts[index.index()] = translate_variant_layout(&layout, None);
                 }
             }
             r_abi::Variants::Empty => {}

@@ -17,7 +17,7 @@ impl Transform {
     fn update_block(
         ctx: &mut TransformCtx,
         block: &mut Block,
-        discriminant_intrinsic: Option<FunDeclId>,
+        discriminant_intrinsics: &HashSet<FunDeclId>,
     ) {
         // Iterate through the statements.
         for i in 0..block.statements.len() {
@@ -147,17 +147,10 @@ impl Transform {
                         ..
                     },
                     ..,
-                ] if let Some(discriminant_intrinsic) = discriminant_intrinsic
-                        // Detect a call to the intrinsic...
-                        && let FnOperand::Regular(fn_ptr) = &call.func
+                ] if let FnOperand::Regular(fn_ptr) = &call.func
                         && let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref()
-                        && *fun_id == discriminant_intrinsic
-                        // on a known enum...
-                        && let ty = &fn_ptr.generics.types[0]
-                        && let TyKind::Adt(ty_ref) = ty.kind()
-                        && let TypeId::Adt(type_id) = ty_ref.id
-                        && let Some(TypeDeclKind::Enum(_)) =
-                            ctx.translated.type_decls.get(type_id).map(|x| &x.kind)
+                        // Detect a call to the intrinsic...
+                        && discriminant_intrinsics.contains(fun_id)
                         // passing it a reference.
                         && let Operand::Move(p) = &call.args[0]
                         && let TyKind::Ref(_, sub_ty, _) = p.ty().kind() =>
@@ -177,20 +170,22 @@ const DISCRIMINANT_INTRINSIC: &str = "core::intrinsics::discriminant_value";
 impl LlbcPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let pat = NamePattern::parse(DISCRIMINANT_INTRINSIC).unwrap();
-        let discriminant_intrinsic: Option<FunDeclId> = ctx
+        // There can be many if we're in mono mode.
+        let discriminant_intrinsic: HashSet<FunDeclId> = ctx
             .translated
             .item_names
             .iter()
-            .find(|(_, name)| pat.matches(&ctx.translated, name))
-            .and_then(|(id, _)| id.as_fun())
-            .copied();
+            .filter(|(_, name)| pat.matches(&ctx.translated, name))
+            .filter_map(|(id, _)| id.as_fun())
+            .copied()
+            .collect();
 
         ctx.for_each_fun_decl(|ctx, decl| {
             if let Ok(body) = &mut decl.body {
                 let body = body.as_structured_mut().unwrap();
                 self.log_before_body(ctx, &decl.item_meta.name, Ok(&*body));
                 body.body.visit_blocks_bwd(|block: &mut Block| {
-                    Transform::update_block(ctx, block, discriminant_intrinsic);
+                    Transform::update_block(ctx, block, &discriminant_intrinsic);
                 });
             };
         });
