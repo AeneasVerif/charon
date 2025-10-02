@@ -200,11 +200,6 @@ where
     let @10: (); // anonymous local
 
     storage_live(@3)
-    storage_live(@5)
-    storage_live(item@6)
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -344,13 +339,6 @@ pub fn main()
     let @25: &'_ (i32); // anonymous local
     let @26: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
 
-    storage_live(kind@20)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
-    storage_live(@24)
-    storage_live(@25)
-    storage_live(@26)
     storage_live(x@1)
     x@1 := const (42 : i32)
     storage_live(iter@2)

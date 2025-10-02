@@ -227,9 +227,7 @@ where
     let @4: &'_ ((dyn exists<_dyn> [@TraitClause0]: Debug<_dyn> + _dyn : '_)); // anonymous local
     let @5: &'_ (E); // anonymous local
 
-    storage_live(e@2)
     storage_live(@3)
-    storage_live(@4)
     storage_live(@5)
     match self@1 {
         Result::Ok => {

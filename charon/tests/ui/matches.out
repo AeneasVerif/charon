@@ -120,7 +120,6 @@ pub fn test3(@1: E2) -> u32
     let @7: u32; // anonymous local
     let @8: u32; // anonymous local
 
-    storage_live(n@4)
     storage_live(@8)
     storage_live(@2)
     storage_dead(@2)

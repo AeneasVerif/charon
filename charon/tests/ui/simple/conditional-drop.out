@@ -92,8 +92,6 @@ fn main()
     let @4: alloc::boxed::Box<u32>[MetaSized<u32>, Sized<Global>, Drop<u32>, {impl Drop for Global}]; // anonymous local
     let @5: bool; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
     storage_live(@5)
     @5 := const (false)
     storage_live(b@1)

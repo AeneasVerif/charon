@@ -31,9 +31,6 @@ fn f0()
     let @3: bool; // anonymous local
     let x@4: u8; // local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(x@4)
     storage_live(@1)
     @1 := const (0 : i32) < const (1 : i32)
     if move (@1) {
@@ -78,14 +75,6 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     let @13: (); // anonymous local
     let @14: (); // anonymous local
 
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(j@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(x@12)
-    storage_live(@13)
     storage_live(previous_true_hints_seen@2)
     previous_true_hints_seen@2 := const (0 : usize)
     storage_live(i@3)

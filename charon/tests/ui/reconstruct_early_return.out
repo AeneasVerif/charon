@@ -29,11 +29,6 @@ fn f() -> usize
     let @13: (); // anonymous local
 
     storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
     storage_live(@12)
     storage_live(i@1)
     i@1 := const (0 : i32)

@@ -40,7 +40,6 @@ where
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
 
-    storage_live(@7)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -207,10 +206,6 @@ where
     let @10: u32; // anonymous local
     let @11: u32; // anonymous local
 
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
     storage_live(@11)
     match *(l@1) {
         CList::CCons => {
@@ -277,11 +272,6 @@ where
     let @15: u32; // anonymous local
     let @16: u32; // anonymous local
 
-    storage_live(@11)
-    storage_live(@12)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
     storage_live(@16)
     storage_live(@3)
     storage_live(@4)
@@ -358,14 +348,7 @@ where
     let @10: &'_ mut (CList<T>[@TraitClause0]); // anonymous local
     let @11: (); // anonymous local
 
-    storage_live(x@4)
-    storage_live(tl@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
     storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
     storage_live(@3)
     loop {
         match *(l@1) {
@@ -427,9 +410,6 @@ pub fn i32_id(@1: i32) -> i32
     let @7: i32; // anonymous local
     let @8: i32; // anonymous local
 
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     storage_live(@2)
@@ -472,9 +452,6 @@ where
     let @5: &'_ mut (CList<T>[@TraitClause0]); // anonymous local
     let @6: &'_ mut (CList<T>[@TraitClause0]); // anonymous local
 
-    storage_live(tl@4)
-    storage_live(@5)
-    storage_live(@6)
     storage_live(@2)
     storage_live(@3)
     match *(l@1) {

@@ -99,15 +99,8 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
 
     storage_live(@5)
     storage_live(pieces@7)
-    storage_live(self@10)
     storage_live(byte_offset@16)
     storage_live(@17)
-    storage_live(@18)
-    storage_live(@20)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
-    storage_live(@24)
     storage_live(@27)
     storage_live(@4)
     storage_live(overflow@19)
@@ -198,8 +191,6 @@ where
     let @6: bool; // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
     storage_live(@6)
     @6 := ub_checks<bool>
     if copy (@6) {

@@ -2,16 +2,13 @@
 //! no StorageLive and StorageDead instructions associated; this always includes the arguments
 //! and the return value, but also sometimes includes other locals. We make sure these additional
 //! locals get initialised at the start of the function.
-use std::collections::BTreeSet;
-use std::ops::ControlFlow::{self, Continue};
-
 use derive_generic_visitor::Visitor;
+use std::collections::BTreeSet;
 
 use crate::ast::*;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::BlockId;
-
 use crate::transform::ctx::TransformPass;
+use crate::ullbc_ast::BlockId;
 
 #[derive(Visitor)]
 struct StorageVisitor {
@@ -31,7 +28,7 @@ impl StorageVisitor {
 }
 
 impl VisitAst for StorageVisitor {
-    fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
+    fn enter_llbc_statement(&mut self, st: &llbc_ast::Statement) {
         match st.kind {
             llbc_ast::StatementKind::StorageDead(loc)
             | llbc_ast::StatementKind::StorageLive(loc) => {
@@ -39,10 +36,9 @@ impl VisitAst for StorageVisitor {
             }
             _ => {}
         }
-        Continue(())
     }
 
-    fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
+    fn enter_ullbc_statement(&mut self, st: &ullbc_ast::Statement) {
         match st.kind {
             ullbc_ast::StatementKind::StorageDead(loc)
             | ullbc_ast::StatementKind::StorageLive(loc) => {
@@ -50,7 +46,6 @@ impl VisitAst for StorageVisitor {
             }
             _ => {}
         }
-        Continue(())
     }
 }
 

@@ -193,7 +193,6 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     let @3: &'_ (bool); // anonymous local
     let @4: &'_ (bool); // anonymous local
 
-    storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
@@ -266,7 +265,6 @@ where
     let @3: &'_ (Option<T>[@TraitClause0]); // anonymous local
     let @4: &'_ (Option<T>[@TraitClause0]); // anonymous local
 
-    storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
@@ -659,7 +657,6 @@ where
     let @7: u64; // anonymous local
     let @8: &'_ (TestType1); // anonymous local
 
-    storage_live(@8)
     storage_live(x@3)
     storage_live(@4)
     // Remark: we can't write: impl TestTrait for TestType<T>,

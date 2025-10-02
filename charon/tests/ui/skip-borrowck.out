@@ -36,7 +36,6 @@ where
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
 
-    storage_live(@7)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)

@@ -265,13 +265,7 @@ where
     storage_live(self@4)
     storage_live(rhs@5)
     storage_live(new_len@6)
-    storage_live(@8)
     storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
     storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
@@ -350,13 +344,7 @@ where
     storage_live(self@4)
     storage_live(rhs@5)
     storage_live(new_len@6)
-    storage_live(@8)
     storage_live(@9)
-    storage_live(@10)
-    storage_live(ptr@11)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
     storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
@@ -436,7 +424,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     let @11: &'_ (Slice<Argument<'_>>); // anonymous local
     let @12: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
-    storage_live(@5)
     storage_live(@6)
     storage_live(pieces@8)
     storage_live(@12)
@@ -491,9 +478,6 @@ where
     let @12: *const T; // anonymous local
 
     storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
     storage_live(new_len@8)
     storage_live(offset@10)
     storage_live(@3)
@@ -545,7 +529,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     let @11: &'_ (Slice<Argument<'_>>); // anonymous local
     let @12: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
-    storage_live(@5)
     storage_live(@6)
     storage_live(pieces@8)
     storage_live(@12)
@@ -600,9 +583,6 @@ where
     let @12: *mut T; // anonymous local
 
     storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
     storage_live(new_len@8)
     storage_live(offset@10)
     storage_live(@3)
@@ -664,14 +644,8 @@ where
     storage_live(new_len@4)
     storage_live(self@6)
     storage_live(rhs@7)
-    storage_live(@8)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
-    storage_live(@12)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
     storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
@@ -743,14 +717,8 @@ where
     storage_live(new_len@4)
     storage_live(self@6)
     storage_live(rhs@7)
-    storage_live(@8)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
-    storage_live(ptr@12)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
     storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)

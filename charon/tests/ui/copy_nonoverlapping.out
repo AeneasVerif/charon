@@ -33,10 +33,6 @@ where
     let @9: bool; // anonymous local
 
     storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
     storage_live(@9)
     @9 := ub_checks<bool>
     if copy (@9) {

@@ -104,9 +104,7 @@ where
 
     storage_live(len@3)
     storage_live(@7)
-    storage_live(@8)
     storage_live(end@9)
-    storage_live(self@14)
     len@3 := copy ((*(self@1)).len)
     storage_live(@4)
     storage_live(@5)

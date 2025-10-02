@@ -529,20 +529,6 @@ where
     let @20: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @21: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
-    storage_live(@7)
-    storage_live(x@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(@12)
-    storage_live(args@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
-    storage_live(@21)
     storage_live(@2)
     storage_live(@3)
     @3 := copy (slice@1)
