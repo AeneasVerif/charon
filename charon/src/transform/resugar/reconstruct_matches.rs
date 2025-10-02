@@ -1,8 +1,6 @@
-//! The MIR code often contains variables with type `Never`, and we want to get
-//! rid of those. We proceed in two steps. First, we remove the instructions
-//! `drop(v)` where `v` has type `Never` (it can happen - this module does the
-//! filtering). Then, we filter the unused variables ([crate::transform::remove_unused_locals]).
-
+//! The way to match on enums in MIR is in two steps: first read the discriminant, then switch on
+//! the resulting integer. This pass merges the two into a `SwitchKind::Match` that directly
+//! mentions enum variants.
 use crate::errors::register_error;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;

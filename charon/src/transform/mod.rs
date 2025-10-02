@@ -35,7 +35,7 @@ mod resugar {
     pub mod reconstruct_asserts;
     pub mod reconstruct_boxes;
     pub mod reconstruct_fallible_operations;
-    pub mod remove_read_discriminant;
+    pub mod reconstruct_matches;
 }
 
 /// Passes that make the output simpler/easier to consume.
@@ -158,8 +158,8 @@ pub static ULLBC_PASSES: &[Pass] = &[
 pub static LLBC_PASSES: &[Pass] = &[
     // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
     NonBody(&control_flow::ullbc_to_llbc::Transform),
-    // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-    StructuredBody(&resugar::remove_read_discriminant::Transform),
+    // Reconstruct matches on enum variants.
+    StructuredBody(&resugar::reconstruct_matches::Transform),
     // Cleanup the cfg.
     StructuredBody(&control_flow::prettify_cfg::Transform),
     // # Micro-pass: replace some unops/binops and the array aggregates with
