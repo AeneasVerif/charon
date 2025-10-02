@@ -645,7 +645,7 @@ impl ItemTransCtx<'_, '_> {
             };
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {
-                if poly_item_def.has_own_generics() {
+                if poly_item_def.has_own_generics_or_predicates() {
                     // Skip items that have generics of their own (as rustc defines these). This
                     // skips GAT and generic methods. This does not skip methods with late-bound
                     // lifetimes as these aren't considered generic arguments to the method itself
@@ -891,7 +891,7 @@ impl ItemTransCtx<'_, '_> {
                 _ => unreachable!(),
             };
             let (item_src, item_def) = if self.monomorphize() {
-                if poly_item_def.has_own_generics() {
+                if poly_item_def.has_own_generics_or_predicates() {
                     continue;
                 } else {
                     let item = match &impl_item.value {
