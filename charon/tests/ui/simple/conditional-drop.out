@@ -77,8 +77,8 @@ fn use_box(@1: alloc::boxed::Box<u32>[MetaSized<u32>, Sized<Global>, Drop<u32>, 
     let @1: alloc::boxed::Box<u32>[MetaSized<u32>, Sized<Global>, Drop<u32>, {impl Drop for Global}]; // arg #1
 
     @0 := ()
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[MetaSized<u32>, Sized<Global>, Drop<u32>, {impl Drop for Global}]] @1
     @0 := ()
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[MetaSized<u32>, Sized<Global>, Drop<u32>, {impl Drop for Global}]] @1
     return
 }
 
@@ -93,6 +93,7 @@ fn main()
     let @5: bool; // anonymous local
 
     storage_live(@5)
+    @0 := ()
     @5 := const (false)
     storage_live(b@1)
     @5 := const (true)
@@ -121,7 +122,6 @@ fn main()
     }
     @5 := const (false)
     storage_dead(b@1)
-    @0 := ()
     return
 }
 

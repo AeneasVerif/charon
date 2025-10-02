@@ -311,11 +311,11 @@ fn main()
     let @0: (); // return
     let ptr@1: *const (); // local
 
+    @0 := ()
     storage_live(ptr@1)
     ptr@1 := null<()>[{impl Thin for Self}<()>[Pointee<()> where Metadata  = ()]]()
     @0 := ()
     storage_dead(ptr@1)
-    @0 := ()
     return
 }
 

@@ -422,8 +422,8 @@ where
     let _f@1: F; // arg #1
 
     @0 := ()
-    drop[Drop<F>] _f@1
     @0 := ()
+    drop[Drop<F>] _f@1
     return
 }
 

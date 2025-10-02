@@ -134,10 +134,10 @@ fn call_fn_in_opaque_module()
     let @0: (); // return
     let @1: u32; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := fn_in_opaque_module()
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

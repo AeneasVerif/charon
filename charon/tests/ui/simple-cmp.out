@@ -157,6 +157,7 @@ fn main()
     let @5: &'_ (i32); // anonymous local
     let @6: &'_ (i32); // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := const (11 : i32)
     storage_live(y@2)
@@ -176,7 +177,6 @@ fn main()
     @0 := ()
     storage_dead(y@2)
     storage_dead(x@1)
-    @0 := ()
     return
 }
 

@@ -88,6 +88,7 @@ fn copy_foo(@1: Foo)
     let y@2: Foo; // local
     let z@3: Foo; // local
 
+    @0 := ()
     storage_live(y@2)
     y@2 := copy (x@1)
     storage_live(z@3)
@@ -95,7 +96,6 @@ fn copy_foo(@1: Foo)
     @0 := ()
     storage_dead(z@3)
     storage_dead(y@2)
-    @0 := ()
     return
 }
 
@@ -110,6 +110,7 @@ where
     let y@2: T; // local
     let z@3: T; // local
 
+    @0 := ()
     storage_live(y@2)
     y@2 := copy (x@1)
     storage_live(z@3)
@@ -117,7 +118,6 @@ where
     @0 := ()
     storage_dead(z@3)
     storage_dead(y@2)
-    @0 := ()
     return
 }
 
@@ -142,6 +142,7 @@ where
     let y@2: @TraitClause1::Ty; // local
     let z@3: @TraitClause1::Ty; // local
 
+    @0 := ()
     storage_live(y@2)
     y@2 := copy (x@1)
     storage_live(z@3)
@@ -149,7 +150,6 @@ where
     @0 := ()
     storage_dead(z@3)
     storage_dead(y@2)
-    @0 := ()
     return
 }
 

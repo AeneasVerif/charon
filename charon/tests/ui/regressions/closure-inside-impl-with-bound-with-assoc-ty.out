@@ -124,11 +124,11 @@ where
     let @0: (); // return
     let _closure@1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // local
 
+    @0 := ()
     storage_live(_closure@1)
     _closure@1 := closure {  }
     @0 := ()
     storage_dead(_closure@1)
-    @0 := ()
     return
 }
 
@@ -144,8 +144,8 @@ where
     let _x@3: (); // local
 
     storage_live(_x@3)
-    _x@3 := move ((tupled_args@2).0)
     @0 := ()
+    _x@3 := move ((tupled_args@2).0)
     @0 := ()
     return
 }
@@ -162,9 +162,9 @@ where
     let @3: &'_ (closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &*(state@1)
     @0 := {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
-    @0 := ()
     return
 }
 
@@ -180,10 +180,10 @@ where
     let @3: &'_ mut (closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (@3), move (@2))
     drop[Drop<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>] @1
-    @0 := ()
     return
 }
 

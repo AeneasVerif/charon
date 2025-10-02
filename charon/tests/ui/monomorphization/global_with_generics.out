@@ -79,6 +79,7 @@ fn main()
 
     storage_live(@3)
     storage_live(@4)
+    @0 := ()
     storage_live(_b@1)
     storage_live(@2)
     @3 := ()
@@ -88,7 +89,6 @@ fn main()
     storage_dead(@2)
     @0 := ()
     storage_dead(_b@1)
-    @0 := ()
     return
 }
 

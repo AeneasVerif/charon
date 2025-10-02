@@ -346,6 +346,7 @@ fn main()
     let @5: (i32, i32); // anonymous local
     let @6: &'_ ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)); // anonymous local
 
+    @0 := ()
     storage_live(v@1)
     storage_live(@2)
     storage_live(@3)
@@ -365,7 +366,6 @@ fn main()
     @0 := ()
     storage_dead(@4)
     storage_dead(v@1)
-    @0 := ()
     return
 }
 

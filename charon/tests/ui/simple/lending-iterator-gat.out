@@ -199,6 +199,7 @@ where
     let @9: @TraitClause2::Item; // anonymous local
 
     storage_live(@3)
+    @0 := ()
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -236,7 +237,6 @@ where
     storage_dead(@4)
     drop[Drop<impl for<'a> FnMut(I::Item<'a>)>] f@2
     drop[Drop<I>] iter@1
-    @0 := ()
     return
 }
 
@@ -257,6 +257,7 @@ fn {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 
 
     storage_live(item@3)
     storage_live(@5)
+    @0 := ()
     item@3 := move ((tupled_args@2).0)
     storage_live(@4)
     @4 := copy (*(item@3))
@@ -264,7 +265,6 @@ fn {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 
     *((*(@1)).0) := move (@5)
     @0 := ()
     storage_dead(@4)
-    @0 := ()
     return
 }
 
@@ -277,10 +277,10 @@ fn {impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<
     let @3: &'_ mut (closure<'_0>); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop[Drop<closure<'_0>>] @1
-    @0 := ()
     return
 }
 
@@ -335,6 +335,7 @@ pub fn main()
     let @24: &'_ (i32); // anonymous local
     let @25: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := const (42 : i32)
     storage_live(iter@2)
@@ -411,7 +412,6 @@ pub fn main()
     storage_dead(@4)
     storage_dead(iter@2)
     storage_dead(x@1)
-    @0 := ()
     return
 }
 

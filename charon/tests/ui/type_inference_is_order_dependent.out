@@ -170,6 +170,7 @@ where
     let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(args@3)
@@ -207,7 +208,6 @@ where
     storage_dead(@6)
     storage_dead(args@3)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }
@@ -265,8 +265,8 @@ where
 {
     let @0: (); // return
 
-    @0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, Sized<bool>, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, Sized<bool>, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
     @0 := ()
+    @0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, Sized<bool>, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, Sized<bool>, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
     return
 }
 

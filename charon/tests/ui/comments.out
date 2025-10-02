@@ -306,8 +306,8 @@ where
     let @1: T; // arg #1
 
     @0 := ()
-    drop[Drop<T>] @1
     @0 := ()
+    drop[Drop<T>] @1
     return
 }
 
@@ -350,8 +350,9 @@ fn foo()
     let @33: &'_ (Array<u32, 10 : usize>); // anonymous local
     let @34: &'_ (u32); // anonymous local
 
-    storage_live(@3)
     // Call `default` and destructure the result
+    @0 := ()
+    storage_live(@3)
     @3 := {impl Default for Foo}::default()
     storage_live(x@1)
     x@1 := copy ((@3).x)
@@ -459,7 +460,6 @@ fn foo()
     storage_dead(x@8)
     storage_dead(y@2)
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -486,9 +486,10 @@ pub fn thing()
     let @5: u32; // anonymous local
 
     storage_live(@3)
+    // This comment belongs above the assignment to `x` and not above intermediate computations.
+    @0 := ()
     storage_live(x@1)
     storage_live(@2)
-    // This comment belongs above the assignment to `x` and not above intermediate computations.
     @2 := copy (CONSTANT) panic.>> const (3 : i32)
     @3 := copy (@2) panic.+ const (12 : u32)
     x@1 := move (@3)
@@ -501,7 +502,6 @@ pub fn thing()
     storage_dead(@4)
     @0 := ()
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -511,8 +511,8 @@ pub fn fake_read(@1: u32)
     let @0: (); // return
     let x@1: u32; // arg #1
 
-    @0 := ()
     // This statement is translated to a `fake_read`.
+    @0 := ()
     @0 := ()
     return
 }
@@ -523,11 +523,11 @@ fn fool()
     let @0: (); // return
     let @1: &'_ (Str); // anonymous local
 
+    // Fooled ya";
+    @0 := ()
     storage_live(@1)
     @1 := const ("\n    // Fooled ya")
     storage_dead(@1)
-    // Fooled ya";
-    @0 := ()
     @0 := ()
     return
 }

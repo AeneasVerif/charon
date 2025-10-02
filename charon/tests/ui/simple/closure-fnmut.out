@@ -179,6 +179,7 @@ fn main()
     let @3: closure<'_>; // anonymous local
     let @4: &'_ mut (u8); // anonymous local
 
+    @0 := ()
     storage_live(z@1)
     z@1 := const (3 : u8)
     storage_live(@2)
@@ -192,7 +193,6 @@ fn main()
     storage_dead(@2)
     @0 := ()
     storage_dead(z@1)
-    @0 := ()
     return
 }
 

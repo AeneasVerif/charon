@@ -36,11 +36,11 @@ fn main()
     let @0: (); // return
     let _max_char@1: char; // local
 
+    @0 := ()
     storage_live(_max_char@1)
     _max_char@1 := copy (core::char::MAX)
     @0 := ()
     storage_dead(_max_char@1)
-    @0 := ()
     return
 }
 

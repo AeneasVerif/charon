@@ -79,6 +79,7 @@ pub fn choose_test()
     let @16: i32; // anonymous local
 
     storage_live(@8)
+    @0 := ()
     storage_live(x@1)
     x@1 := const (0 : i32)
     storage_live(y@2)
@@ -152,7 +153,6 @@ pub fn choose_test()
     storage_dead(z@3)
     storage_dead(y@2)
     storage_dead(x@1)
-    @0 := ()
     return
 }
 

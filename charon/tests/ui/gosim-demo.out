@@ -527,6 +527,7 @@ where
     let @18: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @19: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (slice@1)
@@ -594,7 +595,6 @@ where
     storage_dead(@5)
     storage_dead(iter@4)
     storage_dead(@2)
-    @0 := ()
     return
 }
 
@@ -608,6 +608,7 @@ fn main()
     let @4: &'_ (Array<i32, 3 : usize>); // anonymous local
     let @5: Array<i32, 3 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -623,7 +624,6 @@ fn main()
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

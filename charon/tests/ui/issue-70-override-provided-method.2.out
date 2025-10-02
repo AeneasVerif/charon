@@ -39,6 +39,7 @@ where
     let @4: (); // anonymous local
     let @5: &'_ (Self); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1) with_metadata(copy (self@1.metadata))
@@ -51,7 +52,6 @@ where
     @4 := @TraitClause0::provided2<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
-    @0 := ()
     @0 := ()
     return
 }
@@ -68,6 +68,7 @@ where
     let @4: (); // anonymous local
     let @5: &'_ (Self); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1) with_metadata(copy (self@1.metadata))
@@ -80,7 +81,6 @@ where
     @4 := @TraitClause0::provided1<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
-    @0 := ()
     @0 := ()
     return
 }
@@ -96,13 +96,13 @@ fn {impl Trait for Foo}::required<'_0>(@1: &'_0 (Foo))
     let @2: (); // anonymous local
     let @3: &'_ (Foo); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl Trait for Foo}::provided1<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -116,6 +116,7 @@ fn test_crate::{impl Trait for Foo}::provided1<'_0>(@1: &'_0 (Foo))
     let @4: (); // anonymous local
     let @5: &'_ (Foo); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
@@ -129,7 +130,6 @@ fn test_crate::{impl Trait for Foo}::provided1<'_0>(@1: &'_0 (Foo))
     storage_dead(@5)
     storage_dead(@4)
     @0 := ()
-    @0 := ()
     return
 }
 
@@ -142,6 +142,7 @@ fn test_crate::{impl Trait for Foo}::provided2<'_0>(@1: &'_0 (Foo))
     let @4: (); // anonymous local
     let @5: &'_ (Foo); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
@@ -154,7 +155,6 @@ fn test_crate::{impl Trait for Foo}::provided2<'_0>(@1: &'_0 (Foo))
     @4 := test_crate::{impl Trait for Foo}::provided1<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
-    @0 := ()
     @0 := ()
     return
 }
@@ -179,13 +179,13 @@ fn {impl Trait for Bar}::required<'_0>(@1: &'_0 (Bar))
     let @2: (); // anonymous local
     let @3: &'_ (Bar); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl Trait for Bar}::provided2<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -198,13 +198,13 @@ fn {impl Trait for Bar}::provided1<'_0>(@1: &'_0 (Bar))
     let @2: (); // anonymous local
     let @3: &'_ (Bar); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl Trait for Bar}::provided2<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -218,6 +218,7 @@ fn test_crate::{impl Trait for Bar}::provided2<'_0>(@1: &'_0 (Bar))
     let @4: (); // anonymous local
     let @5: &'_ (Bar); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
@@ -230,7 +231,6 @@ fn test_crate::{impl Trait for Bar}::provided2<'_0>(@1: &'_0 (Bar))
     @4 := {impl Trait for Bar}::provided1<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
-    @0 := ()
     @0 := ()
     return
 }

@@ -42,8 +42,8 @@ fn use_string(@1: String)
     let @1: String; // arg #1
 
     @0 := ()
-    drop[{impl#0}] @1
     @0 := ()
+    drop[{impl#0}] @1
     return
 }
 
@@ -53,12 +53,12 @@ fn main()
     let @0: (); // return
     let _s@1: String; // local
 
+    @0 := ()
     storage_live(_s@1)
     _s@1 := new()
     @0 := ()
     drop[{impl#0}] _s@1
     storage_dead(_s@1)
-    @0 := ()
     return
 }
 

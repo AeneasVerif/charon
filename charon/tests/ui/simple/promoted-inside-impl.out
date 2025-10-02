@@ -45,6 +45,7 @@ where
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
+    @0 := ()
     @4 := const (0 : i32)
     @3 := &@4
     storage_live(_promoted@1)
@@ -52,7 +53,6 @@ where
     _promoted@1 := &*(@2)
     @0 := ()
     storage_dead(_promoted@1)
-    @0 := ()
     return
 }
 

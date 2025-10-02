@@ -4575,6 +4575,7 @@ fn main()
     storage_live(@12)
     storage_live(@33)
     storage_live(@42)
+    @0 := ()
     storage_live(a@1)
     a@1 := [const (0 : i32), const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
     storage_live(i@2)
@@ -4797,7 +4798,6 @@ fn main()
     storage_dead(expected@43)
     storage_dead(i@2)
     storage_dead(a@1)
-    @0 := ()
     return
 }
 

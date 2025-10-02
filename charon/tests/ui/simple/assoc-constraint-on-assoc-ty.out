@@ -54,8 +54,8 @@ where
     let it@1: I; // arg #1
 
     @0 := ()
-    drop[Drop<I>] it@1
     @0 := ()
+    drop[Drop<I>] it@1
     return
 }
 
@@ -78,12 +78,12 @@ where
     let it@1: Clause1_IntoIter; // arg #1
     let @2: Clause1_IntoIter; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     @2 := move (it@1)
     @0 := takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause1, @TraitClause1::parent_clause2](move (@2))
     storage_dead(@2)
     drop[Drop<Clause1_IntoIter>] it@1
-    @0 := ()
     return
 }
 

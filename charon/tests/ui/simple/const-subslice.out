@@ -26,6 +26,7 @@ fn main()
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
+    @0 := ()
     storage_live(y@1)
     @6 := [const (0 : u8), const (1 : u8), const (2 : u8)]
     @7 := ()
@@ -45,7 +46,6 @@ fn main()
     @0 := ()
     storage_dead(z@2)
     storage_dead(y@1)
-    @0 := ()
     return
 }
 

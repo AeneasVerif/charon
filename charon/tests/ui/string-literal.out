@@ -164,6 +164,7 @@ fn main()
     let @2: &'_ (Str); // anonymous local
     let @3: &'_ (Str); // anonymous local
 
+    @0 := ()
     storage_live(_s@1)
     storage_live(@2)
     storage_live(@3)
@@ -175,7 +176,6 @@ fn main()
     @0 := ()
     drop[{impl Drop for String}] _s@1
     storage_dead(_s@1)
-    @0 := ()
     return
 }
 

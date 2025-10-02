@@ -31,6 +31,7 @@ fn panic1()
 {
     let @0: (); // return
 
+    @0 := ()
     panic(core::panicking::panic_explicit)
 }
 
@@ -43,6 +44,7 @@ fn panic2()
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -67,6 +69,7 @@ fn panic3()
     let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -92,11 +95,11 @@ fn panic4()
     let @0: (); // return
     let @1: bool; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (false)
     assert(move (@1) == true)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }
@@ -111,6 +114,7 @@ fn panic5()
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (false)
     if move (@1) {
@@ -129,7 +133,6 @@ fn panic5()
     }
     storage_dead(@1)
     @0 := ()
-    @0 := ()
     return
 }
 
@@ -138,6 +141,7 @@ fn panic6()
 {
     let @0: (); // return
 
+    @0 := ()
     panic(core::panicking::panic)
 }
 
@@ -153,6 +157,7 @@ fn panic7()
     let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -177,6 +182,7 @@ fn panic8()
 {
     let @0: (); // return
 
+    @0 := ()
     panic(core::panicking::panic)
 }
 
@@ -185,6 +191,7 @@ fn panic9()
 {
     let @0: (); // return
 
+    @0 := ()
     panic(std::panicking::begin_panic)
 }
 

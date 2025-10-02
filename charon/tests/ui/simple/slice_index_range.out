@@ -571,6 +571,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     storage_live(@12)
     storage_live(@13)
     storage_live(@14)
+    @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -579,7 +580,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
         if move (@5) {
             storage_dead(@5)
             storage_dead(@4)
-            @0 := ()
             return
         }
         else {
@@ -682,6 +682,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     storage_live(@12)
     storage_live(@13)
     storage_live(@14)
+    @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -690,7 +691,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
         if move (@5) {
             storage_dead(@5)
             storage_dead(@4)
-            @0 := ()
             return
         }
         else {

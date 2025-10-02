@@ -104,10 +104,10 @@ fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 (closure), @2: ())
     let tupled_args@2: (); // arg #2
     let @3: i32; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := const (1 : i32) panic./ const (0 : i32)
     storage_dead(@3)
-    @0 := ()
     @0 := ()
     return
 }
@@ -121,9 +121,9 @@ fn {impl FnMut<()> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: ())
     let @3: &'_ (closure); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &*(state@1)
     @0 := {impl Fn<()> for closure}::call<'_>(move (@3), move (args@2))
-    @0 := ()
     return
 }
 
@@ -136,10 +136,10 @@ fn {impl FnOnce<()> for closure}::call_once(@1: closure, @2: ())
     let @3: &'_ mut (closure); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<()> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
-    @0 := ()
     return
 }
 
@@ -152,10 +152,10 @@ fn as_fn()
 
     storage_live(args@1)
     storage_live(state@2)
+    @0 := ()
     args@1 := ()
     state@2 := closure {  }
     @0 := {impl FnOnce<()> for closure}::call_once(move (state@2), move (args@1))
-    @0 := ()
     return
 }
 
@@ -168,6 +168,7 @@ fn main()
     let @3: (); // anonymous local
     let @4: fn(); // anonymous local
 
+    @0 := ()
     storage_live(f@1)
     storage_live(@2)
     @2 := closure {  }
@@ -181,7 +182,6 @@ fn main()
     storage_dead(@3)
     @0 := ()
     storage_dead(f@1)
-    @0 := ()
     return
 }
 

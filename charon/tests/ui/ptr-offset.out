@@ -102,6 +102,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     storage_live(byte_offset@16)
     storage_live(@17)
     storage_live(@27)
+    @0 := ()
     storage_live(@4)
     storage_live(overflow@19)
     storage_live(rhs@9)
@@ -156,7 +157,6 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
         storage_dead(overflow@19)
         if move (@4) {
             storage_dead(@4)
-            @0 := ()
             return
         }
         else {
@@ -226,6 +226,7 @@ fn main()
     let @7: *const i32; // anonymous local
     let @8: *const i32; // anonymous local
 
+    @0 := ()
     storage_live(s@1)
     s@1 := [const (11 : i32), const (42 : i32)]
     storage_live(ptr@2)
@@ -258,7 +259,6 @@ fn main()
     @0 := ()
     storage_dead(ptr@2)
     storage_dead(s@1)
-    @0 := ()
     return
 }
 

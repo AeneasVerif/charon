@@ -76,10 +76,10 @@ where
     let @0: (); // return
     let @1: usize; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := foo<T>[@TraitClause0]()
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

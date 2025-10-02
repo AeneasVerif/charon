@@ -85,6 +85,7 @@ fn main()
     let @5: &'_ mut (DefaultHasher); // anonymous local
     let @6: &'_ mut (DefaultHasher); // anonymous local
 
+    @0 := ()
     storage_live(hasher@1)
     hasher@1 := DefaultHasher {  }
     storage_live(@2)
@@ -104,7 +105,6 @@ fn main()
     storage_dead(@2)
     @0 := ()
     storage_dead(hasher@1)
-    @0 := ()
     return
 }
 

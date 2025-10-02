@@ -1449,6 +1449,7 @@ pub fn test_loops()
     let @17: bool; // anonymous local
     let @18: u32; // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := test_loop1(const (2 : u32))
     storage_live(@2)
@@ -1540,7 +1541,6 @@ pub fn test_loops()
     storage_dead(x@7)
     storage_dead(x@4)
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -1889,6 +1889,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
     let @10: usize; // anonymous local
 
     storage_live(@10)
+    @0 := ()
     storage_live(i@2)
     i@2 := const (0 : usize)
     loop {
@@ -1928,7 +1929,6 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
     @0 := ()
     storage_dead(@3)
     storage_dead(i@2)
-    @0 := ()
     return
 }
 

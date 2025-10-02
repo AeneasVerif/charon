@@ -292,6 +292,7 @@ fn call_unsafe_fn()
     let @2: u32; // anonymous local
     let @3: *const u32; // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := null<u32>[{impl#1}<u32>[Pointee<u32> where Metadata  = ()]]()
     storage_live(@2)
@@ -302,7 +303,6 @@ fn call_unsafe_fn()
     storage_dead(@2)
     @0 := ()
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -313,6 +313,7 @@ fn deref_raw_ptr()
     let x@1: *const u32; // local
     let @2: u32; // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := null<u32>[{impl#1}<u32>[Pointee<u32> where Metadata  = ()]]()
     storage_live(@2)
@@ -320,7 +321,6 @@ fn deref_raw_ptr()
     storage_dead(@2)
     @0 := ()
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -361,6 +361,7 @@ fn access_mutable_static()
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
+    @0 := ()
     storage_live(@1)
     @3 := ()
     @4 := &raw mut COUNTER
@@ -368,7 +369,6 @@ fn access_mutable_static()
     @2 := copy (*(@1)) panic.+ const (1 : usize)
     *(@1) := move (@2)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }
@@ -386,6 +386,7 @@ fn access_union_field()
     let one@1: Foo; // local
     let _two@2: Array<u32, 2 : usize>; // local
 
+    @0 := ()
     storage_live(one@1)
     one@1 := Foo { one: const (42 : u64) }
     storage_live(_two@2)
@@ -393,7 +394,6 @@ fn access_union_field()
     @0 := ()
     storage_dead(_two@2)
     storage_dead(one@1)
-    @0 := ()
     return
 }
 
@@ -401,8 +401,8 @@ fn test_crate::assume()
 {
     let @0: (); // return
 
-    @0 := core::intrinsics::assume(const (true))
     @0 := ()
+    @0 := core::intrinsics::assume(const (true))
     return
 }
 

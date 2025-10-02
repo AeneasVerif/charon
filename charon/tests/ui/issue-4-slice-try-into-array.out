@@ -199,6 +199,7 @@ pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
     let @3: Result<Array<u8, 4 : usize>, TryFromSliceError>[Sized<Array<u8, 4 : usize>>, Sized<TryFromSliceError>]; // anonymous local
     let @4: &'_ (Slice<u8>); // anonymous local
 
+    @0 := ()
     storage_live(_array@2)
     storage_live(@3)
     storage_live(@4)
@@ -209,7 +210,6 @@ pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
     storage_dead(@3)
     @0 := ()
     storage_dead(_array@2)
-    @0 := ()
     return
 }
 

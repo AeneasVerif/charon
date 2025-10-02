@@ -117,11 +117,11 @@ fn main()
     let @0: (); // return
     let @1: alloc::boxed::Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := @BoxNew<i32>[Sized<i32>](const (42 : i32))
     drop[{impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]] @1
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

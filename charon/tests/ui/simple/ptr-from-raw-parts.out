@@ -276,6 +276,7 @@ fn main()
     let @2: *const Slice<u32>; // anonymous local
     let @3: *const Array<u32, 2 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(a@1)
     a@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (1 : u32))
     storage_live(@2)
@@ -286,7 +287,6 @@ fn main()
     storage_dead(@2)
     @0 := ()
     storage_dead(a@1)
-    @0 := ()
     return
 }
 

@@ -129,6 +129,7 @@ fn main()
     let @4: &'_ (Option<i32>[Sized<i32>]); // anonymous local
     let @5: Option<i32>[Sized<i32>]; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -144,7 +145,6 @@ fn main()
     storage_dead(@5)
     storage_dead(@3)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

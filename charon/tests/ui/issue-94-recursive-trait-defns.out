@@ -119,11 +119,11 @@ where
     let x@1: u64; // arg #1
     let @2: u64; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     @2 := copy (x@1)
     @0 := @TraitClause0::parent_clause2::g(move (@2))
     storage_dead(@2)
-    @0 := ()
     return
 }
 

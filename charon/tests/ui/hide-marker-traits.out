@@ -49,8 +49,8 @@ fn foo<T>(@1: T)
     let _x@1: T; // arg #1
 
     @0 := ()
-    drop[Drop<T>] _x@1
     @0 := ()
+    drop[Drop<T>] _x@1
     return
 }
 

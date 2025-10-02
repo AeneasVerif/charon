@@ -69,8 +69,8 @@ where
     let iter@1: I; // arg #1
 
     @0 := ()
-    drop[Drop<I>] iter@1
     @0 := ()
+    drop[Drop<I>] iter@1
     return
 }
 

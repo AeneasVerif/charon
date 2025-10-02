@@ -120,10 +120,10 @@ where
     let @3: @TraitClause0::Item; // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := move ((tupled_args@2).0)
     @0 := ()
     drop[Drop<@TraitClause0::Item>] @3
-    @0 := ()
     return
 }
 
@@ -139,6 +139,7 @@ where
     let @4: (@TraitClause0::Item); // anonymous local
     let @5: @TraitClause0::Item; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := closure {  }
@@ -154,7 +155,6 @@ where
     storage_dead(@2)
     storage_dead(@3)
     drop[Drop<@TraitClause0::Item>] i@1
-    @0 := ()
     return
 }
 
@@ -169,9 +169,9 @@ where
     let @3: &'_ (closure<Self>[@TraitClause0]); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &*(state@1)
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@3), move (args@2))
-    @0 := ()
     return
 }
 
@@ -186,10 +186,10 @@ where
     let @3: &'_ mut (closure<Self>[@TraitClause0]); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
     drop[Drop<closure<Self>[@TraitClause0]>] @1
-    @0 := ()
     return
 }
 

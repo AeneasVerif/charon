@@ -27,13 +27,13 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
+    @0 := ()
     @2 := len(*(x@1))
     @3 := const (1 : usize)
     @4 := move (@2) >= move (@3)
     if move (@4) {
     }
     else {
-        @0 := ()
         @0 := ()
         return
     }
@@ -50,7 +50,6 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     _named@5 := &*(@9)
     @0 := ()
     storage_dead(_named@5)
-    @0 := ()
     return
 }
 

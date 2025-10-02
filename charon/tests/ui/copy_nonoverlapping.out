@@ -34,6 +34,7 @@ where
 
     storage_live(@4)
     storage_live(@9)
+    @0 := ()
     @9 := ub_checks<bool>
     if copy (@9) {
         storage_live(@5)
@@ -53,7 +54,6 @@ where
     else {
     }
     copy_nonoverlapping(copy (src@1), copy (dst@2), copy (count@3))
-    @0 := ()
     return
 }
 
@@ -79,6 +79,7 @@ where
     let @4: *const T; // anonymous local
     let @5: *mut T; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     storage_live(@4)
     @4 := &raw const *(y@2)
@@ -88,7 +89,6 @@ where
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)
-    @0 := ()
     @0 := ()
     return
 }

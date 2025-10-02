@@ -322,6 +322,7 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
     let @2: bool; // anonymous local
     let @3: i32; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (*(self@1))
@@ -334,7 +335,6 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
     }
     storage_dead(@3)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -531,6 +531,7 @@ where
     let @8: &'_ (Self); // anonymous local
     let @9: &'_ (i64); // anonymous local
 
+    @0 := ()
     storage_live(@4)
     storage_live(@5)
     @5 := &*(self@1) with_metadata(copy (self@1.metadata))
@@ -550,7 +551,6 @@ where
     storage_dead(@8)
     storage_dead(@7)
     @0 := ()
-    @0 := ()
     return
 }
 
@@ -564,6 +564,7 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i3
     let @4: i32; // anonymous local
     let @5: i32; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     storage_live(@4)
     @4 := copy (*(self@1))
@@ -580,7 +581,6 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i3
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)
-    @0 := ()
     @0 := ()
     return
 }
@@ -604,6 +604,7 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i6
     let @5: i32; // anonymous local
     let @6: i64; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
@@ -623,7 +624,6 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i6
     storage_dead(@6)
     storage_dead(@4)
     storage_dead(@3)
-    @0 := ()
     @0 := ()
     return
 }
@@ -649,6 +649,7 @@ fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 
     let @8: &'_ (i32); // anonymous local
     let @9: &'_ (i64); // anonymous local
 
+    @0 := ()
     storage_live(@4)
     storage_live(@5)
     @5 := &*(self@1)
@@ -667,7 +668,6 @@ fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 
     storage_dead(@9)
     storage_dead(@8)
     storage_dead(@7)
-    @0 := ()
     @0 := ()
     return
 }
@@ -727,6 +727,7 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>
     let @8: &'_ (i64); // anonymous local
     let @9: i64; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &*(x@1) with_metadata(copy (x@1.metadata))
@@ -751,7 +752,6 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -820,6 +820,7 @@ fn main()
     let @58: &'_ (i64); // anonymous local
     let @59: i64; // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     storage_live(@2)
     storage_live(@3)
@@ -1009,7 +1010,6 @@ fn main()
         storage_dead(y@7)
         storage_dead(@4)
         storage_dead(x@1)
-        @0 := ()
         return
     }
     storage_dead(@12)

@@ -71,12 +71,12 @@ fn do_test::<bool>(@1: bool)
     let x@1: bool; // arg #1
     let @2: &'_ (bool); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     @2 := &x@1
     @0 := {impl Trait::<bool>}::method<'_>(move (@2))
     storage_dead(@2)
     drop[Drop::<bool>] x@1
-    @0 := ()
     return
 }
 
@@ -86,10 +86,10 @@ fn main()
     let @0: (); // return
     let @1: (); // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := do_test::<bool>(const (true))
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

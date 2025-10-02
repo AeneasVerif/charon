@@ -23,6 +23,7 @@ fn use_union()
     let one@1: Foo; // local
     let _two@2: Array<u32, 2 : usize>; // local
 
+    @0 := ()
     storage_live(one@1)
     one@1 := Foo { one: const (42 : u64) }
     (one@1).one := const (43 : u64)
@@ -31,7 +32,6 @@ fn use_union()
     @0 := ()
     storage_dead(_two@2)
     storage_dead(one@1)
-    @0 := ()
     return
 }
 

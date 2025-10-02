@@ -118,11 +118,11 @@ fn main()
     let @0: (); // return
     let list@1: LinkedList::<u8>; // local
 
+    @0 := ()
     storage_live(list@1)
     list@1 := new::<u8>()
     @0 := ()
     storage_dead(list@1)
-    @0 := ()
     return
 }
 

@@ -93,9 +93,9 @@ fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
     let @2: &'_ mut (String); // anonymous local
 
     storage_live(@2)
+    @0 := ()
     @2 := &mut *(@1)
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[Sized<u8>, Sized<Global>, Drop<u8>, {impl Drop for Global}]] (*(@2)).vec
-    @0 := ()
     return
 }
 
@@ -117,8 +117,8 @@ fn use_string(@1: String)
     let @1: String; // arg #1
 
     @0 := ()
-    drop[{impl Drop for String}] @1
     @0 := ()
+    drop[{impl Drop for String}] @1
     return
 }
 
@@ -128,12 +128,12 @@ fn main()
     let @0: (); // return
     let _s@1: String; // local
 
+    @0 := ()
     storage_live(_s@1)
     _s@1 := new()
     @0 := ()
     drop[{impl Drop for String}] _s@1
     storage_dead(_s@1)
-    @0 := ()
     return
 }
 

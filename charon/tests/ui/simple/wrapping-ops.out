@@ -54,6 +54,7 @@ fn main()
     let @5: u8; // anonymous local
     let @6: u8; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (255 : u8) wrap.+ const (1 : u8)
     storage_dead(@1)
@@ -72,7 +73,6 @@ fn main()
     storage_live(@6)
     @6 := wrapping_mul(const (255 : u8), const (2 : u8))
     storage_dead(@6)
-    @0 := ()
     @0 := ()
     return
 }

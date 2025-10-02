@@ -374,6 +374,7 @@ fn main()
     let @10: u8; // anonymous local
     let @11: test_crate::main::closure#2; // anonymous local
 
+    @0 := ()
     storage_live(z@1)
     z@1 := const (1 : u8)
     storage_live(@2)
@@ -408,7 +409,6 @@ fn main()
     storage_dead(z@9)
     storage_dead(z@5)
     storage_dead(z@1)
-    @0 := ()
     return
 }
 

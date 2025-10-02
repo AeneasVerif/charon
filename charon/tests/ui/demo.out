@@ -122,9 +122,9 @@ pub fn test_crate::incr<'a>(@1: &'a mut (u32))
     let @2: u32; // anonymous local
 
     storage_live(@2)
+    @0 := ()
     @2 := copy (*(x@1)) panic.+ const (1 : u32)
     *(x@1) := move (@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -144,6 +144,7 @@ pub fn use_incr()
     let @9: &'_ mut (u32); // anonymous local
     let @10: &'_ mut (u32); // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := const (0 : u32)
     storage_live(@2)
@@ -175,7 +176,6 @@ pub fn use_incr()
     storage_dead(@8)
     @0 := ()
     storage_dead(x@1)
-    @0 := ()
     return
 }
 

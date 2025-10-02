@@ -169,12 +169,12 @@ where
     let source@2: &'_ (usize); // arg #2
     let @3: usize; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := {impl Clone for usize}::clone<'_>(move (source@2))
     drop[Drop<usize>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -318,6 +318,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
+    @0 := ()
     storage_live(@6)
     @6 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@1))
     switch move (@6) {
@@ -343,7 +344,6 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
         },
     }
     storage_dead(@6)
-    @0 := ()
     return
 }
 
@@ -557,6 +557,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@24)
     storage_live(@25)
     storage_live(@26)
+    @0 := ()
     storage_live(@4)
     storage_live(@12)
     storage_live(@14)
@@ -595,7 +596,6 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
             if copy (zero_size@3) {
                 storage_dead(@12)
                 storage_dead(@4)
-                @0 := ()
                 return
             }
             else {
@@ -606,7 +606,6 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
                 storage_dead(@12)
                 if move (@4) {
                     storage_dead(@4)
-                    @0 := ()
                     return
                 }
                 else {
@@ -645,6 +644,7 @@ where
     let val@2: u8; // arg #2
     let count@3: usize; // arg #3
 
+    @0 := ()
     undefined_behavior
 }
 
@@ -950,6 +950,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_live(@45)
     storage_live(@46)
     storage_live(@47)
+    @0 := ()
     storage_live(@6)
     storage_live(zero_size@7)
     switch copy (count@5) {
@@ -1042,7 +1043,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     storage_dead(zero_size@7)
                                     if move (@6) {
                                         storage_dead(@6)
-                                        @0 := ()
                                         return
                                     }
                                     else {
@@ -1077,7 +1077,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_dead(zero_size@7)
                                         if move (@6) {
                                             storage_dead(@6)
-                                            @0 := ()
                                             return
                                         }
                                         else {
@@ -1199,7 +1198,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_dead(zero_size@7)
                                         if move (@6) {
                                             storage_dead(@6)
-                                            @0 := ()
                                             return
                                         }
                                         else {
@@ -1234,7 +1232,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             storage_dead(zero_size@7)
                                             if move (@6) {
                                                 storage_dead(@6)
-                                                @0 := ()
                                                 return
                                             }
                                             else {
@@ -1439,7 +1436,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                         storage_dead(zero_size@7)
                         if move (@6) {
                             storage_dead(@6)
-                            @0 := ()
                             return
                         }
                         else {
@@ -1459,7 +1455,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             storage_dead(zero_size@7)
                             if move (@6) {
                                 storage_dead(@6)
-                                @0 := ()
                                 return
                             }
                             else {
@@ -1803,12 +1798,12 @@ where
     let source@2: &'_ (Self); // arg #2
     let @3: Self; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
     drop[Drop<Self>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -1867,12 +1862,12 @@ where
     let source@2: &'_ (NonZeroUsizeInner); // arg #2
     let @3: NonZeroUsizeInner; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := {impl Clone for NonZeroUsizeInner}::clone<'_>(move (source@2))
     drop[Drop<NonZeroUsizeInner>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -1968,6 +1963,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     storage_live(@9)
     storage_live(@10)
     storage_live(@11)
+    @0 := ()
     storage_live(@6)
     @6 := transmute<*mut (), usize>(copy (ptr@1))
     switch move (@6) {
@@ -1975,7 +1971,6 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
         },
         _ => {
             storage_dead(@6)
-            @0 := ()
             return
         },
     }
@@ -2016,6 +2011,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    @0 := ()
     if copy (cond@1) {
     }
     else {
@@ -2035,7 +2031,6 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
         storage_dead(@6)
         @2 := panic_nounwind_fmt<'_>(move (@3), const (false))
     }
-    @0 := ()
     return
 }
 
@@ -2060,6 +2055,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
+    @0 := ()
     storage_live(@3)
     @3 := is_size_align_valid(move (size@1), move (align@2))
     if move (@3) {
@@ -2082,7 +2078,6 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
         @4 := panic_nounwind_fmt<'_>(move (@5), const (false))
     }
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -2895,6 +2890,7 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
     let @16: bool; // anonymous local
 
     storage_live(@4)
+    @0 := ()
     storage_live(self@5)
     self@5 := &layout@3
     @4 := copy ((layout@3).size)
@@ -2938,11 +2934,9 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
             storage_dead(@9)
             storage_dead(layout@7)
             storage_dead(ptr@6)
-            @0 := ()
             return
         },
     }
-    @0 := ()
     return
 }
 
@@ -4021,6 +4015,7 @@ where
     storage_live(@11)
     storage_live(unique@13)
     storage_live(ptr@15)
+    @0 := ()
     storage_live(ptr@16)
     ptr@15 := copy (((*(self@1)).0).pointer)
     ptr@16 := copy (((*(self@1)).0)._marker)
@@ -4062,7 +4057,6 @@ where
         },
     }
     storage_dead(ptr@16)
-    @0 := ()
     return
 }
 
@@ -4093,6 +4087,7 @@ unsafe fn foo()
     let @9: *const i32; // anonymous local
 
     storage_live(@9)
+    @0 := ()
     storage_live(b@1)
     b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
     storage_live(p@2)
@@ -4120,7 +4115,6 @@ unsafe fn foo()
     storage_dead(b@6)
     storage_dead(p@2)
     storage_dead(b@1)
-    @0 := ()
     return
 }
 

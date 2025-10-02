@@ -30,6 +30,7 @@ fn f0()
     let @2: bool; // anonymous local
     let x@3: u8; // local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (0 : i32) < const (1 : i32)
     if move (@1) {
@@ -49,7 +50,6 @@ fn f0()
         @0 := ()
     }
     storage_dead(@1)
-    @0 := ()
     return
 }
 
@@ -69,6 +69,7 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     let @10: i32; // anonymous local
     let x@11: u8; // local
 
+    @0 := ()
     storage_live(previous_true_hints_seen@2)
     previous_true_hints_seen@2 := const (0 : usize)
     storage_live(i@3)
@@ -128,7 +129,6 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     storage_dead(@4)
     storage_dead(i@3)
     storage_dead(previous_true_hints_seen@2)
-    @0 := ()
     return
 }
 

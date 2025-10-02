@@ -20,6 +20,7 @@ fn main()
     let @4: u8; // anonymous local
     let @5: u8; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (255 : u8) ub.+ const (1 : u8)
     storage_dead(@1)
@@ -35,7 +36,6 @@ fn main()
     storage_live(@5)
     @5 := const (255 : u8) ub.>> const (9 : i32)
     storage_dead(@5)
-    @0 := ()
     @0 := ()
     return
 }

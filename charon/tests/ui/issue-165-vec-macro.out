@@ -142,6 +142,7 @@ fn foo()
     let @6: Array<i32, 1 : usize>; // anonymous local
 
     storage_live(@6)
+    @0 := ()
     storage_live(_v@1)
     storage_live(@2)
     storage_live(@3)
@@ -163,7 +164,6 @@ fn foo()
     storage_dead(_v2@5)
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v@1
     storage_dead(_v@1)
-    @0 := ()
     return
 }
 
@@ -182,6 +182,7 @@ pub fn bar()
     let @6: Array<Foo, 1 : usize>; // anonymous local
 
     storage_live(@6)
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -201,7 +202,6 @@ pub fn bar()
     storage_dead(@2)
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<Foo, Global>[Sized<Foo>, Sized<Global>]] @1
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

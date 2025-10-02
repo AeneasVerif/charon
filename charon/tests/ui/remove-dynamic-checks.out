@@ -54,9 +54,9 @@ pub fn incr<'_0>(@1: &'_0 mut (u32))
     let @2: u32; // anonymous local
 
     storage_live(@2)
+    @0 := ()
     @2 := copy (*(x@1)) panic.+ const (1 : u32)
     *(x@1) := move (@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -611,12 +611,12 @@ fn index_slice_ignore_value<'_0>(@1: &'_0 (Slice<u32>))
     let x@1: &'_ (Slice<u32>); // arg #1
     let @2: usize; // anonymous local
 
-    storage_live(@2)
     // FIXME: Bug: the bound check is removed but the place is not mentioned, so the translated
     // function doesn't panic on empty slices anymore.
+    @0 := ()
+    storage_live(@2)
     @2 := const (0 : usize)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }
@@ -829,6 +829,7 @@ fn div_unsigned_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (u32); // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := copy (x@2)
     storage_live(@4)
@@ -840,7 +841,6 @@ fn div_unsigned_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     *(@6) := move (@3) panic./ const (3329 : u32)
     storage_dead(@3)
     storage_dead(@4)
-    @0 := ()
     @0 := ()
     return
 }
@@ -856,6 +856,7 @@ fn div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     let @5: &'_ mut (Slice<i32>); // anonymous local
     let @6: &'_ mut (i32); // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := copy (x@2)
     storage_live(@4)
@@ -867,7 +868,6 @@ fn div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     *(@6) := move (@3) panic./ const (3329 : i32)
     storage_dead(@3)
     storage_dead(@4)
-    @0 := ()
     @0 := ()
     return
 }
@@ -885,6 +885,7 @@ fn add_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     let @7: &'_ mut (u32); // anonymous local
 
     storage_live(@4)
+    @0 := ()
     storage_live(@3)
     @3 := copy (x@2)
     @4 := copy (@3) panic.+ const (1 : u32)
@@ -897,7 +898,6 @@ fn add_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     *(@7) := move (@4)
     storage_dead(@3)
     storage_dead(@5)
-    @0 := ()
     @0 := ()
     return
 }
@@ -919,6 +919,7 @@ fn add_to_slice2<'_0>(@1: &'_0 mut (Slice<u8>), @2: usize, @3: u8)
 
     storage_live(@5)
     storage_live(@8)
+    @0 := ()
     storage_live(@4)
     @4 := copy (x@3)
     @5 := copy (@4) panic.* const (7 : u8)
@@ -935,7 +936,6 @@ fn add_to_slice2<'_0>(@1: &'_0 mut (Slice<u8>), @2: usize, @3: u8)
     *(@10) := move (@5)
     storage_dead(@4)
     storage_dead(@6)
-    @0 := ()
     @0 := ()
     return
 }

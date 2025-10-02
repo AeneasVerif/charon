@@ -99,6 +99,7 @@ where
     let @2: (); // anonymous local
     let @3: &'_ (T); // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
@@ -107,7 +108,6 @@ where
     storage_dead(@2)
     @0 := ()
     drop[Drop<T>] x@1
-    @0 := ()
     return
 }
 

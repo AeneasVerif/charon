@@ -14,16 +14,13 @@ impl UllbcPass for Transform {
         if decl.signature.output.is_unit() {
             if let Ok(body) = &mut decl.body {
                 let body = body.as_unstructured_mut().unwrap();
-                for block in &mut body.body {
-                    if let TerminatorKind::Return = block.terminator.kind {
-                        let return_place = body.locals.return_place();
-                        let assign_st = Statement::new(
-                            block.terminator.span,
-                            StatementKind::Assign(return_place, Rvalue::unit_value()),
-                        );
-                        block.statements.push(assign_st)
-                    }
-                }
+                let block = &mut body.body[0];
+                let return_place = body.locals.return_place();
+                let assign_st = Statement::new(
+                    block.terminator.span,
+                    StatementKind::Assign(return_place, Rvalue::unit_value()),
+                );
+                block.statements.insert(0, assign_st);
             }
         }
     }

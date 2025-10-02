@@ -32,6 +32,7 @@ fn main()
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -47,7 +48,6 @@ fn main()
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

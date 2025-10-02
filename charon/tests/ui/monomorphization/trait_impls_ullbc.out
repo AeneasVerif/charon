@@ -84,6 +84,7 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let @5: &'_ (bool); // anonymous local
 
     bb0: {
+        @0 := ();
         storage_live(@3);
         storage_live(@4);
         @4 := &expected@2;
@@ -109,7 +110,6 @@ fn do_test::<bool>(@1: bool, @2: bool)
         @0 := ();
         drop[Drop::<bool>] expected@2;
         drop[Drop::<bool>] init@1;
-        @0 := ();
         return;
     }
 
@@ -127,13 +127,13 @@ fn main()
     let @1: (); // anonymous local
 
     bb0: {
+        @0 := ();
         storage_live(@1);
         @1 := do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
         storage_dead(@1);
-        @0 := ();
         @0 := ();
         return;
     }

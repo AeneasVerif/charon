@@ -193,6 +193,7 @@ fn takes_closure::<for<'_0> foo::<u32><'_0>>(@1: for<'_0> foo::<u32><'_0_0>)
     let @5: &'_ (u32); // anonymous local
     let @6: u32; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     @2 := &c@1
     storage_live(@3)
@@ -210,7 +211,6 @@ fn takes_closure::<for<'_0> foo::<u32><'_0>>(@1: for<'_0> foo::<u32><'_0_0>)
     storage_dead(@6)
     storage_dead(@5)
     drop[Drop::<for<'_0> foo::<u32><'_0_0>>] c@1
-    @0 := ()
     return
 }
 
@@ -246,6 +246,7 @@ fn main()
     let @26: char; // anonymous local
     let @27: (); // anonymous local
 
+    @0 := ()
     storage_live(fooint1@1)
     fooint1@1 := cast<for<'_0> foo::<u8><'_0_0>, fn<'_0>(&'_0_0 (u8))>(const (foo::<u8><'_>))
     storage_live(fooint2@2)
@@ -328,7 +329,6 @@ fn main()
     storage_dead(foochar@3)
     storage_dead(fooint2@2)
     storage_dead(fooint1@1)
-    @0 := ()
     return
 }
 
