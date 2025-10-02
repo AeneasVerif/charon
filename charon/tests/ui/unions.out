@@ -21,18 +21,15 @@ fn use_union()
 {
     let @0: (); // return
     let one@1: Foo; // local
-    let @2: (); // anonymous local
-    let _two@3: Array<u32, 2 : usize>; // local
+    let _two@2: Array<u32, 2 : usize>; // local
 
     storage_live(one@1)
     one@1 := Foo { one: const (42 : u64) }
-    storage_live(@2)
     (one@1).one := const (43 : u64)
-    storage_dead(@2)
-    storage_live(_two@3)
-    _two@3 := copy ((one@1).two)
+    storage_live(_two@2)
+    _two@2 := copy ((one@1).two)
     @0 := ()
-    storage_dead(_two@3)
+    storage_dead(_two@2)
     storage_dead(one@1)
     @0 := ()
     return

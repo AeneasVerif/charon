@@ -2,25 +2,91 @@
 //! never used in the function bodies.  This is useful to remove the locals with
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
+use derive_generic_visitor::Visitor;
 use std::mem;
+use std::ops::ControlFlow::Continue;
 
 use crate::ast::*;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 
+#[derive(Visitor)]
+struct LocalsUsageVisitor {
+    used_locals: Vector<LocalId, bool>,
+}
+
+impl VisitBody for LocalsUsageVisitor {
+    fn enter_local_id(&mut self, lid: &LocalId) {
+        self.used_locals[*lid] = true;
+    }
+    fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
+        match &st.kind {
+            llbc_ast::StatementKind::StorageDead(_) | llbc_ast::StatementKind::StorageLive(_) => {
+                // These statements don't count as a variable use.
+                Continue(())
+            }
+            _ => self.visit_inner(st),
+        }
+    }
+    fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
+        match &st.kind {
+            ullbc_ast::StatementKind::StorageDead(_) | ullbc_ast::StatementKind::StorageLive(_) => {
+                // These statements don't count as a variable use.
+                Continue(())
+            }
+            _ => self.visit_inner(st),
+        }
+    }
+}
+
+#[derive(Visitor)]
+struct LocalsRenumberVisitor {
+    ids_map: Vector<LocalId, Option<LocalId>>,
+}
+
+impl VisitBodyMut for LocalsRenumberVisitor {
+    fn enter_local_id(&mut self, lid: &mut LocalId) {
+        *lid = self.ids_map[*lid].unwrap();
+    }
+    fn enter_llbc_statement(&mut self, st: &mut llbc_ast::Statement) {
+        match st.kind {
+            llbc_ast::StatementKind::StorageDead(lid)
+            | llbc_ast::StatementKind::StorageLive(lid)
+                if self.ids_map[lid].is_none() =>
+            {
+                st.kind = llbc_ast::StatementKind::Nop;
+            }
+            _ => {}
+        }
+    }
+    fn enter_ullbc_statement(&mut self, st: &mut ullbc_ast::Statement) {
+        match st.kind {
+            ullbc_ast::StatementKind::StorageDead(lid)
+            | ullbc_ast::StatementKind::StorageLive(lid)
+                if self.ids_map[lid].is_none() =>
+            {
+                st.kind = ullbc_ast::StatementKind::Nop;
+            }
+            _ => {}
+        }
+    }
+}
+
 fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
     // Compute the set of used locals.
     // We always register the return variable and the input arguments.
-    let mut used_locals: Vector<LocalId, bool> = body
-        .locals
-        .locals
-        .map_ref(|local| local.index <= body.locals.arg_count);
-    body.body.dyn_visit_in_body(|lid: &LocalId| {
-        used_locals[*lid] = true;
-    });
+    let mut visitor = LocalsUsageVisitor {
+        used_locals: body
+            .locals
+            .locals
+            .map_ref(|local| local.index <= body.locals.arg_count),
+    };
+    let _ = body.body.drive_body(&mut visitor);
+    let used_locals = visitor.used_locals;
     trace!("used_locals: {:?}", used_locals);
 
-    // Keep only the variables that are used and update their indices to be contiguous.
+    // Keep only the variables that are used (storage statements don't count) and update their
+    // indices to be contiguous.
     let mut ids_map: Vector<LocalId, Option<LocalId>> = body.locals.locals.map_ref(|_| None);
     for local in mem::take(&mut body.locals.locals) {
         if used_locals[local.index] {
@@ -35,9 +101,8 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
     trace!("ids_maps: {:?}", ids_map);
 
     // Update all `LocalId`s.
-    body.body.dyn_visit_in_body_mut(|lid: &mut LocalId| {
-        *lid = ids_map[*lid].unwrap();
-    });
+    let mut visitor = LocalsRenumberVisitor { ids_map };
+    let _ = body.body.drive_body_mut(&mut visitor);
 }
 
 pub struct Transform;

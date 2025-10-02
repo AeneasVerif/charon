@@ -111,33 +111,31 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
     let @7: u32; // anonymous local
-    let @8: (); // anonymous local
-    let @9: bool; // anonymous local
+    let @8: bool; // anonymous local
+    let @9: usize; // anonymous local
     let @10: usize; // anonymous local
-    let @11: usize; // anonymous local
-    let @12: &'_ (Slice<u32>); // anonymous local
-    let @13: u32; // anonymous local
-    let @14: usize; // anonymous local
-    let @15: u32; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: (); // anonymous local
+    let @11: &'_ (Slice<u32>); // anonymous local
+    let @12: u32; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: u32; // anonymous local
+    let @15: usize; // anonymous local
+    let @16: u32; // anonymous local
+    let @17: bool; // anonymous local
     let @18: u32; // anonymous local
-    let @19: bool; // anonymous local
+    let @19: u32; // anonymous local
     let @20: u32; // anonymous local
-    let @21: u32; // anonymous local
+    let @21: (); // anonymous local
     let @22: u32; // anonymous local
-    let @23: (); // anonymous local
+    let @23: u32; // anonymous local
     let @24: u32; // anonymous local
-    let @25: u32; // anonymous local
-    let @26: u32; // anonymous local
-    let @27: &'_ (Slice<u32>); // anonymous local
-    let @28: &'_ (u32); // anonymous local
+    let @25: &'_ (Slice<u32>); // anonymous local
+    let @26: &'_ (u32); // anonymous local
 
     storage_live(@7)
+    storage_live(@14)
     storage_live(@15)
-    storage_live(@16)
-    storage_live(@22)
-    storage_live(@26)
+    storage_live(@20)
+    storage_live(@24)
     storage_live(sum@2)
     // `let sum`
     sum@2 := const (0 : u32)
@@ -157,85 +155,81 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     @4 := function_call(move (@5))
     storage_dead(@5)
     storage_dead(@4)
-    storage_live(@8)
     // Start of loop
     loop {
+        storage_live(@8)
         storage_live(@9)
+        @9 := copy (i@3)
         storage_live(@10)
-        @10 := copy (i@3)
         storage_live(@11)
-        storage_live(@12)
-        @12 := &*(s@1) with_metadata(copy (s@1.metadata))
-        @11 := len<'_, u32>[Sized<u32>](move (@12))
-        storage_dead(@12)
-        @9 := move (@10) < move (@11)
-        if move (@9) {
+        @11 := &*(s@1) with_metadata(copy (s@1.metadata))
+        @10 := len<'_, u32>[Sized<u32>](move (@11))
+        storage_dead(@11)
+        @8 := move (@9) < move (@10)
+        if move (@8) {
         }
         else {
             break 0
         }
-        storage_dead(@11)
         storage_dead(@10)
-        storage_live(@13)
-        storage_live(@14)
-        // Add to running sum
-        @14 := copy (i@3)
-        storage_live(@27)
-        @27 := &*(s@1) with_metadata(copy (s@1.metadata))
-        storage_live(@28)
-        @28 := @SliceIndexShared<'_, u32>(move (@27), copy (@14))
-        @13 := copy (*(@28))
-        @15 := copy (sum@2) panic.+ copy (@13)
-        sum@2 := move (@15)
-        storage_dead(@13)
-        storage_dead(@14)
-        // Increment `i`
-        @16 := copy (i@3) panic.+ const (1 : usize)
-        i@3 := move (@16)
-        // Before end of loop
         storage_dead(@9)
+        storage_live(@12)
+        storage_live(@13)
+        // Add to running sum
+        @13 := copy (i@3)
+        storage_live(@25)
+        @25 := &*(s@1) with_metadata(copy (s@1.metadata))
+        storage_live(@26)
+        @26 := @SliceIndexShared<'_, u32>(move (@25), copy (@13))
+        @12 := copy (*(@26))
+        @14 := copy (sum@2) panic.+ copy (@12)
+        sum@2 := move (@14)
+        storage_dead(@12)
+        storage_dead(@13)
+        // Increment `i`
+        @15 := copy (i@3) panic.+ const (1 : usize)
+        i@3 := move (@15)
+        // Before end of loop
+        storage_dead(@8)
         continue 0
     }
-    storage_dead(@11)
     storage_dead(@10)
-    storage_live(@17)
-    storage_dead(@17)
     storage_dead(@9)
     storage_dead(@8)
+    storage_live(@16)
+    storage_live(@17)
     storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
     // Assign the result of an `if`.
-    @20 := copy (sum@2)
-    @19 := move (@20) > const (10 : u32)
-    if move (@19) {
-        storage_dead(@20)
-        storage_live(@21)
+    @18 := copy (sum@2)
+    @17 := move (@18) > const (10 : u32)
+    if move (@17) {
+        storage_dead(@18)
+        storage_live(@19)
         // sum + 100
-        @21 := copy (sum@2)
-        @22 := copy (@21) panic.+ const (100 : u32)
-        @18 := move (@22)
-        storage_dead(@21)
+        @19 := copy (sum@2)
+        @20 := copy (@19) panic.+ const (100 : u32)
+        @16 := move (@20)
+        storage_dead(@19)
     }
     else {
-        storage_dead(@20)
+        storage_dead(@18)
         // let sum untouched
-        @18 := copy (sum@2)
+        @16 := copy (sum@2)
     }
-    storage_dead(@19)
-    sum@2 := move (@18)
-    storage_dead(@18)
+    storage_dead(@17)
+    sum@2 := move (@16)
+    storage_dead(@16)
+    storage_live(@21)
+    storage_live(@22)
     storage_live(@23)
-    storage_live(@24)
-    storage_live(@25)
     // Function call
-    @25 := copy (sum@2)
-    @26 := copy (@25) panic.+ const (2 : u32)
-    @24 := move (@26)
-    storage_dead(@25)
-    @23 := function_call(move (@24))
-    storage_dead(@24)
+    @23 := copy (sum@2)
+    @24 := copy (@23) panic.+ const (2 : u32)
+    @22 := move (@24)
     storage_dead(@23)
+    @21 := function_call(move (@22))
+    storage_dead(@22)
+    storage_dead(@21)
     // Return final value
     @0 := copy (sum@2)
     storage_dead(i@3)
@@ -336,26 +330,25 @@ fn foo()
     let @13: u32; // anonymous local
     let @14: u32; // anonymous local
     let a@15: Array<u32, 10 : usize>; // local
-    let @16: (); // anonymous local
-    let @17: (&'_ (u32), &'_ (u32)); // anonymous local
-    let @18: &'_ (u32); // anonymous local
-    let @19: usize; // anonymous local
-    let @20: &'_ (u32); // anonymous local
-    let @21: u32; // anonymous local
-    let left_val@22: &'_ (u32); // local
-    let right_val@23: &'_ (u32); // local
-    let @24: bool; // anonymous local
+    let @16: (&'_ (u32), &'_ (u32)); // anonymous local
+    let @17: &'_ (u32); // anonymous local
+    let @18: usize; // anonymous local
+    let @19: &'_ (u32); // anonymous local
+    let @20: u32; // anonymous local
+    let left_val@21: &'_ (u32); // local
+    let right_val@22: &'_ (u32); // local
+    let @23: bool; // anonymous local
+    let @24: u32; // anonymous local
     let @25: u32; // anonymous local
-    let @26: u32; // anonymous local
-    let kind@27: AssertKind; // local
-    let @28: AssertKind; // anonymous local
+    let kind@26: AssertKind; // local
+    let @27: AssertKind; // anonymous local
+    let @28: &'_ (u32); // anonymous local
     let @29: &'_ (u32); // anonymous local
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
-    let @32: &'_ (u32); // anonymous local
-    let @33: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
-    let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @35: &'_ (u32); // anonymous local
+    let @32: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @33: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @34: &'_ (u32); // anonymous local
 
     storage_live(@3)
     // Call `default` and destructure the result
@@ -407,60 +400,58 @@ fn foo()
     storage_live(@16)
     storage_live(@17)
     storage_live(@18)
-    storage_live(@19)
     // `assert_eq`
-    @19 := const (9 : usize)
+    @18 := const (9 : usize)
+    storage_live(@33)
+    @33 := &a@15
     storage_live(@34)
-    @34 := &a@15
-    storage_live(@35)
-    @35 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@34), copy (@19))
-    @18 := &*(@35)
+    @34 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@33), copy (@18))
+    @17 := &*(@34)
+    storage_live(@19)
     storage_live(@20)
-    storage_live(@21)
-    @21 := const (9 : u32)
-    @20 := &@21
-    @17 := (move (@18), move (@20))
-    storage_dead(@20)
-    storage_dead(@18)
-    storage_live(left_val@22)
-    left_val@22 := copy ((@17).0)
-    storage_live(right_val@23)
-    right_val@23 := copy ((@17).1)
-    storage_live(@24)
-    storage_live(@25)
-    @25 := copy (*(left_val@22))
-    storage_live(@26)
-    @26 := copy (*(right_val@23))
-    @24 := move (@25) == move (@26)
-    if move (@24) {
-    }
-    else {
-        storage_dead(@26)
-        storage_dead(@25)
-        storage_live(kind@27)
-        kind@27 := AssertKind::Eq {  }
-        storage_live(@28)
-        @28 := move (kind@27)
-        storage_live(@29)
-        storage_live(@30)
-        @30 := &*(left_val@22)
-        @29 := &*(@30)
-        storage_live(@31)
-        storage_live(@32)
-        @32 := &*(right_val@23)
-        @31 := &*(@32)
-        storage_live(@33)
-        @33 := Option::None {  }
-        panic(core::panicking::assert_failed)
-    }
-    storage_dead(@26)
-    storage_dead(@25)
-    storage_dead(@24)
-    storage_dead(right_val@23)
-    storage_dead(left_val@22)
-    storage_dead(@21)
+    @20 := const (9 : u32)
+    @19 := &@20
+    @16 := (move (@17), move (@19))
     storage_dead(@19)
     storage_dead(@17)
+    storage_live(left_val@21)
+    left_val@21 := copy ((@16).0)
+    storage_live(right_val@22)
+    right_val@22 := copy ((@16).1)
+    storage_live(@23)
+    storage_live(@24)
+    @24 := copy (*(left_val@21))
+    storage_live(@25)
+    @25 := copy (*(right_val@22))
+    @23 := move (@24) == move (@25)
+    if move (@23) {
+    }
+    else {
+        storage_dead(@25)
+        storage_dead(@24)
+        storage_live(kind@26)
+        kind@26 := AssertKind::Eq {  }
+        storage_live(@27)
+        @27 := move (kind@26)
+        storage_live(@28)
+        storage_live(@29)
+        @29 := &*(left_val@21)
+        @28 := &*(@29)
+        storage_live(@30)
+        storage_live(@31)
+        @31 := &*(right_val@22)
+        @30 := &*(@31)
+        storage_live(@32)
+        @32 := Option::None {  }
+        panic(core::panicking::assert_failed)
+    }
+    storage_dead(@25)
+    storage_dead(@24)
+    storage_dead(@23)
+    storage_dead(right_val@22)
+    storage_dead(left_val@21)
+    storage_dead(@20)
+    storage_dead(@18)
     storage_dead(@16)
     @0 := ()
     storage_dead(a@15)

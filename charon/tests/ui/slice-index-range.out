@@ -791,12 +791,11 @@ fn main()
     let @3: &'_ (Slice<i32>); // anonymous local
     let @4: &'_ (Array<i32, 6 : usize>); // anonymous local
     let @5: Range<usize>[Sized<usize>]; // anonymous local
-    let @6: (); // anonymous local
-    let @7: bool; // anonymous local
-    let @8: i32; // anonymous local
-    let @9: usize; // anonymous local
-    let @10: &'_ (Slice<i32>); // anonymous local
-    let @11: &'_ (i32); // anonymous local
+    let @6: bool; // anonymous local
+    let @7: i32; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: &'_ (Slice<i32>); // anonymous local
+    let @10: &'_ (i32); // anonymous local
 
     storage_live(array@1)
     array@1 := [const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
@@ -813,24 +812,22 @@ fn main()
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
+    @8 := const (0 : usize)
     storage_live(@9)
-    @9 := const (0 : usize)
+    @9 := &*(slice@2) with_metadata(copy (slice@2.metadata))
     storage_live(@10)
-    @10 := &*(slice@2) with_metadata(copy (slice@2.metadata))
-    storage_live(@11)
-    @11 := @SliceIndexShared<'_, i32>(move (@10), copy (@9))
-    @8 := copy (*(@11))
-    @7 := move (@8) == const (3 : i32)
-    if move (@7) {
+    @10 := @SliceIndexShared<'_, i32>(move (@9), copy (@8))
+    @7 := copy (*(@10))
+    @6 := move (@7) == const (3 : i32)
+    if move (@6) {
     }
     else {
+        storage_dead(@7)
         storage_dead(@8)
-        storage_dead(@9)
         panic(core::panicking::panic)
     }
-    storage_dead(@8)
-    storage_dead(@9)
     storage_dead(@7)
+    storage_dead(@8)
     storage_dead(@6)
     @0 := ()
     storage_dead(@3)

@@ -633,15 +633,14 @@ fn cbd(@1: Array<u8, 33 : usize>)
     let @2: Range<u8>[Sized<u8>]; // anonymous local
     let @3: Range<u8>[Sized<u8>]; // anonymous local
     let iter@4: Range<u8>[Sized<u8>]; // local
-    let @5: (); // anonymous local
-    let @6: Option<u8>[Sized<u8>]; // anonymous local
+    let @5: Option<u8>[Sized<u8>]; // anonymous local
+    let @6: &'_ mut (Range<u8>[Sized<u8>]); // anonymous local
     let @7: &'_ mut (Range<u8>[Sized<u8>]); // anonymous local
-    let @8: &'_ mut (Range<u8>[Sized<u8>]); // anonymous local
-    let i@9: u8; // local
-    let @10: u8; // anonymous local
-    let @11: usize; // anonymous local
-    let @12: &'_ mut (Array<u8, 33 : usize>); // anonymous local
-    let @13: &'_ mut (u8); // anonymous local
+    let i@8: u8; // local
+    let @9: u8; // anonymous local
+    let @10: usize; // anonymous local
+    let @11: &'_ mut (Array<u8, 33 : usize>); // anonymous local
+    let @12: &'_ mut (u8); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -654,40 +653,37 @@ fn cbd(@1: Array<u8, 33 : usize>)
         storage_live(@5)
         storage_live(@6)
         storage_live(@7)
-        storage_live(@8)
-        @8 := &mut iter@4
-        @7 := &two-phase-mut *(@8)
-        @6 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[Sized<u8>, {impl Step for u8}](move (@7))
-        storage_dead(@7)
-        match @6 {
+        @7 := &mut iter@4
+        @6 := &two-phase-mut *(@7)
+        @5 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[Sized<u8>, {impl Step for u8}](move (@6))
+        storage_dead(@6)
+        match @5 {
             Option::None => {
                 break 0
             },
             Option::Some => {
-                storage_live(i@9)
-                i@9 := copy ((@6 as variant Option::Some).0)
+                storage_live(i@8)
+                i@8 := copy ((@5 as variant Option::Some).0)
+                storage_live(@9)
+                @9 := copy (i@8)
                 storage_live(@10)
-                @10 := copy (i@9)
+                @10 := const (0 : usize)
                 storage_live(@11)
-                @11 := const (0 : usize)
+                @11 := &mut prf_input@1
                 storage_live(@12)
-                @12 := &mut prf_input@1
-                storage_live(@13)
-                @13 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@12), copy (@11))
-                *(@13) := move (@10)
+                @12 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@11), copy (@10))
+                *(@12) := move (@9)
+                storage_dead(@9)
                 storage_dead(@10)
-                storage_dead(@11)
-                storage_dead(i@9)
-                storage_dead(@8)
-                storage_dead(@6)
+                storage_dead(i@8)
+                storage_dead(@7)
                 storage_dead(@5)
                 continue 0
             },
         }
     }
     @0 := ()
-    storage_dead(@8)
-    storage_dead(@6)
+    storage_dead(@7)
     storage_dead(@5)
     storage_dead(iter@4)
     storage_dead(@2)
@@ -701,96 +697,90 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @0: (); // return
     let lhs@1: &'_ (Slice<u8>); // arg #1
     let rhs@2: &'_ (Slice<u8>); // arg #2
-    let @3: (); // anonymous local
-    let @4: bool; // anonymous local
-    let @5: (); // anonymous local
-    let @6: (&'_ (usize), &'_ (usize)); // anonymous local
-    let @7: &'_ (usize); // anonymous local
-    let @8: usize; // anonymous local
-    let @9: &'_ (Slice<u8>); // anonymous local
-    let @10: &'_ (usize); // anonymous local
-    let @11: usize; // anonymous local
-    let @12: &'_ (Slice<u8>); // anonymous local
-    let left_val@13: &'_ (usize); // local
-    let right_val@14: &'_ (usize); // local
-    let @15: bool; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: usize; // anonymous local
-    let kind@18: AssertKind; // local
-    let @19: AssertKind; // anonymous local
+    let @3: bool; // anonymous local
+    let @4: (&'_ (usize), &'_ (usize)); // anonymous local
+    let @5: &'_ (usize); // anonymous local
+    let @6: usize; // anonymous local
+    let @7: &'_ (Slice<u8>); // anonymous local
+    let @8: &'_ (usize); // anonymous local
+    let @9: usize; // anonymous local
+    let @10: &'_ (Slice<u8>); // anonymous local
+    let left_val@11: &'_ (usize); // local
+    let right_val@12: &'_ (usize); // local
+    let @13: bool; // anonymous local
+    let @14: usize; // anonymous local
+    let @15: usize; // anonymous local
+    let kind@16: AssertKind; // local
+    let @17: AssertKind; // anonymous local
+    let @18: &'_ (usize); // anonymous local
+    let @19: &'_ (usize); // anonymous local
     let @20: &'_ (usize); // anonymous local
     let @21: &'_ (usize); // anonymous local
-    let @22: &'_ (usize); // anonymous local
-    let @23: &'_ (usize); // anonymous local
-    let @24: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @22: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    @4 := const (true)
-    if move (@4) {
+    @3 := const (true)
+    if move (@3) {
+        storage_live(@4)
         storage_live(@5)
         storage_live(@6)
         storage_live(@7)
+        @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
+        @6 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@7))
+        storage_dead(@7)
+        @5 := &@6
         storage_live(@8)
         storage_live(@9)
-        @9 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
-        @8 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@9))
-        storage_dead(@9)
-        @7 := &@8
         storage_live(@10)
-        storage_live(@11)
-        storage_live(@12)
-        @12 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
-        @11 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@12))
-        storage_dead(@12)
-        @10 := &@11
-        @6 := (move (@7), move (@10))
+        @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
+        @9 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@10))
         storage_dead(@10)
-        storage_dead(@7)
-        storage_live(left_val@13)
-        left_val@13 := copy ((@6).0)
-        storage_live(right_val@14)
-        right_val@14 := copy ((@6).1)
+        @8 := &@9
+        @4 := (move (@5), move (@8))
+        storage_dead(@8)
+        storage_dead(@5)
+        storage_live(left_val@11)
+        left_val@11 := copy ((@4).0)
+        storage_live(right_val@12)
+        right_val@12 := copy ((@4).1)
+        storage_live(@13)
+        storage_live(@14)
+        @14 := copy (*(left_val@11))
         storage_live(@15)
-        storage_live(@16)
-        @16 := copy (*(left_val@13))
-        storage_live(@17)
-        @17 := copy (*(right_val@14))
-        @15 := move (@16) == move (@17)
-        if move (@15) {
+        @15 := copy (*(right_val@12))
+        @13 := move (@14) == move (@15)
+        if move (@13) {
         }
         else {
-            storage_dead(@17)
-            storage_dead(@16)
-            storage_live(kind@18)
-            kind@18 := AssertKind::Eq {  }
+            storage_dead(@15)
+            storage_dead(@14)
+            storage_live(kind@16)
+            kind@16 := AssertKind::Eq {  }
+            storage_live(@17)
+            @17 := move (kind@16)
+            storage_live(@18)
             storage_live(@19)
-            @19 := move (kind@18)
+            @19 := &*(left_val@11)
+            @18 := &*(@19)
             storage_live(@20)
             storage_live(@21)
-            @21 := &*(left_val@13)
+            @21 := &*(right_val@12)
             @20 := &*(@21)
             storage_live(@22)
-            storage_live(@23)
-            @23 := &*(right_val@14)
-            @22 := &*(@23)
-            storage_live(@24)
-            @24 := Option::None {  }
+            @22 := Option::None {  }
             panic(core::panicking::assert_failed)
         }
-        storage_dead(@17)
-        storage_dead(@16)
         storage_dead(@15)
-        storage_dead(right_val@14)
-        storage_dead(left_val@13)
-        storage_dead(@11)
-        storage_dead(@8)
+        storage_dead(@14)
+        storage_dead(@13)
+        storage_dead(right_val@12)
+        storage_dead(left_val@11)
+        storage_dead(@9)
         storage_dead(@6)
-        storage_dead(@5)
+        storage_dead(@4)
     }
     else {
     }
-    storage_dead(@4)
     storage_dead(@3)
     @0 := ()
     @0 := ()

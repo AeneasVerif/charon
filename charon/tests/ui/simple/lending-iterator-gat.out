@@ -197,7 +197,6 @@ where
     let @7: &'_ mut (impl for<'a> FnMut(I::Item<'a>)); // anonymous local
     let @8: (@TraitClause2::Item); // anonymous local
     let @9: @TraitClause2::Item; // anonymous local
-    let @10: (); // anonymous local
 
     storage_live(@3)
     loop {
@@ -232,9 +231,7 @@ where
         storage_dead(@4)
         continue 0
     }
-    storage_live(@10)
     @0 := ()
-    storage_dead(@10)
     drop[{impl Drop for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
     storage_dead(@4)
     drop[Drop<impl for<'a> FnMut(I::Item<'a>)>] f@2
@@ -321,23 +318,22 @@ pub fn main()
     let @7: Option<&'_ (i32)>[Sized<&'_ (i32)>]; // anonymous local
     let @8: closure<'_>; // anonymous local
     let @9: &'_ mut (i32); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (&'_ (i32), &'_ (i32)); // anonymous local
+    let @10: (&'_ (i32), &'_ (i32)); // anonymous local
+    let @11: &'_ (i32); // anonymous local
     let @12: &'_ (i32); // anonymous local
-    let @13: &'_ (i32); // anonymous local
-    let @14: i32; // anonymous local
-    let left_val@15: &'_ (i32); // local
-    let right_val@16: &'_ (i32); // local
-    let @17: bool; // anonymous local
+    let @13: i32; // anonymous local
+    let left_val@14: &'_ (i32); // local
+    let right_val@15: &'_ (i32); // local
+    let @16: bool; // anonymous local
+    let @17: i32; // anonymous local
     let @18: i32; // anonymous local
-    let @19: i32; // anonymous local
-    let kind@20: AssertKind; // local
-    let @21: AssertKind; // anonymous local
+    let kind@19: AssertKind; // local
+    let @20: AssertKind; // anonymous local
+    let @21: &'_ (i32); // anonymous local
     let @22: &'_ (i32); // anonymous local
     let @23: &'_ (i32); // anonymous local
     let @24: &'_ (i32); // anonymous local
-    let @25: &'_ (i32); // anonymous local
-    let @26: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @25: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
 
     storage_live(x@1)
     x@1 := const (42 : i32)
@@ -364,53 +360,51 @@ pub fn main()
     storage_dead(@6)
     storage_live(@10)
     storage_live(@11)
+    @11 := &sum@5
     storage_live(@12)
-    @12 := &sum@5
     storage_live(@13)
-    storage_live(@14)
-    @14 := const (42 : i32)
-    @13 := &@14
-    @11 := (move (@12), move (@13))
-    storage_dead(@13)
+    @13 := const (42 : i32)
+    @12 := &@13
+    @10 := (move (@11), move (@12))
     storage_dead(@12)
-    storage_live(left_val@15)
-    left_val@15 := copy ((@11).0)
-    storage_live(right_val@16)
-    right_val@16 := copy ((@11).1)
+    storage_dead(@11)
+    storage_live(left_val@14)
+    left_val@14 := copy ((@10).0)
+    storage_live(right_val@15)
+    right_val@15 := copy ((@10).1)
+    storage_live(@16)
     storage_live(@17)
+    @17 := copy (*(left_val@14))
     storage_live(@18)
-    @18 := copy (*(left_val@15))
-    storage_live(@19)
-    @19 := copy (*(right_val@16))
-    @17 := move (@18) == move (@19)
-    if move (@17) {
+    @18 := copy (*(right_val@15))
+    @16 := move (@17) == move (@18)
+    if move (@16) {
     }
     else {
-        storage_dead(@19)
         storage_dead(@18)
-        storage_live(kind@20)
-        kind@20 := AssertKind::Eq {  }
+        storage_dead(@17)
+        storage_live(kind@19)
+        kind@19 := AssertKind::Eq {  }
+        storage_live(@20)
+        @20 := move (kind@19)
         storage_live(@21)
-        @21 := move (kind@20)
         storage_live(@22)
+        @22 := &*(left_val@14)
+        @21 := &*(@22)
         storage_live(@23)
-        @23 := &*(left_val@15)
-        @22 := &*(@23)
         storage_live(@24)
+        @24 := &*(right_val@15)
+        @23 := &*(@24)
         storage_live(@25)
-        @25 := &*(right_val@16)
-        @24 := &*(@25)
-        storage_live(@26)
-        @26 := Option::None {  }
+        @25 := Option::None {  }
         panic(core::panicking::assert_failed)
     }
-    storage_dead(@19)
     storage_dead(@18)
     storage_dead(@17)
-    storage_dead(right_val@16)
-    storage_dead(left_val@15)
-    storage_dead(@14)
-    storage_dead(@11)
+    storage_dead(@16)
+    storage_dead(right_val@15)
+    storage_dead(left_val@14)
+    storage_dead(@13)
     storage_dead(@10)
     @0 := ()
     storage_dead(sum@5)

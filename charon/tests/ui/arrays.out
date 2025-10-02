@@ -1171,114 +1171,111 @@ pub fn index_all() -> u32
 {
     let @0: u32; // return
     let x@1: Array<u32, 2 : usize>; // local
-    let @2: (); // anonymous local
-    let @3: bool; // anonymous local
-    let _y@4: Array<u32, 2 : usize>; // local
-    let _z@5: Array<u32, 1 : usize>; // local
+    let @2: bool; // anonymous local
+    let _y@3: Array<u32, 2 : usize>; // local
+    let _z@4: Array<u32, 1 : usize>; // local
+    let @5: u32; // anonymous local
     let @6: u32; // anonymous local
     let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: Array<u32, 2 : usize>; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: Array<u32, 2 : usize>; // anonymous local
+    let @9: Array<u32, 2 : usize>; // anonymous local
+    let @10: u32; // anonymous local
+    let @11: Array<u32, 2 : usize>; // anonymous local
+    let @12: u32; // anonymous local
     let @13: u32; // anonymous local
-    let @14: u32; // anonymous local
+    let @14: &'_ (Array<u32, 2 : usize>); // anonymous local
     let @15: &'_ (Array<u32, 2 : usize>); // anonymous local
-    let @16: &'_ (Array<u32, 2 : usize>); // anonymous local
+    let @16: u32; // anonymous local
     let @17: u32; // anonymous local
-    let @18: u32; // anonymous local
-    let @19: &'_ (Slice<u32>); // anonymous local
+    let @18: &'_ (Slice<u32>); // anonymous local
+    let @19: &'_ (Array<u32, 2 : usize>); // anonymous local
     let @20: &'_ (Array<u32, 2 : usize>); // anonymous local
-    let @21: &'_ (Array<u32, 2 : usize>); // anonymous local
+    let @21: u32; // anonymous local
     let @22: u32; // anonymous local
-    let @23: u32; // anonymous local
-    let @24: &'_ mut (Slice<u32>); // anonymous local
+    let @23: &'_ mut (Slice<u32>); // anonymous local
+    let @24: &'_ mut (Array<u32, 2 : usize>); // anonymous local
     let @25: &'_ mut (Array<u32, 2 : usize>); // anonymous local
-    let @26: &'_ mut (Array<u32, 2 : usize>); // anonymous local
-    let @27: u32; // anonymous local
+    let @26: u32; // anonymous local
 
-    storage_live(@13)
-    storage_live(@17)
-    storage_live(@22)
-    storage_live(@27)
+    storage_live(@12)
+    storage_live(@16)
+    storage_live(@21)
+    storage_live(@26)
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     storage_live(@2)
-    storage_live(@3)
-    @3 := const (true)
-    if move (@3) {
-        storage_live(_y@4)
-        _y@4 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
-        storage_dead(_y@4)
+    @2 := const (true)
+    if move (@2) {
+        storage_live(_y@3)
+        _y@3 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+        storage_dead(_y@3)
     }
     else {
-        storage_live(_z@5)
-        _z@5 := [const (0 : u32)]
-        storage_dead(_z@5)
+        storage_live(_z@4)
+        _z@4 := [const (0 : u32)]
+        storage_dead(_z@4)
     }
-    storage_dead(@3)
     storage_dead(@2)
+    storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
-    storage_live(@10)
-    @10 := copy (x@1)
-    @9 := index_array(move (@10))
-    storage_dead(@10)
-    storage_live(@11)
-    storage_live(@12)
-    @12 := copy (x@1)
-    @11 := index_array(move (@12))
-    storage_dead(@12)
-    @13 := copy (@9) panic.+ copy (@11)
-    @8 := move (@13)
-    storage_dead(@11)
+    @9 := copy (x@1)
+    @8 := index_array(move (@9))
     storage_dead(@9)
+    storage_live(@10)
+    storage_live(@11)
+    @11 := copy (x@1)
+    @10 := index_array(move (@11))
+    storage_dead(@11)
+    @12 := copy (@8) panic.+ copy (@10)
+    @7 := move (@12)
+    storage_dead(@10)
+    storage_dead(@8)
+    storage_live(@13)
     storage_live(@14)
     storage_live(@15)
-    storage_live(@16)
-    @16 := &x@1
-    @15 := &*(@16)
-    @14 := index_array_borrow<'_>(move (@15))
-    storage_dead(@15)
-    @17 := copy (@8) panic.+ copy (@14)
-    @7 := move (@17)
+    @15 := &x@1
+    @14 := &*(@15)
+    @13 := index_array_borrow<'_>(move (@14))
     storage_dead(@14)
-    storage_dead(@8)
+    @16 := copy (@7) panic.+ copy (@13)
+    @6 := move (@16)
+    storage_dead(@13)
+    storage_dead(@7)
+    storage_live(@17)
     storage_live(@18)
     storage_live(@19)
     storage_live(@20)
-    storage_live(@21)
-    @21 := &x@1
-    @20 := &*(@21)
-    @19 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@20))
-    storage_dead(@20)
-    @18 := index_slice_u32_0<'_>(move (@19))
+    @20 := &x@1
+    @19 := &*(@20)
+    @18 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@19))
     storage_dead(@19)
-    @22 := copy (@7) panic.+ copy (@18)
-    @6 := move (@22)
+    @17 := index_slice_u32_0<'_>(move (@18))
     storage_dead(@18)
-    storage_dead(@7)
+    @21 := copy (@6) panic.+ copy (@17)
+    @5 := move (@21)
+    storage_dead(@17)
+    storage_dead(@6)
+    storage_live(@22)
     storage_live(@23)
     storage_live(@24)
     storage_live(@25)
-    storage_live(@26)
-    @26 := &mut x@1
-    @25 := &mut *(@26)
-    @24 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@25))
-    storage_dead(@25)
-    @23 := index_mut_slice_u32_0<'_>(move (@24))
+    @25 := &mut x@1
+    @24 := &mut *(@25)
+    @23 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@24))
     storage_dead(@24)
-    @27 := copy (@6) panic.+ copy (@23)
-    @0 := move (@27)
+    @22 := index_mut_slice_u32_0<'_>(move (@23))
     storage_dead(@23)
-    storage_dead(@6)
+    @26 := copy (@5) panic.+ copy (@22)
+    @0 := move (@26)
+    storage_dead(@22)
+    storage_dead(@5)
     storage_dead(x@1)
-    storage_dead(@26)
-    storage_dead(@21)
-    storage_dead(@16)
+    storage_dead(@25)
+    storage_dead(@20)
+    storage_dead(@15)
     return
 }
 
@@ -1545,64 +1542,58 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let s@1: &'_ (Slice<u32>); // arg #1
     let sum@2: u32; // local
     let i@3: usize; // local
-    let @4: (); // anonymous local
-    let @5: bool; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: usize; // anonymous local
     let @6: usize; // anonymous local
-    let @7: usize; // anonymous local
-    let @8: &'_ (Slice<u32>); // anonymous local
-    let @9: u32; // anonymous local
-    let @10: usize; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: usize; // anonymous local
-    let @13: (); // anonymous local
-    let @14: &'_ (Slice<u32>); // anonymous local
-    let @15: &'_ (u32); // anonymous local
+    let @7: &'_ (Slice<u32>); // anonymous local
+    let @8: u32; // anonymous local
+    let @9: usize; // anonymous local
+    let @10: u32; // anonymous local
+    let @11: usize; // anonymous local
+    let @12: &'_ (Slice<u32>); // anonymous local
+    let @13: &'_ (u32); // anonymous local
 
+    storage_live(@10)
     storage_live(@11)
-    storage_live(@12)
     storage_live(sum@2)
     sum@2 := const (0 : u32)
     storage_live(i@3)
     i@3 := const (0 : usize)
-    storage_live(@4)
     loop {
+        storage_live(@4)
         storage_live(@5)
+        @5 := copy (i@3)
         storage_live(@6)
-        @6 := copy (i@3)
         storage_live(@7)
-        storage_live(@8)
-        @8 := &*(s@1) with_metadata(copy (s@1.metadata))
-        @7 := len<'_, u32>[Sized<u32>](move (@8))
-        storage_dead(@8)
-        @5 := move (@6) < move (@7)
-        if move (@5) {
+        @7 := &*(s@1) with_metadata(copy (s@1.metadata))
+        @6 := len<'_, u32>[Sized<u32>](move (@7))
+        storage_dead(@7)
+        @4 := move (@5) < move (@6)
+        if move (@4) {
         }
         else {
             break 0
         }
-        storage_dead(@7)
         storage_dead(@6)
-        storage_live(@9)
-        storage_live(@10)
-        @10 := copy (i@3)
-        storage_live(@14)
-        @14 := &*(s@1) with_metadata(copy (s@1.metadata))
-        storage_live(@15)
-        @15 := @SliceIndexShared<'_, u32>(move (@14), copy (@10))
-        @9 := copy (*(@15))
-        @11 := copy (sum@2) panic.+ copy (@9)
-        sum@2 := move (@11)
-        storage_dead(@9)
-        storage_dead(@10)
-        @12 := copy (i@3) panic.+ const (1 : usize)
-        i@3 := move (@12)
         storage_dead(@5)
+        storage_live(@8)
+        storage_live(@9)
+        @9 := copy (i@3)
+        storage_live(@12)
+        @12 := &*(s@1) with_metadata(copy (s@1.metadata))
+        storage_live(@13)
+        @13 := @SliceIndexShared<'_, u32>(move (@12), copy (@9))
+        @8 := copy (*(@13))
+        @10 := copy (sum@2) panic.+ copy (@8)
+        sum@2 := move (@10)
+        storage_dead(@8)
+        storage_dead(@9)
+        @11 := copy (i@3) panic.+ const (1 : usize)
+        i@3 := move (@11)
+        storage_dead(@4)
         continue 0
     }
-    storage_dead(@7)
     storage_dead(@6)
-    storage_live(@13)
-    storage_dead(@13)
     storage_dead(@5)
     storage_dead(@4)
     @0 := copy (sum@2)
@@ -1618,120 +1609,111 @@ pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
     let s@1: &'_ (Slice<u32>); // arg #1
     let s2@2: &'_ (Slice<u32>); // arg #2
     let sum@3: u32; // local
-    let @4: (); // anonymous local
-    let @5: bool; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: &'_ (Slice<u32>); // anonymous local
-    let @8: usize; // anonymous local
-    let @9: &'_ (Slice<u32>); // anonymous local
-    let i@10: usize; // local
-    let @11: (); // anonymous local
-    let @12: bool; // anonymous local
-    let @13: usize; // anonymous local
-    let @14: usize; // anonymous local
-    let @15: &'_ (Slice<u32>); // anonymous local
-    let @16: u32; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: &'_ (Slice<u32>); // anonymous local
+    let @7: usize; // anonymous local
+    let @8: &'_ (Slice<u32>); // anonymous local
+    let i@9: usize; // local
+    let @10: bool; // anonymous local
+    let @11: usize; // anonymous local
+    let @12: usize; // anonymous local
+    let @13: &'_ (Slice<u32>); // anonymous local
+    let @14: u32; // anonymous local
+    let @15: u32; // anonymous local
+    let @16: usize; // anonymous local
     let @17: u32; // anonymous local
     let @18: usize; // anonymous local
     let @19: u32; // anonymous local
-    let @20: usize; // anonymous local
-    let @21: u32; // anonymous local
-    let @22: u32; // anonymous local
-    let @23: usize; // anonymous local
-    let @24: (); // anonymous local
-    let @25: &'_ (Slice<u32>); // anonymous local
-    let @26: &'_ (u32); // anonymous local
-    let @27: &'_ (Slice<u32>); // anonymous local
-    let @28: &'_ (u32); // anonymous local
+    let @20: u32; // anonymous local
+    let @21: usize; // anonymous local
+    let @22: &'_ (Slice<u32>); // anonymous local
+    let @23: &'_ (u32); // anonymous local
+    let @24: &'_ (Slice<u32>); // anonymous local
+    let @25: &'_ (u32); // anonymous local
 
+    storage_live(@19)
+    storage_live(@20)
     storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
     storage_live(sum@3)
     sum@3 := const (0 : u32)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
+    @6 := &*(s@1) with_metadata(copy (s@1.metadata))
+    @5 := len<'_, u32>[Sized<u32>](move (@6))
+    storage_dead(@6)
     storage_live(@7)
-    @7 := &*(s@1) with_metadata(copy (s@1.metadata))
-    @6 := len<'_, u32>[Sized<u32>](move (@7))
-    storage_dead(@7)
     storage_live(@8)
-    storage_live(@9)
-    @9 := &*(s2@2) with_metadata(copy (s2@2.metadata))
-    @8 := len<'_, u32>[Sized<u32>](move (@9))
-    storage_dead(@9)
-    @5 := move (@6) == move (@8)
-    if move (@5) {
+    @8 := &*(s2@2) with_metadata(copy (s2@2.metadata))
+    @7 := len<'_, u32>[Sized<u32>](move (@8))
+    storage_dead(@8)
+    @4 := move (@5) == move (@7)
+    if move (@4) {
     }
     else {
-        storage_dead(@8)
-        storage_dead(@6)
+        storage_dead(@7)
+        storage_dead(@5)
         panic(core::panicking::panic)
     }
-    storage_dead(@8)
-    storage_dead(@6)
+    storage_dead(@7)
     storage_dead(@5)
     storage_dead(@4)
-    storage_live(i@10)
-    i@10 := const (0 : usize)
-    storage_live(@11)
+    storage_live(i@9)
+    i@9 := const (0 : usize)
     loop {
+        storage_live(@10)
+        storage_live(@11)
+        @11 := copy (i@9)
         storage_live(@12)
         storage_live(@13)
-        @13 := copy (i@10)
-        storage_live(@14)
-        storage_live(@15)
-        @15 := &*(s@1) with_metadata(copy (s@1.metadata))
-        @14 := len<'_, u32>[Sized<u32>](move (@15))
-        storage_dead(@15)
-        @12 := move (@13) < move (@14)
-        if move (@12) {
+        @13 := &*(s@1) with_metadata(copy (s@1.metadata))
+        @12 := len<'_, u32>[Sized<u32>](move (@13))
+        storage_dead(@13)
+        @10 := move (@11) < move (@12)
+        if move (@10) {
         }
         else {
             break 0
         }
-        storage_dead(@14)
-        storage_dead(@13)
+        storage_dead(@12)
+        storage_dead(@11)
+        storage_live(@14)
+        storage_live(@15)
         storage_live(@16)
+        @16 := copy (i@9)
+        storage_live(@24)
+        @24 := &*(s@1) with_metadata(copy (s@1.metadata))
+        storage_live(@25)
+        @25 := @SliceIndexShared<'_, u32>(move (@24), copy (@16))
+        @15 := copy (*(@25))
         storage_live(@17)
         storage_live(@18)
-        @18 := copy (i@10)
-        storage_live(@27)
-        @27 := &*(s@1) with_metadata(copy (s@1.metadata))
-        storage_live(@28)
-        @28 := @SliceIndexShared<'_, u32>(move (@27), copy (@18))
-        @17 := copy (*(@28))
-        storage_live(@19)
-        storage_live(@20)
-        @20 := copy (i@10)
-        storage_live(@25)
-        @25 := &*(s2@2) with_metadata(copy (s2@2.metadata))
-        storage_live(@26)
-        @26 := @SliceIndexShared<'_, u32>(move (@25), copy (@20))
-        @19 := copy (*(@26))
-        @21 := copy (@17) panic.+ copy (@19)
-        @16 := move (@21)
-        storage_dead(@19)
+        @18 := copy (i@9)
+        storage_live(@22)
+        @22 := &*(s2@2) with_metadata(copy (s2@2.metadata))
+        storage_live(@23)
+        @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@18))
+        @17 := copy (*(@23))
+        @19 := copy (@15) panic.+ copy (@17)
+        @14 := move (@19)
         storage_dead(@17)
-        @22 := copy (sum@3) panic.+ copy (@16)
-        sum@3 := move (@22)
-        storage_dead(@16)
-        storage_dead(@20)
+        storage_dead(@15)
+        @20 := copy (sum@3) panic.+ copy (@14)
+        sum@3 := move (@20)
+        storage_dead(@14)
         storage_dead(@18)
-        @23 := copy (i@10) panic.+ const (1 : usize)
-        i@10 := move (@23)
-        storage_dead(@12)
+        storage_dead(@16)
+        @21 := copy (i@9) panic.+ const (1 : usize)
+        i@9 := move (@21)
+        storage_dead(@10)
         continue 0
     }
-    storage_dead(@14)
-    storage_dead(@13)
-    storage_live(@24)
-    storage_dead(@24)
     storage_dead(@12)
     storage_dead(@11)
+    storage_dead(@10)
     @0 := copy (sum@3)
-    storage_dead(i@10)
+    storage_dead(i@9)
     storage_dead(sum@3)
     return
 }
@@ -2012,9 +1994,8 @@ pub fn zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     let @7: usize; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
-    let @10: (); // anonymous local
-    let @11: &'_ mut (Slice<u8>); // anonymous local
-    let @12: &'_ mut (u8); // anonymous local
+    let @10: &'_ mut (Slice<u8>); // anonymous local
+    let @11: &'_ mut (u8); // anonymous local
 
     storage_live(@9)
     storage_live(i@2)
@@ -2036,11 +2017,11 @@ pub fn zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
             storage_dead(@6)
             storage_live(@8)
             @8 := copy (i@2)
+            storage_live(@10)
+            @10 := &mut *(a@1) with_metadata(copy (a@1.metadata))
             storage_live(@11)
-            @11 := &mut *(a@1) with_metadata(copy (a@1.metadata))
-            storage_live(@12)
-            @12 := @SliceIndexMut<'_, u8>(move (@11), copy (@8))
-            *(@12) := const (0 : u8)
+            @11 := @SliceIndexMut<'_, u8>(move (@10), copy (@8))
+            *(@11) := const (0 : u8)
             storage_dead(@8)
             @9 := copy (i@2) panic.+ const (1 : usize)
             i@2 := move (@9)
@@ -2053,9 +2034,7 @@ pub fn zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     }
     storage_dead(@7)
     storage_dead(@6)
-    storage_live(@10)
     @0 := ()
-    storage_dead(@10)
     storage_dead(@5)
     storage_dead(len@3)
     storage_dead(i@2)
@@ -2075,7 +2054,6 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     let @6: usize; // anonymous local
     let @7: usize; // anonymous local
     let @8: usize; // anonymous local
-    let @9: (); // anonymous local
 
     storage_live(@8)
     storage_live(len@2)
@@ -2106,9 +2084,7 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     }
     storage_dead(@7)
     storage_dead(@6)
-    storage_live(@9)
     @0 := ()
-    storage_dead(@9)
     storage_dead(@5)
     storage_dead(i@4)
     storage_dead(len@2)
@@ -2123,64 +2099,58 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
     let a@1: &'_ mut (Slice<u32>); // arg #1
     let i@2: usize; // local
     let s@3: u32; // local
-    let @4: (); // anonymous local
-    let @5: bool; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: usize; // anonymous local
     let @6: usize; // anonymous local
-    let @7: usize; // anonymous local
-    let @8: &'_ (Slice<u32>); // anonymous local
-    let @9: u32; // anonymous local
-    let @10: usize; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: usize; // anonymous local
-    let @13: (); // anonymous local
-    let @14: &'_ (Slice<u32>); // anonymous local
-    let @15: &'_ (u32); // anonymous local
+    let @7: &'_ (Slice<u32>); // anonymous local
+    let @8: u32; // anonymous local
+    let @9: usize; // anonymous local
+    let @10: u32; // anonymous local
+    let @11: usize; // anonymous local
+    let @12: &'_ (Slice<u32>); // anonymous local
+    let @13: &'_ (u32); // anonymous local
 
+    storage_live(@10)
     storage_live(@11)
-    storage_live(@12)
     storage_live(i@2)
     i@2 := const (0 : usize)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    storage_live(@4)
     loop {
+        storage_live(@4)
         storage_live(@5)
+        @5 := copy (i@2)
         storage_live(@6)
-        @6 := copy (i@2)
         storage_live(@7)
-        storage_live(@8)
-        @8 := &*(a@1) with_metadata(copy (a@1.metadata))
-        @7 := len<'_, u32>[Sized<u32>](move (@8))
-        storage_dead(@8)
-        @5 := move (@6) < move (@7)
-        if move (@5) {
+        @7 := &*(a@1) with_metadata(copy (a@1.metadata))
+        @6 := len<'_, u32>[Sized<u32>](move (@7))
+        storage_dead(@7)
+        @4 := move (@5) < move (@6)
+        if move (@4) {
         }
         else {
             break 0
         }
-        storage_dead(@7)
         storage_dead(@6)
-        storage_live(@9)
-        storage_live(@10)
-        @10 := copy (i@2)
-        storage_live(@14)
-        @14 := &*(a@1) with_metadata(copy (a@1.metadata))
-        storage_live(@15)
-        @15 := @SliceIndexShared<'_, u32>(move (@14), copy (@10))
-        @9 := copy (*(@15))
-        @11 := copy (s@3) panic.+ copy (@9)
-        s@3 := move (@11)
-        storage_dead(@9)
-        storage_dead(@10)
-        @12 := copy (i@2) panic.+ const (1 : usize)
-        i@2 := move (@12)
         storage_dead(@5)
+        storage_live(@8)
+        storage_live(@9)
+        @9 := copy (i@2)
+        storage_live(@12)
+        @12 := &*(a@1) with_metadata(copy (a@1.metadata))
+        storage_live(@13)
+        @13 := @SliceIndexShared<'_, u32>(move (@12), copy (@9))
+        @8 := copy (*(@13))
+        @10 := copy (s@3) panic.+ copy (@8)
+        s@3 := move (@10)
+        storage_dead(@8)
+        storage_dead(@9)
+        @11 := copy (i@2) panic.+ const (1 : usize)
+        i@2 := move (@11)
+        storage_dead(@4)
         continue 0
     }
-    storage_dead(@7)
     storage_dead(@6)
-    storage_live(@13)
-    storage_dead(@13)
     storage_dead(@5)
     storage_dead(@4)
     @0 := copy (s@3)
