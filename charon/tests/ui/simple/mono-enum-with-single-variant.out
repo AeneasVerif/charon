@@ -1,0 +1,59 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::<Never>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Never>
+
+// Full name: core::marker::Sized::<Never>
+#[lang_item("sized")]
+pub trait Sized::<Never>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Never>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<u8>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<u8>
+
+// Full name: core::marker::Sized::<u8>
+#[lang_item("sized")]
+pub trait Sized::<u8>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<u8>
+    non-dyn-compatible
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::Never
+enum Never {
+}
+
+// Full name: test_crate::MyResult::<Never, u8>
+enum MyResult::<Never, u8> {
+  Ok(Never),
+  Err(u8),
+}
+
+// Full name: test_crate::use_result
+fn use_result(@1: MyResult::<Never, u8>)
+{
+    let @0: (); // return
+    let @1: MyResult::<Never, u8>; // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+
+

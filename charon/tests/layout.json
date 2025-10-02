@@ -248,6 +248,26 @@
       }
     ]
   },
+  "test_crate::UninhabitedVariant": {
+    "size": 4,
+    "align": 4,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": true,
+        "tag": null
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tag": null
+      }
+    ]
+  },
   "test_crate::UninhabitedVariant2": {
     "size": 8,
     "align": 4,
@@ -585,6 +605,26 @@
             "18446744073709551615"
           ]
         }
+      }
+    ]
+  },
+  "test_crate::SingleVariantButNonZero": {
+    "size": 0,
+    "align": 1,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": true,
+        "tag": null
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tag": null
       }
     ]
   },
