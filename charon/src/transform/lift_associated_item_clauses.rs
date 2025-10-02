@@ -24,7 +24,7 @@ impl TransformPass for Transform {
                     let id_map =
                         mem::take(&mut assoc_ty.skip_binder.implied_clauses).map(|clause| {
                             let mut clause = clause.move_from_under_binder().unwrap();
-                            decl.parent_clauses.push_with(|id| {
+                            decl.implied_clauses.push_with(|id| {
                                 clause.clause_id = id;
                                 clause
                             })
@@ -51,7 +51,7 @@ impl TransformPass for Transform {
                         let trait_ref = trait_ref.move_from_under_binder().unwrap();
                         // Note: this assumes that we listed the types in the same order as in the
                         // trait decl, which we do.
-                        timpl.parent_trait_refs.push(trait_ref);
+                        timpl.implied_trait_refs.push(trait_ref);
                     }
                 }
             }

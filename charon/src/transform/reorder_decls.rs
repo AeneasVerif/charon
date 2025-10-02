@@ -399,7 +399,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     def_id: _,
                     item_meta: _,
                     generics,
-                    parent_clauses,
+                    implied_clauses: parent_clauses,
                     consts,
                     types,
                     methods,

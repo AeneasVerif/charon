@@ -61,7 +61,7 @@ impl TranslatedCrate {
             }
             TraitRefKind::ParentClause(p, clause) => {
                 let (trait_impl, _) = self.find_trait_impl_and_gargs(p)?;
-                let t_ref = trait_impl.parent_trait_refs.get(*clause)?;
+                let t_ref = trait_impl.implied_trait_refs.get(*clause)?;
                 self.find_trait_impl_and_gargs(t_ref)
             }
             _ => None,

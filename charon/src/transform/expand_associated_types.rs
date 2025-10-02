@@ -709,7 +709,7 @@ impl<'a> ComputeItemModifications<'a> {
                         replace.push(path);
                     }
                 }
-                for clause in &tr.parent_clauses {
+                for clause in &tr.implied_clauses {
                     for path in
                         self.compute_extra_params_for_clause(clause, TraitRefPath::parent_clause)
                     {
@@ -825,7 +825,7 @@ impl<'a> ComputeItemModifications<'a> {
                         set.insert_path(&path, assoc_ty.value);
                     }
                 }
-                for (clause_id, tref) in timpl.parent_trait_refs.iter_indexed() {
+                for (clause_id, tref) in timpl.implied_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
                     for (path, ty) in self.compute_assoc_tys_for_tref(timpl.item_meta.span, tref) {
                         let path = path.on_tref(&clause_path);
@@ -1147,7 +1147,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 generics: Box::new(tdecl.generics.identity_args()),
             }),
         };
-        for (clause_id, clause) in tdecl.parent_clauses.iter_mut_indexed() {
+        for (clause_id, clause) in tdecl.implied_clauses.iter_mut_indexed() {
             let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }

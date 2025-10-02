@@ -261,7 +261,7 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub parent_clauses: Vector<TraitClauseId, TraitParam>,
+    pub implied_clauses: Vector<TraitClauseId, TraitParam>,
     /// The associated constants declared in the trait.
     pub consts: Vec<TraitAssocConst>,
     /// The associated types declared in the trait. The binder binds the generic parameters of the
@@ -330,7 +330,7 @@ pub struct TraitImpl {
     pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: Vector<TraitClauseId, TraitRef>,
     /// The implemented associated constants.
     pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
     /// The implemented associated types.

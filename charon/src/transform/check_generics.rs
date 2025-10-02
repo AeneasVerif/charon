@@ -253,7 +253,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 let fmt = &self.ctx.into_fmt();
                 let args_fmt = &self.val_fmt_ctx();
                 self.zip_assert_match(
-                    &tdecl.parent_clauses,
+                    &tdecl.implied_clauses,
                     parent_trait_refs,
                     fmt,
                     args_fmt,
@@ -327,8 +327,8 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         let tdecl_fmt = fmt1.push_binder(Cow::Borrowed(&tdecl.generics));
         let args_fmt = &self.val_fmt_ctx();
         self.zip_assert_match(
-            &tdecl.parent_clauses,
-            &timpl.parent_trait_refs,
+            &tdecl.implied_clauses,
+            &timpl.implied_trait_refs,
             &tdecl_fmt,
             args_fmt,
             "trait parent clauses",

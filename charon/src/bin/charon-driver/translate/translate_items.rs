@@ -584,7 +584,7 @@ impl ItemTransCtx<'_, '_> {
         // Register implied predicates.
         let mut preds =
             self.translate_predicates(implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
-        let parent_clauses = mem::take(&mut preds.trait_clauses);
+        let implied_clauses = mem::take(&mut preds.trait_clauses);
         // Consider the other predicates as required since the distinction doesn't matter for
         // non-trait-clauses.
         self.innermost_generics_mut().take_predicates_from(preds);
@@ -596,7 +596,7 @@ impl ItemTransCtx<'_, '_> {
             return Ok(TraitDecl {
                 def_id,
                 item_meta,
-                parent_clauses,
+                implied_clauses,
                 generics: self.into_generics(),
                 consts: Default::default(),
                 types: Default::default(),
@@ -804,7 +804,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitDecl {
             def_id,
             item_meta,
-            parent_clauses,
+            implied_clauses,
             generics: self.into_generics(),
             consts,
             types,
@@ -852,17 +852,17 @@ impl ItemTransCtx<'_, '_> {
         let vtable = self.translate_vtable_instance_ref(span, &trait_pred.trait_ref, def.this())?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
-        let parent_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
+        let implied_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
 
         {
             // Debugging
             let ctx = self.into_fmt();
-            let refs = parent_trait_refs
+            let refs = implied_trait_refs
                 .iter()
                 .map(|c| c.with_ctx(&ctx))
                 .format("\n");
             trace!(
-                "Trait impl: {:?}\n- parent_trait_refs:\n{}",
+                "Trait impl: {:?}\n- implied_trait_refs:\n{}",
                 def.def_id(),
                 refs
             );
@@ -1012,7 +1012,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             impl_trait: implemented_trait,
             generics: self.into_generics(),
-            parent_trait_refs,
+            implied_trait_refs,
             consts,
             types,
             methods,
@@ -1055,7 +1055,7 @@ impl ItemTransCtx<'_, '_> {
 
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
-        let parent_trait_refs = mem::take(&mut generics.trait_refs);
+        let implied_trait_refs = mem::take(&mut generics.trait_refs);
         let implemented_trait = TraitDeclRef {
             id: trait_id,
             generics: Box::new(generics),
@@ -1066,7 +1066,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             impl_trait: implemented_trait,
             generics: self.the_only_binder().params.clone(),
-            parent_trait_refs,
+            implied_trait_refs,
             consts: Default::default(),
             types: Default::default(),
             methods: Default::default(),
@@ -1148,7 +1148,8 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let parent_trait_refs = self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
+        let implied_trait_refs =
+            self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
 
         let mut types = vec![];
         // Monomorphic traits have no associated types.
@@ -1174,7 +1175,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             impl_trait: implemented_trait,
             generics,
-            parent_trait_refs,
+            implied_trait_refs,
             consts: vec![],
             types,
             methods: vec![],
