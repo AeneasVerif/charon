@@ -400,3 +400,72 @@ pub trait BodyTransformCtx: Sized {
         compute_place_metadata_inner(self, place, &metadata_ty).unwrap_or_else(|| no_metadata(self))
     }
 }
+
+pub struct UllbcStatementTransformCtx<'a> {
+    pub ctx: &'a mut TransformCtx,
+    pub params: &'a GenericParams,
+    pub locals: &'a mut Locals,
+    /// Span of the statement being explored
+    pub span: Span,
+    /// Statements to prepend to the statement currently being explored.
+    pub statements: Vec<ullbc_ast::Statement>,
+}
+
+impl BodyTransformCtx for UllbcStatementTransformCtx<'_> {
+    fn get_ctx(&self) -> &TransformCtx {
+        self.ctx
+    }
+    fn get_params(&self) -> &GenericParams {
+        self.params
+    }
+    fn get_locals_mut(&mut self) -> &mut Locals {
+        self.locals
+    }
+
+    fn insert_storage_live_stmt(&mut self, local: LocalId) {
+        self.statements.push(ullbc_ast::Statement::new(
+            self.span,
+            ullbc_ast::StatementKind::StorageLive(local),
+        ));
+    }
+
+    fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
+        self.statements.push(ullbc_ast::Statement::new(
+            self.span,
+            ullbc_ast::StatementKind::Assign(place, rvalue),
+        ));
+    }
+
+    fn insert_storage_dead_stmt(&mut self, local: LocalId) {
+        self.statements.push(ullbc_ast::Statement::new(
+            self.span,
+            ullbc_ast::StatementKind::StorageDead(local),
+        ));
+    }
+}
+
+impl FunDecl {
+    pub fn transform_ullbc_statements(
+        &mut self,
+        ctx: &mut TransformCtx,
+        mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Statement),
+    ) {
+        if let Ok(body) = &mut self.body {
+            let params = &self.signature.generics;
+            let body = body.as_unstructured_mut().unwrap();
+            body.body.iter_mut().for_each(|block| {
+                block.transform(|st: &mut ullbc_ast::Statement| {
+                    let mut ctx = UllbcStatementTransformCtx {
+                        ctx,
+                        params,
+                        locals: &mut body.locals,
+                        span: st.span,
+                        statements: Vec::new(),
+                    };
+                    f(&mut ctx, st);
+                    ctx.statements
+                });
+            });
+        }
+    }
+}

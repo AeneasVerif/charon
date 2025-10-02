@@ -23,13 +23,13 @@ fn main()
     let @7: (); // anonymous local
     let @8: &'_ (Slice<u8>); // anonymous local
 
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
     @0 := ()
     storage_live(y@1)
+    storage_live(@6)
     @6 := [const (0 : u8), const (1 : u8), const (2 : u8)]
+    storage_live(@7)
     @7 := ()
+    storage_live(@8)
     @8 := &@6
     y@1 := move (@8)
     storage_live(z@2)

@@ -317,7 +317,6 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     storage_live(pieces@4)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
     @0 := ()
     storage_live(@6)
     @6 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@1))
@@ -336,6 +335,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
             @7 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@4))
             storage_live(@8)
             @8 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@9))
+            storage_live(@11)
             @11 := Option::None {  }
             @3 := Arguments { pieces: move (@7), fmt: move (@11), args: move (@8) }
             storage_dead(@8)
@@ -358,7 +358,6 @@ pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[Si
     let @6: Option<Alignment>[Sized<Alignment>]; // anonymous local
 
     storage_live(@4)
-    storage_live(@6)
     storage_live(@3)
     @3 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@1))
     switch move (@3) {
@@ -366,6 +365,7 @@ pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[Si
         },
         _ => {
             storage_dead(@3)
+            storage_live(@6)
             @6 := Option::None {  }
             @0 := move (@6)
             return
@@ -555,8 +555,6 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@22)
     storage_live(@23)
     storage_live(@24)
-    storage_live(@25)
-    storage_live(@26)
     @0 := ()
     storage_live(@4)
     storage_live(@12)
@@ -576,6 +574,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
             @15 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@19))
             storage_live(@16)
             @16 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@21))
+            storage_live(@25)
             @25 := Option::None {  }
             @10 := Arguments { pieces: move (@15), fmt: move (@25), args: move (@16) }
             storage_dead(@16)
@@ -627,6 +626,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     @17 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@7))
     storage_live(@18)
     @18 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@23))
+    storage_live(@26)
     @26 := Option::None {  }
     @6 := Arguments { pieces: move (@17), fmt: move (@26), args: move (@18) }
     storage_dead(@18)
@@ -676,8 +676,6 @@ where
     storage_live(@6)
     storage_live(@12)
     storage_live(@13)
-    storage_live(@17)
-    storage_live(@18)
     storage_live(@3)
     storage_live(self@4)
     self@4 := @TraitClause0::allocate<'_>(move (self@1), move (layout@2))
@@ -688,7 +686,9 @@ where
         Result::Err => {
             storage_dead(v@10)
             storage_dead(self@4)
+            storage_live(@17)
             @17 := AllocError {  }
+            storage_live(@18)
             @18 := Result::Err { 0: move (@17) }
             @0 := move (@18)
             storage_dead(@3)
@@ -759,13 +759,13 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
 
     storage_live(@4)
     storage_live(@5)
-    storage_live(@6)
     @5 := []
     @4 := &@5
     storage_live(@2)
     @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
     storage_live(@3)
     @3 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@4))
+    storage_live(@6)
     @6 := Option::None {  }
     @0 := Arguments { pieces: move (@2), fmt: move (@6), args: move (@3) }
     storage_dead(@3)
@@ -947,9 +947,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_live(@42)
     storage_live(@43)
     storage_live(@44)
-    storage_live(@45)
-    storage_live(@46)
-    storage_live(@47)
     @0 := ()
     storage_live(@6)
     storage_live(zero_size@7)
@@ -980,6 +977,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     @24 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@35))
                     storage_live(@25)
                     @25 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@37))
+                    storage_live(@45)
                     @45 := Option::None {  }
                     @19 := Arguments { pieces: move (@24), fmt: move (@45), args: move (@25) }
                     storage_dead(@25)
@@ -1020,6 +1018,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@41))
                                 storage_live(@32)
                                 @32 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@43))
+                                storage_live(@47)
                                 @47 := Option::None {  }
                                 @27 := Arguments { pieces: move (@31), fmt: move (@47), args: move (@32) }
                                 storage_dead(@32)
@@ -1056,6 +1055,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                         storage_live(@34)
                                         @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                        storage_live(@46)
                                         @46 := Option::None {  }
                                         @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                         storage_dead(@34)
@@ -1090,6 +1090,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                             storage_live(@34)
                                             @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                            storage_live(@46)
                                             @46 := Option::None {  }
                                             @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                             storage_dead(@34)
@@ -1112,6 +1113,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                         storage_live(@34)
                                         @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                        storage_live(@46)
                                         @46 := Option::None {  }
                                         @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                         storage_dead(@34)
@@ -1137,6 +1139,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                 storage_live(@34)
                                 @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                storage_live(@46)
                                 @46 := Option::None {  }
                                 @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                 storage_dead(@34)
@@ -1175,6 +1178,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@41))
                                     storage_live(@32)
                                     @32 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@43))
+                                    storage_live(@47)
                                     @47 := Option::None {  }
                                     @27 := Arguments { pieces: move (@31), fmt: move (@47), args: move (@32) }
                                     storage_dead(@32)
@@ -1211,6 +1215,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                             storage_live(@34)
                                             @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                            storage_live(@46)
                                             @46 := Option::None {  }
                                             @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                             storage_dead(@34)
@@ -1245,6 +1250,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                                 @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                                 storage_live(@34)
                                                 @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                                storage_live(@46)
                                                 @46 := Option::None {  }
                                                 @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                                 storage_dead(@34)
@@ -1267,6 +1273,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                             storage_live(@34)
                                             @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                            storage_live(@46)
                                             @46 := Option::None {  }
                                             @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                             storage_dead(@34)
@@ -1292,6 +1299,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                                     storage_live(@34)
                                     @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                                    storage_live(@46)
                                     @46 := Option::None {  }
                                     @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                                     storage_dead(@34)
@@ -1316,6 +1324,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                             storage_live(@34)
                             @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                            storage_live(@46)
                             @46 := Option::None {  }
                             @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                             storage_dead(@34)
@@ -1342,6 +1351,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
                     storage_live(@34)
                     @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+                    storage_live(@46)
                     @46 := Option::None {  }
                     @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
                     storage_dead(@34)
@@ -1374,6 +1384,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             @24 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@35))
             storage_live(@25)
             @25 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@37))
+            storage_live(@45)
             @45 := Option::None {  }
             @19 := Arguments { pieces: move (@24), fmt: move (@45), args: move (@25) }
             storage_dead(@25)
@@ -1413,6 +1424,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     @31 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@41))
                     storage_live(@32)
                     @32 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@43))
+                    storage_live(@47)
                     @47 := Option::None {  }
                     @27 := Arguments { pieces: move (@31), fmt: move (@47), args: move (@32) }
                     storage_dead(@32)
@@ -1498,6 +1510,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     @33 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@16))
     storage_live(@34)
     @34 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@39))
+    storage_live(@46)
     @46 := Option::None {  }
     @15 := Arguments { pieces: move (@33), fmt: move (@46), args: move (@34) }
     storage_dead(@34)
@@ -1535,8 +1548,6 @@ where
     storage_live(@12)
     storage_live(@14)
     storage_live(@15)
-    storage_live(@19)
-    storage_live(@20)
     storage_live(@5)
     storage_live(self@6)
     self@6 := @TraitClause0::allocate<'_>(copy (self@1), move (new_layout@4))
@@ -1547,7 +1558,9 @@ where
         Result::Err => {
             storage_dead(v@13)
             storage_dead(self@6)
+            storage_live(@19)
             @19 := AllocError {  }
+            storage_live(@20)
             @20 := Result::Err { 0: move (@19) }
             @0 := move (@20)
             storage_dead(@5)
@@ -1623,8 +1636,6 @@ where
     storage_live(@12)
     storage_live(@14)
     storage_live(@15)
-    storage_live(@19)
-    storage_live(@20)
     storage_live(@5)
     storage_live(self@6)
     self@6 := @TraitClause0::allocate_zeroed<'_>(copy (self@1), move (new_layout@4))
@@ -1635,7 +1646,9 @@ where
         Result::Err => {
             storage_dead(v@13)
             storage_dead(self@6)
+            storage_live(@19)
             @19 := AllocError {  }
+            storage_live(@20)
             @20 := Result::Err { 0: move (@19) }
             @0 := move (@20)
             storage_dead(@5)
@@ -1711,8 +1724,6 @@ where
     storage_live(@12)
     storage_live(@14)
     storage_live(@15)
-    storage_live(@19)
-    storage_live(@20)
     storage_live(@5)
     storage_live(self@6)
     self@6 := @TraitClause0::allocate<'_>(copy (self@1), copy (new_layout@4))
@@ -1723,7 +1734,9 @@ where
         Result::Err => {
             storage_dead(v@13)
             storage_dead(self@6)
+            storage_live(@19)
             @19 := AllocError {  }
+            storage_live(@20)
             @20 := Result::Err { 0: move (@19) }
             @0 := move (@20)
             storage_dead(@5)
@@ -1962,7 +1975,6 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     storage_live(pieces@4)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
     @0 := ()
     storage_live(@6)
     @6 := transmute<*mut (), usize>(copy (ptr@1))
@@ -1985,6 +1997,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     @7 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@4))
     storage_live(@8)
     @8 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@9))
+    storage_live(@11)
     @11 := Option::None {  }
     @3 := Arguments { pieces: move (@7), fmt: move (@11), args: move (@8) }
     storage_dead(@8)
@@ -2010,7 +2023,6 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     storage_live(pieces@4)
     storage_live(@8)
     storage_live(@9)
-    storage_live(@10)
     @0 := ()
     if copy (cond@1) {
     }
@@ -2025,6 +2037,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
         @6 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@4))
         storage_live(@7)
         @7 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@8))
+        storage_live(@10)
         @10 := Option::None {  }
         @3 := Arguments { pieces: move (@6), fmt: move (@10), args: move (@7) }
         storage_dead(@7)
@@ -2054,7 +2067,6 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     storage_live(pieces@6)
     storage_live(@10)
     storage_live(@11)
-    storage_live(@12)
     @0 := ()
     storage_live(@3)
     @3 := is_size_align_valid(move (size@1), move (align@2))
@@ -2071,6 +2083,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
         @8 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@6))
         storage_live(@9)
         @9 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@10))
+        storage_live(@12)
         @12 := Option::None {  }
         @5 := Arguments { pieces: move (@8), fmt: move (@12), args: move (@9) }
         storage_dead(@9)
@@ -2180,11 +2193,6 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     storage_live(@48)
     storage_live(@50)
     storage_live(@57)
-    storage_live(@61)
-    storage_live(@62)
-    storage_live(@63)
-    storage_live(@64)
-    storage_live(@65)
     storage_live(self@5)
     self@5 := &layout@2
     size@4 := copy ((layout@2).size)
@@ -2332,10 +2340,13 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
                 },
             }
             storage_dead(@49)
+            storage_live(@61)
             @61 := Option::None {  }
             self@14 := move (@61)
             storage_live(v@53)
+            storage_live(@62)
             @62 := AllocError {  }
+            storage_live(@63)
             @63 := Result::Err { 0: move (@62) }
             self@13 := move (@63)
             storage_dead(v@53)
@@ -2343,7 +2354,9 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
             storage_live(v@54)
             storage_dead(v@54)
             storage_dead(self@13)
+            storage_live(@64)
             @64 := AllocError {  }
+            storage_live(@65)
             @65 := Result::Err { 0: move (@64) }
             @0 := move (@65)
             storage_dead(@12)
@@ -2507,13 +2520,6 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     storage_live(@69)
     storage_live(@73)
     storage_live(@74)
-    storage_live(@82)
-    storage_live(@83)
-    storage_live(@84)
-    storage_live(@85)
-    storage_live(@86)
-    storage_live(@87)
-    storage_live(@88)
     storage_live(self@7)
     self@7 := &old_layout@3
     old_size@6 := copy ((old_layout@3).size)
@@ -2577,7 +2583,9 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                     Result::Err => {
                         storage_dead(v@72)
                         storage_dead(self@34)
+                        storage_live(@82)
                         @82 := AllocError {  }
+                        storage_live(@83)
                         @83 := Result::Err { 0: move (@82) }
                         @0 := move (@83)
                         storage_dead(@33)
@@ -2686,6 +2694,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 switch move (@59) {
                     0 : usize => {
                         storage_dead(@59)
+                        storage_live(@84)
                         @84 := Option::None {  }
                         self@25 := move (@84)
                     },
@@ -2736,6 +2745,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 switch move (@59) {
                     0 : usize => {
                         storage_dead(@59)
+                        storage_live(@84)
                         @84 := Option::None {  }
                         self@25 := move (@84)
                     },
@@ -2760,7 +2770,9 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
             storage_live(v@62)
             match self@25 {
                 Option::None => {
+                    storage_live(@85)
                     @85 := AllocError {  }
+                    storage_live(@86)
                     @86 := Result::Err { 0: move (@85) }
                     self@24 := move (@86)
                 },
@@ -2778,7 +2790,9 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 Result::Err => {
                     storage_dead(v@63)
                     storage_dead(self@24)
+                    storage_live(@87)
                     @87 := AllocError {  }
+                    storage_live(@88)
                     @88 := Result::Err { 0: move (@87) }
                     @0 := move (@88)
                     storage_dead(@23)
@@ -3108,19 +3122,6 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     storage_live(@87)
     storage_live(@91)
     storage_live(@92)
-    storage_live(@101)
-    storage_live(@102)
-    storage_live(@103)
-    storage_live(@104)
-    storage_live(@105)
-    storage_live(@106)
-    storage_live(@107)
-    storage_live(@108)
-    storage_live(@109)
-    storage_live(@110)
-    storage_live(@111)
-    storage_live(@112)
-    storage_live(@113)
     storage_live(self@6)
     self@6 := &new_layout@4
     new_size@5 := copy ((new_layout@4).size)
@@ -3213,6 +3214,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                     switch move (@80) {
                         0 : usize => {
                             storage_dead(@80)
+                            storage_live(@104)
                             @104 := Option::None {  }
                             self@28 := move (@104)
                         },
@@ -3263,6 +3265,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                     switch move (@80) {
                         0 : usize => {
                             storage_dead(@80)
+                            storage_live(@104)
                             @104 := Option::None {  }
                             self@28 := move (@104)
                         },
@@ -3287,7 +3290,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                 storage_live(v@83)
                 match self@28 {
                     Option::None => {
+                        storage_live(@107)
                         @107 := AllocError {  }
+                        storage_live(@108)
                         @108 := Result::Err { 0: move (@107) }
                         self@27 := move (@108)
                         storage_dead(v@83)
@@ -3328,7 +3333,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                         return
                                     },
                                     ControlFlow::Break => {
+                                        storage_live(@112)
                                         @112 := AllocError {  }
+                                        storage_live(@113)
                                         @113 := Result::Err { 0: move (@112) }
                                         @0 := move (@113)
                                         storage_dead(@26)
@@ -3338,8 +3345,11 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 }
                             },
                             Result::Err => {
+                                storage_live(@109)
                                 @109 := AllocError {  }
+                                storage_live(@110)
                                 @110 := Result::Err { 0: move (@109) }
+                                storage_live(@111)
                                 @111 := ControlFlow::Break { 0: move (@110) }
                                 @26 := move (@111)
                                 storage_dead(v@84)
@@ -3373,7 +3383,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                         return
                                     },
                                     ControlFlow::Break => {
+                                        storage_live(@112)
                                         @112 := AllocError {  }
+                                        storage_live(@113)
                                         @113 := Result::Err { 0: move (@112) }
                                         @0 := move (@113)
                                         storage_dead(@26)
@@ -3425,7 +3437,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                         return
                                     },
                                     ControlFlow::Break => {
+                                        storage_live(@112)
                                         @112 := AllocError {  }
+                                        storage_live(@113)
                                         @113 := Result::Err { 0: move (@112) }
                                         @0 := move (@113)
                                         storage_dead(@26)
@@ -3435,8 +3449,11 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 }
                             },
                             Result::Err => {
+                                storage_live(@109)
                                 @109 := AllocError {  }
+                                storage_live(@110)
                                 @110 := Result::Err { 0: move (@109) }
+                                storage_live(@111)
                                 @111 := ControlFlow::Break { 0: move (@110) }
                                 @26 := move (@111)
                                 storage_dead(v@84)
@@ -3470,7 +3487,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                         return
                                     },
                                     ControlFlow::Break => {
+                                        storage_live(@112)
                                         @112 := AllocError {  }
+                                        storage_live(@113)
                                         @113 := Result::Err { 0: move (@112) }
                                         @0 := move (@113)
                                         storage_dead(@26)
@@ -3554,7 +3573,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 return
                             },
                             ControlFlow::Break => {
+                                storage_live(@105)
                                 @105 := AllocError {  }
+                                storage_live(@106)
                                 @106 := Result::Err { 0: move (@105) }
                                 @0 := move (@106)
                                 storage_dead(@32)
@@ -3563,8 +3584,11 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                         }
                     },
                     Result::Err => {
+                        storage_live(@101)
                         @101 := AllocError {  }
+                        storage_live(@102)
                         @102 := Result::Err { 0: move (@101) }
+                        storage_live(@103)
                         @103 := ControlFlow::Break { 0: move (@102) }
                         @32 := move (@103)
                         storage_dead(v@90)
@@ -3626,7 +3650,9 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 return
                             },
                             ControlFlow::Break => {
+                                storage_live(@105)
                                 @105 := AllocError {  }
+                                storage_live(@106)
                                 @106 := Result::Err { 0: move (@105) }
                                 @0 := move (@106)
                                 storage_dead(@32)
@@ -3907,8 +3933,6 @@ where
     let @9: Global; // anonymous local
 
     storage_live(@4)
-    storage_live(@8)
-    storage_live(@9)
     storage_live(@2)
     storage_live(@3)
     storage_live(@6)
@@ -3926,9 +3950,11 @@ where
     @3 := NonNull { pointer: copy (@6) }
     storage_dead(@7)
     storage_dead(@6)
+    storage_live(@8)
     @8 := PhantomData {  }
     @2 := Unique { pointer: move (@3), _marker: move (@8) }
     storage_dead(@3)
+    storage_live(@9)
     @9 := Global {  }
     @0 := Box { 0: move (@2), 1: move (@9) }
     storage_dead(@2)

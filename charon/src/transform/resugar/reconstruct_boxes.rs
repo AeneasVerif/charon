@@ -124,38 +124,31 @@ impl UllbcPass for Transform {
             }
 
             let first_block = b.body.get_mut(candidate_block_idx).unwrap();
-            let number_statements = first_block.statements.len();
+            // Remove the `size_of` and `align_of` assignments.
+            first_block.statements.pop();
+            first_block.statements.pop();
             let value_to_write = match value_to_write {
-                Rvalue::Use(op) => {
-                    first_block
-                        .statements
-                        .get_mut(number_statements - 2)
-                        .unwrap()
-                        .kind = StatementKind::Nop;
-                    op
-                }
+                Rvalue::Use(op) => op,
                 _ => {
                     // We need to create a new variable to store the value.
                     let name = b.locals[at_5].name.clone();
                     let ty = box_generics.types[0].clone();
                     let var = b.locals.new_var(name, ty);
-                    let st = Statement::new(
+                    first_block.statements.push(Statement::new(
+                        assign_span,
+                        StatementKind::StorageLive(var.as_local().unwrap()),
+                    ));
+                    first_block.statements.push(Statement::new(
                         assign_span,
                         StatementKind::Assign(var.clone(), value_to_write),
-                    );
-                    // We overide the @2 := size_of<i32> statement with the rvalue assignment
-                    *first_block
-                        .statements
-                        .get_mut(number_statements - 2)
-                        .unwrap() = st;
+                    ));
                     Operand::Move(var)
                 }
             };
-            first_block
-                .statements
-                .get_mut(number_statements - 1)
-                .unwrap()
-                .kind = StatementKind::StorageLive(at_5);
+            first_block.statements.push(Statement::new(
+                assign_span,
+                StatementKind::StorageLive(at_5),
+            ));
             first_block.terminator.kind = TerminatorKind::Call {
                 call: Call {
                     func: FnOperand::Regular(FnPtr {

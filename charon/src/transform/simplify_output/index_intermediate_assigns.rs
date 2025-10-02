@@ -34,9 +34,8 @@
 //! ```
 
 use crate::transform::TransformCtx;
+use crate::transform::ctx::{BodyTransformCtx, UllbcPass};
 use crate::ullbc_ast::*;
-
-use crate::transform::ctx::UllbcPass;
 
 fn contains_index_proj<T: BodyVisitable>(x: &T) -> bool {
     let mut contains_index = false;
@@ -64,29 +63,21 @@ impl Rvalue {
 pub struct Transform;
 
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        for block in &mut b.body {
-            block.transform(|st: &mut Statement| {
-                match &mut st.kind {
-                    // Introduce an intermediate statement if both the rhs and the lhs contain an
-                    // "index" projection element (to avoid introducing too many intermediate
-                    // assignments).
-                    StatementKind::Assign(lhs, rhs)
-                        if lhs.contains_index_proj() && rhs.contains_index_proj() =>
-                    {
-                        // Fresh local variable for the temporary assignment
-                        let tmp_var = b.locals.new_var(None, lhs.ty().clone());
-                        let tmp_rhs =
-                            std::mem::replace(rhs, Rvalue::Use(Operand::Move(tmp_var.clone())));
-                        // Introduce the intermediate let-binding
-                        vec![Statement::new(
-                            st.span,
-                            StatementKind::Assign(tmp_var, tmp_rhs),
-                        )]
-                    }
-                    _ => vec![],
-                }
-            });
-        }
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+        decl.transform_ullbc_statements(ctx, |ctx, st: &mut Statement| {
+            // Introduce an intermediate statement if both the rhs and the lhs contain an
+            // "index" projection element (to avoid introducing too many intermediate
+            // assignments).
+            if let StatementKind::Assign(lhs, rhs) = &mut st.kind
+                && lhs.contains_index_proj()
+                && rhs.contains_index_proj()
+            {
+                // Fresh local variable for the temporary assignment
+                let tmp_var = ctx.fresh_var(None, lhs.ty().clone());
+                let tmp_rhs = std::mem::replace(rhs, Rvalue::Use(Operand::Move(tmp_var.clone())));
+                // Introduce the intermediate let-binding
+                ctx.insert_assn_stmt(tmp_var, tmp_rhs)
+            }
+        });
     }
 }

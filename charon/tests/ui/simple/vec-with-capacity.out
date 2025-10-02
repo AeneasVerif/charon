@@ -144,12 +144,12 @@ where
     let @4: Global; // anonymous local
     let @5: PhantomData<T>; // anonymous local
 
-    storage_live(@4)
-    storage_live(@5)
     storage_live(@2)
     storage_live(@3)
+    storage_live(@4)
     @4 := Global {  }
     @3 := with_capacity_in<Global>[Sized<Global>](move (capacity@1), move (@4), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
+    storage_live(@5)
     @5 := PhantomData {  }
     @2 := RawVec { 0: move (@3), 1: move (@5) }
     storage_dead(@3)

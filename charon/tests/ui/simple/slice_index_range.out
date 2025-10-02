@@ -109,13 +109,13 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
 
     storage_live(@4)
     storage_live(@5)
-    storage_live(@6)
     @5 := []
     @4 := &@5
     storage_live(@2)
     @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
     storage_live(@3)
     @3 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@4))
+    storage_live(@6)
     @6 := Option::None {  }
     @0 := Arguments { pieces: move (@2), fmt: move (@6), args: move (@3) }
     storage_dead(@3)
@@ -416,7 +416,6 @@ where
     storage_live(rhs@5)
     storage_live(new_len@6)
     storage_live(@9)
-    storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -425,6 +424,7 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
+        storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
     }
@@ -460,6 +460,7 @@ where
         else {
             storage_dead(@8)
             storage_dead(@3)
+            storage_live(@16)
             @16 := Option::None {  }
             @0 := move (@16)
         }
@@ -495,7 +496,6 @@ where
     storage_live(rhs@5)
     storage_live(new_len@6)
     storage_live(@9)
-    storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -504,6 +504,7 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
+        storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
     }
@@ -539,6 +540,7 @@ where
         else {
             storage_dead(@8)
             storage_dead(@3)
+            storage_live(@16)
             @16 := Option::None {  }
             @0 := move (@16)
         }
@@ -570,7 +572,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     storage_live(pieces@8)
     storage_live(@12)
     storage_live(@13)
-    storage_live(@14)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -597,6 +598,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
+    storage_live(@14)
     @14 := Option::None {  }
     @7 := Arguments { pieces: move (@10), fmt: move (@14), args: move (@11) }
     storage_dead(@11)
@@ -681,7 +683,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     storage_live(pieces@8)
     storage_live(@12)
     storage_live(@13)
-    storage_live(@14)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -708,6 +709,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
+    storage_live(@14)
     @14 := Option::None {  }
     @7 := Arguments { pieces: move (@10), fmt: move (@14), args: move (@11) }
     storage_dead(@11)
@@ -967,8 +969,6 @@ where
     storage_live(self@8)
     storage_live(new_len@15)
     storage_live(self@19)
-    storage_live(@20)
-    storage_live(@21)
     storage_live(@3)
     storage_live(self@5)
     self@5 := &self@1
@@ -976,6 +976,7 @@ where
     self@4 := copy ((self@1).end)
     @3 := copy (self@4) == copy (MAX)
     if move (@3) {
+        storage_live(@20)
         @20 := Option::None {  }
         @0 := move (@20)
     }
@@ -999,6 +1000,7 @@ where
         @14 := copy (exclusive_end@6) < copy (self@8)
         if move (@14) {
             storage_dead(@14)
+            storage_live(@21)
             @21 := Option::None {  }
             @0 := move (@21)
             storage_dead(@9)
@@ -1030,6 +1032,7 @@ where
             }
             else {
                 storage_dead(@10)
+                storage_live(@21)
                 @21 := Option::None {  }
                 @0 := move (@21)
             }
@@ -1074,8 +1077,6 @@ where
     storage_live(self@8)
     storage_live(new_len@15)
     storage_live(self@19)
-    storage_live(@20)
-    storage_live(@21)
     storage_live(@3)
     storage_live(self@5)
     self@5 := &self@1
@@ -1083,6 +1084,7 @@ where
     self@4 := copy ((self@1).end)
     @3 := copy (self@4) == copy (MAX)
     if move (@3) {
+        storage_live(@20)
         @20 := Option::None {  }
         @0 := move (@20)
     }
@@ -1106,6 +1108,7 @@ where
         @14 := copy (exclusive_end@6) < copy (self@8)
         if move (@14) {
             storage_dead(@14)
+            storage_live(@21)
             @21 := Option::None {  }
             @0 := move (@21)
             storage_dead(@9)
@@ -1137,6 +1140,7 @@ where
             }
             else {
                 storage_dead(@10)
+                storage_live(@21)
                 @21 := Option::None {  }
                 @0 := move (@21)
             }

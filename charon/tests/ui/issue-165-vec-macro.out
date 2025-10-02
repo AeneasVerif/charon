@@ -141,11 +141,11 @@ fn foo()
     let _v2@5: Vec<i32>[Sized<i32>, Sized<Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
-    storage_live(@6)
     @0 := ()
     storage_live(_v@1)
     storage_live(@2)
     storage_live(@3)
+    storage_live(@6)
     @6 := [const (1 : i32)]
     storage_live(@4)
     @4 := @BoxNew<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>](move (@6))
@@ -181,11 +181,11 @@ pub fn bar()
     let @5: Foo; // anonymous local
     let @6: Array<Foo, 1 : usize>; // anonymous local
 
-    storage_live(@6)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
+    storage_live(@6)
     @6 := [move (@5)]
     storage_live(@4)
     @4 := @BoxNew<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>](move (@6))

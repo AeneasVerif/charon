@@ -266,7 +266,6 @@ where
     storage_live(rhs@5)
     storage_live(new_len@6)
     storage_live(@9)
-    storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -275,6 +274,7 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
+        storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
     }
@@ -310,6 +310,7 @@ where
         else {
             storage_dead(@8)
             storage_dead(@3)
+            storage_live(@16)
             @16 := Option::None {  }
             @0 := move (@16)
         }
@@ -345,7 +346,6 @@ where
     storage_live(rhs@5)
     storage_live(new_len@6)
     storage_live(@9)
-    storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -354,6 +354,7 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
+        storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
     }
@@ -389,6 +390,7 @@ where
         else {
             storage_dead(@8)
             storage_dead(@3)
+            storage_live(@16)
             @16 := Option::None {  }
             @0 := move (@16)
         }
@@ -426,7 +428,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
 
     storage_live(@6)
     storage_live(pieces@8)
-    storage_live(@12)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -451,6 +452,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
+    storage_live(@12)
     @12 := Option::None {  }
     @7 := Arguments { 0: move (@10), 1: move (@12), 2: move (@11) }
     storage_dead(@11)
@@ -531,7 +533,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
 
     storage_live(@6)
     storage_live(pieces@8)
-    storage_live(@12)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -556,6 +557,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
     storage_live(@11)
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
+    storage_live(@12)
     @12 := Option::None {  }
     @7 := Arguments { 0: move (@10), 1: move (@12), 2: move (@11) }
     storage_dead(@11)
