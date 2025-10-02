@@ -40,6 +40,13 @@ impl Body {
             None
         }
     }
+
+    pub fn locals(&self) -> &Locals {
+        match self {
+            Body::Structured(body) => &body.locals,
+            Body::Unstructured(body) => &body.locals,
+        }
+    }
 }
 
 impl Locals {
