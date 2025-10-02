@@ -107,7 +107,6 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
     let @5: Array<Argument<'_>, 0 : usize>; // anonymous local
     let @6: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
-    storage_live(@4)
     storage_live(@5)
     @5 := []
     @4 := &@5
@@ -341,11 +340,10 @@ fn slice_end_index_overflow_fail() -> !
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
 
-    storage_live(@4)
-    storage_live(@5)
     storage_live(@6)
     @6 := [const ("attempted to index slice up to maximum usize")]
     @5 := &@6
+    storage_live(@4)
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -570,8 +568,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
 
     storage_live(@6)
     storage_live(pieces@8)
-    storage_live(@12)
-    storage_live(@13)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -588,6 +584,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked::pr
     }
     else {
     }
+    storage_live(@13)
     @13 := []
     @12 := &@13
     storage_live(@7)
@@ -681,8 +678,6 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
 
     storage_live(@6)
     storage_live(pieces@8)
-    storage_live(@12)
-    storage_live(@13)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -699,6 +694,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
     }
     else {
     }
+    storage_live(@13)
     @13 := []
     @12 := &@13
     storage_live(@7)
