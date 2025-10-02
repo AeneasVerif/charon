@@ -17,7 +17,7 @@ impl UllbcPass for Transform {
                 let block = &mut body.body[0];
                 let return_place = body.locals.return_place();
                 let assign_st = Statement::new(
-                    block.terminator.span,
+                    Span::dummy(),
                     StatementKind::Assign(return_place, Rvalue::unit_value()),
                 );
                 block.statements.insert(0, assign_st);

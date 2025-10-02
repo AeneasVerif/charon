@@ -1028,12 +1028,12 @@ pub fn take_all()
     let @15: &'_ mut (Array<u32, 2 : usize>); // anonymous local
     let @16: &'_ mut (Array<u32, 2 : usize>); // anonymous local
 
-    // x is deep copied (copy node appears in Charon, followed by a move)
     @0 := ()
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     storage_live(@2)
     storage_live(@3)
+    // x is deep copied (copy node appears in Charon, followed by a move)
     @3 := copy (x@1)
     @2 := take_array(move (@3))
     storage_dead(@3)
@@ -1415,7 +1415,6 @@ pub fn range_all()
     let @6: &'_ mut (Array<u32, 4 : usize>); // anonymous local
     let @7: Range<usize>[Sized<usize>]; // anonymous local
 
-    // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
     @0 := ()
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 4 : usize>(const (0 : u32))
@@ -1424,6 +1423,7 @@ pub fn range_all()
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
+    // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
     @6 := &mut x@1
     storage_live(@7)
     @7 := Range { start: const (1 : usize), end: const (3 : usize) }
@@ -1511,8 +1511,6 @@ pub fn non_copyable_array()
     let @4: (); // anonymous local
     let @5: Array<AB, 2 : usize>; // anonymous local
 
-    // x is moved (not deep copied!)
-    // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
     @0 := ()
     storage_live(x@1)
     storage_live(@2)
@@ -1524,6 +1522,8 @@ pub fn non_copyable_array()
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
+    // x is moved (not deep copied!)
+    // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
     @5 := move (x@1)
     @4 := take_array_t(move (@5))
     storage_dead(@5)
