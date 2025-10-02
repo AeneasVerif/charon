@@ -83,6 +83,11 @@ fn type_layout() -> anyhow::Result<()> {
         }
 
         enum UninhabitedVariant {
+            A(!),
+            B(u32),
+        }
+
+        enum UninhabitedVariant2 {
             A(!, u32),
             B(u32),
         }
@@ -140,6 +145,16 @@ fn type_layout() -> anyhow::Result<()> {
             First = 42,
             Second = 18446744073709551615,
         }
+
+        type SingleVariantButNonZero = Result<!, ()>;
+
+        type NonAdtAlias<T> = T;
+
+        type Tuple = (u32, u32);
+
+        type Usize = usize;
+
+        type Ref<'a> = &'a mut u32;
         "#,
         &[],
     )?;

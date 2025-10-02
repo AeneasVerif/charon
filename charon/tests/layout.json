@@ -248,7 +248,7 @@
       }
     ]
   },
-  "test_crate::UninhabitedVariant": {
+  "test_crate::UninhabitedVariant2": {
     "size": 8,
     "align": 4,
     "discriminant_layout": {
@@ -587,5 +587,36 @@
         }
       }
     ]
+  },
+  "test_crate::NonAdtAlias": null,
+  "test_crate::Tuple": {
+    "size": 8,
+    "align": 4,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          4
+        ],
+        "uninhabited": false,
+        "tag": null
+      }
+    ]
+  },
+  "test_crate::Usize": {
+    "size": 8,
+    "align": 8,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": []
+  },
+  "test_crate::Ref": {
+    "size": 8,
+    "align": 8,
+    "discriminant_layout": null,
+    "uninhabited": false,
+    "variant_layouts": []
   }
 }
