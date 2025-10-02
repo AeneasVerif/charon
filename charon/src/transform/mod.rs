@@ -48,7 +48,6 @@ mod simplify_output {
     pub mod inline_promoted_consts;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
-    pub mod remove_drop_never;
     pub mod remove_nops;
     pub mod remove_unit_locals;
     pub mod remove_unused_locals;
@@ -150,9 +149,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     UnstructuredBody(&finish_translation::insert_assign_return_unit::Transform),
     // # Micro-pass: remove locals of type `()` which show up a lot.
     UnstructuredBody(&simplify_output::remove_unit_locals::Transform),
-    // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
-    // is in preparation of the next transformation.
-    UnstructuredBody(&simplify_output::remove_drop_never::Transform),
 ];
 
 /// Body cleanup passes after control flow reconstruction.

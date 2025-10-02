@@ -35,8 +35,8 @@ fn call_my_panic()
     let @0: (); // return
     let @1: !; // anonymous local
 
-    storage_live(@1)
     @0 := ()
+    storage_live(@1)
     @1 := my_panic(const (0 : u32))
 }
 
