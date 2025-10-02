@@ -144,6 +144,7 @@ fn main()
     let @2: u8; // anonymous local
     let @3: closure; // anonymous local
 
+    @0 := ()
     storage_live(z@1)
     z@1 := NotCopy {  }
     storage_live(@2)
@@ -154,7 +155,6 @@ fn main()
     storage_dead(@2)
     @0 := ()
     storage_dead(z@1)
-    @0 := ()
     return
 }
 

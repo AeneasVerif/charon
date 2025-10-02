@@ -153,8 +153,8 @@ pub unsafe fn drop_in_place<T>(@1: *mut T)
     let @0: (); // return
     let to_drop@1: *mut T; // arg #1
 
-    @0 := drop_in_place<T>(move (to_drop@1))
     @0 := ()
+    @0 := drop_in_place<T>(move (to_drop@1))
     return
 }
 
@@ -219,6 +219,7 @@ where
     let len@4: usize; // local
     let @5: NonNull<u8>; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     storage_live(data@3)
     storage_live(@5)
@@ -232,7 +233,6 @@ where
     storage_dead(data@3)
     @0 := drop_in_place<Slice<T>>(move (@2))
     storage_dead(@2)
-    @0 := ()
     return
 }
 
@@ -370,8 +370,8 @@ fn vec(@1: Vec<u32>[Sized<u32>, Sized<Global>])
     let _x@1: Vec<u32>[Sized<u32>, Sized<Global>]; // arg #1
 
     @0 := ()
-    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] _x@1
     @0 := ()
+    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] _x@1
     return
 }
 
@@ -394,8 +394,8 @@ where
     let _x@1: T; // arg #1
 
     @0 := ()
-    drop[Drop<T>] _x@1
     @0 := ()
+    drop[Drop<T>] _x@1
     return
 }
 

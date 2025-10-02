@@ -4,7 +4,6 @@ use crate::{
     formatter::*,
     gast,
     llbc_ast::{self as llbc, *},
-    reorder_decls::*,
     transform::utils::GenericsSource,
     ullbc_ast::{self as ullbc, *},
 };

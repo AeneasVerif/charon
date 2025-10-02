@@ -50,8 +50,8 @@ where
     let _msg@1: M; // arg #1
 
     @0 := ()
-    drop[Drop<M>] _msg@1
     @0 := ()
+    drop[Drop<M>] _msg@1
     return
 }
 
@@ -62,13 +62,13 @@ fn main()
     let @1: (); // anonymous local
     let @2: (); // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
     @1 := foo<()>[Sized<()>, Send<()>](move (@2))
     storage_dead(@2)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

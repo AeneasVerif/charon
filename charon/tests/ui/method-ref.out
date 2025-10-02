@@ -52,10 +52,10 @@ where
     let @0: (); // return
     let @1: for<'_0, '_1> @TraitClause1::cmp<'_0_0, '_0_1>; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (@TraitClause1::cmp<'_, '_>)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

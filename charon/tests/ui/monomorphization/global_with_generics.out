@@ -77,18 +77,18 @@ fn main()
     let @3: (); // anonymous local
     let @4: &'_ (Foo::<bool>); // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
+    @0 := ()
     storage_live(_b@1)
     storage_live(@2)
+    storage_live(@3)
     @3 := ()
+    storage_live(@4)
     @4 := &FooBool
     @2 := move (@4)
     _b@1 := copy ((*(@2)).value)
     storage_dead(@2)
     @0 := ()
     storage_dead(_b@1)
-    @0 := ()
     return
 }
 

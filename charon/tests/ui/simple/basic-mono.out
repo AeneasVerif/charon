@@ -49,13 +49,13 @@ fn main()
     let @1: (); // anonymous local
     let @2: (); // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := foo::<10 : usize>()
     storage_dead(@1)
     storage_live(@2)
     @2 := bar::<u32>()
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }

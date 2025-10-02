@@ -2,7 +2,6 @@ use crate::ast::*;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
 use crate::pretty::FmtWithCtx;
-use crate::reorder_decls::DeclarationsGroups;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -107,6 +106,41 @@ pub enum ItemRefMut<'ctx> {
     TraitDecl(&'ctx mut TraitDecl),
     TraitImpl(&'ctx mut TraitImpl),
 }
+
+/// A (group of) top-level declaration(s), properly reordered.
+/// "G" stands for "generic"
+#[derive(
+    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
+)]
+#[charon::variants_suffix("Group")]
+pub enum GDeclarationGroup<Id> {
+    /// A non-recursive declaration
+    NonRec(Id),
+    /// A (group of mutually) recursive declaration(s)
+    Rec(Vec<Id>),
+}
+
+/// A (group of) top-level declaration(s), properly reordered.
+#[derive(
+    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
+)]
+#[charon::variants_suffix("Group")]
+pub enum DeclarationGroup {
+    /// A type declaration group
+    Type(GDeclarationGroup<TypeDeclId>),
+    /// A function declaration group
+    Fun(GDeclarationGroup<FunDeclId>),
+    /// A global declaration group
+    Global(GDeclarationGroup<GlobalDeclId>),
+    ///
+    TraitDecl(GDeclarationGroup<TraitDeclId>),
+    ///
+    TraitImpl(GDeclarationGroup<TraitImplId>),
+    /// Anything that doesn't fit into these categories.
+    Mixed(GDeclarationGroup<ItemId>),
+}
+
+pub type DeclarationsGroups = Vec<DeclarationGroup>;
 
 #[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
 pub struct TargetInfo {

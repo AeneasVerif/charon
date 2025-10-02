@@ -300,13 +300,13 @@ fn call_fn()
     let @1: Option<&'_ (bool)>[Sized<&'_ (bool)>]; // anonymous local
     let @2: Option<&'_ (bool)>[Sized<&'_ (bool)>]; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := Option::None {  }
     @1 := external_use_item<'_, &'_ (bool), Option<&'_ (bool)>[Sized<&'_ (bool)>], &'_ (bool)>[Sized<&'_ (bool)>, {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}<'_, bool>[Sized<bool>], {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}<'_, &'_ (bool)>[Sized<&'_ (bool)>, {impl Copy for &'_0 (T)}<'_, bool>]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

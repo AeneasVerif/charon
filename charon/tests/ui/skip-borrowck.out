@@ -36,7 +36,6 @@ where
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
 
-    storage_live(@7)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -70,20 +69,17 @@ pub fn choose_test()
     let @6: &'_ mut (i32); // anonymous local
     let @7: &'_ mut (i32); // anonymous local
     let @8: i32; // anonymous local
-    let @9: (); // anonymous local
-    let @10: bool; // anonymous local
-    let @11: i32; // anonymous local
-    let @12: (); // anonymous local
+    let @9: bool; // anonymous local
+    let @10: i32; // anonymous local
+    let @11: bool; // anonymous local
+    let @12: i32; // anonymous local
     let @13: bool; // anonymous local
     let @14: i32; // anonymous local
-    let @15: (); // anonymous local
-    let @16: bool; // anonymous local
-    let @17: i32; // anonymous local
-    let @18: (); // anonymous local
-    let @19: bool; // anonymous local
-    let @20: i32; // anonymous local
+    let @15: bool; // anonymous local
+    let @16: i32; // anonymous local
 
     storage_live(@8)
+    @0 := ()
     storage_live(x@1)
     x@1 := const (0 : i32)
     storage_live(y@2)
@@ -106,24 +102,33 @@ pub fn choose_test()
     *(z@3) := move (@8)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
-    @11 := copy (*(z@3))
-    @10 := move (@11) == const (1 : i32)
-    if move (@10) {
+    @10 := copy (*(z@3))
+    @9 := move (@10) == const (1 : i32)
+    if move (@9) {
     }
     else {
-        storage_dead(@11)
+        storage_dead(@10)
         panic(core::panicking::panic)
     }
-    storage_dead(@11)
     storage_dead(@10)
     storage_dead(@9)
+    storage_live(@11)
     storage_live(@12)
+    // drop(z)
+    @12 := copy (x@1)
+    @11 := move (@12) == const (1 : i32)
+    if move (@11) {
+    }
+    else {
+        storage_dead(@12)
+        panic(core::panicking::panic)
+    }
+    storage_dead(@12)
+    storage_dead(@11)
     storage_live(@13)
     storage_live(@14)
-    // drop(z)
-    @14 := copy (x@1)
-    @13 := move (@14) == const (1 : i32)
+    @14 := copy (y@2)
+    @13 := move (@14) == const (0 : i32)
     if move (@13) {
     }
     else {
@@ -132,40 +137,22 @@ pub fn choose_test()
     }
     storage_dead(@14)
     storage_dead(@13)
-    storage_dead(@12)
     storage_live(@15)
     storage_live(@16)
-    storage_live(@17)
-    @17 := copy (y@2)
-    @16 := move (@17) == const (0 : i32)
-    if move (@16) {
+    @16 := copy (*(z@3))
+    @15 := move (@16) == const (1 : i32)
+    if move (@15) {
     }
     else {
-        storage_dead(@17)
+        storage_dead(@16)
         panic(core::panicking::panic)
     }
-    storage_dead(@17)
     storage_dead(@16)
     storage_dead(@15)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
-    @20 := copy (*(z@3))
-    @19 := move (@20) == const (1 : i32)
-    if move (@19) {
-    }
-    else {
-        storage_dead(@20)
-        panic(core::panicking::panic)
-    }
-    storage_dead(@20)
-    storage_dead(@19)
-    storage_dead(@18)
     @0 := ()
     storage_dead(z@3)
     storage_dead(y@2)
     storage_dead(x@1)
-    @0 := ()
     return
 }
 

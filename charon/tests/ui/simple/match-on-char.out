@@ -16,6 +16,7 @@ fn main()
     let @0: (); // return
     let @1: char; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (x)
     switch copy (@1) {
@@ -27,7 +28,6 @@ fn main()
         },
     }
     storage_dead(@1)
-    @0 := ()
     return
 }
 

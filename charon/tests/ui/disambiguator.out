@@ -34,6 +34,7 @@ fn nonzero_disambiguator()
     let @0: (); // return
     let @1: bool; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := const (true)
     if move (@1) {
@@ -43,7 +44,6 @@ fn nonzero_disambiguator()
         @0 := test_crate::nonzero_disambiguator::my_function#1()
     }
     storage_dead(@1)
-    @0 := ()
     return
 }
 

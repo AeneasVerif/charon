@@ -42,7 +42,6 @@ pub mod transform;
 // Re-export all the ast modules so we can keep the old import structure.
 pub use ast::{builtins, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
 pub use pretty::formatter;
-pub use transform::{graphs, reorder_decls, ullbc_to_llbc};
 
 /// The version of the crate, as defined in `Cargo.toml`.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

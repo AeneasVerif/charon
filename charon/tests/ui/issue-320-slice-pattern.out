@@ -25,6 +25,7 @@ fn slice_pat1()
     let @9: &'_ (Array<i32, 4 : usize>); // anonymous local
     let @10: &'_ (i32); // anonymous local
 
+    @0 := ()
     storage_live(array@1)
     array@1 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
     storage_live(_a@2)
@@ -50,7 +51,6 @@ fn slice_pat1()
     storage_dead(_b@3)
     storage_dead(_a@2)
     storage_dead(array@1)
-    @0 := ()
     return
 }
 
@@ -71,6 +71,7 @@ fn slice_pat2()
     let @11: &'_ (Array<i32, 4 : usize>); // anonymous local
     let @12: &'_ (i32); // anonymous local
 
+    @0 := ()
     storage_live(array_ref@1)
     storage_live(@2)
     storage_live(@3)
@@ -102,7 +103,6 @@ fn slice_pat2()
     storage_dead(_a@4)
     storage_dead(@3)
     storage_dead(array_ref@1)
-    @0 := ()
     return
 }
 
@@ -137,6 +137,7 @@ fn slice_pat3()
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    @0 := ()
     storage_live(slice@1)
     storage_live(@2)
     storage_live(@3)
@@ -199,7 +200,6 @@ fn slice_pat3()
     storage_dead(_a@5)
     storage_dead(@4)
     storage_dead(slice@1)
-    @0 := ()
     return
 }
 
@@ -218,13 +218,13 @@ fn slice_pat4<'_0>(@1: &'_0 (Slice<u32>))
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
+    @0 := ()
     @2 := len(*(x@1))
     @3 := const (1 : usize)
     @4 := move (@2) == move (@3)
     if move (@4) {
     }
     else {
-        @0 := ()
         @0 := ()
         return
     }
@@ -236,7 +236,6 @@ fn slice_pat4<'_0>(@1: &'_0 (Slice<u32>))
     _y@5 := &*(@7)
     @0 := ()
     storage_dead(_y@5)
-    @0 := ()
     return
 }
 
@@ -260,13 +259,13 @@ fn slice_pat5<'_0>(@1: &'_0 (Unsized))
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
+    @0 := ()
     @2 := len((*(x@1)).0)
     @3 := const (1 : usize)
     @4 := move (@2) == move (@3)
     if move (@4) {
     }
     else {
-        @0 := ()
         @0 := ()
         return
     }
@@ -278,7 +277,6 @@ fn slice_pat5<'_0>(@1: &'_0 (Unsized))
     _y@5 := copy (*(@7))
     @0 := ()
     storage_dead(_y@5)
-    @0 := ()
     return
 }
 

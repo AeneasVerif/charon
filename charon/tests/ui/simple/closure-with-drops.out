@@ -123,13 +123,13 @@ where
     let x@1: T; // arg #1
     let @2: test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]; // anonymous local
 
+    @0 := ()
     storage_live(@2)
     @2 := test_crate::foo::closure { 0: move (x@1) }
     drop[Drop<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>] @2
     storage_dead(@2)
     @0 := ()
     drop[@TraitClause1] x@1
-    @0 := ()
     return
 }
 
@@ -144,12 +144,12 @@ where
     let tupled_args@2: (); // arg #2
     let @3: T; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := move ((@1).0)
     @0 := core::mem::drop<T>[@TraitClause0, @TraitClause1](move (@3))
     storage_dead(@3)
     drop[Drop<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>] @1
-    @0 := ()
     return
 }
 
@@ -179,11 +179,11 @@ fn bar()
     let @0: (); // return
     let x@1: test_crate::bar::closure; // local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := test_crate::bar::closure {  }
     @0 := ()
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -208,9 +208,9 @@ fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut (te
     let @3: &'_ (test_crate::bar::closure); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &*(state@1)
     @0 := {impl Fn<()> for test_crate::bar::closure}::call<'_>(move (@3), move (args@2))
-    @0 := ()
     return
 }
 
@@ -223,10 +223,10 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
     let @3: &'_ mut (test_crate::bar::closure); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<test_crate::bar::closure>] @1
-    @0 := ()
     return
 }
 

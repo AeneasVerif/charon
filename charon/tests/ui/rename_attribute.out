@@ -85,7 +85,6 @@ where
     let @3: &'_ (bool); // anonymous local
     let @4: &'_ (bool); // anonymous local
 
-    storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1

@@ -208,6 +208,7 @@ fn main()
     let _y@2: Struct<bool>[Sized<bool>]; // local
     let @3: (); // anonymous local
 
+    @0 := ()
     storage_live(_x@1)
     _x@1 := (const (0 : u8), const (false))
     storage_live(_y@2)
@@ -218,7 +219,6 @@ fn main()
     @0 := ()
     storage_dead(_y@2)
     storage_dead(_x@1)
-    @0 := ()
     return
 }
 

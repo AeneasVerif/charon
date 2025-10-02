@@ -238,6 +238,7 @@ where
     let @3: &'_ mut (T); // anonymous local
     let @4: &'_ mut (T); // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := &two-phase-mut *(x@1)
     storage_live(@4)
@@ -245,7 +246,6 @@ where
     @0 := core::mem::swap<'_, '_, T>[@TraitClause0](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -275,6 +275,7 @@ pub fn test_vec_push()
     let @2: (); // anonymous local
     let @3: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
 
+    @0 := ()
     storage_live(v@1)
     v@1 := alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::new<u32>[Sized<u32>]()
     storage_live(@2)
@@ -286,7 +287,6 @@ pub fn test_vec_push()
     @0 := ()
     drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
     storage_dead(v@1)
-    @0 := ()
     return
 }
 
@@ -314,6 +314,7 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>[MetaSized<u32>]))
     let @4: u32; // anonymous local
 
     storage_live(@4)
+    @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut *(rc@1)
@@ -322,7 +323,6 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>[MetaSized<u32>]))
     @4 := copy (*(@2)) panic.+ const (1 : u32)
     *(@2) := move (@4)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }

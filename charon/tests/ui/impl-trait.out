@@ -167,6 +167,7 @@ fn use_foo()
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (()); // anonymous local
 
+    @0 := ()
     storage_live(foo@1)
     foo@1 := mk_foo()
     storage_live(@2)
@@ -185,7 +186,6 @@ fn use_foo()
     @0 := ()
     drop[Drop<()>] foo@1
     storage_dead(foo@1)
-    @0 := ()
     return
 }
 
@@ -244,6 +244,7 @@ where
     let @4: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
     let @5: &'_ (@TraitClause1::); // anonymous local
 
+    @0 := ()
     storage_live(foo@1)
     foo@1 := @TraitClause1::make_foo()
     storage_live(@2)
@@ -262,7 +263,6 @@ where
     @0 := ()
     drop[Drop<@TraitClause1::>] foo@1
     storage_dead(foo@1)
-    @0 := ()
     return
 }
 
@@ -338,6 +338,7 @@ pub fn use_wrap()
     let @6: &'_ (u32); // anonymous local
     let @7: u32; // anonymous local
 
+    @0 := ()
     storage_live(f@1)
     f@1 := wrap<u32>[Sized<u32>]()
     storage_live(@2)
@@ -361,7 +362,6 @@ pub fn use_wrap()
     @0 := ()
     drop[Drop<closure<u32>[Sized<u32>]>] f@1
     storage_dead(f@1)
-    @0 := ()
     return
 }
 

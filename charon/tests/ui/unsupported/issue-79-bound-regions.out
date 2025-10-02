@@ -429,6 +429,7 @@ fn main()
     let @7: Iter<'_, i32>[Sized<i32>]; // anonymous local
     let @8: &'_ (Slice<i32>); // anonymous local
 
+    @0 := ()
     storage_live(slice@1)
     storage_live(@2)
     storage_live(@3)
@@ -454,7 +455,6 @@ fn main()
     @0 := ()
     storage_dead(@4)
     storage_dead(slice@1)
-    @0 := ()
     return
 }
 

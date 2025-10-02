@@ -55,12 +55,12 @@ where
     let source@2: &'_ (Self); // arg #2
     let @3: Self; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
     drop[Drop<Self>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -83,12 +83,12 @@ where
     let source@2: &'_ (u8); // arg #2
     let @3: u8; // anonymous local
 
+    @0 := ()
     storage_live(@3)
     @3 := {impl Clone for u8}::clone<'_>(move (source@2))
     drop[Drop<u8>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
-    @0 := ()
     return
 }
 
@@ -183,6 +183,7 @@ fn main()
     let @2: (u8, bool); // anonymous local
     let @3: u8; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := wrapping_add(const (255 : u8), const (1 : u8))
     storage_dead(@1)
@@ -198,7 +199,6 @@ fn main()
     // unsafe {
     //     let _ = 255u8.unchecked_add(1);
     // }
-    @0 := ()
     return
 }
 

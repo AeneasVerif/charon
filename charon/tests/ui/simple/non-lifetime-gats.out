@@ -160,11 +160,11 @@ pub fn main()
     let @0: (); // return
     let @1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := make_pointer<BoxFamily, i32>[Sized<BoxFamily>, Sized<i32>, {impl PointerFamily for BoxFamily}](const (42 : i32))
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @1
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

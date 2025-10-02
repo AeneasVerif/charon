@@ -302,10 +302,10 @@ fn main()
     let @0: (); // return
     let @1: *const u8; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := null<u8>[{impl Thin for Self}<u8>[Pointee<u8> where Metadata  = ()]]()
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

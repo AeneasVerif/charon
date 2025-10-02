@@ -99,16 +99,9 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
 
     storage_live(@5)
     storage_live(pieces@7)
-    storage_live(self@10)
     storage_live(byte_offset@16)
     storage_live(@17)
-    storage_live(@18)
-    storage_live(@20)
-    storage_live(@21)
-    storage_live(@22)
-    storage_live(@23)
-    storage_live(@24)
-    storage_live(@27)
+    @0 := ()
     storage_live(@4)
     storage_live(overflow@19)
     storage_live(rhs@9)
@@ -163,7 +156,6 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
         storage_dead(overflow@19)
         if move (@4) {
             storage_dead(@4)
-            @0 := ()
             return
         }
         else {
@@ -177,6 +169,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     @25 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@7))
     storage_live(@26)
     @26 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
+    storage_live(@27)
     @27 := Option::None {  }
     @6 := Arguments { 0: move (@25), 1: move (@27), 2: move (@26) }
     storage_dead(@26)
@@ -198,8 +191,6 @@ where
     let @6: bool; // anonymous local
 
     storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
     storage_live(@6)
     @6 := ub_checks<bool>
     if copy (@6) {
@@ -230,12 +221,12 @@ fn main()
     let ptr@2: *const i32; // local
     let @3: &'_ (Slice<i32>); // anonymous local
     let @4: &'_ (Array<i32, 2 : usize>); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
-    let @7: i32; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: i32; // anonymous local
+    let @7: *const i32; // anonymous local
     let @8: *const i32; // anonymous local
-    let @9: *const i32; // anonymous local
 
+    @0 := ()
     storage_live(s@1)
     s@1 := [const (11 : i32), const (42 : i32)]
     storage_live(ptr@2)
@@ -250,27 +241,24 @@ fn main()
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
-    storage_live(@9)
-    @9 := copy (ptr@2)
-    @8 := offset<i32>[Sized<i32>](move (@9), const (1 : isize))
-    storage_dead(@9)
-    @7 := copy (*(@8))
-    @6 := move (@7) == const (42 : i32)
-    if move (@6) {
+    @8 := copy (ptr@2)
+    @7 := offset<i32>[Sized<i32>](move (@8), const (1 : isize))
+    storage_dead(@8)
+    @6 := copy (*(@7))
+    @5 := move (@6) == const (42 : i32)
+    if move (@5) {
     }
     else {
+        storage_dead(@6)
         storage_dead(@7)
-        storage_dead(@8)
         panic(core::panicking::panic)
     }
-    storage_dead(@7)
-    storage_dead(@8)
     storage_dead(@6)
+    storage_dead(@7)
     storage_dead(@5)
     @0 := ()
     storage_dead(ptr@2)
     storage_dead(s@1)
-    @0 := ()
     return
 }
 

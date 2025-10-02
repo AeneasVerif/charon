@@ -114,6 +114,7 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (
     let @6: &'_ mut (u32); // anonymous local
     let @7: &'_ mut (u32); // anonymous local
 
+    @0 := ()
     storage_live(counter@2)
     counter@2 := const (0 : u32)
     storage_live(@3)
@@ -142,7 +143,6 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (
     }
     storage_dead(@3)
     storage_dead(counter@2)
-    @0 := ()
     return
 }
 
@@ -236,6 +236,7 @@ fn gives_fn()
     let @3: &'_ (closure); // anonymous local
     let @4: closure; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -249,7 +250,6 @@ fn gives_fn()
     storage_dead(@1)
     storage_dead(@4)
     storage_dead(@3)
-    @0 := ()
     return
 }
 

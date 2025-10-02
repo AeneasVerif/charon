@@ -23,6 +23,7 @@ pub fn incr<'_0>(@1: &'_0 mut (Slice<u32>))
     let @7: &'_ (u32); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     storage_live(@2)
     @2 := const (0 : usize)
     storage_live(@6)
@@ -36,7 +37,6 @@ pub fn incr<'_0>(@1: &'_0 mut (Slice<u32>))
     @5 := @SliceIndexMut<'_, u32>(move (@4), copy (@2))
     *(@5) := move (@3)
     storage_dead(@2)
-    @0 := ()
     @0 := ()
     return
 }

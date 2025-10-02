@@ -32,6 +32,7 @@ fn constant()
     let _ref_mut@4: &'_ mut (usize); // local
     let @5: usize; // anonymous local
 
+    @0 := ()
     storage_live(_val@1)
     _val@1 := copy (CONST)
     storage_live(_ref@2)
@@ -48,7 +49,6 @@ fn constant()
     storage_dead(@3)
     storage_dead(_ref@2)
     storage_dead(_val@1)
-    @0 := ()
     return
 }
 
@@ -81,28 +81,29 @@ fn shared_static()
     let @11: (); // anonymous local
     let @12: &'_ (usize); // anonymous local
 
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(@12)
+    @0 := ()
     storage_live(_val@1)
     storage_live(@2)
+    storage_live(@7)
     @7 := ()
+    storage_live(@8)
     @8 := &SHARED_STATIC
     @2 := move (@8)
     _val@1 := copy (*(@2))
     storage_dead(@2)
     storage_live(_ref@3)
     storage_live(@4)
+    storage_live(@9)
     @9 := ()
+    storage_live(@10)
     @10 := &SHARED_STATIC
     @4 := move (@10)
     _ref@3 := &*(@4)
     storage_live(_ptr@5)
     storage_live(@6)
+    storage_live(@11)
     @11 := ()
+    storage_live(@12)
     @12 := &SHARED_STATIC
     @6 := move (@12)
     _ptr@5 := &raw const *(@6)
@@ -112,7 +113,6 @@ fn shared_static()
     storage_dead(@4)
     storage_dead(_ref@3)
     storage_dead(_val@1)
-    @0 := ()
     return
 }
 
@@ -153,44 +153,45 @@ fn mut_static()
     let @19: (); // anonymous local
     let @20: *mut usize; // anonymous local
 
-    storage_live(@11)
-    storage_live(@12)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
-    storage_live(@20)
+    @0 := ()
     storage_live(_val@1)
     storage_live(@2)
+    storage_live(@11)
     @11 := ()
+    storage_live(@12)
     @12 := &raw mut MUT_STATIC
     @2 := move (@12)
     _val@1 := copy (*(@2))
     storage_dead(@2)
     storage_live(_ref@3)
     storage_live(@4)
+    storage_live(@13)
     @13 := ()
+    storage_live(@14)
     @14 := &raw mut MUT_STATIC
     @4 := move (@14)
     _ref@3 := &*(@4)
     storage_live(_ref_mut@5)
     storage_live(@6)
+    storage_live(@15)
     @15 := ()
+    storage_live(@16)
     @16 := &raw mut MUT_STATIC
     @6 := move (@16)
     _ref_mut@5 := &mut *(@6)
     storage_live(_ptr@7)
     storage_live(@8)
+    storage_live(@17)
     @17 := ()
+    storage_live(@18)
     @18 := &raw mut MUT_STATIC
     @8 := move (@18)
     _ptr@7 := &raw const *(@8)
     storage_live(_ptr_mut@9)
     storage_live(@10)
+    storage_live(@19)
     @19 := ()
+    storage_live(@20)
     @20 := &raw mut MUT_STATIC
     @10 := move (@20)
     _ptr_mut@9 := &raw mut *(@10)
@@ -204,7 +205,6 @@ fn mut_static()
     storage_dead(@4)
     storage_dead(_ref@3)
     storage_dead(_val@1)
-    @0 := ()
     return
 }
 
@@ -243,18 +243,18 @@ fn non_copy_static()
     let @3: (); // anonymous local
     let @4: &'_ (Foo); // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
+    storage_live(@3)
     @3 := ()
+    storage_live(@4)
     @4 := &FOO
     @2 := move (@4)
     @1 := &*(@2)
     @0 := method<'_>(move (@1))
     storage_dead(@1)
     storage_dead(@2)
-    @0 := ()
     return
 }
 

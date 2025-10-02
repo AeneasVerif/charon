@@ -214,6 +214,7 @@ fn foo()
     let @21: String; // anonymous local
     let @22: &'_ (String); // anonymous local
 
+    @0 := ()
     storage_live(array@1)
     array@1 := @ArrayRepeat<'_, i32, 2 : usize>(const (0 : i32))
     storage_live(@2)
@@ -290,7 +291,6 @@ fn foo()
     drop[{impl Drop for String}] string@11
     storage_dead(string@11)
     storage_dead(array@1)
-    @0 := ()
     return
 }
 

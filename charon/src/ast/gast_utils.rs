@@ -40,6 +40,13 @@ impl Body {
             None
         }
     }
+
+    pub fn locals(&self) -> &Locals {
+        match self {
+            Body::Structured(body) => &body.locals,
+            Body::Unstructured(body) => &body.locals,
+        }
+    }
 }
 
 impl Locals {
@@ -51,6 +58,7 @@ impl Locals {
     }
 
     /// Creates a new variable and returns a place pointing to it.
+    /// Warning: don't forget to `StorageLive` it before using it.
     pub fn new_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         let local_id = self.locals.push_with(|index| Local {
             index,

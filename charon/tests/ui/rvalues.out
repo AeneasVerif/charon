@@ -151,6 +151,7 @@ fn addr_of()
     let @4: *const u32; // anonymous local
     let @5: *mut u32; // anonymous local
 
+    @0 := ()
     storage_live(x@1)
     x@1 := const (0 : u32)
     storage_live(@2)
@@ -167,7 +168,6 @@ fn addr_of()
     storage_dead(@5)
     @0 := ()
     storage_dead(x@1)
-    @0 := ()
     return
 }
 
@@ -181,6 +181,7 @@ fn literal_casts()
     let @4: u64; // anonymous local
     let @5: f64; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := cast<u64, u8>(const (0 : u64))
     storage_dead(@1)
@@ -196,7 +197,6 @@ fn literal_casts()
     storage_live(@5)
     @5 := cast<f32, f64>(copy (MAX))
     storage_dead(@5)
-    @0 := ()
     @0 := ()
     return
 }
@@ -232,6 +232,7 @@ fn ptr_casts()
     let @16: *const u8; // anonymous local
     let @17: fn(); // anonymous local
 
+    @0 := ()
     storage_live(array_ptr@1)
     storage_live(@2)
     storage_live(@3)
@@ -284,7 +285,6 @@ fn ptr_casts()
     storage_dead(x@6)
     storage_dead(@3)
     storage_dead(array_ptr@1)
-    @0 := ()
     return
 }
 
@@ -319,8 +319,8 @@ fn {impl Fn<(u8)> for closure}::call<'_0>(@1: &'_0 (closure), @2: (u8))
     let @3: u8; // anonymous local
 
     storage_live(@3)
-    @3 := move ((tupled_args@2).0)
     @0 := ()
+    @3 := move ((tupled_args@2).0)
     @0 := ()
     return
 }
@@ -334,9 +334,9 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8
     let @3: &'_ (closure); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &*(state@1)
     @0 := {impl Fn<(u8)> for closure}::call<'_>(move (@3), move (args@2))
-    @0 := ()
     return
 }
 
@@ -349,10 +349,10 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
     let @3: &'_ mut (closure); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(u8)> for closure}::call_mut<'_>(move (@3), move (@2))
     drop[Drop<closure>] @1
-    @0 := ()
     return
 }
 
@@ -366,10 +366,10 @@ fn as_fn(@1: u8)
 
     storage_live(args@2)
     storage_live(state@3)
+    @0 := ()
     args@2 := (move (arg1@1))
     state@3 := closure {  }
     @0 := {impl FnOnce<(u8)> for closure}::call_once(move (state@3), move (args@2))
-    @0 := ()
     return
 }
 
@@ -385,6 +385,7 @@ fn fn_casts()
     let @6: fn(u8); // anonymous local
     let @7: closure; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := cast<test_crate::fn_casts::foo, fn()>(const (test_crate::fn_casts::foo))
     storage_dead(@1)
@@ -407,7 +408,6 @@ fn fn_casts()
     storage_dead(@6)
     @0 := ()
     storage_dead(closure@3)
-    @0 := ()
     return
 }
 
@@ -449,6 +449,7 @@ fn boxes()
     let @1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
     let @2: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := @BoxNew<i32>[MetaSized<i32>, Sized<Global>](const (42 : i32))
@@ -457,7 +458,6 @@ fn boxes()
     storage_dead(@2)
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @1
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

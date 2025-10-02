@@ -282,6 +282,7 @@ fn foo()
     let @10: &'_ (Slice<bool>); // anonymous local
     let @11: RangeFrom<usize>[Sized<usize>]; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
@@ -316,7 +317,6 @@ fn foo()
     storage_dead(@9)
     storage_dead(@7)
     storage_dead(slice@4)
-    @0 := ()
     return
 }
 

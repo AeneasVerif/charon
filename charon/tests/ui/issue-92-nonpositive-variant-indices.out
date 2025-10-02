@@ -23,6 +23,7 @@ fn main()
     let @0: (); // return
     let @1: Ordering; // anonymous local
 
+    @0 := ()
     storage_live(@1)
     @1 := Ordering::Less {  }
     match @1 {
@@ -37,7 +38,6 @@ fn main()
         },
     }
     storage_dead(@1)
-    @0 := ()
     return
 }
 

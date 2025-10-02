@@ -74,8 +74,8 @@ where
     let x@1: U; // arg #1
 
     @0 := ()
-    drop[@TraitClause2] x@1
     @0 := ()
+    drop[@TraitClause2] x@1
     return
 }
 
@@ -88,8 +88,8 @@ where
     let x@1: U; // arg #1
 
     @0 := ()
-    drop[@TraitClause1] x@1
     @0 := ()
+    drop[@TraitClause1] x@1
     return
 }
 
@@ -120,9 +120,9 @@ where
     let _y@2: X; // arg #2
 
     @0 := ()
+    @0 := ()
     drop[@TraitClause4] _y@2
     drop[@TraitClause3] _x@1
-    @0 := ()
     return
 }
 
@@ -133,13 +133,13 @@ fn main()
     let @1: (); // anonymous local
     let @2: (); // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
     @1 := use_trait<u32, ()>[Sized<u32>, Sized<()>, {impl Trait<u32> for ()}, Drop<u32>, Drop<()>](const (42 : u32), move (@2))
     storage_dead(@2)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }

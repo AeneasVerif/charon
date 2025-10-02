@@ -189,11 +189,6 @@ where
     let @6: (T); // anonymous local
     let @7: T; // anonymous local
 
-    storage_live(x@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
     match x@1 {
         Option::None => {
             @0 := Option::None {  }
@@ -239,10 +234,6 @@ where
     let @5: fn<'_0>(&'_0_0 (T)) -> T; // anonymous local
     let @6: &'_ (T); // anonymous local
 
-    storage_live(x@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
     match *(x@1) {
         Option::None => {
         },
@@ -1890,6 +1881,7 @@ fn {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'
 
     storage_live(x@3)
     storage_live(@5)
+    @0 := ()
     x@3 := move ((tupled_args@2).0)
     storage_live(@4)
     @4 := copy (*(x@3))
@@ -1897,7 +1889,6 @@ fn {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'
     *((*(@1)).0) := move (@5)
     @0 := ()
     storage_dead(@4)
-    @0 := ()
     return
 }
 
@@ -1915,6 +1906,7 @@ fn test_fnmut_with_ref()
     let @8: &'_ (usize); // anonymous local
     let @9: usize; // anonymous local
 
+    @0 := ()
     storage_live(sum@1)
     sum@1 := const (0 : usize)
     storage_live(closure@2)
@@ -1943,7 +1935,6 @@ fn test_fnmut_with_ref()
     @0 := ()
     storage_dead(closure@2)
     storage_dead(sum@1)
-    @0 := ()
     return
 }
 
@@ -1956,10 +1947,10 @@ fn {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<
     let @3: &'_ mut (test_crate::test_fnmut_with_ref::closure<'_0>); // anonymous local
 
     storage_live(@3)
+    @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop[Drop<test_crate::test_fnmut_with_ref::closure<'_0>>] @1
-    @0 := ()
     return
 }
 

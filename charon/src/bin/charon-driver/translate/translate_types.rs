@@ -376,16 +376,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .type_of(rdefid)
             .instantiate(tcx, item.rustc_args(hax_state));
 
-        // call the key method
-        let raw_ty = tcx.struct_tail_raw(
+        // Get the tail type, which determines the metadata of `ty`.
+        let tail_ty = tcx.struct_tail_raw(
             ty,
             |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
             || {},
         );
-        let hax_ty: &hax::Ty = &self.t_ctx.catch_sinto(hax_state, span, &raw_ty)?;
+        let hax_ty: hax::Ty = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;
 
-        let ret = match raw_ty.kind() {
-            ty::Foreign(..) => PtrMetadata::None,
+        // If we're hiding `Sized`, let's consider everything to be sized.
+        let everything_is_sized = self.t_ctx.options.hide_marker_traits;
+        let ret = match tail_ty.kind() {
+            _ if everything_is_sized || tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
                 hax::TyKind::Dynamic(_, preds, _) => {
@@ -407,10 +409,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => unreachable!("Unexpected hax type {hax_ty:?} for dynamic type: {ty:?}"),
             },
-            ty::Param(..) => PtrMetadata::InheritFrom(self.translate_ty(span, hax_ty)?),
+            ty::Param(..) => PtrMetadata::InheritFrom(self.translate_ty(span, &hax_ty)?),
             ty::Placeholder(..) | ty::Infer(..) | ty::Bound(..) => {
                 panic!(
-                    "We should never encounter a placeholder, infer, or bound type from ptr_metadata translation. Got: {raw_ty:?}"
+                    "We should never encounter a placeholder, infer, or bound type from ptr_metadata translation. Got: {tail_ty:?}"
                 )
             }
             _ => PtrMetadata::None,

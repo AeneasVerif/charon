@@ -106,11 +106,10 @@ pub fn foo() -> &'static (closure)
     let @4: &'_ (closure); // anonymous local
     let @5: closure; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
     storage_live(@5)
     @5 := closure {  }
     @4 := &@5
+    storage_live(@3)
     storage_live(@1)
     storage_live(@2)
     @3 := move (@4)

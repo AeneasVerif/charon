@@ -94,9 +94,9 @@ fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut (Foo))
     let @2: &'_ mut (Foo); // anonymous local
 
     storage_live(@2)
+    @0 := ()
     @2 := &mut *(@1)
     drop[{impl Drop for String}] (*(@2)).1
-    @0 := ()
     return
 }
 
@@ -162,6 +162,7 @@ fn main()
     let @16: &'_ (i32); // anonymous local
     let @17: i32; // anonymous local
 
+    @0 := ()
     storage_live(f@1)
     f@1 := const (Some<u8>[Sized<u8>])
     storage_live(@2)
@@ -215,7 +216,6 @@ fn main()
     storage_dead(f@8)
     storage_dead(f@4)
     storage_dead(f@1)
-    @0 := ()
     return
 }
 

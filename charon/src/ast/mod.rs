@@ -27,6 +27,7 @@ pub use gast::*;
 pub use krate::*;
 pub use meta::*;
 pub use names::*;
+pub use std::ops::ControlFlow;
 pub use types::*;
 pub use types_utils::*;
 pub use values::*;

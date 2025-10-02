@@ -387,11 +387,11 @@ pub fn S2() -> u32
     let @3: (); // anonymous local
     let @4: &'_ (u32); // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
     storage_live(@1)
     storage_live(@2)
+    storage_live(@3)
     @3 := ()
+    storage_live(@4)
     @4 := &S1
     @2 := move (@4)
     @1 := copy (*(@2))

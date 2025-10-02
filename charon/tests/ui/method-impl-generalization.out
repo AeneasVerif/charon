@@ -108,8 +108,8 @@ where
     let _other@2: T; // arg #2
 
     @0 := ()
-    drop[Drop<T>] _other@2
     @0 := ()
+    drop[Drop<T>] _other@2
     return
 }
 
@@ -169,6 +169,7 @@ fn main()
     let @10: &'_ (()); // anonymous local
     let @11: (); // anonymous local
 
+    @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
@@ -206,7 +207,6 @@ fn main()
     storage_dead(@10)
     storage_dead(@8)
     storage_dead(@6)
-    @0 := ()
     @0 := ()
     return
 }

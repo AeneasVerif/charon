@@ -20,6 +20,7 @@ fn main()
 
     storage_live(@2)
     storage_live(@3)
+    @0 := ()
     storage_live(@1)
     @1 := const (0.5 : f64)
     @3 := const (0.10000000000000001 : f64) == copy (@1)
@@ -36,7 +37,6 @@ fn main()
         }
     }
     storage_dead(@1)
-    @0 := ()
     return
 }
 

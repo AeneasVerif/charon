@@ -12,7 +12,7 @@ use crate::{
     transform::utils::GenericsSource,
 };
 
-use super::{TransformCtx, ctx::TransformPass};
+use crate::transform::{TransformCtx, ctx::TransformPass};
 
 #[derive(Visitor)]
 struct CheckGenericsVisitor<'a> {

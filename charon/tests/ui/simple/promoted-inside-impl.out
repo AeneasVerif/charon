@@ -42,17 +42,16 @@ where
     let @3: &'_ (i32); // anonymous local
     let @4: i32; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
     storage_live(@4)
     @4 := const (0 : i32)
     @3 := &@4
+    storage_live(@2)
+    @0 := ()
     storage_live(_promoted@1)
     @2 := move (@3)
     _promoted@1 := &*(@2)
     @0 := ()
     storage_dead(_promoted@1)
-    @0 := ()
     return
 }
 

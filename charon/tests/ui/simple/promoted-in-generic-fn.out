@@ -39,17 +39,16 @@ where
     let @3: &'_ (usize); // anonymous local
     let @4: usize; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
     storage_live(@4)
     // This can't be evaluated generically.
     @4 := size_of<T>[@TraitClause0]()
     @3 := &@4
+    storage_live(@2)
+    @0 := ()
     storage_live(@1)
     @2 := move (@3)
     @1 := &*(@2)
     storage_dead(@1)
-    @0 := ()
     @0 := ()
     return
 }
