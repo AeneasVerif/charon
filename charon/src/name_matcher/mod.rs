@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use itertools::{EitherOrBoth, Itertools};
 use serde::{Deserialize, Serialize};
 
-use crate::ast::*;
+use crate::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
 
 mod parser;
 
@@ -65,6 +65,28 @@ impl Pattern {
         args: Option<&GenericArgs>,
     ) -> bool {
         let mut scrutinee_elems = name.name.as_slice();
+        let mut args = args.cloned();
+        if let [prefix @ .., PathElem::Monomorphized(mono_args)] = scrutinee_elems {
+            // In this case, we may still have some late-bound generics in `args`, this could ONLY happen for regions
+            assert!(
+                args.is_none()
+                    || args.as_ref().unwrap().len() == args.as_ref().unwrap().regions.elem_count(),
+                "In pattern \"{}\" matching against name \"{}\": we have both monomorphized generics {} and regular generics {}",
+                self,
+                name.with_ctx(&ctx.into_fmt()),
+                mono_args.with_ctx(&ctx.into_fmt()),
+                args.unwrap().with_ctx(&ctx.into_fmt())
+            );
+            // We additionally append the regions from `args` to the monomorphized args, so that we can match against them.
+            let mut mono_args = (**mono_args).clone();
+            if let Some(args) = args {
+                // Late-bound regions are appended after the monomorphized ones.
+                mono_args.regions.extend(args.regions.into_iter());
+            }
+            scrutinee_elems = prefix;
+            args = Some(mono_args);
+        };
+        let args = args.as_ref();
         // Patterns that start with an impl block match that impl block anywhere. In such a case we
         // truncate the scrutinee name to start with the rightmost impl in its name. This isn't
         // fully precise in case of impls within impls, but we'll ignore that.

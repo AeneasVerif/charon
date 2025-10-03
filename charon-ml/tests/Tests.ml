@@ -15,3 +15,6 @@ let () =
 (* llbc files are copied into the `_build` dir by the `(deps)` rule in `./dune`. *)
 let () = Test_Deserialize.run_tests "test-outputs"
 let () = Test_NameMatcher.run_tests "test-outputs/ml-name-matcher-tests.llbc"
+
+let () =
+  Test_NameMatcher.run_tests "test-outputs/ml-mono-name-matcher-tests.llbc"
