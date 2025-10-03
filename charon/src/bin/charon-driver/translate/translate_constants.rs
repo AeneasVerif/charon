@@ -129,7 +129,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 expressions::ConstantExprKind::Var(var)
             }
             ConstantExprKind::FnPtr(item) => {
-                let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
+                let fn_ptr = self
+                    .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
+                    .erase();
                 expressions::ConstantExprKind::FnPtr(fn_ptr)
             }
             ConstantExprKind::Memory(bytes) => {

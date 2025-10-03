@@ -288,6 +288,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
             CastKind::Transmute(src, tgt) => {
                 write!(f, "transmute<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
             }
+            CastKind::Concretize(ty, ty1) => {
+                write!(f, "concretize<{}, {}>", ty.with_ctx(ctx), ty1.with_ctx(ctx))
+            }
         }
     }
 }

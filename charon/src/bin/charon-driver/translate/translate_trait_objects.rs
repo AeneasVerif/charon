@@ -1,10 +1,13 @@
+use itertools::Itertools;
+use std::mem;
+
 use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
 };
-
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
-use itertools::Itertools;
 
 fn dummy_public_attr_info() -> AttrInfo {
     AttrInfo {
@@ -317,11 +320,23 @@ impl ItemTransCtx<'_, '_> {
         Ok(fields)
     }
 
+    /// This is a temporary check until we support `dyn Trait` with `--monomorphize`.
+    pub(crate) fn check_no_monomorphize(&self, span: Span) -> Result<(), Error> {
+        if self.monomorphize() {
+            raise_error!(
+                self,
+                span,
+                "`dyn Trait` is not yet supported with `--monomorphize`; \
+                use `--monomorphize-conservative` instead"
+            )
+        }
+        Ok(())
+    }
+
     /// Construct the type of the vtable for this trait.
     ///
     /// It's a struct that has for generics the generics of the trait + one parameter for each
     /// associated type of the trait and its parents.
-    /// TODO(dyn): add the associated types.
     ///
     /// struct TraitVTable<TraitArgs.., AssocTys..> {
     ///   size: usize,
@@ -347,6 +362,7 @@ impl ItemTransCtx<'_, '_> {
                 for a non-dyn-compatible trait"
             );
         }
+        self.check_no_monomorphize(span)?;
 
         self.translate_def_generics(span, trait_def)?;
 
@@ -503,6 +519,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
         self.translate_def_generics(span, impl_def)?;
+        self.check_no_monomorphize(span)?;
 
         let (impl_ref, _, vtable_struct_ref) =
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;
@@ -547,14 +564,15 @@ impl ItemTransCtx<'_, '_> {
                 ..
             } => {
                 // The method is vtable safe so it has no generics, hence we can reuse the impl
-                // generics.
+                // generics -- the lifetime binder will be added as `Erased` in `translate_fn_ptr`.
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
-                let shim_ref =
-                    self.translate_item(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+                let shim_ref = self
+                    .translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?
+                    .erase();
                 ConstantExprKind::FnPtr(shim_ref)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => ConstantExprKind::Opaque(
-                "shim for provided methods \
+                "shim for default methods \
                     aren't yet supported"
                     .to_string(),
             ),
@@ -721,6 +739,26 @@ impl ItemTransCtx<'_, '_> {
         }))
     }
 
+    fn generate_concretization(
+        &mut self,
+        span: Span,
+        statements: &mut Vec<Statement>,
+        shim_self: &Place,
+        target_self: &Place,
+    ) -> Result<(), Error> {
+        let rval = Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::Concretize(
+                shim_self.ty().clone(),
+                target_self.ty().clone(),
+            )),
+            Operand::Move(shim_self.clone()),
+        );
+        let stmt = StatementKind::Assign(target_self.clone(), rval);
+        statements.push(Statement::new(span, stmt));
+
+        Ok(())
+    }
+
     pub(crate) fn translate_vtable_instance_init(
         mut self,
         init_func_id: FunDeclId,
@@ -730,6 +768,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
         self.translate_def_generics(span, impl_def)?;
+        self.check_no_monomorphize(span)?;
 
         let (impl_ref, _, vtable_struct_ref) =
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;
@@ -771,13 +810,163 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    // pub(crate) fn translate_vtable_shim(
-    //     self,
-    //     _fun_id: FunDeclId,
-    //     item_meta: ItemMeta,
-    //     _impl_func_def: &hax::FullDef,
-    // ) -> Result<FunDecl, Error> {
-    //     let span = item_meta.span;
-    //     raise_error!(self, span, "unimplemented")
-    // }
+    /// The target vtable shim body looks like:
+    /// ```ignore
+    /// local ret@0 : ReturnTy;
+    /// // the shim receiver of this shim function
+    /// local shim_self@1 : ShimReceiverTy;
+    /// // the arguments of the impl function
+    /// local arg1@2 : Arg1Ty;
+    /// ...
+    /// local argN@N : ArgNTy;
+    /// // the target receiver of the impl function
+    /// local target_self@(N+1) : TargetReceiverTy;
+    /// // perform some conversion to cast / re-box the shim receiver to the target receiver
+    /// ...
+    /// target_self@(N+1) := concretize_cast<ShimReceiverTy, TargetReceiverTy>(shim_self@1);
+    /// // call the impl function and assign the result to ret@0
+    /// ret@0 := impl_func(target_self@(N+1), arg1@2, ..., argN@N);
+    /// ```
+    fn translate_vtable_shim_body(
+        &mut self,
+        span: Span,
+        target_receiver: &Ty,
+        shim_signature: &FunSig,
+        impl_func_def: &hax::FullDef,
+    ) -> Result<Body, Error> {
+        let mut locals = Locals {
+            arg_count: shim_signature.inputs.len(),
+            locals: Vector::new(),
+        };
+        let mut statements = vec![];
+
+        let ret_place = locals.new_var(None, shim_signature.output.clone());
+        let mut method_args = shim_signature
+            .inputs
+            .iter()
+            .map(|ty| locals.new_var(None, ty.clone()))
+            .collect_vec();
+        let target_self = locals.new_var(None, target_receiver.clone());
+        statements.push(Statement::new(
+            span,
+            StatementKind::StorageLive(target_self.as_local().unwrap()),
+        ));
+
+        // Replace the `dyn Trait` receiver with the concrete one.
+        let shim_self = mem::replace(&mut method_args[0], target_self.clone());
+
+        // Perform the core concretization cast.
+        // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
+        // (when --raw-boxes is on) `Box`
+        self.generate_concretization(span, &mut statements, &shim_self, &target_self)?;
+
+        let call = {
+            let fun_id = self.register_item(span, &impl_func_def.this(), TransItemSourceKind::Fun);
+            let generics = Box::new(self.outermost_binder().params.identity_args());
+            Call {
+                func: FnOperand::Regular(FnPtr {
+                    kind: Box::new(FnPtrKind::Fun(fun_id)),
+                    generics,
+                }),
+                args: method_args
+                    .into_iter()
+                    .map(|arg| Operand::Move(arg))
+                    .collect(),
+                dest: ret_place,
+            }
+        };
+
+        // Create blocks
+        let mut blocks = Vector::new();
+
+        let ret_block = BlockData {
+            statements: vec![],
+            terminator: Terminator::new(span, TerminatorKind::Return),
+        };
+
+        let unwind_block = BlockData {
+            statements: vec![],
+            terminator: Terminator::new(span, TerminatorKind::UnwindResume),
+        };
+
+        let call_block = BlockData {
+            statements,
+            terminator: Terminator::new(
+                span,
+                TerminatorKind::Call {
+                    call,
+                    target: BlockId::new(1),    // ret_block
+                    on_unwind: BlockId::new(2), // unwind_block
+                },
+            ),
+        };
+
+        blocks.push(call_block); // BlockId(0) -- START_BLOCK_ID
+        blocks.push(ret_block); // BlockId(1)
+        blocks.push(unwind_block); // BlockId(2)
+
+        Ok(Body::Unstructured(GExprBody {
+            span,
+            locals,
+            comments: Vec::new(),
+            body: blocks,
+        }))
+    }
+
+    pub(crate) fn translate_vtable_shim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_func_def: &hax::FullDef,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        self.check_no_monomorphize(span)?;
+
+        let hax::FullDefKind::AssocFn {
+            vtable_sig: Some(vtable_sig),
+            sig: target_signature,
+            ..
+        } = impl_func_def.kind()
+        else {
+            raise_error!(
+                self,
+                span,
+                "Trying to generate a vtable shim for a non-vtable-safe method"
+            );
+        };
+
+        // Replace to get the true signature of the shim function.
+        // As `translate_function_signature` will use the `sig` field of the `hax::FullDef`
+        // TODO: this is a hack.
+        let shim_func_def = {
+            let mut def = impl_func_def.clone();
+            let hax::FullDefKind::AssocFn { sig, .. } = &mut def.kind else {
+                unreachable!()
+            };
+            *sig = vtable_sig.clone();
+            def
+        };
+
+        // Compute the correct signature for the shim
+        let signature = self.translate_function_signature(&shim_func_def, &item_meta)?;
+
+        let target_receiver = self.translate_ty(span, &target_signature.value.inputs[0])?;
+
+        trace!(
+            "[VtableShim] Obtained dyn signature with receiver type: {}",
+            signature.inputs[0].with_ctx(&self.into_fmt())
+        );
+
+        let body =
+            self.translate_vtable_shim_body(span, &target_receiver, &signature, impl_func_def)?;
+
+        Ok(FunDecl {
+            def_id: fun_id,
+            item_meta,
+            signature,
+            src: ItemSource::VTableMethodShim,
+            is_global_initializer: None,
+            body: Ok(body),
+        })
+    }
 }
