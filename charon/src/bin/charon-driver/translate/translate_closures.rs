@@ -77,7 +77,7 @@ impl ItemTransCtx<'_, '_> {
         } else {
             None
         };
-        let signature = self.translate_fun_sig(span, &args.fn_sig)?;
+        let signature = self.translate_poly_fun_sig(span, &args.fn_sig)?;
         Ok(ClosureInfo {
             kind,
             fn_once_impl,

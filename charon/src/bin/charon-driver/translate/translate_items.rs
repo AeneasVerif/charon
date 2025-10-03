@@ -432,9 +432,52 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
 
+        if let hax::FullDefKind::Ctor {
+            fields, output_ty, ..
+        } = def.kind()
+        {
+            let signature = FunSig {
+                inputs: fields
+                    .iter()
+                    .map(|field| self.translate_ty(span, &field.ty))
+                    .try_collect()?,
+                output: self.translate_ty(span, output_ty)?,
+                is_unsafe: false,
+            };
+            let src = self.get_item_source(span, def)?;
+
+            let body = if item_meta.opacity.with_private_contents().is_opaque() {
+                Err(Opaque)
+            } else {
+                let body = self.build_ctor_body(span, def)?;
+                Ok(body)
+            };
+            return Ok(FunDecl {
+                def_id,
+                item_meta,
+                generics: self.into_generics(),
+                signature,
+                src,
+                is_global_initializer: None,
+                body,
+            });
+        }
+
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = self.translate_function_signature(def, &item_meta)?;
+        let signature = match &def.kind {
+            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                self.translate_fun_sig(span, &sig.value)?
+            }
+            hax::FullDefKind::Const { ty, .. }
+            | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::Static { ty, .. } => FunSig {
+                inputs: vec![],
+                output: self.translate_ty(span, ty)?,
+                is_unsafe: false,
+            },
+            _ => panic!("Unexpected definition for function: {def:?}"),
+        };
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -457,25 +500,6 @@ impl ItemTransCtx<'_, '_> {
             || is_trait_method_decl_without_default
         {
             Err(Opaque)
-        } else if let hax::FullDefKind::Ctor {
-            adt_def_id,
-            ctor_of,
-            variant_id,
-            fields,
-            output_ty,
-            ..
-        } = def.kind()
-        {
-            let body = self.build_ctor_body(
-                span,
-                def,
-                adt_def_id,
-                ctor_of,
-                *variant_id,
-                fields,
-                output_ty,
-            )?;
-            Ok(body)
         } else {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
