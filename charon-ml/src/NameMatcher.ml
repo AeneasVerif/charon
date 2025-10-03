@@ -123,6 +123,7 @@ and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
       match c.tgt with
       | TkPattern | TkPretty -> "{" ^ ty ^ "}"
       | TkName -> ty)
+  | PWild -> "_"
 
 and expr_to_string (c : print_config) (e : expr) : string =
   match e with
@@ -436,13 +437,35 @@ let match_literal (pl : literal) (l : Values.literal) : bool =
 let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
     ?(m : maps = mk_empty_maps ()) (p : pattern) (n : T.name)
     (g : T.generic_args) : bool =
+  (* Handle monomorphized matching: if the name ends with a PeMonomorphized
+     element, use the monomorphized args and continue matching without that
+     element *)
+  let n, g =
+    match List.rev n with
+    | PeMonomorphized mono_args :: rest_rev ->
+        (* In this case, we may still have some late-bound generics in `g`, this could ONLY happen for regions *)
+        let regions_count, types_count, const_generics_count, trait_refs_count =
+          TypesUtils.generic_args_lengths g
+        in
+        assert (
+          types_count = 0 && const_generics_count = 0 && trait_refs_count = 0);
+        (* We additionally append the regions from `g` to the monomorphized args, so that we can match against them. *)
+        let merged_args =
+          if regions_count > 0 then begin
+            (* Late-bound regions are appended after the monomorphized ones. *)
+            { mono_args with regions = mono_args.regions @ g.regions }
+          end
+          else mono_args
+        in
+        (List.rev rest_rev, merged_args)
+    | _ -> (n, g)
+  in
   match (p, n) with
   | [], [] ->
       raise
         (Failure
            "match_name_with_generics: attempt to match empty names and patterns")
       (* We shouldn't get there: the names/patterns should be non empty *)
-  | [], [ PeMonomorphized _ ] -> true (* We ignored monomorphizeds *)
   | [ PIdent (pid, pd, pg) ], [ PeIdent (id, d) ] ->
       log#ldebug
         (lazy
@@ -484,6 +507,9 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
           && match_name_with_generics ctx c p n g)
+  | PWild :: p, _ :: n ->
+      (* Wildcard: skip this element in the name *)
+      match_name_with_generics ctx c p n g
   | _ -> false
 
 and match_name (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
@@ -719,10 +745,14 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
           let name = builtin_fun_id_to_string fid in
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
   | FunId (FRegular fid) ->
+      (* Lookup the function decl *)
       let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
       (* Match the pattern on the name of the function. *)
       let match_function_name =
-        match_name_with_generics ctx c p d.item_meta.name func.generics
+        let ret =
+          match_name_with_generics ctx c p d.item_meta.name func.generics
+        in
+        ret
       in
       (* Match the pattern on the trait implementation and method name, if applicable. *)
       let match_trait_ref =
@@ -934,7 +964,10 @@ and path_elem_with_generic_args_to_pattern (ctx : 'fun_body ctx)
       | Some args -> [ PIdent (s, d, args) ]
     end
   | PeImpl impl -> [ impl_elem_to_pattern ctx c impl ]
-  | PeMonomorphized _ -> []
+  | PeMonomorphized _ ->
+      (* In pattern generation, we skip monomorphized elements since patterns
+         are meant to match the logical structure, not the instantiation details *)
+      []
 
 and impl_elem_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (impl : T.impl_elem) : pattern_elem =
@@ -1441,6 +1474,9 @@ module NameMatcherMap = struct
     (* Check if we reached the destination *)
     match name with
     | [] | [ PeMonomorphized _ ] ->
+        (* For tree search, we also consider monomorphized elements as terminal
+           since they represent instantiation details, not logical structure.
+           The monomorphized matching is always handled by the calling context. *)
         if g = TypesUtils.empty_generic_args then node_v else None
     | _ ->
         (* Explore the children *)
