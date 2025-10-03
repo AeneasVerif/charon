@@ -451,7 +451,7 @@ impl FunDecl {
         mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Statement),
     ) {
         if let Ok(body) = &mut self.body {
-            let params = &self.signature.generics;
+            let params = &self.generics;
             let body = body.as_unstructured_mut().unwrap();
             body.body.iter_mut().for_each(|block| {
                 block.transform(|st: &mut ullbc_ast::Statement| {

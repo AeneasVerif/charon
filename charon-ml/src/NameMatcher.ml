@@ -545,7 +545,7 @@ and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
       let m =
         maps_push_bound_regions_group_if_nonempty m binder.binder_regions
       in
-      let inputs, output = binder.binder_value in
+      let { T.inputs; output; _ } = binder.binder_value in
       (* Match *)
       List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
       &&
@@ -735,12 +735,11 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
                arguments matches the number of generic parameters.
             *)
             if
-              TypesUtils.generic_params_lengths d.signature.generics
+              TypesUtils.generic_params_lengths d.generics
               = TypesUtils.generic_args_lengths func.generics
             then
               let subst =
-                Substitute.make_subst_from_generics d.signature.generics
-                  func.generics
+                Substitute.make_subst_from_generics d.generics func.generics
               in
               let trait_ref =
                 Substitute.trait_decl_ref_substitute subst trait_ref
@@ -991,7 +990,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       let m =
         constraints_map_push_regions_map_if_nonempty m binder.binder_regions
       in
-      let inputs, output = binder.binder_value in
+      let { T.inputs; output; _ } = binder.binder_value in
       let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
       let output =
         if output = TypesUtils.mk_unit_ty then None

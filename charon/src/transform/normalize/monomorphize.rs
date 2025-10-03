@@ -395,7 +395,7 @@ impl TransformPass for Transform {
         // Find the roots of the mono item graph
         for (id, item) in ctx.translated.all_items_with_ids() {
             match item {
-                ItemRef::Fun(f) if f.signature.generics.is_empty() => {
+                ItemRef::Fun(f) if f.generics.is_empty() => {
                     data.items
                         .insert((id, empty_gargs.clone()), OptionHint::Some(id));
                     data.worklist.push(id);
@@ -436,7 +436,7 @@ impl TransformPass for Transform {
                             };
                             let fun = ctx.translated.fun_decls.get(*fun_id).unwrap();
                             let mut fun_sub = fun.clone().substitute(gargs);
-                            fun_sub.signature.generics = GenericParams::empty();
+                            fun_sub.generics = GenericParams::empty();
                             fun_sub
                                 .item_meta
                                 .name
@@ -484,7 +484,7 @@ impl TransformPass for Transform {
 
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();
                             let mut init_sub = init.clone().substitute(gargs);
-                            init_sub.signature.generics = GenericParams::empty();
+                            init_sub.generics = GenericParams::empty();
                             init_sub
                                 .item_meta
                                 .name
