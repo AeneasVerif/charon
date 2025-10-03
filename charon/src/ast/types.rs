@@ -41,7 +41,6 @@ pub enum Region {
 /// to a *trait instance*, which is why the [`TraitRefKind::Clause`] variant may seem redundant
 /// with some of the other variants.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
-#[charon::rename("TraitInstanceId")]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
     TraitImpl(TraitImplRef),
@@ -128,7 +127,6 @@ pub enum TraitRefKind {
 /// A reference to a trait
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitRef {
-    #[charon::rename("trait_id")]
     pub kind: TraitRefKind,
     /// Not necessary, but useful
     pub trait_decl_ref: PolyTraitDeclRef,

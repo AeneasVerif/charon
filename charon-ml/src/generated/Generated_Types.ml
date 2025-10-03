@@ -104,7 +104,7 @@ and fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
 
 (** The id of a translated item. *)
-and any_decl_id =
+and item_id =
   | IdType of type_decl_id
   | IdFun of fun_decl_id
   | IdGlobal of global_decl_id
@@ -418,7 +418,7 @@ and trait_param = {
 
 (** A reference to a trait *)
 and trait_ref = {
-  trait_id : trait_instance_id;
+  kind : trait_ref_kind;
   trait_decl_ref : trait_decl_ref region_binder;
       (** Not necessary, but useful *)
 }
@@ -429,7 +429,7 @@ and trait_ref = {
     definition. Note that every path designated by [TraitInstanceId] refers to a
     *trait instance*, which is why the [[TraitRefKind::Clause]] variant may seem
     redundant with some of the other variants. *)
-and trait_instance_id =
+and trait_ref_kind =
   | TraitImpl of trait_impl_ref
       (** A specific top-level implementation item. *)
   | Clause of trait_clause_id de_bruijn_var

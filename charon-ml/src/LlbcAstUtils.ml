@@ -37,8 +37,7 @@ let fun_decl_has_loops (fd : fun_decl) : bool =
   | Some body -> block_has_loops body.body
   | None -> false
 
-let crate_get_item_meta (m : crate) (id : any_decl_id) : Types.item_meta option
-    =
+let crate_get_item_meta (m : crate) (id : item_id) : Types.item_meta option =
   match id with
   | IdType id ->
       Option.map
@@ -63,7 +62,7 @@ let crate_get_item_meta (m : crate) (id : any_decl_id) : Types.item_meta option
 
 (** This visitor keeps track of the last (most precise) span it found, together
     with the id of the declaration it is currently exploring (the environment it
-    carries is a pair (any_decl_id, span)). *)
+    carries is a pair (item_id, span)). *)
 class ['self] map_crate_with_span =
   object (self)
     inherit [_] map_statement as super
@@ -94,7 +93,7 @@ class ['self] map_crate_with_span =
       in
       super#visit_field decl_span_info field
 
-    method visit_expr_body (decl_span_info : (any_decl_id * span) option)
+    method visit_expr_body (decl_span_info : (item_id * span) option)
         (body : expr_body) : expr_body =
       let { span; locals; body } = body in
       let decl_span_info =
@@ -105,7 +104,7 @@ class ['self] map_crate_with_span =
       let body = self#visit_block decl_span_info body in
       { span; locals; body }
 
-    method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl) :
+    method visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) :
         fun_decl =
       let { def_id; item_meta; signature; src; is_global_initializer; body } =
         decl
@@ -122,28 +121,25 @@ class ['self] map_crate_with_span =
       let body = self#visit_option self#visit_expr_body decl_span_info body in
       { def_id; item_meta; signature; src; is_global_initializer; body }
 
-    method! visit_global_decl (_ : (any_decl_id * span) option)
-        (decl : global_decl) =
+    method! visit_global_decl (_ : (item_id * span) option) (decl : global_decl)
+        =
       let decl_span_info = Some (IdGlobal decl.def_id, decl.item_meta.span) in
       super#visit_global_decl decl_span_info decl
 
-    method! visit_trait_decl (_ : (any_decl_id * span) option)
-        (decl : trait_decl) =
+    method! visit_trait_decl (_ : (item_id * span) option) (decl : trait_decl) =
       let decl_span_info =
         Some (IdTraitDecl decl.def_id, decl.item_meta.span)
       in
       super#visit_trait_decl decl_span_info decl
 
-    method! visit_trait_impl (_ : (any_decl_id * span) option)
-        (decl : trait_impl) =
+    method! visit_trait_impl (_ : (item_id * span) option) (decl : trait_impl) =
       let decl_span_info =
         Some (IdTraitImpl decl.def_id, decl.item_meta.span)
       in
       super#visit_trait_impl decl_span_info decl
 
-    method visit_declaration_group
-        (decl_span_info : (any_decl_id * span) option) (g : declaration_group) :
-        declaration_group =
+    method visit_declaration_group (decl_span_info : (item_id * span) option)
+        (g : declaration_group) : declaration_group =
       match g with
       | TypeGroup g ->
           TypeGroup (self#visit_type_declaration_group decl_span_info g)
@@ -159,43 +155,42 @@ class ['self] map_crate_with_span =
           MixedGroup (self#visit_mixed_declaration_group decl_span_info g)
 
     method visit_type_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : type_declaration_group) =
+        (decl_span_info : (item_id * span) option) (g : type_declaration_group)
+        =
       g_declaration_group_map (self#visit_type_decl_id decl_span_info) g
 
     method visit_fun_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : fun_declaration_group) =
+        (decl_span_info : (item_id * span) option) (g : fun_declaration_group) =
       g_declaration_group_map (self#visit_fun_decl_id decl_span_info) g
 
     method visit_global_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
+        (decl_span_info : (item_id * span) option)
         (g : global_declaration_group) =
       g_declaration_group_map (self#visit_global_decl_id decl_span_info) g
 
     method visit_trait_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : trait_declaration_group) =
+        (decl_span_info : (item_id * span) option) (g : trait_declaration_group)
+        =
       g_declaration_group_map (self#visit_trait_decl_id decl_span_info) g
 
-    method visit_trait_impl_group (decl_span_info : (any_decl_id * span) option)
+    method visit_trait_impl_group (decl_span_info : (item_id * span) option)
         (g : trait_impl_group) =
       g_declaration_group_map (self#visit_trait_impl_id decl_span_info) g
 
     method visit_mixed_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : mixed_declaration_group) =
-      g_declaration_group_map (self#visit_any_decl_id decl_span_info) g
+        (decl_span_info : (item_id * span) option) (g : mixed_declaration_group)
+        =
+      g_declaration_group_map (self#visit_item_id decl_span_info) g
 
-    method visit_cli_options (decl_span_info : (any_decl_id * span) option)
+    method visit_cli_options (decl_span_info : (item_id * span) option)
         (option : cli_options) : cli_options =
       option
 
-    method visit_target_info (decl_span_info : (any_decl_id * span) option)
+    method visit_target_info (decl_span_info : (item_id * span) option)
         (target_info : target_info) : target_info =
       target_info
 
-    method visit_crate (decl_span_info : (any_decl_id * span) option)
+    method visit_crate (decl_span_info : (item_id * span) option)
         (crate : crate) : crate =
       let {
         name;
@@ -255,7 +250,7 @@ class ['self] map_crate_with_span =
 
 (** This visitor keeps track of the last (most precise) span it found, together
     with the id of the declaration it is currently exploring (the environment it
-    carries is a pair (any_decl_id, span)). *)
+    carries is a pair (item_id, span)). *)
 class ['self] iter_crate_with_span =
   object (self)
     inherit [_] iter_statement as super
@@ -286,7 +281,7 @@ class ['self] iter_crate_with_span =
       in
       super#visit_field decl_span_info field
 
-    method visit_expr_body (decl_span_info : (any_decl_id * span) option)
+    method visit_expr_body (decl_span_info : (item_id * span) option)
         (body : expr_body) : unit =
       let { span; locals; body } = body in
       let decl_span_info =
@@ -296,8 +291,8 @@ class ['self] iter_crate_with_span =
       self#visit_locals decl_span_info locals;
       self#visit_block decl_span_info body
 
-    method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl) :
-        unit =
+    method visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) : unit
+        =
       let { def_id; item_meta; signature; src; is_global_initializer; body } =
         decl
       in
@@ -310,28 +305,25 @@ class ['self] iter_crate_with_span =
         is_global_initializer;
       self#visit_option self#visit_expr_body decl_span_info body
 
-    method! visit_global_decl (_ : (any_decl_id * span) option)
-        (decl : global_decl) =
+    method! visit_global_decl (_ : (item_id * span) option) (decl : global_decl)
+        =
       let decl_span_info = Some (IdGlobal decl.def_id, decl.item_meta.span) in
       super#visit_global_decl decl_span_info decl
 
-    method! visit_trait_decl (_ : (any_decl_id * span) option)
-        (decl : trait_decl) =
+    method! visit_trait_decl (_ : (item_id * span) option) (decl : trait_decl) =
       let decl_span_info =
         Some (IdTraitDecl decl.def_id, decl.item_meta.span)
       in
       super#visit_trait_decl decl_span_info decl
 
-    method! visit_trait_impl (_ : (any_decl_id * span) option)
-        (decl : trait_impl) =
+    method! visit_trait_impl (_ : (item_id * span) option) (decl : trait_impl) =
       let decl_span_info =
         Some (IdTraitImpl decl.def_id, decl.item_meta.span)
       in
       super#visit_trait_impl decl_span_info decl
 
-    method visit_declaration_group
-        (decl_span_info : (any_decl_id * span) option) (g : declaration_group) :
-        unit =
+    method visit_declaration_group (decl_span_info : (item_id * span) option)
+        (g : declaration_group) : unit =
       match g with
       | TypeGroup g -> self#visit_type_declaration_group decl_span_info g
       | FunGroup g -> self#visit_fun_declaration_group decl_span_info g
@@ -341,45 +333,45 @@ class ['self] iter_crate_with_span =
       | MixedGroup g -> self#visit_mixed_declaration_group decl_span_info g
 
     method visit_type_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : type_declaration_group) : unit =
+        (decl_span_info : (item_id * span) option) (g : type_declaration_group)
+        : unit =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_type_decl_id decl_span_info) ids
 
     method visit_fun_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : fun_declaration_group) : unit =
+        (decl_span_info : (item_id * span) option) (g : fun_declaration_group) :
+        unit =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_fun_decl_id decl_span_info) ids
 
     method visit_global_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
+        (decl_span_info : (item_id * span) option)
         (g : global_declaration_group) : unit =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_global_decl_id decl_span_info) ids
 
     method visit_trait_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : trait_declaration_group) : unit =
+        (decl_span_info : (item_id * span) option) (g : trait_declaration_group)
+        : unit =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_trait_decl_id decl_span_info) ids
 
-    method visit_trait_impl_group (decl_span_info : (any_decl_id * span) option)
+    method visit_trait_impl_group (decl_span_info : (item_id * span) option)
         (g : trait_impl_group) : unit =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_trait_impl_id decl_span_info) ids
 
     method visit_mixed_declaration_group
-        (decl_span_info : (any_decl_id * span) option)
-        (g : mixed_declaration_group) : unit =
+        (decl_span_info : (item_id * span) option) (g : mixed_declaration_group)
+        : unit =
       let ids = g_declaration_group_to_list g in
-      List.iter (self#visit_any_decl_id decl_span_info) ids
+      List.iter (self#visit_item_id decl_span_info) ids
 
-    method visit_cli_options (decl_span_info : (any_decl_id * span) option)
+    method visit_cli_options (decl_span_info : (item_id * span) option)
         (option : cli_options) : unit =
       ()
 
-    method visit_crate (decl_span_info : (any_decl_id * span) option)
+    method visit_crate (decl_span_info : (item_id * span) option)
         (crate : crate) : unit =
       let {
         name;

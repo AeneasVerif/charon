@@ -24,7 +24,7 @@ type trait_declaration_group = TraitDeclId.id g_declaration_group
 [@@deriving show]
 
 type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
-type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
+type mixed_declaration_group = item_id g_declaration_group [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
 type 'body gfun_decl = {

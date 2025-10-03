@@ -97,7 +97,7 @@ let g_declaration_group_iter (f : 'a -> unit) (g : 'a g_declaration_group) :
   List.iter f ids
 
 (** List all the ids in this declaration group. *)
-let declaration_group_to_list (g : declaration_group) : any_decl_id list =
+let declaration_group_to_list (g : declaration_group) : item_id list =
   match g with
   | FunGroup g -> List.map (fun id -> IdFun id) (g_declaration_group_to_list g)
   | TypeGroup g ->
@@ -177,20 +177,19 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
   let trait_impls = TIG.create_map trait_impls in
   (types, funs, globals, trait_decls, trait_impls, mixed_groups)
 
-module OrderedAnyDeclId : Collections.OrderedType with type t = any_decl_id =
-struct
-  type t = any_decl_id
+module OrderedAnyDeclId : Collections.OrderedType with type t = item_id = struct
+  type t = item_id
 
-  let compare = compare_any_decl_id
-  let to_string = show_any_decl_id
-  let pp_t fmt x = Format.pp_print_string fmt (show_any_decl_id x)
-  let show_t = show_any_decl_id
+  let compare = compare_item_id
+  let to_string = show_item_id
+  let pp_t fmt x = Format.pp_print_string fmt (show_item_id x)
+  let show_t = show_item_id
 end
 
 module AnyDeclIdSet = Collections.MakeSet (OrderedAnyDeclId)
 module AnyDeclIdMap = Collections.MakeMap (OrderedAnyDeclId)
 
-let any_decl_id_to_kind_name (id : any_decl_id) : string =
+let item_id_to_kind_name (id : item_id) : string =
   match id with
   | IdType _ -> "type decl"
   | IdFun _ -> "fun decl"
@@ -218,8 +217,7 @@ class ['self] filter_decl_id =
     method visit_trait_decl_id _ (id : TraitDeclId.id) = Some id
     method visit_trait_impl_id _ (id : TraitImplId.id) = Some id
 
-    method visit_any_decl_id (env : 'a) (id : any_decl_id) : any_decl_id option
-        =
+    method visit_item_id (env : 'a) (id : item_id) : item_id option =
       match id with
       | IdType id ->
           Option.map (fun id -> IdType id) (self#visit_type_decl_id env id)
@@ -258,7 +256,7 @@ class ['self] filter_decl_id =
 
     method visit_mixed_declaration_group env (g : mixed_declaration_group) :
         mixed_declaration_group option =
-      g_declaration_group_filter_map (self#visit_any_decl_id env) g
+      g_declaration_group_filter_map (self#visit_item_id env) g
 
     method visit_declaration_group env (g : declaration_group) :
         declaration_group option =

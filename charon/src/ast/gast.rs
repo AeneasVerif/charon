@@ -17,7 +17,7 @@ pub struct Local {
     #[drive(skip)]
     pub name: Option<String>,
     /// The variable type
-    #[charon::rename("var_ty")]
+    #[charon::rename("local_ty")]
     pub ty: Ty,
 }
 #[deprecated(note = "use `Local` intead")]
@@ -193,7 +193,6 @@ pub struct GlobalDecl {
     pub global_kind: GlobalKind,
     /// The initializer function used to compute the initial value for this constant/static. It
     /// uses the same generic parameters as the global.
-    #[charon::rename("body")]
     pub init: FunDeclId,
 }
 

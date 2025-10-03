@@ -173,7 +173,7 @@ let const_generic_as_literal (cg : const_generic) : Values.literal =
   | CgValue v -> v
   | _ -> raise (Failure "Unreachable")
 
-let trait_instance_id_as_trait_impl (id : trait_instance_id) :
+let trait_instance_id_as_trait_impl (id : trait_ref_kind) :
     trait_impl_id * generic_args =
   match id with
   | TraitImpl impl_ref -> (impl_ref.id, impl_ref.generics)
@@ -232,7 +232,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   let trait_refs =
     List.map
       (fun (c : trait_param) ->
-        { trait_id = Clause (Free c.clause_id); trait_decl_ref = c.trait })
+        { kind = Clause (Free c.clause_id); trait_decl_ref = c.trait })
       generics.trait_clauses
   in
   { regions; types; const_generics; trait_refs }

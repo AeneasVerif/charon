@@ -7,7 +7,7 @@ open PrintUtils
 open PrintTypes
 open PrintExpressions
 
-let any_decl_id_to_string (id : any_decl_id) : string =
+let item_id_to_string (id : item_id) : string =
   match id with
   | IdFun id -> FunDeclId.to_string id
   | IdGlobal id -> GlobalDeclId.to_string id
@@ -119,7 +119,7 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
         List.map
           (fun var ->
             indent ^ indent_incr ^ local_to_string var ^ " : "
-            ^ ty_to_string env var.var_ty
+            ^ ty_to_string env var.local_ty
             ^ ";")
           body.locals.locals
       in

@@ -326,9 +326,9 @@ and generic_args_to_string (env : 'a fmt_env) (generics : generic_args) : string
   in
   params ^ trait_refs
 
-and trait_instance_id_to_string (env : 'a fmt_env)
-    (implements : trait_decl_ref region_binder option)
-    (kind : trait_instance_id) : string =
+and trait_ref_kind_to_string (env : 'a fmt_env)
+    (implements : trait_decl_ref region_binder option) (kind : trait_ref_kind) :
+    string =
   match kind with
   | Self -> "Self"
   | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
@@ -353,7 +353,7 @@ and trait_instance_id_to_string (env : 'a fmt_env)
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and trait_ref_to_string (env : 'a fmt_env) (tr : trait_ref) : string =
-  trait_instance_id_to_string env (Some tr.trait_decl_ref) tr.trait_id
+  trait_ref_kind_to_string env (Some tr.trait_decl_ref) tr.kind
 
 and trait_decl_ref_to_string (env : 'a fmt_env) (tr : trait_decl_ref) : string =
   let trait_id = trait_decl_id_to_string env tr.id in
