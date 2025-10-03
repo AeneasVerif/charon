@@ -133,6 +133,10 @@ pub enum ItemSource {
     },
     /// This is a vtable value for an impl.
     VTableInstance { impl_ref: TraitImplRef },
+    /// The method shim wraps a concrete implementation of a method into a function that takes `dyn
+    /// Trait` as its `Self` type. This shim casts the receiver to the known concrete type and
+    /// calls the real method.
+    VTableMethodShim,
 }
 
 /// A function definition

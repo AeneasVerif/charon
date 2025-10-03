@@ -1102,6 +1102,7 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
         let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
         Ok (VTableInstanceItem impl_ref)
+    | `String "VTableMethodShim" -> Ok VTableMethodShimItem
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =

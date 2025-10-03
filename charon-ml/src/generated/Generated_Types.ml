@@ -769,6 +769,10 @@ and item_source =
 
           Fields:
           - [impl_ref] *)
+  | VTableMethodShimItem
+      (** The method shim wraps a concrete implementation of a method into a
+          function that takes [dyn Trait] as its [Self] type. This shim casts
+          the receiver to the known concrete type and calls the real method. *)
 
 (** Simplified type layout information.
 

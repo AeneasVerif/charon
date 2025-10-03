@@ -1163,7 +1163,8 @@ impl VisitAstMut for UpdateItemBody<'_> {
             ItemSource::TopLevel
             | ItemSource::Closure { .. }
             | ItemSource::VTableTy { .. }
-            | ItemSource::VTableInstance { .. } => {}
+            | ItemSource::VTableInstance { .. }
+            | ItemSource::VTableMethodShim => {}
             // Inside method declarations, the implicit `Self` clause is the first clause.
             ItemSource::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,

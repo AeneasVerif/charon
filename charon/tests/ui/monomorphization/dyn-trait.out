@@ -89,22 +89,7 @@ note: the error occurred when translating `core::marker::MetaSized::<type_error(
 7 |     x.to_string()
   |     -------------
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/fmt/mod.rs:1007:1
-
-note: the error occurred when translating `core::fmt::Display::{vtable}::<alloc::string::String>`, which is (transitively) used at the following location(s):
-  --> tests/ui/monomorphization/dyn-trait.rs:12:27
-   |
-12 |     let _ = dyn_to_string(&str);
-   |                           ----
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:374:17:
-incorrect `dyn_self`
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `core::fmt::Display`.
- --> /rustc/library/core/src/fmt/mod.rs:1007:1
-
-error: Failed to translate item Type(3).
- --> /rustc/library/core/src/fmt/mod.rs:1007:1
+ --> /rustc/library/alloc/src/string.rs:2624:1
 
 note: the error occurred when translating `alloc::string::{impl core::fmt::Display::<alloc::string::String>}::{vtable}`, which is (transitively) used at the following location(s):
   --> tests/ui/monomorphization/dyn-trait.rs:12:27
@@ -198,4 +183,4 @@ note: the error occurred when translating `alloc::string::ToString::to_string`, 
   |
 7 |     x.to_string()
   |     -------------
-ERROR Charon failed to translate this code (38 errors)
+ERROR Charon failed to translate this code (36 errors)
