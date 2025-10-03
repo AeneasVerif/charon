@@ -214,7 +214,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
-                let fnref = self.translate_fn_ptr(span, item)?;
+                let fnref = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {

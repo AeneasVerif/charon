@@ -1047,7 +1047,9 @@ impl BodyTransCtx<'_, '_, '_> {
                     // We ignore the arguments
                     return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
                 } else {
-                    let fn_ptr = self.translate_fn_ptr(span, item)?.erase();
+                    let fn_ptr = self
+                        .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
+                        .erase();
                     FnOperand::Regular(fn_ptr)
                 }
             }

@@ -504,6 +504,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         item: &hax::ItemRef,
+        kind: TransItemSourceKind,
     ) -> Result<MaybeBuiltinFunDeclRef, Error> {
         match self.recognize_builtin_fun(item)? {
             Some(id) => {
@@ -514,7 +515,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     generics: Box::new(generics),
                 })
             }
-            None => self.translate_item(span, item, TransItemSourceKind::Fun),
+            None => self.translate_item(span, item, kind),
         }
     }
 
@@ -525,8 +526,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         item: &hax::ItemRef,
+        kind: TransItemSourceKind,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        let fun_item = self.translate_fun_item(span, item)?;
+        let fun_item = self.translate_fun_item(span, item, kind)?;
         let late_bound = match self.hax_def(item)?.kind() {
             hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
                 Some(sig.as_ref().rebind(()))
