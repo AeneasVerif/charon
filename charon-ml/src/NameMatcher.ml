@@ -735,12 +735,11 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
                arguments matches the number of generic parameters.
             *)
             if
-              TypesUtils.generic_params_lengths d.signature.generics
+              TypesUtils.generic_params_lengths d.generics
               = TypesUtils.generic_args_lengths func.generics
             then
               let subst =
-                Substitute.make_subst_from_generics d.signature.generics
-                  func.generics
+                Substitute.make_subst_from_generics d.generics func.generics
               in
               let trait_ref =
                 Substitute.trait_decl_ref_substitute subst trait_ref

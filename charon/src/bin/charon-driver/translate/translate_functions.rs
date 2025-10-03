@@ -14,17 +14,13 @@ use charon_lib::ullbc_ast::*;
 use itertools::Itertools;
 
 impl ItemTransCtx<'_, '_> {
-    /// Translate a function's signature, and initialize a body translation context
-    /// at the same time - the function signature gives us the list of region and
-    /// type parameters, that we put in the translation context.
+    /// Translate a function's signature.
     pub(crate) fn translate_function_signature(
         &mut self,
         def: &hax::FullDef,
         item_meta: &ItemMeta,
     ) -> Result<FunSig, Error> {
         let span = item_meta.span;
-
-        self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
             hax::FullDefKind::Fn { sig, .. } => sig,
@@ -85,7 +81,6 @@ impl ItemTransCtx<'_, '_> {
         };
 
         Ok(FunSig {
-            generics: self.the_only_binder().params.clone(),
             is_unsafe,
             inputs,
             output,

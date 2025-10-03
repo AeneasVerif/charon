@@ -30,6 +30,7 @@ type mixed_declaration_group = item_id g_declaration_group [@@deriving show]
 type 'body gfun_decl = {
   def_id : FunDeclId.id;
   item_meta : item_meta;
+  generics : generic_params;
   signature : fun_sig;
   src : item_source;
   is_global_initializer : GlobalDeclId.id option;

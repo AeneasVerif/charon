@@ -96,6 +96,7 @@ impl TransformPass for Transform {
                     let FunDecl {
                         def_id: _,
                         item_meta,
+                        generics: _,
                         signature,
                         src: kind,
                         is_global_initializer,
@@ -112,7 +113,6 @@ impl TransformPass for Transform {
                         ..item_meta
                     };
                     let signature = FunSig {
-                        generics: bound_method.params,
                         inputs: signature.inputs.substitute_with_self(
                             &bound_method.skip_binder.item.generics,
                             &self_predicate.kind,
@@ -154,6 +154,7 @@ impl TransformPass for Transform {
                         FunDecl {
                             def_id: new_fun_id,
                             item_meta,
+                            generics: bound_method.params,
                             signature,
                             src: kind,
                             is_global_initializer,

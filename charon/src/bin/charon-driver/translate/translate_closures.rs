@@ -333,7 +333,6 @@ impl ItemTransCtx<'_, '_> {
         let output = self.translate_ty(span, &signature.value.output)?;
 
         Ok(FunSig {
-            generics: self.the_only_binder().params.clone(),
             is_unsafe,
             inputs,
             output,
@@ -341,7 +340,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     fn translate_closure_method_body(
-        mut self,
+        &mut self,
         span: Span,
         def: &hax::FullDef,
         target_kind: ClosureKind,
@@ -361,7 +360,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(match (target_kind, closure_kind) {
             (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
                 // Translate the function's body normally
-                let mut bt_ctx = BodyTransCtx::new(&mut self);
+                let mut bt_ctx = BodyTransCtx::new(self);
                 match bt_ctx.translate_def_body(span, def) {
                     Ok(Ok(mut body)) => {
                         // The body is translated as if the locals are: ret value, state, arg-1,
@@ -437,7 +436,7 @@ impl ItemTransCtx<'_, '_> {
                 else {
                     panic!("missing shim for closure")
                 };
-                let mut bt_ctx = BodyTransCtx::new(&mut self);
+                let mut bt_ctx = BodyTransCtx::new(self);
                 match bt_ctx.translate_body(span, body, &def.source_text) {
                     Ok(Ok(body)) => Ok(body),
                     Ok(Err(Opaque)) => Err(Opaque),
@@ -578,6 +577,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src,
             is_global_initializer: None,
@@ -772,6 +772,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::TopLevel,
             is_global_initializer: None,
