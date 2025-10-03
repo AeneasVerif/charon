@@ -279,6 +279,10 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
         Ok (CastTransmute (x_0, x_1))
+    | `Assoc [ ("Concretize", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json ctx x_0 in
+        let* x_1 = ty_of_json ctx x_1 in
+        Ok (CastConcretize (x_0, x_1))
     | _ -> Error "")
 
 and cli_options_of_json (ctx : of_json_ctx) (js : json) :

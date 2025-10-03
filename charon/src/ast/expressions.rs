@@ -202,6 +202,17 @@ pub enum CastKind {
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty, Ty),
+    /// Converts a receiver type with `dyn Trait<...>` to a concrete type `T`, used in vtable method shims.
+    /// Valid conversions are references, raw pointers, and (optionally) boxes:
+    /// - `&[mut] dyn Trait<...>` -> `&[mut] T`
+    /// - `*[mut] dyn Trait<...>` -> `*[mut] T`
+    /// - `Box<dyn Trait<...>>` -> `Box<T>` when no `--raw-boxes`
+    ///
+    /// For possible receivers, see: https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility.
+    /// Other receivers, e.g., `Rc` should be unpacked before the cast and re-boxed after.
+    /// FIXME(ssyram): but this is not implemented yet, namely, there may still be
+    ///     something like `Rc<dyn Trait<...>> -> Rc<T>` in the types.
+    Concretize(Ty, Ty),
 }
 
 #[derive(
