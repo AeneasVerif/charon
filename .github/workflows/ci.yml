@@ -124,6 +124,8 @@ jobs:
               charon eurydice \
               --override-input charon github:aeneasverif/charon/$CHARON \
               --override-input eurydice github:aeneasverif/eurydice/$EURYDICE
+          # Temporarily pin a known good version of libcrux while we find a more maintainable setup.
+          export LIBCRUX=2a86482d716650976b09e0f60f5c87aa166b5f41
           # Use the last-known-good libcrux version unless overridden.
           if [[ -n "$LIBCRUX" ]]; then
               nix flake update --refresh libcrux \
