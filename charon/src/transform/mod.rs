@@ -3,7 +3,7 @@ pub mod ctx;
 pub mod utils;
 
 /// Passes that finish translation, i.e. required for the output to be a valid output.
-mod finish_translation {
+pub mod finish_translation {
     pub mod duplicate_defaulted_methods;
     pub mod filter_invisible_trait_impls;
     pub mod insert_assign_return_unit;
@@ -13,7 +13,7 @@ mod finish_translation {
 }
 
 /// Passes that compute extra info to be stored in the crate.
-mod add_missing_info {
+pub mod add_missing_info {
     pub mod compute_short_names;
     pub mod recover_body_comments;
     pub mod reorder_decls;
@@ -21,7 +21,7 @@ mod add_missing_info {
 }
 
 /// Passes that effect some kind of normalization on the crate.
-mod normalize {
+pub mod normalize {
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
     pub mod monomorphize;
@@ -30,7 +30,7 @@ mod normalize {
 
 /// Passes that undo some lowering done by rustc to recover an operation closer to what the user
 /// wrote.
-mod resugar {
+pub mod resugar {
     pub mod inline_local_panic_functions;
     pub mod reconstruct_asserts;
     pub mod reconstruct_boxes;
@@ -39,7 +39,7 @@ mod resugar {
 }
 
 /// Passes that make the output simpler/easier to consume.
-mod simplify_output {
+pub mod simplify_output {
     pub mod hide_allocator_param;
     pub mod hide_marker_traits;
     pub mod index_intermediate_assigns;
@@ -57,7 +57,7 @@ mod simplify_output {
 }
 
 /// Passes that manipulate the control flow and reconstruct its structure.
-mod control_flow {
+pub mod control_flow {
     pub mod duplicate_return;
     pub mod merge_goto_chains;
     pub mod prettify_cfg;
