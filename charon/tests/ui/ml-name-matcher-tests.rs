@@ -89,7 +89,7 @@ struct MonoContainer<T> {
 
 impl<T> MonoContainer<T> {
     #[pattern::pass("test_crate::{test_crate::MonoContainer<@T>}::create")]
-    #[pattern::fail("test_crate::_::create")]
+    #[pattern::pass("test_crate::_::create")]
     fn create(item: T) -> Self {
         Self { item }
     }

@@ -123,6 +123,7 @@ and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
       match c.tgt with
       | TkPattern | TkPretty -> "{" ^ ty ^ "}"
       | TkName -> ty)
+  | PWild -> "_"
 
 and expr_to_string (c : print_config) (e : expr) : string =
   match e with
@@ -506,6 +507,9 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
           && match_name_with_generics ctx c p n g)
+  | PWild :: p, _ :: n ->
+      (* Wildcard: skip this element in the name *)
+      match_name_with_generics ctx c p n g
   | _ -> false
 
 and match_name (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
