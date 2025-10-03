@@ -596,9 +596,7 @@ and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
         in
         Ok (TraitImplGroup trait_impl)
     | `Assoc [ ("Mixed", mixed) ] ->
-        let* mixed =
-          g_declaration_group_of_json any_decl_id_of_json ctx mixed
-        in
+        let* mixed = g_declaration_group_of_json item_id_of_json ctx mixed in
         Ok (MixedGroup mixed)
     | _ -> Error "")
 
@@ -935,9 +933,9 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* ty = ty_of_json ctx ty in
         let* src = item_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
-        let* body = fun_decl_id_of_json ctx init in
+        let* init = fun_decl_id_of_json ctx init in
         Ok
-          ({ def_id; item_meta; generics; ty; src; global_kind; body }
+          ({ def_id; item_meta; generics; ty; src; global_kind; init }
             : global_decl)
     | _ -> Error "")
 
@@ -1011,8 +1009,7 @@ and integer_type_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Unsigned unsigned)
     | _ -> Error "")
 
-and any_decl_id_of_json (ctx : of_json_ctx) (js : json) :
-    (any_decl_id, string) result =
+and item_id_of_json (ctx : of_json_ctx) (js : json) : (item_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Type", type_) ] ->
@@ -1184,8 +1181,8 @@ and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
     | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
         let* index = local_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
-        let* var_ty = ty_of_json ctx ty in
-        Ok ({ index; name; var_ty } : local)
+        let* local_ty = ty_of_json ctx ty in
+        Ok ({ index; name; local_ty } : local)
     | _ -> Error "")
 
 and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result
@@ -1775,15 +1772,15 @@ and trait_ref_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
-        let* trait_id = trait_instance_id_of_json ctx kind in
+        let* kind = trait_ref_kind_of_json ctx kind in
         let* trait_decl_ref =
           region_binder_of_json trait_decl_ref_of_json ctx trait_decl_ref
         in
-        Ok ({ trait_id; trait_decl_ref } : trait_ref)
+        Ok ({ kind; trait_decl_ref } : trait_ref)
     | _ -> Error "")
 
-and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
-    (trait_instance_id, string) result =
+and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_ref_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("TraitImpl", trait_impl) ] ->

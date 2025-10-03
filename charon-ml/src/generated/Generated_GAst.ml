@@ -64,7 +64,7 @@ and local = {
   name : string option;
       (** Variable name - may be [None] if the variable was introduced by Rust
           through desugaring. *)
-  var_ty : ty;  (** The variable type *)
+  local_ty : ty;  (** The variable type *)
 }
 
 (** The local variables of a body. *)
@@ -108,7 +108,7 @@ type global_decl = {
       (** The context of the global: distinguishes top-level items from
           trait-associated items. *)
   global_kind : global_kind;  (** The kind of global (static or const). *)
-  body : fun_decl_id;
+  init : fun_decl_id;
       (** The initializer function used to compute the initial value for this
           constant/static. It uses the same generic parameters as the global. *)
 }
@@ -418,7 +418,7 @@ and declaration_group =
       (** A global declaration group *)
   | TraitDeclGroup of trait_decl_id g_declaration_group
   | TraitImplGroup of trait_impl_id g_declaration_group
-  | MixedGroup of any_decl_id g_declaration_group
+  | MixedGroup of item_id g_declaration_group
       (** Anything that doesn't fit into these categories. *)
 
 (** A (group of) top-level declaration(s), properly reordered. "G" stands for

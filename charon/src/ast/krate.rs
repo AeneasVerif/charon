@@ -36,7 +36,6 @@ generate_index_type!(TraitImplId, "TraitImpl");
     Drive,
     DriveMut,
 )]
-#[charon::rename("AnyDeclId")]
 #[charon::variants_prefix("Id")]
 pub enum ItemId {
     Type(TypeDeclId),

@@ -113,7 +113,7 @@ module Ast = struct
     let name = name_to_string env def.item_meta.name in
     let ty = ty_to_string env def.ty in
 
-    let body_id = fun_decl_id_to_string env def.body in
+    let body_id = fun_decl_id_to_string env def.init in
     indent ^ "global " ^ name ^ params ^ clauses ^ " : " ^ ty ^ " = " ^ body_id
 end
 

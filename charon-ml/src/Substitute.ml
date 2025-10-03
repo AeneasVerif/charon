@@ -24,9 +24,9 @@ type subst = {
   ty_subst : TypeVarId.id de_bruijn_var -> ty;
   cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
-  tr_subst : TraitClauseId.id de_bruijn_var -> trait_instance_id;
+  tr_subst : TraitClauseId.id de_bruijn_var -> trait_ref_kind;
       (** Substitution for the [Self] trait instance *)
-  tr_self : trait_instance_id;
+  tr_self : trait_ref_kind;
 }
 
 (* A substitution that applies to a specific binder. Use it with
@@ -35,9 +35,9 @@ type single_binder_subst = {
   r_sb_subst : RegionId.id -> region;
   ty_sb_subst : TypeVarId.id -> ty;
   cg_sb_subst : ConstGenericVarId.id -> const_generic;
-  tr_sb_subst : TraitClauseId.id -> trait_instance_id;
+  tr_sb_subst : TraitClauseId.id -> trait_ref_kind;
       (** Substitution for the [Self] trait instance *)
-  tr_sb_self : trait_instance_id;
+  tr_sb_self : trait_ref_kind;
 }
 
 let empty_subst : subst =
@@ -164,7 +164,7 @@ let shift_subst (subst : subst) : subst =
         (compose subst.cg_subst decr_db_var);
     tr_subst =
       compose
-        (st_shift_visitor#visit_trait_instance_id 1)
+        (st_shift_visitor#visit_trait_ref_kind 1)
         (compose subst.tr_subst decr_db_var);
     tr_self = subst.tr_self;
   }
@@ -212,9 +212,9 @@ let trait_decl_ref_substitute (subst : subst) (tr : trait_decl_ref) :
     trait_decl_ref =
   st_substitute_visitor#visit_trait_decl_ref subst tr
 
-let trait_instance_id_substitute (subst : subst) (tr : trait_instance_id) :
-    trait_instance_id =
-  st_substitute_visitor#visit_trait_instance_id subst tr
+let trait_ref_kind_substitute (subst : subst) (tr : trait_ref_kind) :
+    trait_ref_kind =
+  st_substitute_visitor#visit_trait_ref_kind subst tr
 
 let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
   st_substitute_visitor#visit_generic_args subst g
@@ -270,9 +270,8 @@ let erase_regions (ty : ty) : ty = ty_substitute erase_regions_subst ty
 let trait_ref_erase_regions (tr : trait_ref) : trait_ref =
   trait_ref_substitute erase_regions_subst tr
 
-let trait_instance_id_erase_regions (tr : trait_instance_id) : trait_instance_id
-    =
-  trait_instance_id_substitute erase_regions_subst tr
+let trait_ref_kind_erase_regions (tr : trait_ref_kind) : trait_ref_kind =
+  trait_ref_kind_substitute erase_regions_subst tr
 
 let generic_args_erase_regions (tr : generic_args) : generic_args =
   generic_args_substitute erase_regions_subst tr
@@ -328,15 +327,15 @@ let make_const_generic_subst_from_vars (vars : const_generic_param list)
 (** Create a trait substitution from a list of trait clause ids and a list of
     trait refs *)
 let make_trait_subst (var_ids : TraitClauseId.id list)
-    (trs : trait_instance_id list) : TraitClauseId.id -> trait_instance_id =
+    (trs : trait_ref_kind list) : TraitClauseId.id -> trait_ref_kind =
   let map = TraitClauseId.Map.of_list (List.combine var_ids trs) in
   fun varid -> TraitClauseId.Map.find varid map
 
 let make_trait_subst_from_clauses (clauses : trait_param list)
-    (trs : trait_ref list) : TraitClauseId.id -> trait_instance_id =
+    (trs : trait_ref list) : TraitClauseId.id -> trait_ref_kind =
   make_trait_subst
     (List.map (fun (x : trait_param) -> x.clause_id) clauses)
-    (List.map (fun (x : trait_ref) -> x.trait_id) trs)
+    (List.map (fun (x : trait_ref) -> x.kind) trs)
 
 let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
     : single_binder_subst =
@@ -432,7 +431,7 @@ let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
     local list * block =
   let locals =
     List.map
-      (fun (v : local) -> { v with var_ty = ty_substitute subst v.var_ty })
+      (fun (v : local) -> { v with local_ty = ty_substitute subst v.local_ty })
       body.locals.locals
   in
   let body = block_substitute subst body.body in
@@ -472,9 +471,8 @@ let apply_args_to_binder (args : generic_args) (substitutor : subst -> 'a -> 'a)
 (** Remove this binder by substituting the provided arguments for each bound
     variable. The `substitutor` argument must be the appropriate
     `st_substitute_visitor` method. *)
-let apply_args_to_item_binder (tr_self : trait_instance_id)
-    (args : generic_args) (substitutor : subst -> 'a -> 'a)
-    (binder : 'a item_binder) : 'a =
+let apply_args_to_item_binder (tr_self : trait_ref_kind) (args : generic_args)
+    (substitutor : subst -> 'a -> 'a) (binder : 'a item_binder) : 'a =
   let subst = make_sb_subst_from_generics binder.item_binder_params args in
   let subst = { subst with tr_sb_self = tr_self } in
   substitutor (subst_free_vars subst) binder.item_binder_value
@@ -560,7 +558,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
   { item_binder_params = params; item_binder_value = bound_val }
 
 (** Helper *)
-let instantiate_method (trait_self : trait_instance_id)
+let instantiate_method (trait_self : trait_ref_kind)
     (item_generics : generic_args) (method_generics : generic_args)
     (bound_fn : fun_decl_ref binder item_binder) : fun_decl_ref =
   let bound_fn =
@@ -575,7 +573,7 @@ let instantiate_method (trait_self : trait_instance_id)
 (** Helper *)
 let instantiate_trait_method (trait_ref : trait_ref) =
   let trait_generics = trait_ref.trait_decl_ref.binder_value.generics in
-  let trait_self = trait_ref.trait_id in
+  let trait_self = trait_ref.kind in
   instantiate_method trait_self trait_generics
 
 (** Like lookup_trait_decl_method, but also correctly substitutes the generics.
@@ -687,8 +685,8 @@ let bound_identity_args (params : generic_params) : generic_args =
     trait_refs =
       List.map
         (fun (clause : trait_param) ->
-          let trait_id = s.tr_sb_subst clause.clause_id in
-          { trait_id; trait_decl_ref = clause.trait })
+          let kind = s.tr_sb_subst clause.clause_id in
+          { kind; trait_decl_ref = clause.trait })
         params.trait_clauses;
   }
 
