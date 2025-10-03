@@ -70,13 +70,16 @@ fn foo() {
 #[pattern::pass(call[1], "test_crate::funs_with_disambiguator::f#1")]
 #[pattern::fail(call[1], "test_crate::funs_with_disambiguator::f#0")]
 #[pattern::fail(call[1], "test_crate::funs_with_disambiguator::f")]
-fn funs_with_disambiguator(b : bool) ->u32 {
+fn funs_with_disambiguator(b: bool) -> u32 {
     if b {
-        fn f() -> u32 { 0 }
+        fn f() -> u32 {
+            0
+        }
         f()
-    }
-    else {
-        fn f() -> u32 { 1 }
+    } else {
+        fn f() -> u32 {
+            1
+        }
         f()
     }
 }
