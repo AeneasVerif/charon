@@ -50,13 +50,6 @@ and fn_operand =
   | FnOpMove of place
       (** Use of a function pointer stored in a local variable *)
 
-(** A function signature. *)
-and fun_sig = {
-  is_unsafe : bool;  (** Is the function unsafe or not *)
-  inputs : ty list;
-  output : ty;
-}
-
 (** A variable *)
 and local = {
   index : local_id;  (** Unique index identifying the variable *)
