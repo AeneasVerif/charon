@@ -915,7 +915,10 @@ impl DynPredicate {
         // Add associated types in correct order following the vtable's generics.
 
         // 0. Prepare trait name for debug/error messages
-        let trait_name = self.binder.params.trait_clauses[0]
+        let Some(clause) = self.binder.params.trait_clauses.get(0.into()) else {
+            return None;
+        };
+        let trait_name = clause
             .trait_
             .skip_binder
             .id
@@ -925,10 +928,7 @@ impl DynPredicate {
         // 1. Get vtable ref from trait declaration
         //    Provides: 1) final return ID, 2) correct order of associated types
         // Firstly, get the trait declaration for the vtable ref it stores.
-        let Some(trait_decl) = translated
-            .trait_decls
-            .get(self.binder.params.trait_clauses[0].trait_.skip_binder.id)
-        else {
+        let Some(trait_decl) = translated.trait_decls.get(clause.trait_.skip_binder.id) else {
             return None;
         };
 
@@ -948,7 +948,7 @@ impl DynPredicate {
         // 3. Prepare "basic part" of generics from trait ref (without associated types)
         // The trait ref `dyn Trait<_dyn, Arg1, ..., ArgN>`, no associated types.
         // First trait clause is the target one for vtable, guaranteed by `DynPredicate`.
-        let trait_ref = binder.params.trait_clauses[0].trait_.clone().erase();
+        let trait_ref = clause.trait_.clone().erase();
         // Type vars (except `_dyn`) are one level deeper, move out after removing `_dyn`.
         trace!(
             "Getting vtable ref with trait-decl-ref {}.",
