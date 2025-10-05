@@ -322,6 +322,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
         1 : u32 => {
         },
         _ => {
+            storage_live(@9)
             storage_live(@10)
             @10 := []
             @9 := &@10
@@ -557,9 +558,11 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
         1 : u32 => {
         },
         _ => {
+            storage_live(@19)
             storage_live(@20)
             @20 := [const ("is_aligned_to: align is not a power-of-two")]
             @19 := &@20
+            storage_live(@21)
             storage_live(@22)
             @22 := []
             @21 := &@22
@@ -611,6 +614,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
             storage_dead(@12)
         },
     }
+    storage_live(@23)
     storage_live(@24)
     @24 := []
     @23 := &@24
@@ -753,6 +757,7 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : u
     let @5: Array<Argument<'_>, 0 : usize>; // anonymous local
     let @6: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
 
+    storage_live(@4)
     storage_live(@5)
     @5 := []
     @4 := &@5
@@ -952,9 +957,11 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                 1 : u32 => {
                 },
                 _ => {
+                    storage_live(@35)
                     storage_live(@36)
                     @36 := [const ("is_aligned_to: align is not a power-of-two")]
                     @35 := &@36
+                    storage_live(@37)
                     storage_live(@38)
                     @38 := []
                     @37 := &@38
@@ -995,9 +1002,11 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             1 : u32 => {
                             },
                             _ => {
+                                storage_live(@41)
                                 storage_live(@42)
                                 @42 := [const ("is_aligned_to: align is not a power-of-two")]
                                 @41 := &@42
+                                storage_live(@43)
                                 storage_live(@44)
                                 @44 := []
                                 @43 := &@44
@@ -1034,6 +1043,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         return
                                     }
                                     else {
+                                        storage_live(@39)
                                         storage_live(@40)
                                         @40 := []
                                         @39 := &@40
@@ -1070,6 +1080,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             return
                                         }
                                         else {
+                                            storage_live(@39)
                                             storage_live(@40)
                                             @40 := []
                                             @39 := &@40
@@ -1094,6 +1105,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                         storage_dead(@11)
                                         storage_dead(@8)
                                         storage_dead(zero_size@7)
+                                        storage_live(@39)
                                         storage_live(@40)
                                         @40 := []
                                         @39 := &@40
@@ -1121,6 +1133,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 storage_dead(@11)
                                 storage_dead(@8)
                                 storage_dead(zero_size@7)
+                                storage_live(@39)
                                 storage_live(@40)
                                 @40 := []
                                 @39 := &@40
@@ -1161,9 +1174,11 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                 1 : u32 => {
                                 },
                                 _ => {
+                                    storage_live(@41)
                                     storage_live(@42)
                                     @42 := [const ("is_aligned_to: align is not a power-of-two")]
                                     @41 := &@42
+                                    storage_live(@43)
                                     storage_live(@44)
                                     @44 := []
                                     @43 := &@44
@@ -1200,6 +1215,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             return
                                         }
                                         else {
+                                            storage_live(@39)
                                             storage_live(@40)
                                             @40 := []
                                             @39 := &@40
@@ -1236,6 +1252,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                                 return
                                             }
                                             else {
+                                                storage_live(@39)
                                                 storage_live(@40)
                                                 @40 := []
                                                 @39 := &@40
@@ -1260,6 +1277,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                             storage_dead(@11)
                                             storage_dead(@8)
                                             storage_dead(zero_size@7)
+                                            storage_live(@39)
                                             storage_live(@40)
                                             @40 := []
                                             @39 := &@40
@@ -1287,6 +1305,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                                     storage_dead(@11)
                                     storage_dead(@8)
                                     storage_dead(zero_size@7)
+                                    storage_live(@39)
                                     storage_live(@40)
                                     @40 := []
                                     @39 := &@40
@@ -1313,6 +1332,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             storage_dead(@11)
                             storage_dead(@8)
                             storage_dead(zero_size@7)
+                            storage_live(@39)
                             storage_live(@40)
                             @40 := []
                             @39 := &@40
@@ -1341,6 +1361,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     storage_dead(@11)
                     storage_dead(@8)
                     storage_dead(zero_size@7)
+                    storage_live(@39)
                     storage_live(@40)
                     @40 := []
                     @39 := &@40
@@ -1375,9 +1396,11 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
         1 : u32 => {
         },
         _ => {
+            storage_live(@35)
             storage_live(@36)
             @36 := [const ("is_aligned_to: align is not a power-of-two")]
             @35 := &@36
+            storage_live(@37)
             storage_live(@38)
             @38 := []
             @37 := &@38
@@ -1417,9 +1440,11 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                 1 : u32 => {
                 },
                 _ => {
+                    storage_live(@41)
                     storage_live(@42)
                     @42 := [const ("is_aligned_to: align is not a power-of-two")]
                     @41 := &@42
+                    storage_live(@43)
                     storage_live(@44)
                     @44 := []
                     @43 := &@44
@@ -1505,6 +1530,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             storage_dead(zero_size@7)
         },
     }
+    storage_live(@39)
     storage_live(@40)
     @40 := []
     @39 := &@40
@@ -1990,6 +2016,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
             return
         },
     }
+    storage_live(@9)
     storage_live(@10)
     @10 := []
     @9 := &@10
@@ -2030,6 +2057,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     if copy (cond@1) {
     }
     else {
+        storage_live(@8)
         storage_live(@9)
         @9 := []
         @8 := &@9
@@ -2075,6 +2103,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     if move (@3) {
     }
     else {
+        storage_live(@10)
         storage_live(@11)
         @11 := []
         @10 := &@11
@@ -3794,6 +3823,7 @@ fn ct_error(@1: Layout) -> !
     let @6: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @7: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    storage_live(@6)
     storage_live(@7)
     @7 := [const ("allocation failed")]
     @6 := &@7
@@ -3854,6 +3884,7 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
     }
     else {
     }
+    storage_live(@11)
     storage_live(@12)
     @12 := Global {  }
     @11 := &@12

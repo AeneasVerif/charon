@@ -20,6 +20,7 @@ fn SOME_INT() -> &'static (&'static (i32))
     let @4: &'_ (i32); // anonymous local
     let @5: i32; // anonymous local
 
+    storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := const (0 : i32)
