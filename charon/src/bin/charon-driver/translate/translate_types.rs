@@ -780,20 +780,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn translate_repr_options(&mut self, item: &hax::ItemRef) -> Option<ReprOptions> {
-        let rdefid = item.def_id.as_rust_def_id().unwrap();
-        if let Some(local_rdefid) = rdefid.as_local() {
-            let tcx = self.t_ctx.tcx;
-            let r_repr = tcx.repr_options_of_def(local_rdefid);
-            Some(ReprOptions {
-                align: r_repr.align.map(|a| a.bytes()),
-                pack: r_repr.pack.map(|a| a.bytes()),
-                c: r_repr.c(),
-                transparent: r_repr.transparent(),
-                explicit_discr_type: r_repr.int.is_some(),
-            })
-        } else {
-            None
+    pub fn translate_repr_options(&mut self, hax_repr_options: &hax::ReprOptions) -> ReprOptions {
+        ReprOptions {
+            align: hax_repr_options.align.clone().map(|a| a.bytes),
+            pack: hax_repr_options.pack.clone().map(|p| p.bytes),
+            c: hax_repr_options.flags.is_c,
+            transparent: hax_repr_options.flags.is_transparent,
+            explicit_discr_type: hax_repr_options.int_specified,
         }
     }
 }
