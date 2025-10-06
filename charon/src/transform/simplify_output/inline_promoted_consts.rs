@@ -47,6 +47,16 @@ impl UllbcPass for Transform {
                             // gotos so that the inner body is executed before the current block.
                             let mut inner_body = inner_body.clone().substitute(&gref.generics);
 
+                            // The init function of a global assumes the return place is live;
+                            // this is not the case once we inline it
+                            inner_body.body[0].statements.insert(
+                                0,
+                                Statement::new(
+                                    Span::dummy(),
+                                    StatementKind::StorageLive(LocalId::ZERO),
+                                ),
+                            );
+
                             let return_local = outer_body.locals.locals.next_id();
                             inner_body.dyn_visit_in_body_mut(|l: &mut LocalId| {
                                 *l += return_local;

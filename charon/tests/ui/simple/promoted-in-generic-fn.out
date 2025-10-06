@@ -39,6 +39,7 @@ where
     let @3: &'_ (usize); // anonymous local
     let @4: usize; // anonymous local
 
+    storage_live(@3)
     storage_live(@4)
     // This can't be evaluated generically.
     @4 := size_of<T>[@TraitClause0]()
