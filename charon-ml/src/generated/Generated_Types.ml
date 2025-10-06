@@ -646,6 +646,10 @@ type abort_kind =
       (** Unwind had to stop for Abi reasons or because cleanup code panicked
           again. *)
 
+(** Describes modifiers to the alignment and packing of the corresponding type.
+    Represents [repr(align(n))] and [repr(packed(n))]. *)
+and alignment_modifier = Align of int | Pack of int
+
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -861,10 +865,15 @@ and ptr_metadata =
           consistent with [<Ty as Pointee>::Metadata]. Of type
           [TyKind::Metadata(Ty)]. *)
 
-(** The representation options as annotated by the user.
+(** Describes which layout algorithm is used for representing the corresponding
+    type. Depends on the [#[repr(...)]] used. *)
+and repr_algorithm =
+  | Rust
+      (** The default layout algorithm. Used without an explicit [ŗepr] or for
+          [repr(Rust)]. *)
+  | C  (** The C layout algorithm as enforced by [repr(C)]. *)
 
-    If all are false/None, then this is equivalent to [#[repr(Rust)]]. Some
-    combinations are ruled out by the compiler, e.g. align and pack.
+(** The representation options as annotated by the user.
 
     NOTE: This does not include less common/unstable representations such as
     [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
@@ -872,9 +881,8 @@ and ptr_metadata =
     [[DiscriminantLayout]] instead. This only stores whether the discriminant
     type was derived from an explicit annotation. *)
 and repr_options = {
-  align : int option;
-  pack : int option;
-  c : bool;
+  repr_algo : repr_algorithm;
+  align_modif : alignment_modifier option;
   transparent : bool;
   explicit_discr_type : bool;
 }

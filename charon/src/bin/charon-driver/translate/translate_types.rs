@@ -781,12 +781,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub fn translate_repr_options(&mut self, hax_repr_options: &hax::ReprOptions) -> ReprOptions {
+        let repr_algo = if hax_repr_options.flags.is_c {
+            ReprAlgorithm::C
+        } else {
+            ReprAlgorithm::Rust
+        };
+
+        let align_mod = if let Some(align) = &hax_repr_options.align {
+            Some(AlignmentModifier::Align(align.bytes))
+        } else if let Some(pack) = &hax_repr_options.pack {
+            Some(AlignmentModifier::Pack(pack.bytes))
+        } else {
+            None
+        };
+
         ReprOptions {
-            align: hax_repr_options.align.clone().map(|a| a.bytes),
-            pack: hax_repr_options.pack.clone().map(|p| p.bytes),
-            c: hax_repr_options.flags.is_c,
             transparent: hax_repr_options.flags.is_transparent,
             explicit_discr_type: hax_repr_options.int_specified,
+            repr_algo,
+            align_modif: align_mod,
         }
     }
 }

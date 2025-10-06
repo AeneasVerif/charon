@@ -402,10 +402,25 @@ pub enum PtrMetadata {
     InheritFrom(Ty),
 }
 
+/// Describes which layout algorithm is used for representing the corresponding type.
+/// Depends on the `#[repr(...)]` used.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ReprAlgorithm {
+    /// The default layout algorithm. Used without an explicit `ŗepr` or for `repr(Rust)`.
+    Rust,
+    /// The C layout algorithm as enforced by `repr(C)`.
+    C,
+}
+
+/// Describes modifiers to the alignment and packing of the corresponding type.
+/// Represents `repr(align(n))` and `repr(packed(n))`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AlignmentModifier {
+    Align(ByteCount),
+    Pack(ByteCount),
+}
+
 /// The representation options as annotated by the user.
-///
-/// If all are false/None, then this is equivalent to `#[repr(Rust)]`.
-/// Some combinations are ruled out by the compiler, e.g. align and pack.
 ///
 /// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
 /// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
@@ -413,9 +428,8 @@ pub enum PtrMetadata {
 /// This only stores whether the discriminant type was derived from an explicit annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReprOptions {
-    pub align: Option<ByteCount>,
-    pub pack: Option<ByteCount>,
-    pub c: bool,
+    pub repr_algo: ReprAlgorithm,
+    pub align_modif: Option<AlignmentModifier>,
     pub transparent: bool,
     pub explicit_discr_type: bool,
 }

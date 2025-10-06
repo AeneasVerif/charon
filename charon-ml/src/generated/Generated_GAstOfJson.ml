@@ -65,6 +65,18 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedRawPtr (x_0, x_1))
     | _ -> Error "")
 
+and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
+    (alignment_modifier, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Align", align) ] ->
+        let* align = int_of_json ctx align in
+        Ok (Align align)
+    | `Assoc [ ("Pack", pack) ] ->
+        let* pack = int_of_json ctx pack in
+        Ok (Pack pack)
+    | _ -> Error "")
+
 and assertion_of_json (ctx : of_json_ctx) (js : json) :
     (assertion, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1431,24 +1443,34 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ index; name } : region_param)
     | _ -> Error "")
 
+and repr_algorithm_of_json (ctx : of_json_ctx) (js : json) :
+    (repr_algorithm, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Rust" -> Ok Rust
+    | `String "C" -> Ok C
+    | _ -> Error "")
+
 and repr_options_of_json (ctx : of_json_ctx) (js : json) :
     (repr_options, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
-          ("align", align);
-          ("pack", pack);
-          ("c", c);
+          ("repr_algo", repr_algo);
+          ("align_modif", align_modif);
           ("transparent", transparent);
           ("explicit_discr_type", explicit_discr_type);
         ] ->
-        let* align = option_of_json int_of_json ctx align in
-        let* pack = option_of_json int_of_json ctx pack in
-        let* c = bool_of_json ctx c in
+        let* repr_algo = repr_algorithm_of_json ctx repr_algo in
+        let* align_modif =
+          option_of_json alignment_modifier_of_json ctx align_modif
+        in
         let* transparent = bool_of_json ctx transparent in
         let* explicit_discr_type = bool_of_json ctx explicit_discr_type in
-        Ok ({ align; pack; c; transparent; explicit_discr_type } : repr_options)
+        Ok
+          ({ repr_algo; align_modif; transparent; explicit_discr_type }
+            : repr_options)
     | _ -> Error "")
 
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
