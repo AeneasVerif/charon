@@ -399,9 +399,9 @@ pub enum AbortKind {
 /// avoid a lot of small branches.
 ///
 /// We translate MIR asserts (introduced for out-of-bounds accesses or divisions by zero for
-/// instance) to this. We then eliminate them in [crate::transform::remove_dynamic_checks],
+/// instance) to this. We then eliminate them in [crate::transform::resugar::reconstruct_fallible_operations],
 /// because they're implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
-/// [crate::transform::reconstruct_asserts].
+/// [crate::transform::resugar::reconstruct_asserts].
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::rename("Assertion")]
 pub struct Assert {

@@ -366,7 +366,6 @@ pub struct Layout {
     #[drive(skip)]
     pub align: Option<ByteCount>,
     /// The discriminant's layout, if any. Only relevant for types with multiple variants.
-    ///
     #[drive(skip)]
     pub discriminant_layout: Option<DiscriminantLayout>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
@@ -403,6 +402,38 @@ pub enum PtrMetadata {
     InheritFrom(Ty),
 }
 
+/// Describes which layout algorithm is used for representing the corresponding type.
+/// Depends on the `#[repr(...)]` used.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ReprAlgorithm {
+    /// The default layout algorithm. Used without an explicit `ŗepr` or for `repr(Rust)`.
+    Rust,
+    /// The C layout algorithm as enforced by `repr(C)`.
+    C,
+}
+
+/// Describes modifiers to the alignment and packing of the corresponding type.
+/// Represents `repr(align(n))` and `repr(packed(n))`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AlignmentModifier {
+    Align(ByteCount),
+    Pack(ByteCount),
+}
+
+/// The representation options as annotated by the user.
+///
+/// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
+/// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
+/// are encoded in [`Variant::discriminant`] and [`DiscriminantLayout`] instead.
+/// This only stores whether the discriminant type was derived from an explicit annotation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReprOptions {
+    pub repr_algo: ReprAlgorithm,
+    pub align_modif: Option<AlignmentModifier>,
+    pub transparent: bool,
+    pub explicit_discr_type: bool,
+}
+
 /// A type declaration.
 ///
 /// Types can be opaque or transparent.
@@ -432,6 +463,10 @@ pub struct TypeDecl {
     pub layout: Option<Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
+    /// The representation options of this type declaration as annotated by the user.
+    /// Is `None` for foreign type declarations.
+    #[drive(skip)]
+    pub repr: Option<ReprOptions>,
 }
 
 generate_index_type!(VariantId, "Variant");
@@ -465,8 +500,8 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
-    /// The discriminant value outputted by `std::mem::discriminant` for this variant. This is
-    /// different than the discriminant stored in memory (the one controlled by `repr`).
+    /// The discriminant value outputted by `std::mem::discriminant` for this variant.
+    /// This can be different than the discriminant stored in memory (called `tag`).
     /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: Literal,
 }

@@ -98,7 +98,7 @@ and switch =
       (** A match over an ADT.
 
           The match statement is introduced in
-          [crate::transform::remove_read_discriminant] (whenever we find a
+          [crate::transform::resugar::reconstruct_matches] (whenever we find a
           discriminant read, we merge it with the subsequent switch into a
           match). *)
 [@@deriving

@@ -50,7 +50,7 @@ type aggregate_kind =
       (** Construct a raw pointer from a pointer value, and its metadata (can be
           unit, if building a thin pointer). The type is the type of the
           pointee. We lower this to a builtin function call for LLBC in
-          [crate::transform::ops_to_function_calls]. *)
+          [crate::transform::simplify_output::ops_to_function_calls]. *)
 
 (** Binary operations. *)
 and binop =
@@ -148,7 +148,7 @@ and cast_kind =
           - [Box<dyn Trait<...>>] -> [Box<T>] when no [--raw-boxes]
 
           For possible receivers, see:
-          https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility.
+          <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
           Other receivers, e.g., [Rc] should be unpacked before the cast and
           re-boxed after. FIXME(ssyram): but this is not implemented yet,
           namely, there may still be something like
@@ -319,8 +319,8 @@ and rvalue =
       (** Discriminant read. Reads the discriminant value of an enum. The place
           must have the type of an enum.
 
-          This case is filtered in [crate::transform::remove_read_discriminant]
-      *)
+          This case is filtered in
+          [crate::transform::resugar::reconstruct_matches] *)
   | Aggregate of aggregate_kind * operand list
       (** Creates an aggregate value, like a tuple, a struct or an enum:
           {@rust[

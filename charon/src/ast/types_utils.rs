@@ -1299,6 +1299,12 @@ impl TypeDecl {
             TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
         }
     }
+
+    pub fn is_c_repr(&self) -> bool {
+        self.repr
+            .as_ref()
+            .is_some_and(|repr| repr.repr_algo == ReprAlgorithm::C)
+    }
 }
 
 impl Layout {
@@ -1308,6 +1314,21 @@ impl Layout {
         } else {
             false
         }
+    }
+}
+
+impl ReprOptions {
+    /// Whether this representation options guarantee a fixed
+    /// field ordering for the type.
+    ///
+    /// Since we don't support `repr(simd)` or `repr(linear)` yet, this is
+    /// the case if it's either `repr(C)` or an explicit discriminant type for
+    /// an enum with fields (if it doesn't have fields, this obviously doesn't matter anyway).
+    ///
+    /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
+    /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.
+    pub fn guarantees_fixed_field_order(&self) -> bool {
+        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type
     }
 }
 

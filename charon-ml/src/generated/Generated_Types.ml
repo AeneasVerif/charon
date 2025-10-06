@@ -646,6 +646,10 @@ type abort_kind =
       (** Unwind had to stop for Abi reasons or because cleanup code panicked
           again. *)
 
+(** Describes modifiers to the alignment and packing of the corresponding type.
+    Represents [repr(align(n))] and [repr(packed(n))]. *)
+and alignment_modifier = Align of int | Pack of int
+
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -861,6 +865,28 @@ and ptr_metadata =
           consistent with [<Ty as Pointee>::Metadata]. Of type
           [TyKind::Metadata(Ty)]. *)
 
+(** Describes which layout algorithm is used for representing the corresponding
+    type. Depends on the [#[repr(...)]] used. *)
+and repr_algorithm =
+  | Rust
+      (** The default layout algorithm. Used without an explicit [ŗepr] or for
+          [repr(Rust)]. *)
+  | C  (** The C layout algorithm as enforced by [repr(C)]. *)
+
+(** The representation options as annotated by the user.
+
+    NOTE: This does not include less common/unstable representations such as
+    [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
+    discriminant representations are encoded in [[Variant::discriminant]] and
+    [[DiscriminantLayout]] instead. This only stores whether the discriminant
+    type was derived from an explicit annotation. *)
+and repr_options = {
+  repr_algo : repr_algorithm;
+  align_modif : alignment_modifier option;
+  transparent : bool;
+  explicit_discr_type : bool;
+}
+
 (** Describes how we represent the active enum variant in memory. *)
 and tag_encoding =
   | Direct
@@ -900,6 +926,9 @@ and type_decl = {
           [None]. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
+  repr : repr_options option;
+      (** The representation options of this type declaration as annotated by
+          the user. Is [None] for foreign type declarations. *)
 }
 
 and type_decl_kind =
@@ -924,9 +953,9 @@ and variant = {
   fields : field list;
   discriminant : literal;
       (** The discriminant value outputted by [std::mem::discriminant] for this
-          variant. This is different than the discriminant stored in memory (the
-          one controlled by [repr]). That one is described by
-          [[DiscriminantLayout]] and [[TagEncoding]]. *)
+          variant. This can be different than the discriminant stored in memory
+          (called [tag]). That one is described by [[DiscriminantLayout]] and
+          [[TagEncoding]]. *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])
