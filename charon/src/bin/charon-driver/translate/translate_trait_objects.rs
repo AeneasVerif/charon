@@ -500,6 +500,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// E.g.,
+    /// ```
     /// global {impl Trait for Foo}::vtable<Args..>: Trait::{vtable}<TraitArgs.., AssocTys..> {
     ///     size: size_of(Foo),
     ///     align: align_of(Foo),
@@ -511,6 +512,7 @@ impl ItemTransCtx<'_, '_> {
     ///     super_trait_1: SuperImpl1<..>::{vtable_instance}::<..>,
     ///     ...
     /// }
+    /// ```
     pub(crate) fn translate_vtable_instance(
         mut self,
         global_id: GlobalDeclId,

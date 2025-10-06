@@ -208,7 +208,7 @@ pub enum CastKind {
     /// - `*[mut] dyn Trait<...>` -> `*[mut] T`
     /// - `Box<dyn Trait<...>>` -> `Box<T>` when no `--raw-boxes`
     ///
-    /// For possible receivers, see: https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility.
+    /// For possible receivers, see: <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
     /// Other receivers, e.g., `Rc` should be unpacked before the cast and re-boxed after.
     /// FIXME(ssyram): but this is not implemented yet, namely, there may still be
     ///     something like `Rc<dyn Trait<...>> -> Rc<T>` in the types.
@@ -621,7 +621,7 @@ pub enum Rvalue {
     /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
     /// an enum.
     ///
-    /// This case is filtered in [crate::transform::remove_read_discriminant]
+    /// This case is filtered in [crate::transform::resugar::reconstruct_matches]
     Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
@@ -696,6 +696,6 @@ pub enum AggregateKind {
     Array(Ty, ConstGeneric),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
-    /// We lower this to a builtin function call for LLBC in [crate::transform::ops_to_function_calls].
+    /// We lower this to a builtin function call for LLBC in [crate::transform::simplify_output::ops_to_function_calls].
     RawPtr(Ty, RefKind),
 }

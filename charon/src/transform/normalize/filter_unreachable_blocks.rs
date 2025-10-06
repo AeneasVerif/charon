@@ -1,4 +1,4 @@
-//! Some passes like [`crate::transform::reconstruct_asserts`] lead to the apparition of "dangling" blocks,
+//! Some passes like [`crate::transform::resugar::reconstruct_asserts`] lead to the apparition of "dangling" blocks,
 //! which are referenced nowhere and thus become unreachable. This pass filters those out.
 
 use std::collections::{HashMap, HashSet};

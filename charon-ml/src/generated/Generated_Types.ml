@@ -860,7 +860,7 @@ and ptr_metadata =
       (** Unknown due to generics, but will inherit from the given type. This is
           consistent with [<Ty as Pointee>::Metadata]. Of type
           [TyKind::Metadata(Ty)]. *)
-          
+
 (** The representation options as annotated by the user.
 
     If all are false/None, then this is equivalent to [#[repr(Rust)]]. Some
