@@ -282,7 +282,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// Given an item that is a closure, generate the signature of the
     /// `call_once`/`call_mut`/`call` method (depending on `target_kind`).
-    fn translate_closure_method_sig(
+    pub fn translate_closure_method_sig(
         &mut self,
         def: &hax::FullDef,
         span: Span,

@@ -362,7 +362,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 name.name
                     .push(PathElem::Ident("{vtable}".into(), Disambiguator::ZERO));
             }
-            TransItemSourceKind::VTableMethod => {
+            TransItemSourceKind::VTableMethod(..) => {
                 name.name.push(PathElem::Ident(
                     "{vtable_method}".into(),
                     Disambiguator::ZERO,

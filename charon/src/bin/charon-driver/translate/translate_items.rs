@@ -164,11 +164,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTableMethod => {
+            TransItemSourceKind::VTableMethod(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -187,6 +187,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let span = self.def_span(item_source.def_id());
                 raise_error!(self, span, "Failed to translate item {id:?}.")
             }
+            // This prevents re-translating of the same item in the usual queue processing loop.
+            // If this is not present, if the function is called before the usual processing loop,
+            // `processed` does not record the item as processed, and we end up translating it again.
+            self.processed.insert(item_source);
         }
         let item = self.translated.get_item(id);
         Ok(item.unwrap())

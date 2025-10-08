@@ -132,8 +132,14 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_, T>[@TraitClause0, @TraitClause1]), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_, T>[@TraitClause0, @TraitClause1]), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: move (@2) }
     return
 }
 

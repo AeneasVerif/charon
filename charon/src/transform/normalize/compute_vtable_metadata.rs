@@ -442,15 +442,19 @@ impl<'a> VtableMetadataComputer<'a> {
             TypeId::Builtin(BuiltinTy::Array) => self.analyze_array_drop_case(type_decl_ref),
             TypeId::Tuple => self.analyze_tuple_drop_case(type_decl_ref),
             TypeId::Builtin(builtin_ty) => self.analyze_builtin_drop_case(builtin_ty, concrete_ty),
-            TypeId::Adt(_) => {
-                trace!("[ANALYZE] Found ADT type, looking for direct drop implementation");
-                if let Some(fun_ref) = self.find_direct_drop_impl(concrete_ty)? {
-                    Ok(DropCase::Direct(fun_ref))
-                } else {
-                    Ok(DropCase::Panic(format!(
-                        "Drop implementation for {:?} not found or not translated",
-                        concrete_ty
-                    )))
+            TypeId::Adt(ty_id) => {
+                let decl = self.ctx.translated.type_decls.get(*ty_id).unwrap();
+                match &decl.drop_glue {
+                    Some(impl_ref) => {
+                        match self.ctx.translated.trait_impls.get(impl_ref.id) {
+                            Some(timpl) => {
+                                let method = &timpl.methods().find(|(name, _)| name.0 == "drop").unwrap().1;
+                                Ok(DropCase::Direct(method.skip_binder.clone()))
+                            }
+                            None => unreachable!(),
+                        }
+                    }
+                    None => Ok(DropCase::Empty),
                 }
             }
         }
@@ -983,6 +987,7 @@ impl<'a> DropShimCtx<'a> {
             kind: TerminatorKind::Abort(AbortKind::Panic(None)),
             comments_before: vec![format!("Panic: {}", msg)],
         });
+        register_error!(self.ctx.ctx, self.span(), "Panic in generating drop shim: {}", msg);
         Ok(block_id)
     }
 

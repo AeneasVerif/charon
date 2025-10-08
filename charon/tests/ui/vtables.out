@@ -394,13 +394,19 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
 {
     let ret@0: test_crate::Checkable::{vtable}<i32, i32>; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::Super::{vtable}<i32, i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32, Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), i32>::parent_clause1::Output>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Checkable<i32> for i32}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    @2 := &core::marker::MetaSized::{vtable}
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Super<i32> for i32}::{vtable}
+    ret@0 := test_crate::Checkable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Checkable<i32> for i32}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: move (@2), super_trait_1: move (@4) }
     return
 }
 
@@ -519,13 +525,19 @@ fn {impl Checkable<i32> for String}::{vtable}() -> test_crate::Checkable::{vtabl
 {
     let ret@0: test_crate::Checkable::{vtable}<i32, i32>; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::Super::{vtable}<i32, i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32, Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), i32>::parent_clause1::Output>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl Super<i32> for String}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (24 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for String}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for String}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    @2 := &core::marker::MetaSized::{vtable}
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Super<i32> for String}::{vtable}
+    ret@0 := test_crate::Checkable::{vtable} { size: const (24 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for String}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for String}::check::{vtable_method}<'_>), super_trait_0: move (@2), super_trait_1: move (@4) }
     return
 }
 
@@ -668,13 +680,19 @@ fn {impl Checkable<i32> for Array<String, const N : usize>}::{vtable}<const N : 
 {
     let ret@0: test_crate::Checkable::{vtable}<i32, i32>; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::Super::{vtable}<i32, i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32, Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), i32>::parent_clause1::Output>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl Super<i32> for Array<String, const N : usize>}::{vtable}<const N : usize>
-    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), drop: const ({{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_method}<'_, const N : usize>), method_check: const ({impl Checkable<i32> for Array<String, const N : usize>}::check::{vtable_method}<'_, const N : usize>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    @2 := &core::marker::MetaSized::{vtable}
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Super<i32> for Array<String, const N : usize>}::{vtable}<const N : usize>
+    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), drop: const ({{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_method}<'_, const N : usize>), method_check: const ({impl Checkable<i32> for Array<String, const N : usize>}::check::{vtable_method}<'_, const N : usize>), super_trait_0: move (@2), super_trait_1: move (@4) }
     return
 }
 
@@ -790,13 +808,19 @@ fn {impl Checkable<i32> for (i32, String)}::{vtable}() -> test_crate::Checkable:
 {
     let ret@0: test_crate::Checkable::{vtable}<i32, i32>; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::Super::{vtable}<i32, i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32, Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), i32>::parent_clause1::Output>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl Super<i32> for (i32, String)}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (32 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for (i32, String)}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for (i32, String)}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    @2 := &core::marker::MetaSized::{vtable}
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Super<i32> for (i32, String)}::{vtable}
+    ret@0 := test_crate::Checkable::{vtable} { size: const (32 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for (i32, String)}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for (i32, String)}::check::{vtable_method}<'_>), super_trait_0: move (@2), super_trait_1: move (@4) }
     return
 }
 
@@ -1056,8 +1080,14 @@ fn {impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::dum
 fn {impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::{vtable}() -> test_crate::NoParam::{vtable}
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), align: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), drop: const ({{impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), align: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), drop: const ({{impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::dummy::{vtable_method}<'_>), super_trait_0: move (@2) }
     return
 }
 
@@ -1127,8 +1157,14 @@ fn {impl NoParam for (i32, i32)}::dummy::{vtable_method}<'_0>(@1: &'_0 ((dyn exi
 fn {impl NoParam for (i32, i32)}::{vtable}() -> test_crate::NoParam::{vtable}
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (8 : usize), align: const (4 : usize), drop: const ({{impl NoParam for (i32, i32)}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for (i32, i32)}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::NoParam::{vtable} { size: const (8 : usize), align: const (4 : usize), drop: const ({{impl NoParam for (i32, i32)}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for (i32, i32)}::dummy::{vtable_method}<'_>), super_trait_0: move (@2) }
     return
 }
 
@@ -1220,8 +1256,14 @@ fn {impl NoParam for Array<i32, 10 : usize>}::dummy::{vtable_method}<'_0>(@1: &'
 fn {impl NoParam for Array<i32, 10 : usize>}::{vtable}() -> test_crate::NoParam::{vtable}
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (40 : usize), align: const (4 : usize), drop: const ({{impl NoParam for Array<i32, 10 : usize>}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for Array<i32, 10 : usize>}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::NoParam::{vtable} { size: const (40 : usize), align: const (4 : usize), drop: const ({{impl NoParam for Array<i32, 10 : usize>}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for Array<i32, 10 : usize>}::dummy::{vtable_method}<'_>), super_trait_0: move (@2) }
     return
 }
 
@@ -1323,8 +1365,14 @@ fn {impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i
 fn {impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}::{vtable}<const N : usize, const M : usize>() -> test_crate::NoParam::{vtable}
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), drop: const ({{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}}::{vtable}::{drop_method}<'_, const N : usize, const M : usize>), method_dummy: const ({impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}::dummy::{vtable_method}<'_, const N : usize, const M : usize>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), drop: const ({{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}}::{vtable}::{drop_method}<'_, const N : usize, const M : usize>), method_dummy: const ({impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}::dummy::{vtable_method}<'_, const N : usize, const M : usize>), super_trait_0: move (@2) }
     return
 }
 
@@ -1567,8 +1615,14 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_, T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_, T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: move (@2) }
     return
 }
 
@@ -1831,19 +1885,25 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
 {
     let ret@0: test_crate::Both32And64::{vtable}; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::BaseOn::{vtable}<i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
     let @3: (); // anonymous local
-    let @4: &'static (test_crate::BaseOn::{vtable}<i64>); // anonymous local
+    let @4: &'static (test_crate::BaseOn::{vtable}<i32>); // anonymous local
+    let @5: (); // anonymous local
+    let @6: &'static (test_crate::BaseOn::{vtable}<i64>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl BaseOn<i32> for i32}::{vtable}
+    @2 := &core::marker::MetaSized::{vtable}
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &{impl BaseOn<i64> for i32}::{vtable}
-    ret@0 := test_crate::Both32And64::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Both32And64 for i32}}::{vtable}::{drop_method}<'_>), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    @4 := &{impl BaseOn<i32> for i32}::{vtable}
+    storage_live(@5)
+    @5 := ()
+    storage_live(@6)
+    @6 := &{impl BaseOn<i64> for i32}::{vtable}
+    ret@0 := test_crate::Both32And64::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Both32And64 for i32}}::{vtable}::{drop_method}<'_>), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: move (@2), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -1945,8 +2005,14 @@ fn {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'a, '_1>(@1: &
 fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtable}<i32>
 {
     let ret@0: test_crate::LifetimeTrait::{vtable}<i32>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::LifetimeTrait::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl LifetimeTrait for i32}}::{vtable}::{drop_method}<'_>), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::LifetimeTrait::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl LifetimeTrait for i32}}::{vtable}::{drop_method}<'_>), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: move (@2) }
     return
 }
 

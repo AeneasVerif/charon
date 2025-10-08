@@ -108,6 +108,21 @@ fn to_dyn_obj<T: NoParam>(arg: &T) -> &dyn NoParam {
     arg
 }
 
+// #[derive(Clone)]
+// struct MyStruct {
+//     a: i32,
+//     b: String,
+// }
+
+// fn ok_clone<T: Clone>(arg: &T) -> T {
+//     arg.clone()
+// }
+// fn use_ok_clone(arg: &String) -> String {
+//     ok_clone(arg);
+//     let s = MyStruct { a: 10, b: String::from("Hello") };
+//     ok_clone(&s).b
+// }
+
 trait Modifiable<T> {
     fn modify(&mut self, arg: &T) -> T;
 }
