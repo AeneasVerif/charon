@@ -297,7 +297,7 @@ impl ItemTransCtx<'_, '_> {
         mk_field("size".into(), usize_ty());
         // Field: `align: usize`
         mk_field("align".into(), usize_ty());
-        // Field: `drop: fn(*mut Self)`
+        // Field: `drop: fn(*mut Self)` -- `Self` is just a placeholder, will be dynified below.
         mk_field("drop".into(), {
             let self_ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
             let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();

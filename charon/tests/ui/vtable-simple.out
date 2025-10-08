@@ -1,0 +1,218 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    non-dyn-compatible
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl Clone for i32 {
+    parent_clause0 = Sized<i32>
+    fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+struct test_crate::Modifiable::{vtable}<T> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)),
+  method_modify: fn<'_0, '_1>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_0_1 (T)) -> T,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
+// Full name: test_crate::Modifiable
+trait Modifiable<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn modify<'_0, '_1> = test_crate::Modifiable::modify<'_0_0, '_0_1, Self, T>[Self]
+    vtable: test_crate::Modifiable::{vtable}<T>
+}
+
+fn test_crate::Modifiable::modify<'_0, '_1, Self, T>(@1: &'_0 mut (Self), @2: &'_1 (T)) -> T
+where
+    [@TraitClause0]: Modifiable<Self, T>,
+
+// Full name: test_crate::{impl Modifiable<T> for i32}::modify
+fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(@1: &'_0 mut (i32), @2: &'_1 (T)) -> T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let @0: T; // return
+    let self@1: &'_ mut (i32); // arg #1
+    let arg@2: &'_ (T); // arg #2
+    let @3: i32; // anonymous local
+    let @4: &'_ (T); // anonymous local
+
+    storage_live(@3)
+    @3 := copy (*(self@1)) panic.+ const (1 : i32)
+    *(self@1) := move (@3)
+    storage_live(@4)
+    @4 := &*(arg@2)
+    @0 := @TraitClause1::clone<'_>(move (@4))
+    storage_dead(@4)
+    return
+}
+
+// Full name: test_crate::{impl Modifiable<T> for i32}::modify::{vtable_method}
+fn {vtable_method}<'_0, '_1, T>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), @2: &'_1 (T)) -> T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let @0: T; // return
+    let @1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // arg #1
+    let @2: &'_1 (T); // arg #2
+    let @3: &'_0 mut (i32); // anonymous local
+
+    storage_live(@3)
+    @3 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_0 mut (i32)>(move (@1))
+    @0 := {impl Modifiable<T> for i32}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable}
+fn {impl Modifiable<T> for i32}::{vtable}<T>() -> test_crate::Modifiable::{vtable}<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let ret@0: test_crate::Modifiable::{vtable}<T>; // return
+
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable}
+static {impl Modifiable<T> for i32}::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+ = {impl Modifiable<T> for i32}::{vtable}()
+
+// Full name: test_crate::{impl Modifiable<T> for i32}
+impl<T> Modifiable<T> for i32
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    parent_clause0 = MetaSized<i32>
+    parent_clause1 = @TraitClause0
+    fn modify<'_0, '_1> = {impl Modifiable<T> for i32}::modify<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]
+}
+
+// Full name: test_crate::modify_trait_object
+fn modify_trait_object<'_0, T>(@1: &'_0 (T)) -> T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let @0: T; // return
+    let arg@1: &'_ (T); // arg #1
+    let x@2: &'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // local
+    let @3: &'_ mut (i32); // anonymous local
+    let @4: &'_ mut (i32); // anonymous local
+    let @5: i32; // anonymous local
+    let @6: &'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // anonymous local
+    let @7: &'_ (T); // anonymous local
+    let @8: *const test_crate::Modifiable::{vtable}<T>; // anonymous local
+    let @9: fn(&'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_ (T)) -> T; // anonymous local
+
+    storage_live(x@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := const (199 : i32)
+    @4 := &mut @5
+    @3 := &mut *(@4)
+    x@2 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1]>(move (@3))
+    storage_dead(@3)
+    storage_dead(@4)
+    storage_live(@6)
+    @6 := &two-phase-mut *(x@2) with_metadata(copy (x@2.metadata))
+    storage_live(@7)
+    @7 := &*(arg@1)
+    storage_live(@8)
+    storage_live(@9)
+    @8 := copy (@6.metadata)
+    @9 := copy ((*(@8)).method_modify)
+    @0 := (move @9)(move (@6), move (@7))
+    storage_dead(@7)
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(x@2)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let @1: i32; // anonymous local
+    let @2: &'_ (i32); // anonymous local
+    let @3: &'_ (i32); // anonymous local
+    let @4: i32; // anonymous local
+
+    @0 := ()
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @4 := const (42 : i32)
+    @3 := &@4
+    @2 := &*(@3)
+    @1 := modify_trait_object<'_, i32>[Sized<i32>, {impl Clone for i32}](move (@2))
+    storage_dead(@2)
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@1)
+    @0 := ()
+    return
+}
+
+
+

@@ -445,6 +445,29 @@ impl BodyTransformCtx for UllbcStatementTransformCtx<'_> {
 }
 
 impl FunDecl {
+    pub fn transform_ullbc_terminators(
+        &mut self,
+        ctx: &mut TransformCtx,
+        mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Terminator),
+    ) {
+        if let Ok(body) = &mut self.body {
+            let params = &self.signature.generics;
+            let body = body.as_unstructured_mut().unwrap();
+            body.body.iter_mut().for_each(|block| {
+                let span = block.terminator.span;
+                let mut ctx = UllbcStatementTransformCtx {
+                    ctx,
+                    params,
+                    locals: &mut body.locals,
+                    span,
+                    statements: std::mem::take(&mut block.statements),
+                };
+                f(&mut ctx, &mut block.terminator);
+                block.statements = ctx.statements;
+            });
+        }
+    }
+
     pub fn transform_ullbc_statements(
         &mut self,
         ctx: &mut TransformCtx,
