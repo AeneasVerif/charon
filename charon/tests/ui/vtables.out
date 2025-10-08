@@ -753,7 +753,7 @@ struct test_crate::LifetimeTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,
   drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)),
-  method_lifetime_method: fn<'a, '_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)), &'a (LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)>::Ty)) -> &'a (LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)>::Ty),
+  method_lifetime_method: fn<'a, '_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)), &'a (Ty0)) -> &'a (Ty0),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 
@@ -845,7 +845,7 @@ fn use_lifetime_trait<'a, '_1>(@1: &'_1 ((dyn exists<_dyn> [@TraitClause0]: Life
     let @3: &'_ (i32); // anonymous local
     let @4: &'_ ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)); // anonymous local
     let @5: &'_ (i32); // anonymous local
-    let @6: *const test_crate::LifetimeTrait::{vtable}<LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)>::Ty>; // anonymous local
+    let @6: *const test_crate::LifetimeTrait::{vtable}<i32>; // anonymous local
     let @7: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)), &'_ (i32)) -> &'_ (i32); // anonymous local
 
     storage_live(@3)
