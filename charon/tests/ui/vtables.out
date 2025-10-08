@@ -504,7 +504,7 @@ where
     @6 := &two-phase-mut *(x@2) with_metadata(copy (x@2.metadata))
     storage_live(@7)
     @7 := &*(arg@1)
-    @0 := Modifiable<(dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_), T>::modify<'_, '_>(move (@6), move (@7))
+    @0 := (move (*(@6.metadata)).method_modify)(move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(@5)
@@ -747,7 +747,7 @@ struct test_crate::LifetimeTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,
   drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)),
-  method_lifetime_method: fn<'a, '_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)), &'a (LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)>::Ty)) -> &'a (LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)>::Ty),
+  method_lifetime_method: fn<'a, '_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = Ty0)), &'a (Ty0)) -> &'a (Ty0),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 
@@ -845,7 +845,7 @@ fn use_lifetime_trait<'a, '_1>(@1: &'_1 ((dyn exists<_dyn> [@TraitClause0]: Life
     @4 := &*(x@1) with_metadata(copy (x@1.metadata))
     storage_live(@5)
     @5 := &*(y@2)
-    @3 := LifetimeTrait<(dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)>::lifetime_method<'_, '_>(move (@4), move (@5))
+    @3 := (move (*(@4.metadata)).method_lifetime_method)(move (@4), move (@5))
     @0 := &*(@3)
     storage_dead(@5)
     storage_dead(@4)
@@ -883,7 +883,7 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn>
     @9 := const (200 : i64)
     @8 := &@9
     @7 := &*(@8)
-    @2 := Both32And64<(dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)>::both_operate<'_, '_, '_>(move (@3), move (@4), move (@7))
+    @2 := (move (*(@3.metadata)).method_both_operate)(move (@3), move (@4), move (@7))
     storage_dead(@7)
     storage_dead(@4)
     storage_dead(@3)
@@ -1000,7 +1000,7 @@ fn main()
     storage_live(@5)
     storage_live(@6)
     @6 := &*(x@1) with_metadata(copy (x@1.metadata))
-    @5 := Checkable<(dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_), i32>::check<'_>(move (@6))
+    @5 := (move (*(@6.metadata)).method_check)(move (@6))
     if move (@5) {
     }
     else {
@@ -1059,7 +1059,7 @@ fn main()
         @25 := const (100 : i32)
         @24 := &mut @25
         @23 := &*(@24)
-        @21 := Modifiable<(dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, i32> + _dyn : '_), i32>::modify<'_, '_>(move (@22), move (@23))
+        @21 := (move (*(@22.metadata)).method_modify)(move (@22), move (@23))
         storage_dead(@23)
         storage_dead(@22)
         @20 := &@21
@@ -1131,7 +1131,7 @@ fn main()
         storage_live(@46)
         storage_live(@47)
         @47 := &*(z@40) with_metadata(copy (z@40.metadata))
-        @46 := NoParam<(dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)>::dummy<'_>(move (@47))
+        @46 := (move (*(@47.metadata)).method_dummy)(move (@47))
         storage_dead(@47)
         storage_dead(@46)
         storage_live(a@48)
@@ -1159,7 +1159,7 @@ fn main()
         @59 := const (200 : i64)
         @58 := &@59
         @57 := &*(@58)
-        @52 := Both32And64<(dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)>::both_operate<'_, '_, '_>(move (@53), move (@54), move (@57))
+        @52 := (move (*(@53.metadata)).method_both_operate)(move (@53), move (@54), move (@57))
         storage_dead(@57)
         storage_dead(@54)
         storage_dead(@53)
