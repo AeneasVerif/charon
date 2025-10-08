@@ -707,14 +707,16 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
 {
     let ret@0: test_crate::Both32And64::{vtable}; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::BaseOn::{vtable}<i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
     let @3: (); // anonymous local
-    let @4: &'static (test_crate::BaseOn::{vtable}<i64>); // anonymous local
+    let @4: &'static (test_crate::BaseOn::{vtable}<i32>); // anonymous local
+    let @5: (); // anonymous local
+    let @6: &'static (test_crate::BaseOn::{vtable}<i64>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl BaseOn<i32> for i32}::{vtable}
+    @2 := &core::marker::MetaSized::{vtable}
     storage_live(@3)
     @3 := ()
     storage_live(@4)
