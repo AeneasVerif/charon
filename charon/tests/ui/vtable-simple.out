@@ -159,8 +159,6 @@ where
     let @5: i32; // anonymous local
     let @6: &'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // anonymous local
     let @7: &'_ (T); // anonymous local
-    let @8: *const test_crate::Modifiable::{vtable}<T>; // anonymous local
-    let @9: fn(&'_ mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)), &'_ (T)) -> T; // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
@@ -176,11 +174,7 @@ where
     @6 := &two-phase-mut *(x@2) with_metadata(copy (x@2.metadata))
     storage_live(@7)
     @7 := &*(arg@1)
-    storage_live(@8)
-    storage_live(@9)
-    @8 := copy (@6.metadata)
-    @9 := copy ((*(@8)).method_modify)
-    @0 := (move @9)(move (@6), move (@7))
+    @0 := (move (*(@6.metadata)).method_modify)(move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(@5)

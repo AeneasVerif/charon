@@ -113,8 +113,6 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (
     let @5: (&'_ mut (u32)); // anonymous local
     let @6: &'_ mut (u32); // anonymous local
     let @7: &'_ mut (u32); // anonymous local
-    let @8: *const core::ops::function::Fn::{vtable}<(&'_ mut (u32)), bool>; // anonymous local
-    let @9: fn(&'_ ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause1_0::parent_clause1::parent_clause1::Output = bool)), (&'_ mut (u32))) -> bool; // anonymous local
 
     @0 := ()
     storage_live(counter@2)
@@ -128,11 +126,7 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: for<'a> Fn<_dyn, (
     @7 := &mut counter@2
     @6 := &two-phase-mut *(@7)
     @5 := (move (@6))
-    storage_live(@8)
-    storage_live(@9)
-    @8 := copy (@4.metadata)
-    @9 := copy ((*(@8)).method_call)
-    @3 := (move @9)(move (@4), move (@5))
+    @3 := (move (*(@4.metadata)).method_call)(move (@4), move (@5))
     if move (@3) {
         storage_dead(@7)
         storage_dead(@6)
