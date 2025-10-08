@@ -462,9 +462,8 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
   in
   match (p, n) with
   | [], [] ->
-      raise
-        (Failure
-           "match_name_with_generics: attempt to match empty names and patterns")
+      failwith
+        "match_name_with_generics: attempt to match empty names and patterns"
       (* We shouldn't get there: the names/patterns should be non empty *)
   | [ PIdent (pid, pd, pg) ], [ PeIdent (id, d) ] ->
       log#ldebug
@@ -489,6 +488,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
           && g = TypesUtils.empty_generic_args)
+  | [ PWild ], [ _ ] -> true
   | PIdent (pid, pd, pg) :: p, PeIdent (id, d) :: n ->
       (* This is not the end: check that the generics are empty *)
       pid = id
@@ -543,6 +543,7 @@ and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
   let ty = literal_type_to_string ty in
   match pty with
   | [ PIdent (ty', _, []) ] when ty = ty' -> true
+  | [ PWild ] -> true
   | _ -> false
 
 and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
@@ -622,6 +623,7 @@ and match_trait_decl_ref_item (ctx : 'fun_body ctx) (c : match_config)
     | PIdent (pitem_name, pd, pgenerics) ->
         pitem_name = item_name && pd = 0
         && match_generic_args ctx c (mk_empty_maps ()) pgenerics generics
+    | PWild -> true
     | _ -> false
   else raise (Failure "Unimplemented")
 
@@ -1282,6 +1284,7 @@ let rec pattern_common_prefix_aux (c : conv_config) (m : conv_map option)
 and pattern_elem_convertible_aux (c : conv_config) (m : conv_map option)
     (p0 : pattern_elem) (p1 : pattern_elem) : (conv_map option, unit) result =
   match (p0, p1) with
+  | PWild, _ | _, PWild -> Ok m
   | PIdent (s0, d0, g0), PIdent (s1, d1, g1) ->
       if s0 = s1 && d0 = d1 then
         match m with
