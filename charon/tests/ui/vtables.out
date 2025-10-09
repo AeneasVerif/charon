@@ -368,10 +368,10 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 (i32)) -> bool
     return
 }
 
-fn {{impl Checkable<i32> for i32}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)))
+fn {{impl Checkable<i32> for i32}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)); // arg #1
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32); // arg #1
 
     return
 }
@@ -400,7 +400,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     @1 := ()
     storage_live(@2)
     @2 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Checkable<i32> for i32}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    ret@0 := test_crate::Checkable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Checkable<i32> for i32}}::{vtable}::{drop_method}), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
     return
 }
 
@@ -488,16 +488,16 @@ fn {impl Checkable<i32> for String}::check<'_0>(@1: &'_0 (String)) -> bool
     return
 }
 
-fn {{impl Checkable<i32> for String}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)))
+fn {{impl Checkable<i32> for String}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)); // arg #1
-    let concrete@2: &'_0 mut (String); // local
-    let @3: &'_0 mut (String); // anonymous local
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32); // arg #1
+    let concrete@2: &'_ mut (String); // local
+    let @3: &'_ mut (String); // anonymous local
 
-    concrete@2 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)), &'_0 mut (String)>(move (self@1))
+    concrete@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), &'_ mut (String)>(move (self@1))
     @3 := &mut *(concrete@2)
-    ret@0 := {impl Drop for String}::drop<'_0>(move (@3))
+    ret@0 := {impl Drop for String}::drop<'_>(move (@3))
     return
 }
 
@@ -525,7 +525,7 @@ fn {impl Checkable<i32> for String}::{vtable}() -> test_crate::Checkable::{vtabl
     @1 := ()
     storage_live(@2)
     @2 := &{impl Super<i32> for String}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (24 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for String}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for String}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    ret@0 := test_crate::Checkable::{vtable} { size: const (24 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for String}}::{vtable}::{drop_method}), method_check: const ({impl Checkable<i32> for String}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
     return
 }
 
@@ -618,18 +618,18 @@ fn {impl Checkable<i32> for Array<String, const N : usize>}::check<'_0, const N 
     return
 }
 
-fn {{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_method}<'_0, const N : usize>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)))
+fn {{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_method}<const N : usize>(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)); // arg #1
-    let concrete@2: &'_0 mut (Array<String, const N : usize>); // local
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32); // arg #1
+    let concrete@2: &'_ mut (Array<String, const N : usize>); // local
     let @3: usize; // anonymous local
     let @4: bool; // anonymous local
-    let @5: &'_0 mut (String); // anonymous local
+    let @5: &'_ mut (String); // anonymous local
     let @6: &'_ mut (Array<String, const N : usize>); // anonymous local
     let @7: &'_ mut (String); // anonymous local
 
-    concrete@2 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)), &'_0 mut (Array<String, const N : usize>)>(move (self@1))
+    concrete@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), &'_ mut (Array<String, const N : usize>)>(move (self@1))
     @3 := const (0 : usize)
     loop {
         @4 := copy (@3) < const (const N : usize)
@@ -640,7 +640,7 @@ fn {{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_m
             storage_live(@7)
             @7 := @ArrayIndexMut<'_, String, const N : usize>(move (@6), copy (@3))
             @5 := &mut *(@7)
-            ret@0 := {impl Drop for String}::drop<'_0>(move (@5))
+            ret@0 := {impl Drop for String}::drop<'_>(move (@5))
             continue 0
         }
         else {
@@ -674,7 +674,7 @@ fn {impl Checkable<i32> for Array<String, const N : usize>}::{vtable}<const N : 
     @1 := ()
     storage_live(@2)
     @2 := &{impl Super<i32> for Array<String, const N : usize>}::{vtable}<const N : usize>
-    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), drop: const ({{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_method}<'_, const N : usize>), method_check: const ({impl Checkable<i32> for Array<String, const N : usize>}::check::{vtable_method}<'_, const N : usize>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_0)), drop: const ({{impl Checkable<i32> for Array<String, const N : usize>}}::{vtable}::{drop_method}<const N : usize>), method_check: const ({impl Checkable<i32> for Array<String, const N : usize>}::check::{vtable_method}<'_, const N : usize>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
     return
 }
 
@@ -759,16 +759,16 @@ fn {impl Checkable<i32> for (i32, String)}::check<'_0>(@1: &'_0 ((i32, String)))
     return
 }
 
-fn {{impl Checkable<i32> for (i32, String)}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)))
+fn {{impl Checkable<i32> for (i32, String)}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)); // arg #1
-    let concrete@2: &'_0 mut ((i32, String)); // local
-    let @3: &'_0 mut (String); // anonymous local
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32); // arg #1
+    let concrete@2: &'_ mut ((i32, String)); // local
+    let @3: &'_ mut (String); // anonymous local
 
-    concrete@2 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32)), &'_0 mut ((i32, String))>(move (self@1))
+    concrete@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0]: Checkable<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = i32), &'_ mut ((i32, String))>(move (self@1))
     @3 := &mut (*(concrete@2)).1
-    ret@0 := {impl Drop for String}::drop<'_0>(move (@3))
+    ret@0 := {impl Drop for String}::drop<'_>(move (@3))
     return
 }
 
@@ -796,7 +796,7 @@ fn {impl Checkable<i32> for (i32, String)}::{vtable}() -> test_crate::Checkable:
     @1 := ()
     storage_live(@2)
     @2 := &{impl Super<i32> for (i32, String)}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (32 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for (i32, String)}}::{vtable}::{drop_method}<'_>), method_check: const ({impl Checkable<i32> for (i32, String)}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    ret@0 := test_crate::Checkable::{vtable} { size: const (32 : usize), align: const (8 : usize), drop: const ({{impl Checkable<i32> for (i32, String)}}::{vtable}::{drop_method}), method_check: const ({impl Checkable<i32> for (i32, String)}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
     return
 }
 
@@ -1025,16 +1025,16 @@ fn {impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::dum
     return
 }
 
-fn {{impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)))
+fn {{impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // arg #1
-    let concrete@2: &'_0 mut (alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]); // local
-    let @3: &'_0 mut (alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]); // anonymous local
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_); // arg #1
+    let concrete@2: &'_ mut (alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]); // local
+    let @3: &'_ mut (alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]); // anonymous local
 
-    concrete@2 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), &'_0 mut (alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>])>(move (self@1))
+    concrete@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_), &'_ mut (alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>])>(move (self@1))
     @3 := &mut *(concrete@2)
-    ret@0 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, i64, Global>[MetaSized<i64>, Sized<Global>](move (@3))
+    ret@0 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_, i64, Global>[MetaSized<i64>, Sized<Global>](move (@3))
     return
 }
 
@@ -1057,7 +1057,7 @@ fn {impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::{vt
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), align: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), drop: const ({{impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), align: const (Opaque(Layout not available: TODO: handle Box with ptr-metadata)), drop: const ({{impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}}::{vtable}::{drop_method}), method_dummy: const ({impl NoParam for alloc::boxed::Box<i64>[MetaSized<i64>, Sized<Global>]}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -1101,10 +1101,10 @@ fn {impl NoParam for (i32, i32)}::dummy<'_0>(@1: &'_0 ((i32, i32)))
     return
 }
 
-fn {{impl NoParam for (i32, i32)}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)))
+fn {{impl NoParam for (i32, i32)}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // arg #1
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_); // arg #1
 
     return
 }
@@ -1128,7 +1128,7 @@ fn {impl NoParam for (i32, i32)}::{vtable}() -> test_crate::NoParam::{vtable}
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (8 : usize), align: const (4 : usize), drop: const ({{impl NoParam for (i32, i32)}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for (i32, i32)}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::NoParam::{vtable} { size: const (8 : usize), align: const (4 : usize), drop: const ({{impl NoParam for (i32, i32)}}::{vtable}::{drop_method}), method_dummy: const ({impl NoParam for (i32, i32)}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -1194,10 +1194,10 @@ fn {impl NoParam for Array<i32, 10 : usize>}::dummy<'_0>(@1: &'_0 (Array<i32, 10
     return
 }
 
-fn {{impl NoParam for Array<i32, 10 : usize>}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)))
+fn {{impl NoParam for Array<i32, 10 : usize>}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // arg #1
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_); // arg #1
 
     return
 }
@@ -1221,7 +1221,7 @@ fn {impl NoParam for Array<i32, 10 : usize>}::{vtable}() -> test_crate::NoParam:
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (40 : usize), align: const (4 : usize), drop: const ({{impl NoParam for Array<i32, 10 : usize>}}::{vtable}::{drop_method}<'_>), method_dummy: const ({impl NoParam for Array<i32, 10 : usize>}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::NoParam::{vtable} { size: const (40 : usize), align: const (4 : usize), drop: const ({{impl NoParam for Array<i32, 10 : usize>}}::{vtable}::{drop_method}), method_dummy: const ({impl NoParam for Array<i32, 10 : usize>}::dummy::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -1246,17 +1246,17 @@ fn {impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i
     return
 }
 
-fn {{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}}::{vtable}::{drop_method}<'_0, const N : usize, const M : usize>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)))
+fn {{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}}::{vtable}::{drop_method}<const N : usize, const M : usize>(@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)); // arg #1
-    let concrete@2: &'_0 mut (Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>); // local
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_); // arg #1
+    let concrete@2: &'_ mut (Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>); // local
     let @3: usize; // anonymous local
     let @4: bool; // anonymous local
     let @5: usize; // anonymous local
     let @6: bool; // anonymous local
-    let @7: &'_0 mut (String); // anonymous local
-    let @8: &'_0 mut (String); // anonymous local
+    let @7: &'_ mut (String); // anonymous local
+    let @8: &'_ mut (String); // anonymous local
     let @9: &'_ mut (Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>); // anonymous local
     let @10: &'_ mut ((String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>)); // anonymous local
     let @11: &'_ mut (Array<(i32, String), const M : usize>); // anonymous local
@@ -1264,7 +1264,7 @@ fn {{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(
     let @13: &'_ mut (Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>); // anonymous local
     let @14: &'_ mut ((String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>)); // anonymous local
 
-    concrete@2 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_)), &'_0 mut (Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>)>(move (self@1))
+    concrete@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0]: NoParam<_dyn> + _dyn : '_), &'_ mut (Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>)>(move (self@1))
     @3 := const (0 : usize)
     loop {
         @4 := copy (@3) < const (const N : usize)
@@ -1275,7 +1275,7 @@ fn {{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(
             storage_live(@14)
             @14 := @ArrayIndexMut<'_, (String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>(move (@13), copy (@3))
             @8 := &mut (*(@14)).0
-            ret@0 := {impl Drop for String}::drop<'_0>(move (@8))
+            ret@0 := {impl Drop for String}::drop<'_>(move (@8))
             @5 := const (0 : usize)
             loop {
                 @6 := copy (@5) < const (const M : usize)
@@ -1290,7 +1290,7 @@ fn {{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(
                     storage_live(@12)
                     @12 := @ArrayIndexMut<'_, (i32, String), const M : usize>(move (@11), copy (@5))
                     @7 := &mut (*(@12)).1
-                    ret@0 := {impl Drop for String}::drop<'_0>(move (@7))
+                    ret@0 := {impl Drop for String}::drop<'_>(move (@7))
                     continue 0
                 }
                 else {
@@ -1324,7 +1324,7 @@ fn {impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i
 {
     let ret@0: test_crate::NoParam::{vtable}; // return
 
-    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), drop: const ({{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}}::{vtable}::{drop_method}<'_, const N : usize, const M : usize>), method_dummy: const ({impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}::dummy::{vtable_method}<'_, const N : usize, const M : usize>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::NoParam::{vtable} { size: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), align: const (Opaque(Layout not available: No instant available const generic value or wrong format value: @ConstGeneric0_1)), drop: const ({{impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}}::{vtable}::{drop_method}<const N : usize, const M : usize>), method_dummy: const ({impl NoParam for Array<(String, Array<(i32, i32), const M : usize>, Array<(i32, String), const M : usize>), const N : usize>}::dummy::{vtable_method}<'_, const N : usize, const M : usize>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -1532,13 +1532,13 @@ where
     return
 }
 
-fn {{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_0, T>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)))
+fn {{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<T>(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_)); // arg #1
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Modifiable<_dyn, T> + _dyn : '_); // arg #1
 
     return
 }
@@ -1568,7 +1568,7 @@ where
 {
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
 
-    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<'_, T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Modifiable<T> for i32}}::{vtable}::{drop_method}<T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -1818,10 +1818,10 @@ fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 
     return
 }
 
-fn {{impl Both32And64 for i32}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)))
+fn {{impl Both32And64 for i32}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_)); // arg #1
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Both32And64<_dyn> + _dyn : '_); // arg #1
 
     return
 }
@@ -1843,7 +1843,7 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     @3 := ()
     storage_live(@4)
     @4 := &{impl BaseOn<i64> for i32}::{vtable}
-    ret@0 := test_crate::Both32And64::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Both32And64 for i32}}::{vtable}::{drop_method}<'_>), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    ret@0 := test_crate::Both32And64::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl Both32And64 for i32}}::{vtable}::{drop_method}), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
     return
 }
 
@@ -1919,10 +1919,10 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'
     return
 }
 
-fn {{impl LifetimeTrait for i32}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)))
+fn {{impl LifetimeTrait for i32}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32)); // arg #1
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause1_0::Ty = i32); // arg #1
 
     return
 }
@@ -1946,7 +1946,7 @@ fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtabl
 {
     let ret@0: test_crate::LifetimeTrait::{vtable}<i32>; // return
 
-    ret@0 := test_crate::LifetimeTrait::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl LifetimeTrait for i32}}::{vtable}::{drop_method}<'_>), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::LifetimeTrait::{vtable} { size: const (4 : usize), align: const (4 : usize), drop: const ({{impl LifetimeTrait for i32}}::{vtable}::{drop_method}), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 

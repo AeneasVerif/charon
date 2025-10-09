@@ -206,16 +206,16 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-fn {{impl Display for String}}::{vtable}::{drop_method}<'_0>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)))
+fn {{impl Display for String}}::{vtable}::{drop_method}(@1: *mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let self@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)); // arg #1
-    let concrete@2: &'_0 mut (String); // local
-    let @3: &'_0 mut (String); // anonymous local
+    let self@1: *mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_); // arg #1
+    let concrete@2: &'_ mut (String); // local
+    let @3: &'_ mut (String); // anonymous local
 
-    concrete@2 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_)), &'_0 mut (String)>(move (self@1))
+    concrete@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0]: Display<_dyn> + _dyn : '_), &'_ mut (String)>(move (self@1))
     @3 := &mut *(concrete@2)
-    ret@0 := {impl Drop for String}::drop<'_0>(move (@3))
+    ret@0 := {impl Drop for String}::drop<'_>(move (@3))
     return
 }
 
@@ -238,7 +238,7 @@ fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
 {
     let ret@0: core::fmt::Display::{vtable}; // return
 
-    ret@0 := core::fmt::Display::{vtable} { size: const (24 : usize), align: const (8 : usize), drop: const ({{impl Display for String}}::{vtable}::{drop_method}<'_>), method_fmt: const ({vtable_method}<'_, '_, '_>) }
+    ret@0 := core::fmt::Display::{vtable} { size: const (24 : usize), align: const (8 : usize), drop: const ({{impl Display for String}}::{vtable}::{drop_method}), method_fmt: const ({vtable_method}<'_, '_, '_>) }
     return
 }
 

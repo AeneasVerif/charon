@@ -673,11 +673,14 @@ impl<'a> VtableMetadataComputer<'a> {
         // For the drop shim, we need *mut (dyn Trait<...>)
         let dyn_trait_param_ty = self.get_drop_receiver()?;
         let dyn_trait_param_ty = match dyn_trait_param_ty.kind() {
-            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Ty::new(TyKind::Ref(
-                Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
-                ty.clone(),
-                RefKind::Mut,
-            )),
+            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) =>
+                // ssyram: Use raw pointer for the receiver now
+                Ty::new(TyKind::RawPtr(ty.clone(), RefKind::Mut)),
+                // Ty::new(TyKind::Ref(
+                //     Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                //     ty.clone(),
+                //     RefKind::Mut,
+                // )),
             _ => unreachable!(),
         };
 
@@ -795,17 +798,19 @@ impl<'a> VtableMetadataComputer<'a> {
 
         // Drop shim functions should have the same generic parameters as the trait impl
         // but with at least one region binder for the receiver
-        let mut generics = trait_impl.generics.clone();
+        let generics = trait_impl.generics.clone();
 
-        // Insert the region for the drop shim receiver
-        generics.regions.iter_mut().for_each(|reg| reg.index += 1);
-        generics.regions.insert_and_shift_ids(
-            RegionId::ZERO,
-            RegionParam {
-                index: RegionId::ZERO,
-                name: None,
-            },
-        );
+        // ssyram: Now no need to add the new region `'0`
+        // as the receiver is `*mut` instead of reference `&'0 mut`
+        // // Insert the region for the drop shim receiver
+        // generics.regions.iter_mut().for_each(|reg| reg.index += 1);
+        // generics.regions.insert_and_shift_ids(
+        //     RegionId::ZERO,
+        //     RegionParam {
+        //         index: RegionId::ZERO,
+        //         name: None,
+        //     },
+        // );
 
         Ok(generics)
     }
@@ -860,8 +865,10 @@ impl<'a> VtableMetadataComputer<'a> {
             }
         };
 
-        // Use proper region variable instead of Region::Erased
-        let region_var = Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), RegionId::new(0)));
+        // ssyram: Now we use `*mut dyn Trait` as receiver, hence no region -- back to Region::Erased
+        // // Use proper region variable instead of Region::Erased
+        // let region_var = Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), RegionId::new(0)));
+        let region_var = Region::Erased;
         generics
             .regions
             .insert_and_shift_ids(RegionId::ZERO, region_var);
@@ -873,13 +880,14 @@ impl<'a> VtableMetadataComputer<'a> {
     fn create_drop_shim_function_generics(&self) -> Result<GenericArgs, Error> {
         // The drop shim function reference should use the same generic arguments as the impl_ref
         // but also include the region parameter for the receiver
-        let mut generics = *self.impl_ref.generics.clone();
+        let generics = *self.impl_ref.generics.clone();
 
-        // We create the function pointer there, which is `fn<'a>(&'a mut dyn Trait<...>)`
-        // But the shim itself should have erased region for this
-        generics
-            .regions
-            .insert_and_shift_ids(RegionId::ZERO, Region::Erased);
+        // ssyram: Now we use `*mut dyn Trait` as receiver, hence no region
+        // // We create the function pointer there, which is `fn<'a>(&'a mut dyn Trait<...>)`
+        // // But the shim itself should have erased region for this
+        // generics
+        //     .regions
+        //     .insert_and_shift_ids(RegionId::ZERO, Region::Erased);
 
         Ok(generics)
     }
@@ -1004,7 +1012,9 @@ impl<'a> DropShimCtx<'a> {
         let drop_place_ref = self.new_var(
             None,
             Ty::new(TyKind::Ref(
-                Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                // ssyram: Use raw pointer for the receiver now
+                // Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                Region::Erased,
                 drop_place.ty().clone(),
                 RefKind::Mut,
             )),
@@ -1280,7 +1290,9 @@ impl<'a> DropShimCtx<'a> {
                 let concrete_place = locals.new_var(
                     Some("concrete".into()),
                     Ty::new(TyKind::Ref(
-                        Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                        // ssyram: Use raw pointer for the receiver now
+                        // Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                        Region::Erased,
                         concrete_ty.clone(),
                         RefKind::Mut,
                     )),
