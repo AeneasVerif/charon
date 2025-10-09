@@ -471,6 +471,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and don't enqueue it for translation.
+    #[expect(dead_code)]
     pub(crate) fn translate_item_no_enqueue<T: TryFrom<ItemRef<ItemId>>>(
         &mut self,
         span: Span,
