@@ -187,6 +187,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let span = self.def_span(item_source.def_id());
                 raise_error!(self, span, "Failed to translate item {id:?}.")
             }
+            // Add to avoid the double translation of the same item
+            self.processed.insert(item_source.clone());
         }
         let item = self.translated.get_item(id);
         Ok(item.unwrap())
