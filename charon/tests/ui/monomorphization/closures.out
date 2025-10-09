@@ -68,15 +68,50 @@ pub trait Tuple::<(u8)>
     vtable: core::marker::Tuple::{vtable}::<(u8)>
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun1()
+
 // Full name: test_crate::Thing
 struct Thing {}
 
+// Full name: core::ops::drop::Drop::<Thing>
+#[lang_item("drop")]
+pub trait Drop::<Thing>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Thing>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Thing><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Thing>
+}
+
+// Full name: test_crate::Thing::{impl Drop::<Thing>}
+impl Drop::<Thing> {
+    parent_clause0 = MetaSized::<Thing>
+    fn drop<'_0> = {impl Drop::<Thing>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Thing::{impl Drop::<Thing>}::drop
+fn {impl Drop::<Thing>}::drop<'_0>(@1: &'_0 mut (Thing))
+{
+    let @0: (); // return
+    let @1: *mut Thing; // arg #1
+    let @2: &'_ mut (Thing); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<Thing>(@1: Thing)
-
-struct test_crate::main::closure<'_0> {
-  &'_0 (u8),
-}
 
 // Full name: core::ops::drop::Drop::<test_crate::main::closure<'_>>
 #[lang_item("drop")]
@@ -87,8 +122,28 @@ pub trait Drop::<test_crate::main::closure<'_>>
     vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure<'_>>
 }
 
-struct test_crate::main::closure#1<'_0> {
-  &'_0 mut (u8),
+struct test_crate::main::closure<'_0> {
+  &'_0 (u8),
+}
+
+// Full name: test_crate::main::closure::{impl Drop::<test_crate::main::closure<'_>>}
+impl<'_0> Drop::<test_crate::main::closure<'_>> {
+    parent_clause0 = MetaSized::<test_crate::main::closure<'_>>
+    fn drop<'_0> = {impl Drop::<test_crate::main::closure<'_>>}::drop<'_0, '_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure::{impl Drop::<test_crate::main::closure<'_>>}::drop
+fn {impl Drop::<test_crate::main::closure<'_>>}::drop<'_0, '_1>(@1: &'_1 mut (test_crate::main::closure<'_>))
+{
+    let @0: (); // return
+    let @1: *mut test_crate::main::closure<'_0>; // arg #1
+    let @2: &'_ mut (test_crate::main::closure<'_0>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: core::ops::drop::Drop::<test_crate::main::closure#1<'_>>
@@ -100,8 +155,28 @@ pub trait Drop::<test_crate::main::closure#1<'_>>
     vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#1<'_>>
 }
 
-struct test_crate::main::closure#2 {
-  Thing,
+struct test_crate::main::closure#1<'_0> {
+  &'_0 mut (u8),
+}
+
+// Full name: test_crate::main::closure#1::{impl Drop::<test_crate::main::closure#1<'_>>}
+impl<'_0> Drop::<test_crate::main::closure#1<'_>> {
+    parent_clause0 = MetaSized::<test_crate::main::closure#1<'_>>
+    fn drop<'_0> = {impl Drop::<test_crate::main::closure#1<'_>>}::drop<'_0, '_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure#1::{impl Drop::<test_crate::main::closure#1<'_>>}::drop
+fn {impl Drop::<test_crate::main::closure#1<'_>>}::drop<'_0, '_1>(@1: &'_1 mut (test_crate::main::closure#1<'_>))
+{
+    let @0: (); // return
+    let @1: *mut test_crate::main::closure#1<'_0>; // arg #1
+    let @2: &'_ mut (test_crate::main::closure#1<'_0>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: core::ops::drop::Drop::<test_crate::main::closure#2>
@@ -113,9 +188,35 @@ pub trait Drop::<test_crate::main::closure#2>
     vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#2>
 }
 
+struct test_crate::main::closure#2 {
+  Thing,
+}
+
+// Full name: test_crate::main::closure#2::{impl Drop::<test_crate::main::closure#2>}
+impl Drop::<test_crate::main::closure#2> {
+    parent_clause0 = MetaSized::<test_crate::main::closure#2>
+    fn drop<'_0> = {impl Drop::<test_crate::main::closure#2>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure#2::{impl Drop::<test_crate::main::closure#2>}::drop
+fn {impl Drop::<test_crate::main::closure#2>}::drop<'_0>(@1: &'_0 mut (test_crate::main::closure#2))
+{
+    let @0: (); // return
+    let @1: *mut test_crate::main::closure#2; // arg #1
+    let @2: &'_ mut (test_crate::main::closure#2); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
 pub fn core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0>(@1: &'_0 mut (test_crate::main::closure<'_>))
 
 pub fn core::ops::drop::Drop::drop::<test_crate::main::closure#1<'_>><'_0>(@1: &'_0 mut (test_crate::main::closure#1<'_>))
+
+pub fn core::ops::drop::Drop::drop::<Thing><'_0>(@1: &'_0 mut (Thing))
 
 pub fn core::ops::drop::Drop::drop::<test_crate::main::closure#2><'_0>(@1: &'_0 mut (test_crate::main::closure#2))
 
@@ -207,16 +308,6 @@ pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>(@1: test_crate::main::closure<'_>, @2: (u8)) -> u8
 
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>(@1: test_crate::main::closure#1<'_>, @2: (u8)) -> u8
-
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8)>}::call
 fn {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '_1>(@1: &'_1 (test_crate::main::closure<'_0>), @2: (u8)) -> u8

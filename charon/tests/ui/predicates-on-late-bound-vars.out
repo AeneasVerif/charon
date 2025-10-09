@@ -10,8 +10,27 @@ pub opaque type RefCell<T>
 where
     [@TraitClause0]: MetaSized<T>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::cell::BorrowError
 pub struct BorrowError {}
+
+// Full name: core::cell::BorrowError::{impl Drop for BorrowError}
+impl Drop for BorrowError {
+    parent_clause0 = MetaSized<BorrowError>
+    fn drop<'_0> = {impl Drop for BorrowError}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::cell::BorrowError::{impl Drop for BorrowError}::drop
+fn {impl Drop for BorrowError}::drop<'_0>(@1: &'_0 mut (BorrowError))
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -70,15 +89,6 @@ pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))

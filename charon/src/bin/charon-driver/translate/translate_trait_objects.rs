@@ -16,10 +16,6 @@ fn dummy_public_attr_info() -> AttrInfo {
     }
 }
 
-fn usize_ty() -> Ty {
-    Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
-}
-
 /// Takes a `T` valid in the context of a trait ref and transforms it into a `T` valid in the
 /// context of its vtable definition, i.e. no longer mentions the `Self` type or `Self` clause. If
 /// `new_self` is `Some`, we replace any mention of the `Self` type with it; otherwise we panic if
@@ -294,9 +290,9 @@ impl ItemTransCtx<'_, '_> {
 
         // Add the basic fields.
         // Field: `size: usize`
-        mk_field("size".into(), usize_ty());
+        mk_field("size".into(), Ty::mk_usize());
         // Field: `align: usize`
-        mk_field("align".into(), usize_ty());
+        mk_field("align".into(), Ty::mk_usize());
         // Field: `drop: fn(*mut Self)` -- `Self` is just a placeholder, will be dynified below.
         mk_field("drop".into(), {
             let self_ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
@@ -449,6 +445,7 @@ impl ItemTransCtx<'_, '_> {
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
             repr: None,
+            drop_glue: None,
         })
     }
 }

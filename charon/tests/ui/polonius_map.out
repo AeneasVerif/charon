@@ -137,6 +137,19 @@ impl Hash for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx>
@@ -235,8 +248,28 @@ where
 // Full name: std::hash::random::RandomState
 pub opaque type RandomState
 
+// Full name: std::hash::random::RandomState::{impl Drop for RandomState}
+impl Drop for RandomState {
+    parent_clause0 = MetaSized<RandomState>
+    fn drop<'_0> = {impl Drop for RandomState}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: std::hash::random::RandomState::{impl Drop for RandomState}::drop
+fn {impl Drop for RandomState}::drop<'_0>(@1: &'_0 mut (RandomState))
+
 // Full name: std::hash::random::DefaultHasher
 pub opaque type DefaultHasher
+
+// Full name: std::hash::random::DefaultHasher::{impl Drop for DefaultHasher}
+impl Drop for DefaultHasher {
+    parent_clause0 = MetaSized<DefaultHasher>
+    fn drop<'_0> = {impl Drop for DefaultHasher}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: std::hash::random::DefaultHasher::{impl Drop for DefaultHasher}::drop
+fn {impl Drop for DefaultHasher}::drop<'_0>(@1: &'_0 mut (DefaultHasher))
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}::finish
 pub fn {impl Hasher for DefaultHasher}::finish<'_0>(@1: &'_0 (DefaultHasher)) -> u64

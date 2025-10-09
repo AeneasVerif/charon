@@ -1,10 +1,27 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
 // Full name: core::num::{usize}::MAX
 pub fn MAX() -> usize
 
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
@@ -27,6 +44,33 @@ const UNIT_METADATA: () = @Fun0()
 enum HasPointerNiche {
   First,
   Second(NonNull<usize>),
+}
+
+// Full name: test_crate::HasPointerNiche::{impl Drop for HasPointerNiche}
+impl Drop for HasPointerNiche {
+    parent_clause0 = MetaSized<HasPointerNiche>
+    fn drop<'_0> = {impl Drop for HasPointerNiche}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::HasPointerNiche::{impl Drop for HasPointerNiche}::drop
+fn {impl Drop for HasPointerNiche}::drop<'_0>(@1: &'_0 mut (HasPointerNiche))
+{
+    let @0: (); // return
+    let @1: *mut HasPointerNiche; // arg #1
+    let @2: &'_ mut (HasPointerNiche); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        HasPointerNiche::First => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
 }
 
 // Full name: test_crate::main

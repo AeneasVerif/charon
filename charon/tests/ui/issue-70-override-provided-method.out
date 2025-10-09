@@ -13,6 +13,19 @@ pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
 pub enum Ordering {
@@ -21,9 +34,15 @@ pub enum Ordering {
   Greater,
 }
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}
+impl Drop for Ordering {
+    parent_clause0 = MetaSized<Ordering>
+    fn drop<'_0> = {impl Drop for Ordering}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}::drop
+fn {impl Drop for Ordering}::drop<'_0>(@1: &'_0 mut (Ordering))
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -93,6 +112,10 @@ pub trait StructuralPartialEq<Self>
     vtable: core::marker::StructuralPartialEq::{vtable}
 }
 
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::option::{impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq
 pub fn {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0, '_1, T>(@1: &'_0 (Option<T>[@TraitClause0]), @2: &'_1 (Option<T>[@TraitClause0])) -> bool
 where
@@ -152,6 +175,26 @@ fn main()
 // Full name: test_crate::Foo
 struct Foo {
   u32,
+}
+
+// Full name: test_crate::Foo::{impl Drop for Foo}
+impl Drop for Foo {
+    parent_clause0 = MetaSized<Foo>
+    fn drop<'_0> = {impl Drop for Foo}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::{impl Drop for Foo}::drop
+fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut (Foo))
+{
+    let @0: (); // return
+    let @1: *mut Foo; // arg #1
+    let @2: &'_ mut (Foo); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: test_crate::{impl StructuralPartialEq for Foo}

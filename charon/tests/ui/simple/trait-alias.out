@@ -39,12 +39,11 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -79,6 +78,26 @@ trait Trait<Self, T, Self_Item>
 
 // Full name: test_crate::Struct
 struct Struct {}
+
+// Full name: test_crate::Struct::{impl Drop for Struct}
+impl Drop for Struct {
+    parent_clause0 = MetaSized<Struct>
+    fn drop<'_0> = {impl Drop for Struct}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Struct::{impl Drop for Struct}::drop
+fn {impl Drop for Struct}::drop<'_0>(@1: &'_0 mut (Struct))
+{
+    let @0: (); // return
+    let @1: *mut Struct; // arg #1
+    let @2: &'_ mut (Struct); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
 pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 (Struct)) -> Struct

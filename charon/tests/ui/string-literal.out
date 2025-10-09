@@ -1,11 +1,30 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -47,15 +66,6 @@ impl Display for Str {
     vtable: {impl Display for Str}::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
@@ -64,15 +74,15 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
-
 // Full name: alloc::string::String::{impl Drop for String}
 impl Drop for String {
     parent_clause0 = MetaSized<String>
     fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
     non-dyn-compatible
 }
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
 // Full name: alloc::string::ToString
 #[lang_item("ToString")]

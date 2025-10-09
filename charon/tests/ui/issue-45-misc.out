@@ -98,6 +98,15 @@ pub trait Eq<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
 pub enum Ordering {
@@ -105,6 +114,16 @@ pub enum Ordering {
   Equal,
   Greater,
 }
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}
+impl Drop for Ordering {
+    parent_clause0 = MetaSized<Ordering>
+    fn drop<'_0> = {impl Drop for Ordering}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::Ordering::{impl Drop for Ordering}::drop
+fn {impl Drop for Ordering}::drop<'_0>(@1: &'_0 mut (Ordering))
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -445,17 +464,7 @@ where
   Break(B),
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -530,6 +539,16 @@ pub enum AssertKind {
   Ne,
   Match,
 }
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}
+impl Drop for AssertKind {
+    parent_clause0 = MetaSized<AssertKind>
+    fn drop<'_0> = {impl Drop for AssertKind}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}::drop
+fn {impl Drop for AssertKind}::drop<'_0>(@1: &'_0 mut (AssertKind))
 
 #[lang_item("slice_len_fn")]
 pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize

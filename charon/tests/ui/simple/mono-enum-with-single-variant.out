@@ -24,6 +24,10 @@ pub trait Sized::<u8>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<MyResult::<Never, u8>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<MyResult::<Never, u8>>
+
 fn UNIT_METADATA()
 {
     let @0: (); // return
@@ -34,8 +38,46 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
+// Full name: core::ops::drop::Drop::<Never>
+#[lang_item("drop")]
+pub trait Drop::<Never>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Never>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Never><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Never>
+}
+
 // Full name: test_crate::Never
 enum Never {
+}
+
+// Full name: test_crate::Never::{impl Drop::<Never>}
+impl Drop::<Never> {
+    parent_clause0 = MetaSized::<Never>
+    fn drop<'_0> = {impl Drop::<Never>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Never::{impl Drop::<Never>}::drop
+fn {impl Drop::<Never>}::drop<'_0>(@1: &'_0 mut (Never))
+{
+    let @0: (); // return
+    let @1: *mut Never; // arg #1
+    let @2: &'_ mut (Never); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    undefined_behavior
+}
+
+// Full name: core::ops::drop::Drop::<MyResult::<Never, u8>>
+#[lang_item("drop")]
+pub trait Drop::<MyResult::<Never, u8>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<MyResult::<Never, u8>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<MyResult::<Never, u8>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<MyResult::<Never, u8>>
 }
 
 // Full name: test_crate::MyResult::<Never, u8>
@@ -43,6 +85,37 @@ enum MyResult::<Never, u8> {
   Ok(Never),
   Err(u8),
 }
+
+// Full name: test_crate::MyResult::{impl Drop::<MyResult::<Never, u8>>}::<Never, u8>
+impl Drop::<MyResult::<Never, u8>> {
+    parent_clause0 = MetaSized::<MyResult::<Never, u8>>
+    fn drop<'_0> = {impl Drop::<MyResult::<Never, u8>>}::drop::<Never, u8><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::MyResult::{impl Drop::<MyResult::<Never, u8>>}::drop::<Never, u8>
+fn {impl Drop::<MyResult::<Never, u8>>}::drop::<Never, u8><'_0>(@1: &'_0 mut (MyResult::<Never, u8>))
+{
+    let @0: (); // return
+    let @1: *mut MyResult::<Never, u8>; // arg #1
+    let @2: &'_ mut (MyResult::<Never, u8>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        MyResult::<Never, u8>::Ok => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
+}
+
+pub fn core::ops::drop::Drop::drop::<Never><'_0>(@1: &'_0 mut (Never))
+
+pub fn core::ops::drop::Drop::drop::<MyResult::<Never, u8>><'_0>(@1: &'_0 mut (MyResult::<Never, u8>))
 
 // Full name: test_crate::use_result
 fn use_result(@1: MyResult::<Never, u8>)

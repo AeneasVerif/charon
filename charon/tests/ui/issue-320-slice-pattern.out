@@ -1,5 +1,22 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 fn UNIT_METADATA()
 {
     let @0: (); // return
@@ -242,6 +259,26 @@ fn slice_pat4<'_0>(@1: &'_0 (Slice<u32>))
 // Full name: test_crate::Unsized
 struct Unsized {
   Slice<u32>,
+}
+
+// Full name: test_crate::Unsized::{impl Drop for Unsized}
+impl Drop for Unsized {
+    parent_clause0 = MetaSized<Unsized>
+    fn drop<'_0> = {impl Drop for Unsized}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Unsized::{impl Drop for Unsized}::drop
+fn {impl Drop for Unsized}::drop<'_0>(@1: &'_0 mut (Unsized))
+{
+    let @0: (); // return
+    let @1: *mut Unsized; // arg #1
+    let @2: &'_ mut (Unsized); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
+    return
 }
 
 // Full name: test_crate::slice_pat5

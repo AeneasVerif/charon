@@ -1952,6 +1952,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
           ("repr", repr);
+          ("drop_glue", drop_glue);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -1961,6 +1962,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* layout = option_of_json layout_of_json ctx layout in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
         let* repr = option_of_json repr_options_of_json ctx repr in
+        let* drop_glue = option_of_json trait_impl_ref_of_json ctx drop_glue in
         Ok
           ({
              def_id;
@@ -1971,6 +1973,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
              layout;
              ptr_metadata;
              repr;
+             drop_glue;
            }
             : type_decl)
     | _ -> Error "")

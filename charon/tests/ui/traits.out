@@ -122,6 +122,16 @@ where
 #[lang_item("String")]
 pub opaque type String
 
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
 fn UNIT_METADATA()
 {
     let @0: (); // return
@@ -628,6 +638,26 @@ struct TestType1 {
   u64,
 }
 
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestType1::{impl Drop for TestType1}
+impl Drop for TestType1 {
+    parent_clause0 = MetaSized<TestType1>
+    fn drop<'_0> = {impl Drop for TestType1}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{TestType<T>[@TraitClause0]}::test::TestType1::{impl Drop for TestType1}::drop
+fn {impl Drop for TestType1}::drop<'_0>(@1: &'_0 mut (TestType1))
+{
+    let @0: (); // return
+    let @1: *mut TestType1; // arg #1
+    let @2: &'_ mut (TestType1); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
 // Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}::test
 fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
 {
@@ -713,6 +743,26 @@ impl TestTrait for TestType1 {
 // Full name: test_crate::BoolWrapper
 pub struct BoolWrapper {
   bool,
+}
+
+// Full name: test_crate::BoolWrapper::{impl Drop for BoolWrapper}
+impl Drop for BoolWrapper {
+    parent_clause0 = MetaSized<BoolWrapper>
+    fn drop<'_0> = {impl Drop for BoolWrapper}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::BoolWrapper::{impl Drop for BoolWrapper}::drop
+fn {impl Drop for BoolWrapper}::drop<'_0>(@1: &'_0 mut (BoolWrapper))
+{
+    let @0: (); // return
+    let @1: *mut BoolWrapper; // arg #1
+    let @2: &'_ mut (BoolWrapper); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
 }
 
 // Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type

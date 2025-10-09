@@ -58,6 +58,33 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::boxed::Box::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
 pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
 where
@@ -167,14 +194,85 @@ pub enum EmptyEnum {
   Empty,
 }
 
+// Full name: test_crate::EmptyEnum::{impl Drop for EmptyEnum}
+impl Drop for EmptyEnum {
+    parent_clause0 = MetaSized<EmptyEnum>
+    fn drop<'_0> = {impl Drop for EmptyEnum}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::EmptyEnum::{impl Drop for EmptyEnum}::drop
+fn {impl Drop for EmptyEnum}::drop<'_0>(@1: &'_0 mut (EmptyEnum))
+{
+    let @0: (); // return
+    let @1: *mut EmptyEnum; // arg #1
+    let @2: &'_ mut (EmptyEnum); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        _ => {
+        },
+    }
+    return
+}
+
 // Full name: test_crate::Enum
 pub enum Enum {
   Variant1,
   Variant2,
 }
 
+// Full name: test_crate::Enum::{impl Drop for Enum}
+impl Drop for Enum {
+    parent_clause0 = MetaSized<Enum>
+    fn drop<'_0> = {impl Drop for Enum}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Enum::{impl Drop for Enum}::drop
+fn {impl Drop for Enum}::drop<'_0>(@1: &'_0 mut (Enum))
+{
+    let @0: (); // return
+    let @1: *mut Enum; // arg #1
+    let @2: &'_ mut (Enum); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        Enum::Variant1 => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
+}
+
 // Full name: test_crate::EmptyStruct
 pub struct EmptyStruct {}
+
+// Full name: test_crate::EmptyStruct::{impl Drop for EmptyStruct}
+impl Drop for EmptyStruct {
+    parent_clause0 = MetaSized<EmptyStruct>
+    fn drop<'_0> = {impl Drop for EmptyStruct}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::EmptyStruct::{impl Drop for EmptyStruct}::drop
+fn {impl Drop for EmptyStruct}::drop<'_0>(@1: &'_0 mut (EmptyStruct))
+{
+    let @0: (); // return
+    let @1: *mut EmptyStruct; // arg #1
+    let @2: &'_ mut (EmptyStruct); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
 
 // Full name: test_crate::Sum
 pub enum Sum<T1, T2>
