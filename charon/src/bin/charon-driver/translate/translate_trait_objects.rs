@@ -525,7 +525,7 @@ impl ItemTransCtx<'_, '_> {
             _ => unreachable!(),
         };
         let vtable_struct_ref = self
-            .translate_vtable_struct_ref_no_enqueue(span, implemented_trait)?
+            .translate_vtable_struct_ref(span, implemented_trait)?
             .expect("trait should be dyn-compatible");
         let implemented_trait = self.translate_trait_decl_ref(span, implemented_trait)?;
         let impl_ref = self.translate_item(
@@ -655,7 +655,7 @@ impl ItemTransCtx<'_, '_> {
 
             let vtable_def_ref = self
                 .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    ctx.translate_vtable_struct_ref_no_enqueue(span, tref)
+                    ctx.translate_vtable_struct_ref(span, tref)
                 })?
                 .erase()
                 .expect("parent trait should be dyn compatible");
