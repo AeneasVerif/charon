@@ -411,7 +411,7 @@ impl<'a> VtableMetadataComputer<'a> {
 
     /// Analyze what kind of drop case applies to the given concrete type
     fn analyze_drop_case(&self, concrete_ty: &Ty) -> Result<DropCase, Error> {
-        trace!("[ANALYZE] Analyzing drop case for type: {:?}", concrete_ty);
+        trace!("[DropShim] Analyzing drop case for type: {:?}", concrete_ty);
 
         match concrete_ty.kind() {
             TyKind::Adt(type_decl_ref) => self.analyze_adt_drop_case(type_decl_ref, concrete_ty),
@@ -443,7 +443,7 @@ impl<'a> VtableMetadataComputer<'a> {
             TypeId::Tuple => self.analyze_tuple_drop_case(type_decl_ref),
             TypeId::Builtin(builtin_ty) => self.analyze_builtin_drop_case(builtin_ty, concrete_ty),
             TypeId::Adt(_) => {
-                trace!("[ANALYZE] Found ADT type, looking for direct drop implementation");
+                trace!("[DropShim] Found ADT type, looking for direct drop implementation");
                 if let Some(fun_ref) = self.find_direct_drop_impl(concrete_ty)? {
                     Ok(DropCase::Direct(fun_ref))
                 } else {
@@ -569,43 +569,24 @@ impl<'a> VtableMetadataComputer<'a> {
 
     /// Find direct Drop implementation for a concrete type
     fn find_direct_drop_impl(&self, concrete_ty: &Ty) -> Result<Option<FunDeclRef>, Error> {
-        trace!(
-            "[DROP_IMPL] Looking for drop implementation for type: {:?}",
-            concrete_ty
-        );
-
         for trait_impl in self.ctx.translated.trait_impls.iter() {
             let trait_decl_id = trait_impl.impl_trait.id;
 
             if self.is_drop_trait(&trait_decl_id) {
                 if let Some(self_type) = self.get_impl_self_type(trait_impl) {
-                    trace!("[DROP_IMPL] Checking impl with self type: {:?}", self_type);
-
                     if self.types_match(&self_type, concrete_ty) {
-                        trace!("[DROP_IMPL] Found matching drop impl");
-
                         // Find the drop method in this implementation
-                        if let Some((method_name, method_ref)) =
+                        if let Some((_, method_ref)) =
                             trait_impl.methods().find(|(n, _)| n.0 == "drop")
                         {
-                            trace!(
-                                "[DROP_IMPL] Found drop method: {}, {:?}",
-                                method_name, method_ref
-                            );
                             // Extract the FunDeclRef from the binder
                             return Ok(Some(method_ref.skip_binder.clone()));
                         }
-
-                        trace!("[DROP_IMPL] No drop method found in matching impl");
                     }
                 }
             }
         }
 
-        trace!(
-            "[DROP_IMPL] No drop implementation found for type: {:?}",
-            concrete_ty
-        );
         Ok(None)
     }
 
@@ -673,14 +654,9 @@ impl<'a> VtableMetadataComputer<'a> {
         // For the drop shim, we need *mut (dyn Trait<...>)
         let dyn_trait_param_ty = self.get_drop_receiver()?;
         let dyn_trait_param_ty = match dyn_trait_param_ty.kind() {
-            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) =>
-                // ssyram: Use raw pointer for the receiver now
-                Ty::new(TyKind::RawPtr(ty.clone(), RefKind::Mut)),
-                // Ty::new(TyKind::Ref(
-                //     Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
-                //     ty.clone(),
-                //     RefKind::Mut,
-                // )),
+            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => {
+                Ty::new(TyKind::RawPtr(ty.clone(), RefKind::Mut))
+            }
             _ => unreachable!(),
         };
 
@@ -800,18 +776,6 @@ impl<'a> VtableMetadataComputer<'a> {
         // but with at least one region binder for the receiver
         let generics = trait_impl.generics.clone();
 
-        // ssyram: Now no need to add the new region `'0`
-        // as the receiver is `*mut` instead of reference `&'0 mut`
-        // // Insert the region for the drop shim receiver
-        // generics.regions.iter_mut().for_each(|reg| reg.index += 1);
-        // generics.regions.insert_and_shift_ids(
-        //     RegionId::ZERO,
-        //     RegionParam {
-        //         index: RegionId::ZERO,
-        //         name: None,
-        //     },
-        // );
-
         Ok(generics)
     }
 
@@ -865,13 +829,9 @@ impl<'a> VtableMetadataComputer<'a> {
             }
         };
 
-        // ssyram: Now we use `*mut dyn Trait` as receiver, hence no region -- back to Region::Erased
-        // // Use proper region variable instead of Region::Erased
-        // let region_var = Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), RegionId::new(0)));
-        let region_var = Region::Erased;
         generics
             .regions
-            .insert_and_shift_ids(RegionId::ZERO, region_var);
+            .insert_and_shift_ids(RegionId::ZERO, Region::Erased);
         Ok(generics)
     }
 
@@ -881,13 +841,6 @@ impl<'a> VtableMetadataComputer<'a> {
         // The drop shim function reference should use the same generic arguments as the impl_ref
         // but also include the region parameter for the receiver
         let generics = *self.impl_ref.generics.clone();
-
-        // ssyram: Now we use `*mut dyn Trait` as receiver, hence no region
-        // // We create the function pointer there, which is `fn<'a>(&'a mut dyn Trait<...>)`
-        // // But the shim itself should have erased region for this
-        // generics
-        //     .regions
-        //     .insert_and_shift_ids(RegionId::ZERO, Region::Erased);
 
         Ok(generics)
     }
@@ -1012,8 +965,6 @@ impl<'a> DropShimCtx<'a> {
         let drop_place_ref = self.new_var(
             None,
             Ty::new(TyKind::Ref(
-                // ssyram: Use raw pointer for the receiver now
-                // Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
                 Region::Erased,
                 drop_place.ty().clone(),
                 RefKind::Mut,
@@ -1030,7 +981,7 @@ impl<'a> DropShimCtx<'a> {
                     ptr_metadata: no_metadata(&self.ctx.ctx.translated),
                 },
             ),
-            comments_before: vec!["Create reference for drop argument".to_string()],
+            comments_before: vec![],
         };
 
         // Create the call
@@ -1052,10 +1003,7 @@ impl<'a> DropShimCtx<'a> {
                 target: end_block,
                 on_unwind: unwind_block,
             },
-            comments_before: vec![format!(
-                "Call drop function: {}",
-                fun_ref.id.with_ctx(&self.ctx.ctx.into_fmt())
-            )],
+            comments_before: vec![],
         };
 
         let (block_id, block_data) = self.new_block_with_terminator(terminator);
@@ -1110,7 +1058,7 @@ impl<'a> DropShimCtx<'a> {
                         constant_builder.zero_constant(&counter_ty)?,
                     ))),
                 ),
-                comments_before: vec!["Initialize counter to 0".to_string()],
+                comments_before: vec![],
             };
 
             let span = self.span();
@@ -1134,7 +1082,7 @@ impl<'a> DropShimCtx<'a> {
                         Operand::Const(Box::new(array_length_expr.clone())),
                     ),
                 ),
-                comments_before: vec![format!("Check if counter < array length")],
+                comments_before: vec![],
             };
 
             let loop_switch = SwitchTargets::If(
@@ -1152,7 +1100,7 @@ impl<'a> DropShimCtx<'a> {
                     discr: Operand::Move(counter_check.clone()),
                     targets: loop_switch,
                 },
-                comments_before: vec!["Branch based on loop condition".to_string()],
+                comments_before: vec![],
             };
         }
 
@@ -1181,7 +1129,7 @@ impl<'a> DropShimCtx<'a> {
                         Operand::Const(Box::new(one_constant)),
                     ),
                 ),
-                comments_before: vec!["Increment counter".to_string()],
+                comments_before: vec![],
             };
 
             let span = self.span();
@@ -1273,7 +1221,7 @@ impl<'a> DropShimCtx<'a> {
                     terminator: Terminator {
                         span: ctx.span,
                         kind: TerminatorKind::Return,
-                        comments_before: vec!["Nothing to drop, return".to_string()],
+                        comments_before: vec![],
                     },
                 };
 
@@ -1290,8 +1238,6 @@ impl<'a> DropShimCtx<'a> {
                 let concrete_place = locals.new_var(
                     Some("concrete".into()),
                     Ty::new(TyKind::Ref(
-                        // ssyram: Use raw pointer for the receiver now
-                        // Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
                         Region::Erased,
                         concrete_ty.clone(),
                         RefKind::Mut,
@@ -1310,10 +1256,7 @@ impl<'a> DropShimCtx<'a> {
                             Operand::Move(locals.place_for_var(LocalId::new(1))),
                         ),
                     ),
-                    comments_before: vec![format!(
-                        "Concretize to concrete type: {}",
-                        concrete_ty.with_ctx(&ctx.ctx.into_fmt())
-                    )],
+                    comments_before: vec![],
                 };
 
                 let mut shim_ctx = DropShimCtx::new(ctx, &mut locals);
@@ -1338,24 +1281,10 @@ impl<'a> DropShimCtx<'a> {
     }
 }
 
-/// Count vtable instances for logging
-fn count_vtable_instances(ctx: &TransformCtx) -> usize {
-    ctx.translated
-        .fun_decls
-        .iter()
-        .filter(|decl| matches!(decl.src, ItemSource::VTableInstance { .. }))
-        .count()
-}
-
 pub struct Transform;
 
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        trace!(
-            "ComputeVtableMetadata: Processing {} vtable instances",
-            count_vtable_instances(ctx)
-        );
-
         // Process vtable instance initializer functions
         ctx.for_each_fun_decl(|ctx, decl| {
             if let ItemSource::VTableInstance { impl_ref } = &decl.src {
@@ -1364,28 +1293,9 @@ impl TransformPass for Transform {
                     let mut computer =
                         VtableMetadataComputer::new(ctx, impl_ref, decl.item_meta.span, generics);
 
-                    match computer.compute_vtable_metadata_for_function(body) {
-                        Ok(_) => {
-                            trace!(
-                                "Successfully computed vtable metadata for {}",
-                                decl.def_id.with_ctx(&ctx.into_fmt())
-                            );
-                        }
-                        Err(e) => {
-                            register_error!(
-                                ctx,
-                                decl.item_meta.span,
-                                "Failed to compute vtable metadata: {:?}",
-                                e
-                            );
-                        }
-                    }
+                    let _ = computer.compute_vtable_metadata_for_function(body);
                 }
             }
         });
-    }
-
-    fn name(&self) -> &str {
-        "ComputeVtableMetadata"
     }
 }
