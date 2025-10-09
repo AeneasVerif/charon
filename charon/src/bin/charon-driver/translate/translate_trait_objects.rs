@@ -210,7 +210,8 @@ impl ItemTransCtx<'_, '_> {
         }
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
-        let mut vtable_ref: TypeDeclRef = self.translate_item_maybe_enqueue(span, enqueue, tref, TransItemSourceKind::VTable)?;
+        let mut vtable_ref: TypeDeclRef =
+            self.translate_item_maybe_enqueue(span, enqueue, tref, TransItemSourceKind::VTable)?;
         // Remove the `Self` type variable from the generic parameters.
         vtable_ref
             .generics
@@ -488,7 +489,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<Option<GlobalDeclRef>, Error> {
         self.translate_vtable_instance_ref_maybe_enqueue(false, span, trait_ref, impl_ref)
     }
-    
+
     pub fn translate_vtable_instance_ref_maybe_enqueue(
         &mut self,
         enqueue: bool,
