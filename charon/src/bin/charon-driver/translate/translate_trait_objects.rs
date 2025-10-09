@@ -185,6 +185,7 @@ impl ItemTransCtx<'_, '_> {
     /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
     pub fn translate_vtable_struct_ref(
         &mut self,
+        enforce_enqueue: bool,
         span: Span,
         tref: &hax::TraitRef,
     ) -> Result<Option<TypeDeclRef>, Error> {
@@ -193,8 +194,11 @@ impl ItemTransCtx<'_, '_> {
         }
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
-        let mut vtable_ref: TypeDeclRef =
-            self.translate_item_no_enqueue(span, tref, TransItemSourceKind::VTable)?;
+        let mut vtable_ref: TypeDeclRef = if !enforce_enqueue {
+            self.translate_item_no_enqueue(span, tref, TransItemSourceKind::VTable)?
+        } else {
+            self.translate_item(span, tref, TransItemSourceKind::VTable)?
+        };
         // Remove the `Self` type variable from the generic parameters.
         vtable_ref
             .generics
@@ -261,7 +265,7 @@ impl ItemTransCtx<'_, '_> {
                 }
                 let vtbl_struct = self
                     .translate_region_binder(span, &clause.kind, |ctx, _| {
-                        ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
+                        ctx.translate_vtable_struct_ref(true, span, &pred.trait_ref)
                     })?
                     .erase()
                     .expect("parent trait should be dyn compatible");
@@ -457,6 +461,7 @@ impl ItemTransCtx<'_, '_> {
 impl ItemTransCtx<'_, '_> {
     pub fn translate_vtable_instance_ref(
         &mut self,
+        enforce_enqueue: bool,
         span: Span,
         trait_ref: &hax::TraitRef,
         impl_ref: &hax::ItemRef,
@@ -468,11 +473,19 @@ impl ItemTransCtx<'_, '_> {
         // `dyn Trait` coercion.
         // TODO(dyn): To do this properly we'd need to know for each clause whether it ultimately
         // ends up used in a vtable cast.
-        let vtable_ref: GlobalDeclRef = self.translate_item_no_enqueue(
-            span,
-            impl_ref,
-            TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
-        )?;
+        let vtable_ref: GlobalDeclRef = if !enforce_enqueue {
+            self.translate_item_no_enqueue(
+                span,
+                impl_ref,
+                TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
+            )?
+        } else {
+            self.translate_item(
+                span,
+                impl_ref,
+                TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
+            )?
+        };
         Ok(Some(vtable_ref))
     }
 
@@ -488,7 +501,7 @@ impl ItemTransCtx<'_, '_> {
             _ => unreachable!(),
         };
         let vtable_struct_ref = self
-            .translate_vtable_struct_ref(span, implemented_trait)?
+            .translate_vtable_struct_ref(false, span, implemented_trait)?
             .expect("trait should be dyn-compatible");
         let implemented_trait = self.translate_trait_decl_ref(span, implemented_trait)?;
         let impl_ref = self.translate_item(
@@ -618,7 +631,7 @@ impl ItemTransCtx<'_, '_> {
 
             let vtable_def_ref = self
                 .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    ctx.translate_vtable_struct_ref(span, tref)
+                    ctx.translate_vtable_struct_ref(false, span, tref)
                 })?
                 .erase()
                 .expect("parent trait should be dyn compatible");
@@ -627,7 +640,7 @@ impl ItemTransCtx<'_, '_> {
                 hax::ImplExprAtom::Concrete(impl_item) => {
                     let vtable_instance_ref = self
                         .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                            ctx.translate_vtable_instance_ref(span, tref, impl_item)
+                            ctx.translate_vtable_instance_ref(true, span, tref, impl_item)
                         })?
                         .erase()
                         .expect("parent trait should be dyn compatible");

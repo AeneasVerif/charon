@@ -4,6 +4,12 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+struct core::marker::MetaSized::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn> + _dyn : '_)),
+}
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -183,6 +189,14 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
+struct test_crate::Super::{vtable}<T> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T> + _dyn : '_)),
+  method_super_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T> + _dyn : '_)), T) -> i32,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
 // Full name: test_crate::Super
 trait Super<Self, T>
 {
@@ -240,6 +254,32 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
     storage_dead(@3)
     return
 }
+
+// Full name: test_crate::{impl Super<i32> for i32}::super_method::{vtable_method}
+fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, i32> + _dyn : '_)), @2: i32) -> i32
+{
+    let @0: i32; // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, i32> + _dyn : '_)); // arg #1
+    let @2: i32; // arg #2
+    let @3: &'_0 (i32); // anonymous local
+
+    storage_live(@3)
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @0 := {impl Super<i32> for i32}::super_method<'_0>(move (@3), move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Super<i32> for i32}::{vtable}
+fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
+{
+    let ret@0: test_crate::Super::{vtable}<i32>; // return
+
+    ret@0 := test_crate::Super::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl Super<i32> for i32}::{vtable}
+static {impl Super<i32> for i32}::{vtable}: test_crate::Super::{vtable}<i32> = {impl Super<i32> for i32}::{vtable}()
 
 // Full name: test_crate::{impl Super<i32> for i32}
 impl Super<i32> for i32 {
@@ -512,6 +552,14 @@ where
     return
 }
 
+struct test_crate::BaseOn::{vtable}<T> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, T> + _dyn : '_)),
+  method_operate_on: fn<'_0, '_1>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, T> + _dyn : '_)), &'_0_1 (T)),
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
 // Full name: test_crate::BaseOn
 trait BaseOn<Self, T>
 {
@@ -615,6 +663,33 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i3
     return
 }
 
+// Full name: test_crate::{impl BaseOn<i32> for i32}::operate_on::{vtable_method}
+fn {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_0, '_1>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, i32> + _dyn : '_)), @2: &'_1 (i32))
+{
+    let @0: (); // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, i32> + _dyn : '_)); // arg #1
+    let @2: &'_1 (i32); // arg #2
+    let @3: &'_0 (i32); // anonymous local
+
+    @0 := ()
+    storage_live(@3)
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @0 := {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(move (@3), move (@2))
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable}
+fn {impl BaseOn<i32> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
+{
+    let ret@0: test_crate::BaseOn::{vtable}<i32>; // return
+
+    ret@0 := test_crate::BaseOn::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable}
+static {impl BaseOn<i32> for i32}::{vtable}: test_crate::BaseOn::{vtable}<i32> = {impl BaseOn<i32> for i32}::{vtable}()
+
 // Full name: test_crate::{impl BaseOn<i32> for i32}
 impl BaseOn<i32> for i32 {
     parent_clause0 = MetaSized<i32>
@@ -657,6 +732,33 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i6
     @0 := ()
     return
 }
+
+// Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on::{vtable_method}
+fn {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_0, '_1>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, i64> + _dyn : '_)), @2: &'_1 (i64))
+{
+    let @0: (); // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, i64> + _dyn : '_)); // arg #1
+    let @2: &'_1 (i64); // arg #2
+    let @3: &'_0 (i32); // anonymous local
+
+    @0 := ()
+    storage_live(@3)
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: BaseOn<_dyn, i64> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @0 := {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(move (@3), move (@2))
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable}
+fn {impl BaseOn<i64> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
+{
+    let ret@0: test_crate::BaseOn::{vtable}<i64>; // return
+
+    ret@0 := test_crate::BaseOn::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable}
+static {impl BaseOn<i64> for i32}::{vtable}: test_crate::BaseOn::{vtable}<i64> = {impl BaseOn<i64> for i32}::{vtable}()
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}
 impl BaseOn<i64> for i32 {

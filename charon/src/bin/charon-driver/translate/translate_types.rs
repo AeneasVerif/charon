@@ -393,7 +393,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                     unreachable!()
                                 };
                                 Ok(ctx
-                                    .translate_vtable_struct_ref(span, &trait_predicate.trait_ref)?
+                                    .translate_vtable_struct_ref(false, span, &trait_predicate.trait_ref)?
                                     .unwrap())
                             },
                         )?

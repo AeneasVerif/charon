@@ -187,6 +187,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let span = self.def_span(item_source.def_id());
                 raise_error!(self, span, "Failed to translate item {id:?}.")
             }
+            // Add to avoid the double translation of the same item
+            self.processed.insert(item_source.clone());
         }
         let item = self.translated.get_item(id);
         Ok(item.unwrap())
@@ -595,7 +597,7 @@ impl ItemTransCtx<'_, '_> {
         // non-trait-clauses.
         self.innermost_generics_mut().take_predicates_from(preds);
 
-        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
+        let vtable = self.translate_vtable_struct_ref(false, span, def.this())?;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
@@ -855,7 +857,8 @@ impl ItemTransCtx<'_, '_> {
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
 
-        let vtable = self.translate_vtable_instance_ref(span, &trait_pred.trait_ref, def.this())?;
+        let vtable =
+            self.translate_vtable_instance_ref(false, span, &trait_pred.trait_ref, def.this())?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let implied_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;

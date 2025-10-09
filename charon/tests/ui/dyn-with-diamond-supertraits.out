@@ -4,6 +4,12 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+struct core::marker::MetaSized::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn> + _dyn : '_)),
+}
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -52,6 +58,14 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
+struct test_crate::Super::{vtable}<T> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T> + _dyn : '_)),
+  method_super_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, T> + _dyn : '_)), T) -> i32,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
 // Full name: test_crate::Super
 trait Super<Self, T>
 {
@@ -64,6 +78,14 @@ trait Super<Self, T>
 fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
 where
     [@TraitClause0]: Super<Self, T>,
+
+struct test_crate::Internal::{vtable}<Ty0> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Internal<_dyn> + _dyn : '_ + @TraitClause1_0::Internal = Ty0)),
+  method_internal_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Internal<_dyn> + _dyn : '_ + @TraitClause1_0::Internal = Ty0))) -> Ty0,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
 
 // Full name: test_crate::Internal
 trait Internal<Self>
@@ -79,6 +101,15 @@ fn test_crate::Internal::internal_method<'_0, Self>(@1: &'_0 (Self)) -> @TraitCl
 where
     [@TraitClause0]: Internal<Self>,
 
+struct test_crate::Left::{vtable}<Ty0, Ty1> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Left<_dyn> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = Ty0 + @TraitClause1_0::Left = Ty1)),
+  method_left_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Left<_dyn> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = Ty0 + @TraitClause1_0::Left = Ty1))) -> Ty1,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (test_crate::Internal::{vtable}<Ty0>),
+}
+
 // Full name: test_crate::Left
 trait Left<Self>
 {
@@ -93,6 +124,16 @@ trait Left<Self>
 fn test_crate::Left::left_method<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Left
 where
     [@TraitClause0]: Left<Self>,
+
+struct test_crate::Right::{vtable}<T, Ty0, Ty1> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Right<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = Ty0 + @TraitClause1_0::Right = Ty1)),
+  method_right_method: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Right<_dyn, T> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = Ty0 + @TraitClause1_0::Right = Ty1))) -> Ty1,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (test_crate::Internal::{vtable}<Ty0>),
+  super_trait_2: &'static (test_crate::Super::{vtable}<T>),
+}
 
 // Full name: test_crate::Right
 trait Right<Self, T>
@@ -155,6 +196,32 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
     return
 }
 
+// Full name: test_crate::{impl Super<i32> for i32}::super_method::{vtable_method}
+fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, i32> + _dyn : '_)), @2: i32) -> i32
+{
+    let @0: i32; // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, i32> + _dyn : '_)); // arg #1
+    let @2: i32; // arg #2
+    let @3: &'_0 (i32); // anonymous local
+
+    storage_live(@3)
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: Super<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @0 := {impl Super<i32> for i32}::super_method<'_0>(move (@3), move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Super<i32> for i32}::{vtable}
+fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
+{
+    let ret@0: test_crate::Super::{vtable}<i32>; // return
+
+    ret@0 := test_crate::Super::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl Super<i32> for i32}::{vtable}
+static {impl Super<i32> for i32}::{vtable}: test_crate::Super::{vtable}<i32> = {impl Super<i32> for i32}::{vtable}()
+
 // Full name: test_crate::{impl Super<i32> for i32}
 impl Super<i32> for i32 {
     parent_clause0 = MetaSized<i32>
@@ -179,6 +246,31 @@ fn {impl Internal for i32}::internal_method<'_0>(@1: &'_0 (i32)) -> i32
     storage_dead(@2)
     return
 }
+
+// Full name: test_crate::{impl Internal for i32}::internal_method::{vtable_method}
+fn {impl Internal for i32}::internal_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Internal<_dyn> + _dyn : '_ + @TraitClause1_0::Internal = i32))) -> i32
+{
+    let @0: i32; // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Internal<_dyn> + _dyn : '_ + @TraitClause1_0::Internal = i32)); // arg #1
+    let @2: &'_0 (i32); // anonymous local
+
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: Internal<_dyn> + _dyn : '_ + @TraitClause1_0::Internal = i32)), &'_0 (i32)>(move (@1))
+    @0 := {impl Internal for i32}::internal_method<'_0>(move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Internal for i32}::{vtable}
+fn {impl Internal for i32}::{vtable}() -> test_crate::Internal::{vtable}<i32>
+{
+    let ret@0: test_crate::Internal::{vtable}<i32>; // return
+
+    ret@0 := test_crate::Internal::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_internal_method: const ({impl Internal for i32}::internal_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl Internal for i32}::{vtable}
+static {impl Internal for i32}::{vtable}: test_crate::Internal::{vtable}<i32> = {impl Internal for i32}::{vtable}()
 
 // Full name: test_crate::{impl Internal for i32}
 impl Internal for i32 {
@@ -205,6 +297,37 @@ fn {impl Left for i32}::left_method<'_0>(@1: &'_0 (i32)) -> i32
     storage_dead(@2)
     return
 }
+
+// Full name: test_crate::{impl Left for i32}::left_method::{vtable_method}
+fn {impl Left for i32}::left_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Left<_dyn> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = i32 + @TraitClause1_0::Left = i32))) -> i32
+{
+    let @0: i32; // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Left<_dyn> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = i32 + @TraitClause1_0::Left = i32)); // arg #1
+    let @2: &'_0 (i32); // anonymous local
+
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: Left<_dyn> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = i32 + @TraitClause1_0::Left = i32)), &'_0 (i32)>(move (@1))
+    @0 := {impl Left for i32}::left_method<'_0>(move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Left for i32}::{vtable}
+fn {impl Left for i32}::{vtable}() -> test_crate::Left::{vtable}<i32, i32>
+{
+    let ret@0: test_crate::Left::{vtable}<i32, i32>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (test_crate::Internal::{vtable}<i32>); // anonymous local
+
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &{impl Internal for i32}::{vtable}
+    ret@0 := test_crate::Left::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_left_method: const ({impl Left for i32}::left_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    return
+}
+
+// Full name: test_crate::{impl Left for i32}::{vtable}
+static {impl Left for i32}::{vtable}: test_crate::Left::{vtable}<i32, i32> = {impl Left for i32}::{vtable}()
 
 // Full name: test_crate::{impl Left for i32}
 impl Left for i32 {
@@ -263,6 +386,43 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 (i32)) -> i32
     return
 }
 
+// Full name: test_crate::{impl Right<i32> for i32}::right_method::{vtable_method}
+fn {impl Right<i32> for i32}::right_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Right<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = i32 + @TraitClause1_0::Right = i32))) -> i32
+{
+    let @0: i32; // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Right<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = i32 + @TraitClause1_0::Right = i32)); // arg #1
+    let @2: &'_0 (i32); // anonymous local
+
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0]: Right<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::Internal = i32 + @TraitClause1_0::Right = i32)), &'_0 (i32)>(move (@1))
+    @0 := {impl Right<i32> for i32}::right_method<'_0>(move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Right<i32> for i32}::{vtable}
+fn {impl Right<i32> for i32}::{vtable}() -> test_crate::Right::{vtable}<i32, i32, i32>
+{
+    let ret@0: test_crate::Right::{vtable}<i32, i32, i32>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (test_crate::Internal::{vtable}<i32>); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
+
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &{impl Internal for i32}::{vtable}
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Super<i32> for i32}::{vtable}
+    ret@0 := test_crate::Right::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_right_method: const ({impl Right<i32> for i32}::right_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    return
+}
+
+// Full name: test_crate::{impl Right<i32> for i32}::{vtable}
+static {impl Right<i32> for i32}::{vtable}: test_crate::Right::{vtable}<i32, i32, i32> = {impl Right<i32> for i32}::{vtable}()
+
 // Full name: test_crate::{impl Right<i32> for i32}
 impl Right<i32> for i32 {
     parent_clause0 = MetaSized<i32>
@@ -302,7 +462,7 @@ fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 (i32)) -> (i32, i32)
 }
 
 // Full name: test_crate::{impl Join<i32> for i32}::join_method::{vtable_method}
-fn {vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32))) -> (i32, i32)
+fn {impl Join<i32> for i32}::join_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32))) -> (i32, i32)
 {
     let @0: (i32, i32); // return
     let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32)); // arg #1
@@ -331,7 +491,7 @@ fn {impl Join<i32> for i32}::{vtable}() -> test_crate::Join::{vtable}<i32, i32, 
     @3 := ()
     storage_live(@4)
     @4 := &{impl Right<i32> for i32}::{vtable}
-    ret@0 := test_crate::Join::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_join_method: const ({vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    ret@0 := test_crate::Join::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_join_method: const ({impl Join<i32> for i32}::join_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
     return
 }
 

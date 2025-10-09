@@ -31,6 +31,7 @@
   "test_crate::GenericBehindIndirectionUnsized": "None",
   "test_crate::ThinGeneric": "None",
   "test_crate::Showable::{vtable}": "None",
+  "core::marker::MetaSized::{vtable}": "None",
   "alloc::alloc::Global": "None",
   "core::cmp::Ordering": "None",
   "core::option::Option": "None",
