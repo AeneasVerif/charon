@@ -82,8 +82,27 @@ pub fn core::mem::swap<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 mut (T))
 where
     [@TraitClause0]: Sized<T>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::num::niche_types::NonZeroU32Inner
 pub opaque type NonZeroU32Inner
+
+// Full name: core::num::niche_types::NonZeroU32Inner::{impl Drop for NonZeroU32Inner}
+impl Drop for NonZeroU32Inner {
+    parent_clause0 = MetaSized<NonZeroU32Inner>
+    fn drop<'_0> = {impl Drop for NonZeroU32Inner}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::NonZeroU32Inner::{impl Drop for NonZeroU32Inner}::drop
+fn {impl Drop for NonZeroU32Inner}::drop<'_0>(@1: &'_0 mut (NonZeroU32Inner))
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}::clone
 pub fn {impl Clone for NonZeroU32Inner}::clone<'_0>(@1: &'_0 (NonZeroU32Inner)) -> NonZeroU32Inner
@@ -160,15 +179,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ZeroablePrimitive<T>,
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
@@ -182,6 +192,16 @@ where
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}
+impl Drop for Global {
+    parent_clause0 = MetaSized<Global>
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]

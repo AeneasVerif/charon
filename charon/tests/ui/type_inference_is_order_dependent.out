@@ -36,8 +36,27 @@ impl Default for bool {
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::fmt::Error
 pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
 
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
@@ -90,17 +109,7 @@ where
 // Full name: core::fmt::rt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 

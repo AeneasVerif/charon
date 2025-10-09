@@ -26,6 +26,19 @@ pub trait Tuple<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -59,6 +72,16 @@ pub enum AssertKind {
   Ne,
   Match,
 }
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}
+impl Drop for AssertKind {
+    parent_clause0 = MetaSized<AssertKind>
+    fn drop<'_0> = {impl Drop for AssertKind}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}::drop
+fn {impl Drop for AssertKind}::drop<'_0>(@1: &'_0 mut (AssertKind))
 
 // Full name: take_mut::take
 pub fn take<'_0, T, F>(@1: &'_0 mut (T), @2: F)

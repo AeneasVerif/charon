@@ -1,4 +1,6 @@
 //! Implementations for [crate::values]
+use core::panic;
+
 use crate::ast::*;
 
 #[derive(Debug, Clone)]
@@ -225,6 +227,32 @@ impl ScalarValue {
         ConstantExpr {
             kind: ConstantExprKind::Literal(Literal::Scalar(self)),
             ty: TyKind::Literal(literal_ty).into_ty(),
+        }
+    }
+}
+
+impl From<Literal> for ConstantExpr {
+    fn from(lit: Literal) -> Self {
+        let ty = match &lit {
+            Literal::Scalar(scalar) => match scalar {
+                ScalarValue::Signed(int_ty, _) => {
+                    TyKind::Literal(LiteralTy::Int(*int_ty)).into_ty()
+                }
+                ScalarValue::Unsigned(uint_ty, _) => {
+                    TyKind::Literal(LiteralTy::UInt(*uint_ty)).into_ty()
+                }
+            },
+            Literal::Float(float) => TyKind::Literal(LiteralTy::Float(float.ty)).into_ty(),
+            Literal::Bool(_) => TyKind::Literal(LiteralTy::Bool).into_ty(),
+            Literal::Char(_) => TyKind::Literal(LiteralTy::Char).into_ty(),
+            _ => panic!(
+                "Only scalar literals can be converted to ConstantExpr, got {:?}",
+                lit
+            ),
+        };
+        ConstantExpr {
+            kind: ConstantExprKind::Literal(lit),
+            ty,
         }
     }
 }

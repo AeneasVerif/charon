@@ -69,7 +69,7 @@ pub enum TransItemSourceKind {
     /// Shim function to store a method in a vtable; give a method with `self: Ptr<Self>` argument,
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
     /// implementation.
-    VTableMethod,
+    VTableMethod(TraitImplSource),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -282,7 +282,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     | ClosureAsFnCast
                     | DropGlueMethod
                     | VTableInstanceInitializer(..)
-                    | VTableMethod => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableMethod(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -425,7 +425,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item without enqueueing it for translation.
-    #[expect(dead_code)]
     pub(crate) fn register_item_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
@@ -486,7 +485,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TypeDeclRef, Error> {
-        match self.recognize_builtin_type(item)? {
+        match self.recognize_builtin_type(span, item)? {
             Some(id) => {
                 let generics =
                     self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;

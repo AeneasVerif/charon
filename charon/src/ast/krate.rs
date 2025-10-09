@@ -83,6 +83,11 @@ impl TryFrom<ItemId> for FunId {
         Ok(FunId::Regular(x.try_into()?))
     }
 }
+impl From<TypeDeclId> for TypeId {
+    fn from(x: TypeDeclId) -> Self {
+        TypeId::Adt(x)
+    }
+}
 
 /// A reference to a translated item.
 #[derive(

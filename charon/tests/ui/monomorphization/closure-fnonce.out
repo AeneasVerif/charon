@@ -44,16 +44,50 @@ pub trait Tuple::<(u8)>
     vtable: core::marker::Tuple::{vtable}::<(u8)>
 }
 
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun1()
+
 // Full name: test_crate::NotCopy
 struct NotCopy {}
 
+// Full name: core::ops::drop::Drop::<NotCopy>
+#[lang_item("drop")]
+pub trait Drop::<NotCopy>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<NotCopy>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<NotCopy><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<NotCopy>
+}
+
+// Full name: test_crate::NotCopy::{impl Drop::<NotCopy>}
+impl Drop::<NotCopy> {
+    parent_clause0 = MetaSized::<NotCopy>
+    fn drop<'_0> = {impl Drop::<NotCopy>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::NotCopy::{impl Drop::<NotCopy>}::drop
+fn {impl Drop::<NotCopy>}::drop<'_0>(@1: &'_0 mut (NotCopy))
+{
+    let @0: (); // return
+    let @1: *mut NotCopy; // arg #1
+    let @2: &'_ mut (NotCopy); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<NotCopy>(@1: NotCopy)
-
-// Full name: test_crate::main::closure
-struct closure {
-  NotCopy,
-}
 
 // Full name: core::ops::drop::Drop::<closure>
 #[lang_item("drop")]
@@ -63,6 +97,33 @@ pub trait Drop::<closure>
     fn drop<'_0> = core::ops::drop::Drop::drop::<closure><'_0_0>
     vtable: core::ops::drop::Drop::{vtable}::<closure>
 }
+
+// Full name: test_crate::main::closure
+struct closure {
+  NotCopy,
+}
+
+// Full name: test_crate::main::closure::{impl Drop::<closure>}
+impl Drop::<closure> {
+    parent_clause0 = MetaSized::<closure>
+    fn drop<'_0> = {impl Drop::<closure>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure::{impl Drop::<closure>}::drop
+fn {impl Drop::<closure>}::drop<'_0>(@1: &'_0 mut (closure))
+{
+    let @0: (); // return
+    let @1: *mut closure; // arg #1
+    let @2: &'_ mut (closure); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+pub fn core::ops::drop::Drop::drop::<NotCopy><'_0>(@1: &'_0 mut (NotCopy))
 
 pub fn core::ops::drop::Drop::drop::<closure><'_0>(@1: &'_0 mut (closure))
 
@@ -80,16 +141,6 @@ pub trait FnOnce::<closure, (u8)>
 pub fn core::ops::function::FnOnce::call_once(@1: closure, @2: (u8)) -> u8
 
 pub fn core::ops::function::FnOnce::call_once::<closure, (u8)>(@1: closure, @2: (u8)) -> u8
-
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::main::{impl FnOnce::<closure, (u8)>}::call_once
 fn {impl FnOnce::<closure, (u8)>}::call_once(@1: closure, @2: (u8)) -> u8

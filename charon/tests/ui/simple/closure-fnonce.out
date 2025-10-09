@@ -91,6 +91,26 @@ where
 // Full name: test_crate::NotCopy
 struct NotCopy {}
 
+// Full name: test_crate::NotCopy::{impl Drop for NotCopy}
+impl Drop for NotCopy {
+    parent_clause0 = MetaSized<NotCopy>
+    fn drop<'_0> = {impl Drop for NotCopy}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::NotCopy::{impl Drop for NotCopy}::drop
+fn {impl Drop for NotCopy}::drop<'_0>(@1: &'_0 mut (NotCopy))
+{
+    let @0: (); // return
+    let @1: *mut NotCopy; // arg #1
+    let @2: &'_ mut (NotCopy); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
 // Full name: test_crate::main::closure
 struct closure {
   NotCopy,

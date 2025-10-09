@@ -104,6 +104,16 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}
+impl Drop for AssertKind {
+    parent_clause0 = MetaSized<AssertKind>
+    fn drop<'_0> = {impl Drop for AssertKind}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::AssertKind::{impl Drop for AssertKind}::drop
+fn {impl Drop for AssertKind}::drop<'_0>(@1: &'_0 mut (AssertKind))
+
 fn UNIT_METADATA()
 {
     let @0: (); // return

@@ -120,8 +120,14 @@ pub fn combine_span(m0: &Span, m1: &Span) -> Span {
 
 /// Combine all the span information in a slice.
 pub fn combine_span_iter<'a, T: Iterator<Item = &'a Span>>(mut ms: T) -> Span {
-    // The iterator should have a next element
-    let mut mc: Span = *ms.next().unwrap();
+    // Handle the case where the iterator might be empty
+    let mut mc: Span = match ms.next() {
+        Some(span) => *span,
+        None => {
+            // Return a dummy span if the iterator is empty
+            return Span::dummy();
+        }
+    };
     for m in ms {
         mc = combine_span(&mc, m);
     }

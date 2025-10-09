@@ -23,8 +23,27 @@ where
   Err(E),
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::fmt::Error
 pub struct Error {}
+
+// Full name: core::fmt::Error::{impl Drop for Error}
+impl Drop for Error {
+    parent_clause0 = MetaSized<Error>
+    fn drop<'_0> = {impl Drop for Error}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error::{impl Drop for Error}::drop
+fn {impl Drop for Error}::drop<'_0>(@1: &'_0 mut (Error))
 
 // Full name: core::fmt::Debug
 #[lang_item("Debug")]
@@ -36,6 +55,16 @@ pub trait Debug<Self>
 
 // Full name: core::array::TryFromSliceError
 pub opaque type TryFromSliceError
+
+// Full name: core::array::TryFromSliceError::{impl Drop for TryFromSliceError}
+impl Drop for TryFromSliceError {
+    parent_clause0 = MetaSized<TryFromSliceError>
+    fn drop<'_0> = {impl Drop for TryFromSliceError}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::array::TryFromSliceError::{impl Drop for TryFromSliceError}::drop
+fn {impl Drop for TryFromSliceError}::drop<'_0>(@1: &'_0 mut (TryFromSliceError))
 
 // Full name: core::array::{impl Debug for TryFromSliceError}::fmt
 pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 (TryFromSliceError), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
@@ -172,6 +201,10 @@ pub trait Destruct<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
 pub fn unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T

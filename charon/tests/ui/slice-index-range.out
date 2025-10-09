@@ -52,6 +52,15 @@ pub opaque type Arguments<'a>
 where
     'a : 'a,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
 // Full name: core::fmt::rt::Count
 #[lang_item("format_count")]
 pub enum Count {
@@ -59,6 +68,16 @@ pub enum Count {
   Param(usize),
   Implied,
 }
+
+// Full name: core::fmt::rt::Count::{impl Drop for Count}
+impl Drop for Count {
+    parent_clause0 = MetaSized<Count>
+    fn drop<'_0> = {impl Drop for Count}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Count::{impl Drop for Count}::drop
+fn {impl Drop for Count}::drop<'_0>(@1: &'_0 mut (Count))
 
 // Full name: core::fmt::rt::Placeholder
 #[lang_item("format_placeholder")]
@@ -69,6 +88,16 @@ pub struct Placeholder {
   width: Count,
 }
 
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}
+impl Drop for Placeholder {
+    parent_clause0 = MetaSized<Placeholder>
+    fn drop<'_0> = {impl Drop for Placeholder}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::rt::Placeholder::{impl Drop for Placeholder}::drop
+fn {impl Drop for Placeholder}::drop<'_0>(@1: &'_0 mut (Placeholder))
+
 // Full name: core::fmt::rt::Argument
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
@@ -76,6 +105,10 @@ pub opaque type Argument<'a>
 fn core::slice::index::slice_end_index_len_fail::do_panic::runtime(@1: usize, @2: usize) -> !
 
 fn core::slice::index::slice_index_order_fail::do_panic::runtime(@1: usize, @2: usize) -> !
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
 where

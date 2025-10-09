@@ -81,12 +81,11 @@ where
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -282,6 +281,33 @@ const UNIT_METADATA: () = @Fun0()
 pub enum AB {
   A,
   B,
+}
+
+// Full name: test_crate::AB::{impl Drop for AB}
+impl Drop for AB {
+    parent_clause0 = MetaSized<AB>
+    fn drop<'_0> = {impl Drop for AB}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::AB::{impl Drop for AB}::drop
+fn {impl Drop for AB}::drop<'_0>(@1: &'_0 mut (AB))
+{
+    let @0: (); // return
+    let @1: *mut AB; // arg #1
+    let @2: &'_ mut (AB); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        AB::A => {
+        },
+        _ => {
+            return
+        },
+    }
+    return
 }
 
 // Full name: test_crate::incr

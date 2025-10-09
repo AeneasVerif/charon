@@ -12,12 +12,37 @@ pub trait Sized::<&'_ (u32)>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<Option::<&'_ (u32)>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Option::<&'_ (u32)>>
+
+// Full name: core::ops::drop::Drop::<Option::<&'_ (u32)>>
+#[lang_item("drop")]
+pub trait Drop::<Option::<&'_ (u32)>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Option::<&'_ (u32)>>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<Option::<&'_ (u32)>><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<Option::<&'_ (u32)>>
+}
+
 // Full name: core::option::Option::<&'_ (u32)>
 #[lang_item("Option")]
 pub enum Option::<&'_ (u32)> {
   None,
   Some(&'_ (u32)),
 }
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ (u32)>>}::<&'_ (u32)>
+impl Drop::<Option::<&'_ (u32)>> {
+    parent_clause0 = MetaSized::<Option::<&'_ (u32)>>
+    fn drop<'_0> = {impl Drop::<Option::<&'_ (u32)>>}::drop::<&'_ (u32)><'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::{impl Drop::<Option::<&'_ (u32)>>}::drop::<&'_ (u32)>
+fn {impl Drop::<Option::<&'_ (u32)>>}::drop::<&'_ (u32)><'_0>(@1: &'_0 mut (Option::<&'_ (u32)>))
+
+pub fn core::ops::drop::Drop::drop::<Option::<&'_ (u32)>><'_0>(@1: &'_0 mut (Option::<&'_ (u32)>))
 
 fn UNIT_METADATA()
 {

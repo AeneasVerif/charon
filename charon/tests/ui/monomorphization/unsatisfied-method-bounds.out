@@ -8,9 +8,9 @@ pub trait MetaSized::<A>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<B>
 
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
+// Full name: core::marker::MetaSized::<String>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<String>
 
 fn UNIT_METADATA()
 {
@@ -22,8 +22,98 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
+// Full name: core::ops::drop::Drop::<A>
+#[lang_item("drop")]
+pub trait Drop::<A>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<A>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<A><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<A>
+}
+
 // Full name: test_crate::A
 struct A {}
+
+// Full name: test_crate::A::{impl Drop::<A>}
+impl Drop::<A> {
+    parent_clause0 = MetaSized::<A>
+    fn drop<'_0> = {impl Drop::<A>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::A::{impl Drop::<A>}::drop
+fn {impl Drop::<A>}::drop<'_0>(@1: &'_0 mut (A))
+{
+    let @0: (); // return
+    let @1: *mut A; // arg #1
+    let @2: &'_ mut (A); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: core::ops::drop::Drop::<B>
+#[lang_item("drop")]
+pub trait Drop::<B>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<B>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<B><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<B>
+}
+
+// Full name: test_crate::B
+struct B {}
+
+// Full name: test_crate::B::{impl Drop::<B>}
+impl Drop::<B> {
+    parent_clause0 = MetaSized::<B>
+    fn drop<'_0> = {impl Drop::<B>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::B::{impl Drop::<B>}::drop
+fn {impl Drop::<B>}::drop<'_0>(@1: &'_0 mut (B))
+{
+    let @0: (); // return
+    let @1: *mut B; // arg #1
+    let @2: &'_ mut (B); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: core::ops::drop::Drop::<String>
+#[lang_item("drop")]
+pub trait Drop::<String>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<String>
+    fn drop<'_0> = core::ops::drop::Drop::drop::<String><'_0_0>
+    vtable: core::ops::drop::Drop::{vtable}::<String>
+}
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: alloc::string::String::{impl Drop::<String>}
+impl Drop::<String> {
+    parent_clause0 = MetaSized::<String>
+    fn drop<'_0> = {impl Drop::<String>}::drop<'_0_0>
+    non-dyn-compatible
+}
+
+// Full name: alloc::string::String::{impl Drop::<String>}::drop
+fn {impl Drop::<String>}::drop<'_0>(@1: &'_0 mut (String))
+
+pub fn core::ops::drop::Drop::drop::<A><'_0>(@1: &'_0 mut (A))
+
+pub fn core::ops::drop::Drop::drop::<B><'_0>(@1: &'_0 mut (B))
+
+pub fn core::ops::drop::Drop::drop::<String><'_0>(@1: &'_0 mut (String))
 
 // Full name: test_crate::MyIterator::<A>
 trait MyIterator::<A>
@@ -32,9 +122,6 @@ trait MyIterator::<A>
     fn method<'_0> = method::<A><'_0_0>
     vtable: test_crate::MyIterator::{vtable}::<A><String>
 }
-
-// Full name: test_crate::B
-struct B {}
 
 // Full name: test_crate::MyIterator::<B>
 trait MyIterator::<B>
