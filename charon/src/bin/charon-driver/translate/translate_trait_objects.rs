@@ -182,9 +182,26 @@ impl ItemTransCtx<'_, '_> {
         }
     }
 
-    /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
     pub fn translate_vtable_struct_ref(
         &mut self,
+        span: Span,
+        tref: &hax::TraitRef,
+    ) -> Result<Option<TypeDeclRef>, Error> {
+        self.translate_vtable_struct_ref_maybe_enqueue(true, span, tref)
+    }
+
+    pub fn translate_vtable_struct_ref_no_enqueue(
+        &mut self,
+        span: Span,
+        tref: &hax::TraitRef,
+    ) -> Result<Option<TypeDeclRef>, Error> {
+        self.translate_vtable_struct_ref_maybe_enqueue(false, span, tref)
+    }
+
+    /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
+    pub fn translate_vtable_struct_ref_maybe_enqueue(
+        &mut self,
+        enqueue: bool,
         span: Span,
         tref: &hax::TraitRef,
     ) -> Result<Option<TypeDeclRef>, Error> {
@@ -194,7 +211,7 @@ impl ItemTransCtx<'_, '_> {
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
         let mut vtable_ref: TypeDeclRef =
-            self.translate_item_no_enqueue(span, tref, TransItemSourceKind::VTable)?;
+            self.translate_item_maybe_enqueue(span, enqueue, tref, TransItemSourceKind::VTable)?;
         // Remove the `Self` type variable from the generic parameters.
         vtable_ref
             .generics
@@ -461,6 +478,25 @@ impl ItemTransCtx<'_, '_> {
         trait_ref: &hax::TraitRef,
         impl_ref: &hax::ItemRef,
     ) -> Result<Option<GlobalDeclRef>, Error> {
+        self.translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)
+    }
+
+    pub fn translate_vtable_instance_ref_no_enqueue(
+        &mut self,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+        impl_ref: &hax::ItemRef,
+    ) -> Result<Option<GlobalDeclRef>, Error> {
+        self.translate_vtable_instance_ref_maybe_enqueue(false, span, trait_ref, impl_ref)
+    }
+
+    pub fn translate_vtable_instance_ref_maybe_enqueue(
+        &mut self,
+        enqueue: bool,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+        impl_ref: &hax::ItemRef,
+    ) -> Result<Option<GlobalDeclRef>, Error> {
         if !self.trait_is_dyn_compatible(&trait_ref.def_id)? {
             return Ok(None);
         }
@@ -468,8 +504,9 @@ impl ItemTransCtx<'_, '_> {
         // `dyn Trait` coercion.
         // TODO(dyn): To do this properly we'd need to know for each clause whether it ultimately
         // ends up used in a vtable cast.
-        let vtable_ref: GlobalDeclRef = self.translate_item_no_enqueue(
+        let vtable_ref: GlobalDeclRef = self.translate_item_maybe_enqueue(
             span,
+            enqueue,
             impl_ref,
             TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
         )?;

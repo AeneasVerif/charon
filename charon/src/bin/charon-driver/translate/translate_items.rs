@@ -597,7 +597,7 @@ impl ItemTransCtx<'_, '_> {
         // non-trait-clauses.
         self.innermost_generics_mut().take_predicates_from(preds);
 
-        let vtable = self.translate_vtable_struct_ref(span, def.this())?;
+        let vtable = self.translate_vtable_struct_ref_no_enqueue(span, def.this())?;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
@@ -857,7 +857,8 @@ impl ItemTransCtx<'_, '_> {
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
 
-        let vtable = self.translate_vtable_instance_ref(span, &trait_pred.trait_ref, def.this())?;
+        let vtable =
+            self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let implied_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;

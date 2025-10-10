@@ -4,6 +4,12 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+struct core::marker::MetaSized::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn> + _dyn : '_)),
+}
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -47,6 +53,14 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
+struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause1_0::Output = Ty0)),
+  method_call_once: fn((dyn exists<_dyn> [@TraitClause0]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause1_0::Output = Ty0), Args) -> Ty0,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
 // Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
@@ -57,6 +71,15 @@ pub trait FnMut<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+}
+
+struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = Ty0)),
+  method_call_mut: fn<'_0>(&'_0_0 mut ((dyn exists<_dyn> [@TraitClause0]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause1_0::parent_clause1::Output = Ty0)), Args) -> Ty0,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (core::ops::function::FnOnce::{vtable}<Args, Ty0>),
 }
 
 struct core::ops::function::Fn::{vtable}<Args, Ty0> {
