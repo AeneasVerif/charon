@@ -66,6 +66,8 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub item_id: Option<ItemId>,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
+    /// The Hax context with the current `DefId`.
+    pub hax_state_with_id: hax::StateWithOwner<'tcx>,
     /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
     pub error_on_impl_expr_error: bool,
@@ -170,10 +172,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item_id: Option<ItemId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
+        use hax::BaseState;
+        let def_id = item_src.def_id().underlying_rust_def_id();
+        let hax_state_with_id = t_ctx.hax_state.clone().with_owner_id(def_id);
         ItemTransCtx {
             item_src,
             item_id,
             t_ctx,
+            hax_state_with_id,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
         }
@@ -192,10 +198,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &self.t_ctx.hax_state
     }
 
-    pub fn hax_state_with_id(&self) -> hax::StateWithOwner<'tcx> {
-        use hax::BaseState;
-        let def_id = self.item_src.def_id().underlying_rust_def_id();
-        self.t_ctx.hax_state.clone().with_owner_id(def_id)
+    pub fn hax_state_with_id(&self) -> &hax::StateWithOwner<'tcx> {
+        &self.hax_state_with_id
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition

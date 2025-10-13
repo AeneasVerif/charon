@@ -221,7 +221,7 @@ impl ItemTransCtx<'_, '_> {
 
         // The vtable type also takes associated types as parameters.
         let assoc_tys: Vec<_> = tref
-            .trait_associated_types(&self.hax_state_with_id())
+            .trait_associated_types(self.hax_state_with_id())
             .iter()
             .map(|ty| self.translate_ty(span, ty))
             .try_collect()?;
@@ -757,11 +757,11 @@ impl ItemTransCtx<'_, '_> {
 
         // Build a reference to `std::ptr::drop_in_place<T>`.
         let drop_in_place: hax::ItemRef = {
-            let hax_state = self.hax_state_with_id();
+            let s = self.hax_state_with_id();
             let drop_in_place = self.tcx.lang_items().drop_in_place_fn().unwrap();
-            let rustc_trait_args = trait_pred.trait_ref.rustc_args(&hax_state);
+            let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
             let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-            hax::ItemRef::translate(&hax_state, drop_in_place, generics)
+            hax::ItemRef::translate(s, drop_in_place, generics)
         };
         let fn_ptr = self
             .translate_fn_ptr(span, &drop_in_place, TransItemSourceKind::Fun)?
