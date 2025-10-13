@@ -80,6 +80,10 @@ pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
+// Full name: core::ptr::drop_in_place
+#[lang_item("drop_in_place")]
+pub unsafe fn drop_in_place<T>(@1: *mut T)
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -177,8 +181,14 @@ fn {vtable_method}<'_0, '_1, '_2>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: D
 fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
 {
     let ret@0: core::fmt::Display::{vtable}; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
 
-    ret@0 := core::fmt::Display::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_fmt: const ({vtable_method}<'_, '_, '_>) }
+    storage_live(size@1)
+    size@1 := size_of<String>
+    storage_live(align@2)
+    align@2 := align_of<String>
+    ret@0 := core::fmt::Display::{vtable} { size: move (size@1), align: move (align@2), drop: const (drop_in_place<String>), method_fmt: const ({vtable_method}<'_, '_, '_>) }
     return
 }
 

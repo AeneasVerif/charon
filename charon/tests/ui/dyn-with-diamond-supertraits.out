@@ -48,6 +48,10 @@ pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0
 where
     [@TraitClause0]: Add<Self, Rhs>,
 
+// Full name: core::ptr::drop_in_place
+#[lang_item("drop_in_place")]
+pub unsafe fn drop_in_place<T>(@1: *mut T)
+
 fn UNIT_METADATA()
 {
     let @0: (); // return
@@ -214,8 +218,14 @@ fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 ((dyn 
 fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
 {
     let ret@0: test_crate::Super::{vtable}<i32>; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
 
-    ret@0 := test_crate::Super::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(size@1)
+    size@1 := size_of<i32>
+    storage_live(align@2)
+    align@2 := align_of<i32>
+    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const (drop_in_place<i32>), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -264,8 +274,14 @@ fn {impl Internal for i32}::internal_method::{vtable_method}<'_0>(@1: &'_0 ((dyn
 fn {impl Internal for i32}::{vtable}() -> test_crate::Internal::{vtable}<i32>
 {
     let ret@0: test_crate::Internal::{vtable}<i32>; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
 
-    ret@0 := test_crate::Internal::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_internal_method: const ({impl Internal for i32}::internal_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(size@1)
+    size@1 := size_of<i32>
+    storage_live(align@2)
+    align@2 := align_of<i32>
+    ret@0 := test_crate::Internal::{vtable} { size: move (size@1), align: move (align@2), drop: const (drop_in_place<i32>), method_internal_method: const ({impl Internal for i32}::internal_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -315,14 +331,20 @@ fn {impl Left for i32}::left_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<
 fn {impl Left for i32}::{vtable}() -> test_crate::Left::{vtable}<i32, i32>
 {
     let ret@0: test_crate::Left::{vtable}<i32, i32>; // return
-    let @1: (); // anonymous local
-    let @2: &'static (test_crate::Internal::{vtable}<i32>); // anonymous local
+    let size@1: usize; // local
+    let align@2: usize; // local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Internal::{vtable}<i32>); // anonymous local
 
-    storage_live(@1)
-    @1 := ()
-    storage_live(@2)
-    @2 := &{impl Internal for i32}::{vtable}
-    ret@0 := test_crate::Left::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_left_method: const ({impl Left for i32}::left_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    storage_live(size@1)
+    size@1 := size_of<i32>
+    storage_live(align@2)
+    align@2 := align_of<i32>
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Internal for i32}::{vtable}
+    ret@0 := test_crate::Left::{vtable} { size: move (size@1), align: move (align@2), drop: const (drop_in_place<i32>), method_left_method: const ({impl Left for i32}::left_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4) }
     return
 }
 
@@ -403,20 +425,26 @@ fn {impl Right<i32> for i32}::right_method::{vtable_method}<'_0>(@1: &'_0 ((dyn 
 fn {impl Right<i32> for i32}::{vtable}() -> test_crate::Right::{vtable}<i32, i32, i32>
 {
     let ret@0: test_crate::Right::{vtable}<i32, i32, i32>; // return
-    let @1: (); // anonymous local
-    let @2: &'static (test_crate::Internal::{vtable}<i32>); // anonymous local
+    let size@1: usize; // local
+    let align@2: usize; // local
     let @3: (); // anonymous local
-    let @4: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
+    let @4: &'static (test_crate::Internal::{vtable}<i32>); // anonymous local
+    let @5: (); // anonymous local
+    let @6: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
 
-    storage_live(@1)
-    @1 := ()
-    storage_live(@2)
-    @2 := &{impl Internal for i32}::{vtable}
+    storage_live(size@1)
+    size@1 := size_of<i32>
+    storage_live(align@2)
+    align@2 := align_of<i32>
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Right::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_right_method: const ({impl Right<i32> for i32}::right_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    @4 := &{impl Internal for i32}::{vtable}
+    storage_live(@5)
+    @5 := ()
+    storage_live(@6)
+    @6 := &{impl Super<i32> for i32}::{vtable}
+    ret@0 := test_crate::Right::{vtable} { size: move (size@1), align: move (align@2), drop: const (drop_in_place<i32>), method_right_method: const ({impl Right<i32> for i32}::right_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -478,20 +506,26 @@ fn {impl Join<i32> for i32}::join_method::{vtable_method}<'_0>(@1: &'_0 ((dyn ex
 fn {impl Join<i32> for i32}::{vtable}() -> test_crate::Join::{vtable}<i32, i32, i32, i32, i32>
 {
     let ret@0: test_crate::Join::{vtable}<i32, i32, i32, i32, i32>; // return
-    let @1: (); // anonymous local
-    let @2: &'static (test_crate::Left::{vtable}<i32, i32>); // anonymous local
+    let size@1: usize; // local
+    let align@2: usize; // local
     let @3: (); // anonymous local
-    let @4: &'static (test_crate::Right::{vtable}<i32, i32, i32>); // anonymous local
+    let @4: &'static (test_crate::Left::{vtable}<i32, i32>); // anonymous local
+    let @5: (); // anonymous local
+    let @6: &'static (test_crate::Right::{vtable}<i32, i32, i32>); // anonymous local
 
-    storage_live(@1)
-    @1 := ()
-    storage_live(@2)
-    @2 := &{impl Left for i32}::{vtable}
+    storage_live(size@1)
+    size@1 := size_of<i32>
+    storage_live(align@2)
+    align@2 := align_of<i32>
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &{impl Right<i32> for i32}::{vtable}
-    ret@0 := test_crate::Join::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_join_method: const ({impl Join<i32> for i32}::join_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    @4 := &{impl Left for i32}::{vtable}
+    storage_live(@5)
+    @5 := ()
+    storage_live(@6)
+    @6 := &{impl Right<i32> for i32}::{vtable}
+    ret@0 := test_crate::Join::{vtable} { size: move (size@1), align: move (align@2), drop: const (drop_in_place<i32>), method_join_method: const ({impl Join<i32> for i32}::join_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 

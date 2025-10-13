@@ -11,6 +11,7 @@ use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
+use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::{fmt, mem};
@@ -210,6 +211,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
         self.t_ctx.poly_hax_def(def_id)
+    }
+}
+
+impl<'tcx> Deref for ItemTransCtx<'tcx, '_> {
+    type Target = TranslateCtx<'tcx>;
+    fn deref(&self) -> &Self::Target {
+        self.t_ctx
+    }
+}
+impl<'tcx> DerefMut for ItemTransCtx<'tcx, '_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.t_ctx
     }
 }
 
