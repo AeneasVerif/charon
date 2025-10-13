@@ -58,8 +58,15 @@ pub enum TransItemSourceKind {
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// The `drop` method of a `TraitImplSource::ImplicitDrop` trait impl.
-    DropGlueMethod,
+    /// The `drop` method of a `TraitImplSource::ImplicitDrop` trait impl; that method does
+    /// nothing.
+    EmptyDropMethod,
+    /// The `drop_in_place` method of a `Drop` impl or decl. It contains the drop glue that calls
+    /// `Drop::drop` for the type and then drops its fields. if the `TraitImplSource` is `None`
+    /// this is the method declaration (and the DefId is that of the `Drop` trait), otherwise this
+    /// is a method implementation (and the DefId is either that of a `impl Drop for Foo` impl, or
+    /// that of an ADT in case of an implicit `Drop` impl).
+    DropInPlaceMethod(Option<TraitImplSource>),
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
     /// The static vtable value for a specific impl.
@@ -134,13 +141,15 @@ impl TransItemSource {
             TransItemSourceKind::ClosureMethod(kind) => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
             }
-            TransItemSourceKind::DropGlueMethod => {
+            TransItemSourceKind::EmptyDropMethod => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop)
             }
-            TransItemSourceKind::VTableInstance(impl_kind)
+            TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
+            | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
+            TransItemSourceKind::DropInPlaceMethod(None) => TransItemSourceKind::TraitDecl,
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -280,7 +289,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Fun
                     | ClosureMethod(..)
                     | ClosureAsFnCast
-                    | DropGlueMethod
+                    | EmptyDropMethod
+                    | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,

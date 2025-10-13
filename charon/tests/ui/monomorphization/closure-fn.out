@@ -44,8 +44,12 @@ pub trait Drop::<closure<'_, '_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
     fn drop<'_0> = drop::<closure<'_, '_>><'_0_0>
+    fn drop_in_place = drop_in_place::<closure<'_, '_>>
     vtable: core::ops::drop::Drop::{vtable}::<closure<'_, '_>>
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place::<closure<'_, '_>>
+fn drop_in_place::<closure<'_, '_>>(@1: *mut closure<'_, '_>)
 
 // Full name: core::ops::drop::Drop::drop::<closure<'_, '_>>
 pub fn drop::<closure<'_, '_>><'_0>(@1: &'_0 mut (closure<'_, '_>))

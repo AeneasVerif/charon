@@ -1365,11 +1365,17 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 // Full name: core::array::iter::{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop
 pub fn {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop<'_0, T, const N : usize>(@1: &'_0 mut (IntoIter<T, const N : usize>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::array::iter::{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop_in_place
+fn {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, const N : usize>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 
@@ -1380,6 +1386,7 @@ where
 {
     parent_clause0 = MetaSized<IntoIter<T, const N : usize>[@TraitClause0]>
     fn drop<'_0> = {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop<'_0_0, T, const N : usize>[@TraitClause0]
+    fn drop_in_place = {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop_in_place<T, const N : usize>[@TraitClause0]
     vtable: {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::{vtable}<T, const N : usize>[@TraitClause0]
 }
 
@@ -2309,6 +2316,8 @@ where
 pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
 where
     [@TraitClause0]: AddAssign<Self, Rhs>,
+
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where

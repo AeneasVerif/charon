@@ -157,6 +157,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -1976,6 +1977,8 @@ where
 {
   @TraitClause1::NonZeroInner,
 }
+
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -4118,6 +4121,13 @@ where
     return
 }
 
+// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
+fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(@1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause2]: Allocator<A>,
+
 // Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
 impl<T, A> Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 where
@@ -4127,6 +4137,7 @@ where
 {
     parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
     fn drop<'_0> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn drop_in_place = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 

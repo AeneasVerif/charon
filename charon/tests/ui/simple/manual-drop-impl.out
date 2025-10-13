@@ -18,8 +18,11 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -67,6 +70,11 @@ where
     return
 }
 
+// Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}::drop_in_place
+fn {impl Drop for Foo<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Foo<T>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
+
 // Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}
 impl<T> Drop for Foo<T>[@TraitClause0]
 where
@@ -74,6 +82,7 @@ where
 {
     parent_clause0 = MetaSized<Foo<T>[@TraitClause0]>
     fn drop<'_0> = {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    fn drop_in_place = {impl Drop for Foo<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     vtable: {impl Drop for Foo<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 

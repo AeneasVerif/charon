@@ -348,9 +348,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 name.name
                     .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
             }
-            TransItemSourceKind::DropGlueMethod => {
+            TransItemSourceKind::EmptyDropMethod => {
                 name.name
                     .push(PathElem::Ident("drop".to_string(), Disambiguator::ZERO));
+            }
+            TransItemSourceKind::DropInPlaceMethod(..) => {
+                name.name.push(PathElem::Ident(
+                    "drop_in_place".to_string(),
+                    Disambiguator::ZERO,
+                ));
             }
             TransItemSourceKind::ClosureAsFnCast => {
                 name.name

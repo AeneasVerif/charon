@@ -84,6 +84,7 @@ pub trait Drop::<test_crate::main::closure<'_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
     fn drop<'_0> = core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0_0>
+    fn drop_in_place = drop_in_place::<test_crate::main::closure<'_>>
     vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure<'_>>
 }
 
@@ -97,6 +98,7 @@ pub trait Drop::<test_crate::main::closure#1<'_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
     fn drop<'_0> = core::ops::drop::Drop::drop::<test_crate::main::closure#1<'_>><'_0_0>
+    fn drop_in_place = drop_in_place::<test_crate::main::closure#1<'_>>
     vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#1<'_>>
 }
 
@@ -110,8 +112,18 @@ pub trait Drop::<test_crate::main::closure#2>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
     fn drop<'_0> = core::ops::drop::Drop::drop::<test_crate::main::closure#2><'_0_0>
+    fn drop_in_place = drop_in_place::<test_crate::main::closure#2>
     vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#2>
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place::<test_crate::main::closure<'_>>
+fn drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
+
+// Full name: core::ops::drop::Drop::drop_in_place::<test_crate::main::closure#1<'_>>
+fn drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
+
+// Full name: core::ops::drop::Drop::drop_in_place::<test_crate::main::closure#2>
+fn drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
 
 pub fn core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0>(@1: &'_0 mut (test_crate::main::closure<'_>))
 

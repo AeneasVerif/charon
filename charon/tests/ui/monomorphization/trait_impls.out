@@ -18,8 +18,12 @@ pub trait Drop::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
     fn drop<'_0> = drop::<bool><'_0_0>
+    fn drop_in_place = drop_in_place::<bool>
     vtable: core::ops::drop::Drop::{vtable}::<bool>
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place::<bool>
+fn drop_in_place::<bool>(@1: *mut bool)
 
 // Full name: core::ops::drop::Drop::drop::<bool>
 pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))

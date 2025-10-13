@@ -28,6 +28,7 @@ pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -142,19 +143,20 @@ pub fn MAX() -> usize
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
+
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
-// Full name: core::ptr::drop_in_place
 #[lang_item("drop_in_place")]
-pub unsafe fn drop_in_place<T>(@1: *mut T)
+pub unsafe fn core::ptr::drop_in_place<T>(@1: *mut T)
 {
     let @0: (); // return
     let to_drop@1: *mut T; // arg #1
 
     @0 := ()
-    @0 := drop_in_place<T>(move (to_drop@1))
+    @0 := core::ptr::drop_in_place<T>(move (to_drop@1))
     return
 }
 
@@ -231,10 +233,16 @@ where
     @2 := @PtrFromPartsMut<'_, Slice<T>>(copy (data@3), copy (len@4))
     storage_dead(len@4)
     storage_dead(data@3)
-    @0 := drop_in_place<Slice<T>>(move (@2))
+    @0 := core::ptr::drop_in_place<Slice<T>>(move (@2))
     storage_dead(@2)
     return
 }
+
+// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
@@ -244,6 +252,7 @@ where
 {
     parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
