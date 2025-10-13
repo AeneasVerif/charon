@@ -23,7 +23,7 @@ enum LocalStatus {
 impl StorageVisitor {
     fn new(locals: &Locals) -> Self {
         let local_status = locals.locals.map_ref(|local| {
-            if local.index <= locals.arg_count {
+            if locals.is_return_or_arg(local.index) {
                 // The return and argument places count as having a `StorageLive` already.
                 LocalStatus::UsedAndHasExplicitStorage
             } else {

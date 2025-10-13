@@ -333,8 +333,8 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8
     let args@2: (u8); // arg #2
     let @3: &'_ (closure); // anonymous local
 
-    storage_live(@3)
     @0 := ()
+    storage_live(@3)
     @3 := &*(state@1)
     @0 := {impl Fn<(u8)> for closure}::call<'_>(move (@3), move (args@2))
     return
@@ -364,9 +364,9 @@ fn as_fn(@1: u8)
     let args@2: (u8); // local
     let state@3: closure; // local
 
+    @0 := ()
     storage_live(args@2)
     storage_live(state@3)
-    @0 := ()
     args@2 := (move (arg1@1))
     state@3 := closure {  }
     @0 := {impl FnOnce<(u8)> for closure}::call_once(move (state@3), move (args@2))

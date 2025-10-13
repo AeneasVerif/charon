@@ -1,6 +1,7 @@
 use super::translate_bodies::BodyTransCtx;
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
@@ -209,18 +210,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         };
 
         let body = {
-            let mut body = GExprBody {
-                span: Span::dummy(),
-                locals: Locals::new(0),
-                comments: Default::default(),
-                body: Vector::default(),
-            };
-            let _ = body.locals.new_var(None, Ty::mk_unit());
-            body.body.push(BlockData {
-                statements: Default::default(),
-                terminator: Terminator::new(Span::dummy(), TerminatorKind::Return),
-            });
-            body
+            let mut builder = BodyBuilder::new(Span::dummy(), 0);
+            let _ = builder.new_var(None, Ty::mk_unit());
+            builder.build()
         };
 
         let global_id = self.translated.global_decls.reserve_slot();

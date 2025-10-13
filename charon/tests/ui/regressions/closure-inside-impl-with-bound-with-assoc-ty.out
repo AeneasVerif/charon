@@ -161,8 +161,8 @@ where
     let args@2: (()); // arg #2
     let @3: &'_ (closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]); // anonymous local
 
-    storage_live(@3)
     @0 := ()
+    storage_live(@3)
     @3 := &*(state@1)
     @0 := {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
     return

@@ -207,8 +207,8 @@ fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut (te
     let args@2: (); // arg #2
     let @3: &'_ (test_crate::bar::closure); // anonymous local
 
-    storage_live(@3)
     @0 := ()
+    storage_live(@3)
     @3 := &*(state@1)
     @0 := {impl Fn<()> for test_crate::bar::closure}::call<'_>(move (@3), move (args@2))
     return

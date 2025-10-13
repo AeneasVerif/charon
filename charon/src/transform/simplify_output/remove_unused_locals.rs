@@ -79,7 +79,7 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
         used_locals: body
             .locals
             .locals
-            .map_ref(|local| local.index <= body.locals.arg_count),
+            .map_ref(|local| body.locals.is_return_or_arg(local.index)),
     };
     let _ = body.body.drive_body(&mut visitor);
     let used_locals = visitor.used_locals;
