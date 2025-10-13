@@ -168,8 +168,8 @@ where
     let args@2: (@TraitClause0::Item); // arg #2
     let @3: &'_ (closure<Self>[@TraitClause0]); // anonymous local
 
-    storage_live(@3)
     @0 := ()
+    storage_live(@3)
     @3 := &*(state@1)
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@3), move (args@2))
     return

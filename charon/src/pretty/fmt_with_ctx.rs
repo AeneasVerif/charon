@@ -697,11 +697,10 @@ impl<T> GExprBody<T> {
             write!(f, "let {v}: {};", v.ty.with_ctx(ctx))?;
 
             write!(f, " // ")?;
-            let index = v.index.index();
-            if index == 0 {
+            if v.index.is_zero() {
                 write!(f, "return")?;
-            } else if index <= self.locals.arg_count {
-                write!(f, "arg #{index}")?
+            } else if self.locals.is_return_or_arg(v.index) {
+                write!(f, "arg #{}", v.index.index())?
             } else {
                 match &v.name {
                     Some(_) => write!(f, "local")?,

@@ -74,6 +74,11 @@ impl Locals {
         Place::new(local_id, ty)
     }
 
+    /// Returns whether this local is the special return local or one of the input argument locals.
+    pub fn is_return_or_arg(&self, lid: LocalId) -> bool {
+        lid.index() <= self.arg_count
+    }
+
     /// The place where we write the return value.
     pub fn return_place(&self) -> Place {
         self.place_for_var(LocalId::new(0))

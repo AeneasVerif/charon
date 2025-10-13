@@ -42,17 +42,17 @@ impl ItemTransCtx<'_, '_> {
         let def_id = &item_ref.def_id;
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
             Some(body) => {
-                let state = self.hax_state_with_id();
+                let s = self.hax_state_with_id();
                 let body = if self.monomorphize() {
-                    let typing_env = state.typing_env();
-                    let args = item_ref.rustc_args(&state);
+                    let typing_env = s.typing_env();
+                    let args = item_ref.rustc_args(s);
                     hax::substitute(tcx, typing_env, Some(args), body)
                 } else {
                     body
                 };
                 // Here, we have to create a MIR state, which contains the body.
                 let body = Rc::new(body);
-                let state = state.with_mir(body.clone());
+                let state = s.with_mir(body.clone());
                 // Translate
                 let body: hax::MirBody<hax::mir_kinds::Unknown> =
                     self.t_ctx.catch_sinto(&state, span, body.as_ref())?;

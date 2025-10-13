@@ -402,7 +402,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> T {
         let item = if self.monomorphize() && item.has_param {
-            item.erase(&self.hax_state_with_id())
+            item.erase(self.hax_state_with_id())
         } else {
             item.clone()
         };

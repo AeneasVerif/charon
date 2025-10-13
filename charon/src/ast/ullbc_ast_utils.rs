@@ -209,3 +209,91 @@ impl ExprBody {
         }
     }
 }
+
+/// Helper to construct a small ullbc body.
+pub struct BodyBuilder {
+    /// The span to use for everything.
+    pub span: Span,
+    /// Body under construction.
+    pub body: ExprBody,
+    /// Block onto which we're adding statements. Its terminator is always `Return`.
+    pub current_block: BlockId,
+    /// Block to unwind to; created on demand.
+    pub unwind_block: Option<BlockId>,
+}
+
+fn mk_block(span: Span, term: TerminatorKind) -> BlockData {
+    BlockData {
+        statements: vec![],
+        terminator: Terminator::new(span, term),
+    }
+}
+
+impl BodyBuilder {
+    pub fn new(span: Span, arg_count: usize) -> Self {
+        let mut body: ExprBody = GExprBody {
+            span,
+            locals: Locals::new(arg_count),
+            comments: vec![],
+            body: Vector::new(),
+        };
+        let current_block = body.body.push(BlockData {
+            statements: Default::default(),
+            terminator: Terminator::new(span, TerminatorKind::Return),
+        });
+        Self {
+            span,
+            body,
+            current_block,
+            unwind_block: None,
+        }
+    }
+
+    /// Finalize the builder by returning the built body.
+    pub fn build(self) -> ExprBody {
+        self.body
+    }
+
+    /// Create a new local. Adds a `StorageLive` statement if the local is not one of the special
+    /// ones (return or function argument).
+    pub fn new_var(&mut self, name: Option<String>, ty: Ty) -> Place {
+        let place = self.body.locals.new_var(name, ty);
+        let local_id = place.as_local().unwrap();
+        if !self.body.locals.is_return_or_arg(local_id) {
+            self.push_statement(StatementKind::StorageLive(local_id));
+        }
+        place
+    }
+
+    /// Helper.
+    fn current_block(&mut self) -> &mut BlockData {
+        &mut self.body.body[self.current_block]
+    }
+
+    pub fn push_statement(&mut self, kind: StatementKind) {
+        let st = Statement::new(self.span, kind);
+        self.current_block().statements.push(st);
+    }
+
+    fn unwind_block(&mut self) -> BlockId {
+        *self.unwind_block.get_or_insert_with(|| {
+            self.body
+                .body
+                .push(mk_block(self.span, TerminatorKind::UnwindResume))
+        })
+    }
+
+    pub fn call(&mut self, call: Call) {
+        let next_block = self
+            .body
+            .body
+            .push(mk_block(self.span, TerminatorKind::Return));
+        let term = TerminatorKind::Call {
+            target: next_block,
+            call,
+            on_unwind: self.unwind_block(),
+        };
+        self.current_block().terminator.kind = term;
+        self.current_block = next_block;
+    }
+}
