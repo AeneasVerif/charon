@@ -53,7 +53,7 @@ impl ItemTransCtx<'_, '_> {
         let drop_impl_id = self.register_item(
             span,
             def.this(),
-            TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue),
+            TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop),
         );
         let impl_ref = TraitImplRef {
             id: drop_impl_id,
@@ -103,7 +103,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_drop_impl(
+    pub fn translate_implicit_drop_impl(
         mut self,
         impl_id: TraitImplId,
         item_meta: ItemMeta,

@@ -334,7 +334,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         match &src.kind {
             TransItemSourceKind::TraitImpl(
                 kind @ (TraitImplSource::Closure(..)
-                | TraitImplSource::DropGlue
+                | TraitImplSource::ImplicitDrop
                 | TraitImplSource::TraitAlias),
             ) => {
                 if let TraitImplSource::Closure(..) = kind {

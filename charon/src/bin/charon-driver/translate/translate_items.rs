@@ -117,7 +117,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     &TraitImplSource::Closure(kind) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
                     }
-                    TraitImplSource::DropGlue => bt_ctx.translate_drop_impl(id, item_meta, &def)?,
+                    TraitImplSource::ImplicitDrop => {
+                        bt_ctx.translate_implicit_drop_impl(id, item_meta, &def)?
+                    }
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }

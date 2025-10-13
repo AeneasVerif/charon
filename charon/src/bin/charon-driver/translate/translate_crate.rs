@@ -58,7 +58,7 @@ pub enum TransItemSourceKind {
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// The `drop` method of a `TraitImplSource::DropGlue` trait impl.
+    /// The `drop` method of a `TraitImplSource::ImplicitDrop` trait impl.
     DropGlueMethod,
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
@@ -83,7 +83,7 @@ pub enum TraitImplSource {
     Closure(ClosureKind),
     /// A fictitious `impl Drop for T` that contains the drop glue code for the given ADT. The
     /// `DefId` is that of the ADT.
-    DropGlue,
+    ImplicitDrop,
 }
 
 impl TransItemSource {
@@ -135,7 +135,7 @@ impl TransItemSource {
                 TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
             }
             TransItemSourceKind::DropGlueMethod => {
-                TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue)
+                TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop)
             }
             TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
