@@ -10,7 +10,7 @@ error: Found inconsistent generics after translation:
          charon_lib::ast::types::FunSig
          charon_lib::ast::gast::FunDecl
        Binding stack (depth 1):
-         0: <'a, T, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>, [@TraitClause1]: @TraitDecl1<missing(@Type1_0)>>
+         0: <'a, T, [@TraitClause0]: @TraitDecl0<missing(@TypeBound(1, 0))>, [@TraitClause1]: @TraitDecl1<missing(@TypeBound(1, 0))>>
  --> tests/ui/simple/nested-closure-lifetime.rs:2:1
   |
 2 | / fn foo<'a, T: Clone>(x: &'a T) -> impl Fn() -> &'a T {
@@ -31,7 +31,7 @@ error: Found inconsistent generics after transformations:
          charon_lib::ast::types::FunSig
          charon_lib::ast::gast::FunDecl
        Binding stack (depth 1):
-         0: <'a, T, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>, [@TraitClause1]: @TraitDecl1<missing(@Type1_0)>>
+         0: <'a, T, [@TraitClause0]: @TraitDecl0<missing(@TypeBound(1, 0))>, [@TraitClause1]: @TraitDecl1<missing(@TypeBound(1, 0))>>
  --> tests/ui/simple/nested-closure-lifetime.rs:2:1
   |
 2 | / fn foo<'a, T: Clone>(x: &'a T) -> impl Fn() -> &'a T {

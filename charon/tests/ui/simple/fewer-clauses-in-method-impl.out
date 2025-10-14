@@ -13,7 +13,7 @@ warning: 1 warning emitted
 error: Found inconsistent generics after transformations:
        Mismatched builtin trait parent clauses:
        target: Clone
-       expected: [[@TraitClause0]: Sized<missing(@Type1_0)>]
+       expected: [[@TraitClause0]: Sized<missing(@TypeBound(1, 0))>]
             got: [MetaSized<()>, Clone<()>]
        Visitor stack:
          charon_lib::ast::types::TraitRef

@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -56,7 +56,7 @@ fn {impl Drop for String}::drop_in_place(@1: *mut String)
 // Full name: alloc::string::String::{impl Drop for String}
 impl Drop for String {
     parent_clause0 = MetaSized<String>
-    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    fn drop<'_0_1> = {impl Drop for String}::drop<'_0_1>
     fn drop_in_place = {impl Drop for String}::drop_in_place
     non-dyn-compatible
 }
@@ -120,7 +120,7 @@ fn {impl Drop for Foo}::drop_in_place(@1: *mut Foo)
 // Full name: test_crate::Foo::{impl Drop for Foo}
 impl Drop for Foo {
     parent_clause0 = MetaSized<Foo>
-    fn drop<'_0> = {impl Drop for Foo}::drop<'_0_0>
+    fn drop<'_0_1> = {impl Drop for Foo}::drop<'_0_1>
     fn drop_in_place = {impl Drop for Foo}::drop_in_place
     non-dyn-compatible
 }

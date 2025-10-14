@@ -7,7 +7,7 @@ where
     'a : 'a,
 
 // Full name: core::fmt::rt::{Arguments<'a>}::new_const
-pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
+pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), N>)) -> Arguments<'a>
 
 fn UNIT_METADATA()
 {

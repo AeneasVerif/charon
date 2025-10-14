@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -72,7 +72,7 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 // Full name: test_crate::{impl Clone for Foo}
 impl Clone for Foo {
     parent_clause0 = Sized<Foo>
-    fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for Foo}::clone<'_0_1>
     non-dyn-compatible
 }
 

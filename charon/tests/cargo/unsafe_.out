@@ -7,7 +7,7 @@ where
     'a : 'a,
 
 // Full name: core::fmt::rt::{Arguments<'a>}::new_const
-pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
+pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), N>)) -> Arguments<'a>
 
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)

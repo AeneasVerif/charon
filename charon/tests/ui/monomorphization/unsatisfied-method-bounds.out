@@ -29,7 +29,7 @@ struct A {}
 trait MyIterator::<A>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<A>
-    fn method<'_0> = method::<A><'_0_0>
+    fn method<'_0_1> = method::<A><'_0_1>
     vtable: test_crate::MyIterator::{vtable}::<A><String>
 }
 
@@ -40,7 +40,7 @@ struct B {}
 trait MyIterator::<B>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<B>
-    fn method<'_0> = method::<B><'_0_0>
+    fn method<'_0_1> = method::<B><'_0_1>
     vtable: test_crate::MyIterator::{vtable}::<B><u8>
 }
 
@@ -101,7 +101,7 @@ fn test_crate::{impl MyIterator::<A>}::<A><'_0>(@1: &'_0 (A))
 // Full name: test_crate::{impl MyIterator::<A>}
 impl MyIterator::<A> {
     parent_clause0 = MetaSized::<A>
-    fn method<'_0> = test_crate::{impl MyIterator::<A>}::<A><'_0_0>
+    fn method<'_0_1> = test_crate::{impl MyIterator::<A>}::<A><'_0_1>
     vtable: {impl MyIterator::<A>}::{vtable}
 }
 
@@ -118,7 +118,7 @@ fn test_crate::{impl MyIterator::<B>}::<B><'_0>(@1: &'_0 (B))
 // Full name: test_crate::{impl MyIterator::<B>}
 impl MyIterator::<B> {
     parent_clause0 = MetaSized::<B>
-    fn method<'_0> = test_crate::{impl MyIterator::<B>}::<B><'_0_0>
+    fn method<'_0_1> = test_crate::{impl MyIterator::<B>}::<B><'_0_1>
     vtable: {impl MyIterator::<B>}::{vtable}
 }
 

@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -41,7 +41,7 @@ fn {impl Drop for Global}::drop_in_place(@1: *mut Global)
 // Full name: alloc::alloc::Global::{impl Drop for Global}
 impl Drop for Global {
     parent_clause0 = MetaSized<Global>
-    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+    fn drop<'_0_1> = {impl Drop for Global}::drop<'_0_1>
     fn drop_in_place = {impl Drop for Global}::drop_in_place
     non-dyn-compatible
 }
@@ -71,7 +71,7 @@ where
     [@TraitClause4]: Drop<A>,
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]>
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
     fn drop_in_place = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
     vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
 }

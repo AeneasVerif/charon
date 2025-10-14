@@ -320,11 +320,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.to_string()))
+        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.name.clone()))
     }
 }
 
-impl_display_via_ctx!(ConstGenericParam);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "const {} : {}", self.name, self.ty)
@@ -340,7 +339,7 @@ impl Display for DeBruijnId {
 impl<Id: Display> Display for DeBruijnVar<Id> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Bound(dbid, varid) => write!(f, "{dbid}_{varid}"),
+            Self::Bound(dbid, varid) => write!(f, "Bound({dbid}, {varid})"),
             Self::Free(varid) => write!(f, "{varid}"),
         }
     }
@@ -588,8 +587,8 @@ impl GenericParams {
         C: AstFormatter,
     {
         let regions = self.regions.iter().map(|x| x.with_ctx(ctx));
-        let types = self.types.iter();
-        let const_generics = self.const_generics.iter();
+        let types = self.types.iter().map(|x| x.with_ctx(ctx));
+        let const_generics = self.const_generics.iter().map(|x| x.with_ctx(ctx));
         regions.map(Either::Left).chain(
             types
                 .map(Either::Left)
@@ -1188,12 +1187,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionDbVar {
     }
 }
 
-impl_display_via_ctx!(RegionParam);
 impl<C: AstFormatter> FmtWithCtx<C> for RegionParam {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.name {
             Some(name) => write!(f, "{name}"),
-            None => write!(f, "'_{}", self.index),
+            None => {
+                write!(f, "'_{}", self.index)?;
+                if let Some(d @ 1..) = ctx.binder_depth().checked_sub(1) {
+                    write!(f, "_{d}")?;
+                }
+                Ok(())
+            }
         }
     }
 }
@@ -1559,7 +1563,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitParam {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let clause_id = self.clause_id.to_pretty_string();
         let trait_ = self.trait_.with_ctx(ctx);
-        write!(f, "[{clause_id}]: {trait_}")
+        write!(f, "[{clause_id}")?;
+        if let Some(d @ 1..) = ctx.binder_depth().checked_sub(1) {
+            write!(f, "_{d}")?;
+        }
+        write!(f, "]: {trait_}")?;
+        Ok(())
     }
 }
 
@@ -1861,7 +1870,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TypeDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ctx.format_bound_var(f, *self, "@Type", |v| Some(v.to_string()))
+        ctx.format_bound_var(f, *self, "@Type", |v| Some(v.name.clone()))
     }
 }
 
@@ -1944,7 +1953,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     }
 }
 
-impl_display_via_ctx!(TypeParam);
 impl<C: AstFormatter> FmtWithCtx<C> for TypeParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)

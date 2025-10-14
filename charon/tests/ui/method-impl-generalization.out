@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -49,7 +49,7 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -77,7 +77,7 @@ trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn method1 = test_crate::Trait::method1<Self>[Self]
-    fn method2<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method2<Self, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn method2<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>> = test_crate::Trait::method2<Self, T>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -121,7 +121,7 @@ where
 impl Trait for () {
     parent_clause0 = Sized<()>
     fn method1 = {impl Trait for ()}::method1
-    fn method2<T, [@TraitClause0]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_0]
+    fn method2<T, [@TraitClause0_1]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_1]
     non-dyn-compatible
 }
 

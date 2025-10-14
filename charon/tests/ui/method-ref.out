@@ -34,7 +34,7 @@ const UNIT_METADATA: () = @Fun0()
 trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>[Self]
+    fn cmp<'_0_1, '_1_1> = cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -50,7 +50,7 @@ where
     [@TraitClause1]: Ord<T>,
 {
     let @0: (); // return
-    let @1: for<'_0, '_1> @TraitClause1::cmp<'_0_0, '_0_1>; // anonymous local
+    let @1: for<'_0_1, '_1_1> @TraitClause1::cmp<'_0_1, '_1_1>; // anonymous local
 
     @0 := ()
     storage_live(@1)

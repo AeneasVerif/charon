@@ -3,7 +3,7 @@
 struct core::marker::MetaSized::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn> + _dyn : '_)),
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: MetaSized<_dyn> + _dyn : '_)),
 }
 
 // Full name: core::marker::MetaSized
@@ -23,8 +23,8 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Trait<_dyn> + _dyn : '_)),
-  method_foo: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Trait<_dyn> + _dyn : '_))),
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Trait<_dyn> + _dyn : '_)),
+  method_foo: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Trait<_dyn> + _dyn : '_))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 
@@ -32,7 +32,7 @@ struct test_crate::Trait::{vtable} {
 trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn foo<'a, '_1, Self : 'a> = test_crate::Trait::foo<'a, '_0_1, Self>[Self]
+    fn foo<'a, '_1_1, Self : 'a> = test_crate::Trait::foo<'a, '_1_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -41,10 +41,10 @@ where
     [@TraitClause0]: Trait<Self>,
     Self : 'a,
 
-fn test_crate::foo<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0]: Trait<_dyn> + _dyn : '_0)))
+fn test_crate::foo<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_0)))
 {
     let @0: (); // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0]: Trait<_dyn> + _dyn : '_)); // arg #1
+    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_)); // arg #1
 
     @0 := ()
     @0 := ()

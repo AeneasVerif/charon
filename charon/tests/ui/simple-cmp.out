@@ -4,7 +4,7 @@
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -56,7 +56,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -66,7 +66,7 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -85,7 +85,7 @@ pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
-    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<i32> for i32}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
@@ -121,7 +121,7 @@ pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2:
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
 impl PartialOrd<i32> for i32 {
     parent_clause0 = {impl PartialEq<i32> for i32}
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<i32> for i32}::{vtable}
 }
 
@@ -132,7 +132,7 @@ pub fn {impl Ord for i32}::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Orde
 impl Ord for i32 {
     parent_clause0 = {impl Eq for i32}
     parent_clause1 = {impl PartialOrd<i32> for i32}
-    fn cmp<'_0, '_1> = {impl Ord for i32}::cmp<'_0_0, '_0_1>
+    fn cmp<'_0_1, '_1_1> = {impl Ord for i32}::cmp<'_0_1, '_1_1>
     non-dyn-compatible
 }
 

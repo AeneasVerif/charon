@@ -38,8 +38,8 @@ pub opaque type NonNull<T>
 pub trait Allocator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn allocate<'_0> = core::alloc::Allocator::allocate<'_0_0, Self>[Self]
-    fn deallocate<'_0> = core::alloc::Allocator::deallocate<'_0_0, Self>[Self]
+    fn allocate<'_0_1> = core::alloc::Allocator::allocate<'_0_1, Self>[Self]
+    fn deallocate<'_0_1> = core::alloc::Allocator::deallocate<'_0_1, Self>[Self]
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -56,7 +56,7 @@ where
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -80,8 +80,8 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
     parent_clause0 = MetaSized<Global>
-    fn allocate<'_0> = {impl Allocator for Global}::allocate<'_0_0>
-    fn deallocate<'_0> = {impl Allocator for Global}::deallocate<'_0_0>
+    fn allocate<'_0_1> = {impl Allocator for Global}::allocate<'_0_1>
+    fn deallocate<'_0_1> = {impl Allocator for Global}::deallocate<'_0_1>
     vtable: {impl Allocator for Global}::{vtable}
 }
 
@@ -107,7 +107,7 @@ where
     [@TraitClause2]: Allocator<A>,
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     fn drop_in_place = {impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl Drop for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }

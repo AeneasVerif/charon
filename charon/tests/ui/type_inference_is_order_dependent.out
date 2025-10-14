@@ -60,7 +60,7 @@ where
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Debug::{vtable}
 }
 
@@ -73,7 +73,7 @@ pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (
 
 // Full name: core::fmt::{impl Debug for bool}
 impl Debug for bool {
-    fn fmt<'_0, '_1, '_2> = {impl Debug for bool}::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for bool}::fmt<'_0_1, '_1_1, '_2_1>
     vtable: {impl Debug for bool}::{vtable}
 }
 
@@ -88,14 +88,14 @@ where
     [@TraitClause1]: Debug<T>,
 
 // Full name: core::fmt::rt::{Arguments<'a>}::new_v1
-pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
+pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), P>), @2: &'a (Array<Argument<'a>, A>)) -> Arguments<'a>
 
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }

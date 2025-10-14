@@ -43,7 +43,7 @@ struct closure<'_0, '_1> {
 pub trait Drop::<closure<'_, '_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
-    fn drop<'_0> = drop::<closure<'_, '_>><'_0_0>
+    fn drop<'_0_1> = drop::<closure<'_, '_>><'_0_1>
     fn drop_in_place = drop_in_place::<closure<'_, '_>>
     vtable: core::ops::drop::Drop::{vtable}::<closure<'_, '_>>
 }
@@ -73,7 +73,7 @@ pub trait FnMut::<closure<'_, '_>, (u8, u8)>
     parent_clause1 : [@TraitClause1]: FnOnce::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8, u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8, u8)>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0_0>
+    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0_1>
     vtable: core::ops::function::FnMut::{vtable}::<closure<'_, '_>, (u8, u8)><u8>
 }
 
@@ -85,7 +85,7 @@ pub trait Fn::<closure<'_, '_>, (u8, u8)>
     parent_clause1 : [@TraitClause1]: FnMut::<closure<'_, '_>, (u8, u8)>
     parent_clause2 : [@TraitClause2]: Sized::<(u8, u8)>
     parent_clause3 : [@TraitClause3]: Tuple::<(u8, u8)>
-    fn call<'_0> = core::ops::function::Fn::call::<closure<'_, '_>, (u8, u8)><'_0_0>
+    fn call<'_0_1> = core::ops::function::Fn::call::<closure<'_, '_>, (u8, u8)><'_0_1>
     vtable: core::ops::function::Fn::{vtable}::<closure<'_, '_>, (u8, u8)><u8>
 }
 
@@ -334,7 +334,7 @@ impl<'_0, '_1> FnMut::<closure<'_, '_>, (u8, u8)> {
     parent_clause1 = {impl FnOnce::<closure<'_, '_>, (u8, u8)>}<'_0, '_1>
     parent_clause2 = Sized::<(u8, u8)>
     parent_clause3 = Tuple::<(u8, u8)>
-    fn call_mut<'_0> = {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_0_0>
+    fn call_mut<'_0_1> = {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
@@ -344,7 +344,7 @@ impl<'_0, '_1> Fn::<closure<'_, '_>, (u8, u8)> {
     parent_clause1 = {impl FnMut::<closure<'_, '_>, (u8, u8)>}<'_0, '_1>
     parent_clause2 = Sized::<(u8, u8)>
     parent_clause3 = Tuple::<(u8, u8)>
-    fn call<'_0> = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_0_0>
+    fn call<'_0_1> = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 

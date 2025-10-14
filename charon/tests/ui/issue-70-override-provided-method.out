@@ -4,7 +4,7 @@
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -48,7 +48,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -62,7 +62,7 @@ pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
-    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<i32> for i32}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
@@ -71,7 +71,7 @@ pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl PartialEq<u32> for u32 {
-    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<u32> for u32}::{vtable}
 }
 
@@ -81,7 +81,7 @@ pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2:
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
 impl PartialOrd<u32> for u32 {
     parent_clause0 = {impl PartialEq<u32> for u32}
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_0, '_0_1>
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<u32> for u32}::{vtable}
 }
 
@@ -105,7 +105,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: PartialEq<T, T>,
 {
-    fn eq<'_0, '_1> = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0_1, '_1_1, T>[@TraitClause0, @TraitClause1]
     vtable: {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
@@ -181,7 +181,7 @@ pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 (Foo), @2: &'_1 (Foo
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}
 impl PartialEq<Foo> for Foo {
-    fn eq<'_0, '_1> = {impl PartialEq<Foo> for Foo}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<Foo> for Foo}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<Foo> for Foo}::{vtable}
 }
 
@@ -215,7 +215,7 @@ pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 (Foo), @2:
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}
 impl PartialOrd<Foo> for Foo {
     parent_clause0 = {impl PartialEq<Foo> for Foo}
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0_0, '_0_1>
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<Foo> for Foo}::{vtable}
 }
 
