@@ -87,6 +87,12 @@ pub struct CliOpts {
     #[clap(long, visible_alias = "mono")]
     #[serde(default)]
     pub monomorphize: bool,
+    /// Partially monomorphize items to make it so that no item is ever monomorphized with a
+    /// mutable reference (or type containing one); said differently, so that the presence of
+    /// mutable references in a type is independent of its generics. This is used by Aeneas.
+    #[clap(long)]
+    #[serde(default)]
+    pub monomorphize_mut: bool,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -401,6 +407,8 @@ pub struct TranslateOptions {
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
     pub translate_all_methods: bool,
+    /// Whether to run the partial mutability monomorphization pass.
+    pub monomorphize_mut: bool,
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
@@ -493,6 +501,7 @@ impl TranslateOptions {
 
         TranslateOptions {
             mir_level,
+            monomorphize_mut: options.monomorphize_mut,
             hide_marker_traits: options.hide_marker_traits,
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,

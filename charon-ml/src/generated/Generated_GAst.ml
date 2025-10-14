@@ -345,6 +345,11 @@ type cli_options = {
           in the crate are skipped. To only translate a particular call graph,
           use [--start-from]. Note: this doesn't currently support [dyn Trait].
       *)
+  monomorphize_mut : bool;
+      (** Partially monomorphize items to make it so that no item is ever
+          monomorphized with a mutable reference (or type containing one); said
+          differently, so that the presence of mutable references in a type is
+          independent of its generics. This is used by Aeneas. *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private
           fields. When this flag is on, we don't. *)

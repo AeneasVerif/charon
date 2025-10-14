@@ -68,4 +68,18 @@ impl Name {
     pub fn equals_ref_name(&self, ref_name: &[&str]) -> bool {
         self.compare_with_ref_name(true, ref_name)
     }
+
+    /// Created an instantiated version of this name by putting a `PathElem::Instantiated` last. If
+    /// the item was already instantiated, this merges the two instantiations.
+    pub fn instantiate(mut self, binder: Binder<GenericArgs>) -> Self {
+        if let [.., PathElem::Instantiated(box x)] = self.name.as_mut_slice() {
+            // Put the new args in place; the params are what we want but the args are wrong.
+            let old_args = std::mem::replace(x, binder);
+            // Apply the new args to the old binder to get correct args.
+            x.skip_binder = old_args.apply(&x.skip_binder);
+        } else {
+            self.name.push(PathElem::Instantiated(Box::new(binder)));
+        }
+        self
+    }
 }
