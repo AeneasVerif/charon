@@ -97,8 +97,12 @@ pub trait Drop::<for<'_0> foo::<u32><'_0_0>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'_0> foo::<u32><'_0_0>>
     fn drop<'_0> = drop::<for<'_0> foo::<u32><'_0_0>><'_0_0>
+    fn drop_in_place = drop_in_place::<for<'_0> foo::<u32><'_0_0>>
     vtable: core::ops::drop::Drop::{vtable}::<for<'_0> foo::<u32><'_0_0>>
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place::<for<'_0> foo::<u32><'_0>>
+fn drop_in_place::<for<'_0> foo::<u32><'_0>>(@1: *mut for<'_0> foo::<u32><'_0_0>)
 
 // Full name: core::ops::drop::Drop::drop::<for<'_0> foo::<u32><'_0>>
 pub fn drop::<for<'_0> foo::<u32><'_0>><'_0>(@1: &'_0 mut (for<'_0> foo::<u32><'_0_0>))

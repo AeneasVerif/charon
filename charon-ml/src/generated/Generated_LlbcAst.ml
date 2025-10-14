@@ -50,8 +50,10 @@ and statement_kind =
           only be dropped if it has not already been moved out. For MIR
           elaborated and optimized, this is a real drop.
 
-          This drop is then equivalent to a call to
-          [std::ptr::drop_in_place(&raw mut place)]. *)
+          This then calls [<T as Drop>::drop_in_place(&raw mut place)] and marks
+          the place as moved-out-of. The [drop_in_place] method is added by
+          Charon, it contains the same code as the [core::ptr::drop_in_place<T>]
+          builtin). *)
   | Assert of assertion
   | Call of call
   | Abort of abort_kind

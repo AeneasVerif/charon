@@ -322,7 +322,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     && let hax::TyKind::Adt(item) = ty.kind()
                 {
                     let impl_ref =
-                        self.translate_trait_impl_ref(span, item, TraitImplSource::DropGlue)?;
+                        self.translate_trait_impl_ref(span, item, TraitImplSource::ImplicitDrop)?;
                     TraitRefKind::TraitImpl(impl_ref)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
