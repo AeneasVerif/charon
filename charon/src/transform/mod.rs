@@ -24,7 +24,6 @@ pub mod add_missing_info {
 pub mod normalize {
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
-    pub mod monomorphize;
     pub mod skip_trait_refs_when_known;
     pub mod transform_dyn_trait_calls;
 }
@@ -185,8 +184,6 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
     NonBody(&add_missing_info::recover_body_comments::Transform),
-    // Monomorphize the functions and types.
-    NonBody(&normalize::monomorphize::Transform),
     // # Reorder the graph of dependencies and compute the strictly connex components to:
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
