@@ -343,14 +343,8 @@ type cli_options = {
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
           in the crate are skipped. To only translate a particular call graph,
-          use [--start-from]. This uses a different mechanism than
-          [--monomorphize-conservative] which should be a lot more complete, but
-          doesn't currently support [dyn Trait]. *)
-  monomorphize_conservative : bool;
-      (** Monomorphize the code, replacing generics with their concrete types.
-          This is less complete than [--monomorphize] but at least doesn't crash
-          on [dyn Trait]. This will eventually be fully replaced with
-          [--monomorphized]. *)
+          use [--start-from]. Note: this doesn't currently support [dyn Trait].
+      *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private
           fields. When this flag is on, we don't. *)

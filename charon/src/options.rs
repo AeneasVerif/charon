@@ -82,18 +82,11 @@ pub struct CliOpts {
     #[serde(default)]
     pub skip_borrowck: bool,
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
-    /// skipped. To only translate a particular call graph, use `--start-from`. This
-    /// uses a different mechanism than `--monomorphize-conservative` which should be a lot more
-    /// complete, but doesn't currently support `dyn Trait`.
+    /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't
+    /// currently support `dyn Trait`.
     #[clap(long, visible_alias = "mono")]
     #[serde(default)]
     pub monomorphize: bool,
-    /// Monomorphize the code, replacing generics with their concrete types. This is less complete
-    /// than `--monomorphize` but at least doesn't crash on `dyn Trait`. This will eventually be
-    /// fully replaced with `--monomorphized`.
-    #[clap(long)]
-    #[serde(default)]
-    pub monomorphize_conservative: bool,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -411,8 +404,6 @@ pub struct TranslateOptions {
     pub hide_allocator: bool,
     /// Remove unused `Self: Trait` clauses on method declarations.
     pub remove_unused_self_clauses: bool,
-    /// Monomorphize functions as a post-processing pass.
-    pub monomorphize_as_pass: bool,
     /// Monomorphize code using hax's instantiation mechanism.
     pub monomorphize_with_hax: bool,
     /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
@@ -501,7 +492,6 @@ impl TranslateOptions {
             hide_marker_traits: options.hide_marker_traits,
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
-            monomorphize_as_pass: options.monomorphize_conservative,
             monomorphize_with_hax: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
             no_ops_to_function_calls: options.no_ops_to_function_calls,
