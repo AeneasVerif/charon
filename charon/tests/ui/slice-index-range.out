@@ -12,7 +12,7 @@ pub trait Index<Self, Idx>
     parent_clause1 : [@TraitClause1]: MetaSized<Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -42,7 +42,7 @@ where
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause2
     type Output = @TraitClause2::Output
-    fn index<'_0> = {impl Index<I> for Array<T, N>}::index<'_0_0, T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0_1> = {impl Index<I> for Array<T, N>}::index<'_0_1, T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl Index<I> for Array<T, N>}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
@@ -138,12 +138,12 @@ pub trait SliceIndex<Self, T>
     parent_clause2 : [@TraitClause2]: MetaSized<T>
     parent_clause3 : [@TraitClause3]: MetaSized<Self::Output>
     type Output
-    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>[Self]
-    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>[Self]
+    fn get<'_0_1> = core::slice::index::SliceIndex::get<'_0_1, Self, T>[Self]
+    fn get_mut<'_0_1> = core::slice::index::SliceIndex::get_mut<'_0_1, Self, T>[Self]
     fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>[Self]
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
-    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
-    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
+    fn index<'_0_1> = core::slice::index::SliceIndex::index<'_0_1, Self, T>[Self]
+    fn index_mut<'_0_1> = core::slice::index::SliceIndex::index_mut<'_0_1, Self, T>[Self]
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -177,7 +177,7 @@ where
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
-    fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0_1> = {impl Index<I> for Slice<T>}::index<'_0_1, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl Index<I> for Slice<T>}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
@@ -775,12 +775,12 @@ where
     parent_clause2 = MetaSized<Slice<T>>
     parent_clause3 = MetaSized<Slice<T>>
     type Output = Slice<T>
-    fn get<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_mut<'_0_0, T>[@TraitClause0]
+    fn get<'_0_1> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get<'_0_1, T>[@TraitClause0]
+    fn get_mut<'_0_1> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_mut<'_0_1, T>[@TraitClause0]
     fn get_unchecked = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked<T>[@TraitClause0]
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_0, T>[@TraitClause0]
+    fn index<'_0_1> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_1, T>[@TraitClause0]
+    fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_1, T>[@TraitClause0]
     vtable: {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::{vtable}<T>[@TraitClause0]
 }
 

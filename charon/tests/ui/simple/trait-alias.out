@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -39,7 +39,7 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -97,7 +97,7 @@ pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 (Struct)) -> Struct
 // Full name: test_crate::{impl Clone for Struct}
 impl Clone for Struct {
     parent_clause0 = Sized<Struct>
-    fn clone<'_0> = {impl Clone for Struct}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for Struct}::clone<'_0_1>
     non-dyn-compatible
 }
 

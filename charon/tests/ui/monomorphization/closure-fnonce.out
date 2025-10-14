@@ -60,7 +60,7 @@ struct closure {
 pub trait Drop::<closure>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure>
-    fn drop<'_0> = core::ops::drop::Drop::drop::<closure><'_0_0>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<closure><'_0_1>
     fn drop_in_place = drop_in_place::<closure>
     vtable: core::ops::drop::Drop::{vtable}::<closure>
 }

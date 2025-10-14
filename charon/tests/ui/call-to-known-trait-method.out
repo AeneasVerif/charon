@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -32,7 +32,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
     parent_clause0 = Sized<u8>
-    fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -40,7 +40,7 @@ impl Clone for u8 {
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -54,7 +54,7 @@ pub fn {impl PartialEq<bool> for bool}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (
 
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
 impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<bool> for bool}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<bool> for bool}::{vtable}
 }
 
@@ -95,7 +95,7 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -164,7 +164,7 @@ trait Trait<Self, B, Self_Item>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<B>
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
-    fn method<C, [@TraitClause0]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, @TraitClause0_0]
+    fn method<C, [@TraitClause0_1]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -200,7 +200,7 @@ where
     parent_clause0 = MetaSized<Struct<A>[@TraitClause0]>
     parent_clause1 = @TraitClause1
     parent_clause2 = Sized<(A, B)>
-    fn method<C, [@TraitClause0]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
+    fn method<C, [@TraitClause0_1]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_1]
     non-dyn-compatible
 }
 

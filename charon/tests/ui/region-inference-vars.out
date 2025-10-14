@@ -40,7 +40,7 @@ pub trait MyTryFrom<Self, T>
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: Sized<Self::Error>
     type Error
-    fn from<[@TraitClause0]: Sized<Self>> = test_crate::MyTryFrom::from<Self, T>[Self, @TraitClause0_0]
+    fn from<[@TraitClause0_1]: Sized<Self>> = test_crate::MyTryFrom::from<Self, T>[Self, @TraitClause0_1]
     vtable: test_crate::MyTryFrom::{vtable}<T, Self::Error>
 }
 

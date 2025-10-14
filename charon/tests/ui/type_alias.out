@@ -10,7 +10,7 @@ pub trait Borrow<Self, Borrowed>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: MetaSized<Borrowed>
-    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
+    fn borrow<'_0_1> = core::borrow::Borrow::borrow<'_0_1, Self, Borrowed>[Self]
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -31,7 +31,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -61,7 +61,7 @@ pub trait ToOwned<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Owned>
     parent_clause2 : [@TraitClause2]: Borrow<Self::Owned, Self>
     type Owned
-    fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>[Self]
+    fn to_owned<'_0_1> = alloc::borrow::ToOwned::to_owned<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -104,7 +104,7 @@ where
 {
     parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = MetaSized<Slice<T>>
-    fn borrow<'_0> = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn borrow<'_0_1> = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::borrow<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -124,7 +124,7 @@ where
     parent_clause1 = Sized<Vec<T>[@TraitClause0, Sized<Global>]>
     parent_clause2 = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, Sized<Global>]
     type Owned = Vec<T>[@TraitClause0, Sized<Global>]
-    fn to_owned<'_0> = {impl ToOwned for Slice<T>}::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn to_owned<'_0_1> = {impl ToOwned for Slice<T>}::to_owned<'_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 

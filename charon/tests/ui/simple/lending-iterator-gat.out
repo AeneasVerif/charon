@@ -31,7 +31,7 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -63,7 +63,7 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -101,7 +101,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
-    fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    fn drop<'_0_1> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
     fn drop_in_place = {impl Drop for Option<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -129,7 +129,7 @@ pub trait LendingIterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     type Item<'a, Self : 'a>
     where
-        implied_clause_0 : [@TraitClause0]: Sized<Self::Item>
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::Item>
 
     fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
     non-dyn-compatible
@@ -310,7 +310,7 @@ impl<'_0, '_1> FnMut<(&'_ (i32))> for closure<'_0> {
     parent_clause1 = {impl FnOnce<(&'_ (i32))> for closure<'_0>}<'_0, '_1>
     parent_clause2 = Sized<(&'_ (i32))>
     parent_clause3 = Tuple<(&'_ (i32))>
-    fn call_mut<'_0> = {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_0_0>
+    fn call_mut<'_0_1> = {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 

@@ -42,7 +42,7 @@ impl Hasher for DefaultHasher {
 pub trait Hash<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = test_crate::Hash::hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -70,7 +70,7 @@ where
 // Full name: test_crate::{impl Hash for u32}
 impl Hash for u32 {
     parent_clause0 = MetaSized<u32>
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = {impl Hash for u32}::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = {impl Hash for u32}::hash<'_0_1, '_1_1, H>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 

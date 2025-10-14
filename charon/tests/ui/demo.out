@@ -471,7 +471,7 @@ where
 pub trait Counter<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>[Self]
+    fn incr<'_0_1> = test_crate::Counter::incr<'_0_1, Self>[Self]
     vtable: test_crate::Counter::{vtable}
 }
 
@@ -500,7 +500,7 @@ pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
 // Full name: test_crate::{impl Counter for usize}
 impl Counter for usize {
     parent_clause0 = MetaSized<usize>
-    fn incr<'_0> = {impl Counter for usize}::incr<'_0_0>
+    fn incr<'_0_1> = {impl Counter for usize}::incr<'_0_1>
     vtable: {impl Counter for usize}::{vtable}
 }
 

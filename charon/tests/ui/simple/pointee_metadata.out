@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -31,7 +31,7 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -72,7 +72,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1> = partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -82,7 +82,7 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>[Self]
+    fn cmp<'_0_1, '_1_1> = cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -116,7 +116,7 @@ where
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Debug::{vtable}
 }
 
@@ -129,8 +129,8 @@ where
 pub trait Hasher<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn finish<'_0> = finish<'_0_0, Self>[Self]
-    fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
+    fn finish<'_0_1> = finish<'_0_1, Self>[Self]
+    fn write<'_0_1, '_1_1> = write<'_0_1, '_1_1, Self>[Self]
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -138,7 +138,7 @@ pub trait Hasher<Self>
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 

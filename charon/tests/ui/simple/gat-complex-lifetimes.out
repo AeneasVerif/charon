@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -60,8 +60,8 @@ pub trait Bar<'a, Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     type Type<'b>
     where
-        implied_clause_0 : [@TraitClause0]: Sized<Self::Type>
-        implied_clause_1 : [@TraitClause1]: for<'c> Foo<Self::Type, &'a (&'b (&'c (())))>
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::Type>
+        implied_clause_1 : [@TraitClause1_1]: for<'c> Foo<Self::Type, &'a (&'b (&'c (())))>
 
     non-dyn-compatible
 }

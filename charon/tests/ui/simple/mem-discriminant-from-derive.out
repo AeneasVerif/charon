@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -31,7 +31,7 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -53,7 +53,7 @@ pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
 impl PartialEq<u8> for u8 {
-    fn eq<'_0, '_1> = {impl PartialEq<u8> for u8}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<u8> for u8}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<u8> for u8}::{vtable}
 }
 
@@ -67,7 +67,7 @@ impl<'_0, '_1, A, B> PartialEq<&'_0 (B)> for &'_1 (A)
 where
     [@TraitClause0]: PartialEq<A, B>,
 {
-    fn eq<'_0, '_1> = {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_0_0, '_0_1, A, B>[@TraitClause0]
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_0_1, '_1_1, A, B>[@TraitClause0]
     vtable: {impl PartialEq<&'_0 (B)> for &'_1 (A)}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
 }
 
@@ -89,7 +89,7 @@ where
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Debug::{vtable}
 }
 
@@ -102,8 +102,8 @@ where
 pub trait Hasher<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn finish<'_0> = finish<'_0_0, Self>[Self]
-    fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
+    fn finish<'_0_1> = finish<'_0_1, Self>[Self]
+    fn write<'_0_1, '_1_1> = write<'_0_1, '_1_1, Self>[Self]
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -111,7 +111,7 @@ pub trait Hasher<Self>
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -305,7 +305,7 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
 
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}
 impl PartialEq<Enum> for Enum {
-    fn eq<'_0, '_1> = {impl PartialEq<Enum> for Enum}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<Enum> for Enum}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<Enum> for Enum}::{vtable}
 }
 

@@ -26,8 +26,8 @@ const UNIT_METADATA: () = @Fun0()
 pub trait BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
-    fn ret_true<'_0> = ret_true<'_0_0, Self>[Self]
+    fn get_bool<'_0_1> = test_crate::BoolTrait::get_bool<'_0_1, Self>[Self]
+    fn ret_true<'_0_1> = ret_true<'_0_1, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
 
@@ -69,8 +69,8 @@ pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> 
 // Full name: test_crate::{impl BoolTrait for bool}
 impl BoolTrait for bool {
     parent_clause0 = MetaSized<bool>
-    fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
-    fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
+    fn get_bool<'_0_1> = {impl BoolTrait for bool}::get_bool<'_0_1>
+    fn ret_true<'_0_1> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_1>
     vtable: {impl BoolTrait for bool}::{vtable}
 }
 

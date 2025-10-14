@@ -35,6 +35,8 @@ pub trait AstFormatter: Sized {
             ..Default::default()
         }))
     }
+    /// Return the depth of binders we're under.
+    fn binder_depth(&self) -> usize;
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a>;
     fn indent(&self) -> String;
@@ -135,6 +137,9 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         ret.generics.push(new_params);
         ret
     }
+    fn binder_depth(&self) -> usize {
+        self.generics.len()
+    }
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a> {
         FmtCtx {
@@ -176,10 +181,11 @@ impl<'c> AstFormatter for FmtCtx<'c> {
                 None => {
                     write!(f, "{var_prefix}")?;
                     let (dbid, varid) = self.generics.as_bound_var(var);
-                    if dbid == self.generics.depth() {
+                    let depth = self.generics.depth().index - dbid.index;
+                    if depth == 0 {
                         write!(f, "{varid}")
                     } else {
-                        write!(f, "{var}")
+                        write!(f, "{varid}_{depth}")
                     }
                 }
             },

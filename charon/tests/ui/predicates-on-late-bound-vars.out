@@ -54,7 +54,7 @@ where
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -77,7 +77,7 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -117,7 +117,7 @@ where
     [@TraitClause1]: Sized<E>,
 {
     parent_clause0 = MetaSized<Result<T, E>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, E>[@TraitClause0, @TraitClause1]
+    fn drop<'_0_1> = {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, E>[@TraitClause0, @TraitClause1]
     fn drop_in_place = {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }

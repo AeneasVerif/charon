@@ -7,7 +7,7 @@ pub opaque type TypeId
 struct core::marker::MetaSized::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: MetaSized<_dyn> + _dyn : '_)),
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: MetaSized<_dyn> + _dyn : '_)),
 }
 
 // Full name: core::marker::MetaSized
@@ -17,8 +17,8 @@ pub trait MetaSized<Self>
 struct core::any::Any::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)),
-  method_type_id: fn<'_0>(&'_0_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_))) -> TypeId,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + _dyn : '_)),
+  method_type_id: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + _dyn : '_))) -> TypeId,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 
@@ -29,7 +29,7 @@ where
     Self : 'static,
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn type_id<'_0> = type_id<'_0_0, Self>[Self]
+    fn type_id<'_0_1> = type_id<'_0_1, Self>[Self]
     vtable: core::any::Any::{vtable}
 }
 
@@ -57,25 +57,25 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : 'static))
+fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : 'static))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,
 {
-    let @0: &'_ ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)); // return
+    let @0: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // return
     let x@1: &'_ (T); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)); // anonymous local
-    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)); // anonymous local
+    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // anonymous local
+    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // anonymous local
     let @4: &'_ (T); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(x@1)
-    @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
+    @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
     storage_dead(@4)
     @2 := &*(@3) with_metadata(copy (@3.metadata))
-    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)), Any<(dyn exists<_dyn> [@TraitClause0]: Any<_dyn> + _dyn : '_)>>(move (@2))
+    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), Any<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + _dyn : '_)>>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return

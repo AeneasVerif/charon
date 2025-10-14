@@ -49,7 +49,7 @@ pub const MIN: f64 = MIN()
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -81,7 +81,7 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -93,7 +93,7 @@ pub trait Fn<Self, Args>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
@@ -136,7 +136,7 @@ where
     [@TraitClause1]: Sized<A>,
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     fn drop_in_place = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
@@ -438,7 +438,7 @@ impl FnMut<(u8)> for closure {
     parent_clause1 = {impl FnOnce<(u8)> for closure}
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>
-    fn call_mut<'_0> = {impl FnMut<(u8)> for closure}::call_mut<'_0_0>
+    fn call_mut<'_0_1> = {impl FnMut<(u8)> for closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
@@ -448,7 +448,7 @@ impl Fn<(u8)> for closure {
     parent_clause1 = {impl FnMut<(u8)> for closure}
     parent_clause2 = Sized<(u8)>
     parent_clause3 = Tuple<(u8)>
-    fn call<'_0> = {impl Fn<(u8)> for closure}::call<'_0_0>
+    fn call<'_0_1> = {impl Fn<(u8)> for closure}::call<'_0_1>
     non-dyn-compatible
 }
 

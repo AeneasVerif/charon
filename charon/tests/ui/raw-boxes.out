@@ -115,8 +115,8 @@ pub trait Destruct<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -156,7 +156,7 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -182,8 +182,8 @@ where
 // Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
     parent_clause0 = Sized<usize>
-    fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -237,7 +237,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::fmt::rt::ArgumentType
 enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: fn<'_0, '_1>(NonNull<()>, &'_0_0 mut (Formatter<'_0_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
+  Placeholder(value: NonNull<()>, formatter: fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
   Count(u16),
 }
 
@@ -489,13 +489,13 @@ pub struct AllocError {}
 pub trait Allocator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn allocate<'_0> = core::alloc::Allocator::allocate<'_0_0, Self>[Self]
-    fn allocate_zeroed<'_0> = core::alloc::Allocator::allocate_zeroed<'_0_0, Self>[Self]
-    fn deallocate<'_0> = core::alloc::Allocator::deallocate<'_0_0, Self>[Self]
-    fn grow<'_0> = core::alloc::Allocator::grow<'_0_0, Self>[Self]
-    fn grow_zeroed<'_0> = core::alloc::Allocator::grow_zeroed<'_0_0, Self>[Self]
-    fn shrink<'_0> = core::alloc::Allocator::shrink<'_0_0, Self>[Self]
-    fn by_ref<'_0, [@TraitClause0]: Sized<Self>> = by_ref<'_0_0, Self>[Self, @TraitClause0_0]
+    fn allocate<'_0_1> = core::alloc::Allocator::allocate<'_0_1, Self>[Self]
+    fn allocate_zeroed<'_0_1> = core::alloc::Allocator::allocate_zeroed<'_0_1, Self>[Self]
+    fn deallocate<'_0_1> = core::alloc::Allocator::deallocate<'_0_1, Self>[Self]
+    fn grow<'_0_1> = core::alloc::Allocator::grow<'_0_1, Self>[Self]
+    fn grow_zeroed<'_0_1> = core::alloc::Allocator::grow_zeroed<'_0_1, Self>[Self]
+    fn shrink<'_0_1> = core::alloc::Allocator::shrink<'_0_1, Self>[Self]
+    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Self>> = by_ref<'_0_1, Self>[Self, @TraitClause0_1]
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -1920,8 +1920,8 @@ where
 // Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}
 impl Clone for NonZeroUsizeInner {
     parent_clause0 = Sized<NonZeroUsizeInner>
-    fn clone<'_0> = {impl Clone for NonZeroUsizeInner}::clone<'_0_0>
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    fn clone<'_0_1> = {impl Clone for NonZeroUsizeInner}::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -3804,13 +3804,13 @@ where
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
     parent_clause0 = MetaSized<Global>
-    fn allocate<'_0> = {impl Allocator for Global}::allocate<'_0_0>
-    fn allocate_zeroed<'_0> = {impl Allocator for Global}::allocate_zeroed<'_0_0>
-    fn deallocate<'_0> = {impl Allocator for Global}::deallocate<'_0_0>
-    fn grow<'_0> = {impl Allocator for Global}::grow<'_0_0>
-    fn grow_zeroed<'_0> = {impl Allocator for Global}::grow_zeroed<'_0_0>
-    fn shrink<'_0> = {impl Allocator for Global}::shrink<'_0_0>
-    fn by_ref<'_0, [@TraitClause0]: Sized<Global>> = alloc::alloc::{impl Allocator for Global}::by_ref<'_0_0>[@TraitClause0_0]
+    fn allocate<'_0_1> = {impl Allocator for Global}::allocate<'_0_1>
+    fn allocate_zeroed<'_0_1> = {impl Allocator for Global}::allocate_zeroed<'_0_1>
+    fn deallocate<'_0_1> = {impl Allocator for Global}::deallocate<'_0_1>
+    fn grow<'_0_1> = {impl Allocator for Global}::grow<'_0_1>
+    fn grow_zeroed<'_0_1> = {impl Allocator for Global}::grow_zeroed<'_0_1>
+    fn shrink<'_0_1> = {impl Allocator for Global}::shrink<'_0_1>
+    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = alloc::alloc::{impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
     vtable: {impl Allocator for Global}::{vtable}
 }
 
@@ -4136,7 +4136,7 @@ where
     [@TraitClause2]: Allocator<A>,
 {
     parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
-    fn drop<'_0> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn drop<'_0_1> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     fn drop_in_place = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
 }

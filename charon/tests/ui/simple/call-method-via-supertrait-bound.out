@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
@@ -59,7 +59,7 @@ trait ImpliesOtherTrait<Self>
 trait HasMethod<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn method<'_0> = test_crate::HasMethod::method<'_0_0, Self>[Self]
+    fn method<'_0_1> = test_crate::HasMethod::method<'_0_1, Self>[Self]
     vtable: test_crate::HasMethod::{vtable}
 }
 
@@ -88,7 +88,7 @@ where
     [@TraitClause1]: OtherTrait<T>,
 {
     parent_clause0 = @TraitClause0::parent_clause0
-    fn method<'_0> = {impl HasMethod for T}::method<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn method<'_0_1> = {impl HasMethod for T}::method<'_0_1, T>[@TraitClause0, @TraitClause1]
     vtable: {impl HasMethod for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
