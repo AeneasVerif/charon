@@ -23,25 +23,25 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::array::{impl Index<I, Clause2_Output> for Array<T, const N : usize>}::index
-pub fn {impl Index<I, Clause2_Output> for Array<T, const N : usize>}::index<'_0, T, I, Clause2_Output, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (Clause2_Output)
+// Full name: core::array::{impl Index<I, Clause2_Output> for Array<T, N>}::index
+pub fn {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_0, T, I, Clause2_Output, const N : usize>(@1: &'_0 (Array<T, N>), @2: I) -> &'_0 (Clause2_Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Index<Slice<T>, I, Clause2_Output>,
 
-// Full name: core::array::{impl Index<I, Clause2_Output> for Array<T, const N : usize>}
-impl<T, I, Clause2_Output, const N : usize> Index<I, Clause2_Output> for Array<T, const N : usize>
+// Full name: core::array::{impl Index<I, Clause2_Output> for Array<T, N>}
+impl<T, I, Clause2_Output, const N : usize> Index<I, Clause2_Output> for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Index<Slice<T>, I, Clause2_Output>,
 {
-    parent_clause0 = MetaSized<Array<T, const N : usize>>
+    parent_clause0 = MetaSized<Array<T, N>>
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause2
-    fn index<'_0> = {impl Index<I, Clause2_Output> for Array<T, const N : usize>}::index<'_0_0, T, I, Clause2_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I, Clause2_Output> for Array<T, const N : usize>}::{vtable}<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_0_0, T, I, Clause2_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Index<I, Clause2_Output> for Array<T, N>}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::ops::index::IndexMut
@@ -55,25 +55,25 @@ pub trait IndexMut<Self, Idx, Self_Clause1_Output>
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self_Clause1_Output>
 }
 
-// Full name: core::array::{impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut
-pub fn {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_0, T, I, Clause2_Clause1_Output, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (Clause2_Clause1_Output)
+// Full name: core::array::{impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut
+pub fn {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_0, T, I, Clause2_Clause1_Output, const N : usize>(@1: &'_0 mut (Array<T, N>), @2: I) -> &'_0 mut (Clause2_Clause1_Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: IndexMut<Slice<T>, I, Clause2_Clause1_Output>,
 
-// Full name: core::array::{impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}
-impl<T, I, Clause2_Clause1_Output, const N : usize> IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>
+// Full name: core::array::{impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}
+impl<T, I, Clause2_Clause1_Output, const N : usize> IndexMut<I, Clause2_Clause1_Output> for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: IndexMut<Slice<T>, I, Clause2_Clause1_Output>,
 {
-    parent_clause0 = MetaSized<Array<T, const N : usize>>
-    parent_clause1 = {impl Index<I, Clause2_Output> for Array<T, const N : usize>}<T, I, Clause2_Clause1_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause1]
+    parent_clause0 = MetaSized<Array<T, N>>
+    parent_clause1 = {impl Index<I, Clause2_Output> for Array<T, N>}<T, I, Clause2_Clause1_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause1]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_0_0, T, I, Clause2_Clause1_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::{vtable}<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index_mut<'_0> = {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_0_0, T, I, Clause2_Clause1_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::ops::drop::Drop
@@ -687,7 +687,7 @@ pub fn array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize,
     @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := {impl Index<I, Clause2_Output> for Array<T, const N : usize>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5) with_metadata(copy (@5.metadata))
@@ -725,7 +725,7 @@ pub fn array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @2: usize
     @8 := Range { start: move (@9), end: move (@10) }
     storage_dead(@10)
     storage_dead(@9)
-    @6 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@7), move (@8))
+    @6 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6) with_metadata(copy (@6.metadata))
@@ -1431,7 +1431,7 @@ pub fn range_all()
     @6 := &mut x@1
     storage_live(@7)
     @7 := Range { start: const (1 : usize), end: const (3 : usize) }
-    @5 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, const N : usize>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 4 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 4 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &mut *(@5) with_metadata(copy (@5.metadata))
@@ -1821,7 +1821,7 @@ pub fn f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 
     @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := {impl Index<I, Clause2_Output> for Array<T, const N : usize>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5) with_metadata(copy (@5.metadata))

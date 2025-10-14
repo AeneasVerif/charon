@@ -76,23 +76,23 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-// Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from
-pub fn {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from<'_0, T, const N : usize>(@1: &'_0 (Slice<T>)) -> Result<Array<T, const N : usize>, TryFromSliceError>[Sized<Array<T, const N : usize>>, Sized<TryFromSliceError>]
+// Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from
+pub fn {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from<'_0, T, const N : usize>(@1: &'_0 (Slice<T>)) -> Result<Array<T, N>, TryFromSliceError>[Sized<Array<T, N>>, Sized<TryFromSliceError>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 
-// Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}
-impl<'_0, T, const N : usize> TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>
+// Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}
+impl<'_0, T, const N : usize> TryFrom<&'_0 (Slice<T>)> for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = Sized<Array<T, const N : usize>>
+    parent_clause0 = Sized<Array<T, N>>
     parent_clause1 = Sized<&'_ (Slice<T>)>
     parent_clause2 = Sized<TryFromSliceError>
     type Error = TryFromSliceError
-    fn try_from = {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}::try_from<'_0, T, const N : usize>[@TraitClause0, @TraitClause1]
+    fn try_from = {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from<'_0, T, N>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
@@ -204,7 +204,7 @@ pub fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
     storage_live(@3)
     storage_live(@4)
     @4 := &*(s@1) with_metadata(copy (s@1.metadata))
-    @3 := {impl TryInto<U> for T}::try_into<&'_ (Slice<u8>), Array<u8, 4 : usize>>[Sized<&'_ (Slice<u8>)>, Sized<Array<u8, 4 : usize>>, {impl TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}<'_, u8, 4 : usize>[Sized<u8>, {impl Copy for u8}]](move (@4))
+    @3 := {impl TryInto<U> for T}::try_into<&'_ (Slice<u8>), Array<u8, 4 : usize>>[Sized<&'_ (Slice<u8>)>, Sized<Array<u8, 4 : usize>>, {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}<'_, u8, 4 : usize>[Sized<u8>, {impl Copy for u8}]](move (@4))
     storage_dead(@4)
     _array@2 := unwrap<Array<u8, 4 : usize>, TryFromSliceError>[Sized<Array<u8, 4 : usize>>, Sized<TryFromSliceError>, {impl Debug for TryFromSliceError}](move (@3))
     storage_dead(@3)

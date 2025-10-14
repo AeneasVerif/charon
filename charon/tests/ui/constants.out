@@ -437,21 +437,21 @@ pub struct V<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 {
-  x: Array<T, const N : usize>,
+  x: Array<T, N>,
 }
 
-// Full name: test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN
+// Full name: test_crate::{V<T, N>[@TraitClause0]}::LEN
 pub fn LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
 
-    @0 := const (const N : usize)
+    @0 := const (N)
     return
 }
 
-// Full name: test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN
+// Full name: test_crate::{V<T, N>[@TraitClause0]}::LEN
 pub const LEN<T, const N : usize>: usize
 where
     [@TraitClause0]: Sized<T>,
@@ -464,7 +464,7 @@ where
 {
     let @0: usize; // return
 
-    @0 := copy (LEN<T, const N : usize>[@TraitClause0])
+    @0 := copy (LEN<T, N>[@TraitClause0])
     return
 }
 

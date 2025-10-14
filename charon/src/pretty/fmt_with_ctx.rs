@@ -320,11 +320,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.to_string()))
+        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.name.clone()))
     }
 }
 
-impl_display_via_ctx!(ConstGenericParam);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "const {} : {}", self.name, self.ty)
@@ -588,8 +587,8 @@ impl GenericParams {
         C: AstFormatter,
     {
         let regions = self.regions.iter().map(|x| x.with_ctx(ctx));
-        let types = self.types.iter();
-        let const_generics = self.const_generics.iter();
+        let types = self.types.iter().map(|x| x.with_ctx(ctx));
+        let const_generics = self.const_generics.iter().map(|x| x.with_ctx(ctx));
         regions.map(Either::Left).chain(
             types
                 .map(Either::Left)
@@ -1188,7 +1187,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionDbVar {
     }
 }
 
-impl_display_via_ctx!(RegionParam);
 impl<C: AstFormatter> FmtWithCtx<C> for RegionParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.name {
@@ -1861,7 +1859,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TypeDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ctx.format_bound_var(f, *self, "@Type", |v| Some(v.to_string()))
+        ctx.format_bound_var(f, *self, "@Type", |v| Some(v.name.clone()))
     }
 }
 
@@ -1944,7 +1942,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     }
 }
 
-impl_display_via_ctx!(TypeParam);
 impl<C: AstFormatter> FmtWithCtx<C> for TypeParam {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)

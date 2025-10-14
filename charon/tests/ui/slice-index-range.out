@@ -24,26 +24,26 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}::index
-pub fn {impl Index<I> for Array<T, const N : usize>}::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (@TraitClause2::Output)
+// Full name: core::array::{impl Index<I> for Array<T, N>}::index
+pub fn {impl Index<I> for Array<T, N>}::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, N>), @2: I) -> &'_0 (@TraitClause2::Output)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Index<Slice<T>, I>,
 
-// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}
-impl<T, I, const N : usize> Index<I> for Array<T, const N : usize>
+// Full name: core::array::{impl Index<I> for Array<T, N>}
+impl<T, I, const N : usize> Index<I> for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Index<Slice<T>, I>,
 {
-    parent_clause0 = MetaSized<Array<T, const N : usize>>
+    parent_clause0 = MetaSized<Array<T, N>>
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause2
     type Output = @TraitClause2::Output
-    fn index<'_0> = {impl Index<I> for Array<T, const N : usize>}::index<'_0_0, T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I> for Array<T, const N : usize>}::{vtable}<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I> for Array<T, N>}::index<'_0_0, T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Index<I> for Array<T, N>}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::fmt::Arguments
@@ -808,7 +808,7 @@ fn main()
     @4 := &array@1
     storage_live(@5)
     @5 := Range { start: const (2 : usize), end: const (5 : usize) }
-    @3 := {impl Index<I> for Array<T, const N : usize>}::index<'_, i32, Range<usize>[Sized<usize>], 6 : usize>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I> for Slice<T>}<i32, Range<usize>[Sized<usize>]>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}<i32>[Sized<i32>]]](move (@4), move (@5))
+    @3 := {impl Index<I> for Array<T, N>}::index<'_, i32, Range<usize>[Sized<usize>], 6 : usize>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I> for Slice<T>}<i32, Range<usize>[Sized<usize>]>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}<i32>[Sized<i32>]]](move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)
     slice@2 := &*(@3) with_metadata(copy (@3.metadata))

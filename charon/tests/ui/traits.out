@@ -777,14 +777,14 @@ pub trait WithConstTy<Self, const LEN : usize>
     const LEN2 : usize
     type V
     type W
-    fn f<'_0, '_1> = test_crate::WithConstTy::f<'_0_0, '_0_1, Self, const LEN : usize>[Self]
+    fn f<'_0, '_1> = test_crate::WithConstTy::f<'_0_0, '_0_1, Self, LEN>[Self]
     non-dyn-compatible
 }
 
 // Full name: test_crate::WithConstTy::LEN2
 pub fn LEN2<Self, const LEN : usize>() -> usize
 where
-    [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
+    [@TraitClause0]: WithConstTy<Self, LEN>,
 {
     let @0: usize; // return
 
@@ -795,12 +795,12 @@ where
 // Full name: test_crate::WithConstTy::LEN2
 pub const LEN2<Self, const LEN : usize>: usize
 where
-    [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
+    [@TraitClause0]: WithConstTy<Self, LEN>,
  = LEN2()
 
-pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 (Array<u8, const LEN : usize>))
+pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 (Array<u8, LEN>))
 where
-    [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
+    [@TraitClause0]: WithConstTy<Self, LEN>,
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
 pub fn LEN1() -> usize
@@ -844,7 +844,7 @@ impl WithConstTy<32 : usize> for bool {
 pub fn use_with_const_ty1<H, const LEN : usize>() -> usize
 where
     [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: WithConstTy<H, const LEN : usize>,
+    [@TraitClause1]: WithConstTy<H, LEN>,
 {
     let @0: usize; // return
 
@@ -856,7 +856,7 @@ where
 pub fn use_with_const_ty2<H, const LEN : usize>(@1: @TraitClause1::W)
 where
     [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: WithConstTy<H, const LEN : usize>,
+    [@TraitClause1]: WithConstTy<H, LEN>,
 {
     let @0: (); // return
     let @1: @TraitClause1::W; // arg #1
@@ -871,7 +871,7 @@ where
 pub fn use_with_const_ty3<H, const LEN : usize>(@1: @TraitClause1::W) -> u64
 where
     [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: WithConstTy<H, const LEN : usize>,
+    [@TraitClause1]: WithConstTy<H, LEN>,
 {
     let @0: u64; // return
     let x@1: @TraitClause1::W; // arg #1
@@ -1217,30 +1217,30 @@ pub trait Trait<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Trait for Array<T, const N : usize>}::LEN
-pub fn {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>() -> usize
+// Full name: test_crate::{impl Trait for Array<T, N>}::LEN
+pub fn {impl Trait for Array<T, N>}::LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
 
-    @0 := const (const N : usize)
+    @0 := const (N)
     return
 }
 
-// Full name: test_crate::{impl Trait for Array<T, const N : usize>}::LEN
-pub const {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>: usize
+// Full name: test_crate::{impl Trait for Array<T, N>}::LEN
+pub const {impl Trait for Array<T, N>}::LEN<T, const N : usize>: usize
 where
     [@TraitClause0]: Sized<T>,
- = {impl Trait for Array<T, const N : usize>}::LEN()
+ = {impl Trait for Array<T, N>}::LEN()
 
-// Full name: test_crate::{impl Trait for Array<T, const N : usize>}
-impl<T, const N : usize> Trait for Array<T, const N : usize>
+// Full name: test_crate::{impl Trait for Array<T, N>}
+impl<T, const N : usize> Trait for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Array<T, const N : usize>>
-    const LEN = {impl Trait for Array<T, const N : usize>}::LEN<T, const N : usize>[@TraitClause0]
+    parent_clause0 = MetaSized<Array<T, N>>
+    const LEN = {impl Trait for Array<T, N>}::LEN<T, N>[@TraitClause0]
     non-dyn-compatible
 }
 

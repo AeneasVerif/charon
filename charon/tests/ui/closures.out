@@ -44,8 +44,8 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
-// Full name: core::array::{Array<T, const N : usize>}::map
-pub fn map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
+// Full name: core::array::{Array<T, N>}::map
+pub fn map<T, F, U, const N : usize>(@1: Array<T, N>, @2: F) -> Array<U, N>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,

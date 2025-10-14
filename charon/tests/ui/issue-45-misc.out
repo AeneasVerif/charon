@@ -45,7 +45,7 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-pub fn core::array::{Array<T, const N : usize>}::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
+pub fn core::array::{Array<T, N>}::map<T, F, U, const N : usize>(@1: Array<T, N>, @2: F) -> Array<U, N>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -614,18 +614,18 @@ pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
     @2 := copy (x@1)
     storage_live(@3)
     @3 := closure {  }
-    @0 := core::array::{Array<T, const N : usize>}::map<i32, closure, i32, 256 : usize>[Sized<i32>, Sized<closure>, Sized<i32>, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
+    @0 := core::array::{Array<T, N>}::map<i32, closure, i32, 256 : usize>[Sized<i32>, Sized<closure>, Sized<i32>, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
 }
 
 // Full name: test_crate::array
-pub fn array<const LEN : usize>() -> Array<u8, const LEN : usize>
+pub fn array<const LEN : usize>() -> Array<u8, LEN>
 {
-    let @0: Array<u8, const LEN : usize>; // return
+    let @0: Array<u8, LEN>; // return
 
-    @0 := @ArrayRepeat<'_, u8, const LEN : usize>(const (0 : u8))
+    @0 := @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
     return
 }
 
