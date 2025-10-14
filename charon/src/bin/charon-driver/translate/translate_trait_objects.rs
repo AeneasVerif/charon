@@ -756,16 +756,40 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Build a reference to `std::ptr::drop_in_place<T>`.
-        let drop_in_place: hax::ItemRef = {
-            let s = self.hax_state_with_id();
-            let drop_in_place = self.tcx.lang_items().drop_in_place_fn().unwrap();
-            let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
-            let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-            hax::ItemRef::translate(s, drop_in_place, generics)
+        // let drop_in_place: hax::ItemRef = {
+        //     // TODO: use the method instead
+        //     let s = self.hax_state_with_id();
+        //     let drop_in_place = self.tcx.lang_items().drop_in_place_fn().unwrap();
+        //     let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+        //     let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
+        //     hax::ItemRef::translate(s, drop_in_place, generics)
+        // };
+        // let fn_ptr = self
+        //     .translate_fn_ptr(span, &drop_in_place, TransItemSourceKind::Fun)?
+        //     .erase();
+        let fn_ptr = {
+            // Build a reference to `impl Drop for T`.
+            let drop_trait = self.tcx.lang_items().drop_trait().unwrap();
+            let drop_impl_expr: hax::ImplExpr = {
+                let s = self.hax_state_with_id();
+                let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+                let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
+                let drop_tref =
+                    rustc_middle::ty::TraitRef::new_from_args(self.tcx, drop_trait, generics);
+                hax::solve_trait(s, rustc_middle::ty::Binder::dummy(drop_tref))
+            };
+            let drop_tref = self.translate_trait_impl_expr(span, &drop_impl_expr)?;
+            let method_id = self.register_item(
+                span,
+                drop_impl_expr.r#trait.hax_skip_binder_ref(),
+                TransItemSourceKind::DropInPlaceMethod(None),
+            );
+            let item_name = TraitItemName("drop_in_place".to_string());
+            FnPtr::new(
+                FnPtrKind::Trait(drop_tref, item_name, method_id),
+                GenericArgs::empty(),
+            )
         };
-        let fn_ptr = self
-            .translate_fn_ptr(span, &drop_in_place, TransItemSourceKind::Fun)?
-            .erase();
         mk_field(ConstantExprKind::FnPtr(fn_ptr));
 
         for item in items {

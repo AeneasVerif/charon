@@ -83,9 +83,6 @@ pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
-#[lang_item("drop_in_place")]
-pub unsafe fn core::ptr::drop_in_place<T>(@1: *mut T)
-
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -208,7 +205,7 @@ fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
     size@1 := size_of<String>
     storage_live(align@2)
     align@2 := align_of<String>
-    ret@0 := core::fmt::Display::{vtable} { size: move (size@1), align: move (align@2), drop: const (core::ptr::drop_in_place<String>), method_fmt: const ({vtable_method}<'_, '_, '_>) }
+    ret@0 := core::fmt::Display::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Drop for String}::drop_in_place), method_fmt: const ({vtable_method}<'_, '_, '_>) }
     return
 }
 
