@@ -358,10 +358,7 @@ impl TryFrom<ItemRef<ItemId>> for FnPtr {
     type Error = ();
     fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
         let id: FunId = item.id.try_into()?;
-        Ok(FnPtr {
-            kind: Box::new(id.into()),
-            generics: item.generics,
-        })
+        Ok(FnPtr::new(id.into(), item.generics))
     }
 }
 
@@ -552,10 +549,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
-        Ok(bound_generics.map(|generics| FnPtr {
-            kind: Box::new(fun_id),
-            generics: Box::new(generics),
-        }))
+        Ok(bound_generics.map(|generics| FnPtr::new(fun_id, generics)))
     }
 
     pub(crate) fn translate_global_decl_ref(

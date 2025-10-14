@@ -455,13 +455,13 @@ impl ItemTransCtx<'_, '_> {
                 let impl_ref = self.translate_closure_impl_ref(span, args, closure_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
                 // TODO: can we ask hax for the trait ref?
-                let fn_op = FnOperand::Regular(FnPtr {
-                    kind: Box::new(fun_id.into()),
-                    generics: Box::new(impl_ref.generics.concat(&GenericArgs {
+                let fn_op = FnOperand::Regular(FnPtr::new(
+                    fun_id.into(),
+                    impl_ref.generics.concat(&GenericArgs {
                         regions: vec![Region::Erased].into(),
                         ..GenericArgs::empty()
-                    })),
-                });
+                    }),
+                ));
 
                 let mut builder = BodyBuilder::new(span, 2);
 
@@ -686,10 +686,7 @@ impl ItemTransCtx<'_, '_> {
                 TransItemSourceKind::ClosureMethod(ClosureKind::FnOnce),
             );
             let impl_ref = self.translate_closure_impl_ref(span, closure, ClosureKind::FnOnce)?;
-            let fn_op = FnOperand::Regular(FnPtr {
-                kind: Box::new(fun_id.into()),
-                generics: impl_ref.generics.clone(),
-            });
+            let fn_op = FnOperand::Regular(FnPtr::new(fun_id.into(), impl_ref.generics.clone()));
 
             let mut builder = BodyBuilder::new(span, signature.inputs.len());
 

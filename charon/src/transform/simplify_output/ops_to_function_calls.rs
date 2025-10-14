@@ -47,12 +47,8 @@ fn transform_st(s: &mut Statement) {
                     tref1.generics.const_generics.clone(),
                     [].into(),
                 );
-                let func = FnOperand::Regular(FnPtr {
-                    kind: Box::new(func),
-                    generics: Box::new(generics),
-                });
                 s.kind = StatementKind::Call(Call {
-                    func,
+                    func: FnOperand::Regular(FnPtr::new(func, generics)),
                     args: vec![op.clone()],
                     dest: p.clone(),
                 });
@@ -70,12 +66,8 @@ fn transform_st(s: &mut Statement) {
                 [cg.clone()].into(),
                 [].into(),
             );
-            let func = FnOperand::Regular(FnPtr {
-                kind: Box::new(func),
-                generics: Box::new(generics),
-            });
             s.kind = StatementKind::Call(Call {
-                func,
+                func: FnOperand::Regular(FnPtr::new(func, generics)),
                 args: vec![op.clone()],
                 dest: p.clone(),
             });
@@ -91,12 +83,8 @@ fn transform_st(s: &mut Statement) {
                 [].into(),
             );
 
-            let func = FnOperand::Regular(FnPtr {
-                kind: Box::new(func),
-                generics: Box::new(generics),
-            });
             s.kind = StatementKind::Call(Call {
-                func,
+                func: FnOperand::Regular(FnPtr::new(func, generics)),
                 args: ops.clone(),
                 dest: p.clone(),
             });

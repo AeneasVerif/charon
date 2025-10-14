@@ -895,12 +895,9 @@ impl ItemTransCtx<'_, '_> {
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
         let fun_id = self.register_item(span, &impl_func_def.this(), TransItemSourceKind::Fun);
-        let generics = Box::new(self.outermost_binder().params.identity_args());
+        let generics = self.outermost_binder().params.identity_args();
         builder.call(Call {
-            func: FnOperand::Regular(FnPtr {
-                kind: Box::new(FnPtrKind::Fun(fun_id)),
-                generics,
-            }),
+            func: FnOperand::Regular(FnPtr::new(FnPtrKind::Fun(fun_id), generics)),
             args: method_args
                 .into_iter()
                 .map(|arg| Operand::Move(arg))
