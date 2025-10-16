@@ -23,6 +23,7 @@ pub trait AstFormatter: Sized {
 
     fn get_crate(&self) -> Option<&TranslatedCrate>;
 
+    fn no_generics<'a>(&'a self) -> Self::Reborrow<'a>;
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
@@ -120,6 +121,12 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         self.translated
     }
 
+    fn no_generics<'a>(&'a self) -> Self::Reborrow<'a> {
+        FmtCtx {
+            generics: BindingStack::empty(),
+            ..self.reborrow()
+        }
+    }
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
         FmtCtx {
             generics: BindingStack::new(Cow::Borrowed(generics)),

@@ -960,6 +960,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for LocalId {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Name {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Reset generics to avoid names being displayed differently depending on the current
+        // binding level.
+        let ctx = &ctx.no_generics();
         let name = self.name.iter().map(|x| x.with_ctx(ctx)).format("::");
         write!(f, "{}", name)
     }
