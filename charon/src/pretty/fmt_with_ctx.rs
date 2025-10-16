@@ -1014,8 +1014,31 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
             PathElem::Impl(impl_elem) => {
                 write!(f, "{}", impl_elem.with_ctx(ctx))
             }
-            PathElem::Monomorphized(args) => {
-                write!(f, "<{}>", args.fmt_explicits(ctx).format(", "))
+            PathElem::Instantiated(binder) => {
+                // Anonymize all parameters.
+                let underscore = "_".to_string();
+                let params = GenericParams {
+                    regions: binder.params.regions.map_ref(|x| RegionParam {
+                        name: Some(underscore.clone()),
+                        ..*x
+                    }),
+                    types: binder.params.types.map_ref(|x| TypeParam {
+                        name: underscore.clone(),
+                        ..*x
+                    }),
+                    const_generics: binder.params.const_generics.map_ref(|x| ConstGenericParam {
+                        name: underscore.clone(),
+                        ..*x
+                    }),
+                    trait_clauses: binder.params.trait_clauses.clone(),
+                    ..GenericParams::empty()
+                };
+                let ctx = &ctx.push_binder(Cow::Owned(params));
+                write!(
+                    f,
+                    "<{}>",
+                    binder.skip_binder.fmt_explicits(ctx).format(", ")
+                )
             }
         }
     }

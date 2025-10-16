@@ -1294,11 +1294,11 @@ and path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Impl", impl) ] ->
         let* impl = impl_elem_of_json ctx impl in
         Ok (PeImpl impl)
-    | `Assoc [ ("Monomorphized", monomorphized) ] ->
-        let* monomorphized =
-          box_of_json generic_args_of_json ctx monomorphized
+    | `Assoc [ ("Instantiated", instantiated) ] ->
+        let* instantiated =
+          box_of_json (binder_of_json generic_args_of_json) ctx instantiated
         in
-        Ok (PeMonomorphized monomorphized)
+        Ok (PeInstantiated instantiated)
     | _ -> Error "")
 
 and place_of_json (ctx : of_json_ctx) (js : json) : (place, string) result =

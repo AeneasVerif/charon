@@ -842,9 +842,10 @@ and name = (path_elem list[@visitors.opaque])
 and path_elem =
   | PeIdent of string * disambiguator
   | PeImpl of impl_elem
-  | PeMonomorphized of generic_args
-      (** This item was obtained by monomorphizing its parent with the given
-          args. *)
+  | PeInstantiated of generic_args binder
+      (** This item was obtained by instantiating its parent with the given
+          args. The binder binds the parameters of the new items. If the binder
+          binds nothing then this is a monomorphization. *)
 
 (** The metadata stored in a pointer. That's the information stored in pointers
     alongside their address. It's empty for [Sized] types, and interesting for

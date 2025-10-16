@@ -395,7 +395,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 &item_ref.generic_args,
                 &item_ref.impl_exprs,
             )?;
-            name.name.push(PathElem::Monomorphized(Box::new(args)));
+            name.name.push(PathElem::Instantiated(Box::new(Binder {
+                params: GenericParams::empty(),
+                skip_binder: args,
+                kind: BinderKind::Other,
+            })));
         }
         Ok(name)
     }
