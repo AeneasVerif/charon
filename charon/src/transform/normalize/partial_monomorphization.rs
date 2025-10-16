@@ -263,11 +263,11 @@ struct PartialMonomorphizer<'a> {
     /// Map of partial monomorphizations. The source item applied with the generic params gives the
     /// target item. The resulting partially-monomorphized item will have the binder params as
     /// generic params.
-    partial_mono_shapes: IndexMap<(TypeDeclId, MutabilityShape), TypeDeclId>,
+    partial_mono_shapes: IndexMap<(ItemId, MutabilityShape), ItemId>,
     /// Reverse of `partial_mono_shapes`.
-    reverse_shape_map: HashMap<TypeDeclId, (TypeDeclId, MutabilityShape)>,
-    // Record which entries in `partial_mono_shapes` have been created already.
-    instantiated_items: usize,
+    reverse_shape_map: HashMap<ItemId, (ItemId, MutabilityShape)>,
+    /// Items that need to be processed.
+    to_process: VecDeque<ItemId>,
 }
 
 impl<'a> PartialMonomorphizer<'a> {
@@ -296,25 +296,18 @@ impl<'a> PartialMonomorphizer<'a> {
             .all_items()
             .map(|item| (item.id(), item.generic_params().clone()))
             .collect();
+
+        // Enqueue all items to be processed.
+        let to_process = ctx.translated.all_ids().collect();
         PartialMonomorphizer {
             ctx,
             span: Span::dummy(),
             infected_types,
             generic_params,
+            to_process,
             partial_mono_shapes: IndexMap::default(),
             reverse_shape_map: Default::default(),
-            // TODO: use a single processing queue instead of this index
-            instantiated_items: 0,
         }
-    }
-
-    fn get_mutability_shape(
-        &self,
-        target: impl Into<ItemId>,
-        args: &GenericArgs,
-    ) -> Option<(MutabilityShape, GenericArgs)> {
-        let item = self.generic_params.get(&target.into())?;
-        Some(MutabilityShapeBuilder::compute_shape(self, item, args))
     }
 
     /// Whether this type is or contains a `&mut`. This assumes that we've already visited this
@@ -342,6 +335,48 @@ impl<'a> PartialMonomorphizer<'a> {
         }
     }
 
+    /// Given that `generics` apply to item `id`, if any of the generics is infected we generate a
+    /// reference to a new item obtained by partially instantiating item `id`. (That new item isn't
+    /// added immediately but is added to the `to_process` queue to be created later).
+    fn process_generics(&mut self, id: ItemId, generics: &GenericArgs) -> Option<DeclRef<ItemId>> {
+        if !generics.types.iter().any(|ty| self.is_infected(ty)) {
+            return None;
+        }
+
+        // If the type is already an instantiation, transform this reference into a reference to
+        // the original type so we don't instantiate the instantiation.
+        let (id, generics) = if let Some((base_id, shape)) = self.reverse_shape_map.get(&id) {
+            (*base_id, &shape.clone().apply(generics))
+        } else {
+            (id, generics)
+        };
+
+        // Split the args between the infected part and the non-infected part.
+        let item_params = self.generic_params.get(&id)?;
+        let (shape, shape_args) =
+            MutabilityShapeBuilder::compute_shape(self, item_params, generics);
+
+        // Create a new type id.
+        let new_params = shape.params.clone();
+        let key: (ItemId, MutabilityShape) = (id, shape);
+        let new_id = *self
+            .partial_mono_shapes
+            .entry(key.clone())
+            .or_insert_with(|| {
+                let new_id = self.ctx.translated.type_decls.reserve_slot();
+                self.infected_types.insert(new_id);
+                self.generic_params.insert(new_id.into(), new_params);
+                self.reverse_shape_map.insert(new_id.into(), key);
+                self.to_process.push_back(new_id.into());
+                new_id.into()
+            });
+
+        Some(DeclRef {
+            id: new_id,
+            generics: Box::new(shape_args),
+        })
+    }
+
     /// Traverse the item, replacing any type instantiations we don't want with references to
     /// soon-to-be-created partially-monomorphized types. This does not access the items in
     /// `self.translated`, which may be missing since we took `item` out for processing.
@@ -349,36 +384,32 @@ impl<'a> PartialMonomorphizer<'a> {
         let _ = item.drive_mut(self);
     }
 
-    /// In `process_item` we accumulated a list of items that must be partially instantiated. This
-    /// creates one of these required items by duplicating and substituting the existing one.
+    /// Creates the item corresponding to this id by instantiating the item it is based on.
     ///
     /// This accesses the items in `self.translated`, which must therefore all be there.
     /// That's why items are created outside of `process_item`.
-    pub fn create_pending_instantiation(&mut self) -> Option<ItemId> {
-        // Return `None` if `self.instantiated_items` is already at the end of the list.
-        let (&(orig_id, ref shape), &new_id) = self
-            .partial_mono_shapes
-            .get_index(self.instantiated_items)?;
-        self.instantiated_items += 1;
-
+    pub fn create_pending_instantiation(&mut self, new_id: ItemId) -> ItemByVal {
+        let (orig_id, shape) = &self.reverse_shape_map[&new_id];
         let mut decl = self
             .ctx
             .translated
-            .type_decls
-            .get(orig_id)?
+            .get_item(*orig_id)
+            .unwrap()
             .clone()
             .substitute(&shape.skip_binder);
-        decl.def_id = new_id;
-        decl.generics = shape.params.clone();
-        decl.item_meta.name = decl.item_meta.name.instantiate(shape.clone());
 
+        let mut decl_mut = decl.as_mut();
+        decl_mut.set_id(new_id);
+        *decl_mut.generic_params() = shape.params.clone();
+
+        let name_ref = &mut decl_mut.item_meta().name;
+        *name_ref = mem::take(name_ref).instantiate(shape.clone());
         self.ctx
             .translated
             .item_names
-            .insert(new_id.into(), decl.item_meta.name.clone());
-        self.ctx.translated.type_decls.set_slot(new_id, decl);
+            .insert(new_id, decl.as_ref().item_meta().name.clone());
 
-        Some(new_id.into())
+        decl
     }
 }
 
@@ -397,44 +428,10 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
     // TODO: any `Trait::method<&mut A>` requires monomorphizing all the instances of that method
     // just in case :>>>
     fn exit_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        let TypeId::Adt(id) = x.id else {
-            return;
-        };
-
-        if !x.generics.types.iter().any(|ty| self.is_infected(ty)) {
-            return;
-        }
-
-        // If the type is already an instantiation, transform this reference into a reference to
-        // the original type so we don't instantiate the instantiation.
-        let (id, generics) = if let Some((base_id, shape)) = self.reverse_shape_map.get(&id) {
-            (*base_id, &shape.clone().apply(&x.generics))
-        } else {
-            (id, &*x.generics)
-        };
-
-        // Split the args between the infected part and the non-infected part.
-        let Some((shape, shape_args)) = self.get_mutability_shape(id, generics) else {
-            return;
-        };
-
-        // Create a new type id.
-        let new_params = shape.params.clone();
-        let key: (TypeDeclId, MutabilityShape) = (id, shape);
-        let mut_shape_id = *self
-            .partial_mono_shapes
-            .entry(key.clone())
-            .or_insert_with(|| {
-                let new_id = self.ctx.translated.type_decls.reserve_slot();
-                self.infected_types.insert(new_id);
-                self.generic_params.insert(new_id.into(), new_params);
-                self.reverse_shape_map.insert(new_id, key);
-                new_id
-            });
-
-        *x = TypeDeclRef {
-            id: TypeId::Adt(mut_shape_id),
-            generics: Box::new(shape_args),
+        if let TypeId::Adt(id) = x.id
+            && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
+        {
+            *x = new_decl_ref.try_into().unwrap()
         }
     }
 }
@@ -447,25 +444,25 @@ impl TransformPass for Transform {
         }
         // TODO: test name matcher, also with methods
         let mut visitor = PartialMonomorphizer::new(ctx);
-        // Items to process. We only need to process a given item once.
-        let mut to_process: VecDeque<_> = visitor.ctx.translated.all_ids().collect();
-        while let Some(id) = to_process.pop_front() {
-            // Take the item out so we can modify it. Warning: don't look up other items in the
-            // meantime as this would break in recursive cases.
-            let Some(mut decl) = visitor.ctx.translated.remove_item(id) else {
-                continue;
+        while let Some(id) = visitor.to_process.pop_front() {
+            // Get the item corresponding to this id, either by creating it or by getting an
+            // existing one.
+            let mut decl = if visitor.reverse_shape_map.get(&id).is_some() {
+                // Create the required item by instantiating the item it's based on.
+                visitor.create_pending_instantiation(id)
+            } else {
+                // Take the item out so we can modify it. Warning: don't look up other items in the
+                // meantime as this would break in recursive cases.
+                match visitor.ctx.translated.remove_item(id) {
+                    Some(decl) => decl,
+                    None => continue,
+                }
             };
             // Visit the item, replacing type instantiations with references to soon-to-be-created
             // partially-monomorphized types.
             visitor.process_item(&mut decl.as_mut());
             // Put the item back.
             visitor.ctx.translated.set_item_slot(id, decl);
-
-            // Add the new items.
-            while let Some(new_id) = visitor.create_pending_instantiation() {
-                // Enqueue the item as this instantiation may trigger more instantiations.
-                to_process.push_back(new_id);
-            }
         }
     }
 }

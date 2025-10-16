@@ -322,16 +322,25 @@ impl<'ctx> ItemRef<'ctx> {
         }
     }
 
-    pub fn item_meta(&self) -> &'ctx ItemMeta {
-        match self {
-            ItemRef::Type(d) => &d.item_meta,
-            ItemRef::Fun(d) => &d.item_meta,
-            ItemRef::Global(d) => &d.item_meta,
-            ItemRef::TraitDecl(d) => &d.item_meta,
-            ItemRef::TraitImpl(d) => &d.item_meta,
+    pub fn clone(&self) -> ItemByVal {
+        match *self {
+            Self::Type(d) => ItemByVal::Type(d.clone()),
+            Self::Fun(d) => ItemByVal::Fun(d.clone()),
+            Self::Global(d) => ItemByVal::Global(d.clone()),
+            Self::TraitDecl(d) => ItemByVal::TraitDecl(d.clone()),
+            Self::TraitImpl(d) => ItemByVal::TraitImpl(d.clone()),
         }
     }
 
+    pub fn item_meta(&self) -> &'ctx ItemMeta {
+        match self {
+            Self::Type(d) => &d.item_meta,
+            Self::Fun(d) => &d.item_meta,
+            Self::Global(d) => &d.item_meta,
+            Self::TraitDecl(d) => &d.item_meta,
+            Self::TraitImpl(d) => &d.item_meta,
+        }
+    }
     /// The generic parameters of this item.
     pub fn generic_params(&self) -> &'ctx GenericParams {
         match self {
@@ -403,6 +412,26 @@ impl<'ctx> ItemRefMut<'ctx> {
         }
     }
 
+    pub fn set_id(&mut self, id: ItemId) {
+        match (self, id) {
+            (Self::Type(d), ItemId::Type(id)) => d.def_id = id,
+            (Self::Fun(d), ItemId::Fun(id)) => d.def_id = id,
+            (Self::Global(d), ItemId::Global(id)) => d.def_id = id,
+            (Self::TraitDecl(d), ItemId::TraitDecl(id)) => d.def_id = id,
+            (Self::TraitImpl(d), ItemId::TraitImpl(id)) => d.def_id = id,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn item_meta(&mut self) -> &mut ItemMeta {
+        match self {
+            Self::Type(d) => &mut d.item_meta,
+            Self::Fun(d) => &mut d.item_meta,
+            Self::Global(d) => &mut d.item_meta,
+            Self::TraitDecl(d) => &mut d.item_meta,
+            Self::TraitImpl(d) => &mut d.item_meta,
+        }
+    }
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {
