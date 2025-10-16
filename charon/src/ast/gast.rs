@@ -412,3 +412,45 @@ pub struct Assert {
     /// What kind of abort happens on assert failure.
     pub on_failure: AbortKind,
 }
+
+/// A generic `*DeclRef`-shaped struct, used when we're generic over the type of item.
+pub struct DeclRef<Id> {
+    pub id: Id,
+    pub generics: BoxedArgs,
+}
+
+// Implement `DeclRef<_>` -> `FooDeclRef` conversions.
+macro_rules! convert_item_ref {
+    ($item_ref_ty:ident($id:ident)) => {
+        impl TryFrom<DeclRef<ItemId>> for $item_ref_ty {
+            type Error = ();
+            fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+                Ok($item_ref_ty {
+                    id: item.id.try_into()?,
+                    generics: item.generics,
+                })
+            }
+        }
+        impl From<DeclRef<$id>> for $item_ref_ty {
+            fn from(item: DeclRef<$id>) -> Self {
+                $item_ref_ty {
+                    id: item.id,
+                    generics: item.generics,
+                }
+            }
+        }
+    };
+}
+convert_item_ref!(TypeDeclRef(TypeId));
+convert_item_ref!(FunDeclRef(FunDeclId));
+convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
+convert_item_ref!(GlobalDeclRef(GlobalDeclId));
+convert_item_ref!(TraitDeclRef(TraitDeclId));
+convert_item_ref!(TraitImplRef(TraitImplId));
+impl TryFrom<DeclRef<ItemId>> for FnPtr {
+    type Error = ();
+    fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+        let id: FunId = item.id.try_into()?;
+        Ok(FnPtr::new(id.into(), item.generics))
+    }
+}

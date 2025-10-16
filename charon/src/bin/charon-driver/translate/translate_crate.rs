@@ -331,47 +331,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
-pub struct ItemRef<Id> {
-    id: Id,
-    generics: BoxedArgs,
-}
-
-// Implement `ItemRef<_>` -> `FooDeclRef` conversions.
-macro_rules! convert_item_ref {
-    ($item_ref_ty:ident($id:ident)) => {
-        impl TryFrom<ItemRef<ItemId>> for $item_ref_ty {
-            type Error = ();
-            fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
-                Ok($item_ref_ty {
-                    id: item.id.try_into()?,
-                    generics: item.generics,
-                })
-            }
-        }
-        impl From<ItemRef<$id>> for $item_ref_ty {
-            fn from(item: ItemRef<$id>) -> Self {
-                $item_ref_ty {
-                    id: item.id,
-                    generics: item.generics,
-                }
-            }
-        }
-    };
-}
-convert_item_ref!(TypeDeclRef(TypeId));
-convert_item_ref!(FunDeclRef(FunDeclId));
-convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
-convert_item_ref!(GlobalDeclRef(GlobalDeclId));
-convert_item_ref!(TraitDeclRef(TraitDeclId));
-convert_item_ref!(TraitImplRef(TraitImplId));
-impl TryFrom<ItemRef<ItemId>> for FnPtr {
-    type Error = ();
-    fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
-        let id: FunId = item.id.try_into()?;
-        Ok(FnPtr::new(id.into(), item.generics))
-    }
-}
-
 // Id and item reference registration.
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
@@ -443,7 +402,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and maybe enqueue it for translation.
-    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<ItemRef<ItemId>>>(
+    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
         enqueue: bool,
@@ -456,7 +415,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
         }?;
-        let item = ItemRef {
+        let item = DeclRef {
             id,
             generics: Box::new(generics),
         };
@@ -468,7 +427,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Note: for `FnPtr`s use `translate_fn_ptr` instead, as this handles late-bound variables
     /// correctly. For `TypeDeclRef`s use `translate_type_decl_ref` instead, as this correctly
     /// recognizes built-in types.
-    pub(crate) fn translate_item<T: TryFrom<ItemRef<ItemId>>>(
+    pub(crate) fn translate_item<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -479,7 +438,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Register this item and don't enqueue it for translation.
     #[expect(dead_code)]
-    pub(crate) fn translate_item_no_enqueue<T: TryFrom<ItemRef<ItemId>>>(
+    pub(crate) fn translate_item_no_enqueue<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
