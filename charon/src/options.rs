@@ -315,6 +315,10 @@ impl CliOpts {
                 Preset::Tests => {
                     self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
+                    self.rustc_args
+                        .push("-Zcrate-attr=feature(register_tool)".to_owned());
+                    self.rustc_args
+                        .push("-Zcrate-attr=register_tool(charon)".to_owned());
                     self.exclude.push("core::fmt::Formatter".to_owned());
                 }
             }

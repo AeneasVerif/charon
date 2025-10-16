@@ -1,3 +1,5 @@
+//@ no-default-options
+//@ charon-args=--hide-allocator
 #![feature(register_tool)]
 #![register_tool(pattern)]
 mod foo {
