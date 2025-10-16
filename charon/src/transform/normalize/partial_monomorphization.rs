@@ -20,6 +20,9 @@ use indexmap::IndexMap;
 
 use crate::ast::types_utils::TyVisitable;
 use crate::ast::visitor::{VisitWithBinderDepth, VisitorWithBinderDepth};
+use crate::formatter::IntoFormatter;
+use crate::pretty::FmtWithCtx;
+use crate::register_error;
 use crate::transform::ctx::TransformPass;
 use crate::{transform::TransformCtx, ullbc_ast::*};
 
@@ -323,8 +326,15 @@ impl<'a> PartialMonomorphizer<'a> {
                     tref.generics.types.iter().any(|ty| self.is_infected(ty))
                 }
             },
-            TyKind::DynTrait(_dyn_predicate) => false, // TODO
-            TyKind::FnDef(_region_binder) => false,    // TODO
+            TyKind::FnDef(_region_binder) => false, // TODO
+            TyKind::DynTrait(_) => {
+                register_error!(
+                    self.ctx,
+                    self.span,
+                    "`dyn Trait` is unsupported with `--monomorphize-mut`"
+                );
+                false
+            }
             TyKind::TypeVar(..)
             | TyKind::Literal(..)
             | TyKind::Never
@@ -345,8 +355,11 @@ impl<'a> PartialMonomorphizer<'a> {
 
         // If the type is already an instantiation, transform this reference into a reference to
         // the original type so we don't instantiate the instantiation.
-        let (id, generics) = if let Some((base_id, shape)) = self.reverse_shape_map.get(&id) {
-            (*base_id, &shape.clone().apply(generics))
+        let mut new_generics;
+        let (id, generics) = if let Some(&(base_id, ref shape)) = self.reverse_shape_map.get(&id) {
+            new_generics = shape.clone().apply(generics);
+            let _ = self.visit(&mut new_generics); // New instantiation may require cleanup.
+            (base_id, &new_generics)
         } else {
             (id, generics)
         };
@@ -363,14 +376,31 @@ impl<'a> PartialMonomorphizer<'a> {
             .partial_mono_shapes
             .entry(key.clone())
             .or_insert_with(|| {
-                let new_id = self.ctx.translated.type_decls.reserve_slot();
-                self.infected_types.insert(new_id);
-                self.generic_params.insert(new_id.into(), new_params);
-                self.reverse_shape_map.insert(new_id.into(), key);
-                self.to_process.push_back(new_id.into());
-                new_id.into()
+                let new_id = match id {
+                    ItemId::Type(_) => {
+                        let new_id = self.ctx.translated.type_decls.reserve_slot();
+                        self.infected_types.insert(new_id);
+                        new_id.into()
+                    }
+                    ItemId::Fun(_) => self.ctx.translated.fun_decls.reserve_slot().into(),
+                    ItemId::Global(_) => self.ctx.translated.global_decls.reserve_slot().into(),
+                    ItemId::TraitDecl(_) => self.ctx.translated.trait_decls.reserve_slot().into(),
+                    ItemId::TraitImpl(_) => self.ctx.translated.trait_impls.reserve_slot().into(),
+                };
+                self.generic_params.insert(new_id, new_params);
+                self.reverse_shape_map.insert(new_id, key);
+                self.to_process.push_back(new_id);
+                new_id
             });
 
+        let fmt_ctx = self.ctx.into_fmt();
+        trace!(
+            "processing {}{}\n output: {}{}",
+            id.with_ctx(&fmt_ctx),
+            generics.with_ctx(&fmt_ctx),
+            new_id.with_ctx(&fmt_ctx),
+            shape_args.with_ctx(&fmt_ctx),
+        );
         Some(DeclRef {
             id: new_id,
             generics: Box::new(shape_args),
@@ -424,13 +454,39 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
         VisitWithSpan::new(self).visit(x)
     }
 
-    // TODO: also partial mono `FnPtr`s, tdecls, timpls, basically every item ref.
-    // TODO: any `Trait::method<&mut A>` requires monomorphizing all the instances of that method
-    // just in case :>>>
     fn exit_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
         if let TypeId::Adt(id) = x.id
             && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
         {
+            *x = new_decl_ref.try_into().unwrap()
+        }
+    }
+    fn exit_fn_ptr(&mut self, x: &mut FnPtr) {
+        // TODO: methods. any `Trait::method<&mut A>` requires monomorphizing all the instances of
+        // that method just in case :>>>
+        if let FnPtrKind::Fun(FunId::Regular(id)) = *x.kind
+            && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
+        {
+            *x = new_decl_ref.try_into().unwrap()
+        }
+    }
+    fn exit_fun_decl_ref(&mut self, x: &mut FunDeclRef) {
+        if let Some(new_decl_ref) = self.process_generics(x.id.into(), &x.generics) {
+            *x = new_decl_ref.try_into().unwrap()
+        }
+    }
+    fn exit_global_decl_ref(&mut self, x: &mut GlobalDeclRef) {
+        if let Some(new_decl_ref) = self.process_generics(x.id.into(), &x.generics) {
+            *x = new_decl_ref.try_into().unwrap()
+        }
+    }
+    fn exit_trait_decl_ref(&mut self, x: &mut TraitDeclRef) {
+        if let Some(new_decl_ref) = self.process_generics(x.id.into(), &x.generics) {
+            *x = new_decl_ref.try_into().unwrap()
+        }
+    }
+    fn exit_trait_impl_ref(&mut self, x: &mut TraitImplRef) {
+        if let Some(new_decl_ref) = self.process_generics(x.id.into(), &x.generics) {
             *x = new_decl_ref.try_into().unwrap()
         }
     }
