@@ -138,21 +138,21 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-// Full name: test_crate::Usize
+// Full name: type_alias::Usize
 pub type Usize = usize
 
-// Full name: test_crate::Generic
+// Full name: type_alias::Generic
 pub type Generic<'a, T>
 where
     [@TraitClause0]: Sized<T>, = &'a (T)
 
-// Full name: test_crate::Generic2
+// Full name: type_alias::Generic2
 pub type Generic2<'a, T>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>, = Cow<'a, Slice<T>>[MetaSized<Slice<T>>, {impl ToOwned for Slice<T>}<T>[@TraitClause0, @TraitClause1]]
 
-// Full name: test_crate::GenericWithoutBound
+// Full name: type_alias::GenericWithoutBound
 pub type GenericWithoutBound<'a, T>
 where
     [@TraitClause0]: Sized<T>, = Cow<'a, Slice<T>>[MetaSized<Slice<T>>, UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)]

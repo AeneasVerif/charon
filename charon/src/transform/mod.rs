@@ -101,10 +101,10 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration
     // items if they're not used. This simplifies the graph of dependencies between definitions.
     NonBody(&simplify_output::remove_unused_self_clause::Transform),
-    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
-    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
-    // some sources of mutual recursion.
-    UnstructuredBody(&normalize::skip_trait_refs_when_known::Transform),
+    // # Micro-pass: whenever we reference a trait method on a known type, refer to the method
+    // `FunDecl` directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
+    // remove some sources of mutual recursion.
+    NonBody(&normalize::skip_trait_refs_when_known::Transform),
     // Transform dyn trait method calls to vtable function pointer calls
     // This should be early to handle the calls before other transformations
     UnstructuredBody(&normalize::transform_dyn_trait_calls::Transform),
