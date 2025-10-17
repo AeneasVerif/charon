@@ -205,11 +205,6 @@ fn type_layout() -> anyhow::Result<()> {
         .collect();
     let layouts_str = serde_json::to_string_pretty(&layouts)?;
 
-    let action = if std::env::var("IN_CI").as_deref() == Ok("1") {
-        Action::Verify
-    } else {
-        Action::Overwrite
-    };
-    compare_or_overwrite(action, layouts_str, &PathBuf::from("./tests/layout.json"))?;
+    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
     Ok(())
 }

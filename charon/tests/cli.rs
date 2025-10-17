@@ -66,12 +66,7 @@ fn charon_version() -> Result<()> {
 #[test]
 fn charon_help_output() -> Result<()> {
     charon(&["help"], ".", |stdout, _| {
-        let action = if std::env::var("IN_CI").as_deref() == Ok("1") {
-            Action::Verify
-        } else {
-            Action::Overwrite
-        };
-        compare_or_overwrite(action, stdout, &PathBuf::from("./tests/help-output.txt"))?;
+        compare_or_overwrite(stdout, &PathBuf::from("./tests/help-output.txt"))?;
         Ok(())
     })
 }

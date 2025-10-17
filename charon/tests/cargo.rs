@@ -6,8 +6,7 @@ use itertools::Itertools;
 use libtest_mimic::Trial;
 use std::{error::Error, ffi::OsStr, path::PathBuf, process::Command};
 
-use util::{Action, compare_or_overwrite};
-
+use util::compare_or_overwrite;
 mod util;
 
 static TESTS_DIR: &str = "tests/cargo";
@@ -29,7 +28,7 @@ struct Case {
     charon_args: Vec<String>,
 }
 
-fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
+fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     // Clean the cargo cache to avoid caching issues.
     Command::new("cargo")
         .arg("clean")
@@ -83,18 +82,12 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         }
         _ => {}
     }
-    compare_or_overwrite(action, output, &test_case.output_file)?;
+    compare_or_overwrite(output, &test_case.output_file)?;
 
     Ok(())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let action = if std::env::var("IN_CI").as_deref() == Ok("1") {
-        Action::Verify
-    } else {
-        Action::Overwrite
-    };
-
     let root: PathBuf = PathBuf::from(TESTS_DIR).canonicalize()?;
     let mktest = |name: &str, dir: PathBuf, charon_args: &[String], expect: Expect| {
         let charon_args = charon_args.to_vec();
@@ -106,7 +99,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 expect,
                 charon_args,
             };
-            perform_test(&case, action).map_err(|err| err.into())
+            perform_test(&case).map_err(|err| err.into())
         })
     };
     let tests = vec![
