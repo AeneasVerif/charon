@@ -339,7 +339,14 @@ impl<'a> PartialMonomorphizer<'a> {
                     tref.generics.types.iter().any(|ty| self.is_infected(ty))
                 }
             },
-            TyKind::FnDef(_region_binder) => false, // TODO
+            TyKind::FnDef(..) | TyKind::FnPtr(..) => {
+                register_error!(
+                    self.ctx,
+                    self.span,
+                    "function pointers are unsupported with `--monomorphize-mut`"
+                );
+                false
+            }
             TyKind::DynTrait(_) => {
                 register_error!(
                     self.ctx,
@@ -352,7 +359,6 @@ impl<'a> PartialMonomorphizer<'a> {
             | TyKind::Literal(..)
             | TyKind::Never
             | TyKind::TraitType(..)
-            | TyKind::FnPtr(..)
             | TyKind::PtrMetadata(..)
             | TyKind::Error(_) => false,
         }
