@@ -807,7 +807,7 @@ checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 [[package]]
 name = "hax-adt-into"
 version = "0.3.4"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#68926ebc7b2ad598935215dd8daa13ea420db05d"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#841323a40e0275976b8f6f5d02aac7940162899b"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -818,7 +818,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.3.4"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#68926ebc7b2ad598935215dd8daa13ea420db05d"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#841323a40e0275976b8f6f5d02aac7940162899b"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -835,7 +835,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.3.4"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#68926ebc7b2ad598935215dd8daa13ea420db05d"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#841323a40e0275976b8f6f5d02aac7940162899b"
 dependencies = [
  "hax-adt-into",
  "schemars",

@@ -594,7 +594,7 @@ pub fn translate<'tcx, 'ctx>(
     tcx: TyCtxt<'tcx>,
     sysroot: PathBuf,
 ) -> TransformCtx {
-    let hax_state = hax::state::State::new(
+    let mut hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
             inline_anon_consts: true,
@@ -604,6 +604,9 @@ pub fn translate<'tcx, 'ctx>(
             },
         },
     );
+    // This suppresses warnings when trait resolution fails. We don't need them since we emit our
+    // own.
+    hax_state.base.silence_resolution_errors = true;
 
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()
