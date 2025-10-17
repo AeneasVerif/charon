@@ -128,7 +128,7 @@ module List = struct
       (l2 : 'c list) : 'd list =
     match (l0, l1, l2) with
     | [], [], [] -> []
-    | a :: l0, b :: l1, c :: l3 -> f a b c :: map3 f l0 l1 l2
+    | a :: l0, b :: l1, c :: l2 -> f a b c :: map3 f l0 l1 l2
     | _ ->
         raise
           (Invalid_argument "List.combine3 expects lists of the same length")
@@ -137,7 +137,7 @@ module List = struct
       ('a * 'b * 'c) list =
     match (l0, l1, l2) with
     | [], [], [] -> []
-    | a :: l0, b :: l1, c :: l3 -> (a, b, c) :: combine3 l0 l1 l2
+    | a :: l0, b :: l1, c :: l2 -> (a, b, c) :: combine3 l0 l1 l2
     | _ ->
         raise
           (Invalid_argument "List.combine3 expects lists of the same length")
