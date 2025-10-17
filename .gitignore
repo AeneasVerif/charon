@@ -51,7 +51,6 @@ nohup.out
 #======
 .vscode
 *.mir
-*.txt
 *#
 *.smt2
 .#*
