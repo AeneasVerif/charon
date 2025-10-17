@@ -345,7 +345,7 @@ type cli_options = {
           in the crate are skipped. To only translate a particular call graph,
           use [--start-from]. Note: this doesn't currently support [dyn Trait].
       *)
-  monomorphize_mut : bool;
+  monomorphize_mut : monomorphize_mut option;
       (** Partially monomorphize items to make it so that no item is ever
           monomorphized with a mutable reference (or type containing one); said
           differently, so that the presence of mutable references in a type is
@@ -449,6 +449,11 @@ and mir_level =
   | Optimized
       (** The MIR after optimizations. Charon disables all the optimizations it
           can, so this is sensibly the same MIR as the elaborated MIR. *)
+
+and monomorphize_mut =
+  | All  (** Monomorphize any item instantiated with [&mut]. *)
+  | ExceptTypes
+      (** Monomorphize all non-typedecl items instantiated with [&mut]. *)
 
 (** Presets to make it easier to tweak options without breaking dependent
     projects. Eventually we should define semantically-meaningful presets

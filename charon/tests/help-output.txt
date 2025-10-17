@@ -56,8 +56,12 @@ Options:
           
           [aliases: --mono]
 
-      --monomorphize-mut
+      --monomorphize-mut[=<INCLUDE_TYPES>]
           Partially monomorphize items to make it so that no item is ever monomorphized with a mutable reference (or type containing one); said differently, so that the presence of mutable references in a type is independent of its generics. This is used by Aeneas
+
+          Possible values:
+          - all:          Monomorphize any item instantiated with `&mut`
+          - except-types: Monomorphize all non-typedecl items instantiated with `&mut`
 
       --extract-opaque-bodies
           Usually we skip the bodies of foreign methods and structs with private fields. When this flag is on, we don't

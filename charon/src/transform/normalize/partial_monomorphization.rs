@@ -21,6 +21,7 @@ use indexmap::IndexMap;
 use crate::ast::types_utils::TyVisitable;
 use crate::ast::visitor::{VisitWithBinderDepth, VisitorWithBinderDepth};
 use crate::formatter::IntoFormatter;
+use crate::options::MonomorphizeMut;
 use crate::pretty::FmtWithCtx;
 use crate::register_error;
 use crate::transform::ctx::TransformPass;
@@ -255,6 +256,7 @@ impl<'pm, 'ctx> VisitAstMut for MutabilityShapeBuilder<'pm, 'ctx> {
 #[derive(Visitor)]
 struct PartialMonomorphizer<'a> {
     ctx: &'a mut TransformCtx,
+    /// Tracks the closest span to emit useful errors.
     span: Span,
     /// Types that contain mutable references.
     infected_types: HashSet<TypeDeclId>,
@@ -506,8 +508,11 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        if !ctx.options.monomorphize_mut {
+        let Some(include_types) = ctx.options.monomorphize_mut else {
             return;
+        };
+        if !matches!(include_types, MonomorphizeMut::All) {
+            panic!("--monomorphize-mut=except-types is not implemented yet")
         }
         // TODO: test name matcher, also with methods
         let mut visitor = PartialMonomorphizer::new(ctx);
