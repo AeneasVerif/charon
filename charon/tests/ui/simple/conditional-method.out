@@ -1,25 +1,13 @@
-disabled backtrace
-warning[E9999]: Could not find a clause for `Binder { value: <Foo<T> as std::clone::Clone>, bound_vars: [] }` in the current context: `Unimplemented`
-  --> tests/ui/simple/conditional-method.rs:16:1
-   |
-16 | impl<T> Trait for Foo<T> {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: ⚠️ This is a bug in Hax's frontend.
-           Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
 error: Error parsing attribute: Unrecognized attribute: `charon::error`
-  --> tests/ui/simple/conditional-method.rs:18:1
+  --> tests/ui/simple/conditional-method.rs:17:1
    |
-18 | #[charon::error] // trigger an error so we get the stderr output
+17 | #[charon::error] // trigger an error so we get the stderr output
    | ^^^^^^^^^^^^^^^^
 
 error: Error parsing attribute: Unrecognized attribute: `charon::error`
-  --> tests/ui/simple/conditional-method.rs:18:1
+  --> tests/ui/simple/conditional-method.rs:17:1
    |
-18 | #[charon::error] // trigger an error so we get the stderr output
+17 | #[charon::error] // trigger an error so we get the stderr output
    | ^^^^^^^^^^^^^^^^
-
-warning: 1 warning emitted
 
 ERROR Charon failed to translate this code (2 errors)
