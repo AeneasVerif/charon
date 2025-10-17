@@ -98,11 +98,11 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
             // Now the explicit params in `shape_params` are correct, and the implicit params are a mix
             // of the old params and new trait clauses. The old params may refer to the old explicit
             // params which is wrong and must be fixed up.
-            shape_params.trait_clauses = shape_params.trait_clauses.map(|clause| {
-                if clause.clause_id.index() < target_params.trait_clauses.slot_count() {
-                    clause.substitute_explicits(&shape_contents)
+            shape_params.trait_clauses = shape_params.trait_clauses.map_indexed(|i, x| {
+                if i.index() < target_params.trait_clauses.slot_count() {
+                    x.substitute_explicits(&shape_contents)
                 } else {
-                    clause
+                    x
                 }
             });
             shape_params.trait_type_constraints =
@@ -140,8 +140,8 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
             shape_params
         };
 
-        // The first few trait params correspond to the original item clauses so we can pass them
-        // unmodified.
+        // The first half of the trait params correspond to the original item clauses so we can
+        // pass them unmodified.
         shape_contents.trait_refs = shape_params.identity_args().trait_refs;
         shape_contents
             .trait_refs
@@ -247,8 +247,8 @@ impl<'pm, 'ctx> VisitAstMut for MutabilityShapeBuilder<'pm, 'ctx> {
     //     });
     // }
     fn visit_trait_ref(&mut self, _tref: &mut TraitRef) -> ControlFlow<Self::Break> {
-        // We don't touch trait refs or we'd risk adding duplicated extra params. They'll get fixed
-        // up afterwards.
+        // We don't touch trait refs or we'd risk adding duplicated extra params. Instead, we fix
+        // them up in `exit_ty_kind` and `compute_shape`.
         ControlFlow::Continue(())
     }
 }
@@ -258,6 +258,8 @@ struct PartialMonomorphizer<'a> {
     ctx: &'a mut TransformCtx,
     /// Tracks the closest span to emit useful errors.
     span: Span,
+    /// Whether we partially-monomorphize type declarations.
+    instantiate_types: bool,
     /// Types that contain mutable references.
     infected_types: HashSet<TypeDeclId>,
     /// Map of generic params for each item. We can't use `ctx.translated` because while iterating
@@ -276,7 +278,7 @@ struct PartialMonomorphizer<'a> {
 }
 
 impl<'a> PartialMonomorphizer<'a> {
-    pub fn new(ctx: &'a mut TransformCtx) -> Self {
+    pub fn new(ctx: &'a mut TransformCtx, instantiate_types: bool) -> Self {
         use petgraph::graphmap::DiGraphMap;
         use petgraph::visit::Dfs;
         use petgraph::visit::Walker;
@@ -318,6 +320,7 @@ impl<'a> PartialMonomorphizer<'a> {
         PartialMonomorphizer {
             ctx,
             span: Span::dummy(),
+            instantiate_types,
             infected_types,
             generic_params,
             to_process,
@@ -332,13 +335,20 @@ impl<'a> PartialMonomorphizer<'a> {
         match ty.kind() {
             TyKind::Ref(_, _, RefKind::Mut) => true,
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => self.is_infected(ty),
-            TyKind::Adt(tref) => match &tref.id {
-                // We don't need to check the ADT generics as we've already visited this.
-                TypeId::Adt(id) => self.infected_types.contains(id),
-                TypeId::Tuple | TypeId::Builtin(..) => {
+            TyKind::Adt(tref) => {
+                let ty_infected =
+                    matches!(&tref.id, TypeId::Adt(id) if self.infected_types.contains(id));
+                let args_infected = if tref.id.is_adt() && self.instantiate_types {
+                    // Since we make sure to only call the method on a processed type, any type
+                    // with infected arguments would have been replaced with a fresh instantiated
+                    // (and infected type). Hence we don't need to check the arguments here, only
+                    // the type id.
+                    false
+                } else {
                     tref.generics.types.iter().any(|ty| self.is_infected(ty))
-                }
-            },
+                };
+                ty_infected || args_infected
+            }
             TyKind::FnDef(..) | TyKind::FnPtr(..) => {
                 register_error!(
                     self.ctx,
@@ -474,7 +484,8 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
     }
 
     fn exit_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        if let TypeId::Adt(id) = x.id
+        if self.instantiate_types
+            && let TypeId::Adt(id) = x.id
             && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
         {
             *x = new_decl_ref.try_into().unwrap()
@@ -517,11 +528,9 @@ impl TransformPass for Transform {
         let Some(include_types) = ctx.options.monomorphize_mut else {
             return;
         };
-        if !matches!(include_types, MonomorphizeMut::All) {
-            panic!("--monomorphize-mut=except-types is not implemented yet")
-        }
         // TODO: test name matcher, also with methods
-        let mut visitor = PartialMonomorphizer::new(ctx);
+        let mut visitor =
+            PartialMonomorphizer::new(ctx, matches!(include_types, MonomorphizeMut::All));
         while let Some(id) = visitor.to_process.pop_front() {
             // Get the item corresponding to this id, either by creating it or by getting an
             // existing one.

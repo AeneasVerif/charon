@@ -423,8 +423,16 @@ impl CliOpts {
 
         if self.remove_adt_clauses && self.remove_associated_types.is_empty() {
             anyhow::bail!(
-                "`--remove-adt-clauses` should be used with `--remove-associated-types` \
+                "`--remove-adt-clauses` should be used with `--remove-associated-types='*'` \
                 to avoid missing clause errors",
+            )
+        }
+        if matches!(self.monomorphize_mut, Some(MonomorphizeMut::ExceptTypes))
+            && !self.remove_adt_clauses
+        {
+            anyhow::bail!(
+                "`--monomorphize-mut=except-types` should be used with `--remove-adt-clauses` \
+                to avoid generics mismatches"
             )
         }
         Ok(())
