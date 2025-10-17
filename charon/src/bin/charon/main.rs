@@ -29,10 +29,6 @@
 //! them in a specific environment variable, so that charon-driver can
 //! deserialize them later and use them to guide the extraction in the
 //! callbacks.
-#![feature(register_tool)]
-// For when we use charon on itself
-#![register_tool(charon)]
-
 use annotate_snippets::Level;
 use anyhow::Result;
 use charon_lib::{

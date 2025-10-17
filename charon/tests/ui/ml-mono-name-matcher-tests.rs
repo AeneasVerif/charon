@@ -1,4 +1,6 @@
+//@ no-default-options
 //@ charon-args=--monomorphize
+//@ charon-args=--hide-allocator
 #![feature(register_tool)]
 #![register_tool(pattern)]
 //! Tests for the ml name matcher. This is in the rust test suite so that the llbc file gets

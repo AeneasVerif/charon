@@ -12,8 +12,6 @@
 //@ charon-args=--include crate::keep_names_of_excluded::{crate::keep_names_of_excluded::Trait<_>}
 // Note: we don't use the `impl Trait for T` syntax above because we can't have spaces in these
 // options.
-#![feature(register_tool)]
-#![register_tool(charon)]
 
 fn foo() {
     let _ = Some(0).is_some();

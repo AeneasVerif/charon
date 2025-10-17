@@ -396,9 +396,10 @@ and path_elem_to_string (env : 'a fmt_env) (e : path_elem) : string =
       in
       s ^ d
   | PeImpl impl -> "{" ^ impl_elem_to_string env impl ^ "}"
-  | PeMonomorphized args ->
-      let params, _ = generic_args_to_strings env args in
-      "<" ^ String.concat ", " params ^ ">"
+  | PeInstantiated binder ->
+      let env = fmt_env_update_generics_and_preds env binder.binder_params in
+      let explicits, _ = generic_args_to_strings env binder.binder_value in
+      "<" ^ String.concat ", " explicits ^ ">"
 
 and name_to_string (env : 'a fmt_env) (n : name) : string =
   let name = List.map (path_elem_to_string env) n in

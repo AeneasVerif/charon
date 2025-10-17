@@ -9,8 +9,6 @@
 //! - The implementation of a trait method in an impl block.
 //!
 //! We keep all const and const initializers for now.
-#![feature(register_tool)]
-#![register_tool(charon)]
 
 #[charon::opaque]
 trait Trait {

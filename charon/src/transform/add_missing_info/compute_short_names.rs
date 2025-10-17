@@ -33,7 +33,7 @@ impl TransformPass for Transform {
                 ctx.translated.short_names.insert(id, trunc_name);
             }
 
-            if let [prefix @ .., PathElem::Monomorphized(..)] = name_slice {
+            if let [prefix @ .., PathElem::Instantiated(..)] = name_slice {
                 name_slice = prefix;
             }
             // Ignoring monomorphizations, if a name is the only one to end with a given suffix, we
@@ -68,7 +68,7 @@ impl TransformPass for Transform {
                     let mut short_name = Name {
                         name: vec![PathElem::Ident(short.to_owned(), Disambiguator::ZERO)],
                     };
-                    if let [.., mono @ PathElem::Monomorphized(..)] =
+                    if let [.., mono @ PathElem::Instantiated(..)] =
                         ctx.translated.item_names[&id].name.as_slice()
                     {
                         short_name.name.push(mono.clone());

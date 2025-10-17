@@ -11,6 +11,14 @@ impl PathElem {
             _ => false,
         }
     }
+
+    pub fn as_monomorphized(&self) -> Option<&GenericArgs> {
+        let binder = self.as_instantiated()?;
+        binder.params.is_empty().then_some(&binder.skip_binder)
+    }
+    pub fn is_monomorphized(&self) -> bool {
+        self.as_monomorphized().is_some()
+    }
 }
 
 impl Name {
@@ -32,7 +40,7 @@ impl Name {
 
     /// If this item comes from monomorphization, return the arguments used.
     pub fn mono_args(&self) -> Option<&GenericArgs> {
-        Some(self.name.last()?.as_monomorphized()?.as_ref())
+        Some(self.name.last()?.as_monomorphized()?)
     }
 
     /// Compare the name to a constant array.

@@ -65,8 +65,8 @@ impl Pattern {
         args: Option<&GenericArgs>,
     ) -> bool {
         let mut scrutinee_elems = name.name.as_slice();
-        let mut args = args.cloned();
-        if let [prefix @ .., PathElem::Monomorphized(mono_args)] = scrutinee_elems {
+        let mut args: Option<GenericArgs> = args.cloned();
+        if let [prefix @ .., PathElem::Instantiated(mono_args)] = scrutinee_elems {
             // In this case, we may still have some late-bound generics in `args`, this could ONLY happen for regions
             assert!(
                 args.is_none()
@@ -74,11 +74,13 @@ impl Pattern {
                 "In pattern \"{}\" matching against name \"{}\": we have both monomorphized generics {} and regular generics {}",
                 self,
                 name.with_ctx(&ctx.into_fmt()),
-                mono_args.with_ctx(&ctx.into_fmt()),
+                mono_args.skip_binder.with_ctx(&ctx.into_fmt()),
                 args.unwrap().with_ctx(&ctx.into_fmt())
             );
-            // We additionally append the regions from `args` to the monomorphized args, so that we can match against them.
-            let mut mono_args = (**mono_args).clone();
+            // We additionally append the regions from `args` to the monomorphized args, so that we
+            // can match against them. We can ignore the binder because binding levels shouldn't
+            // affect matching.
+            let mut mono_args = mono_args.skip_binder.clone();
             if let Some(args) = args {
                 // Late-bound regions are appended after the monomorphized ones.
                 mono_args.regions.extend(args.regions.into_iter());
