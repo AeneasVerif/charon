@@ -53,6 +53,7 @@ use indexmap::IndexMap;
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata,
         TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
+        ItemByVal,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),

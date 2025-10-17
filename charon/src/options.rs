@@ -87,6 +87,18 @@ pub struct CliOpts {
     #[clap(long, visible_alias = "mono")]
     #[serde(default)]
     pub monomorphize: bool,
+    /// Partially monomorphize items to make it so that no item is ever monomorphized with a
+    /// mutable reference (or type containing one); said differently, so that the presence of
+    /// mutable references in a type is independent of its generics. This is used by Aeneas.
+    #[clap(
+        long,
+        value_name("INCLUDE_TYPES"),
+        num_args(0..=1),
+        require_equals(true),
+        default_missing_value("all"),
+    )]
+    #[serde(default)]
+    pub monomorphize_mut: Option<MonomorphizeMut>,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -283,6 +295,17 @@ pub enum Preset {
     Tests,
 }
 
+#[derive(
+    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
+)]
+pub enum MonomorphizeMut {
+    /// Monomorphize any item instantiated with `&mut`.
+    #[default]
+    All,
+    /// Monomorphize all non-typedecl items instantiated with `&mut`.
+    ExceptTypes,
+}
+
 impl CliOpts {
     pub fn apply_preset(&mut self) {
         if let Some(preset) = self.preset {
@@ -401,6 +424,9 @@ pub struct TranslateOptions {
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
     pub translate_all_methods: bool,
+    /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
+    /// indicates whether to partially monomorphize types.
+    pub monomorphize_mut: Option<MonomorphizeMut>,
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
@@ -493,6 +519,7 @@ impl TranslateOptions {
 
         TranslateOptions {
             mir_level,
+            monomorphize_mut: options.monomorphize_mut,
             hide_marker_traits: options.hide_marker_traits,
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,

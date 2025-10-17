@@ -118,9 +118,11 @@ impl GenericParams {
         }
     }
 
-    /// Take the predicates from the another `GenericParams`.
+    /// Take the predicates from the another `GenericParams`. This assumes the clause ids etc are
+    /// already consistent.
     pub fn take_predicates_from(&mut self, other: GenericParams) {
         assert!(!other.has_explicits());
+        let num_clauses = self.trait_clauses.slot_count();
         let GenericParams {
             regions: _,
             types: _,
@@ -130,7 +132,6 @@ impl GenericParams {
             types_outlive,
             trait_type_constraints,
         } = other;
-        let num_clauses = self.trait_clauses.slot_count();
         self.trait_clauses
             .extend(trait_clauses.into_iter().update(|clause| {
                 clause.clause_id += num_clauses;
@@ -138,6 +139,34 @@ impl GenericParams {
         self.regions_outlive.extend(regions_outlive);
         self.types_outlive.extend(types_outlive);
         self.trait_type_constraints.extend(trait_type_constraints);
+    }
+
+    /// Take the predicates from the another `GenericParams`. This assumes that the two
+    /// `GenericParams` are independent, hence will shift clause ids if `other` has any
+    /// trait refs that reference its own clauses.
+    pub fn merge_predicates_from(&mut self, mut other: GenericParams) {
+        // Drop the explicits params.
+        other.types.clear();
+        other.regions.clear();
+        other.const_generics.clear();
+        // The contents of `other` may refer to its own trait clauses, so we must shift clause ids.
+        struct ShiftClausesVisitor(usize);
+        impl VarsVisitor for ShiftClausesVisitor {
+            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+                if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
+                    // Replace clause 0 and decrement the others.
+                    Some(TraitRefKind::Clause(DeBruijnVar::Bound(
+                        DeBruijnId::ZERO,
+                        clause_id + self.0,
+                    )))
+                } else {
+                    None
+                }
+            }
+        }
+        let num_clauses = self.trait_clauses.slot_count();
+        other.visit_vars(&mut ShiftClausesVisitor(num_clauses));
+        self.take_predicates_from(other);
     }
 }
 
@@ -1048,10 +1077,20 @@ pub trait VarsVisitor {
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     self_ref: &'a TraitRefKind,
+    /// Whether to substitute explicit variables only (types, regions, const generics).
+    explicits_only: bool,
 }
 impl<'a> SubstVisitor<'a> {
-    pub(crate) fn new(generics: &'a GenericArgs, self_ref: &'a TraitRefKind) -> Self {
-        Self { generics, self_ref }
+    pub(crate) fn new(
+        generics: &'a GenericArgs,
+        self_ref: &'a TraitRefKind,
+        explicits_only: bool,
+    ) -> Self {
+        Self {
+            generics,
+            self_ref,
+            explicits_only,
+        }
     }
 
     /// Returns the value for this variable, if any.
@@ -1085,7 +1124,11 @@ impl VarsVisitor for SubstVisitor<'_> {
         self.process_var(v, |id| &self.generics[id])
     }
     fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
-        self.process_var(v, |id| &self.generics[id].kind)
+        if self.explicits_only {
+            None
+        } else {
+            self.process_var(v, |id| &self.generics[id].kind)
+        }
     }
     fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
         Some(self.self_ref.clone())
@@ -1173,12 +1216,24 @@ pub trait TyVisitable: Sized + AstVisitable {
         });
     }
 
+    /// Substitute the generic variables inside `self` by replacing them with the provided values.
+    /// Note: if `self` is an item that comes from a `TraitDecl`, you most likely want to use
+    /// `substitute_with_self`.
     fn substitute(self, generics: &GenericArgs) -> Self {
         self.substitute_with_self(generics, &TraitRefKind::SelfId)
     }
-
+    /// Substitute only the type, region and const generic args.
+    fn substitute_explicits(mut self, generics: &GenericArgs) -> Self {
+        let _ = self.visit_vars(&mut SubstVisitor::new(
+            generics,
+            &TraitRefKind::SelfId,
+            true,
+        ));
+        self
+    }
+    /// Substitute the generic variables as well as the `TraitRefKind::Self` trait ref.
     fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
-        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref));
+        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref, false));
         self
     }
 

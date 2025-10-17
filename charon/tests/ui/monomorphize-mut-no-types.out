@@ -1,0 +1,5 @@
+
+thread 'main' panicked at src/transform/normalize/partial_monomorphization.rs:521:13:
+--monomorphize-mut=except-types is not implemented yet
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ERROR Compilation panicked
