@@ -276,11 +276,13 @@ let mk_box_ty (ty : ty) : ty =
 
     This function should be used on non-erased and non-bound regions. For
     sanity, we raise exceptions if this is not the case. *)
-let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
+let region_in_set ?(allow_erased = false) (r : region) (rset : RegionId.Set.t) :
+    bool =
   match r with
   | RStatic -> false
   | RErased ->
-      raise (Failure "region_in_set shouldn't be called on erased regions")
+      if allow_erased then false
+      else raise (Failure "region_in_set shouldn't be called on erased regions")
   | RVar (Bound _) ->
       raise (Failure "region_in_set shouldn't be called on bound regions")
   | RVar (Free id) -> RegionId.Set.mem id rset

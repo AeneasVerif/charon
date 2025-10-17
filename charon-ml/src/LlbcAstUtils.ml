@@ -531,12 +531,12 @@ let find_local_transitive_dep (m : crate) (marked_externals : AnyDeclIdSet.t) :
 
 let map_statement (f : statement -> statement list) (b : block) : block =
   let visitor =
-    object
-      inherit [_] map_statement_base as super
+    object (self)
+      inherit [_] map_statement_base
 
       method! visit_block env b =
-        super#visit_block env
-          { b with statements = List.flatten (List.map f b.statements) }
+        let update st = f (self#visit_statement env st) in
+        { b with statements = List.flatten (List.map update b.statements) }
     end
   in
   visitor#visit_block () b
