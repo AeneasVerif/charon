@@ -79,6 +79,22 @@ where
 }
 
 #[lang_item("meta_sized")]
+pub trait core::marker::MetaSized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>
+where
+    [@TraitClause0]: Sized<T0>,
+    T0 : '_0,
+
+#[lang_item("sized")]
+pub trait core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>
+where
+    [@TraitClause0]: Sized<T0>,
+    T0 : '_0,
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    non-dyn-compatible
+}
+
+#[lang_item("meta_sized")]
 pub trait core::marker::MetaSized::<test_crate::List::<&_ mut (_)><_, _>[@TraitClause0]><'_0, T0>
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
@@ -216,6 +232,26 @@ where
 {
   None,
   Some(Iter<'_0, T0>[@TraitClause1]),
+}
+
+// Full name: test_crate::IterWrapper
+struct IterWrapper<'a, T>
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+{
+  Iter<'a, T>[@TraitClause0],
+}
+
+#[lang_item("Option")]
+pub enum core::option::Option::<IterWrapper<_, _>[@TraitClause1]><'_0, T0>
+where
+    [@TraitClause0]: core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
+    [@TraitClause1]: Sized<T0>,
+    T0 : '_0,
+{
+  None,
+  Some(IterWrapper<'_0, T0>[@TraitClause1]),
 }
 
 // Full name: alloc::alloc::Global
@@ -597,22 +633,13 @@ where
     return
 }
 
-// Full name: test_crate::IterWrapper
-struct IterWrapper<'a, T>
-where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
-{
-  Iter<'a, T>[@TraitClause0],
-}
-
 // Full name: test_crate::use_iter_wrapper
-fn use_iter_wrapper<'a, 'b, T>(@1: Option<IterWrapper<'a, bool>[Sized<bool>]>[Sized<IterWrapper<'a, bool>[Sized<bool>]>])
+fn use_iter_wrapper<'a, 'b, T>(@1: core::option::Option::<IterWrapper<_, _>[@TraitClause1]><'a, bool>[core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'a, bool>[Sized<bool>], Sized<bool>])
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let @1: Option<IterWrapper<'_, bool>[Sized<bool>]>[Sized<IterWrapper<'_, bool>[Sized<bool>]>]; // arg #1
+    let @1: core::option::Option::<IterWrapper<_, _>[@TraitClause1]><'_, bool>[core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'_, bool>[Sized<bool>], Sized<bool>]; // arg #1
 
     @0 := ()
     @0 := ()
