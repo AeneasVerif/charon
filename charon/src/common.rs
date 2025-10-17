@@ -121,7 +121,7 @@ pub mod hash_consing {
     /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
     /// value will be stored at the same address. This makes it possible to use the pointer address
     /// as a hash value.
-    #[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+    #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
     pub struct HashConsed<T>(HashByAddr<Arc<T>>);
 
     impl<T> HashConsed<T> {
@@ -192,6 +192,21 @@ pub mod hash_consing {
         }
     }
 
+    /// Manual impl to make sure we re-establish sharing!
+    impl<'de, T> Deserialize<'de> for HashConsed<T>
+    where
+        T: Hash + PartialEq + Eq + Clone + Mappable,
+        T: Deserialize<'de>,
+    {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            let x: T = T::deserialize(deserializer)?;
+            Ok(Self::new(x))
+        }
+    }
+
     impl<'s, T, V: Visit<'s, T>> Drive<'s, V> for HashConsed<T> {
         fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
             v.visit(self.inner())
@@ -206,6 +221,15 @@ pub mod hash_consing {
         fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
             self.with_inner_mut(|inner| v.visit(inner))
         }
+    }
+
+    #[test]
+    fn test_hash_cons() {
+        let x = HashConsed::new(42u32);
+        let y = HashConsed::new(42u32);
+        assert_eq!(x, y);
+        let z = serde_json::from_value(serde_json::to_value(x.clone()).unwrap()).unwrap();
+        assert_eq!(x, z);
     }
 }
 
