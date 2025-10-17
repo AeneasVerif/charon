@@ -128,7 +128,7 @@ module List = struct
       (l2 : 'c list) : 'd list =
     match (l0, l1, l2) with
     | [], [], [] -> []
-    | a :: l0, b :: l1, c :: l3 -> f a b c :: map3 f l0 l1 l2
+    | a :: l0, b :: l1, c :: l2 -> f a b c :: map3 f l0 l1 l2
     | _ ->
         raise
           (Invalid_argument "List.combine3 expects lists of the same length")
@@ -137,7 +137,7 @@ module List = struct
       ('a * 'b * 'c) list =
     match (l0, l1, l2) with
     | [], [], [] -> []
-    | a :: l0, b :: l1, c :: l3 -> (a, b, c) :: combine3 l0 l1 l2
+    | a :: l0, b :: l1, c :: l2 -> (a, b, c) :: combine3 l0 l1 l2
     | _ ->
         raise
           (Invalid_argument "List.combine3 expects lists of the same length")
@@ -164,6 +164,15 @@ module List = struct
     | (a, b, c, d, e) :: l ->
         let l0, l1, l2, l3, l4 = split5 l in
         (a :: l0, b :: l1, c :: l2, d :: l3, e :: l4)
+
+  let fold_left_map2 :
+      ('acc -> 'a -> 'b -> 'acc * 'c) ->
+      'acc ->
+      'a list ->
+      'b list ->
+      'acc * 'c list =
+   fun f acc l0 l1 ->
+    fold_left_map (fun acc (a, b) -> f acc a b) acc (List.combine l0 l1)
 end
 
 module type OrderedType = sig
@@ -423,6 +432,7 @@ module type InjMap = sig
 
   val empty : t
   val is_empty : t -> bool
+  val to_map : t -> elem Map.t
   val mem : key -> t -> bool
   val add : key -> elem -> t -> t
   val singleton : key -> elem -> t
@@ -492,6 +502,7 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
 
   let empty = { map = Map.empty; elems = Set.empty }
   let is_empty m = Map.is_empty m.map
+  let to_map m = m.map
   let mem k m = Map.mem k m.map
 
   let add k e m =
