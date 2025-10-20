@@ -93,7 +93,7 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     UnstructuredBody(&finish_translation::insert_assign_return_unit::Transform),
     // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
     NonBody(&finish_translation::insert_storage_lives::Transform),
-    // Move clauses on associated types to be parent clauses
+    // Move clauses on associated types to be implied clauses of the trait.
     NonBody(&simplify_output::lift_associated_item_clauses::Transform),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&simplify_output::hide_marker_traits::Transform),
