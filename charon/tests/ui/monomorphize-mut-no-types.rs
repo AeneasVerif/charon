@@ -1,5 +1,6 @@
-//@ known-panic
 //@ charon-arg=--monomorphize-mut=except-types
+//@ charon-arg=--remove-adt-clauses
+//@ charon-args=--remove-associated-types=*
 
 fn identity<T>(x: T) -> T {
     x

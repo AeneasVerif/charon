@@ -48,6 +48,7 @@ pub mod simplify_output {
     pub mod inline_promoted_consts;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
+    pub mod remove_adt_clauses;
     pub mod remove_nops;
     pub mod remove_unit_locals;
     pub mod remove_unused_locals;
@@ -93,7 +94,7 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     UnstructuredBody(&finish_translation::insert_assign_return_unit::Transform),
     // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
     NonBody(&finish_translation::insert_storage_lives::Transform),
-    // Move clauses on associated types to be parent clauses
+    // Move clauses on associated types to be implied clauses of the trait.
     NonBody(&simplify_output::lift_associated_item_clauses::Transform),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&simplify_output::hide_marker_traits::Transform),
@@ -112,6 +113,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Change trait associated types to be type parameters instead. See the module for details.
     // This also normalizes any use of an associated type that we can resolve.
     NonBody(&normalize::expand_associated_types::Transform),
+    // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
+    NonBody(&simplify_output::remove_adt_clauses::Transform),
 ];
 
 /// Body cleanup passes on the ullbc.
