@@ -162,6 +162,12 @@ pub struct CliOpts {
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
+    /// Remove trait clauses from type declarations. Must be combined with
+    /// `--remove-associated-types` for type declarations that use trait associated types in their
+    /// fields, otherwise this will result in errors.
+    #[clap(long)]
+    #[serde(default)]
+    pub remove_adt_clauses: bool,
     /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     #[clap(long)]
     #[serde(default)]
@@ -349,7 +355,7 @@ impl CliOpts {
     }
 
     /// Check that the options are meaningful
-    pub fn validate(&self) {
+    pub fn validate(&self) -> anyhow::Result<()> {
         assert!(
             !self.lib || self.bin.is_none(),
             "Can't use --lib and --bin at the same time"
@@ -414,6 +420,14 @@ impl CliOpts {
                 "`--dest` is deprecated, use `--dest-file` instead",
             )
         }
+
+        if self.remove_adt_clauses && self.remove_associated_types.is_empty() {
+            anyhow::bail!(
+                "`--remove-adt-clauses` should be used with `--remove-associated-types` \
+                to avoid missing clause errors",
+            )
+        }
+        Ok(())
     }
 }
 
@@ -430,6 +444,8 @@ pub struct TranslateOptions {
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
+    /// Remove trait clauses attached to type declarations.
+    pub remove_adt_clauses: bool,
     /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     pub hide_allocator: bool,
     /// Remove unused `Self: Trait` clauses on method declarations.
@@ -521,6 +537,7 @@ impl TranslateOptions {
             mir_level,
             monomorphize_mut: options.monomorphize_mut,
             hide_marker_traits: options.hide_marker_traits,
+            remove_adt_clauses: options.remove_adt_clauses,
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize_with_hax: options.monomorphize,

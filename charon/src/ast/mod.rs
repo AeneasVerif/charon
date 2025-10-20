@@ -22,6 +22,7 @@ pub mod visitor;
 pub use crate::errors::Error;
 pub use crate::ids::Vector;
 pub use builtins::*;
+pub use derive_generic_visitor::Visitor;
 pub use expressions::*;
 pub use gast::*;
 pub use krate::*;

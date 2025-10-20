@@ -370,6 +370,11 @@ type cli_options = {
   hide_marker_traits : bool;
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
           anywhere they show up. *)
+  remove_adt_clauses : bool;
+      (** Remove trait clauses from type declarations. Must be combined with
+          [--remove-associated-types] for type declarations that use trait
+          associated types in their fields, otherwise this will result in
+          errors. *)
   hide_allocator : bool;
       (** Hide the [A] type parameter on standard library containers ([Box],
           [Vec], etc). *)

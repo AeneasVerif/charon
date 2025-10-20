@@ -48,6 +48,7 @@ pub mod simplify_output {
     pub mod inline_promoted_consts;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
+    pub mod remove_adt_clauses;
     pub mod remove_nops;
     pub mod remove_unit_locals;
     pub mod remove_unused_locals;
@@ -112,6 +113,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Change trait associated types to be type parameters instead. See the module for details.
     // This also normalizes any use of an associated type that we can resolve.
     NonBody(&normalize::expand_associated_types::Transform),
+    // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
+    NonBody(&simplify_output::remove_adt_clauses::Transform),
 ];
 
 /// Body cleanup passes on the ullbc.
