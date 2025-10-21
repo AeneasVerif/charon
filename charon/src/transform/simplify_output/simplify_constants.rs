@@ -29,7 +29,7 @@ fn transform_constant_expr(
     val: Box<ConstantExpr>,
     new_var: &mut impl FnMut(Rvalue, Ty) -> Place,
 ) -> Operand {
-    match val.kind {
+    let rval = match val.kind {
         ConstantExprKind::Literal(_)
         | ConstantExprKind::Var(_)
         | ConstantExprKind::RawMemory(..)
@@ -40,7 +40,7 @@ fn transform_constant_expr(
             // TODO: for trait const: might come from a top-level impl, so we might
             // want to introduce an intermediate statement to be able to evaluate
             // it as a function call, like for globals.
-            Operand::Const(val)
+            return Operand::Const(val);
         }
         // Here we use a copy, rather than a move -- moving a global would leave it uninitialized,
         // which would e.g. make the following code fail:
@@ -48,7 +48,7 @@ fn transform_constant_expr(
         //     let x = GLOBAL;
         //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
         ConstantExprKind::Global(global_ref) => {
-            Operand::Copy(Place::new_global(global_ref, val.ty))
+            return Operand::Copy(Place::new_global(global_ref, val.ty));
         }
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
@@ -57,94 +57,54 @@ fn transform_constant_expr(
                 ptr,
             )));
             let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty.clone()));
-            let uvar = new_var(
-                Rvalue::UnaryOp(
-                    cast,
-                    Operand::Const(Box::new(ConstantExpr {
-                        kind: ptr_usize,
-                        ty: usize_ty,
-                    })),
-                ),
-                val.ty,
-            );
-            Operand::Move(uvar)
+            Rvalue::UnaryOp(
+                cast,
+                Operand::Const(Box::new(ConstantExpr {
+                    kind: ptr_usize,
+                    ty: usize_ty,
+                })),
+            )
         }
         ConstantExprKind::Ref(bval) => {
-            match bval.kind {
-                ConstantExprKind::Global(global_ref) => {
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-                    Operand::Move(new_var(
-                        // This is a reference to a global constant, which must be Sized, so no metadata
-                        Rvalue::Ref {
-                            place: Place::new_global(global_ref, bval.ty),
-                            kind: BorrowKind::Shared,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    ))
-                }
+            // This is a reference to a global constant, which must be Sized, so no metadata
+            let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
+            let place = match bval.kind {
+                ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
                 _ => {
                     // Recurse on the borrowed value
-                    let bval_ty = bval.ty.clone();
                     let bval = transform_constant_expr(span, bval, new_var);
 
                     // Evaluate the referenced value
-                    let bvar = new_var(Rvalue::Use(bval), bval_ty);
-
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-
-                    // Borrow the value
-                    // As the value is originally an argument, it must be Sized
-                    let ref_var = new_var(
-                        Rvalue::Ref {
-                            place: bvar,
-                            kind: BorrowKind::Shared,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    );
-
-                    Operand::Move(ref_var)
+                    let bval_ty = bval.ty().clone();
+                    new_var(Rvalue::Use(bval), bval_ty)
                 }
+            };
+            // Borrow the place.
+            Rvalue::Ref {
+                place,
+                kind: BorrowKind::Shared,
+                ptr_metadata: Operand::Move(unit_metadata),
             }
         }
         ConstantExprKind::Ptr(rk, bval) => {
-            match bval.kind {
-                ConstantExprKind::Global(global_ref) => {
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-                    Operand::Move(new_var(
-                        // This is a raw pointer to a global constant, which must be Sized, so no metadata
-                        Rvalue::RawPtr {
-                            place: Place::new_global(global_ref, bval.ty),
-                            kind: rk,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    ))
-                }
+            // As the value is originally an argument, it must be Sized, hence no metadata
+            let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
+            let place = match bval.kind {
+                ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
                 _ => {
                     // Recurse on the borrowed value
-                    let bval_ty = bval.ty.clone();
                     let bval = transform_constant_expr(span, bval, new_var);
 
                     // Evaluate the referenced value
-                    let bvar = new_var(Rvalue::Use(bval), bval_ty);
-
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-
-                    // Borrow the value
-                    // As the value is originally an argument, it must be Sized, hence no metadata
-                    let ref_var = new_var(
-                        Rvalue::RawPtr {
-                            place: bvar,
-                            kind: rk,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    );
-
-                    Operand::Move(ref_var)
+                    let bval_ty = bval.ty().clone();
+                    new_var(Rvalue::Use(bval), bval_ty)
                 }
+            };
+            // Borrow the value
+            Rvalue::RawPtr {
+                place,
+                kind: rk,
+                ptr_metadata: Operand::Move(unit_metadata),
             }
         }
         ConstantExprKind::Adt(variant, fields) => {
@@ -154,14 +114,9 @@ fn transform_constant_expr(
                 .collect();
 
             // Build an `Aggregate` rvalue.
-            let rval = {
-                let tref = val.ty.kind().as_adt().unwrap();
-                let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
-                Rvalue::Aggregate(aggregate_kind, fields)
-            };
-            let var = new_var(rval, val.ty);
-
-            Operand::Move(var)
+            let tref = val.ty.kind().as_adt().unwrap();
+            let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
+            Rvalue::Aggregate(aggregate_kind, fields)
         }
         ConstantExprKind::Array(fields) => {
             let fields = fields
@@ -179,12 +134,10 @@ fn transform_constant_expr(
                 BuiltinTy::Array | BuiltinTy::Slice
             );
             let ty = tref.generics.types[0].clone();
-            let rval = Rvalue::Aggregate(AggregateKind::Array(ty, len), fields);
-            let var = new_var(rval, val.ty);
-
-            Operand::Move(var)
+            Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
         }
-    }
+    };
+    Operand::Move(new_var(rval, val.ty))
 }
 
 fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>, op: &mut Operand) {
