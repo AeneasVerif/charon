@@ -1299,7 +1299,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     AggregateKind::Adt(ty_ref, variant_id, field_id) => {
                         match ty_ref.id {
                             TypeId::Tuple => write!(f, "({})", ops_s),
-                            TypeId::Builtin(_) => unreachable!(),
+                            TypeId::Builtin(BuiltinTy::Box) => write!(f, "Box({})", ops_s),
+                            TypeId::Builtin(
+                                BuiltinTy::Array | BuiltinTy::Slice | BuiltinTy::Str,
+                            ) => {
+                                write!(f, "[{}]", ops_s)
+                            }
                             TypeId::Adt(ty_id) => {
                                 match variant_id {
                                     None => ty_id.fmt_with_ctx(ctx, f)?,
