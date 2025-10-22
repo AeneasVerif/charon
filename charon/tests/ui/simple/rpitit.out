@@ -1,0 +1,53 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::Foo
+trait Foo<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    type <U, [@TraitClause0_1]: Sized<U>>
+    where
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::>
+        implied_clause_1 : [@TraitClause1_1]: Trait<Self::>
+
+    fn into_iter<U, [@TraitClause0_1]: Sized<U>> = into_iter<Self, T, U>[Self, @TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::into_iter
+fn into_iter<Self, T, U>(@1: Self) -> @TraitClause0::
+where
+    [@TraitClause0]: Foo<Self, T>,
+    [@TraitClause1]: Sized<U>,
+
+
+
