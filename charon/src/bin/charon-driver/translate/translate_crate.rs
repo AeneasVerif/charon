@@ -220,20 +220,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
             // We skip these
             ExternCrate { .. } | GlobalAsm { .. } | Macro { .. } | Use { .. } => return None,
+            // These can happen when doing `--start-from` on a foreign crate. We can skip them
+            // because their parents will already have been registered.
+            Ctor { .. } | Variant { .. } => return None,
             // We cannot encounter these since they're not top-level items.
             AnonConst { .. }
             | AssocTy { .. }
             | Closure { .. }
             | ConstParam { .. }
-            | Ctor { .. }
             | Field { .. }
             | InlineConst { .. }
             | PromotedConst { .. }
             | LifetimeParam { .. }
             | OpaqueTy { .. }
             | SyntheticCoroutineBody { .. }
-            | TyParam { .. }
-            | Variant { .. } => {
+            | TyParam { .. } => {
                 let span = self.def_span(def_id);
                 register_error!(
                     self,
