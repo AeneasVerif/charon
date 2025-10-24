@@ -18,7 +18,7 @@ pub trait Deref<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self::Target>
     type Target
-    fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>[Self]
+    fn deref<'_0_1> = core::ops::deref::Deref::deref<'_0_1, Self>[Self]
     vtable: core::ops::deref::Deref::{vtable}<Self::Target>
 }
 
@@ -32,9 +32,12 @@ where
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -50,6 +53,12 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
 where
@@ -57,7 +66,8 @@ where
     [@TraitClause1]: Sized<A>,
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -75,7 +85,7 @@ where
 {
     parent_clause0 = @TraitClause0
     type Target = T
-    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn deref<'_0_1> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -93,12 +103,12 @@ const UNIT_METADATA: () = @Fun0()
 pub trait PointerFamily<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    type Pointer<T, [@TraitClause0]: Sized<T>, (Self::Pointer::[@TraitClause1])::Target = T>
+    type Pointer<T, [@TraitClause0_1]: Sized<T>, (Self::Pointer::[@TraitClause1])::Target = T>
     where
-        implied_clause_0 : [@TraitClause0]: Sized<Self::Pointer>
-        implied_clause_1 : [@TraitClause1]: Deref<Self::Pointer>
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::Pointer>
+        implied_clause_1 : [@TraitClause1_1]: Deref<Self::Pointer>
 
-    fn new<T, [@TraitClause0]: Sized<T>> = test_crate::PointerFamily::new<Self, T>[Self, @TraitClause0_0]
+    fn new<T, [@TraitClause0_1]: Sized<T>> = test_crate::PointerFamily::new<Self, T>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -130,8 +140,8 @@ where
 // Full name: test_crate::{impl PointerFamily for BoxFamily}
 impl PointerFamily for BoxFamily {
     parent_clause0 = MetaSized<BoxFamily>
-    type Pointer<U, [@TraitClause0]: Sized<U>> = alloc::boxed::Box<U>[@TraitClause0_0::parent_clause0, Sized<Global>]
-    fn new<T, [@TraitClause0]: Sized<T>> = {impl PointerFamily for BoxFamily}::new<T>[@TraitClause0_0]
+    type Pointer<U, [@TraitClause0_1]: Sized<U>> = alloc::boxed::Box<U>[@TraitClause0_1::parent_clause0, Sized<Global>]
+    fn new<T, [@TraitClause0_1]: Sized<T>> = {impl PointerFamily for BoxFamily}::new<T>[@TraitClause0_1]
     non-dyn-compatible
 }
 

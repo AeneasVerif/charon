@@ -6,6 +6,7 @@
 use std::panic;
 
 use super::translate_ctx::*;
+use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::IntoFormatter;
@@ -106,13 +107,14 @@ impl ItemTransCtx<'_, '_> {
         let tref = self
             .translate_type_decl_ref(span, &def.this().with_def_id(self.hax_state(), adt_def_id))?;
         let output_ty = self.translate_ty(span, output_ty)?;
-        let mut locals = Locals::new(fields.len());
-        locals.new_var(None, output_ty);
+
+        let mut builder = BodyBuilder::new(span, fields.len());
+        let return_place = builder.new_var(None, output_ty);
         let args: Vec<_> = fields
             .iter()
             .map(|field| -> Result<Operand, Error> {
                 let ty = self.translate_ty(span, &field.ty)?;
-                let place = locals.new_var(None, ty);
+                let place = builder.new_var(None, ty);
                 Ok(Operand::Move(place))
             })
             .try_collect()?;
@@ -120,22 +122,11 @@ impl ItemTransCtx<'_, '_> {
             hax::CtorOf::Struct => None,
             hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
         };
-        let st_kind = StatementKind::Assign(
-            locals.return_place(),
+        builder.push_statement(StatementKind::Assign(
+            return_place,
             Rvalue::Aggregate(AggregateKind::Adt(tref, variant, None), args),
-        );
-        let statement = Statement::new(span, st_kind);
-        let block = BlockData {
-            statements: vec![statement],
-            terminator: Terminator::new(span, TerminatorKind::Return),
-        };
-        let body = Body::Unstructured(GExprBody {
-            span,
-            locals,
-            comments: Default::default(),
-            body: [block].into_iter().collect(),
-        });
-        Ok(body)
+        ));
+        Ok(Body::Unstructured(builder.build()))
     }
 
     /// Checks whether the given id corresponds to a built-in type.

@@ -30,7 +30,7 @@ where
 #[lang_item("Display")]
 pub trait Display<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
+    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Display::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Display::{vtable}
 }
 
@@ -43,7 +43,7 @@ pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (
 
 // Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
-    fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display for Str}::fmt<'_0_1, '_1_1, '_2_1>
     vtable: {impl Display for Str}::{vtable}
 }
 
@@ -52,9 +52,12 @@ impl Display for Str {
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -67,10 +70,14 @@ pub opaque type String
 // Full name: alloc::string::String::{impl Drop for String}::drop
 fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
 
+// Full name: alloc::string::String::{impl Drop for String}::drop_in_place
+fn {impl Drop for String}::drop_in_place(@1: *mut String)
+
 // Full name: alloc::string::String::{impl Drop for String}
 impl Drop for String {
     parent_clause0 = MetaSized<String>
-    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+    fn drop<'_0_1> = {impl Drop for String}::drop<'_0_1>
+    fn drop_in_place = {impl Drop for String}::drop_in_place
     non-dyn-compatible
 }
 
@@ -79,7 +86,7 @@ impl Drop for String {
 pub trait ToString<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
+    fn to_string<'_0_1> = alloc::string::ToString::to_string<'_0_1, Self>[Self]
     vtable: alloc::string::ToString::{vtable}
 }
 
@@ -101,7 +108,7 @@ where
     [@TraitClause1]: Display<T>,
 {
     parent_clause0 = @TraitClause0
-    fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn to_string<'_0_1> = {impl ToString for T}::to_string<'_0_1, T>[@TraitClause0, @TraitClause1]
     vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 

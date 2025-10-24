@@ -23,6 +23,7 @@ pub trait AstFormatter: Sized {
 
     fn get_crate(&self) -> Option<&TranslatedCrate>;
 
+    fn no_generics<'a>(&'a self) -> Self::Reborrow<'a>;
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
@@ -35,6 +36,8 @@ pub trait AstFormatter: Sized {
             ..Default::default()
         }))
     }
+    /// Return the depth of binders we're under.
+    fn binder_depth(&self) -> usize;
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a>;
     fn indent(&self) -> String;
@@ -118,6 +121,12 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         self.translated
     }
 
+    fn no_generics<'a>(&'a self) -> Self::Reborrow<'a> {
+        FmtCtx {
+            generics: BindingStack::empty(),
+            ..self.reborrow()
+        }
+    }
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
         FmtCtx {
             generics: BindingStack::new(Cow::Borrowed(generics)),
@@ -134,6 +143,9 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         let mut ret = self.reborrow();
         ret.generics.push(new_params);
         ret
+    }
+    fn binder_depth(&self) -> usize {
+        self.generics.len()
     }
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a> {
@@ -176,10 +188,11 @@ impl<'c> AstFormatter for FmtCtx<'c> {
                 None => {
                     write!(f, "{var_prefix}")?;
                     let (dbid, varid) = self.generics.as_bound_var(var);
-                    if dbid == self.generics.depth() {
+                    let depth = self.generics.depth().index - dbid.index;
+                    if depth == 0 {
                         write!(f, "{varid}")
                     } else {
-                        write!(f, "{var}")
+                        write!(f, "{varid}_{depth}")
                     }
                 }
             },

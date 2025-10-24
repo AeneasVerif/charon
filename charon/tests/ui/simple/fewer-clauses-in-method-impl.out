@@ -1,19 +1,7 @@
-disabled backtrace
-warning[E9999]: Could not find a clause for `Binder { value: <T as std::marker::Copy>, bound_vars: [] }` in the current context: `Unimplemented`
- --> tests/ui/simple/fewer-clauses-in-method-impl.rs:8:5
-  |
-8 |     fn method<T: Clone>() {}
-  |     ^^^^^^^^^^^^^^^^^^^^^
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
-warning: 1 warning emitted
-
 error: Found inconsistent generics after transformations:
        Mismatched builtin trait parent clauses:
        target: Clone
-       expected: [[@TraitClause0]: Sized<missing(@Type1_0)>]
+       expected: [[@TraitClause0]: Sized<missing(@TypeBound(1, 0))>]
             got: [MetaSized<()>, Clone<()>]
        Visitor stack:
          charon_lib::ast::types::TraitRef

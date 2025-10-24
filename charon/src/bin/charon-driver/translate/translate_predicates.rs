@@ -278,7 +278,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 let tref = &impl_source.r#trait;
                 let trait_def =
-                    self.hax_def(&tref.hax_skip_binder_ref().erase(&self.hax_state_with_id()))?;
+                    self.hax_def(&tref.hax_skip_binder_ref().erase(self.hax_state_with_id()))?;
                 let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
                     "fn_once" => Some(ClosureKind::FnOnce),
                     "fn_mut" => Some(ClosureKind::FnMut),
@@ -322,7 +322,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     && let hax::TyKind::Adt(item) = ty.kind()
                 {
                     let impl_ref =
-                        self.translate_trait_impl_ref(span, item, TraitImplSource::DropGlue)?;
+                        self.translate_trait_impl_ref(span, item, TraitImplSource::ImplicitDrop)?;
                     TraitRefKind::TraitImpl(impl_ref)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;

@@ -24,7 +24,7 @@ pub mod add_missing_info {
 pub mod normalize {
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
-    pub mod monomorphize;
+    pub mod partial_monomorphization;
     pub mod skip_trait_refs_when_known;
     pub mod transform_dyn_trait_calls;
 }
@@ -48,6 +48,7 @@ pub mod simplify_output {
     pub mod inline_promoted_consts;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
+    pub mod remove_adt_clauses;
     pub mod remove_nops;
     pub mod remove_unit_locals;
     pub mod remove_unused_locals;
@@ -93,7 +94,7 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     UnstructuredBody(&finish_translation::insert_assign_return_unit::Transform),
     // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
     NonBody(&finish_translation::insert_storage_lives::Transform),
-    // Move clauses on associated types to be parent clauses
+    // Move clauses on associated types to be implied clauses of the trait.
     NonBody(&simplify_output::lift_associated_item_clauses::Transform),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&simplify_output::hide_marker_traits::Transform),
@@ -102,16 +103,18 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration
     // items if they're not used. This simplifies the graph of dependencies between definitions.
     NonBody(&simplify_output::remove_unused_self_clause::Transform),
-    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
-    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
-    // some sources of mutual recursion.
-    UnstructuredBody(&normalize::skip_trait_refs_when_known::Transform),
+    // # Micro-pass: whenever we reference a trait method on a known type, refer to the method
+    // `FunDecl` directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
+    // remove some sources of mutual recursion.
+    NonBody(&normalize::skip_trait_refs_when_known::Transform),
     // Transform dyn trait method calls to vtable function pointer calls
     // This should be early to handle the calls before other transformations
     UnstructuredBody(&normalize::transform_dyn_trait_calls::Transform),
     // Change trait associated types to be type parameters instead. See the module for details.
     // This also normalizes any use of an associated type that we can resolve.
     NonBody(&normalize::expand_associated_types::Transform),
+    // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
+    NonBody(&simplify_output::remove_adt_clauses::Transform),
 ];
 
 /// Body cleanup passes on the ullbc.
@@ -185,8 +188,9 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
     NonBody(&add_missing_info::recover_body_comments::Transform),
-    // Monomorphize the functions and types.
-    NonBody(&normalize::monomorphize::Transform),
+    // Partially monomorphize items so that no item is ever instanciated with a mutable reference
+    // or a type containing one.
+    NonBody(&normalize::partial_monomorphization::Transform),
     // # Reorder the graph of dependencies and compute the strictly connex components to:
     // - compute the order in which to extract the definitions
     // - find the recursive definitions

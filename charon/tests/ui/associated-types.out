@@ -10,7 +10,7 @@ pub trait Borrow<Self, Borrowed>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: MetaSized<Borrowed>
-    fn borrow<'_0> = borrow<'_0_0, Self, Borrowed>[Self]
+    fn borrow<'_0_1> = borrow<'_0_1, Self, Borrowed>[Self]
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -32,7 +32,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -48,7 +48,7 @@ pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}
 impl<'_0, T> Clone for &'_0 (T) {
     parent_clause0 = Sized<&'_ (T)>
-    fn clone<'_0> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_0, T>
+    fn clone<'_0_1> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_1, T>
     non-dyn-compatible
 }
 
@@ -81,9 +81,13 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -113,7 +117,7 @@ where
     [@TraitClause1]: Clone<T>,
 {
     parent_clause0 = Sized<Option<T>[@TraitClause0]>
-    fn clone<'_0> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn clone<'_0_1> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
@@ -135,7 +139,7 @@ pub trait ToOwned<Self, Self_Owned>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Owned>
     parent_clause2 : [@TraitClause2]: Borrow<Self_Owned, Self>
-    fn to_owned<'_0> = to_owned<'_0_0, Self, Self_Owned>[Self]
+    fn to_owned<'_0_1> = to_owned<'_0_1, Self, Self_Owned>[Self]
     non-dyn-compatible
 }
 
@@ -164,7 +168,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
     parent_clause3 : [@TraitClause3]: Clone<Self_Item>
     fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item>[Self]
-    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_0]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -219,7 +223,7 @@ where
     parent_clause2 = Sized<Option<&'_ (T)>[Sized<&'_ (T)>]>
     parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[Sized<&'_ (T)>, {impl Clone for &'_0 (T)}<'_, T>]
     fn use_item_required = {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
-    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_0]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -263,7 +267,7 @@ where
     parent_clause2 = @TraitClause0
     parent_clause3 = @TraitClause1::parent_clause1
     fn use_item_required = {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_required<'a, T>[@TraitClause0, @TraitClause1]
-    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, T, Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_0]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, T, Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_1]
     non-dyn-compatible
 }
 

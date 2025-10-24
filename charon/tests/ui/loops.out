@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -32,7 +32,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
-    fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -42,7 +42,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
     parent_clause0 = Sized<i32>
-    fn clone<'_0> = {impl Clone for i32}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -52,7 +52,7 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
 // Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
     parent_clause0 = Sized<usize>
-    fn clone<'_0> = {impl Clone for usize}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -60,7 +60,7 @@ impl Clone for usize {
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -100,7 +100,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -110,7 +110,7 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -129,7 +129,7 @@ pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl PartialEq<u32> for u32 {
-    fn eq<'_0, '_1> = {impl PartialEq<u32> for u32}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<u32> for u32}::{vtable}
 }
 
@@ -138,7 +138,7 @@ pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
-    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<i32> for i32}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
@@ -147,7 +147,7 @@ pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
 impl PartialEq<usize> for usize {
-    fn eq<'_0, '_1> = {impl PartialEq<usize> for usize}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<usize> for usize}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq<usize> for usize}::{vtable}
 }
 
@@ -157,7 +157,7 @@ pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2:
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
 impl PartialOrd<u32> for u32 {
     parent_clause0 = {impl PartialEq<u32> for u32}
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_0, '_0_1>
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<u32> for u32}::{vtable}
 }
 
@@ -167,7 +167,7 @@ pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2:
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
 impl PartialOrd<i32> for i32 {
     parent_clause0 = {impl PartialEq<i32> for i32}
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_0, '_0_1>
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<i32> for i32}::{vtable}
 }
 
@@ -177,7 +177,7 @@ pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
 impl PartialOrd<usize> for usize {
     parent_clause0 = {impl PartialEq<usize> for usize}
-    fn partial_cmp<'_0, '_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_0, '_0_1>
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<usize> for usize}::{vtable}
 }
 
@@ -211,7 +211,7 @@ pub trait Step<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     parent_clause2 : [@TraitClause2]: PartialOrd<Self, Self>
-    fn steps_between<'_0, '_1> = core::iter::range::Step::steps_between<'_0_0, '_0_1, Self>[Self]
+    fn steps_between<'_0_1, '_1_1> = core::iter::range::Step::steps_between<'_0_1, '_1_1, Self>[Self]
     fn forward_checked = core::iter::range::Step::forward_checked<Self>[Self]
     fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
     non-dyn-compatible
@@ -243,7 +243,7 @@ impl Step for usize {
     parent_clause0 = Sized<usize>
     parent_clause1 = {impl Clone for usize}
     parent_clause2 = {impl PartialOrd<usize> for usize}
-    fn steps_between<'_0, '_1> = {impl Step for usize}::steps_between<'_0_0, '_0_1>
+    fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for usize}::forward_checked
     fn backward_checked = {impl Step for usize}::backward_checked
     non-dyn-compatible
@@ -263,7 +263,7 @@ impl Step for u32 {
     parent_clause0 = Sized<u32>
     parent_clause1 = {impl Clone for u32}
     parent_clause2 = {impl PartialOrd<u32> for u32}
-    fn steps_between<'_0, '_1> = {impl Step for u32}::steps_between<'_0_0, '_0_1>
+    fn steps_between<'_0_1, '_1_1> = {impl Step for u32}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for u32}::forward_checked
     fn backward_checked = {impl Step for u32}::backward_checked
     non-dyn-compatible
@@ -283,7 +283,7 @@ impl Step for i32 {
     parent_clause0 = Sized<i32>
     parent_clause1 = {impl Clone for i32}
     parent_clause2 = {impl PartialOrd<i32> for i32}
-    fn steps_between<'_0, '_1> = {impl Step for i32}::steps_between<'_0_0, '_0_1>
+    fn steps_between<'_0_1, '_1_1> = {impl Step for i32}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for i32}::forward_checked
     fn backward_checked = {impl Step for i32}::backward_checked
     non-dyn-compatible
@@ -296,7 +296,7 @@ pub trait Iterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
-    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -325,7 +325,7 @@ where
     parent_clause0 = MetaSized<Range<A>[@TraitClause0]>
     parent_clause1 = @TraitClause0
     type Item = A
-    fn next<'_0> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_0, A>[@TraitClause0, @TraitClause1]
+    fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
@@ -334,7 +334,7 @@ pub trait Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn sum<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -350,7 +350,7 @@ pub trait Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn product<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -383,7 +383,7 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -428,7 +428,7 @@ pub trait Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn extend<'_0_1, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_1, Self, A, T>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -446,7 +446,7 @@ pub trait DoubleEndedIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
-    fn next_back<'_0> = next_back<'_0_0, Self>[Self]
+    fn next_back<'_0_1> = next_back<'_0_1, Self>[Self]
     vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::parent_clause1::Item>
 }
 
@@ -525,7 +525,7 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -547,7 +547,7 @@ pub trait Index<Self, Idx>
     parent_clause1 : [@TraitClause1]: MetaSized<Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
     type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
+    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -562,7 +562,7 @@ pub trait IndexMut<Self, Idx>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Index<Self, Idx>
     parent_clause2 : [@TraitClause2]: MetaSized<Idx>
-    fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>[Self]
+    fn index_mut<'_0_1> = core::ops::index::IndexMut::index_mut<'_0_1, Self, Idx>[Self]
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::parent_clause1::Output>
 }
 
@@ -649,12 +649,12 @@ pub trait SliceIndex<Self, T>
     parent_clause2 : [@TraitClause2]: MetaSized<T>
     parent_clause3 : [@TraitClause3]: MetaSized<Self::Output>
     type Output
-    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>[Self]
-    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>[Self]
+    fn get<'_0_1> = core::slice::index::SliceIndex::get<'_0_1, Self, T>[Self]
+    fn get_mut<'_0_1> = core::slice::index::SliceIndex::get_mut<'_0_1, Self, T>[Self]
     fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>[Self]
     fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
-    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
-    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
+    fn index<'_0_1> = core::slice::index::SliceIndex::index<'_0_1, Self, T>[Self]
+    fn index_mut<'_0_1> = core::slice::index::SliceIndex::index_mut<'_0_1, Self, T>[Self]
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -722,12 +722,12 @@ where
     parent_clause2 = MetaSized<Slice<T>>
     parent_clause3 = @TraitClause0::parent_clause0
     type Output = T
-    fn get<'_0> = {impl SliceIndex<Slice<T>> for usize}::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0_0, T>[@TraitClause0]
+    fn get<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::get<'_0_1, T>[@TraitClause0]
+    fn get_mut<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0_1, T>[@TraitClause0]
     fn get_unchecked = {impl SliceIndex<Slice<T>> for usize}::get_unchecked<T>[@TraitClause0]
     fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_0, T>[@TraitClause0]
+    fn index<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_1, T>[@TraitClause0]
+    fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_1, T>[@TraitClause0]
     vtable: {impl SliceIndex<Slice<T>> for usize}::{vtable}<T>[@TraitClause0]
 }
 
@@ -767,7 +767,7 @@ where
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause3::parent_clause3
     type Output = @TraitClause3::Output
-    fn index<'_0> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index<'_0_1> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     vtable: {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
@@ -790,7 +790,7 @@ where
     parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause2]>
     parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index_mut<'_0_1> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     vtable: {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
@@ -1816,10 +1816,10 @@ pub fn test_crate::sum(@1: u32) -> u32
 }
 
 // Full name: test_crate::sum_array
-pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
+pub fn sum_array<const N : usize>(@1: Array<u32, N>) -> u32
 {
     let @0: u32; // return
-    let a@1: Array<u32, const N : usize>; // arg #1
+    let a@1: Array<u32, N>; // arg #1
     let i@2: usize; // local
     let s@3: u32; // local
     let @4: bool; // anonymous local
@@ -1828,7 +1828,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
     let @7: usize; // anonymous local
     let @8: u32; // anonymous local
     let @9: usize; // anonymous local
-    let @10: &'_ (Array<u32, const N : usize>); // anonymous local
+    let @10: &'_ (Array<u32, N>); // anonymous local
     let @11: &'_ (u32); // anonymous local
 
     storage_live(@8)
@@ -1841,7 +1841,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
         storage_live(@4)
         storage_live(@5)
         @5 := copy (i@2)
-        @4 := move (@5) < const (const N : usize)
+        @4 := move (@5) < const (N)
         if move (@4) {
             storage_dead(@5)
             storage_live(@6)
@@ -1850,7 +1850,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
             storage_live(@10)
             @10 := &a@1
             storage_live(@11)
-            @11 := @ArrayIndexShared<'_, u32, const N : usize>(move (@10), copy (@7))
+            @11 := @ArrayIndexShared<'_, u32, N>(move (@10), copy (@7))
             @6 := copy (*(@11))
             @8 := copy (s@3) panic.+ copy (@6)
             s@3 := move (@8)

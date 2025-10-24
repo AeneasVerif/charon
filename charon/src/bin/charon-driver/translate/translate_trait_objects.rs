@@ -1,3 +1,4 @@
+use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use itertools::Itertools;
 use std::{mem, vec};
 
@@ -182,9 +183,26 @@ impl ItemTransCtx<'_, '_> {
         }
     }
 
-    /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
     pub fn translate_vtable_struct_ref(
         &mut self,
+        span: Span,
+        tref: &hax::TraitRef,
+    ) -> Result<Option<TypeDeclRef>, Error> {
+        self.translate_vtable_struct_ref_maybe_enqueue(true, span, tref)
+    }
+
+    pub fn translate_vtable_struct_ref_no_enqueue(
+        &mut self,
+        span: Span,
+        tref: &hax::TraitRef,
+    ) -> Result<Option<TypeDeclRef>, Error> {
+        self.translate_vtable_struct_ref_maybe_enqueue(false, span, tref)
+    }
+
+    /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
+    pub fn translate_vtable_struct_ref_maybe_enqueue(
+        &mut self,
+        enqueue: bool,
         span: Span,
         tref: &hax::TraitRef,
     ) -> Result<Option<TypeDeclRef>, Error> {
@@ -194,7 +212,7 @@ impl ItemTransCtx<'_, '_> {
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
         let mut vtable_ref: TypeDeclRef =
-            self.translate_item_no_enqueue(span, tref, TransItemSourceKind::VTable)?;
+            self.translate_item_maybe_enqueue(span, enqueue, tref, TransItemSourceKind::VTable)?;
         // Remove the `Self` type variable from the generic parameters.
         vtable_ref
             .generics
@@ -203,7 +221,7 @@ impl ItemTransCtx<'_, '_> {
 
         // The vtable type also takes associated types as parameters.
         let assoc_tys: Vec<_> = tref
-            .trait_associated_types(&self.hax_state_with_id())
+            .trait_associated_types(self.hax_state_with_id())
             .iter()
             .map(|ty| self.translate_ty(span, ty))
             .try_collect()?;
@@ -475,6 +493,25 @@ impl ItemTransCtx<'_, '_> {
         trait_ref: &hax::TraitRef,
         impl_ref: &hax::ItemRef,
     ) -> Result<Option<GlobalDeclRef>, Error> {
+        self.translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)
+    }
+
+    pub fn translate_vtable_instance_ref_no_enqueue(
+        &mut self,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+        impl_ref: &hax::ItemRef,
+    ) -> Result<Option<GlobalDeclRef>, Error> {
+        self.translate_vtable_instance_ref_maybe_enqueue(false, span, trait_ref, impl_ref)
+    }
+
+    pub fn translate_vtable_instance_ref_maybe_enqueue(
+        &mut self,
+        enqueue: bool,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+        impl_ref: &hax::ItemRef,
+    ) -> Result<Option<GlobalDeclRef>, Error> {
         if !self.trait_is_dyn_compatible(&trait_ref.def_id)? {
             return Ok(None);
         }
@@ -482,8 +519,9 @@ impl ItemTransCtx<'_, '_> {
         // `dyn Trait` coercion.
         // TODO(dyn): To do this properly we'd need to know for each clause whether it ultimately
         // ends up used in a vtable cast.
-        let vtable_ref: GlobalDeclRef = self.translate_item_no_enqueue(
+        let vtable_ref: GlobalDeclRef = self.translate_item_maybe_enqueue(
             span,
+            enqueue,
             impl_ref,
             TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
         )?;
@@ -702,7 +740,7 @@ impl ItemTransCtx<'_, '_> {
                     // Handle built-in implementations, including closures
                     let tref = &impl_expr.r#trait;
                     let hax_state = self.hax_state_with_id();
-                    let trait_def = self.hax_def(&tref.hax_skip_binder_ref().erase(&hax_state))?;
+                    let trait_def = self.hax_def(&tref.hax_skip_binder_ref().erase(hax_state))?;
 
                     trace!(
                         "Processing builtin impl for trait {:?}, lang_item: {:?}, trait_data: {:?}",
@@ -830,13 +868,13 @@ impl ItemTransCtx<'_, '_> {
         vtable_struct_ref: TypeDeclRef,
         impl_kind: &TraitImplSource,
     ) -> Result<Body, Error> {
-        let mut locals = Locals::new(0);
-        let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
-        let ret_place = locals.new_var(Some("ret".into()), ret_ty.clone());
+        // let mut locals = Locals::new(0);
+        // let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
+        // let ret_place = locals.new_var(Some("ret".into()), ret_ty.clone());
 
         // Get trait definition (`trait_def`) and assoticated items (`items`).
         // The `items` for closure is empty: method_call of closure is treated separately.
-        let (trait_def , items) = {
+        let (trait_pred, items) = {
             match impl_kind {
                 TraitImplSource::Normal => {
                     let hax::FullDefKind::TraitImpl {
@@ -845,8 +883,8 @@ impl ItemTransCtx<'_, '_> {
                     else {
                         unreachable!()
                     };
-                    (self.hax_def(&trait_pred.trait_ref)?, items)
-                },
+                    (trait_pred, items)
+                }
                 TraitImplSource::Closure(closure_kind) => {
                     let hax::FullDefKind::Closure {
                         fn_once_impl,
@@ -860,11 +898,13 @@ impl ItemTransCtx<'_, '_> {
                     // Get the appropriate trait implementation for this closure kind
                     let trait_impl = match closure_kind {
                         ClosureKind::FnOnce => fn_once_impl,
-                        ClosureKind::FnMut => fn_mut_impl.as_ref().expect("FnMut impl should exist"),
+                        ClosureKind::FnMut => {
+                            fn_mut_impl.as_ref().expect("FnMut impl should exist")
+                        }
                         ClosureKind::Fn => fn_impl.as_ref().expect("Fn impl should exist"),
                     };
-                    (self.hax_def(&trait_impl.trait_pred.trait_ref)?, &vec![])
-                },
+                    (&trait_impl.trait_pred, &vec![])
+                }
                 _ => {
                     raise_error!(
                         self,
@@ -874,6 +914,15 @@ impl ItemTransCtx<'_, '_> {
                 }
             }
         };
+
+        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
+        // The type this impl is for.
+        let self_ty = &implemented_trait.generics.types[0];
+
+        let mut builder = BodyBuilder::new(span, 0);
+        let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
+        let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
 
         // Retreive the expected field types from the struct definition. This avoids complicated
         // substitutions.
@@ -894,36 +943,68 @@ impl ItemTransCtx<'_, '_> {
                 .collect_vec()
         };
 
-        let mut statements = vec![];
         let mut aggregate_fields = vec![];
         // For each vtable field, assign the desired value to a new local.
         let mut field_ty_iter = field_tys.into_iter();
+
+        let size_ty = field_ty_iter.next().unwrap();
+        let size_local = builder.new_var(Some("size".to_string()), size_ty);
+        builder.push_statement(StatementKind::Assign(
+            size_local.clone(),
+            Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
+        ));
+        aggregate_fields.push(Operand::Move(size_local));
+
+        let align_ty = field_ty_iter.next().unwrap();
+        let align_local = builder.new_var(Some("align".to_string()), align_ty);
+        builder.push_statement(StatementKind::Assign(
+            align_local.clone(),
+            Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
+        ));
+        aggregate_fields.push(Operand::Move(align_local));
+
+        // Helper to fill in the remaining fields with constant values.
         let mut mk_field = |kind| {
             let ty = field_ty_iter.next().unwrap();
             aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
         };
 
-        // Configure the placeholder for the standard vtable metadata fields (size, align, drop).
-        // The value will be provided in a pass later
-        let metadata_fields = match impl_kind {
-            TraitImplSource::Normal => {
-                vec!["unknown size", "unknown align", "unknown drop"]
-            },
-            TraitImplSource::Closure(_) => {
-                vec!["closure size", "closure align", "closure drop"]
-            },
-            _ => {
-                    raise_error!(
-                        self,
-                        span,
-                        "Don't know how to generate a vtable for a virtual impl {impl_kind:?}"
-                    );
-            }
+        // Build a reference to `std::ptr::drop_in_place<T>`.
+        // let drop_in_place: hax::ItemRef = {
+        //     // TODO: use the method instead
+        //     let s = self.hax_state_with_id();
+        //     let drop_in_place = self.tcx.lang_items().drop_in_place_fn().unwrap();
+        //     let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+        //     let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
+        //     hax::ItemRef::translate(s, drop_in_place, generics)
+        // };
+        // let fn_ptr = self
+        //     .translate_fn_ptr(span, &drop_in_place, TransItemSourceKind::Fun)?
+        //     .erase();
+        let fn_ptr = {
+            // Build a reference to `impl Drop for T`.
+            let drop_trait = self.tcx.lang_items().drop_trait().unwrap();
+            let drop_impl_expr: hax::ImplExpr = {
+                let s = self.hax_state_with_id();
+                let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+                let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
+                let drop_tref =
+                    rustc_middle::ty::TraitRef::new_from_args(self.tcx, drop_trait, generics);
+                hax::solve_trait(s, rustc_middle::ty::Binder::dummy(drop_tref))
+            };
+            let drop_tref = self.translate_trait_impl_expr(span, &drop_impl_expr)?;
+            let method_id = self.register_item(
+                span,
+                drop_impl_expr.r#trait.hax_skip_binder_ref(),
+                TransItemSourceKind::DropInPlaceMethod(None),
+            );
+            let item_name = TraitItemName("drop_in_place".to_string());
+            FnPtr::new(
+                FnPtrKind::Trait(drop_tref, item_name, method_id),
+                GenericArgs::empty(),
+            )
         };
-        // mk_field of the vtable metadata fields.
-        metadata_fields
-            .iter()
-            .for_each(|field| mk_field(ConstantExprKind::Opaque(field.to_string())));
+        mk_field(ConstantExprKind::FnPtr(fn_ptr));
 
         // Add usual method
         for item in items {
@@ -933,9 +1014,10 @@ impl ItemTransCtx<'_, '_> {
         // Add the closure method (call, call_mut)
         // We do not translate `call_once` for the reason discussed above -- the function is not dyn-compatible
         if let TraitImplSource::Closure(closure_kind) = *impl_kind
-            && ! matches!(closure_kind, ClosureKind::FnOnce) {
-                mk_field(self.generate_closure_method_shim_ref(span, impl_def, closure_kind)?);
-            }
+            && !matches!(closure_kind, ClosureKind::FnOnce)
+        {
+            mk_field(self.generate_closure_method_shim_ref(span, impl_def, closure_kind)?);
+        }
 
         // Add supertraits to vtable value.
         self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
@@ -949,27 +1031,16 @@ impl ItemTransCtx<'_, '_> {
             )
         }
 
-        // Create the aggregate for the vtable struct
-        let ret_rvalue = Rvalue::Aggregate(
-            AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
-            aggregate_fields,
-        );
-        statements.push(Statement::new(
-            span,
-            StatementKind::Assign(ret_place.clone(), ret_rvalue),
+        // Construct the final struct.
+        builder.push_statement(StatementKind::Assign(
+            ret_place,
+            Rvalue::Aggregate(
+                AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
+                aggregate_fields,
+            ),
         ));
 
-        let block = BlockData {
-            statements,
-            terminator: Terminator::new(span, TerminatorKind::Return),
-        };
-
-        Ok(Body::Unstructured(GExprBody {
-            span,
-            locals,
-            comments: Vec::new(),
-            body: [block].into(),
-        }))
+        Ok(Body::Unstructured(builder.build()))
     }
 
     fn generate_closure_method_shim_ref(
@@ -1011,26 +1082,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(ConstantExprKind::FnPtr(fn_ptr))
     }
 
-    fn generate_concretization(
-        &mut self,
-        span: Span,
-        statements: &mut Vec<Statement>,
-        shim_self: &Place,
-        target_self: &Place,
-    ) -> Result<(), Error> {
-        let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(
-                shim_self.ty().clone(),
-                target_self.ty().clone(),
-            )),
-            Operand::Move(shim_self.clone()),
-        );
-        let stmt = StatementKind::Assign(target_self.clone(), rval);
-        statements.push(Statement::new(span, stmt));
-
-        Ok(())
-    }
-
     pub(crate) fn translate_vtable_instance_init(
         mut self,
         init_func_id: FunDeclId,
@@ -1058,13 +1109,9 @@ impl ItemTransCtx<'_, '_> {
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
 
-        let body = 
-            self.gen_vtable_instance_init_body(
-                    span,
-                    impl_def,
-                    vtable_struct_ref,
-                    impl_kind,
-            ).map_err(|_| Opaque);
+        let body = self
+            .gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)
+            .map_err(|_| Opaque);
 
         Ok(FunDecl {
             def_id: init_func_id,
@@ -1101,23 +1148,15 @@ impl ItemTransCtx<'_, '_> {
         impl_func_def: &hax::FullDef,
         impl_kind: &TraitImplSource,
     ) -> Result<Body, Error> {
-        let mut locals = Locals {
-            arg_count: shim_signature.inputs.len(),
-            locals: Vector::new(),
-        };
-        let mut statements = vec![];
+        let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
 
-        let ret_place = locals.new_var(None, shim_signature.output.clone());
+        let ret_place = builder.new_var(None, shim_signature.output.clone());
         let mut method_args = shim_signature
             .inputs
             .iter()
-            .map(|ty| locals.new_var(None, ty.clone()))
+            .map(|ty| builder.new_var(None, ty.clone()))
             .collect_vec();
-        let target_self = locals.new_var(None, target_receiver.clone());
-        statements.push(Statement::new(
-            span,
-            StatementKind::StorageLive(target_self.as_local().unwrap()),
-        ));
+        let target_self = builder.new_var(None, target_receiver.clone());
 
         // Replace the `dyn Trait` receiver with the concrete one.
         let shim_self = mem::replace(&mut method_args[0], target_self.clone());
@@ -1125,67 +1164,37 @@ impl ItemTransCtx<'_, '_> {
         // Perform the core concretization cast.
         // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
         // (when --raw-boxes is on) `Box`
-        self.generate_concretization(span, &mut statements, &shim_self, &target_self)?;
+        let rval = Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::Concretize(
+                shim_self.ty().clone(),
+                target_self.ty().clone(),
+            )),
+            Operand::Move(shim_self.clone()),
+        );
+        builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        let call = {
-            let fun_id = self.register_item(
-                span,
-                &impl_func_def.this(),
-                match impl_kind {
-                    TraitImplSource::Normal => TransItemSourceKind::Fun,
-                    TraitImplSource::Closure(kind) => TransItemSourceKind::ClosureMethod(*kind),
-                    _ => unreachable!(),
-                },
-            );
-            let generics = Box::new(self.outermost_binder().params.identity_args());
-            Call {
-                func: FnOperand::Regular(FnPtr {
-                    kind: Box::new(FnPtrKind::Fun(fun_id)),
-                    generics,
-                }),
-                args: method_args
-                    .into_iter()
-                    .map(|arg| Operand::Move(arg))
-                    .collect(),
-                dest: ret_place,
-            }
-        };
-
-        // Create blocks
-        let mut blocks = Vector::new();
-
-        let ret_block = BlockData {
-            statements: vec![],
-            terminator: Terminator::new(span, TerminatorKind::Return),
-        };
-
-        let unwind_block = BlockData {
-            statements: vec![],
-            terminator: Terminator::new(span, TerminatorKind::UnwindResume),
-        };
-
-        let call_block = BlockData {
-            statements,
-            terminator: Terminator::new(
-                span,
-                TerminatorKind::Call {
-                    call,
-                    target: BlockId::new(1),    // ret_block
-                    on_unwind: BlockId::new(2), // unwind_block
-                },
-            ),
-        };
-
-        blocks.push(call_block); // BlockId(0) -- START_BLOCK_ID
-        blocks.push(ret_block); // BlockId(1)
-        blocks.push(unwind_block); // BlockId(2)
-
-        Ok(Body::Unstructured(GExprBody {
+        let fun_id = self.register_item(
             span,
-            locals,
-            comments: Vec::new(),
-            body: blocks,
-        }))
+            &impl_func_def.this(),
+            match impl_kind {
+                TraitImplSource::Normal => TransItemSourceKind::Fun,
+                TraitImplSource::Closure(kind) => TransItemSourceKind::ClosureMethod(*kind),
+                _ => unreachable!(),
+            },
+        );
+
+        let generics = self.outermost_binder().params.identity_args();
+
+        builder.call(Call {
+            func: FnOperand::Regular(FnPtr::new(FnPtrKind::Fun(fun_id), generics)),
+            args: method_args
+                .into_iter()
+                .map(|arg| Operand::Move(arg))
+                .collect(),
+            dest: ret_place,
+        });
+
+        Ok(Body::Unstructured(builder.build()))
     }
 
     pub(crate) fn translate_vtable_shim(

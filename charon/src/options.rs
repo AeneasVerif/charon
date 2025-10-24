@@ -82,18 +82,23 @@ pub struct CliOpts {
     #[serde(default)]
     pub skip_borrowck: bool,
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
-    /// skipped. To only translate a particular call graph, use `--start-from`. This
-    /// uses a different mechanism than `--monomorphize-conservative` which should be a lot more
-    /// complete, but doesn't currently support `dyn Trait`.
+    /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't
+    /// currently support `dyn Trait`.
     #[clap(long, visible_alias = "mono")]
     #[serde(default)]
     pub monomorphize: bool,
-    /// Monomorphize the code, replacing generics with their concrete types. This is less complete
-    /// than `--monomorphize` but at least doesn't crash on `dyn Trait`. This will eventually be
-    /// fully replaced with `--monomorphized`.
-    #[clap(long)]
+    /// Partially monomorphize items to make it so that no item is ever monomorphized with a
+    /// mutable reference (or type containing one); said differently, so that the presence of
+    /// mutable references in a type is independent of its generics. This is used by Aeneas.
+    #[clap(
+        long,
+        value_name("INCLUDE_TYPES"),
+        num_args(0..=1),
+        require_equals(true),
+        default_missing_value("all"),
+    )]
     #[serde(default)]
-    pub monomorphize_conservative: bool,
+    pub monomorphize_mut: Option<MonomorphizeMut>,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -157,6 +162,12 @@ pub struct CliOpts {
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
+    /// Remove trait clauses from type declarations. Must be combined with
+    /// `--remove-associated-types` for type declarations that use trait associated types in their
+    /// fields, otherwise this will result in errors.
+    #[clap(long)]
+    #[serde(default)]
+    pub remove_adt_clauses: bool,
     /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     #[clap(long)]
     #[serde(default)]
@@ -290,6 +301,17 @@ pub enum Preset {
     Tests,
 }
 
+#[derive(
+    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
+)]
+pub enum MonomorphizeMut {
+    /// Monomorphize any item instantiated with `&mut`.
+    #[default]
+    All,
+    /// Monomorphize all non-typedecl items instantiated with `&mut`.
+    ExceptTypes,
+}
+
 impl CliOpts {
     pub fn apply_preset(&mut self) {
         if let Some(preset) = self.preset {
@@ -322,6 +344,10 @@ impl CliOpts {
                 Preset::Tests => {
                     self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
+                    self.rustc_args
+                        .push("-Zcrate-attr=feature(register_tool)".to_owned());
+                    self.rustc_args
+                        .push("-Zcrate-attr=register_tool(charon)".to_owned());
                     self.exclude.push("core::fmt::Formatter".to_owned());
                 }
             }
@@ -329,7 +355,7 @@ impl CliOpts {
     }
 
     /// Check that the options are meaningful
-    pub fn validate(&self) {
+    pub fn validate(&self) -> anyhow::Result<()> {
         assert!(
             !self.lib || self.bin.is_none(),
             "Can't use --lib and --bin at the same time"
@@ -394,6 +420,22 @@ impl CliOpts {
                 "`--dest` is deprecated, use `--dest-file` instead",
             )
         }
+
+        if self.remove_adt_clauses && self.remove_associated_types.is_empty() {
+            anyhow::bail!(
+                "`--remove-adt-clauses` should be used with `--remove-associated-types='*'` \
+                to avoid missing clause errors",
+            )
+        }
+        if matches!(self.monomorphize_mut, Some(MonomorphizeMut::ExceptTypes))
+            && !self.remove_adt_clauses
+        {
+            anyhow::bail!(
+                "`--monomorphize-mut=except-types` should be used with `--remove-adt-clauses` \
+                to avoid generics mismatches"
+            )
+        }
+        Ok(())
     }
 }
 
@@ -404,15 +446,18 @@ pub struct TranslateOptions {
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
     pub translate_all_methods: bool,
+    /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
+    /// indicates whether to partially monomorphize types.
+    pub monomorphize_mut: Option<MonomorphizeMut>,
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
+    /// Remove trait clauses attached to type declarations.
+    pub remove_adt_clauses: bool,
     /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     pub hide_allocator: bool,
     /// Remove unused `Self: Trait` clauses on method declarations.
     pub remove_unused_self_clauses: bool,
-    /// Monomorphize functions as a post-processing pass.
-    pub monomorphize_as_pass: bool,
     /// Monomorphize code using hax's instantiation mechanism.
     pub monomorphize_with_hax: bool,
     /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
@@ -498,10 +543,11 @@ impl TranslateOptions {
 
         TranslateOptions {
             mir_level,
+            monomorphize_mut: options.monomorphize_mut,
             hide_marker_traits: options.hide_marker_traits,
+            remove_adt_clauses: options.remove_adt_clauses,
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
-            monomorphize_as_pass: options.monomorphize_conservative,
             monomorphize_with_hax: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
             no_ops_to_function_calls: options.no_ops_to_function_calls,

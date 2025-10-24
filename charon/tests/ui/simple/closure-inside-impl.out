@@ -25,9 +25,13 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -55,7 +59,7 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -67,7 +71,7 @@ pub trait Fn<Self, Args>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
@@ -154,8 +158,8 @@ where
     let args@2: (()); // arg #2
     let @3: &'_ (closure<F, T>[@TraitClause0, @TraitClause1]); // anonymous local
 
-    storage_live(@3)
     @0 := ()
+    storage_live(@3)
     @3 := &*(state@1)
     @0 := {impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_, F, T>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
     return
@@ -205,7 +209,7 @@ where
     parent_clause1 = {impl FnOnce<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}<F, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>
-    fn call_mut<'_0> = {impl FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0_0, F, T>[@TraitClause0, @TraitClause1]
+    fn call_mut<'_0_1> = {impl FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0_1, F, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
@@ -219,7 +223,7 @@ where
     parent_clause1 = {impl FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}<F, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = Sized<(())>
     parent_clause3 = Tuple<(())>
-    fn call<'_0> = {impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_0_0, F, T>[@TraitClause0, @TraitClause1]
+    fn call<'_0_1> = {impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_0_1, F, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 

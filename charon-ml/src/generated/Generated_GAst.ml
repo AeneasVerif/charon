@@ -343,14 +343,13 @@ type cli_options = {
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
           in the crate are skipped. To only translate a particular call graph,
-          use [--start-from]. This uses a different mechanism than
-          [--monomorphize-conservative] which should be a lot more complete, but
-          doesn't currently support [dyn Trait]. *)
-  monomorphize_conservative : bool;
-      (** Monomorphize the code, replacing generics with their concrete types.
-          This is less complete than [--monomorphize] but at least doesn't crash
-          on [dyn Trait]. This will eventually be fully replaced with
-          [--monomorphized]. *)
+          use [--start-from]. Note: this doesn't currently support [dyn Trait].
+      *)
+  monomorphize_mut : monomorphize_mut option;
+      (** Partially monomorphize items to make it so that no item is ever
+          monomorphized with a mutable reference (or type containing one); said
+          differently, so that the presence of mutable references in a type is
+          independent of its generics. This is used by Aeneas. *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private
           fields. When this flag is on, we don't. *)
@@ -371,6 +370,11 @@ type cli_options = {
   hide_marker_traits : bool;
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
           anywhere they show up. *)
+  remove_adt_clauses : bool;
+      (** Remove trait clauses from type declarations. Must be combined with
+          [--remove-associated-types] for type declarations that use trait
+          associated types in their fields, otherwise this will result in
+          errors. *)
   hide_allocator : bool;
       (** Hide the [A] type parameter on standard library containers ([Box],
           [Vec], etc). *)
@@ -450,6 +454,11 @@ and mir_level =
   | Optimized
       (** The MIR after optimizations. Charon disables all the optimizations it
           can, so this is sensibly the same MIR as the elaborated MIR. *)
+
+and monomorphize_mut =
+  | All  (** Monomorphize any item instantiated with [&mut]. *)
+  | ExceptTypes
+      (** Monomorphize all non-typedecl items instantiated with [&mut]. *)
 
 (** Presets to make it easier to tweak options without breaking dependent
     projects. Eventually we should define semantically-meaningful presets

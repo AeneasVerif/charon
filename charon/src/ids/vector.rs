@@ -212,6 +212,18 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids.
+    pub fn map_indexed<U>(self, mut f: impl FnMut(I, T) -> U) -> Vector<I, U> {
+        Vector {
+            vector: self
+                .vector
+                .into_iter_enumerated()
+                .map(|(i, x_opt)| x_opt.map(|x| f(i, x)))
+                .collect(),
+            elem_count: self.elem_count,
+        }
+    }
+
+    /// Map each entry to a new one, keeping the same ids.
     pub fn map_ref_indexed<'a, U>(&'a self, mut f: impl FnMut(I, &'a T) -> U) -> Vector<I, U> {
         Vector {
             vector: self
@@ -322,6 +334,16 @@ where
         self.extract(|x| !f(x)).for_each(drop);
     }
 
+    /// Like `Vec::clear`.
+    pub fn clear(&mut self) {
+        self.vector.clear();
+        self.elem_count = 0;
+    }
+    /// Like `Vec::truncate`.
+    pub fn truncate(&mut self, at: usize) {
+        self.vector.truncate(at);
+        self.elem_count = self.iter().count();
+    }
     /// Like `Vec::split_off`.
     pub fn split_off(&mut self, at: usize) -> Self {
         let mut ret = Self {

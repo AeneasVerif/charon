@@ -25,8 +25,8 @@ pub trait Destruct<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<Self>> = clone_from<'_0_0, '_0_1, Self>[Self, @TraitClause0_0]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -40,7 +40,8 @@ where
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -95,8 +96,8 @@ where
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
     parent_clause0 = Sized<u8>
-    fn clone<'_0> = {impl Clone for u8}::clone<'_0_0>
-    fn clone_from<'_0, '_1, [@TraitClause0]: Destruct<u8>> = core::clone::impls::{impl Clone for u8}::clone_from<'_0_0, '_0_1>[@TraitClause0_0]
+    fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<u8>> = core::clone::impls::{impl Clone for u8}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -159,6 +160,9 @@ pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
     @0 := copy (self@1) checked.+ copy (rhs@2)
     return
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))

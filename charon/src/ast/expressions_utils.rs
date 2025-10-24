@@ -244,3 +244,12 @@ impl UnOp {
         }
     }
 }
+
+impl FnPtr {
+    pub fn new(kind: FnPtrKind, generics: impl Into<BoxedArgs>) -> Self {
+        Self {
+            kind: Box::new(kind),
+            generics: generics.into(),
+        }
+    }
+}

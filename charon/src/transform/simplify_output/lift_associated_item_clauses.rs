@@ -1,6 +1,5 @@
-//! Move clauses on non-gat associated types to be parent clauses. The distinction is not semantically
-//! meaningful. We should ideally to this directly when translating but this is currently
-//! difficult; instead we do this as a post-processing pass.
+//! Move clauses on non-generic associated types to be implied clauses of the trait. The
+//! distinction is not semantically meaningful.
 use std::collections::HashMap;
 use std::mem;
 

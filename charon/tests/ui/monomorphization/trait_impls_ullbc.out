@@ -4,7 +4,7 @@
 #[lang_item("eq")]
 pub trait PartialEq::<bool, bool>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq::<bool, bool><'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq::<bool, bool><'_0_1, '_1_1>
     vtable: core::cmp::PartialEq::{vtable}::<bool, bool>
 }
 
@@ -27,7 +27,7 @@ pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (b
 
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
 impl PartialEq::<bool, bool> {
-    fn eq<'_0, '_1> = {impl PartialEq::<bool, bool>}::eq<'_0_0, '_0_1>
+    fn eq<'_0_1, '_1_1> = {impl PartialEq::<bool, bool>}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq::<bool, bool>}::{vtable}
 }
 
@@ -54,9 +54,13 @@ pub trait Sized::<bool>
 pub trait Drop::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    fn drop<'_0> = drop::<bool><'_0_0>
+    fn drop<'_0_1> = drop::<bool><'_0_1>
+    fn drop_in_place = drop_in_place::<bool>
     vtable: core::ops::drop::Drop::{vtable}::<bool>
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place::<bool>
+fn drop_in_place::<bool>(@1: *mut bool)
 
 // Full name: core::ops::drop::Drop::drop::<bool>
 pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))

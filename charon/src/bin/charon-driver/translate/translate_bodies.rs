@@ -532,7 +532,7 @@ impl BodyTransCtx<'_, '_, '_> {
                                     hax::ImplExprAtom::Builtin { .. } => {
                                         // Handle built-in implementations, including closures
                                         let tref = &impl_expr.r#trait;
-                                        let hax_state = self.hax_state_with_id();
+                                        let hax_state = self.hax_state_with_id().clone();
                                         let trait_def = self.hax_def(
                                             &tref.hax_skip_binder_ref().erase(&hax_state),
                                         )?;

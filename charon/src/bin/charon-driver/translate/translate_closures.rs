@@ -44,6 +44,7 @@ use crate::translate::translate_bodies::BodyTransCtx;
 
 use super::translate_crate::TransItemSourceKind;
 use super::translate_ctx::*;
+use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::ids::Vector;
 use charon_lib::ullbc_ast::*;
@@ -350,14 +351,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<Result<Body, Opaque>, Error> {
         use ClosureKind::*;
         let closure_kind = translate_closure_kind(&args.kind);
-        let mk_stt = |content| Statement::new(span, content);
-        let mk_block = |statements, terminator| -> BlockData {
-            BlockData {
-                statements,
-                terminator: Terminator::new(span, terminator),
-            }
-        };
-
         Ok(match (target_kind, closure_kind) {
             (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
                 // Translate the function's body normally
@@ -379,9 +372,8 @@ impl ItemTransCtx<'_, '_> {
                         } = body.as_unstructured_mut().unwrap();
 
                         blocks.dyn_visit_mut(|local: &mut LocalId| {
-                            let idx = local.index();
-                            if idx >= 2 {
-                                *local = LocalId::new(idx + 1)
+                            if local.index() >= 2 {
+                                *local += 1;
                             }
                         });
 
@@ -406,10 +398,14 @@ impl ItemTransCtx<'_, '_> {
                                 ),
                                 ty,
                             );
-                            mk_stt(StatementKind::Assign(
-                                locals.place_for_var(LocalId::new(i + 3)),
-                                Rvalue::Use(Operand::Move(nth_field)),
-                            ))
+                            let local_id = LocalId::new(i + 3);
+                            Statement::new(
+                                span,
+                                StatementKind::Assign(
+                                    locals.place_for_var(local_id),
+                                    Rvalue::Use(Operand::Move(nth_field)),
+                                ),
+                            )
                         });
                         blocks[BlockId::ZERO].statements.splice(0..0, new_stts);
 
@@ -459,27 +455,25 @@ impl ItemTransCtx<'_, '_> {
                 let impl_ref = self.translate_closure_impl_ref(span, args, closure_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
                 // TODO: can we ask hax for the trait ref?
-                let fn_op = FnOperand::Regular(FnPtr {
-                    kind: Box::new(fun_id.into()),
-                    generics: Box::new(impl_ref.generics.concat(&GenericArgs {
+                let fn_op = FnOperand::Regular(FnPtr::new(
+                    fun_id.into(),
+                    impl_ref.generics.concat(&GenericArgs {
                         regions: vec![Region::Erased].into(),
                         ..GenericArgs::empty()
-                    })),
-                });
+                    }),
+                ));
 
-                let mut locals = Locals::new(2);
-                let mut statements = vec![];
-                let mut blocks = Vector::default();
+                let mut builder = BodyBuilder::new(span, 2);
 
-                let output = locals.new_var(None, signature.output.clone());
-                let state = locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
-                let args = locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
+                let output = builder.new_var(None, signature.output.clone());
+                let state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
+                let args = builder.new_var(Some("args".to_string()), signature.inputs[1].clone());
                 let deref_state = state.deref();
                 let reborrow_ty =
                     TyKind::Ref(Region::Erased, deref_state.ty.clone(), RefKind::Shared).into_ty();
-                let reborrow = locals.new_var(None, reborrow_ty);
+                let reborrow = builder.new_var(None, reborrow_ty);
 
-                statements.push(mk_stt(StatementKind::Assign(
+                builder.push_statement(StatementKind::Assign(
                     reborrow.clone(),
                     // the state must be Sized, hence `()` as ptr-metadata
                     Rvalue::Ref {
@@ -487,29 +481,15 @@ impl ItemTransCtx<'_, '_> {
                         kind: BorrowKind::Shared,
                         ptr_metadata: Operand::mk_const_unit(),
                     },
-                )));
+                ));
 
-                let start_block = blocks.reserve_slot();
-                let ret_block = blocks.push(mk_block(vec![], TerminatorKind::Return));
-                let unwind_block = blocks.push(mk_block(vec![], TerminatorKind::UnwindResume));
-                let call = TerminatorKind::Call {
-                    target: ret_block,
-                    call: Call {
-                        func: fn_op,
-                        args: vec![Operand::Move(reborrow), Operand::Move(args)],
-                        dest: output,
-                    },
-                    on_unwind: unwind_block,
-                };
-                blocks.set_slot(start_block, mk_block(statements, call));
+                builder.call(Call {
+                    func: fn_op,
+                    args: vec![Operand::Move(reborrow), Operand::Move(args)],
+                    dest: output,
+                });
 
-                let body: ExprBody = GExprBody {
-                    span,
-                    locals,
-                    comments: vec![],
-                    body: blocks,
-                };
-                Ok(Body::Unstructured(body))
+                Ok(Body::Unstructured(builder.build()))
             }
             (Fn, FnOnce) | (Fn, FnMut) | (FnMut, FnOnce) => {
                 panic!(
@@ -700,73 +680,47 @@ impl ItemTransCtx<'_, '_> {
             //   let args = (arg0, ..., argN);
             //   closure.call(args)
             // }
-            let mk_stt = |content| Statement::new(span, content);
-            let mk_block = |statements, terminator| -> BlockData {
-                BlockData {
-                    statements,
-                    terminator: Terminator::new(span, terminator),
-                }
-            };
             let fun_id: FunDeclId = self.register_item(
                 span,
                 def.this(),
                 TransItemSourceKind::ClosureMethod(ClosureKind::FnOnce),
             );
             let impl_ref = self.translate_closure_impl_ref(span, closure, ClosureKind::FnOnce)?;
-            let fn_op = FnOperand::Regular(FnPtr {
-                kind: Box::new(fun_id.into()),
-                generics: impl_ref.generics.clone(),
-            });
+            let fn_op = FnOperand::Regular(FnPtr::new(fun_id.into(), impl_ref.generics.clone()));
 
-            let mut locals = Locals::new(signature.inputs.len());
-            let mut statements = vec![];
-            let mut blocks = Vector::default();
+            let mut builder = BodyBuilder::new(span, signature.inputs.len());
 
-            let output = locals.new_var(None, signature.output.clone());
+            let output = builder.new_var(None, signature.output.clone());
             let args: Vec<Place> = signature
                 .inputs
                 .iter()
                 .enumerate()
-                .map(|(i, ty)| locals.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
+                .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
-            let args_tupled = locals.new_var(Some("args".to_string()), args_tuple_ty.clone());
-            let state = locals.new_var(Some("state".to_string()), state_ty.clone());
+            let args_tupled = builder.new_var(Some("args".to_string()), args_tuple_ty.clone());
+            let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 
-            statements.push(mk_stt(StatementKind::Assign(
+            builder.push_statement(StatementKind::Assign(
                 args_tupled.clone(),
                 Rvalue::Aggregate(
                     AggregateKind::Adt(args_tuple_ty.as_adt().unwrap().clone(), None, None),
                     args.into_iter().map(Operand::Move).collect(),
                 ),
-            )));
+            ));
 
             let state_ty_adt = state_ty.as_adt().unwrap();
-            statements.push(mk_stt(StatementKind::Assign(
+            builder.push_statement(StatementKind::Assign(
                 state.clone(),
                 Rvalue::Aggregate(AggregateKind::Adt(state_ty_adt.clone(), None, None), vec![]),
-            )));
+            ));
 
-            let start_block = blocks.reserve_slot();
-            let ret_block = blocks.push(mk_block(vec![], TerminatorKind::Return));
-            let unwind_block = blocks.push(mk_block(vec![], TerminatorKind::UnwindResume));
-            let call = TerminatorKind::Call {
-                target: ret_block,
-                call: Call {
-                    func: fn_op,
-                    args: vec![Operand::Move(state), Operand::Move(args_tupled)],
-                    dest: output,
-                },
-                on_unwind: unwind_block,
-            };
-            blocks.set_slot(start_block, mk_block(statements, call));
+            builder.call(Call {
+                func: fn_op,
+                args: vec![Operand::Move(state), Operand::Move(args_tupled)],
+                dest: output,
+            });
 
-            let body: ExprBody = GExprBody {
-                span,
-                locals,
-                comments: vec![],
-                body: blocks,
-            };
-            Ok(Body::Unstructured(body))
+            Ok(Body::Unstructured(builder.build()))
         };
 
         Ok(FunDecl {

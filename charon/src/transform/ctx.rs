@@ -204,23 +204,14 @@ impl<'ctx> TransformCtx {
     }
 
     /// Iterate mutably over all items, keeping access to `self`. To make this work, we move out
-    /// each item before iterating over it.
+    /// each item before iterating over it. Items added during traversal will not be iterated over.
     pub fn for_each_item_mut(&mut self, mut f: impl for<'a> FnMut(&'a mut Self, ItemRefMut<'a>)) {
-        macro_rules! for_each {
-            ($vector:ident, $kind:ident) => {
-                for id in self.translated.$vector.all_indices() {
-                    if let Some(mut decl) = self.translated.$vector.remove(id) {
-                        f(self, ItemRefMut::$kind(&mut decl));
-                        self.translated.$vector.set_slot(id, decl);
-                    }
-                }
-            };
+        for id in self.translated.all_ids() {
+            if let Some(mut decl) = self.translated.remove_item(id) {
+                f(self, decl.as_mut());
+                self.translated.set_item_slot(id, decl);
+            }
         }
-        for_each!(type_decls, Type);
-        for_each!(fun_decls, Fun);
-        for_each!(global_decls, Global);
-        for_each!(trait_decls, TraitDecl);
-        for_each!(trait_impls, TraitImpl);
     }
 }
 

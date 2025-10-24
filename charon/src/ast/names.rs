@@ -14,8 +14,10 @@ generate_index_type!(Disambiguator);
 pub enum PathElem {
     Ident(#[drive(skip)] String, Disambiguator),
     Impl(ImplElem),
-    /// This item was obtained by monomorphizing its parent with the given args.
-    Monomorphized(BoxedArgs),
+    /// This item was obtained by instantiating its parent with the given args. The binder binds
+    /// the parameters of the new items. If the binder binds nothing then this is a
+    /// monomorphization.
+    Instantiated(Box<Binder<GenericArgs>>),
 }
 
 /// There are two kinds of `impl` blocks:
@@ -70,7 +72,7 @@ pub enum ImplElem {
 /// name clashes anyway. Still, we might want to be more precise in the future.
 ///
 /// Also note that the first path element in the name is always the crate name.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 #[serde(transparent)]
 pub struct Name {
     pub name: Vec<PathElem>,

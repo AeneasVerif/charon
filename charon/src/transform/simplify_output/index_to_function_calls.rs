@@ -77,10 +77,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             // Same generics as the array/slice type, except for the extra lifetime.
             let mut generics = tref.generics.clone();
             generics.regions = [Region::Erased].into();
-            FnOperand::Regular(FnPtr {
-                kind: Box::new(FnPtrKind::mk_builtin(builtin_fun)),
-                generics,
-            })
+            FnOperand::Regular(FnPtr::new(FnPtrKind::mk_builtin(builtin_fun), generics))
         };
 
         let input_ty = TyKind::Ref(

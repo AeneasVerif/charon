@@ -316,7 +316,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("use_polonius", use_polonius);
           ("skip_borrowck", skip_borrowck);
           ("monomorphize", monomorphize);
-          ("monomorphize_conservative", monomorphize_conservative);
+          ("monomorphize_mut", monomorphize_mut);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
           ("include", include_);
@@ -324,6 +324,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("exclude", exclude);
           ("remove_associated_types", remove_associated_types);
           ("hide_marker_traits", hide_marker_traits);
+          ("remove_adt_clauses", remove_adt_clauses);
           ("hide_allocator", hide_allocator);
           ("remove_unused_self_clauses", remove_unused_self_clauses);
           ("add_drop_bounds", add_drop_bounds);
@@ -356,8 +357,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* use_polonius = bool_of_json ctx use_polonius in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* monomorphize = bool_of_json ctx monomorphize in
-        let* monomorphize_conservative =
-          bool_of_json ctx monomorphize_conservative
+        let* monomorphize_mut =
+          option_of_json monomorphize_mut_of_json ctx monomorphize_mut
         in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
@@ -368,6 +369,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           list_of_json string_of_json ctx remove_associated_types
         in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
+        let* remove_adt_clauses = bool_of_json ctx remove_adt_clauses in
         let* hide_allocator = bool_of_json ctx hide_allocator in
         let* remove_unused_self_clauses =
           bool_of_json ctx remove_unused_self_clauses
@@ -405,7 +407,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              use_polonius;
              skip_borrowck;
              monomorphize;
-             monomorphize_conservative;
+             monomorphize_mut;
              extract_opaque_bodies;
              translate_all_methods;
              included;
@@ -413,6 +415,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              exclude;
              remove_associated_types;
              hide_marker_traits;
+             remove_adt_clauses;
              hide_allocator;
              remove_unused_self_clauses;
              add_drop_bounds;
@@ -1230,6 +1233,14 @@ and mir_level_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Optimized" -> Ok Optimized
     | _ -> Error "")
 
+and monomorphize_mut_of_json (ctx : of_json_ctx) (js : json) :
+    (monomorphize_mut, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "All" -> Ok All
+    | `String "ExceptTypes" -> Ok ExceptTypes
+    | _ -> Error "")
+
 and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1299,11 +1310,11 @@ and path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Impl", impl) ] ->
         let* impl = impl_elem_of_json ctx impl in
         Ok (PeImpl impl)
-    | `Assoc [ ("Monomorphized", monomorphized) ] ->
-        let* monomorphized =
-          box_of_json generic_args_of_json ctx monomorphized
+    | `Assoc [ ("Instantiated", instantiated) ] ->
+        let* instantiated =
+          box_of_json (binder_of_json generic_args_of_json) ctx instantiated
         in
-        Ok (PeMonomorphized monomorphized)
+        Ok (PeInstantiated instantiated)
     | _ -> Error "")
 
 and place_of_json (ctx : of_json_ctx) (js : json) : (place, string) result =

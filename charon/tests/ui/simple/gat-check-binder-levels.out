@@ -56,10 +56,10 @@ pub trait Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
-    type Type<U, [@TraitClause0]: Sized<U>>
+    type Type<U, [@TraitClause0_1]: Sized<U>>
     where
-        implied_clause_0 : [@TraitClause0]: Sized<Self::Type>
-        implied_clause_1 : [@TraitClause1]: Link<Self::Type, T>
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::Type>
+        implied_clause_1 : [@TraitClause1_1]: Link<Self::Type, T>
 
     non-dyn-compatible
 }
@@ -74,7 +74,7 @@ where
 {
     parent_clause0 = MetaSized<Foo>
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
-    type Type<U, [@TraitClause0]: Sized<U>> = (T, U)
+    type Type<U, [@TraitClause0_1]: Sized<U>> = (T, U)
     non-dyn-compatible
 }
 

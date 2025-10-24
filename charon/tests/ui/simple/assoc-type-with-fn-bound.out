@@ -40,7 +40,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args, Self_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0> = call_mut<'_0_0, Self, Args, Self_Clause1_Output>[Self]
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args, Self_Clause1_Output>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
@@ -52,7 +52,7 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause1_Clause1_Output>[Self]
+    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
@@ -86,7 +86,7 @@ pub trait Trait<Self, Self_Foo>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self_Foo>
     parent_clause2 : [@TraitClause2]: Fn<Self_Foo, (), ()>
-    fn call<'_0> = test_crate::Trait::call<'_0_0, Self, Self_Foo>[Self]
+    fn call<'_0_1> = test_crate::Trait::call<'_0_1, Self, Self_Foo>[Self]
     vtable: test_crate::Trait::{vtable}<Self_Foo>
 }
 
@@ -125,7 +125,7 @@ where
     parent_clause0 = @TraitClause0::parent_clause0
     parent_clause1 = @TraitClause1
     parent_clause2 = @TraitClause0
-    fn call<'_0> = {impl Trait<F> for F}::call<'_0_0, F>[@TraitClause0, @TraitClause1]
+    fn call<'_0_1> = {impl Trait<F> for F}::call<'_0_1, F>[@TraitClause0, @TraitClause1]
     vtable: {impl Trait<F> for F}::{vtable}<F>[@TraitClause0, @TraitClause1]
 }
 

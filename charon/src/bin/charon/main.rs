@@ -29,10 +29,6 @@
 //! them in a specific environment variable, so that charon-driver can
 //! deserialize them later and use them to guide the extraction in the
 //! callbacks.
-#![feature(register_tool)]
-// For when we use charon on itself
-#![register_tool(charon)]
-
 use annotate_snippets::Level;
 use anyhow::Result;
 use charon_lib::{
@@ -121,7 +117,7 @@ fn translate_with_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
     if let Some(toml) = toml_config::read_toml() {
         options = toml.apply(options);
     }
-    options.validate();
+    options.validate()?;
     if options.input_file.is_some() {
         panic!("Option `--input` is only available for `charon rustc`");
     }
@@ -160,7 +156,7 @@ fn translate_with_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
 
 fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    options.validate();
+    options.validate()?;
     if !options.cargo_args.is_empty() {
         bail!("Option `--cargo-arg` is not compatible with `--no-cargo` or `charon rustc`")
     }

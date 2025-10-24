@@ -17,9 +17,13 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -49,7 +53,7 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T, A>> = test_crate::FromIterator::from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: IntoIterator<T, A>> = test_crate::FromIterator::from_iter<Self, A, T>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -78,7 +82,7 @@ where
 impl FromIterator<()> for () {
     parent_clause0 = Sized<()>
     parent_clause1 = Sized<()>
-    fn from_iter<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I, ()>> = {impl FromIterator<()> for ()}::from_iter<I>[@TraitClause0_0, @TraitClause0_1]
+    fn from_iter<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: IntoIterator<I, ()>> = {impl FromIterator<()> for ()}::from_iter<I>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 

@@ -58,8 +58,15 @@ pub enum TransItemSourceKind {
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// The `drop` method of a `TraitImplSource::DropGlue` trait impl.
-    DropGlueMethod,
+    /// The `drop` method of a `TraitImplSource::ImplicitDrop` trait impl; that method does
+    /// nothing.
+    EmptyDropMethod,
+    /// The `drop_in_place` method of a `Drop` impl or decl. It contains the drop glue that calls
+    /// `Drop::drop` for the type and then drops its fields. if the `TraitImplSource` is `None`
+    /// this is the method declaration (and the DefId is that of the `Drop` trait), otherwise this
+    /// is a method implementation (and the DefId is either that of a `impl Drop for Foo` impl, or
+    /// that of an ADT in case of an implicit `Drop` impl).
+    DropInPlaceMethod(Option<TraitImplSource>),
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
     /// The static vtable value for a specific impl.
@@ -83,7 +90,7 @@ pub enum TraitImplSource {
     Closure(ClosureKind),
     /// A fictitious `impl Drop for T` that contains the drop glue code for the given ADT. The
     /// `DefId` is that of the ADT.
-    DropGlue,
+    ImplicitDrop,
 }
 
 impl TransItemSource {
@@ -134,13 +141,15 @@ impl TransItemSource {
             TransItemSourceKind::ClosureMethod(kind) => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
             }
-            TransItemSourceKind::DropGlueMethod => {
-                TransItemSourceKind::TraitImpl(TraitImplSource::DropGlue)
+            TransItemSourceKind::EmptyDropMethod => {
+                TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop)
             }
-            TransItemSourceKind::VTableInstance(impl_kind)
+            TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
+            | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
+            TransItemSourceKind::DropInPlaceMethod(None) => TransItemSourceKind::TraitDecl,
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -211,20 +220,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
             // We skip these
             ExternCrate { .. } | GlobalAsm { .. } | Macro { .. } | Use { .. } => return None,
+            // These can happen when doing `--start-from` on a foreign crate. We can skip them
+            // because their parents will already have been registered.
+            Ctor { .. } | Variant { .. } => return None,
             // We cannot encounter these since they're not top-level items.
             AnonConst { .. }
             | AssocTy { .. }
             | Closure { .. }
             | ConstParam { .. }
-            | Ctor { .. }
             | Field { .. }
             | InlineConst { .. }
             | PromotedConst { .. }
             | LifetimeParam { .. }
             | OpaqueTy { .. }
             | SyntheticCoroutineBody { .. }
-            | TyParam { .. }
-            | Variant { .. } => {
+            | TyParam { .. } => {
                 let span = self.def_span(def_id);
                 register_error!(
                     self,
@@ -280,7 +290,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Fun
                     | ClosureMethod(..)
                     | ClosureAsFnCast
-                    | DropGlueMethod
+                    | EmptyDropMethod
+                    | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
@@ -321,50 +332,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
-pub struct ItemRef<Id> {
-    id: Id,
-    generics: BoxedArgs,
-}
-
-// Implement `ItemRef<_>` -> `FooDeclRef` conversions.
-macro_rules! convert_item_ref {
-    ($item_ref_ty:ident($id:ident)) => {
-        impl TryFrom<ItemRef<ItemId>> for $item_ref_ty {
-            type Error = ();
-            fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
-                Ok($item_ref_ty {
-                    id: item.id.try_into()?,
-                    generics: item.generics,
-                })
-            }
-        }
-        impl From<ItemRef<$id>> for $item_ref_ty {
-            fn from(item: ItemRef<$id>) -> Self {
-                $item_ref_ty {
-                    id: item.id,
-                    generics: item.generics,
-                }
-            }
-        }
-    };
-}
-convert_item_ref!(TypeDeclRef(TypeId));
-convert_item_ref!(FunDeclRef(FunDeclId));
-convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
-convert_item_ref!(GlobalDeclRef(GlobalDeclId));
-convert_item_ref!(TraitDeclRef(TraitDeclId));
-convert_item_ref!(TraitImplRef(TraitImplId));
-impl TryFrom<ItemRef<ItemId>> for FnPtr {
-    type Error = ();
-    fn try_from(item: ItemRef<ItemId>) -> Result<Self, ()> {
-        let id: FunId = item.id.try_into()?;
-        Ok(FnPtr {
-            kind: Box::new(id.into()),
-            generics: item.generics,
-        })
-    }
-}
-
 // Id and item reference registration.
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
@@ -402,7 +369,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> T {
         let item = if self.monomorphize() && item.has_param {
-            item.erase(&self.hax_state_with_id())
+            item.erase(self.hax_state_with_id())
         } else {
             item.clone()
         };
@@ -436,7 +403,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and maybe enqueue it for translation.
-    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<ItemRef<ItemId>>>(
+    pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
         enqueue: bool,
@@ -449,7 +416,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)
         }?;
-        let item = ItemRef {
+        let item = DeclRef {
             id,
             generics: Box::new(generics),
         };
@@ -461,7 +428,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Note: for `FnPtr`s use `translate_fn_ptr` instead, as this handles late-bound variables
     /// correctly. For `TypeDeclRef`s use `translate_type_decl_ref` instead, as this correctly
     /// recognizes built-in types.
-    pub(crate) fn translate_item<T: TryFrom<ItemRef<ItemId>>>(
+    pub(crate) fn translate_item<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -471,7 +438,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Register this item and don't enqueue it for translation.
-    pub(crate) fn translate_item_no_enqueue<T: TryFrom<ItemRef<ItemId>>>(
+    #[expect(dead_code)]
+    pub(crate) fn translate_item_no_enqueue<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -551,10 +519,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
-        Ok(bound_generics.map(|generics| FnPtr {
-            kind: Box::new(fun_id),
-            generics: Box::new(generics),
-        }))
+        Ok(bound_generics.map(|generics| FnPtr::new(fun_id, generics)))
     }
 
     pub(crate) fn translate_global_decl_ref(
@@ -589,7 +554,7 @@ pub fn translate<'tcx, 'ctx>(
     tcx: TyCtxt<'tcx>,
     sysroot: PathBuf,
 ) -> TransformCtx {
-    let hax_state = hax::state::State::new(
+    let mut hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
             inline_anon_consts: true,
@@ -599,6 +564,9 @@ pub fn translate<'tcx, 'ctx>(
             },
         },
     );
+    // This suppresses warnings when trait resolution fails. We don't need them since we emit our
+    // own.
+    hax_state.base.silence_resolution_errors = true;
 
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()

@@ -36,7 +36,7 @@ const UNIT_METADATA: () = @Fun0()
 pub trait BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn foo<'_0> = foo<'_0_0, Self>[Self]
+    fn foo<'_0_1> = foo<'_0_1, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
 
@@ -71,7 +71,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
-    fn foo<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
+    fn foo<'_0_1> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_1, T>[@TraitClause0]
     vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 

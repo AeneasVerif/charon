@@ -84,6 +84,16 @@ impl TryFrom<ItemId> for FunId {
     }
 }
 
+/// A translated item.
+#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
+pub enum ItemByVal {
+    Type(TypeDecl),
+    Fun(FunDecl),
+    Global(GlobalDecl),
+    TraitDecl(TraitDecl),
+    TraitImpl(TraitImpl),
+}
+
 /// A reference to a translated item.
 #[derive(
     Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
@@ -216,7 +226,6 @@ impl TranslatedCrate {
             ItemId::TraitImpl(id) => self.trait_impls.get(id).map(ItemRef::TraitImpl),
         }
     }
-
     pub fn get_item_mut(&mut self, trans_id: ItemId) -> Option<ItemRefMut<'_>> {
         match trans_id {
             ItemId::Type(id) => self.type_decls.get_mut(id).map(ItemRefMut::Type),
@@ -224,6 +233,28 @@ impl TranslatedCrate {
             ItemId::Global(id) => self.global_decls.get_mut(id).map(ItemRefMut::Global),
             ItemId::TraitDecl(id) => self.trait_decls.get_mut(id).map(ItemRefMut::TraitDecl),
             ItemId::TraitImpl(id) => self.trait_impls.get_mut(id).map(ItemRefMut::TraitImpl),
+        }
+    }
+    pub fn remove_item(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
+        match trans_id {
+            ItemId::Type(id) => self.type_decls.remove(id).map(ItemByVal::Type),
+            ItemId::Fun(id) => self.fun_decls.remove(id).map(ItemByVal::Fun),
+            ItemId::Global(id) => self.global_decls.remove(id).map(ItemByVal::Global),
+            ItemId::TraitDecl(id) => self.trait_decls.remove(id).map(ItemByVal::TraitDecl),
+            ItemId::TraitImpl(id) => self.trait_impls.remove(id).map(ItemByVal::TraitImpl),
+        }
+    }
+    pub fn set_item_slot(&mut self, id: ItemId, item: ItemByVal) {
+        match item {
+            ItemByVal::Type(decl) => self.type_decls.set_slot(*id.as_type().unwrap(), decl),
+            ItemByVal::Fun(decl) => self.fun_decls.set_slot(*id.as_fun().unwrap(), decl),
+            ItemByVal::Global(decl) => self.global_decls.set_slot(*id.as_global().unwrap(), decl),
+            ItemByVal::TraitDecl(decl) => self
+                .trait_decls
+                .set_slot(*id.as_trait_decl().unwrap(), decl),
+            ItemByVal::TraitImpl(decl) => self
+                .trait_impls
+                .set_slot(*id.as_trait_impl().unwrap(), decl),
         }
     }
 
@@ -259,6 +290,27 @@ impl TranslatedCrate {
     }
 }
 
+impl ItemByVal {
+    pub fn as_ref(&self) -> ItemRef<'_> {
+        match self {
+            Self::Type(d) => ItemRef::Type(d),
+            Self::Fun(d) => ItemRef::Fun(d),
+            Self::Global(d) => ItemRef::Global(d),
+            Self::TraitDecl(d) => ItemRef::TraitDecl(d),
+            Self::TraitImpl(d) => ItemRef::TraitImpl(d),
+        }
+    }
+    pub fn as_mut(&mut self) -> ItemRefMut<'_> {
+        match self {
+            Self::Type(d) => ItemRefMut::Type(d),
+            Self::Fun(d) => ItemRefMut::Fun(d),
+            Self::Global(d) => ItemRefMut::Global(d),
+            Self::TraitDecl(d) => ItemRefMut::TraitDecl(d),
+            Self::TraitImpl(d) => ItemRefMut::TraitImpl(d),
+        }
+    }
+}
+
 impl<'ctx> ItemRef<'ctx> {
     pub fn id(&self) -> ItemId {
         match self {
@@ -270,16 +322,25 @@ impl<'ctx> ItemRef<'ctx> {
         }
     }
 
-    pub fn item_meta(&self) -> &'ctx ItemMeta {
-        match self {
-            ItemRef::Type(d) => &d.item_meta,
-            ItemRef::Fun(d) => &d.item_meta,
-            ItemRef::Global(d) => &d.item_meta,
-            ItemRef::TraitDecl(d) => &d.item_meta,
-            ItemRef::TraitImpl(d) => &d.item_meta,
+    pub fn clone(&self) -> ItemByVal {
+        match *self {
+            Self::Type(d) => ItemByVal::Type(d.clone()),
+            Self::Fun(d) => ItemByVal::Fun(d.clone()),
+            Self::Global(d) => ItemByVal::Global(d.clone()),
+            Self::TraitDecl(d) => ItemByVal::TraitDecl(d.clone()),
+            Self::TraitImpl(d) => ItemByVal::TraitImpl(d.clone()),
         }
     }
 
+    pub fn item_meta(&self) -> &'ctx ItemMeta {
+        match self {
+            Self::Type(d) => &d.item_meta,
+            Self::Fun(d) => &d.item_meta,
+            Self::Global(d) => &d.item_meta,
+            Self::TraitDecl(d) => &d.item_meta,
+            Self::TraitImpl(d) => &d.item_meta,
+        }
+    }
     /// The generic parameters of this item.
     pub fn generic_params(&self) -> &'ctx GenericParams {
         match self {
@@ -351,6 +412,26 @@ impl<'ctx> ItemRefMut<'ctx> {
         }
     }
 
+    pub fn set_id(&mut self, id: ItemId) {
+        match (self, id) {
+            (Self::Type(d), ItemId::Type(id)) => d.def_id = id,
+            (Self::Fun(d), ItemId::Fun(id)) => d.def_id = id,
+            (Self::Global(d), ItemId::Global(id)) => d.def_id = id,
+            (Self::TraitDecl(d), ItemId::TraitDecl(id)) => d.def_id = id,
+            (Self::TraitImpl(d), ItemId::TraitImpl(id)) => d.def_id = id,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn item_meta(&mut self) -> &mut ItemMeta {
+        match self {
+            Self::Type(d) => &mut d.item_meta,
+            Self::Fun(d) => &mut d.item_meta,
+            Self::Global(d) => &mut d.item_meta,
+            Self::TraitDecl(d) => &mut d.item_meta,
+            Self::TraitImpl(d) => &mut d.item_meta,
+        }
+    }
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {

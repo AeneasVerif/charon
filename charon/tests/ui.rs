@@ -19,8 +19,7 @@ use std::{
 };
 use walkdir::{DirEntry, WalkDir};
 
-use util::{Action, compare_or_overwrite};
-
+use util::compare_or_overwrite;
 mod util;
 
 static TESTS_DIR: &str = "tests/ui";
@@ -127,7 +126,7 @@ struct Case {
     magic_comments: MagicComments,
 }
 
-fn setup_test(input_path: PathBuf, action: Action) -> anyhow::Result<Trial> {
+fn setup_test(input_path: PathBuf) -> anyhow::Result<Trial> {
     let name = input_path
         .to_str()
         .unwrap()
@@ -144,10 +143,8 @@ fn setup_test(input_path: PathBuf, action: Action) -> anyhow::Result<Trial> {
         expected,
         magic_comments,
     };
-    let trial = Trial::test(name, move || {
-        perform_test(&case, action).map_err(|err| err.into())
-    })
-    .with_ignored_flag(ignore);
+    let trial = Trial::test(name, move || perform_test(&case).map_err(|err| err.into()))
+        .with_ignored_flag(ignore);
     Ok(trial)
 }
 
@@ -160,7 +157,7 @@ fn path_to_crate_name(path: &Path) -> Option<String> {
     )
 }
 
-fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
+fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     // Dependencies
     // Vec of (crate name, path to crate.rs, path to libcrate.rlib).
     let deps: Vec<(String, PathBuf, String)> = test_case
@@ -274,7 +271,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         TestKind::Skip => unreachable!(),
     };
     if test_case.magic_comments.check_output {
-        compare_or_overwrite(action, test_output, &test_case.expected)?;
+        compare_or_overwrite(test_output, &test_case.expected)?;
     } else {
         // Remove the `out` file if there's one from a previous run.
         if test_case.expected.exists() {
@@ -286,12 +283,6 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let action = if std::env::var("IN_CI").as_deref() == Ok("1") {
-        Action::Verify
-    } else {
-        Action::Overwrite
-    };
-
     let root: PathBuf = TESTS_DIR.into();
     let file_filter = |e: &DirEntry| e.file_name().to_str().is_some_and(|s| s.ends_with(".rs"));
     let tests: Vec<_> = WalkDir::new(root)
@@ -303,7 +294,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .map(|entry| {
             let entry = entry?;
-            let test = setup_test(entry.into_path(), action)?;
+            let test = setup_test(entry.into_path())?;
             anyhow::Result::Ok(test)
         })
         .collect::<anyhow::Result<_>>()?;

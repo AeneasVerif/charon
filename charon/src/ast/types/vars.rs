@@ -287,8 +287,20 @@ where
 }
 
 impl TypeParam {
-    pub fn new(index: TypeVarId, name: String) -> TypeParam {
-        TypeParam { index, name }
+    pub fn new(index: TypeVarId, name: String) -> Self {
+        Self { index, name }
+    }
+}
+
+impl RegionParam {
+    pub fn new(index: RegionId, name: Option<String>) -> Self {
+        Self { index, name }
+    }
+}
+
+impl ConstGenericParam {
+    pub fn new(index: ConstGenericVarId, name: String, ty: LiteralTy) -> Self {
+        Self { index, name, ty }
     }
 }
 

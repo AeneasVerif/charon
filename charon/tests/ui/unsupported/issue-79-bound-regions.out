@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -31,7 +31,7 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -71,7 +71,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -81,7 +81,7 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -125,7 +125,7 @@ pub trait Iterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
-    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -134,7 +134,7 @@ pub trait Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn sum<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -150,7 +150,7 @@ pub trait Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn product<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -183,7 +183,7 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -207,7 +207,7 @@ pub trait Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn extend<'_0_1, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_1, Self, A, T>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -225,7 +225,7 @@ pub trait DoubleEndedIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Iterator<Self>
-    fn next_back<'_0> = next_back<'_0_0, Self>[Self]
+    fn next_back<'_0_1> = next_back<'_0_1, Self>[Self]
     vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::parent_clause1::Item>
 }
 
@@ -304,7 +304,7 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -396,7 +396,7 @@ where
     parent_clause0 = MetaSized<Iter<'_, T>[@TraitClause0]>
     parent_clause1 = Sized<&'_ (T)>
     type Item = &'a (T)
-    fn next<'_0> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_0, T>[@TraitClause0]
+    fn next<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
     vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 

@@ -3,6 +3,9 @@ use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use std::{path::PathBuf, process::Command};
 
+mod util;
+use util::*;
+
 fn charon<T>(args: &[&str], dir: &str, f: impl FnOnce(String, String) -> Result<T>) -> Result<T> {
     let cmd_str = std::iter::once("charon")
         .chain(args.iter().copied())
@@ -56,6 +59,14 @@ fn charon_version() -> Result<()> {
             stdout.trim() == version,
             "Output of `{cmd}` is:\n{stdout:?}\nIt should be {version}."
         );
+        Ok(())
+    })
+}
+
+#[test]
+fn charon_help_output() -> Result<()> {
+    charon(&["help"], ".", |stdout, _| {
+        compare_or_overwrite(stdout, &PathBuf::from("./tests/help-output.txt"))?;
         Ok(())
     })
 }

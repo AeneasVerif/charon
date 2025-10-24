@@ -18,7 +18,7 @@ pub trait Deref<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self::Target>
     type Target
-    fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>[Self]
+    fn deref<'_0_1> = core::ops::deref::Deref::deref<'_0_1, Self>[Self]
     vtable: core::ops::deref::Deref::{vtable}<Self::Target>
 }
 
@@ -32,7 +32,7 @@ where
 pub trait DerefMut<Self>
 {
     parent_clause0 : [@TraitClause0]: Deref<Self>
-    fn deref_mut<'_0> = core::ops::deref::DerefMut::deref_mut<'_0_0, Self>[Self]
+    fn deref_mut<'_0_1> = core::ops::deref::DerefMut::deref_mut<'_0_1, Self>[Self]
     vtable: core::ops::deref::DerefMut::{vtable}<Self::parent_clause0::Target>
 }
 
@@ -46,9 +46,12 @@ where
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -64,6 +67,12 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
 where
@@ -71,7 +80,8 @@ where
     [@TraitClause1]: Sized<A>,
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -89,7 +99,7 @@ where
 {
     parent_clause0 = @TraitClause0
     type Target = T
-    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn deref<'_0_1> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -106,7 +116,7 @@ where
     [@TraitClause1]: Sized<A>,
 {
     parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<T, A>[@TraitClause0, @TraitClause1]
-    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn deref_mut<'_0_1> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -143,6 +153,18 @@ where
 fn {impl Drop for List<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (List<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
+{
+    let @0: (); // return
+    let @1: &'_0 mut (List<T>[@TraitClause0]); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::List::{impl Drop for List<T>[@TraitClause0]}::drop_in_place
+fn {impl Drop for List<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut List<T>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
 
 // Full name: test_crate::List::{impl Drop for List<T>[@TraitClause0]}
 impl<T> Drop for List<T>[@TraitClause0]
@@ -150,7 +172,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<List<T>[@TraitClause0]>
-    fn drop<'_0> = {impl Drop for List<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    fn drop<'_0_1> = {impl Drop for List<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
+    fn drop_in_place = {impl Drop for List<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -258,6 +281,18 @@ where
 fn {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (IdType<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<T>,
+{
+    let @0: (); // return
+    let @1: &'_0 mut (IdType<T>[@TraitClause0]); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::IdType::{impl Drop for IdType<T>[@TraitClause0]}::drop_in_place
+fn {impl Drop for IdType<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut IdType<T>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
 
 // Full name: test_crate::IdType::{impl Drop for IdType<T>[@TraitClause0]}
 impl<T> Drop for IdType<T>[@TraitClause0]
@@ -265,7 +300,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<IdType<T>[@TraitClause0]>
-    fn drop<'_0> = {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+    fn drop<'_0_1> = {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
+    fn drop_in_place = {impl Drop for IdType<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
 

@@ -50,7 +50,7 @@ fn main()
 pub trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn defaulted<'_0> = defaulted<'_0_0, Self>[Self]
+    fn defaulted<'_0_1> = defaulted<'_0_1, Self>[Self]
     vtable: test_crate::foo::Trait::{vtable}
 }
 
@@ -70,7 +70,7 @@ where
 // Full name: test_crate::foo::{impl Trait for ()}
 impl Trait for () {
     parent_clause0 = MetaSized<()>
-    fn defaulted<'_0> = test_crate::foo::{impl Trait for ()}::defaulted<'_0_0>
+    fn defaulted<'_0_1> = test_crate::foo::{impl Trait for ()}::defaulted<'_0_1>
     vtable: {impl Trait for ()}::{vtable}
 }
 

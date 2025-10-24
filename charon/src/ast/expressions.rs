@@ -456,10 +456,7 @@ pub struct FnPtr {
 
 impl From<FunDeclRef> for FnPtr {
     fn from(fn_ref: FunDeclRef) -> Self {
-        FnPtr {
-            kind: Box::new(fn_ref.id.into()),
-            generics: fn_ref.generics,
-        }
+        FnPtr::new(fn_ref.id.into(), fn_ref.generics)
     }
 }
 

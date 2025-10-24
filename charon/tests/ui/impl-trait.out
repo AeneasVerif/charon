@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -32,7 +32,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
     parent_clause0 = Sized<u32>
-    fn clone<'_0> = {impl Clone for u32}::clone<'_0_0>
+    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -43,7 +43,7 @@ pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}
 impl<'_0, T> Clone for &'_0 (T) {
     parent_clause0 = Sized<&'_ (T)>
-    fn clone<'_0> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_0, T>
+    fn clone<'_0_1> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_1, T>
     non-dyn-compatible
 }
 
@@ -68,9 +68,13 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+// Full name: core::ops::drop::Drop::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::drop::Drop::drop
 pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
@@ -111,7 +115,7 @@ pub trait Foo<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Type>
     parent_clause2 : [@TraitClause2]: Clone<Self::Type>
     type Type
-    fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>[Self]
+    fn get_ty<'_0_1> = test_crate::Foo::get_ty<'_0_1, Self>[Self]
     vtable: test_crate::Foo::{vtable}<Self::Type>
 }
 
@@ -143,7 +147,7 @@ impl Foo for () {
     parent_clause1 = Sized<u32>
     parent_clause2 = {impl Clone for u32}
     type Type = u32
-    fn get_ty<'_0> = {impl Foo for ()}::get_ty<'_0_0>
+    fn get_ty<'_0_1> = {impl Foo for ()}::get_ty<'_0_1>
     vtable: {impl Foo for ()}::{vtable}
 }
 

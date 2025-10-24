@@ -25,7 +25,8 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -34,6 +35,9 @@ pub fn core::mem::drop<T>(@1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Drop<T>,
+
+// Full name: core::ops::drop::Drop::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -65,7 +69,7 @@ pub trait FnMut<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     parent_clause4 : [@TraitClause4]: Drop<Self>
     parent_clause5 : [@TraitClause5]: Drop<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -79,7 +83,7 @@ pub trait Fn<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     parent_clause4 : [@TraitClause4]: Drop<Self>
     parent_clause5 : [@TraitClause5]: Drop<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
@@ -207,8 +211,8 @@ fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut (te
     let args@2: (); // arg #2
     let @3: &'_ (test_crate::bar::closure); // anonymous local
 
-    storage_live(@3)
     @0 := ()
+    storage_live(@3)
     @3 := &*(state@1)
     @0 := {impl Fn<()> for test_crate::bar::closure}::call<'_>(move (@3), move (args@2))
     return
@@ -252,7 +256,7 @@ impl FnMut<()> for test_crate::bar::closure {
     parent_clause3 = Tuple<()>
     parent_clause4 = Drop<test_crate::bar::closure>
     parent_clause5 = Drop<()>
-    fn call_mut<'_0> = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0_0>
+    fn call_mut<'_0_1> = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
@@ -264,7 +268,7 @@ impl Fn<()> for test_crate::bar::closure {
     parent_clause3 = Tuple<()>
     parent_clause4 = Drop<test_crate::bar::closure>
     parent_clause5 = Drop<()>
-    fn call<'_0> = {impl Fn<()> for test_crate::bar::closure}::call<'_0_0>
+    fn call<'_0_1> = {impl Fn<()> for test_crate::bar::closure}::call<'_0_1>
     non-dyn-compatible
 }
 

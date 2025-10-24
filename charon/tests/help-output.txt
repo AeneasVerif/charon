@@ -1,0 +1,170 @@
+Usage: charon [OPTIONS] [COMMAND]
+
+Commands:
+  rustc           Runs charon on a single rust file (and the modules it references, if any)
+  cargo           Runs charon on a cargo project
+  toolchain-path  Print the path to the rustc toolchain used by charon
+  pretty-print    Pretty-print the given llbc file
+  version         Print the version
+  help            Print this message or the help of the given subcommand(s)
+
+Options:
+      --ullbc
+          Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
+
+      --lib
+          Compile the package's library
+
+      --bin <BIN>
+          Compile the specified binary
+
+      --mir_promoted
+          Deprecated: use `--mir promoted` instead
+
+      --mir_optimized
+          Deprecated: use `--mir optimized` instead
+
+      --mir <MIR>
+          The MIR stage to extract. This is only relevant for the current crate; for dpendencies only MIR optimized is available
+
+          Possible values:
+          - built:      The MIR just after MIR lowering
+          - promoted:   The MIR after const promotion. This is the MIR used by the borrow-checker
+          - elaborated: The MIR after drop elaboration. This is the first MIR to include all the runtime information
+          - optimized:  The MIR after optimizations. Charon disables all the optimizations it can, so this is sensibly the same MIR as the elaborated MIR
+
+      --input <INPUT_FILE>
+          The input file (the entry point of the crate to extract). This is needed if you want to define a custom entry point (to only extract part of a crate for instance)
+
+      --read-llbc <READ_LLBC>
+          Read an llbc file and pretty-print it. This is a terrible API, we should use subcommands
+
+      --dest <DEST_DIR>
+          The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`, unless `dest_file` is set. `dest_dir` defaults to the current directory
+
+      --dest-file <DEST_FILE>
+          The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore `dest_dir`
+
+      --polonius
+          If activated, use Polonius' non-lexical lifetimes (NLL) analysis. Otherwise, use the standard borrow checker
+
+      --skip-borrowck
+          If activated, this skips borrow-checking of the crate
+
+      --monomorphize
+          Monomorphize the items encountered when possible. Generic items found in the crate are skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't currently support `dyn Trait`
+          
+          [aliases: --mono]
+
+      --monomorphize-mut[=<INCLUDE_TYPES>]
+          Partially monomorphize items to make it so that no item is ever monomorphized with a mutable reference (or type containing one); said differently, so that the presence of mutable references in a type is independent of its generics. This is used by Aeneas
+
+          Possible values:
+          - all:          Monomorphize any item instantiated with `&mut`
+          - except-types: Monomorphize all non-typedecl items instantiated with `&mut`
+
+      --extract-opaque-bodies
+          Usually we skip the bodies of foreign methods and structs with private fields. When this flag is on, we don't
+
+      --translate-all-methods
+          Usually we skip the provided methods that aren't used. When this flag is on, we translate them all
+
+      --include <INCLUDE>
+          Whitelist of items to translate. These use the name-matcher syntax (note: this differs
+          a bit from the ocaml NameMatcher).
+          
+          Note: This is very rough at the moment. E.g. this parses `u64` as a path instead of the
+          built-in type. It is also not possible to filter a trait impl (this will only filter
+          its methods). Please report bugs or missing features.
+          
+          Examples:
+            - `crate::module1::module2::item`: refers to this item and all its subitems (e.g.
+                submodules or trait methods);
+            - `crate::module1::module2::item::_`: refers only to the subitems of this item;
+            - `core::convert::{impl core::convert::Into<_> for _}`: retrieve the body of this
+                very useful impl;
+          
+          When multiple patterns in the `--include` and `--opaque` options match the same item,
+          the most precise pattern wins. E.g.: `charon --opaque crate::module --include
+          crate::module::_` makes the `module` opaque (we won't explore its contents), but the
+          items in it transparent (we will translate them if we encounter them.)
+          
+
+      --opaque <OPAQUE>
+          Blacklist of items to keep opaque. Works just like `--include`, see the doc there.
+
+      --exclude <EXCLUDE>
+          Blacklist of items to not translate at all. Works just like `--include`, see the doc there.
+
+      --remove-associated-types <REMOVE_ASSOCIATED_TYPES>
+          List of traits for which we transform associated types to type parameters. The syntax is like `--include`, see the doc there.
+
+      --hide-marker-traits
+          Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show up
+
+      --remove-adt-clauses
+          Remove trait clauses from type declarations. Must be combined with `--remove-associated-types` for type declarations that use trait associated types in their fields, otherwise this will result in errors
+
+      --hide-allocator
+          Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc)
+
+      --remove-unused-self-clauses
+          Trait method declarations take a `Self: Trait` clause as parameter, so that they can be reused by multiple trait impls. This however causes trait definitions to be mutually recursive with their method declarations. This flag removes `Self` clauses that aren't used to break this mutual recursion
+
+      --add-drop-bounds
+          Whether to add `Drop` bounds everywhere to enable proper tracking of what code runs on a given `drop` call
+
+      --start-from <START_FROM>
+          A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)
+
+      --no-cargo
+          Do not run cargo; instead, run the driver directly
+
+      --rustc-flag <RUSTC_ARGS>
+          Extra flags to pass to rustc
+
+      --cargo-arg <CARGO_ARGS>
+          Extra flags to pass to cargo. Incompatible with `--no-cargo`
+
+      --abort-on-error
+          Panic on the first error. This is useful for debugging
+
+      --error-on-warnings
+          Consider any warnings as errors
+
+      --no-serialize
+          Don't serialize the final (U)LLBC to a file.
+
+      --print-original-ullbc
+          Print the ULLBC immediately after extraction from MIR.
+
+      --print-ullbc
+          Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction).
+
+      --print-built-llbc
+          Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
+
+      --print-llbc
+          Print the final LLBC (after all the cleaning micro-passes).
+
+      --no-merge-goto-chains
+          Do not merge the chains of gotos in the ULLBC control-flow graph.
+
+      --no-ops-to-function-calls
+          Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC
+
+      --raw-boxes
+          Do not special-case the translation of `Box<T>` into a builtin ADT.
+
+      --preset <PRESET>
+          Named builtin sets of options. Currently used only for dependent projects, eveentually should be replaced with semantically-meaningful presets
+
+          Possible values:
+          - old-defaults: The default translation used before May 2025. After that, many passes were made optional and disabled by default
+          - aeneas
+          - eurydice
+          - soteria
+          - tests
+
+  -h, --help
+          Print help (see a summary with '-h')

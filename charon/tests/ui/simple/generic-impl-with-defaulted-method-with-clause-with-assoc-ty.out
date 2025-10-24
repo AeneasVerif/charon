@@ -44,7 +44,7 @@ trait HasType<Self, Self_Type>
 trait HasMethod<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn method<Clause0_Type, [@TraitClause0]: HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[Self, @TraitClause0_0]
+    fn method<Clause0_Type, [@TraitClause0_1]: HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -79,7 +79,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
-    fn method<Clause0_Type, [@TraitClause0]: HasType<Option<T>[@TraitClause0], Clause0_Type>> = test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_0]
+    fn method<Clause0_Type, [@TraitClause0_1]: HasType<Option<T>[@TraitClause0], Clause0_Type>> = test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
