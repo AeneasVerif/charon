@@ -99,7 +99,6 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
   drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0)),
-  method_call_once: fn((dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0), Args) -> Ty0,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 

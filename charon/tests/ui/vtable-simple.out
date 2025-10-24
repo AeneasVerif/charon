@@ -147,12 +147,18 @@ where
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
     let size@1: usize; // local
     let align@2: usize; // local
+    let @3: (); // anonymous local
+    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: move (@4) }
     return
 }
 
