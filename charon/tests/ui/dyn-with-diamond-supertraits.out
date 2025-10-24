@@ -321,9 +321,9 @@ fn {impl Join<i32> for i32}::{vtable}() -> test_crate::Join::{vtable}<i32, i32, 
     let @1: (); // anonymous local
     let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
     let @3: (); // anonymous local
-    let @4: &'static (test_crate::Left::{vtable}<Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32), i32>::parent_clause1::Left, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32), i32>::parent_clause1::parent_clause1::Internal>); // anonymous local
+    let @4: &'static (test_crate::Left::{vtable}<i32, i32>); // anonymous local
     let @5: (); // anonymous local
-    let @6: &'static (test_crate::Right::{vtable}<i32, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32), i32>::parent_clause2::Right, Join<(dyn exists<_dyn> [@TraitClause0]: Join<_dyn, i32> + _dyn : '_ + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause1::parent_clause1::Internal = i32 + @TraitClause1_0::parent_clause2::Right = i32 + @TraitClause1_0::parent_clause1::Left = i32), i32>::parent_clause1::parent_clause1::Internal>); // anonymous local
+    let @6: &'static (test_crate::Right::{vtable}<i32, i32, i32>); // anonymous local
 
     storage_live(@1)
     @1 := ()
@@ -332,8 +332,12 @@ fn {impl Join<i32> for i32}::{vtable}() -> test_crate::Join::{vtable}<i32, i32, 
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &{impl Right<i32> for i32}::{vtable}
-    ret@0 := test_crate::Join::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_join_method: const ({vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    @4 := &{impl Left for i32}::{vtable}
+    storage_live(@5)
+    @5 := ()
+    storage_live(@6)
+    @6 := &{impl Right<i32> for i32}::{vtable}
+    ret@0 := test_crate::Join::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_join_method: const ({vtable_method}<'_>), super_trait_0: move (@2), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 

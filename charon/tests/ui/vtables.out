@@ -285,13 +285,19 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
 {
     let ret@0: test_crate::Checkable::{vtable}<i32>; // return
     let @1: (); // anonymous local
-    let @2: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
+    let @3: (); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
 
     storage_live(@1)
     @1 := ()
     storage_live(@2)
-    @2 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2) }
+    @2 := &core::marker::MetaSized::{vtable}
+    storage_live(@3)
+    @3 := ()
+    storage_live(@4)
+    @4 := &{impl Super<i32> for i32}::{vtable}
+    ret@0 := test_crate::Checkable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: move (@2), super_trait_1: move (@4) }
     return
 }
 
@@ -451,8 +457,14 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::Modifiable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::Modifiable::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: move (@2) }
     return
 }
 
@@ -720,8 +732,12 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &{impl BaseOn<i64> for i32}::{vtable}
-    ret@0 := test_crate::Both32And64::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@2), super_trait_2: move (@4) }
+    @4 := &{impl BaseOn<i32> for i32}::{vtable}
+    storage_live(@5)
+    @5 := ()
+    storage_live(@6)
+    @6 := &{impl BaseOn<i64> for i32}::{vtable}
+    ret@0 := test_crate::Both32And64::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: move (@2), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -815,8 +831,14 @@ fn {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'a, '_1>(@1: &
 fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtable}<i32>
 {
     let ret@0: test_crate::LifetimeTrait::{vtable}<i32>; // return
+    let @1: (); // anonymous local
+    let @2: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
-    ret@0 := test_crate::LifetimeTrait::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(@1)
+    @1 := ()
+    storage_live(@2)
+    @2 := &core::marker::MetaSized::{vtable}
+    ret@0 := test_crate::LifetimeTrait::{vtable} { size: const (Opaque(unknown size)), align: const (Opaque(unknown align)), drop: const (Opaque(unknown drop)), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: move (@2) }
     return
 }
 
