@@ -1,12 +1,6 @@
 # Final LLBC before serialization:
 
-struct core::cmp::PartialEq::{vtable}<Rhs> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: PartialEq<_dyn, Rhs> + _dyn : '_)),
-  method_eq: fn<'_0_1, '_1_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: PartialEq<_dyn, Rhs> + _dyn : '_)), &'_1_1 (Rhs)) -> bool,
-  method_ne: fn<'_0_1, '_1_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: PartialEq<_dyn, Rhs> + _dyn : '_)), &'_1_1 (Rhs)) -> bool,
-}
+opaque type core::cmp::PartialEq::{vtable}<Rhs>
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
@@ -25,15 +19,11 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
+opaque type core::fmt::Display::{vtable}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
-
-struct core::marker::MetaSized::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: MetaSized<_dyn> + _dyn : '_)),
-}
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -52,13 +42,6 @@ where
 {
   Ok(T),
   Err(E),
-}
-
-struct core::fmt::Display::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)),
-  method_fmt: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)), &'_1_1 mut (Formatter<'_2_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
 }
 
 // Full name: core::fmt::Display
@@ -82,6 +65,8 @@ pub trait Tuple<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
+opaque type core::ops::function::Fn::{vtable}<Args, Ty0>
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -95,14 +80,6 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0)),
-  method_call_once: fn((dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0), Args) -> Ty0,
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-}
-
 // Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
@@ -113,24 +90,6 @@ pub trait FnMut<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
-}
-
-struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::Output = Ty0)),
-  method_call_mut: fn<'_0_1>(&'_0_1 mut ((dyn exists<_dyn> [@TraitClause0_2]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::Output = Ty0)), Args) -> Ty0,
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-  super_trait_1: &'static (core::ops::function::FnOnce::{vtable}<Args, Ty0>),
-}
-
-struct core::ops::function::Fn::{vtable}<Args, Ty0> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::parent_clause1::Output = Ty0)),
-  method_call: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::parent_clause1::Output = Ty0)), Args) -> Ty0,
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-  super_trait_1: &'static (core::ops::function::FnMut::{vtable}<Args, Ty0>),
 }
 
 // Full name: core::ops::function::Fn

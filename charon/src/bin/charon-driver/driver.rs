@@ -27,6 +27,7 @@ fn set_mir_options(config: &mut Config) {
     config.opts.unstable_opts.always_encode_mir = true;
     config.opts.unstable_opts.mir_opt_level = Some(0);
     config.opts.unstable_opts.mir_emit_retag = true;
+    config.opts.unstable_opts.mir_preserve_ub = true;
     let disabled_mir_passes = ["CheckAlignment"];
     for pass in disabled_mir_passes {
         config

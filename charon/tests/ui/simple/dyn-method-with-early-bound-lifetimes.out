@@ -1,10 +1,6 @@
 # Final LLBC before serialization:
 
-struct core::marker::MetaSized::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: MetaSized<_dyn> + _dyn : '_)),
-}
+opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]

@@ -4,12 +4,6 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-struct core::marker::MetaSized::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: MetaSized<_dyn> + _dyn : '_)),
-}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -44,6 +38,8 @@ pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
+opaque type core::ops::function::Fn::{vtable}<Args, Ty0>
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -57,14 +53,6 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0)),
-  method_call_once: fn((dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0), Args) -> Ty0,
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-}
-
 // Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
@@ -75,24 +63,6 @@ pub trait FnMut<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
-}
-
-struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::Output = Ty0)),
-  method_call_mut: fn<'_0_1>(&'_0_1 mut ((dyn exists<_dyn> [@TraitClause0_2]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::Output = Ty0)), Args) -> Ty0,
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-  super_trait_1: &'static (core::ops::function::FnOnce::{vtable}<Args, Ty0>),
-}
-
-struct core::ops::function::Fn::{vtable}<Args, Ty0> {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::parent_clause1::Output = Ty0)),
-  method_call: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::parent_clause1::Output = Ty0)), Args) -> Ty0,
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-  super_trait_1: &'static (core::ops::function::FnMut::{vtable}<Args, Ty0>),
 }
 
 // Full name: core::ops::function::Fn
@@ -153,7 +123,7 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn,
     @7 := &mut counter@2
     @6 := &two-phase-mut *(@7)
     @5 := (move (@6))
-    @3 := (move (*(@4.metadata)).method_call)(move (@4), move (@5))
+    @3 := Fn<(dyn exists<_dyn> [@TraitClause0_2]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_2::parent_clause1::parent_clause1::Output = bool), (&'_ mut (u32))>::call<'_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@7)
         storage_dead(@6)
