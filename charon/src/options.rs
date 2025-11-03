@@ -333,6 +333,8 @@ impl CliOpts {
                 Preset::Eurydice => {
                     self.hide_allocator = true;
                     self.remove_associated_types.push("*".to_owned());
+                    // Eurydice doesn't support opaque vtables it seems?
+                    self.include.push("core::marker::MetaSized".to_owned());
                 }
                 Preset::Soteria => {
                     self.extract_opaque_bodies = true;
