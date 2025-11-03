@@ -1,0 +1,60 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::<bool>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<bool>
+
+// Full name: core::marker::Sized::<bool>
+#[lang_item("sized")]
+pub trait Sized::<bool>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<u64>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<u64>
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::Foo::<u64>
+trait Foo::<u64>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<u64>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::bar::<bool>
+fn bar::<bool>() -> u64
+
+// Full name: test_crate::{impl Foo::<u64>}
+impl Foo::<u64> {
+    parent_clause0 = MetaSized::<u64>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let @1: u64; // anonymous local
+
+    @0 := ()
+    storage_live(@1)
+    @1 := {impl Foo::<u64>}::bar()
+    storage_dead(@1)
+    @0 := ()
+    return
+}
+
+
+
