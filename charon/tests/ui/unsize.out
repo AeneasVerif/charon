@@ -29,6 +29,8 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
+opaque type core::fmt::Display::{vtable}
+
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -38,13 +40,6 @@ where
 {
   Ok(T),
   Err(E),
-}
-
-struct core::fmt::Display::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)),
-  method_fmt: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)), &'_1_1 mut (Formatter<'_2_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>],
 }
 
 // Full name: core::fmt::Display
@@ -180,34 +175,8 @@ impl Clone for String {
 // Full name: alloc::string::{impl Display for String}::fmt
 pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 
-// Full name: alloc::string::{impl Display for String}::fmt::{vtable_method}
-fn {vtable_method}<'_0, '_1, '_2>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
-{
-    let @0: Result<(), Error>[Sized<()>, Sized<Error>]; // return
-    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)); // arg #1
-    let @2: &'_1 mut (Formatter<'_2>); // arg #2
-    let @3: &'_0 (String); // anonymous local
-
-    storage_live(@3)
-    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)), &'_0 (String)>(move (@1))
-    @0 := {impl Display for String}::fmt<'_0, '_1, '_2>(move (@3), move (@2))
-    return
-}
-
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
-{
-    let ret@0: core::fmt::Display::{vtable}; // return
-    let size@1: usize; // local
-    let align@2: usize; // local
-
-    storage_live(size@1)
-    size@1 := size_of<String>
-    storage_live(align@2)
-    align@2 := align_of<String>
-    ret@0 := core::fmt::Display::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Drop for String}::drop_in_place), method_fmt: const ({vtable_method}<'_, '_, '_>) }
-    return
-}
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()

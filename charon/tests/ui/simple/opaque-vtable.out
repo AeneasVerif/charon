@@ -1,32 +1,8 @@
 # Final LLBC before serialization:
 
-struct core::marker::MetaSized::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: MetaSized<_dyn> + _dyn : '_)),
-}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 fn UNIT_METADATA()
 {
@@ -38,13 +14,7 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-struct test_crate::x::Trait::{vtable} {
-  size: usize,
-  align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Trait<_dyn> + _dyn : '_)),
-  method_method: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Trait<_dyn> + _dyn : '_))),
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-}
+opaque type test_crate::x::Trait::{vtable}
 
 // Full name: test_crate::x::Trait
 pub trait Trait<Self>
@@ -61,34 +31,8 @@ where
 // Full name: test_crate::x::{impl Trait for ()}::method
 pub fn {impl Trait for ()}::method<'_0>(@1: &'_0 (()))
 
-// Full name: test_crate::x::{impl Trait for ()}::method::{vtable_method}
-fn {vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_)))
-{
-    let @0: (); // return
-    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_)); // arg #1
-    let @2: &'_0 (()); // anonymous local
-
-    @0 := ()
-    storage_live(@2)
-    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_)), &'_0 (())>(move (@1))
-    @0 := {impl Trait for ()}::method<'_0>(move (@2))
-    return
-}
-
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
 fn {impl Trait for ()}::{vtable}() -> test_crate::x::Trait::{vtable}
-{
-    let ret@0: test_crate::x::Trait::{vtable}; // return
-    let size@1: usize; // local
-    let align@2: usize; // local
-
-    storage_live(size@1)
-    size@1 := size_of<()>
-    storage_live(align@2)
-    align@2 := align_of<()>
-    ret@0 := test_crate::x::Trait::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<()>::drop_in_place), method_method: const ({vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
-    return
-}
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
 static {impl Trait for ()}::{vtable}: test_crate::x::Trait::{vtable} = {impl Trait for ()}::{vtable}()
