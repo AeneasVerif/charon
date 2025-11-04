@@ -92,74 +92,41 @@ impl TransformPass for Transform {
                     // parameters that we'll use for the new function item, and the arguments to
                     // pass to the old function item.
                     let bound_method = bound_method.flatten();
-                    // Create a copy of the provided method and update all the relevant data.
-                    let FunDecl {
-                        def_id: _,
-                        item_meta,
-                        signature,
-                        src: kind,
-                        is_global_initializer,
-                        body,
-                    } = fun_decl.clone();
-                    // We use the span of the *impl*, not the span of the
-                    // default method in the original trait declaration.
-                    let span = timpl.item_meta.span;
-                    let item_meta = ItemMeta {
+                    // Create a copy of the provided method with the new generics.
+                    let mut fun_decl = fun_decl
+                        .clone()
+                        .substitute_params(bound_method.map(|x| *x.item.generics));
+
+                    // Update the rest of the data.
+                    fun_decl.def_id = new_fun_id;
+                    // We use the span of the *impl*, not the span of the default method in the
+                    // original trait declaration.
+                    fun_decl.item_meta = ItemMeta {
                         name: new_fun_name,
-                        is_local: timpl.item_meta.is_local,
                         opacity,
-                        span,
-                        ..item_meta
+                        is_local: timpl.item_meta.is_local,
+                        span: timpl.item_meta.span,
+                        ..fun_decl.item_meta
                     };
-                    let signature = FunSig {
-                        generics: bound_method.params,
-                        inputs: signature.inputs.substitute_with_self(
-                            &bound_method.skip_binder.item.generics,
-                            &self_predicate.kind,
-                        ),
-                        output: signature.output.substitute_with_self(
-                            &bound_method.skip_binder.item.generics,
-                            &self_predicate.kind,
-                        ),
-                        ..signature
-                    };
-                    let kind = if let ItemSource::TraitDecl {
+                    fun_decl.src = if let ItemSource::TraitDecl {
                         trait_ref,
                         item_name,
                         ..
-                    } = kind
+                    } = fun_decl.src
                     {
                         ItemSource::TraitImpl {
                             impl_ref: self_impl_ref.clone(),
-                            trait_ref: trait_ref.substitute_with_self(
-                                &bound_method.skip_binder.item.generics,
-                                &self_predicate.kind,
-                            ),
+                            trait_ref,
                             item_name,
                             reuses_default: true,
                         }
                     } else {
                         unreachable!()
                     };
-                    let body = if opacity.is_transparent() {
-                        body.substitute_with_self(
-                            &bound_method.skip_binder.item.generics,
-                            &self_predicate.kind,
-                        )
-                    } else {
-                        Err(Opaque)
-                    };
-                    ctx.translated.fun_decls.set_slot(
-                        new_fun_id,
-                        FunDecl {
-                            def_id: new_fun_id,
-                            item_meta,
-                            signature,
-                            src: kind,
-                            is_global_initializer,
-                            body,
-                        },
-                    );
+                    if !opacity.is_transparent() {
+                        fun_decl.body = Err(Opaque);
+                    }
+                    ctx.translated.fun_decls.set_slot(new_fun_id, fun_decl);
                 }
             }
             let timpl = ctx.translated.trait_impls.get_mut(impl_id).unwrap();
