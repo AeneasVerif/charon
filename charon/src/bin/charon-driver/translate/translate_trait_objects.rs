@@ -789,7 +789,7 @@ impl ItemTransCtx<'_, '_> {
                 drop_impl_expr.r#trait.hax_skip_binder_ref(),
                 TransItemSourceKind::DropInPlaceMethod(None),
             );
-            let item_name = TraitItemName("drop_in_place".to_string());
+            let item_name = TraitItemName("drop_in_place".into());
             FnPtr::new(
                 FnPtrKind::Trait(drop_tref, item_name, method_id),
                 GenericArgs::empty(),

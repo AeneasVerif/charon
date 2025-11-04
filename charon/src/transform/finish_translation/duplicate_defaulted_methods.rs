@@ -35,7 +35,7 @@ impl TransformPass for Transform {
             let timpl = ctx.translated.trait_impls.get(impl_id).unwrap();
             let mut methods = vec![];
             for bound_method in &tdecl.methods {
-                if let Some(kv) = methods_map.remove_entry(bound_method.name()) {
+                if let Some(kv) = methods_map.remove_entry(&bound_method.name()) {
                     methods.push(kv);
                     continue;
                 }
@@ -78,7 +78,7 @@ impl TransformPass for Transform {
                     params: bound_method.params.clone(),
                     kind: bound_method.kind.clone(),
                 };
-                methods.push((bound_method.name().clone(), new_fn_ref));
+                methods.push((bound_method.name(), new_fn_ref));
 
                 if let Some(fun_decl) = ctx.translated.fun_decls.get(declared_fun_id)
                     && !opacity.is_invisible()

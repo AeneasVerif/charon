@@ -119,7 +119,7 @@ impl Binder<TraitAssocTy> {
     }
 }
 impl Binder<TraitMethod> {
-    pub fn name(&self) -> &TraitItemName {
-        &self.skip_binder.name
+    pub fn name(&self) -> TraitItemName {
+        self.skip_binder.name
     }
 }

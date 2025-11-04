@@ -422,7 +422,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             } => associated_item,
             _ => panic!("Unexpected def for associated item: {def:?}"),
         };
-        Ok(TraitItemName(assoc.name.clone().unwrap_or_default()))
+        Ok(TraitItemName(
+            assoc.name.as_ref().map(|n| n.into()).unwrap_or_default(),
+        ))
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {

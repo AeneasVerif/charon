@@ -41,7 +41,7 @@ impl ItemTransCtx<'_, '_> {
         let src = ItemSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
-            item_name: TraitItemName("drop".to_owned()),
+            item_name: TraitItemName("drop".into()),
             reuses_default: false,
         };
 
@@ -151,7 +151,7 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let implemented_trait = self.translate_trait_predicate(span, trait_pred)?;
-        let item_name = TraitItemName("drop".to_owned());
+        let item_name = TraitItemName("drop".into());
         let self_ty = implemented_trait
             .self_ty(&self.t_ctx.translated)
             .unwrap()
@@ -216,7 +216,7 @@ impl ItemTransCtx<'_, '_> {
             def.this(),
             TransItemSourceKind::DropInPlaceMethod(impl_kind),
         );
-        let method_name = TraitItemName("drop_in_place".to_owned());
+        let method_name = TraitItemName("drop_in_place".into());
         let method_binder = {
             let generics = self
                 .outermost_binder()
@@ -255,7 +255,7 @@ impl ItemTransCtx<'_, '_> {
         // Add the `drop(&mut self)` method.
         let drop_method_id =
             self.register_item(span, def.this(), TransItemSourceKind::EmptyDropMethod);
-        let drop_method_name = TraitItemName("drop".to_owned());
+        let drop_method_name = TraitItemName("drop".into());
         let drop_method_binder = {
             let mut method_params = GenericParams::empty();
             method_params
