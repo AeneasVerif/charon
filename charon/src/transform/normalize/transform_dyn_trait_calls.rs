@@ -67,6 +67,9 @@ impl<'a> UllbcStatementTransformCtx<'a> {
         let Some(vtable_decl) = self.ctx.translated.type_decls.get(vtable_decl_id) else {
             return Ok(()); // Missing data
         };
+        if matches!(vtable_decl.kind, TypeDeclKind::Opaque) {
+            return Ok(()); // Missing data
+        }
 
         // Retreive the method field from the vtable struct definition.
         let method_field_name = format!("method_{}", method_name);

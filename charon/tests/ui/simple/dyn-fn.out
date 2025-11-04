@@ -1,33 +1,11 @@
-error: Trying to generate a vtable shim for a non-vtable-safe method
-  --> tests/ui/simple/dyn-fn.rs:8:15
-   |
- 8 |       takes_fn(&|counter| {
-   |  _______________^
- 9 | |         *counter += 1;
-10 | |         true
-11 | |     })
-   | |_____^
 
-error: Item `test_crate::gives_fn::{closure#0}` caused errors; ignoring.
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:941:17:
+internal error: entered unreachable code
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::gives_fn::{closure#0}`.
  --> tests/ui/simple/dyn-fn.rs:8:15
   |
 8 |     takes_fn(&|counter| {
   |               ^^^^^^^^^
 
-error: Trying to generate a vtable shim for a non-vtable-safe method
-  --> tests/ui/simple/dyn-fn.rs:8:15
-   |
- 8 |       takes_fn(&|counter| {
-   |  _______________^
- 9 | |         *counter += 1;
-10 | |         true
-11 | |     })
-   | |_____^
-
-error: Item `test_crate::gives_fn::{closure#0}` caused errors; ignoring.
- --> tests/ui/simple/dyn-fn.rs:8:15
-  |
-8 |     takes_fn(&|counter| {
-  |               ^^^^^^^^^
-
-ERROR Charon failed to translate this code (4 errors)
+ERROR Charon failed to translate this code (1 errors)

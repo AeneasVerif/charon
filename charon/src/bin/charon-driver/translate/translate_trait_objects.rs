@@ -446,11 +446,16 @@ impl ItemTransCtx<'_, '_> {
             TyKind::DynTrait(dyn_pred).into_ty()
         };
 
-        // First construct fields that use the real method signatures (which may use the `Self`
-        // type). We fixup the types and generics below.
-        let fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
-        let mut kind = TypeDeclKind::Struct(fields);
-        let layout = self.generate_naive_layout(span, &kind)?;
+        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
+            (TypeDeclKind::Opaque, None)
+        } else {
+            // First construct fields that use the real method signatures (which may use the `Self`
+            // type). We fixup the types and generics below.
+            let fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
+            let kind = TypeDeclKind::Struct(fields);
+            let layout = self.generate_naive_layout(span, &kind)?;
+            (kind, Some(layout))
+        };
 
         // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
         // from the generic parameters.
@@ -477,7 +482,7 @@ impl ItemTransCtx<'_, '_> {
                 dyn_predicate: dyn_predicate.clone(),
             },
             kind,
-            layout: Some(layout),
+            layout,
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
             repr: None,
@@ -1109,9 +1114,14 @@ impl ItemTransCtx<'_, '_> {
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
 
-        let body = self
-            .gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)
-            .map_err(|_| Opaque);
+        let body =  if item_meta.opacity.with_private_contents().is_opaque() {
+            Err(Opaque)
+        } else {
+            self
+                .gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)
+                .map_err(|_| Opaque)
+        };
+        
 
         Ok(FunDecl {
             def_id: init_func_id,
@@ -1242,13 +1252,17 @@ impl ItemTransCtx<'_, '_> {
             signature.inputs[0].with_ctx(&self.into_fmt())
         );
 
-        let body = self.translate_vtable_shim_body(
-            span,
-            &target_receiver,
-            &signature,
-            impl_func_def,
-            impl_kind,
-        )?;
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Err(Opaque)
+        } else {
+            Ok(self.translate_vtable_shim_body(
+                span, 
+                &target_receiver, 
+                &signature, 
+                impl_func_def,
+                impl_kind,
+            )?)
+        };
 
         Ok(FunDecl {
             def_id: fun_id,
@@ -1256,7 +1270,7 @@ impl ItemTransCtx<'_, '_> {
             signature,
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,
-            body: Ok(body),
+            body,
         })
     }
 }
