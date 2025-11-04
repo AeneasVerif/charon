@@ -588,6 +588,7 @@ pub fn translate<'tcx, 'ctx>(
             options: options.clone(),
             ..TranslatedCrate::default()
         },
+        impl_methods: Default::default(),
         id_map: Default::default(),
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),
@@ -647,6 +648,9 @@ pub fn translate<'tcx, 'ctx>(
             ctx.translate_item(&item_src);
         }
     }
+
+    // The trait decl and impl methods were stored in a side-table. Move them to where they belong.
+    ctx.move_methods_to_their_items();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {

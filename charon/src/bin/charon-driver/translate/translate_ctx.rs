@@ -35,6 +35,10 @@ pub struct TranslateCtx<'tcx> {
     /// The translated data.
     pub translated: TranslatedCrate,
 
+    /// We store the methods outside their trait decl/impl while translating, so that we can add
+    /// methods lazily as they are used. We put them back inside their item at the end.
+    pub impl_methods: Vector<TraitImplId, HashMap<TraitItemName, Binder<FunDeclRef>>>,
+
     /// The map from rustc id to translated id.
     pub id_map: HashMap<TransItemSource, ItemId>,
     /// The reverse map of ids.

@@ -137,26 +137,6 @@ fn {impl Trait for ()}::CONST3() -> usize
 // Full name: test_crate::{impl Trait for ()}::CONST3
 const {impl Trait for ()}::CONST3: usize = {impl Trait for ()}::CONST3()
 
-// Full name: test_crate::{impl Trait for ()}::method1
-fn {impl Trait for ()}::method1()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
-// Full name: test_crate::{impl Trait for ()}::method2
-fn {impl Trait for ()}::method2()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
     parent_clause0 = MetaSized<()>

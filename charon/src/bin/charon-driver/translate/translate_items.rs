@@ -7,6 +7,7 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
 use itertools::Itertools;
+use std::collections::HashMap;
 use std::mem;
 use std::ops::ControlFlow;
 
@@ -262,6 +263,140 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             id: global_id,
             generics: Box::new(GenericArgs::empty()),
         });
+    }
+
+    /// We store methods in a side-table during translation. Call this function at the end of
+    /// translation to move methods back into their corresponding item.
+    pub fn move_methods_to_their_items(&mut self) {
+        let method_is_translated = |id: FunDeclId| self.translated.fun_decls.get(id).is_some();
+        // Keep only the methods for which we translated the corresponding `FunDecl`. We ensured
+        // that this would be translated if the method is used or transparently implemented.
+        for tdecl in self.translated.trait_decls.iter_mut() {
+            tdecl
+                .methods
+                .retain(|m| method_is_translated(m.skip_binder.item.id));
+        }
+
+        for (impl_id, mut methods_map) in mem::take(&mut self.impl_methods).into_iter_indexed() {
+            let Some(timpl) = self.translated.trait_impls.get(impl_id) else {
+                continue;
+            };
+            let decl_id = timpl.impl_trait.id;
+            let Some(tdecl) = self.translated.trait_decls.get(decl_id) else {
+                continue;
+            };
+
+            // A `TraitRef` that points to this impl with the correct generics.
+            let self_impl_ref = TraitImplRef {
+                id: timpl.def_id,
+                generics: Box::new(timpl.generics.identity_args()),
+            };
+            let self_predicate_kind = TraitRefKind::TraitImpl(self_impl_ref.clone());
+
+            // For each declared method (in order), take the implemented method if any, otherwise
+            // duplicate it.
+            let mut methods_vec = vec![];
+            for bound_method in &tdecl.methods {
+                let name = bound_method.name();
+                let method = if let Some(method) = methods_map.remove(&name) {
+                    method
+                } else {
+                    let declared_fun_id = bound_method.skip_binder.item.id;
+                    let declared_fun_name = self.translated.item_name(declared_fun_id).unwrap();
+                    let new_fun_name = {
+                        let mut item_name = timpl.item_meta.name.clone();
+                        item_name
+                            .name
+                            .push(declared_fun_name.name.last().unwrap().clone());
+                        item_name
+                    };
+                    let opacity = self.opacity_for_name(&new_fun_name);
+                    let new_fun_id = self.translated.fun_decls.reserve_slot();
+                    self.translated
+                        .item_names
+                        .insert(new_fun_id.into(), new_fun_name.clone());
+
+                    // Substitute the method reference to be valid in the context of the impl.
+                    let bound_method = bound_method
+                        .clone()
+                        .substitute_with_self(&timpl.impl_trait.generics, &self_predicate_kind);
+                    // The new function item has for params the concatenation of impl params and method
+                    // params. We build a FunDeclRef to this even if we don't end up adding the new
+                    // function item below.
+                    let new_fn_ref = Binder {
+                        skip_binder: FunDeclRef {
+                            id: new_fun_id,
+                            generics: Box::new(
+                                timpl
+                                    .generics
+                                    .identity_args_at_depth(DeBruijnId::one())
+                                    .concat(
+                                        &bound_method
+                                            .params
+                                            .identity_args_at_depth(DeBruijnId::zero()),
+                                    ),
+                            ),
+                        },
+                        params: bound_method.params.clone(),
+                        kind: bound_method.kind.clone(),
+                    };
+
+                    // Duplicate the `FunDecl`.
+                    if let Some(fun_decl) = self.translated.fun_decls.get(declared_fun_id)
+                        && !opacity.is_invisible()
+                    {
+                        let bound_method = Binder {
+                            params: timpl.generics.clone(),
+                            skip_binder: bound_method,
+                            kind: BinderKind::Other,
+                        };
+                        // Flatten into a single binder level. This gives us the concatenated
+                        // parameters that we'll use for the new function item, and the arguments to
+                        // pass to the old function item.
+                        let bound_method = bound_method.flatten();
+                        // Create a copy of the provided method with the new generics.
+                        let mut fun_decl = fun_decl
+                            .clone()
+                            .substitute_params(bound_method.map(|x| *x.item.generics));
+
+                        // Update the rest of the data.
+                        fun_decl.def_id = new_fun_id;
+                        // We use the span of the *impl*, not the span of the default method in the
+                        // original trait declaration.
+                        fun_decl.item_meta = ItemMeta {
+                            name: new_fun_name,
+                            opacity,
+                            is_local: timpl.item_meta.is_local,
+                            span: timpl.item_meta.span,
+                            ..fun_decl.item_meta
+                        };
+                        fun_decl.src = if let ItemSource::TraitDecl {
+                            trait_ref,
+                            item_name,
+                            ..
+                        } = fun_decl.src
+                        {
+                            ItemSource::TraitImpl {
+                                impl_ref: self_impl_ref.clone(),
+                                trait_ref,
+                                item_name,
+                                reuses_default: true,
+                            }
+                        } else {
+                            unreachable!()
+                        };
+                        if !opacity.is_transparent() {
+                            fun_decl.body = Err(Opaque);
+                        }
+                        self.translated.fun_decls.set_slot(new_fun_id, fun_decl);
+                    }
+                    new_fn_ref
+                };
+                methods_vec.push((name, method));
+            }
+            let timpl = self.translated.trait_impls.get_mut(impl_id).unwrap();
+            timpl.methods = methods_vec;
+        }
     }
 }
 
@@ -891,7 +1026,7 @@ impl ItemTransCtx<'_, '_> {
         // Explore the associated items
         let mut consts = Vec::new();
         let mut types = Vec::new();
-        let mut methods = Vec::new();
+        let mut methods = HashMap::new();
 
         for impl_item in impl_items {
             use hax::ImplAssocItemValue::*;
@@ -974,7 +1109,7 @@ impl ItemTransCtx<'_, '_> {
                                     })
                                 },
                             )?;
-                            methods.push((name, fn_ref));
+                            methods.insert(name, fn_ref);
                         }
                         DefaultedFn { .. } => {
                             // TODO: handle defaulted methods
@@ -1030,13 +1165,19 @@ impl ItemTransCtx<'_, '_> {
         let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
         if implemented_trait_def.lang_item.as_deref() == Some("drop") {
             // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
-            methods.push(self.prepare_drop_in_trait_method(
+            let (name, method) = self.prepare_drop_in_trait_method(
                 def,
                 span,
                 trait_id,
                 Some(TraitImplSource::Normal),
-            ));
+            );
+            methods.insert(name, method);
         }
+
+        // Store methods separately.
+        *self
+            .impl_methods
+            .get_or_extend_and_insert(def_id, || HashMap::new()) = methods;
 
         Ok(TraitImpl {
             def_id,
@@ -1046,7 +1187,7 @@ impl ItemTransCtx<'_, '_> {
             implied_trait_refs,
             consts,
             types,
-            methods,
+            methods: Default::default(), // Stored separately
             vtable,
         })
     }

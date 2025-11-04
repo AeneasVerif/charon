@@ -4,12 +4,10 @@ pub mod utils;
 
 /// Passes that finish translation, i.e. required for the output to be a valid output.
 pub mod finish_translation {
-    pub mod duplicate_defaulted_methods;
     pub mod filter_invisible_trait_impls;
     pub mod insert_assign_return_unit;
     pub mod insert_ptr_metadata;
     pub mod insert_storage_lives;
-    pub mod remove_unused_methods;
 }
 
 /// Passes that compute extra info to be stored in the crate.
@@ -72,17 +70,13 @@ use ctx::{LlbcPass, TransformPass, UllbcPass};
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
+    // Compute short names. We do it early to make pretty-printed output more legible in traces.
+    NonBody(&add_missing_info::compute_short_names::Transform),
     // Check that translation emitted consistent generics.
     NonBody(&check_generics::Check("after translation")),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&finish_translation::filter_invisible_trait_impls::Transform),
-    // Remove the trait/impl methods that were not translated (because not used).
-    NonBody(&finish_translation::remove_unused_methods::Transform),
-    // Add missing methods to trait impls by duplicating the default method.
-    NonBody(&finish_translation::duplicate_defaulted_methods::Transform),
-    // Compute short names. We do it early to make pretty-printed output more legible in traces.
-    NonBody(&add_missing_info::compute_short_names::Transform),
     // Compute the metadata & insert for Rvalue
     UnstructuredBody(&finish_translation::insert_ptr_metadata::Transform),
     // # Micro-pass: add the missing assignments to the return value.
