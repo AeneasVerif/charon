@@ -55,6 +55,9 @@ pub enum TransItemSourceKind {
     InherentImpl,
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
+    /// A trait impl method that uses the default method body from the trait declaration. The
+    /// `DefId` is that of the trait impl.
+    DefaultedMethod(TraitImplSource, TraitItemName),
     /// The `call_*` method of the appropriate `TraitImplSource::Closure` impl.
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
@@ -145,7 +148,8 @@ impl TransItemSource {
             TransItemSourceKind::EmptyDropMethod => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop)
             }
-            TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
+            TransItemSourceKind::DefaultedMethod(impl_kind, _)
+            | TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
@@ -289,6 +293,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
                     Fun
+                    | DefaultedMethod(..)
                     | ClosureMethod(..)
                     | ClosureAsFnCast
                     | EmptyDropMethod

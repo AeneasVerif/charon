@@ -490,6 +490,15 @@ fn rename_attribute() -> anyhow::Result<()> {
             .attr_info
             .rename
             .as_deref(),
+        Some("retTest")
+    );
+
+    assert_eq!(
+        crate_data.fun_decls[6]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("Const_Test")
     );
 
