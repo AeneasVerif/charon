@@ -1114,14 +1114,12 @@ impl ItemTransCtx<'_, '_> {
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
 
-        let body =  if item_meta.opacity.with_private_contents().is_opaque() {
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Err(Opaque)
         } else {
-            self
-                .gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)
+            self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)
                 .map_err(|_| Opaque)
         };
-        
 
         Ok(FunDecl {
             def_id: init_func_id,
@@ -1256,9 +1254,9 @@ impl ItemTransCtx<'_, '_> {
             Err(Opaque)
         } else {
             Ok(self.translate_vtable_shim_body(
-                span, 
-                &target_receiver, 
-                &signature, 
+                span,
+                &target_receiver,
+                &signature,
                 impl_func_def,
                 impl_kind,
             )?)
