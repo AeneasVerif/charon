@@ -168,7 +168,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
     parent_clause3 : [@TraitClause3]: Clone<Self_Item>
     fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item>[Self]
-    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_1]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = test_crate::Foo::use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -176,8 +176,7 @@ fn test_crate::Foo::use_item_required<'a, Self, Clause0_Item>(@1: Clause0_Item) 
 where
     [@TraitClause0]: test_crate::Foo<'a, Self, Clause0_Item>,
 
-// Full name: test_crate::Foo::use_item_provided
-fn use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(@1: Clause0_Item) -> Clause0_Item
+fn test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(@1: Clause0_Item) -> Clause0_Item
 where
     [@TraitClause0]: test_crate::Foo<'a, Self, Clause0_Item>,
     [@TraitClause1]: test_crate::Foo<'a, Clause0_Item, Clause1_Item>,
@@ -201,7 +200,8 @@ where
     return
 }
 
-fn test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
+// Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided
+fn {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause1_Item>,
@@ -223,7 +223,7 @@ where
     parent_clause2 = Sized<Option<&'_ (T)>[Sized<&'_ (T)>]>
     parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[Sized<&'_ (T)>, {impl Clone for &'_0 (T)}<'_, T>]
     fn use_item_required = {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
-    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_1]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause0_Item>> = {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -241,7 +241,8 @@ where
     return
 }
 
-fn test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
+// Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided
+fn {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -267,7 +268,7 @@ where
     parent_clause2 = @TraitClause0
     parent_clause3 = @TraitClause1::parent_clause1
     fn use_item_required = {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_required<'a, T>[@TraitClause0, @TraitClause1]
-    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, T, Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_1]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, T, Clause0_Item>> = {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_1]
     non-dyn-compatible
 }
 

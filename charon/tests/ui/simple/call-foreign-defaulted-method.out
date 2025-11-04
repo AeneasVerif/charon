@@ -14,7 +14,8 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-pub fn test_crate::foo::{impl Trait for ()}::defaulted<'_0>(@1: &'_0 (()))
+// Full name: test_crate::foo::{impl Trait for ()}::defaulted
+pub fn {impl Trait for ()}::defaulted<'_0>(@1: &'_0 (()))
 {
     let @0: (); // return
     let self@1: &'_ (()); // arg #1
@@ -38,7 +39,7 @@ fn main()
     storage_live(@3)
     @3 := ()
     @2 := &@3
-    @1 := test_crate::foo::{impl Trait for ()}::defaulted<'_>(move (@2))
+    @1 := {impl Trait for ()}::defaulted<'_>(move (@2))
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)
@@ -50,12 +51,11 @@ fn main()
 pub trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn defaulted<'_0_1> = defaulted<'_0_1, Self>[Self]
+    fn defaulted<'_0_1> = test_crate::foo::Trait::defaulted<'_0_1, Self>[Self]
     vtable: test_crate::foo::Trait::{vtable}
 }
 
-// Full name: test_crate::foo::Trait::defaulted
-pub fn defaulted<'_0, Self>(@1: &'_0 (Self))
+pub fn test_crate::foo::Trait::defaulted<'_0, Self>(@1: &'_0 (Self))
 where
     [@TraitClause0]: Trait<Self>,
 {
@@ -70,7 +70,7 @@ where
 // Full name: test_crate::foo::{impl Trait for ()}
 impl Trait for () {
     parent_clause0 = MetaSized<()>
-    fn defaulted<'_0_1> = test_crate::foo::{impl Trait for ()}::defaulted<'_0_1>
+    fn defaulted<'_0_1> = {impl Trait for ()}::defaulted<'_0_1>
     vtable: {impl Trait for ()}::{vtable}
 }
 

@@ -72,8 +72,6 @@ use ctx::{LlbcPass, TransformPass, UllbcPass};
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
-    // Compute short names. We do it early to make pretty-printed output more legible in traces.
-    NonBody(&add_missing_info::compute_short_names::Transform),
     // Check that translation emitted consistent generics.
     NonBody(&check_generics::Check("after translation")),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
@@ -83,6 +81,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     NonBody(&finish_translation::remove_unused_methods::Transform),
     // Add missing methods to trait impls by duplicating the default method.
     NonBody(&finish_translation::duplicate_defaulted_methods::Transform),
+    // Compute short names. We do it early to make pretty-printed output more legible in traces.
+    NonBody(&add_missing_info::compute_short_names::Transform),
     // Compute the metadata & insert for Rvalue
     UnstructuredBody(&finish_translation::insert_ptr_metadata::Transform),
     // # Micro-pass: add the missing assignments to the return value.

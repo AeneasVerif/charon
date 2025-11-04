@@ -610,12 +610,11 @@ trait Both32And64<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: BaseOn<Self, i32>
     parent_clause2 : [@TraitClause2]: BaseOn<Self, i64>
-    fn both_operate<'_0_1, '_1_1, '_2_1> = both_operate<'_0_1, '_1_1, '_2_1, Self>[Self]
+    fn both_operate<'_0_1, '_1_1, '_2_1> = test_crate::Both32And64::both_operate<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: test_crate::Both32And64::{vtable}
 }
 
-// Full name: test_crate::Both32And64::both_operate
-fn both_operate<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 (i32), @3: &'_2 (i64))
+fn test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 (i32), @3: &'_2 (i64))
 where
     [@TraitClause0]: Both32And64<Self>,
 {
@@ -801,7 +800,8 @@ impl BaseOn<i64> for i32 {
     vtable: {impl BaseOn<i64> for i32}::{vtable}
 }
 
-fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
+// Full name: test_crate::{impl Both32And64 for i32}::both_operate
+fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
 {
     let @0: (); // return
     let self@1: &'_ (i32); // arg #1
@@ -872,7 +872,7 @@ impl Both32And64 for i32 {
     parent_clause0 = MetaSized<i32>
     parent_clause1 = {impl BaseOn<i32> for i32}
     parent_clause2 = {impl BaseOn<i64> for i32}
-    fn both_operate<'_0_1, '_1_1, '_2_1> = test_crate::{impl Both32And64 for i32}::both_operate<'_0_1, '_1_1, '_2_1>
+    fn both_operate<'_0_1, '_1_1, '_2_1> = {impl Both32And64 for i32}::both_operate<'_0_1, '_1_1, '_2_1>
     vtable: {impl Both32And64 for i32}::{vtable}
 }
 

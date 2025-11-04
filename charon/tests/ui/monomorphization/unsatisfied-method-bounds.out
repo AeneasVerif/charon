@@ -88,7 +88,8 @@ fn method::<B><'_0>(@1: &'_0 (B))
     return
 }
 
-fn test_crate::{impl MyIterator::<A>}::<A><'_0>(@1: &'_0 (A))
+// Full name: test_crate::{impl MyIterator::<A>}::<A>
+fn {impl MyIterator::<A>}::<A><'_0>(@1: &'_0 (A))
 {
     let @0: (); // return
     let self@1: &'_ (A); // arg #1
@@ -101,11 +102,12 @@ fn test_crate::{impl MyIterator::<A>}::<A><'_0>(@1: &'_0 (A))
 // Full name: test_crate::{impl MyIterator::<A>}
 impl MyIterator::<A> {
     parent_clause0 = MetaSized::<A>
-    fn method<'_0_1> = test_crate::{impl MyIterator::<A>}::<A><'_0_1>
+    fn method<'_0_1> = {impl MyIterator::<A>}::<A><'_0_1>
     vtable: {impl MyIterator::<A>}::{vtable}
 }
 
-fn test_crate::{impl MyIterator::<B>}::<B><'_0>(@1: &'_0 (B))
+// Full name: test_crate::{impl MyIterator::<B>}::<B>
+fn {impl MyIterator::<B>}::<B><'_0>(@1: &'_0 (B))
 {
     let @0: (); // return
     let self@1: &'_ (B); // arg #1
@@ -118,7 +120,7 @@ fn test_crate::{impl MyIterator::<B>}::<B><'_0>(@1: &'_0 (B))
 // Full name: test_crate::{impl MyIterator::<B>}
 impl MyIterator::<B> {
     parent_clause0 = MetaSized::<B>
-    fn method<'_0_1> = test_crate::{impl MyIterator::<B>}::<B><'_0_1>
+    fn method<'_0_1> = {impl MyIterator::<B>}::<B><'_0_1>
     vtable: {impl MyIterator::<B>}::{vtable}
 }
 
@@ -139,7 +141,7 @@ fn main()
     storage_live(@3)
     @3 := A {  }
     @2 := &@3
-    @1 := test_crate::{impl MyIterator::<A>}::<A><'_>(move (@2))
+    @1 := {impl MyIterator::<A>}::<A><'_>(move (@2))
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)
@@ -148,7 +150,7 @@ fn main()
     storage_live(@6)
     @6 := B {  }
     @5 := &@6
-    @4 := test_crate::{impl MyIterator::<B>}::<B><'_>(move (@5))
+    @4 := {impl MyIterator::<B>}::<B><'_>(move (@5))
     storage_dead(@5)
     storage_dead(@6)
     storage_dead(@4)

@@ -116,7 +116,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -161,7 +161,8 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
+// Full name: core::clone::impls::{impl Clone for usize}::clone_from
+pub fn {impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 where
     [@TraitClause0]: Destruct<usize>,
 {
@@ -183,7 +184,7 @@ where
 impl Clone for usize {
     parent_clause0 = Sized<usize>
     fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -495,7 +496,7 @@ pub trait Allocator<Self>
     fn grow<'_0_1> = core::alloc::Allocator::grow<'_0_1, Self>[Self]
     fn grow_zeroed<'_0_1> = core::alloc::Allocator::grow_zeroed<'_0_1, Self>[Self]
     fn shrink<'_0_1> = core::alloc::Allocator::shrink<'_0_1, Self>[Self]
-    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Self>> = by_ref<'_0_1, Self>[Self, @TraitClause0_1]
+    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Self>> = core::alloc::Allocator::by_ref<'_0_1, Self>[Self, @TraitClause0_1]
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -1815,8 +1816,7 @@ where
     return
 }
 
-// Full name: core::alloc::Allocator::by_ref
-pub fn by_ref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self)
+pub fn core::alloc::Allocator::by_ref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self)
 where
     [@TraitClause0]: Allocator<Self>,
     [@TraitClause1]: Sized<Self>,
@@ -1833,8 +1833,7 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -1899,7 +1898,8 @@ pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInne
     return
 }
 
-pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from
+pub fn {impl Clone for NonZeroUsizeInner}::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
 where
     [@TraitClause0]: Destruct<NonZeroUsizeInner>,
 {
@@ -1921,7 +1921,7 @@ where
 impl Clone for NonZeroUsizeInner {
     parent_clause0 = Sized<NonZeroUsizeInner>
     fn clone<'_0_1> = {impl Clone for NonZeroUsizeInner}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<NonZeroUsizeInner>> = {impl Clone for NonZeroUsizeInner}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -3790,7 +3790,8 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     return
 }
 
-pub fn alloc::alloc::{impl Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
+// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
+pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
 where
     [@TraitClause0]: Sized<Global>,
 {
@@ -3810,7 +3811,7 @@ impl Allocator for Global {
     fn grow<'_0_1> = {impl Allocator for Global}::grow<'_0_1>
     fn grow_zeroed<'_0_1> = {impl Allocator for Global}::grow_zeroed<'_0_1>
     fn shrink<'_0_1> = {impl Allocator for Global}::shrink<'_0_1>
-    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = alloc::alloc::{impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
+    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = {impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
     vtable: {impl Allocator for Global}::{vtable}
 }
 

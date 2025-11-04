@@ -27,7 +27,7 @@ pub trait BoolTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn get_bool<'_0_1> = test_crate::BoolTrait::get_bool<'_0_1, Self>[Self]
-    fn ret_true<'_0_1> = ret_true<'_0_1, Self>[Self]
+    fn ret_true<'_0_1> = test_crate::BoolTrait::ret_true<'_0_1, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
 
@@ -35,8 +35,7 @@ pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
 
-// Full name: test_crate::BoolTrait::ret_true
-pub fn ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
 {
@@ -57,7 +56,8 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
     return
 }
 
-pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+// Full name: test_crate::{impl BoolTrait for bool}::ret_true
+pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -70,7 +70,7 @@ pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> 
 impl BoolTrait for bool {
     parent_clause0 = MetaSized<bool>
     fn get_bool<'_0_1> = {impl BoolTrait for bool}::get_bool<'_0_1>
-    fn ret_true<'_0_1> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_1>
+    fn ret_true<'_0_1> = {impl BoolTrait for bool}::ret_true<'_0_1>
     vtable: {impl BoolTrait for bool}::{vtable}
 }
 
@@ -93,7 +93,7 @@ where
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
-        @0 := test_crate::{impl BoolTrait for bool}::ret_true<'_>(move (@4))
+        @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
     }
     else {
