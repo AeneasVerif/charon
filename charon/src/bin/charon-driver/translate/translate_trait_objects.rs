@@ -783,35 +783,13 @@ impl ItemTransCtx<'_, '_> {
                         .translate_vtable_struct_ref(span, impl_expr.r#trait.hax_skip_binder_ref())?
                         .is_some()
                     {
-                        // For other builtin traits that are dyn-compatible, try to create a vtable instance
+                        // TODO: other builtin impls
                         trace!(
                             "Handling dyn-compatible builtin trait: {:?}",
                             trait_def.lang_item
                         );
 
-                        // TODO(ssyram): for now, we don't know how to translate other kinds of built-in traits, just take their names
-                        // The challenge is that we need an impl_ref, but builtin traits don't have concrete impls
-                        // Let's try using the trait reference itself as the impl reference
-                        // A simple case would be that they are all marker traits like `core::marker::MetaSized`
-                        let trait_ref = impl_expr.r#trait.hax_skip_binder_ref();
-                        let mut vtable_instance_ref: GlobalDeclRef = self
-                            .translate_item_no_enqueue(
-                                span,
-                                trait_ref,
-                                TransItemSourceKind::VTableInstance(
-                                    TraitImplSource::Normal, // Builtin traits are normal impls
-                                ),
-                            )?;
-                        // Remove the first `Self` argument
-                        vtable_instance_ref
-                            .generics
-                            .types
-                            .remove_and_shift_ids(TypeVarId::ZERO);
-                        let global = Box::new(ConstantExpr {
-                            kind: ConstantExprKind::Global(vtable_instance_ref),
-                            ty: fn_ptr_ty,
-                        });
-                        ConstantExprKind::Ref(global)
+                        ConstantExprKind::Opaque("missing supertrait vtable".into())
                     } else {
                         // For non-dyn-compatible builtin traits, we don't need vtable instances
                         trace!(

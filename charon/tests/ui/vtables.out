@@ -278,18 +278,12 @@ fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
     let ret@0: test_crate::Super::{vtable}<i32>; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    storage_live(@3)
-    @3 := ()
-    storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
-    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: move (@4) }
+    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -342,9 +336,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     let size@1: usize; // local
     let align@2: usize; // local
     let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
-    let @5: (); // anonymous local
-    let @6: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
+    let @4: &'static (test_crate::Super::{vtable}<i32>); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
@@ -353,12 +345,8 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
-    storage_live(@5)
-    @5 := ()
-    storage_live(@6)
-    @6 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: move (@4), super_trait_1: move (@6) }
+    @4 := &{impl Super<i32> for i32}::{vtable}
+    ret@0 := test_crate::Checkable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4) }
     return
 }
 
@@ -520,18 +508,12 @@ where
     let ret@0: test_crate::Modifiable::{vtable}<T>; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    storage_live(@3)
-    @3 := ()
-    storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: move (@4) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -723,18 +705,12 @@ fn {impl BaseOn<i32> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
     let ret@0: test_crate::BaseOn::{vtable}<i32>; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    storage_live(@3)
-    @3 := ()
-    storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
-    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: move (@4) }
+    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -805,18 +781,12 @@ fn {impl BaseOn<i64> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
     let ret@0: test_crate::BaseOn::{vtable}<i64>; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    storage_live(@3)
-    @3 := ()
-    storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
-    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: move (@4) }
+    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -874,11 +844,9 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     let size@1: usize; // local
     let align@2: usize; // local
     let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
+    let @4: &'static (test_crate::BaseOn::{vtable}<i32>); // anonymous local
     let @5: (); // anonymous local
-    let @6: &'static (test_crate::BaseOn::{vtable}<i32>); // anonymous local
-    let @7: (); // anonymous local
-    let @8: &'static (test_crate::BaseOn::{vtable}<i64>); // anonymous local
+    let @6: &'static (test_crate::BaseOn::{vtable}<i64>); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
@@ -887,16 +855,12 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     storage_live(@3)
     @3 := ()
     storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
+    @4 := &{impl BaseOn<i32> for i32}::{vtable}
     storage_live(@5)
     @5 := ()
     storage_live(@6)
-    @6 := &{impl BaseOn<i32> for i32}::{vtable}
-    storage_live(@7)
-    @7 := ()
-    storage_live(@8)
-    @8 := &{impl BaseOn<i64> for i32}::{vtable}
-    ret@0 := test_crate::Both32And64::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: move (@4), super_trait_1: move (@6), super_trait_2: move (@8) }
+    @6 := &{impl BaseOn<i64> for i32}::{vtable}
+    ret@0 := test_crate::Both32And64::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -992,18 +956,12 @@ fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtabl
     let ret@0: test_crate::LifetimeTrait::{vtable}<i32>; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let @3: (); // anonymous local
-    let @4: &'static (core::marker::MetaSized::{vtable}); // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    storage_live(@3)
-    @3 := ()
-    storage_live(@4)
-    @4 := &core::marker::MetaSized::{vtable}
-    ret@0 := test_crate::LifetimeTrait::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: move (@4) }
+    ret@0 := test_crate::LifetimeTrait::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
