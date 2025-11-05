@@ -982,7 +982,7 @@ impl ItemTransCtx<'_, '_> {
         };
         mk_field(ConstantExprKind::FnPtr(fn_ptr));
 
-        // Add usual method
+        // Add the normal method
         for item in items {
             self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
         }
