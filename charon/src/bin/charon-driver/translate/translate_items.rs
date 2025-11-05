@@ -305,9 +305,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     let declared_fun_name = self.translated.item_name(declared_fun_id).unwrap();
                     let new_fun_name = {
                         let mut item_name = timpl.item_meta.name.clone();
-                        item_name
-                            .name
-                            .push(declared_fun_name.name.last().unwrap().clone());
+                        item_name.name.push(
+                            declared_fun_name
+                                .name
+                                .iter()
+                                .rfind(|p| !matches!(p, PathElem::Instantiated(..)))
+                                .unwrap()
+                                .clone(),
+                        );
                         item_name
                     };
                     let opacity = self.opacity_for_name(&new_fun_name);
