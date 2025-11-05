@@ -552,20 +552,19 @@ impl ItemTransCtx<'_, '_> {
                 args,
                 ..
             } => {
-                // For closures, get the trait implementation based on the closure kind
-                let closure_trait_impl = match impl_kind {
-                    TraitImplSource::Closure(ClosureKind::FnOnce) => fn_once_impl,
-                    TraitImplSource::Closure(ClosureKind::FnMut) => {
-                        fn_mut_impl.as_ref().expect("FnMut impl should exist")
-                    }
-                    TraitImplSource::Closure(ClosureKind::Fn) => {
-                        fn_impl.as_ref().expect("Fn impl should exist")
-                    }
-                    _ => unreachable!("Expected closure trait impl source"),
-                };
                 let target_kind = match impl_kind {
                     TraitImplSource::Closure(kind) => *kind,
                     _ => unreachable!(),
+                };
+                // For closures, get the trait implementation based on the closure kind
+                let closure_trait_impl = match target_kind {
+                    ClosureKind::FnOnce => fn_once_impl,
+                    ClosureKind::FnMut => {
+                        fn_mut_impl.as_ref().expect("FnMut impl should exist")
+                    }
+                    ClosureKind::Fn => {
+                        fn_impl.as_ref().expect("Fn impl should exist")
+                    }
                 };
                 (
                     &closure_trait_impl.trait_pred.trait_ref,
