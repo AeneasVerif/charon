@@ -791,17 +791,11 @@ impl ItemTransCtx<'_, '_> {
 
                         ConstantExprKind::Opaque("missing supertrait vtable".into())
                     } else {
-                        // For non-dyn-compatible builtin traits, we don't need vtable instances
-                        trace!(
-                            "Non-dyn-compatible builtin trait: {:?}",
-                            trait_def.lang_item
-                        );
-                        ConstantExprKind::Opaque(
-                            format!(
-                                "non-dyn-compatible builtin trait {:?}",
-                                trait_def.lang_item.as_deref().unwrap_or("unknown")
-                            )
-                            .into(),
+                        // For non-dyn-compatible builtin traits, this branch should not happen
+                        raise_error!(
+                            self,
+                            span,
+                            "`non-dyn-compatible builtin traits` should not appear in vtable construction"
                         )
                     }
                 }
