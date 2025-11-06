@@ -446,7 +446,15 @@ impl ItemTransCtx<'_, '_> {
             TyKind::DynTrait(dyn_pred).into_ty()
         };
 
-        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
+        let is_closure = |lang_item: &Option<String>| match lang_item {
+            Some(name) => name == "r#fn" || name == "fn_mut" || name == "fn_once",
+            None => false,
+        };
+
+        // Translate normal traits and Closure traits.
+        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque()
+            && !is_closure(&trait_def.lang_item)
+        {
             (TypeDeclKind::Opaque, None)
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
