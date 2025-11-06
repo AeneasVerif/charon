@@ -559,12 +559,8 @@ impl ItemTransCtx<'_, '_> {
                 // For closures, get the trait implementation based on the closure kind
                 let closure_trait_impl = match target_kind {
                     ClosureKind::FnOnce => fn_once_impl,
-                    ClosureKind::FnMut => {
-                        fn_mut_impl.as_ref().expect("FnMut impl should exist")
-                    }
-                    ClosureKind::Fn => {
-                        fn_impl.as_ref().expect("Fn impl should exist")
-                    }
+                    ClosureKind::FnMut => fn_mut_impl.as_ref().expect("FnMut impl should exist"),
+                    ClosureKind::Fn => fn_impl.as_ref().expect("Fn impl should exist"),
                 };
                 (
                     &closure_trait_impl.trait_pred.trait_ref,
@@ -844,22 +840,14 @@ impl ItemTransCtx<'_, '_> {
         vtable_struct_ref: TypeDeclRef,
         impl_kind: &TraitImplSource,
     ) -> Result<Body, Error> {
-        // let mut locals = Locals::new(0);
-        // let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
-        // let ret_place = locals.new_var(Some("ret".into()), ret_ty.clone());
-
-        // Get trait definition (`trait_def`) and assoticated items (`items`).
-        // The `items` for closure is empty: method_call of closure is treated separately.
-        let (trait_pred, items) = {
+        // Get trait reference (`trait_ref`)
+        let trait_ref = {
             match impl_kind {
                 TraitImplSource::Normal => {
-                    let hax::FullDefKind::TraitImpl {
-                        trait_pred, items, ..
-                    } = impl_def.kind()
-                    else {
+                    let hax::FullDefKind::TraitImpl { trait_pred, .. } = impl_def.kind() else {
                         unreachable!()
                     };
-                    (trait_pred, items)
+                    &trait_pred.trait_ref
                 }
                 TraitImplSource::Closure(closure_kind) => {
                     let hax::FullDefKind::Closure {
@@ -879,7 +867,7 @@ impl ItemTransCtx<'_, '_> {
                         }
                         ClosureKind::Fn => fn_impl.as_ref().expect("Fn impl should exist"),
                     };
-                    (&trait_impl.trait_pred, &vec![])
+                    &trait_impl.trait_pred.trait_ref
                 }
                 _ => {
                     raise_error!(
@@ -891,8 +879,8 @@ impl ItemTransCtx<'_, '_> {
             }
         };
 
-        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
+        let trait_def = self.hax_def(trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, trait_ref)?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
 
@@ -962,7 +950,7 @@ impl ItemTransCtx<'_, '_> {
             let drop_trait = self.tcx.lang_items().drop_trait().unwrap();
             let drop_impl_expr: hax::ImplExpr = {
                 let s = self.hax_state_with_id();
-                let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+                let rustc_trait_args = trait_ref.rustc_args(s);
                 let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
                 let drop_tref =
                     rustc_middle::ty::TraitRef::new_from_args(self.tcx, drop_trait, generics);
@@ -982,16 +970,17 @@ impl ItemTransCtx<'_, '_> {
         };
         mk_field(ConstantExprKind::FnPtr(fn_ptr));
 
-        // Add the normal method
-        for item in items {
-            self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
-        }
-
-        // Add the closure method (call, call_mut)
-        // We do not translate `call_once` for the reason discussed above -- the function is not dyn-compatible
-        if let TraitImplSource::Closure(closure_kind) = *impl_kind
+        // Add methods
+        if let hax::FullDefKind::TraitImpl { items, .. } = impl_def.kind() {
+            // Add the normal method
+            for item in items {
+                self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
+            }
+        } else if let TraitImplSource::Closure(closure_kind) = *impl_kind
             && !matches!(closure_kind, ClosureKind::FnOnce)
         {
+            // Add the closure method (call, call_mut)
+            // We do not translate `call_once` for the reason discussed above -- the function is not dyn-compatible
             mk_field(self.generate_closure_method_shim_ref(span, impl_def, closure_kind)?);
         }
 
