@@ -24,18 +24,6 @@ pub trait Sized::<usize>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<bool>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<bool>
@@ -157,16 +145,6 @@ pub fn core::ops::index::Index::index::<Slice<bool>, RangeFrom::<usize>><'_0>(@1
 pub enum Option::<i32> {
   None,
   Some(i32),
-}
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
 }
 
 // Full name: core::option::Option::<&'_ (Slice<bool>)>
@@ -387,14 +365,6 @@ struct MonoContainer::<i32> {
 // Full name: test_crate::MonoContainer::<&'_ (Str)>
 struct MonoContainer::<&'_ (Str)> {
   item: &'_ (Str),
-}
-
-// Full name: test_crate::MonoContainer
-struct MonoContainer<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  item: T,
 }
 
 fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::<i32>
