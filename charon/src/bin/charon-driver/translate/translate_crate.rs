@@ -329,6 +329,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id
     }
 
+    /// Enqueue an item from its id.
+    pub(crate) fn enqueue_id(&mut self, id: impl Into<ItemId>) {
+        let id = id.into();
+        if self.translated.get_item(id).is_none() {
+            let item_src = self.reverse_id_map[&id].clone();
+            self.items_to_translate.insert(item_src);
+        }
+    }
+
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         self.translated.target_information = krate::TargetInfo {
@@ -522,6 +531,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .id
                     .as_regular()
                     .expect("methods are not builtin functions");
+                self.mark_method_as_used(trait_ref.trait_decl_ref.skip_binder.id, name);
                 FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
@@ -593,6 +603,7 @@ pub fn translate<'tcx, 'ctx>(
             options: options.clone(),
             ..TranslatedCrate::default()
         },
+        method_status: Default::default(),
         id_map: Default::default(),
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),

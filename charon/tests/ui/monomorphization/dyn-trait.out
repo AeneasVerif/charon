@@ -175,12 +175,4 @@ note: the error occurred when translating `alloc::string::{impl alloc::string::T
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/alloc/src/string.rs:2808:5
 
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2795:5
-
-note: the error occurred when translating `alloc::string::ToString::to_string`, which is (transitively) used at the following location(s):
- --> tests/ui/monomorphization/dyn-trait.rs:7:5
-  |
-7 |     x.to_string()
-  |     -------------
-ERROR Charon failed to translate this code (36 errors)
+ERROR Charon failed to translate this code (35 errors)

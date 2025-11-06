@@ -228,27 +228,15 @@ pub trait SliceIndex::<RangeFrom::<usize>, Slice<bool>>
 
 pub fn core::slice::index::SliceIndex::get::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
 
-pub fn core::slice::index::SliceIndex::get<'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
-
 pub fn core::slice::index::SliceIndex::get_mut::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
-
-pub fn core::slice::index::SliceIndex::get_mut<'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked::<RangeFrom::<usize>, Slice<bool>>(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
-
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut::<RangeFrom::<usize>, Slice<bool>>(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
 
 pub fn core::slice::index::SliceIndex::index::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
 
-pub fn core::slice::index::SliceIndex::index<'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
-
 pub fn core::slice::index::SliceIndex::index_mut::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
-
-pub fn core::slice::index::SliceIndex::index_mut<'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>

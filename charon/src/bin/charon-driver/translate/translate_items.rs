@@ -7,7 +7,6 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
 use itertools::Itertools;
-use std::collections::HashMap;
 use std::mem;
 use std::ops::ControlFlow;
 
@@ -96,7 +95,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_fun_decl(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::Global => {
@@ -283,42 +282,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         });
     }
 
-    /// We store methods in a side-table during translation. Call this function at the end of
-    /// translation to move methods back into their corresponding item.
+    /// Keep only the methods we marked as "used".
     pub fn remove_unused_methods(&mut self) {
-        let method_is_translated = |id: FunDeclId| self.translated.fun_decls.get(id).is_some();
-        // Keep only the methods for which we translated the corresponding `FunDecl`. We ensured
-        // that this would be translated if the method is used or implemented.
+        let method_is_used = |trait_id, name| {
+            self.method_status.get(trait_id).is_some_and(|map| {
+                map.get(&name)
+                    .is_some_and(|status| matches!(status, MethodStatus::Used))
+            })
+        };
         for tdecl in self.translated.trait_decls.iter_mut() {
             tdecl
                 .methods
-                .retain(|m| method_is_translated(m.skip_binder.item.id));
+                .retain(|m| method_is_used(tdecl.def_id, m.name()));
         }
-
-        for impl_id in self.translated.trait_impls.all_indices() {
-            let Some(timpl) = self.translated.trait_impls.get_mut(impl_id) else {
-                continue;
-            };
-            let decl_id = timpl.impl_trait.id;
-            let Some(tdecl) = self.translated.trait_decls.get(decl_id) else {
-                continue;
-            };
-
-            let mut methods_map: HashMap<_, _> =
-                mem::take(&mut timpl.methods).into_iter().collect();
-            // For each (kept) declared method, take the implemented method in the correct order.
-            let mut methods_vec = vec![];
-            for bound_method in &tdecl.methods {
-                let name = bound_method.name();
-                let method = methods_map.remove(&name).expect("missing method in impl");
-                methods_vec.push((name, method));
-            }
-            for (_, m) in &methods_vec {
-                // Ensure the used default methods are translated.
-                let _ = self.get_or_translate(m.skip_binder.id.into());
-            }
-            let timpl = self.translated.trait_impls.get_mut(impl_id).unwrap();
-            timpl.methods = methods_vec;
+        for timpl in self.translated.trait_impls.iter_mut() {
+            let trait_id = timpl.impl_trait.id;
+            timpl
+                .methods
+                .retain(|(name, _)| method_is_used(trait_id, *name));
         }
     }
 }
@@ -390,21 +371,18 @@ impl ItemTransCtx<'_, '_> {
             hax::AssocItemContainer::TraitImplContainer {
                 impl_,
                 implemented_trait_ref,
-                implemented_trait_item,
                 overrides_default,
                 ..
             } => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
-                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
-                    // Ensure we translate the corresponding decl signature.
-                    // FIXME(self_clause): also ensure we translate associated globals
-                    // consistently; to do once we have clearer `Self` clause handling.
-                    let _: FunDeclId =
-                        self.register_item(span, implemented_trait_item, TransItemSourceKind::Fun);
-                }
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
+                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                    // If the implementation is getting translated, that means the method is
+                    // getting used.
+                    self.mark_method_as_used(trait_ref.id, item_name);
+                }
                 ItemSource::TraitImpl {
                     impl_ref,
                     trait_ref,
@@ -496,7 +474,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// Translate one function.
     #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_function(
+    pub fn translate_fun_decl(
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
@@ -698,11 +676,11 @@ impl ItemTransCtx<'_, '_> {
             .try_collect()?;
 
         // Translate the associated items
-        // We do something subtle here: TODO: explain
         let mut consts = Vec::new();
         let mut types = Vec::new();
         let mut methods = Vec::new();
-        for (item_name, hax_item) in &items {
+
+        for &(item_name, ref hax_item) in &items {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
 
@@ -734,28 +712,24 @@ impl ItemTransCtx<'_, '_> {
 
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
+                    let method_id = self.register_no_enqueue(item_span, &item_src);
+                    // Register this method.
+                    self.register_method_impl(def_id, item_name, method_id);
+                    // By default we only enqueue required methods (those that don't have a default
+                    // impl). If the trait is transparent, we enqueue all its methods.
+                    if self.options.translate_all_methods
+                        || item_meta.opacity.is_transparent()
+                        || !hax_item.has_value
+                    {
+                        self.mark_method_as_used(def_id, item_name);
+                    }
+
+                    let binder_kind = BinderKind::TraitMethod(def_id, item_name);
                     let mut method = self.translate_binder_for_def(
                         item_span,
                         binder_kind,
                         &item_def,
                         |bt_ctx| {
-                            // If the trait is opaque, we only translate the signature of a method
-                            // with default body if it's overridden or used somewhere else.
-                            // We insert the `Binder<FunDeclRef>` unconditionally here, and remove
-                            // the ones that correspond to untranslated functions in the
-                            // `remove_unused_methods` pass.
-                            // FIXME: this triggers the translation of traits used in the method
-                            // clauses, despite the fact that we may end up not needing them.
-                            let fun_id = if bt_ctx.t_ctx.options.translate_all_methods
-                                || item_meta.opacity.is_transparent()
-                                || !hax_item.has_value
-                            {
-                                bt_ctx.register_and_enqueue(item_span, item_src)
-                            } else {
-                                bt_ctx.register_no_enqueue(item_span, &item_src)
-                            };
-
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
                             let fun_generics = bt_ctx
                                 .outermost_binder()
@@ -768,7 +742,7 @@ impl ItemTransCtx<'_, '_> {
                                         .identity_args_at_depth(DeBruijnId::zero()),
                                 );
                             let fn_ref = FunDeclRef {
-                                id: fun_id,
+                                id: method_id,
                                 generics: Box::new(fun_generics),
                             };
                             Ok(TraitMethod {
@@ -810,6 +784,9 @@ impl ItemTransCtx<'_, '_> {
                             clause.clause_id -= 1;
                         });
                     }
+
+                    // We insert the `Binder<TraitMethod>` unconditionally here; we'll remove the
+                    // ones that correspond to unused methods at the end of translation.
                     methods.push(method);
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
@@ -872,6 +849,7 @@ impl ItemTransCtx<'_, '_> {
             // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
             let (method_name, method_binder) =
                 self.prepare_drop_in_trait_method(def, span, def_id, None);
+            self.mark_method_as_used(def_id, method_name);
             methods.push(method_binder.map(|fn_ref| TraitMethod {
                 name: method_name,
                 item: fn_ref,
@@ -991,39 +969,51 @@ impl ItemTransCtx<'_, '_> {
 
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
+                    let method_id: FunDeclId = {
+                        let method_src = match &impl_item.value {
+                            Provided { .. } => item_src,
+                            // This will generate a copy of the default method. Note that the base
+                            // item for `DefaultedMethod` is the trait impl.
+                            DefaultedFn { .. } => TransItemSource::from_item(
+                                def.this(),
+                                TransItemSourceKind::DefaultedMethod(TraitImplSource::Normal, name),
+                                self.monomorphize(),
+                            ),
+                            _ => unreachable!(),
+                        };
+                        self.register_no_enqueue(item_span, &method_src)
+                    };
+
+                    // Register this method.
+                    self.register_method_impl(trait_id, name, method_id);
+                    // By default we only enqueue required methods (those that don't have a default
+                    // impl). If the impl is transparent, we enqueue all the implemented methods.
+                    if matches!(impl_item.value, Provided { .. })
+                        && item_meta.opacity.is_transparent()
+                    {
+                        self.mark_method_as_used(trait_id, name);
+                    }
+
                     let binder_kind = BinderKind::TraitMethod(trait_id, name);
                     let bound_fn_ref = match &impl_item.value {
-                        Provided { is_override, .. } => {
-                            // If the impl is opaque, we only translate the signature of a method with a
-                            // default body if it's directly used somewhere else.
-                            let fun_id = if self.t_ctx.options.translate_all_methods
-                                || item_meta.opacity.is_transparent()
-                                || !*is_override
-                            {
-                                self.register_and_enqueue(item_span, item_src)
-                            } else {
-                                self.register_no_enqueue(item_span, &item_src)
-                            };
-                            self.translate_binder_for_def(
-                                item_span,
-                                binder_kind,
-                                &item_def,
-                                |bt_ctx| {
-                                    let fun_generics = bt_ctx
-                                        .outermost_generics()
-                                        .identity_args_at_depth(DeBruijnId::one())
-                                        .concat(
-                                            &bt_ctx
-                                                .innermost_generics()
-                                                .identity_args_at_depth(DeBruijnId::zero()),
-                                        );
-                                    Ok(FunDeclRef {
-                                        id: fun_id,
-                                        generics: Box::new(fun_generics),
-                                    })
-                                },
-                            )?
-                        }
+                        Provided { .. } => self.translate_binder_for_def(
+                            item_span,
+                            binder_kind,
+                            &item_def,
+                            |ctx| {
+                                let generics = ctx
+                                    .outermost_generics()
+                                    .identity_args_at_depth(DeBruijnId::one())
+                                    .concat(
+                                        &ctx.innermost_generics()
+                                            .identity_args_at_depth(DeBruijnId::zero()),
+                                    );
+                                Ok(FunDeclRef {
+                                    id: method_id,
+                                    generics: Box::new(generics),
+                                })
+                            },
+                        )?,
                         DefaultedFn { .. } => {
                             // Retrieve the method generics from the trait decl.
                             let decl_methods =
@@ -1043,29 +1033,21 @@ impl ItemTransCtx<'_, '_> {
                                 )
                                 .params;
 
-                            // Get the id of the duplicate method. Note that the base item for
-                            // `DefaultedMethod` is the trait impl.
-                            let method_src = TransItemSource::from_item(
-                                def.this(),
-                                TransItemSourceKind::DefaultedMethod(TraitImplSource::Normal, name),
-                                self.monomorphize(),
-                            );
-                            let fun_id = self.register_no_enqueue(item_span, &method_src);
+                            let generics = self
+                                .outermost_generics()
+                                .identity_args_at_depth(DeBruijnId::one())
+                                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
                             let fn_ref = FunDeclRef {
-                                id: fun_id,
-                                generics: Box::new(
-                                    self.outermost_generics()
-                                        .identity_args_at_depth(DeBruijnId::one())
-                                        .concat(
-                                            &method_params
-                                                .identity_args_at_depth(DeBruijnId::zero()),
-                                        ),
-                                ),
+                                id: method_id,
+                                generics: Box::new(generics),
                             };
                             Binder::new(binder_kind, method_params, fn_ref)
                         }
                         _ => unreachable!(),
                     };
+
+                    // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
+                    // ones that correspond to unused methods at the end of translation.
                     methods.push((name, bound_fn_ref));
                 }
                 hax::FullDefKind::AssocConst { .. } => {
@@ -1300,6 +1282,50 @@ impl ItemTransCtx<'_, '_> {
             // TODO(dyn): generate vtable instances for builtin traits
             vtable: None,
         })
+    }
+
+    /// Record that `method_id` is an implementation of the given method of the trait. If the
+    /// method is not used anywhere yet we simply record the implementation. If the method is used
+    /// then we enqueue it for translation.
+    pub fn register_method_impl(
+        &mut self,
+        trait_id: TraitDeclId,
+        method_name: TraitItemName,
+        method_id: FunDeclId,
+    ) {
+        match self
+            .method_status
+            .get_or_extend_and_insert_default(trait_id)
+            .entry(method_name)
+            .or_default()
+        {
+            MethodStatus::Unused { implementors } => {
+                implementors.insert(method_id);
+            }
+            MethodStatus::Used => {
+                self.enqueue_id(method_id);
+            }
+        }
+    }
+
+    /// Mark the method as "used", which will enqueue for translation all the implementations of
+    /// that method.
+    pub fn mark_method_as_used(&mut self, trait_id: TraitDeclId, method_name: TraitItemName) {
+        let method_status = self
+            .method_status
+            .get_or_extend_and_insert_default(trait_id)
+            .entry(method_name)
+            .or_default();
+        match method_status {
+            MethodStatus::Unused { implementors } => {
+                let implementors = mem::take(implementors);
+                *method_status = MethodStatus::Used;
+                for fun_id in implementors {
+                    self.enqueue_id(fun_id);
+                }
+            }
+            MethodStatus::Used => {}
+        }
     }
 
     /// In case an impl does not override a trait method, this duplicates the original trait method
