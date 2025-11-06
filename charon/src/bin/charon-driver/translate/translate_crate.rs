@@ -14,16 +14,17 @@
 //! are opaque (this can be controlled with `--include`, `--opaque` and `--exclude`). If an item is
 //! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
 //! signature) but not its contents.
+use itertools::Itertools;
+use rustc_middle::ty::TyCtxt;
+use std::cell::RefCell;
+use std::path::PathBuf;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use hax::SInto;
-use itertools::Itertools;
 use macros::VariantIndexArity;
-use rustc_middle::ty::TyCtxt;
-use std::cell::RefCell;
-use std::path::PathBuf;
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
@@ -642,7 +643,6 @@ pub fn translate<'tcx, 'ctx>(
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
     while let Some(item_src) = ctx.items_to_translate.pop_first() {
-        trace!("About to translate item: {:?}", item_src);
         if ctx.processed.insert(item_src.clone()) {
             ctx.translate_item(&item_src);
         }

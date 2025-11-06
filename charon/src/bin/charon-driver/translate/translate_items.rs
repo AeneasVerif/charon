@@ -73,6 +73,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
+        trace!(
+            "About to translate item `{:?}` as a {:?}; \
+            target_id={trans_id:?}, mono={}",
+            def.def_id(),
+            item_src.kind,
+            bt_ctx.monomorphize()
+        );
         match &item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
                 bt_ctx.register_module(item_meta, &def);
@@ -437,7 +444,6 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        trace!("About to translate function:\n{:?}", def.def_id());
         let span = item_meta.span;
 
         // Translate the function signature
@@ -515,7 +521,6 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        trace!("About to translate global:\n{:?}", def.def_id());
         let span = item_meta.span;
 
         // Translate the generics and predicates - globals *can* have generics
@@ -570,9 +575,6 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
-        trace!("About to translate trait decl:\n{:?}", def.def_id());
-        trace!("Trait decl id:\n{:?}", def_id);
-
         let span = item_meta.span;
 
         // Translate the generics
@@ -840,9 +842,6 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
-        trace!("About to translate trait impl:\n{:?}", def.def_id());
-        trace!("Trait impl id:\n{:?}", def_id);
-
         let span = item_meta.span;
 
         self.translate_def_generics(span, def)?;
