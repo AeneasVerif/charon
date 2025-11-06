@@ -285,18 +285,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     /// We store methods in a side-table during translation. Call this function at the end of
     /// translation to move methods back into their corresponding item.
-    pub fn move_methods_to_their_items(&mut self) {
+    pub fn remove_unused_methods(&mut self) {
         let method_is_translated = |id: FunDeclId| self.translated.fun_decls.get(id).is_some();
         // Keep only the methods for which we translated the corresponding `FunDecl`. We ensured
-        // that this would be translated if the method is used or transparently implemented.
+        // that this would be translated if the method is used or implemented.
         for tdecl in self.translated.trait_decls.iter_mut() {
             tdecl
                 .methods
                 .retain(|m| method_is_translated(m.skip_binder.item.id));
         }
 
-        for (impl_id, mut methods_map) in mem::take(&mut self.impl_methods).into_iter_indexed() {
-            let Some(timpl) = self.translated.trait_impls.get(impl_id) else {
+        for impl_id in self.translated.trait_impls.all_indices() {
+            let Some(timpl) = self.translated.trait_impls.get_mut(impl_id) else {
                 continue;
             };
             let decl_id = timpl.impl_trait.id;
@@ -304,7 +304,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 continue;
             };
 
-            // For each declared method, take the implemented method in the correct order.
+            let mut methods_map: HashMap<_, _> =
+                mem::take(&mut timpl.methods).into_iter().collect();
+            // For each (kept) declared method, take the implemented method in the correct order.
             let mut methods_vec = vec![];
             for bound_method in &tdecl.methods {
                 let name = bound_method.name();
@@ -312,7 +314,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 methods_vec.push((name, method));
             }
             for (_, m) in &methods_vec {
-                // Ensure the default methods are translated.
+                // Ensure the used default methods are translated.
                 let _ = self.get_or_translate(m.skip_binder.id.into());
             }
             let timpl = self.translated.trait_impls.get_mut(impl_id).unwrap();
@@ -947,7 +949,7 @@ impl ItemTransCtx<'_, '_> {
         // Explore the associated items
         let mut consts = Vec::new();
         let mut types = Vec::new();
-        let mut methods = HashMap::new();
+        let mut methods = Vec::new();
 
         for impl_item in impl_items {
             use hax::ImplAssocItemValue::*;
@@ -1064,7 +1066,7 @@ impl ItemTransCtx<'_, '_> {
                         }
                         _ => unreachable!(),
                     };
-                    methods.insert(name, bound_fn_ref);
+                    methods.push((name, bound_fn_ref));
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_and_enqueue(item_span, item_src);
@@ -1120,13 +1122,8 @@ impl ItemTransCtx<'_, '_> {
                 trait_id,
                 Some(TraitImplSource::Normal),
             );
-            methods.insert(name, method);
+            methods.push((name, method));
         }
-
-        // Store methods separately.
-        *self
-            .impl_methods
-            .get_or_extend_and_insert(def_id, || HashMap::new()) = methods;
 
         Ok(TraitImpl {
             def_id,
@@ -1136,7 +1133,7 @@ impl ItemTransCtx<'_, '_> {
             implied_trait_refs,
             consts,
             types,
-            methods: Default::default(), // Stored separately
+            methods,
             vtable,
         })
     }

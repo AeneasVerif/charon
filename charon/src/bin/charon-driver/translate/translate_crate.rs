@@ -593,7 +593,6 @@ pub fn translate<'tcx, 'ctx>(
             options: options.clone(),
             ..TranslatedCrate::default()
         },
-        impl_methods: Default::default(),
         id_map: Default::default(),
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),
@@ -654,8 +653,9 @@ pub fn translate<'tcx, 'ctx>(
         }
     }
 
-    // The trait decl and impl methods were stored in a side-table. Move them to where they belong.
-    ctx.move_methods_to_their_items();
+    // Remove methods not marked as "used". They are never called and we made sure not to translate
+    // them. This removes them from the traits and impls.
+    ctx.remove_unused_methods();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {
