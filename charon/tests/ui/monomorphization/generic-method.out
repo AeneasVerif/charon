@@ -33,13 +33,19 @@ trait Foo::<u64>
     non-dyn-compatible
 }
 
-// Full name: test_crate::Foo::bar::<bool>
-fn bar::<bool>() -> u64
-
 // Full name: test_crate::{impl Foo::<u64>}
 impl Foo::<u64> {
     parent_clause0 = MetaSized::<u64>
     non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Foo::<u64>}::bar::<bool>
+fn bar::<bool>() -> u64
+{
+    let @0: u64; // return
+
+    @0 := const (0 : u64)
+    return
 }
 
 // Full name: test_crate::main
@@ -50,7 +56,7 @@ fn main()
 
     @0 := ()
     storage_live(@1)
-    @1 := {impl Foo::<u64>}::bar()
+    @1 := bar::<bool>()
     storage_dead(@1)
     @0 := ()
     return
