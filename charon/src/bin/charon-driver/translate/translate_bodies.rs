@@ -842,15 +842,9 @@ impl BodyTransCtx<'_, '_, '_> {
                 place,
                 impl_expr,
                 target,
-                unwind: _, // We consider that panic is an error, and don't model unwinding
+                unwind,
                 ..
-            } => {
-                let place = self.translate_place(span, place)?;
-                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                statements.push(Statement::new(span, StatementKind::Drop(place, tref)));
-                let target = self.translate_basic_block_id(*target);
-                ullbc_ast::TerminatorKind::Goto { target }
-            }
+            } => self.translate_drop(span, place, impl_expr, target, unwind)?,
             TerminatorKind::Call {
                 fun,
                 args,
@@ -1087,6 +1081,47 @@ impl BodyTransCtx<'_, '_, '_> {
         };
         Ok(TerminatorKind::Call {
             call,
+            target,
+            on_unwind,
+        })
+    }
+
+    /// Translate a drop terminator
+    #[allow(clippy::too_many_arguments)]
+    fn translate_drop(
+        &mut self,
+        span: Span,
+        place: &hax::Place,
+        impl_expr: &hax::ImplExpr,
+        target: &hax::BasicBlock,
+        unwind: &UnwindAction,
+    ) -> Result<TerminatorKind, Error> {
+        trace!();
+
+        let place = self.translate_place(span, place)?;
+        let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+        let target = self.translate_basic_block_id(*target);
+
+        let on_unwind = match unwind {
+            UnwindAction::Continue => {
+                let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
+                self.blocks.push(unwind_continue.into_block())
+            }
+            UnwindAction::Unreachable => {
+                let abort =
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
+                self.blocks.push(abort.into_block())
+            }
+            UnwindAction::Terminate(..) => {
+                let abort =
+                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
+                self.blocks.push(abort.into_block())
+            }
+            UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
+        };
+        Ok(TerminatorKind::Drop {
+            place,
+            tref,
             target,
             on_unwind,
         })

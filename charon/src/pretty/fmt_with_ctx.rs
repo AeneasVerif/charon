@@ -1410,14 +1410,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             StatementKind::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
             }
-            StatementKind::Drop(place, tref) => {
-                write!(
-                    f,
-                    "{tab}drop[{}] {}",
-                    tref.with_ctx(ctx),
-                    place.with_ctx(ctx),
-                )
-            }
             StatementKind::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
             StatementKind::Nop => write!(f, "{tab}nop"),
             StatementKind::Error(s) => write!(f, "{tab}@Error({})", s),
@@ -1585,6 +1577,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             } => {
                 let call = call.with_ctx(ctx);
                 write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
+            }
+            TerminatorKind::Drop {
+                place,
+                tref,
+                target,
+                on_unwind,
+            } => {
+                write!(
+                    f,
+                    "drop[{}] {} -> bb{target} (unwind: bb{on_unwind})",
+                    tref.with_ctx(ctx),
+                    place.with_ctx(ctx),
+                )
             }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
             TerminatorKind::Return => write!(f, "return"),

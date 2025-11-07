@@ -97,6 +97,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb2: {
+        drop[Drop::<bool>] expected@2;
+        drop[Drop::<bool>] init@1;
         unwind_continue;
     }
 
@@ -105,6 +107,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@4);
         storage_dead(@3);
         @0 := ();
+        drop[Drop::<bool>] expected@2;
+        drop[Drop::<bool>] init@1;
         return;
     }
 
@@ -112,6 +116,30 @@ fn do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@5);
         storage_dead(@4);
         panic(core::panicking::panic);
+    }
+
+    bb5: {
+        drop[Drop::<bool>] init@1 -> bb8 (unwind: bb9);
+    }
+
+    bb6: {
+        unwind_terminate;
+    }
+
+    bb7: {
+        drop[Drop::<bool>] init@1 -> bb10 (unwind: bb8);
+    }
+
+    bb8: {
+        unwind_continue;
+    }
+
+    bb9: {
+        unwind_terminate;
+    }
+
+    bb10: {
+        return;
     }
 }
 

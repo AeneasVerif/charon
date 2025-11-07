@@ -71,6 +71,12 @@ impl BlockData {
                 target,
                 on_unwind,
             } => vec![*target, *on_unwind],
+            TerminatorKind::Drop {
+                place: _,
+                tref: _,
+                target,
+                on_unwind,
+            } => vec![*target, *on_unwind],
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
                 vec![]
             }
