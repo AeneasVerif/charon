@@ -48,8 +48,6 @@ pub trait Trait::<bool>
 
 pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 (bool))
 
-pub fn test_crate::Trait::method<'_0>(@1: &'_0 (bool))
-
 // Full name: test_crate::{impl Trait::<bool>}::method
 pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 {

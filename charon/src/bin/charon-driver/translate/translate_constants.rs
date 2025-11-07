@@ -94,7 +94,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             ConstantExprKind::TraitConst { impl_expr, name } => {
                 let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
-                let name = TraitItemName(name.clone());
+                let name = TraitItemName(name.into());
                 expressions::ConstantExprKind::TraitConst(trait_ref, name)
             }
             ConstantExprKind::GlobalName(item) => {

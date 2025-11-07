@@ -9,9 +9,6 @@ pub trait PartialEq::<bool, bool>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
-
-#[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
 // Full name: core::cmp::Eq::<bool>

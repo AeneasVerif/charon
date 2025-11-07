@@ -24,18 +24,6 @@ pub trait Sized::<usize>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<bool>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<bool>
@@ -148,8 +136,6 @@ pub trait Index::<Slice<bool>, RangeFrom::<usize>>
     vtable: core::ops::index::Index::{vtable}::<Slice<bool>, RangeFrom::<usize>><Slice<bool>>
 }
 
-pub fn core::ops::index::Index::index<'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom::<usize>) -> &'_0 (Slice<bool>)
-
 pub fn core::ops::index::Index::index::<Slice<bool>, RangeFrom::<usize>><'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom::<usize>) -> &'_0 (Slice<bool>)
 
 // Full name: core::option::Option::<i32>
@@ -157,16 +143,6 @@ pub fn core::ops::index::Index::index::<Slice<bool>, RangeFrom::<usize>><'_0>(@1
 pub enum Option::<i32> {
   None,
   Some(i32),
-}
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
 }
 
 // Full name: core::option::Option::<&'_ (Slice<bool>)>
@@ -228,27 +204,15 @@ pub trait SliceIndex::<RangeFrom::<usize>, Slice<bool>>
 
 pub fn core::slice::index::SliceIndex::get::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
 
-pub fn core::slice::index::SliceIndex::get<'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
-
 pub fn core::slice::index::SliceIndex::get_mut::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
-
-pub fn core::slice::index::SliceIndex::get_mut<'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked::<RangeFrom::<usize>, Slice<bool>>(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
-
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut::<RangeFrom::<usize>, Slice<bool>>(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
 
 pub fn core::slice::index::SliceIndex::index::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
 
-pub fn core::slice::index::SliceIndex::index<'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
-
 pub fn core::slice::index::SliceIndex::index_mut::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
-
-pub fn core::slice::index::SliceIndex::index_mut<'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
@@ -399,14 +363,6 @@ struct MonoContainer::<i32> {
 // Full name: test_crate::MonoContainer::<&'_ (Str)>
 struct MonoContainer::<&'_ (Str)> {
   item: &'_ (Str),
-}
-
-// Full name: test_crate::MonoContainer
-struct MonoContainer<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  item: T,
 }
 
 fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::<i32>

@@ -14,16 +14,17 @@
 //! are opaque (this can be controlled with `--include`, `--opaque` and `--exclude`). If an item is
 //! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
 //! signature) but not its contents.
+use itertools::Itertools;
+use rustc_middle::ty::TyCtxt;
+use std::cell::RefCell;
+use std::path::PathBuf;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use hax::SInto;
-use itertools::Itertools;
 use macros::VariantIndexArity;
-use rustc_middle::ty::TyCtxt;
-use std::cell::RefCell;
-use std::path::PathBuf;
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
@@ -54,6 +55,9 @@ pub enum TransItemSourceKind {
     InherentImpl,
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
+    /// A trait impl method that uses the default method body from the trait declaration. The
+    /// `DefId` is that of the trait impl.
+    DefaultedMethod(TraitImplSource, TraitItemName),
     /// The `call_*` method of the appropriate `TraitImplSource::Closure` impl.
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
@@ -144,7 +148,8 @@ impl TransItemSource {
             TransItemSourceKind::EmptyDropMethod => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop)
             }
-            TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
+            TransItemSourceKind::DefaultedMethod(impl_kind, _)
+            | TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
@@ -288,6 +293,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
                     Fun
+                    | DefaultedMethod(..)
                     | ClosureMethod(..)
                     | ClosureAsFnCast
                     | EmptyDropMethod
@@ -321,6 +327,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let id = self.register_no_enqueue(dep_src, &item_src);
         self.items_to_translate.insert(item_src);
         id
+    }
+
+    /// Enqueue an item from its id.
+    pub(crate) fn enqueue_id(&mut self, id: impl Into<ItemId>) {
+        let id = id.into();
+        if self.translated.get_item(id).is_none() {
+            let item_src = self.reverse_id_map[&id].clone();
+            self.items_to_translate.insert(item_src);
+        }
     }
 
     pub(crate) fn register_target_info(&mut self) {
@@ -516,6 +531,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .id
                     .as_regular()
                     .expect("methods are not builtin functions");
+                self.mark_method_as_used(trait_ref.trait_decl_ref.skip_binder.id, name);
                 FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
@@ -587,6 +603,7 @@ pub fn translate<'tcx, 'ctx>(
             options: options.clone(),
             ..TranslatedCrate::default()
         },
+        method_status: Default::default(),
         id_map: Default::default(),
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),
@@ -642,11 +659,14 @@ pub fn translate<'tcx, 'ctx>(
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
     while let Some(item_src) = ctx.items_to_translate.pop_first() {
-        trace!("About to translate item: {:?}", item_src);
         if ctx.processed.insert(item_src.clone()) {
             ctx.translate_item(&item_src);
         }
     }
+
+    // Remove methods not marked as "used". They are never called and we made sure not to translate
+    // them. This removes them from the traits and impls.
+    ctx.remove_unused_methods();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {

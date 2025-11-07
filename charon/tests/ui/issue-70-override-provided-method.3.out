@@ -256,7 +256,8 @@ where
     return
 }
 
-fn test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>(@1: Option<T>[@TraitClause0], @2: U)
+// Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided
+fn {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>(@1: Option<T>[@TraitClause0], @2: U)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -303,7 +304,7 @@ where
     parent_clause1 = Sized<Option<T>[@TraitClause0]>
     parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
-    fn provided<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: PartialEq<U, Option<T>[@TraitClause0]>> = test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_1, @TraitClause1_1]
+    fn provided<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: PartialEq<U, Option<T>[@TraitClause0]>> = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 

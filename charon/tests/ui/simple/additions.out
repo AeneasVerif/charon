@@ -26,7 +26,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -45,8 +45,7 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -75,7 +74,8 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
     return
 }
 
-pub fn core::clone::impls::{impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
+// Full name: core::clone::impls::{impl Clone for u8}::clone_from
+pub fn {impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
 where
     [@TraitClause0]: Destruct<u8>,
 {
@@ -97,7 +97,7 @@ where
 impl Clone for u8 {
     parent_clause0 = Sized<u8>
     fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<u8>> = core::clone::impls::{impl Clone for u8}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<u8>> = {impl Clone for u8}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 

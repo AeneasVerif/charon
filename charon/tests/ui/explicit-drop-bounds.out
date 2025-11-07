@@ -66,12 +66,11 @@ trait Trait<Self, T>
     parent_clause4 : [@TraitClause4]: Sized<Self::Type>
     parent_clause5 : [@TraitClause5]: Drop<Self::Type>
     type Type
-    fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Drop<U>> = foo<Self, T, U>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Drop<U>> = test_crate::Trait::foo<Self, T, U>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::Trait::foo
-fn foo<Self, T, U>(@1: U)
+fn test_crate::Trait::foo<Self, T, U>(@1: U)
 where
     [@TraitClause0]: Trait<Self, T>,
     [@TraitClause1]: Sized<U>,
@@ -86,7 +85,8 @@ where
     return
 }
 
-fn test_crate::{impl Trait<u32> for ()}::foo<U>(@1: U)
+// Full name: test_crate::{impl Trait<u32> for ()}::foo
+fn {impl Trait<u32> for ()}::foo<U>(@1: U)
 where
     [@TraitClause0]: Sized<U>,
     [@TraitClause1]: Drop<U>,
@@ -109,7 +109,7 @@ impl Trait<u32> for () {
     parent_clause4 = Sized<String>
     parent_clause5 = {impl Drop for String}
     type Type = String
-    fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Drop<U>> = test_crate::{impl Trait<u32> for ()}::foo<U>[@TraitClause0_1, @TraitClause1_1]
+    fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Drop<U>> = {impl Trait<u32> for ()}::foo<U>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 

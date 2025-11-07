@@ -35,6 +35,16 @@ pub struct TranslateCtx<'tcx> {
     /// The translated data.
     pub translated: TranslatedCrate,
 
+    /// Record data for each method whether it is ever used (called or implemented) and the
+    /// `FunDeclId`s of the implementations. We use this to lazily translate methods, so that we
+    /// skip unused default methods of large traits like `Iterator`.
+    ///
+    /// The complete scheme works as follows: by default we enqueue no methods for translation.
+    /// When we find a use of a method, we mark it "used" using `mark_method_as_used`. This
+    /// enqueues all known and future impls of this method. We also mark a method as used if we
+    /// find an implementation of it in a non-opaque impl, and if the method is a required method.
+    pub method_status: Vector<TraitDeclId, HashMap<TraitItemName, MethodStatus>>,
+
     /// The map from rustc id to translated id.
     pub id_map: HashMap<TransItemSource, ItemId>,
     /// The reverse map of ids.
@@ -55,6 +65,26 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
+}
+
+/// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).
+#[derive(Debug)]
+pub enum MethodStatus {
+    Unused {
+        /// The `FunDeclId`s of the method implementations. Because the method is unused, these
+        /// items are not enqueued for translation yet. When marking the method as used we'll
+        /// enqueue them.
+        implementors: HashSet<FunDeclId>,
+    },
+    Used,
+}
+
+impl Default for MethodStatus {
+    fn default() -> Self {
+        Self::Unused {
+            implementors: Default::default(),
+        }
+    }
 }
 
 /// A translation context for items.

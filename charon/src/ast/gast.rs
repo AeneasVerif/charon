@@ -208,10 +208,21 @@ pub struct GlobalDeclRef {
 }
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq, Hash, PartialOrd, Ord,
+    Debug,
+    Clone,
+    Copy,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
 )]
 #[drive(skip)]
-pub struct TraitItemName(pub String);
+pub struct TraitItemName(pub ustr::Ustr);
 
 /// A trait **declaration**.
 ///
