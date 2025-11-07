@@ -1016,45 +1016,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(Body::Unstructured(builder.build()))
     }
 
-    fn generate_closure_method_shim_ref(
-        &mut self,
-        span: Span,
-        impl_def: &hax::FullDef,
-        closure_kind: ClosureKind,
-    ) -> Result<ConstantExprKind, Error> {
-        // Register the closure method shim
-        let shim_id: FunDeclId = self.register_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::VTableMethod(TraitImplSource::Closure(closure_kind)),
-        );
-
-        let mut generics = Box::new(self.the_only_binder().params.identity_args());
-
-        // Add the arguments for region binders of the closure
-        let hax::FullDefKind::Closure { args, .. } = impl_def.kind() else {
-            unreachable!()
-        };
-        // The signature can only contain region binders
-        let sig = &args.fn_sig;
-        for _ in &sig.bound_vars {
-            // The late-bound region binders are at last, for the whole closure, as per `translate_closures`, use push
-            generics.regions.push(Region::Erased);
-        }
-        // Finally, one more region for the receiver, this is at first, as it is the region of the function itself, use insert at head
-        generics
-            .regions
-            .insert_and_shift_ids(RegionId::ZERO, Region::Erased);
-
-        // Create function pointer to the shim
-        let fn_ptr = FnPtr {
-            kind: Box::new(shim_id.into()),
-            generics,
-        };
-
-        Ok(ConstantExprKind::FnPtr(fn_ptr))
-    }
-
     pub(crate) fn translate_vtable_instance_init(
         mut self,
         init_func_id: FunDeclId,
