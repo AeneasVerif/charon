@@ -319,7 +319,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         generics,
                     })
                 } else if let hax::BuiltinTraitData::Drop(DropData::Glue { ty, .. }) = trait_data
-                    && let hax::TyKind::Adt(item) = ty.kind()
+                    && let hax::TyKind::Adt(item)
+                    | hax::TyKind::Array(item)
+                    | hax::TyKind::Slice(item)
+                    | hax::TyKind::Tuple(item) = ty.kind()
                 {
                     let impl_ref =
                         self.translate_trait_impl_ref(span, item, TraitImplSource::ImplicitDrop)?;

@@ -150,6 +150,34 @@ pub trait BoolTrait<Self>
     vtable: test_crate::BoolTrait::{vtable}
 }
 
+// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}::drop
+fn {impl Drop for (A, B)}::drop<'_0, A, B>(@1: &'_0 mut ((A, B)))
+where
+    [@TraitClause0]: Sized<A>,
+{
+    let @0: (); // return
+    let @1: &'_0 mut ((A, B)); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}::drop_in_place
+fn {impl Drop for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}
+impl<A, B> Drop for (A, B)
+where
+    [@TraitClause0]: Sized<A>,
+{
+    parent_clause0 = MetaSized<(A, B)>
+    fn drop<'_0_1> = {impl Drop for (A, B)}::drop<'_0_1, A, B>[@TraitClause0]
+    fn drop_in_place = {impl Drop for (A, B)}::drop_in_place<A, B>[@TraitClause0]
+    non-dyn-compatible
+}
+
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
@@ -371,7 +399,7 @@ where
     @0 := move (@6)
     storage_dead(@4)
     storage_dead(@2)
-    drop[Drop<(A, A)>] self@1
+    drop[{impl Drop for (A, B)}<A, A>[@TraitClause0]] self@1
     return
 }
 
@@ -399,7 +427,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[Drop<(T, T)>] x@1
+    drop[{impl Drop for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -417,7 +445,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[Drop<(T, T)>] x@1
+    drop[{impl Drop for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 

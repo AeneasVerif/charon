@@ -80,6 +80,20 @@ where
 #[lang_item("String")]
 pub opaque type String
 
+// Full name: alloc::string::String::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::String::{impl Drop for String}::drop_in_place
+fn {impl Drop for String}::drop_in_place(@1: *mut String)
+
+// Full name: alloc::string::String::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0_1> = {impl Drop for String}::drop<'_0_1>
+    fn drop_in_place = {impl Drop for String}::drop_in_place
+    non-dyn-compatible
+}
+
 fn UNIT_METADATA()
 {
     let @0: (); // return
@@ -90,6 +104,102 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
+// Full name: test_crate::<array>::{impl Drop for Array<T, N>}::drop
+fn {impl Drop for Array<T, N>}::drop<'_0, T, const N : usize>(@1: &'_0 mut (Array<T, N>))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Drop<T>,
+{
+    let @0: (); // return
+    let @1: &'_0 mut (Array<T, N>); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<array>::{impl Drop for Array<T, N>}::drop_in_place
+fn {impl Drop for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut Array<T, N>)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Drop<T>,
+
+// Full name: test_crate::<array>::{impl Drop for Array<T, N>}
+impl<T, const N : usize> Drop for Array<T, N>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Drop<T>,
+{
+    parent_clause0 = MetaSized<Array<T, N>>
+    fn drop<'_0_1> = {impl Drop for Array<T, N>}::drop<'_0_1, T, N>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Drop for Array<T, N>}::drop_in_place<T, N>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::<slice>::{impl Drop for Slice<T>}::drop
+fn {impl Drop for Slice<T>}::drop<'_0, T>(@1: &'_0 mut (Slice<T>))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Drop<T>,
+{
+    let @0: (); // return
+    let @1: &'_0 mut (Slice<T>); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<slice>::{impl Drop for Slice<T>}::drop_in_place
+fn {impl Drop for Slice<T>}::drop_in_place<T>(@1: *mut Slice<T>)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Drop<T>,
+
+// Full name: test_crate::<slice>::{impl Drop for Slice<T>}
+impl<T> Drop for Slice<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Drop<T>,
+{
+    parent_clause0 = MetaSized<Slice<T>>
+    fn drop<'_0_1> = {impl Drop for Slice<T>}::drop<'_0_1, T>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Drop for Slice<T>}::drop_in_place<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}::drop
+fn {impl Drop for (A, B)}::drop<'_0, A, B>(@1: &'_0 mut ((A, B)))
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Drop<A>,
+    [@TraitClause2]: Drop<B>,
+{
+    let @0: (); // return
+    let @1: &'_0 mut ((A, B)); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}::drop_in_place
+fn {impl Drop for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Drop<A>,
+    [@TraitClause2]: Drop<B>,
+
+// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}
+impl<A, B> Drop for (A, B)
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Drop<A>,
+    [@TraitClause2]: Drop<B>,
+{
+    parent_clause0 = MetaSized<(A, B)>
+    fn drop<'_0_1> = {impl Drop for (A, B)}::drop<'_0_1, A, B>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn drop_in_place = {impl Drop for (A, B)}::drop_in_place<A, B>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::drop_array
 fn drop_array(@1: Array<String, 4 : usize>)
 {
@@ -98,19 +208,19 @@ fn drop_array(@1: Array<String, 4 : usize>)
 
     @0 := ()
     @0 := ()
-    drop[Drop<Array<String, 4 : usize>>] @1
+    drop[{impl Drop for Array<T, N>}<String, 4 : usize>[Sized<String>, {impl Drop for String}]] @1
     return
 }
 
 // Full name: test_crate::drop_slice
-fn drop_slice(@1: alloc::boxed::Box<Slice<String>>[MetaSized<Slice<String>>, Sized<Global>, Drop<Slice<String>>, {impl Drop for Global}])
+fn drop_slice(@1: alloc::boxed::Box<Slice<String>>[MetaSized<Slice<String>>, Sized<Global>, {impl Drop for Slice<T>}<String>[Sized<String>, {impl Drop for String}], {impl Drop for Global}])
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<Slice<String>>[MetaSized<Slice<String>>, Sized<Global>, Drop<Slice<String>>, {impl Drop for Global}]; // arg #1
+    let @1: alloc::boxed::Box<Slice<String>>[MetaSized<Slice<String>>, Sized<Global>, {impl Drop for Slice<T>}<String>[Sized<String>, {impl Drop for String}], {impl Drop for Global}]; // arg #1
 
     @0 := ()
     @0 := ()
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<Slice<String>, Global>[MetaSized<Slice<String>>, Sized<Global>, Drop<Slice<String>>, {impl Drop for Global}]] @1
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<Slice<String>, Global>[MetaSized<Slice<String>>, Sized<Global>, {impl Drop for Slice<T>}<String>[Sized<String>, {impl Drop for String}], {impl Drop for Global}]] @1
     return
 }
 
@@ -127,7 +237,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<(A, B)>] @1
+    drop[{impl Drop for (A, B)}<A, B>[@TraitClause0, @TraitClause2, @TraitClause3]] @1
     return
 }
 
