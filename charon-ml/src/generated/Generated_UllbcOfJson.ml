@@ -69,10 +69,6 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Deinit", deinit) ] ->
         let* deinit = place_of_json ctx deinit in
         Ok (Deinit deinit)
-    | `Assoc [ ("Drop", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = place_of_json ctx x_0 in
-        let* x_1 = trait_ref_of_json ctx x_1 in
-        Ok (Drop (x_0, x_1))
     | `Assoc [ ("Assert", assert_) ] ->
         let* assert_ = assertion_of_json ctx assert_ in
         Ok (Assert assert_)
@@ -133,6 +129,11 @@ and terminator_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* target = block_id_of_json ctx target in
         let* on_unwind = block_id_of_json ctx on_unwind in
         Ok (Call (call, target, on_unwind))
+    | `Assoc [ ("Drop", `Assoc [ ("place", place); ("tref", tref); ("target", target); ("on_unwind", on_unwind); ]) ] ->  
+      let* place = (place_of_json) ctx place in
+      let* tref = (trait_ref_of_json) ctx tref in
+      let* target = (block_id_of_json) ctx target in
+      let* on_unwind = (block_id_of_json) ctx on_unwind in Ok (Drop (place, tref, target, on_unwind))
     | `Assoc [ ("Abort", abort) ] ->
         let* abort = abort_kind_of_json ctx abort in
         Ok (Abort abort)
