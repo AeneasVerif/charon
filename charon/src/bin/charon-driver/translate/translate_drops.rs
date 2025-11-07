@@ -234,6 +234,35 @@ impl ItemTransCtx<'_, '_> {
         (method_name, method_binder)
     }
 
+    fn prepare_drop_method(
+        &mut self,
+        drop_trait_id: TraitDeclId,
+        method_id: FunDeclId,
+    ) -> (TraitItemName, Binder<FunDeclRef>) {
+        let method_name = TraitItemName("drop".into());
+        let method_binder = {
+            let mut method_params = GenericParams::empty();
+            method_params
+                .regions
+                .push_with(|index| RegionParam { index, name: None });
+
+            let generics = self
+                .outermost_binder()
+                .params
+                .identity_args_at_depth(DeBruijnId::one())
+                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
+            Binder::new(
+                BinderKind::TraitMethod(drop_trait_id, method_name.clone()),
+                method_params,
+                FunDeclRef {
+                    id: method_id,
+                    generics: Box::new(generics),
+                },
+            )
+        };
+        (method_name, method_binder)
+    }
+
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_implicit_drop_impl(
         mut self,
@@ -253,30 +282,10 @@ impl ItemTransCtx<'_, '_> {
         let mut timpl = self.translate_virtual_trait_impl(impl_id, item_meta, drop_impl)?;
 
         // Add the `drop(&mut self)` method.
-        let drop_method_id =
-            self.register_item(span, def.this(), TransItemSourceKind::EmptyDropMethod);
-        let drop_method_name = TraitItemName("drop".into());
-        let drop_method_binder = {
-            let mut method_params = GenericParams::empty();
-            method_params
-                .regions
-                .push_with(|index| RegionParam { index, name: None });
-
-            let generics = self
-                .outermost_binder()
-                .params
-                .identity_args_at_depth(DeBruijnId::one())
-                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
-            Binder::new(
-                BinderKind::TraitMethod(timpl.impl_trait.id, drop_method_name.clone()),
-                method_params,
-                FunDeclRef {
-                    id: drop_method_id,
-                    generics: Box::new(generics),
-                },
-            )
-        };
-        timpl.methods.push((drop_method_name, drop_method_binder));
+        let method_id = self.register_item(span, def.this(), TransItemSourceKind::EmptyDropMethod);
+        timpl
+            .methods
+            .push(self.prepare_drop_method(timpl.impl_trait.id, method_id));
 
         // Add the `drop_in_place(*mut self)` method.
         timpl.methods.push(self.prepare_drop_in_trait_method(
