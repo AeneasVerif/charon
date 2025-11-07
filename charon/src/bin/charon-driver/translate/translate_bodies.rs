@@ -665,10 +665,14 @@ impl BodyTransCtx<'_, '_, '_> {
                         let variant_id = match kind {
                             AdtKind::Struct | AdtKind::Union => None,
                             AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
+                            // The rest are fake adt kinds that won't reach here.
+                            _ => unreachable!(),
                         };
                         let field_id = match kind {
                             AdtKind::Struct | AdtKind::Enum => None,
                             AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
+                            // The rest are fake adt kinds that won't reach here.
+                            _ => unreachable!(),
                         };
 
                         let akind = AggregateKind::Adt(tref, variant_id, field_id);
