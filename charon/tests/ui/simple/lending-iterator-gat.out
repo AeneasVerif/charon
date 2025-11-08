@@ -135,6 +135,27 @@ pub trait LendingIterator<Self>
     non-dyn-compatible
 }
 
+// Full name: test_crate::<tuple_1>::{impl Drop for (A)}::drop
+fn {impl Drop for (A)}::drop<'_0, A>(@1: &'_0 mut ((A)))
+{
+    let @0: (); // return
+    let @1: &'_0 mut ((A)); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<tuple_1>::{impl Drop for (A)}::drop_in_place
+fn {impl Drop for (A)}::drop_in_place<A>(@1: *mut (A))
+
+// Full name: test_crate::<tuple_1>::{impl Drop for (A)}
+impl<A> Drop for (A) {
+    parent_clause0 = MetaSized<(A)>
+    fn drop<'_0_1> = {impl Drop for (A)}::drop<'_0_1, A>
+    fn drop_in_place = {impl Drop for (A)}::drop_in_place<A>
+    non-dyn-compatible
+}
+
 pub fn test_crate::LendingIterator::next<'a, Self>(@1: &'a mut (Self)) -> Option<@TraitClause0::Item>[(@TraitClause0::Item::[@TraitClause0])]
 where
     [@TraitClause0]: LendingIterator<Self>,

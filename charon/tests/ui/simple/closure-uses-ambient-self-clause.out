@@ -25,16 +25,14 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -104,6 +102,27 @@ trait Thing<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
     fn foo = foo<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::<tuple_1>::{impl Drop for (A)}::drop
+fn {impl Drop for (A)}::drop<'_0, A>(@1: &'_0 mut ((A)))
+{
+    let @0: (); // return
+    let @1: &'_0 mut ((A)); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<tuple_1>::{impl Drop for (A)}::drop_in_place
+fn {impl Drop for (A)}::drop_in_place<A>(@1: *mut (A))
+
+// Full name: test_crate::<tuple_1>::{impl Drop for (A)}
+impl<A> Drop for (A) {
+    parent_clause0 = MetaSized<(A)>
+    fn drop<'_0_1> = {impl Drop for (A)}::drop<'_0_1, A>
+    fn drop_in_place = {impl Drop for (A)}::drop_in_place<A>
     non-dyn-compatible
 }
 

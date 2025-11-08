@@ -1,0 +1,318 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::<String>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<String>
+
+// Full name: core::marker::Sized::<String>
+#[lang_item("sized")]
+pub trait Sized::<String>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<String>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<Global>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Global>
+
+// Full name: core::marker::Sized::<Global>
+#[lang_item("sized")]
+pub trait Sized::<Global>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Global>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<Slice<String>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Slice<String>>
+
+// Full name: core::marker::MetaSized::<Array<String, 4 : usize>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<Array<String, 4 : usize>>
+
+// Full name: core::marker::MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: core::ops::drop::Drop::<Array<String, 4 : usize>>
+#[lang_item("drop")]
+pub trait Drop::<Array<String, 4 : usize>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Array<String, 4 : usize>>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<Array<String, 4 : usize>><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Array<String, 4 : usize>>
+    vtable: core::ops::drop::Drop::{vtable}::<Array<String, 4 : usize>>
+}
+
+// Full name: core::ops::drop::Drop::<String>
+#[lang_item("drop")]
+pub trait Drop::<String>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<String>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<String><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<String>
+    vtable: core::ops::drop::Drop::{vtable}::<String>
+}
+
+// Full name: core::ops::drop::Drop::<Slice<String>>
+#[lang_item("drop")]
+pub trait Drop::<Slice<String>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Slice<String>>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<Slice<String>><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Slice<String>>
+    vtable: core::ops::drop::Drop::{vtable}::<Slice<String>>
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: core::ops::drop::Drop::<Global>
+#[lang_item("drop")]
+pub trait Drop::<Global>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<Global>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<Global><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Global>
+    vtable: core::ops::drop::Drop::{vtable}::<Global>
+}
+
+// Full name: test_crate::<slice>::{impl Drop::<Slice<String>>}::drop::<String>
+fn {impl Drop::<Slice<String>>}::drop::<String><'_0>(@1: &'_0 mut (Slice<String>))
+{
+    let @0: (); // return
+    let @1: &'_0 mut (Slice<String>); // arg #1
+
+    @0 := ()
+    return
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: alloc::string::String::{impl Drop::<String>}::drop
+fn {impl Drop::<String>}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::String::{impl Drop::<String>}::drop_in_place
+fn {impl Drop::<String>}::drop_in_place(@1: *mut String)
+
+// Full name: alloc::string::String::{impl Drop::<String>}
+impl Drop::<String> {
+    parent_clause0 = MetaSized::<String>
+    fn drop<'_0_1> = {impl Drop::<String>}::drop<'_0_1>
+    fn drop_in_place = {impl Drop::<String>}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: test_crate::<slice>::{impl Drop::<Slice<String>>}::drop_in_place::<String>
+fn {impl Drop::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<String>)
+{
+    let @0: (); // return
+    let @1: *mut Slice<String>; // arg #1
+    let @2: &'_ mut (Slice<String>); // anonymous local
+    let @3: usize; // anonymous local
+    let @4: usize; // anonymous local
+    let @5: *mut String; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: &'_ mut (Slice<String>); // anonymous local
+    let @8: &'_ mut (String); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    @0 := ()
+    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
+    @3 := copy (@2.metadata)
+    @4 := const (0 : usize)
+    loop {
+        @6 := copy (@4) == copy (@3)
+        if move (@6) {
+            break 0
+        }
+        else {
+            storage_live(@7)
+            @7 := &mut *(@2) with_metadata(copy (@2.metadata))
+            storage_live(@8)
+            @8 := @SliceIndexMut<'_, String>(move (@7), copy (@4))
+            @5 := &raw mut *(@8)
+            @4 := move (@4) wrap.+ const (1 : usize)
+            drop[{impl Drop::<String>}] *(@5)
+            continue 0
+        }
+    }
+    return
+}
+
+// Full name: test_crate::<slice>::{impl Drop::<Slice<String>>}::<String>
+impl Drop::<Slice<String>> {
+    parent_clause0 = MetaSized::<Slice<String>>
+    fn drop<'_0_1> = {impl Drop::<Slice<String>>}::drop::<String><'_0_1>
+    fn drop_in_place = {impl Drop::<Slice<String>>}::drop_in_place::<String>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Drop::<Global>}::drop
+fn {impl Drop::<Global>}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::alloc::Global::{impl Drop::<Global>}::drop_in_place
+fn {impl Drop::<Global>}::drop_in_place(@1: *mut Global)
+
+// Full name: alloc::alloc::Global::{impl Drop::<Global>}
+impl Drop::<Global> {
+    parent_clause0 = MetaSized::<Global>
+    fn drop<'_0_1> = {impl Drop::<Global>}::drop<'_0_1>
+    fn drop_in_place = {impl Drop::<Global>}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: core::ops::drop::Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+#[lang_item("drop")]
+pub trait Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]><'_0_1>
+    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+    vtable: core::ops::drop::Drop::{vtable}::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+}
+
+fn core::ops::drop::Drop::drop_in_place::<String>(@1: *mut String)
+
+fn core::ops::drop::Drop::drop_in_place::<Slice<String>>(@1: *mut Slice<String>)
+
+fn core::ops::drop::Drop::drop_in_place::<Global>(@1: *mut Global)
+
+fn core::ops::drop::Drop::drop_in_place::<Array<String, 4 : usize>>(@1: *mut Array<String, 4 : usize>)
+
+fn core::ops::drop::Drop::drop_in_place::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>(@1: *mut alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}])
+
+pub fn core::ops::drop::Drop::drop::<String><'_0>(@1: &'_0 mut (String))
+
+pub fn core::ops::drop::Drop::drop::<Slice<String>><'_0>(@1: &'_0 mut (Slice<String>))
+
+pub fn core::ops::drop::Drop::drop::<Global><'_0>(@1: &'_0 mut (Global))
+
+pub fn core::ops::drop::Drop::drop::<Array<String, 4 : usize>><'_0>(@1: &'_0 mut (Array<String, 4 : usize>))
+
+pub fn core::ops::drop::Drop::drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]><'_0>(@1: &'_0 mut (alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]))
+
+// Full name: alloc::boxed::{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::drop::<Slice<String>, Global>
+pub fn {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::drop::<Slice<String>, Global><'_0>(@1: &'_0 mut (alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]))
+
+// Full name: alloc::boxed::{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::drop_in_place::<Slice<String>, Global>
+fn {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::drop_in_place::<Slice<String>, Global>(@1: *mut alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}])
+
+// Full name: alloc::boxed::{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::<Slice<String>, Global>
+impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]> {
+    parent_clause0 = MetaSized::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>
+    fn drop<'_0_1> = {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::drop::<Slice<String>, Global><'_0_1>
+    fn drop_in_place = {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::drop_in_place::<Slice<String>, Global>
+    vtable: {impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::{vtable}::<Slice<String>, Global>
+}
+
+// Full name: test_crate::<array>::{impl Drop::<Array<String, 4 : usize>>}::drop::<String, 4 : usize>
+fn {impl Drop::<Array<String, 4 : usize>>}::drop::<String, 4 : usize><'_0>(@1: &'_0 mut (Array<String, 4 : usize>))
+{
+    let @0: (); // return
+    let @1: &'_0 mut (Array<String, 4 : usize>); // arg #1
+
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::<array>::{impl Drop::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usize>
+fn {impl Drop::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usize>(@1: *mut Array<String, 4 : usize>)
+{
+    let @0: (); // return
+    let @1: *mut Array<String, 4 : usize>; // arg #1
+    let @2: &'_ mut (Array<String, 4 : usize>); // anonymous local
+    let @3: *mut Array<String, 4 : usize>; // anonymous local
+    let @4: *mut Slice<String>; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: usize; // anonymous local
+    let @7: *mut String; // anonymous local
+    let @8: bool; // anonymous local
+    let @9: &'_ mut (Slice<String>); // anonymous local
+    let @10: &'_ mut (String); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    @0 := ()
+    @2 := &mut *(@1)
+    @3 := &raw mut *(@2)
+    @4 := unsize_cast<*mut Array<String, 4 : usize>, *mut Slice<String>, 4 : usize>(move (@3))
+    @5 := copy (@4.metadata)
+    @6 := const (0 : usize)
+    loop {
+        @8 := copy (@6) == copy (@5)
+        if move (@8) {
+            break 0
+        }
+        else {
+            storage_live(@9)
+            @9 := &mut *(@4) with_metadata(copy (@4.metadata))
+            storage_live(@10)
+            @10 := @SliceIndexMut<'_, String>(move (@9), copy (@6))
+            @7 := &raw mut *(@10)
+            @6 := move (@6) wrap.+ const (1 : usize)
+            drop[{impl Drop::<String>}] *(@7)
+            continue 0
+        }
+    }
+    return
+}
+
+// Full name: test_crate::<array>::{impl Drop::<Array<String, 4 : usize>>}::<String, 4 : usize>
+impl Drop::<Array<String, 4 : usize>> {
+    parent_clause0 = MetaSized::<Array<String, 4 : usize>>
+    fn drop<'_0_1> = {impl Drop::<Array<String, 4 : usize>>}::drop::<String, 4 : usize><'_0_1>
+    fn drop_in_place = {impl Drop::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usize>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::drop_array
+fn drop_array(@1: Array<String, 4 : usize>)
+{
+    let @0: (); // return
+    let @1: Array<String, 4 : usize>; // arg #1
+
+    @0 := ()
+    @0 := ()
+    drop[{impl Drop::<Array<String, 4 : usize>>}::<String, 4 : usize>] @1
+    return
+}
+
+// Full name: test_crate::drop_slice
+fn drop_slice(@1: alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}])
+{
+    let @0: (); // return
+    let @1: alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]; // arg #1
+
+    @0 := ()
+    @0 := ()
+    drop[{impl Drop::<alloc::boxed::Box<Slice<String>>[MetaSized::<Slice<String>>, Sized::<Global>, {impl Drop::<Slice<String>>}::<String>, {impl Drop::<Global>}]>}::<Slice<String>, Global>] @1
+    return
+}
+
+
+
