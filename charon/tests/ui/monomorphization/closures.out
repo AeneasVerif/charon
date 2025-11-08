@@ -60,6 +60,57 @@ pub trait Sized::<Thing>
     non-dyn-compatible
 }
 
+struct test_crate::main::closure<'_0> {
+  &'_0 (u8),
+}
+
+// Full name: core::marker::Destruct::<test_crate::main::closure<'_>>
+#[lang_item("destruct")]
+pub trait Destruct::<test_crate::main::closure<'_>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
+    fn drop_in_place = drop_in_place::<test_crate::main::closure<'_>>
+    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure<'_>>
+}
+
+struct test_crate::main::closure#1<'_0> {
+  &'_0 mut (u8),
+}
+
+// Full name: core::marker::Destruct::<test_crate::main::closure#1<'_>>
+#[lang_item("destruct")]
+pub trait Destruct::<test_crate::main::closure#1<'_>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
+    fn drop_in_place = drop_in_place::<test_crate::main::closure#1<'_>>
+    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#1<'_>>
+}
+
+// Full name: test_crate::Thing
+struct Thing {}
+
+struct test_crate::main::closure#2 {
+  Thing,
+}
+
+// Full name: core::marker::Destruct::<test_crate::main::closure#2>
+#[lang_item("destruct")]
+pub trait Destruct::<test_crate::main::closure#2>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
+    fn drop_in_place = drop_in_place::<test_crate::main::closure#2>
+    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#2>
+}
+
+// Full name: core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>
+fn drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
+
+// Full name: core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>
+fn drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
+
+// Full name: core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>
+fn drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
+
 // Full name: core::marker::Tuple::<(u8)>
 #[lang_item("tuple_trait")]
 pub trait Tuple::<(u8)>
@@ -68,68 +119,9 @@ pub trait Tuple::<(u8)>
     vtable: core::marker::Tuple::{vtable}::<(u8)>
 }
 
-// Full name: test_crate::Thing
-struct Thing {}
-
+// Full name: core::mem::drop::<Thing>
 #[lang_item("mem_drop")]
-pub fn core::mem::drop::<Thing>(@1: Thing)
-
-struct test_crate::main::closure<'_0> {
-  &'_0 (u8),
-}
-
-// Full name: core::ops::drop::Drop::<test_crate::main::closure<'_>>
-#[lang_item("drop")]
-pub trait Drop::<test_crate::main::closure<'_>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0_1>
-    fn drop_in_place = drop_in_place::<test_crate::main::closure<'_>>
-    vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure<'_>>
-}
-
-struct test_crate::main::closure#1<'_0> {
-  &'_0 mut (u8),
-}
-
-// Full name: core::ops::drop::Drop::<test_crate::main::closure#1<'_>>
-#[lang_item("drop")]
-pub trait Drop::<test_crate::main::closure#1<'_>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop::<test_crate::main::closure#1<'_>><'_0_1>
-    fn drop_in_place = drop_in_place::<test_crate::main::closure#1<'_>>
-    vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#1<'_>>
-}
-
-struct test_crate::main::closure#2 {
-  Thing,
-}
-
-// Full name: core::ops::drop::Drop::<test_crate::main::closure#2>
-#[lang_item("drop")]
-pub trait Drop::<test_crate::main::closure#2>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop::<test_crate::main::closure#2><'_0_1>
-    fn drop_in_place = drop_in_place::<test_crate::main::closure#2>
-    vtable: core::ops::drop::Drop::{vtable}::<test_crate::main::closure#2>
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place::<test_crate::main::closure<'_>>
-fn drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
-
-// Full name: core::ops::drop::Drop::drop_in_place::<test_crate::main::closure#1<'_>>
-fn drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
-
-// Full name: core::ops::drop::Drop::drop_in_place::<test_crate::main::closure#2>
-fn drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
-
-pub fn core::ops::drop::Drop::drop::<test_crate::main::closure<'_>><'_0>(@1: &'_0 mut (test_crate::main::closure<'_>))
-
-pub fn core::ops::drop::Drop::drop::<test_crate::main::closure#1<'_>><'_0>(@1: &'_0 mut (test_crate::main::closure#1<'_>))
-
-pub fn core::ops::drop::Drop::drop::<test_crate::main::closure#2><'_0>(@1: &'_0 mut (test_crate::main::closure#2))
+pub fn drop::<Thing>(@1: Thing)
 
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure<'_>, (u8)>
 #[lang_item("fn_once")]
@@ -270,7 +262,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
     @0 := {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_, '_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Drop::<test_crate::main::closure<'_>>] f@1
+    drop[Destruct::<test_crate::main::closure<'_>>] f@1
     return
 }
 
@@ -318,7 +310,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
     @0 := {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_, '_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Drop::<test_crate::main::closure#1<'_>>] f@1
+    drop[Destruct::<test_crate::main::closure#1<'_>>] f@1
     return
 }
 
@@ -340,7 +332,7 @@ fn {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(@1: test_crate:
     storage_live(@4)
     storage_live(@5)
     @5 := move ((@1).0)
-    @4 := core::mem::drop::<Thing>(move (@5))
+    @4 := drop::<Thing>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -366,7 +358,7 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate::main::closu
     @0 := {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Drop::<test_crate::main::closure#2>] f@1
+    drop[Destruct::<test_crate::main::closure#2>] f@1
     return
 }
 
@@ -449,7 +441,7 @@ fn {impl FnOnce::<test_crate::main::closure<'_>, (u8)>}::call_once<'_0>(@1: test
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut::<test_crate::main::closure<'_>, (u8)>}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop[Drop::<test_crate::main::closure<'_>>] @1
+    drop[Destruct::<test_crate::main::closure<'_>>] @1
     return
 }
 
@@ -493,7 +485,7 @@ fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8)>}::call_once<'_0>(@1: te
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop[Drop::<test_crate::main::closure#1<'_>>] @1
+    drop[Destruct::<test_crate::main::closure#1<'_>>] @1
     return
 }
 

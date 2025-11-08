@@ -62,14 +62,11 @@ pub enum TransItemSourceKind {
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// The `drop` method of a `TraitImplSource::ImplicitDrop` trait impl; that method does
-    /// nothing.
-    EmptyDropMethod,
-    /// The `drop_in_place` method of a `Drop` impl or decl. It contains the drop glue that calls
-    /// `Drop::drop` for the type and then drops its fields. if the `TraitImplSource` is `None`
-    /// this is the method declaration (and the DefId is that of the `Drop` trait), otherwise this
-    /// is a method implementation (and the DefId is either that of a `impl Drop for Foo` impl, or
-    /// that of an ADT in case of an implicit `Drop` impl).
+    /// The `drop_in_place` method of a `Destruct` impl or decl. It contains the drop glue that
+    /// calls `Drop::drop` for the type and then drops its fields. if the `TraitImplSource` is
+    /// `None` this is the method declaration (and the DefId is that of the `Destruct` trait),
+    /// otherwise this is a method implementation (and the DefId is that of the ADT or closure for
+    /// which to generate the drop glue).
     DropInPlaceMethod(Option<TraitImplSource>),
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
@@ -92,9 +89,9 @@ pub enum TraitImplSource {
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure. The `DefId` is that of the closure.
     Closure(ClosureKind),
-    /// A fictitious `impl Drop for T` that contains the drop glue code for the given ADT. The
+    /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT. The
     /// `DefId` is that of the ADT.
-    ImplicitDrop,
+    ImplicitDestruct,
 }
 
 impl TransItemSource {
@@ -145,9 +142,6 @@ impl TransItemSource {
             TransItemSourceKind::ClosureMethod(kind) => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
             }
-            TransItemSourceKind::EmptyDropMethod => {
-                TransItemSourceKind::TraitImpl(TraitImplSource::ImplicitDrop)
-            }
             TransItemSourceKind::DefaultedMethod(impl_kind, _)
             | TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
             | TransItemSourceKind::VTableInstance(impl_kind)
@@ -160,7 +154,7 @@ impl TransItemSource {
         Some(self.with_kind(parent_kind))
     }
 
-    /// Whether this item is the "main" item for this def_id or not (e.g. drop impl/methods are not
+    /// Whether this item is the "main" item for this def_id or not (e.g. Destruct impl/methods are not
     /// the main item).
     pub(crate) fn is_derived_item(&self) -> bool {
         use TransItemSourceKind::*;
@@ -296,7 +290,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     | DefaultedMethod(..)
                     | ClosureMethod(..)
                     | ClosureAsFnCast
-                    | EmptyDropMethod
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
@@ -575,7 +568,7 @@ pub fn translate<'tcx, 'ctx>(
         hax::options::Options {
             inline_anon_consts: true,
             bounds_options: hax::options::BoundsOptions {
-                resolve_drop: options.add_drop_bounds,
+                resolve_destruct: options.add_drop_bounds,
                 prune_sized: false,
             },
         },

@@ -12,17 +12,25 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
@@ -46,12 +54,6 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
 where
@@ -60,7 +62,6 @@ where
 {
     parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
     fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
-    fn drop_in_place = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
@@ -68,17 +69,13 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
-// Full name: alloc::string::String::{impl Drop for String}::drop_in_place
-fn {impl Drop for String}::drop_in_place(@1: *mut String)
-
-// Full name: alloc::string::String::{impl Drop for String}
-impl Drop for String {
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
     parent_clause0 = MetaSized<String>
-    fn drop<'_0_1> = {impl Drop for String}::drop<'_0_1>
-    fn drop_in_place = {impl Drop for String}::drop_in_place
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }
 
@@ -134,7 +131,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
     assert(copy (@13) == true)
     _x@2 := move (*(@6))
     @0 := ()
-    drop[{impl Drop for String}] _x@2
+    drop[{impl Destruct for String}] _x@2
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1

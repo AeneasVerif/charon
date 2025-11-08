@@ -4,25 +4,30 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
+    parent_clause0 = MetaSized<String>
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
+    non-dyn-compatible
+}
 
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
@@ -46,7 +51,7 @@ fn use_string(@1: String)
 
     @0 := ()
     @0 := ()
-    drop[{impl#0}] @1
+    drop[{impl Destruct for String}] @1
     return
 }
 
@@ -60,7 +65,7 @@ fn main()
     storage_live(_s@1)
     _s@1 := new()
     @0 := ()
-    drop[{impl#0}] _s@1
+    drop[{impl Destruct for String}] _s@1
     storage_dead(_s@1)
     return
 }

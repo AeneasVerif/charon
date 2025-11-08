@@ -69,24 +69,11 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -98,27 +85,20 @@ where
   Some(T),
 }
 
-// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop
-fn {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0, T, E>(@1: &'_0 mut (Result<T, E>[@TraitClause0, @TraitClause1]))
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(@1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
 
-// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(@1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-
-// Full name: core::result::Result::{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}
-impl<T, E> Drop for Result<T, E>[@TraitClause0, @TraitClause1]
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}
+impl<T, E> Destruct for Result<T, E>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
 {
     parent_clause0 = MetaSized<Result<T, E>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0_1> = {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, E>[@TraitClause0, @TraitClause1]
-    fn drop_in_place = {impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
@@ -179,7 +159,7 @@ fn foo()
     @3 := &ref_b@1
     @2 := try_borrow<'_, bool>[MetaSized<bool>](move (@3))
     storage_dead(@3)
-    drop[{impl Drop for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]] @2
+    drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'_, bool>[MetaSized<bool>], BorrowError>[Sized<Ref<'_, bool>[MetaSized<bool>]>, Sized<BorrowError>]] @2
     storage_dead(@2)
     @0 := ()
     storage_dead(ref_b@1)

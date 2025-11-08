@@ -12,6 +12,18 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -20,27 +32,11 @@ pub trait Tuple<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
+// Full name: core::mem::drop
 #[lang_item("mem_drop")]
-pub fn core::mem::drop<T>(@1: T)
+pub fn drop<T>(@1: T)
 where
     [@TraitClause0]: Sized<T>,
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -88,7 +84,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Drop<impl FnOnce(u8) -> u8>] f@1
+    drop[Destruct<impl FnOnce(u8) -> u8>] f@1
     return
 }
 
@@ -118,7 +114,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     storage_live(@4)
     storage_live(@5)
     @5 := move ((@1).0)
-    @4 := core::mem::drop<NotCopy>[Sized<NotCopy>](move (@5))
+    @4 := drop<NotCopy>[Sized<NotCopy>](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)

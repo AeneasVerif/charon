@@ -179,8 +179,8 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
-    /// Whether to add `Drop` bounds everywhere to enable proper tracking of what code runs on a
-    /// given `drop` call.
+    /// Whether to add `Destruct` bounds everywhere to enable proper tracking of what code runs on
+    /// a given `drop` call.
     #[clap(long)]
     #[serde(default)]
     pub add_drop_bounds: bool,

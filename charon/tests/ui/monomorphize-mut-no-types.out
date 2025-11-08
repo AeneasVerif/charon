@@ -42,23 +42,21 @@ pub trait core::marker::Sized::<Option<Option<&_ mut (_)>>><'_0, T0>
     non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    vtable: core::marker::Destruct::{vtable}
 }
 
-#[lang_item("drop")]
-pub trait core::ops::drop::Drop::<&_ mut (_)><'_0, T0>
+#[lang_item("destruct")]
+pub trait core::marker::Destruct::<&_ mut (_)><'_0, T0>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<&_ mut (_)><'_0, T0>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop::<_, &_ mut (_)><'_0_1, '_0, T0>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<&_ mut (_)><'_0, T0>
-    vtable: core::ops::drop::Drop::{vtable}
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<&_ mut (_)><'_0, T0>
+    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::option::Option
@@ -68,49 +66,30 @@ pub enum Option<T> {
   Some(T),
 }
 
-#[lang_item("drop")]
-pub trait core::ops::drop::Drop::<Option<&_ mut (_)>><'_0, T0>
+#[lang_item("destruct")]
+pub trait core::marker::Destruct::<Option<&_ mut (_)>><'_0, T0>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<Option<&_ mut (_)>><'_0, T0>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop::<_, Option<&_ mut (_)>><'_0_1, '_0, T0>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Option<&_ mut (_)>><'_0, T0>
-    vtable: core::ops::drop::Drop::{vtable}
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<Option<&_ mut (_)>><'_0, T0>
+    vtable: core::marker::Destruct::{vtable}
 }
 
-#[lang_item("drop")]
-pub trait core::ops::drop::Drop::<Option<Option<&_ mut (_)>>><'_0, T0>
+#[lang_item("destruct")]
+pub trait core::marker::Destruct::<Option<Option<&_ mut (_)>>><'_0, T0>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<Option<Option<&_ mut (_)>>><'_0, T0>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop::<_, Option<Option<&_ mut (_)>>><'_0_1, '_0, T0>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place::<Option<Option<&_ mut (_)>>><'_0, T0>
-    vtable: core::ops::drop::Drop::{vtable}
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<Option<Option<&_ mut (_)>>><'_0, T0>
+    vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
 
-fn core::ops::drop::Drop::drop_in_place::<&_ mut (_)><'_0, T0>(@1: *mut &'_0 mut (T0))
+fn core::marker::Destruct::drop_in_place::<&_ mut (_)><'_0, T0>(@1: *mut &'_0 mut (T0))
 
-fn core::ops::drop::Drop::drop_in_place::<Option<&_ mut (_)>><'_0, T0>(@1: *mut Option<&'_0 mut (T0)>)
+fn core::marker::Destruct::drop_in_place::<Option<&_ mut (_)>><'_0, T0>(@1: *mut Option<&'_0 mut (T0)>)
 
-fn core::ops::drop::Drop::drop_in_place::<Option<Option<&_ mut (_)>>><'_0, T0>(@1: *mut Option<Option<&'_0 mut (T0)>>)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
-
-pub fn core::ops::drop::Drop::drop::<_, &_ mut (_)><'_0, '_1, T0>(@1: &'_0 mut (&'_1 mut (T0)))
-where
-    [@TraitClause0]: core::ops::drop::Drop::<&_ mut (_)><'_1, T0>,
-
-pub fn core::ops::drop::Drop::drop::<_, Option<&_ mut (_)>><'_0, '_1, T0>(@1: &'_0 mut (Option<&'_1 mut (T0)>))
-where
-    [@TraitClause0]: core::ops::drop::Drop::<Option<&_ mut (_)>><'_1, T0>,
-
-pub fn core::ops::drop::Drop::drop::<_, Option<Option<&_ mut (_)>>><'_0, '_1, T0>(@1: &'_0 mut (Option<Option<&'_1 mut (T0)>>))
-where
-    [@TraitClause0]: core::ops::drop::Drop::<Option<Option<&_ mut (_)>>><'_1, T0>,
+fn core::marker::Destruct::drop_in_place::<Option<Option<&_ mut (_)>>><'_0, T0>(@1: *mut Option<Option<&'_0 mut (T0)>>)
 
 fn UNIT_METADATA()
 {
@@ -131,7 +110,7 @@ where
     let x@1: T; // arg #1
 
     @0 := move (x@1)
-    drop[Drop<T>] x@1
+    drop[Destruct<T>] x@1
     return
 }
 
@@ -143,7 +122,7 @@ where
     let x@1: &'_0 mut (T0); // arg #1
 
     @0 := move (x@1)
-    drop[core::ops::drop::Drop::<&_ mut (_)><'_0, T0>] x@1
+    drop[core::marker::Destruct::<&_ mut (_)><'_0, T0>] x@1
     return
 }
 
@@ -155,7 +134,7 @@ where
     let x@1: Option<&'_0 mut (T0)>; // arg #1
 
     @0 := move (x@1)
-    drop[core::ops::drop::Drop::<Option<&_ mut (_)>><'_0, T0>] x@1
+    drop[core::marker::Destruct::<Option<&_ mut (_)>><'_0, T0>] x@1
     return
 }
 
@@ -167,7 +146,7 @@ where
     let x@1: Option<Option<&'_0 mut (T0)>>; // arg #1
 
     @0 := move (x@1)
-    drop[core::ops::drop::Drop::<Option<Option<&_ mut (_)>>><'_0, T0>] x@1
+    drop[core::marker::Destruct::<Option<Option<&_ mut (_)>>><'_0, T0>] x@1
     return
 }
 
@@ -238,7 +217,7 @@ where
     storage_dead(@13)
     storage_dead(@12)
     @0 := ()
-    drop[Drop<A>] x@1
+    drop[Destruct<A>] x@1
     return
 }
 

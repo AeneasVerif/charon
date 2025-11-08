@@ -12,6 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -19,22 +30,6 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -95,24 +90,18 @@ where
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}::drop
-fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+// Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}::drop_in_place
-fn {impl Drop for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: core::option::Option::{impl Drop for Option<T>[@TraitClause0]}
-impl<T> Drop for Option<T>[@TraitClause0]
+// Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}
+impl<T> Destruct for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
-    fn drop<'_0_1> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
-    fn drop_in_place = {impl Drop for Option<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -150,31 +139,18 @@ pub trait BoolTrait<Self>
     vtable: test_crate::BoolTrait::{vtable}
 }
 
-// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}::drop
-fn {impl Drop for (A, B)}::drop<'_0, A, B>(@1: &'_0 mut ((A, B)))
-where
-    [@TraitClause0]: Sized<A>,
-{
-    let @0: (); // return
-    let @1: &'_0 mut ((A, B)); // arg #1
-
-    @0 := ()
-    return
-}
-
-// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}::drop_in_place
-fn {impl Drop for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
+// Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
+fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: test_crate::<tuple_2>::{impl Drop for (A, B)}
-impl<A, B> Drop for (A, B)
+// Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
+impl<A, B> Destruct for (A, B)
 where
     [@TraitClause0]: Sized<A>,
 {
     parent_clause0 = MetaSized<(A, B)>
-    fn drop<'_0_1> = {impl Drop for (A, B)}::drop<'_0_1, A, B>[@TraitClause0]
-    fn drop_in_place = {impl Drop for (A, B)}::drop_in_place<A, B>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for (A, B)}::drop_in_place<A, B>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -319,7 +295,7 @@ where
         @0 := const (false)
     }
     storage_dead(@2)
-    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -337,7 +313,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<T>] x@1
+    drop[Destruct<T>] x@1
     return
 }
 
@@ -399,7 +375,7 @@ where
     @0 := move (@6)
     storage_dead(@4)
     storage_dead(@2)
-    drop[{impl Drop for (A, B)}<A, A>[@TraitClause0]] self@1
+    drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self@1
     return
 }
 
@@ -427,7 +403,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Drop for (A, B)}<T, T>[@TraitClause0]] x@1
+    drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -445,7 +421,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Drop for (A, B)}<T, T>[@TraitClause0]] x@1
+    drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -471,31 +447,18 @@ where
   x: T,
 }
 
-// Full name: test_crate::Wrapper::{impl Drop for Wrapper<T>[@TraitClause0]}::drop
-fn {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Wrapper<T>[@TraitClause0]))
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let @0: (); // return
-    let @1: &'_0 mut (Wrapper<T>[@TraitClause0]); // arg #1
-
-    @0 := ()
-    return
-}
-
-// Full name: test_crate::Wrapper::{impl Drop for Wrapper<T>[@TraitClause0]}::drop_in_place
-fn {impl Drop for Wrapper<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Wrapper<T>[@TraitClause0])
+// Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Wrapper<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: test_crate::Wrapper::{impl Drop for Wrapper<T>[@TraitClause0]}
-impl<T> Drop for Wrapper<T>[@TraitClause0]
+// Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[@TraitClause0]}
+impl<T> Destruct for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
-    fn drop<'_0_1> = {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
-    fn drop_in_place = {impl Drop for Wrapper<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -513,7 +476,7 @@ where
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
+    drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
     return
 }
 
@@ -556,7 +519,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -626,7 +589,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Drop<T2>] y@1
+    drop[Destruct<T2>] y@1
     return
 }
 
@@ -662,7 +625,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Drop<T2>] y@1
+    drop[Destruct<T2>] y@1
     return
 }
 
@@ -738,7 +701,7 @@ where
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop[Drop<T>] x@2
+    drop[Destruct<T>] x@2
     return
 }
 
@@ -892,7 +855,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<@TraitClause1::W>] @1
+    drop[Destruct<@TraitClause1::W>] @1
     return
 }
 
@@ -910,7 +873,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
     storage_dead(@2)
-    drop[Drop<@TraitClause1::W>] x@1
+    drop[Destruct<@TraitClause1::W>] x@1
     return
 }
 
@@ -1411,7 +1374,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<F>] @1
+    drop[Destruct<F>] @1
     return
 }
 
