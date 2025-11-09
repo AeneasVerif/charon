@@ -368,8 +368,8 @@ type cli_options = {
       (** List of traits for which we transform associated types to type
           parameters. *)
   hide_marker_traits : bool;
-      (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
-          anywhere they show up. *)
+      (** Whether to hide various marker traits such as [Sized], [Sync], [Send]
+          and [Destruct] anywhere they show up. *)
   remove_adt_clauses : bool;
       (** Remove trait clauses from type declarations. Must be combined with
           [--remove-associated-types] for type declarations that use trait

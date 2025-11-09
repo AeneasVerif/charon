@@ -1,8 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
 fn UNIT_METADATA()
 {
     let @0: (); // return

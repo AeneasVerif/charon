@@ -157,8 +157,8 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub remove_associated_types: Vec<String>,
-    /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
-    /// up.
+    /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
+    /// anywhere they show up.
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
@@ -451,8 +451,8 @@ pub struct TranslateOptions {
     /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
     /// indicates whether to partially monomorphize types.
     pub monomorphize_mut: Option<MonomorphizeMut>,
-    /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
-    /// up.
+    /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
+    /// anywhere they show up.
     pub hide_marker_traits: bool,
     /// Remove trait clauses attached to type declarations.
     pub remove_adt_clauses: bool,
