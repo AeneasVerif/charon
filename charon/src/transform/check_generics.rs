@@ -260,6 +260,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
                 types,
+                ..
             } => {
                 let trait_id = x.trait_decl_ref.skip_binder.id;
                 let target = GenericsSource::item(trait_id);
