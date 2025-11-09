@@ -16,7 +16,7 @@ fn my_panic(@1: u32) -> !
     let @0: !; // return
     let _x@1: u32; // arg #1
 
-    panic(core::panicking::panic_explicit)
+    panic(core::panicking::panic)
 }
 
 // Full name: test_crate::do_something_else

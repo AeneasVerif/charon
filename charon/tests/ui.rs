@@ -9,6 +9,7 @@ use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use indoc::indoc as unindent;
 use itertools::Itertools;
 use libtest_mimic::Trial;
+use regex::Regex;
 use snapbox::filter::Filter as _;
 use std::{
     error::Error,
@@ -16,6 +17,7 @@ use std::{
     fs::read_to_string,
     path::{Path, PathBuf},
     process::Command,
+    sync::LazyLock,
 };
 use walkdir::{DirEntry, WalkDir};
 
@@ -228,7 +230,12 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     let stderr = String::from_utf8(output.stderr.clone())?;
     let stdout = String::from_utf8(output.stdout.clone())?;
 
-    let test_output = match test_case.magic_comments.test_kind {
+    // Hide thread id from the output.
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"thread 'rustc' \(\d+\) panicked").unwrap());
+    let stderr = RE.replace_all(&stderr, "thread 'rustc' panicked");
+
+    let test_output: &str = match test_case.magic_comments.test_kind {
         TestKind::KnownPanic => {
             if output.status.code() != Some(101) {
                 let status = if output.status.success() {
@@ -240,7 +247,7 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
                     "Command: `{cmd_str}`\nCompilation was expected to panic but instead {status}:\n{stderr}"
                 );
             }
-            stderr
+            &stderr
         }
         TestKind::KnownFailure => {
             if output.status.success() || output.status.code() == Some(101) {
@@ -253,7 +260,7 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
                     "Command: `{cmd_str}`\nCompilation was expected to fail but instead {status}:\n{stderr}"
                 );
             }
-            stderr
+            &stderr
         }
         TestKind::PrettyLlbc => {
             if !output.status.success() {
@@ -265,9 +272,9 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
                 }
                 bail!("Command: `{cmd_str}`\nCompilation failed:\n{stderr}")
             }
-            stdout
+            &stdout
         }
-        TestKind::IgnoreWarnings => stdout,
+        TestKind::IgnoreWarnings => &stdout,
         TestKind::Skip => unreachable!(),
     };
     if test_case.magic_comments.check_output {

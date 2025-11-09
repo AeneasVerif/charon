@@ -361,6 +361,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Get the tail type, which determines the metadata of `ty`.
         let tail_ty = tcx.struct_tail_raw(
             ty,
+            &rustc_middle::traits::ObligationCause::dummy(),
             |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
             || {},
         );

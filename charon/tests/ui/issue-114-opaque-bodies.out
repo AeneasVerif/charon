@@ -151,7 +151,6 @@ pub struct NonNull<T> {
 }
 
 // Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
 pub struct Unique<T> {
   pointer: NonNull<T>,
   _marker: PhantomData<T>,

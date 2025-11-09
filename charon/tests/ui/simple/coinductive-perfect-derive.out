@@ -1,7 +1,7 @@
-error[E0599]: no method named `clone` found for enum `List` in the current scope
+error[E0599]: no method named `clone` found for enum `List<T>` in the current scope
   --> tests/ui/simple/coinductive-perfect-derive.rs:24:18
    |
-2  | enum List<T> {
+ 2 | enum List<T> {
    | ------------ method `clone` not found for this enum
 ...
 24 |     let _ = list.clone();

@@ -1994,7 +1994,7 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[{built_in impl Sized for usiz
                 return
             },
             List::Nil => {
-                panic(core::panicking::panic_explicit)
+                panic(core::panicking::panic)
             },
         }
     }
@@ -2050,7 +2050,7 @@ where
                 return
             },
             _ => {
-                panic(core::panicking::panic_explicit)
+                panic(core::panicking::panic)
             },
         }
     }

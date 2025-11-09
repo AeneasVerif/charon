@@ -26,17 +26,17 @@ pub trait Add<Self, Rhs>
     vtable: core::ops::arith::Add::{vtable}<Rhs, Self::Output>
 }
 
-// Full name: core::ops::arith::{impl Add<i32> for &'a (i32)}::add
-pub fn {impl Add<i32> for &'a (i32)}::add<'a>(@1: &'a (i32), @2: i32) -> i32
+// Full name: core::ops::arith::{impl Add<i32> for &'_0 (i32)}::add
+pub fn {impl Add<i32> for &'_0 (i32)}::add<'_0>(@1: &'_0 (i32), @2: i32) -> i32
 
-// Full name: core::ops::arith::{impl Add<i32> for &'a (i32)}
-impl<'a> Add<i32> for &'a (i32) {
+// Full name: core::ops::arith::{impl Add<i32> for &'_0 (i32)}
+impl<'_0> Add<i32> for &'_0 (i32) {
     parent_clause0 = {built_in impl MetaSized for &'_ (i32)}
     parent_clause1 = {built_in impl Sized for i32}
     parent_clause2 = {built_in impl Sized for i32}
     type Output = i32
-    fn add = {impl Add<i32> for &'a (i32)}::add<'a>
-    vtable: {impl Add<i32> for &'a (i32)}::{vtable}<'a>
+    fn add = {impl Add<i32> for &'_0 (i32)}::add<'_0>
+    vtable: {impl Add<i32> for &'_0 (i32)}::{vtable}<'_0>
 }
 
 // Full name: core::marker::Destruct
@@ -198,7 +198,7 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
     @3 := copy (self@1)
     storage_live(@4)
     @4 := copy (arg@2)
-    @0 := {impl Add<i32> for &'a (i32)}::add<'_>(move (@3), move (@4))
+    @0 := {impl Add<i32> for &'_0 (i32)}::add<'_>(move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     return

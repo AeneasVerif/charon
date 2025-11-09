@@ -563,7 +563,7 @@ where
         List::Cons => {
         },
         _ => {
-            panic(core::panicking::panic_explicit)
+            panic(core::panicking::panic)
         },
     }
     storage_live(hd@2)

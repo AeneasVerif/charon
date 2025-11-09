@@ -171,7 +171,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     @26 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
     storage_live(@27)
     @27 := Option::None {  }
-    @6 := Arguments { 0: move (@25), 1: move (@27), 2: move (@26) }
+    @6 := Arguments { 0: copy (@25), 1: move (@27), 2: copy (@26) }
     storage_dead(@26)
     storage_dead(@25)
     @5 := panic_nounwind_fmt<'_>(move (@6), const (false))

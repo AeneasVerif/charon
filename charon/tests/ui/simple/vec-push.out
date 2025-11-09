@@ -32,7 +32,6 @@ pub opaque type UsizeNoHighBit
 pub opaque type NonNull<T>
 
 // Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
 pub opaque type Unique<T>
 
 // Full name: alloc::alloc::Global
@@ -77,13 +76,13 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
+// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push_mut
+pub fn push_mut<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T) -> &'_0 mut (T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    let @0: (); // return
+    let @0: &'_ mut (T); // return
     let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
     let value@2: T; // arg #2
     let len@3: usize; // local
@@ -103,7 +102,6 @@ where
     storage_live(len@3)
     storage_live(@7)
     storage_live(end@9)
-    @0 := ()
     len@3 := copy ((*(self@1)).len)
     storage_live(@4)
     storage_live(@5)
@@ -151,6 +149,25 @@ where
     *(end@9) := copy (src@11)
     storage_dead(src@11)
     (*(self@1)).len := copy (len@3) wrap.+ const (1 : usize)
+    @0 := &mut *(end@9)
+    return
+}
+
+// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
+pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
+    let value@2: T; // arg #2
+    let @3: &'_ mut (T); // anonymous local
+
+    @0 := ()
+    storage_live(@3)
+    @3 := push_mut<'_, T, A>[@TraitClause0, @TraitClause1](move (self@1), move (value@2))
+    storage_dead(@3)
     return
 }
 

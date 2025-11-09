@@ -41,7 +41,6 @@ where
 pub opaque type NonNull<T>
 
 // Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
 pub opaque type Unique<T>
 
 // Full name: alloc::alloc::Global

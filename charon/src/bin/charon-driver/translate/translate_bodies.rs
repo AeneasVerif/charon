@@ -442,19 +442,6 @@ impl BodyTransCtx<'_, '_, '_> {
                     ptr_metadata: Operand::mk_const_unit(),
                 })
             }
-            hax::Rvalue::Len(place) => {
-                let place = self.translate_place(span, place)?;
-                let ty = place.ty().clone();
-                let tref = ty.as_adt().unwrap();
-                let cg = match tref.id {
-                    TypeId::Builtin(BuiltinTy::Array) => {
-                        Some(tref.generics.const_generics[0].clone())
-                    }
-                    TypeId::Builtin(BuiltinTy::Slice) => None,
-                    _ => unreachable!(),
-                };
-                Ok(Rvalue::Len(place, ty, cg))
-            }
             hax::Rvalue::Cast(cast_kind, hax_operand, tgt_ty) => {
                 trace!("Rvalue::Cast: {:?}", rvalue);
                 // Translate the target type

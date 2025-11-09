@@ -211,7 +211,7 @@ where
         CList::CCons => {
         },
         CList::CNil => {
-            panic(core::panicking::panic_explicit)
+            panic(core::panicking::panic)
         },
     }
     storage_live(x@3)
@@ -279,7 +279,7 @@ where
         CList::CCons => {
         },
         CList::CNil => {
-            panic(core::panicking::panic_explicit)
+            panic(core::panicking::panic)
         },
     }
     storage_live(x@5)
@@ -380,7 +380,7 @@ where
                 return
             },
             _ => {
-                panic(core::panicking::panic_explicit)
+                panic(core::panicking::panic)
             },
         }
     }
