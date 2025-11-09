@@ -53,23 +53,17 @@ where
     [@TraitClause2]: FnMut<F, (usize)>,
     @TraitClause2::parent_clause1::Output = T,
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
@@ -144,7 +138,7 @@ where
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, K>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop[Drop<closure<T, K>[@TraitClause0, @TraitClause1]>] @1
+    drop[Destruct<closure<T, K>[@TraitClause0, @TraitClause1]>] @1
     return
 }
 

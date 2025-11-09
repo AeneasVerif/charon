@@ -88,37 +88,29 @@ pub trait Sized::<&'_ mut (Slice<bool>)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<Slice<bool>>
 
-// Full name: core::ops::drop::Drop::<i32>
-#[lang_item("drop")]
-pub trait Drop::<i32>
+// Full name: core::marker::Destruct::<i32>
+#[lang_item("destruct")]
+pub trait Destruct::<i32>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<i32>
-    fn drop<'_0_1> = drop::<i32><'_0_1>
     fn drop_in_place = drop_in_place::<i32>
-    vtable: core::ops::drop::Drop::{vtable}::<i32>
+    vtable: core::marker::Destruct::{vtable}::<i32>
 }
 
-// Full name: core::ops::drop::Drop::<&'_ (Str)>
-#[lang_item("drop")]
-pub trait Drop::<&'_ (Str)>
+// Full name: core::marker::Destruct::<&'_ (Str)>
+#[lang_item("destruct")]
+pub trait Destruct::<&'_ (Str)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<&'_ (Str)>
-    fn drop<'_0_1> = drop::<&'_ (Str)><'_0_1>
     fn drop_in_place = drop_in_place::<&'_ (Str)>
-    vtable: core::ops::drop::Drop::{vtable}::<&'_ (Str)>
+    vtable: core::marker::Destruct::{vtable}::<&'_ (Str)>
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place::<i32>
+// Full name: core::marker::Destruct::drop_in_place::<i32>
 fn drop_in_place::<i32>(@1: *mut i32)
 
-// Full name: core::ops::drop::Drop::drop_in_place::<&'_ (Str)>
+// Full name: core::marker::Destruct::drop_in_place::<&'_ (Str)>
 fn drop_in_place::<&'_ (Str)>(@1: *mut &'_ (Str))
-
-// Full name: core::ops::drop::Drop::drop::<i32>
-pub fn drop::<i32><'_0>(@1: &'_0 mut (i32))
-
-// Full name: core::ops::drop::Drop::drop::<&'_ (Str)>
-pub fn drop::<&'_ (Str)><'_0>(@1: &'_0 mut (&'_ (Str)))
 
 // Full name: core::ops::range::RangeFrom::<usize>
 #[lang_item("RangeFrom")]
@@ -374,9 +366,9 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<i32> { item: move (@2) }
-    drop[Drop::<i32>] @2
+    drop[Destruct::<i32>] @2
     storage_dead(@2)
-    drop[Drop::<i32>] item@1
+    drop[Destruct::<i32>] item@1
     return
 }
 
@@ -389,9 +381,9 @@ fn test_crate::{MonoContainer::<&'_ (Str)>}::create::<&'_ (Str)>(@1: &'_ (Str)) 
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<&'_ (Str)> { item: move (@2) }
-    drop[Drop::<&'_ (Str)>] @2
+    drop[Destruct::<&'_ (Str)>] @2
     storage_dead(@2)
-    drop[Drop::<&'_ (Str)>] item@1
+    drop[Destruct::<&'_ (Str)>] item@1
     return
 }
 

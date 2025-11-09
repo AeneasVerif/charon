@@ -18,6 +18,30 @@ pub opaque type IntoIter<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, N>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}
+impl<T, const N : usize> Destruct for IntoIter<T, N>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = MetaSized<IntoIter<T, N>[@TraitClause0]>
+    fn drop_in_place = {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, N>[@TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -37,14 +61,6 @@ where
 {
   Ok(T),
   Err(E),
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::clone::Clone
@@ -1430,37 +1446,6 @@ where
     vtable: {impl IntoIterator for Array<T, N>}::{vtable}<T, N>[@TraitClause0]
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::array::iter::{impl Drop for IntoIter<T, N>[@TraitClause0]}::drop
-pub fn {impl Drop for IntoIter<T, N>[@TraitClause0]}::drop<'_0, T, const N : usize>(@1: &'_0 mut (IntoIter<T, N>[@TraitClause0]))
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: core::array::iter::{impl Drop for IntoIter<T, N>[@TraitClause0]}::drop_in_place
-fn {impl Drop for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, N>[@TraitClause0])
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: core::array::iter::{impl Drop for IntoIter<T, N>[@TraitClause0]}
-impl<T, const N : usize> Drop for IntoIter<T, N>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-{
-    parent_clause0 = MetaSized<IntoIter<T, N>[@TraitClause0]>
-    fn drop<'_0_1> = {impl Drop for IntoIter<T, N>[@TraitClause0]}::drop<'_0_1, T, N>[@TraitClause0]
-    fn drop_in_place = {impl Drop for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, N>[@TraitClause0]
-    vtable: {impl Drop for IntoIter<T, N>[@TraitClause0]}::{vtable}<T, N>[@TraitClause0]
-}
-
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
@@ -2335,15 +2320,11 @@ where
     [@TraitClause0]: Iterator<Self>,
     [@TraitClause1]: TrustedRandomAccessNoCoerce<Self>,
 
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+
 pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
 where
     [@TraitClause0]: AddAssign<Self, Rhs>,
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
@@ -4853,9 +4834,9 @@ fn main()
     }
     storage_dead(@9)
     storage_dead(@7)
-    drop[{impl Drop for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[Sized<i32>]] iter@6
+    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[Sized<i32>]] iter@6
     storage_dead(iter@6)
-    drop[{impl Drop for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[Sized<i32>]] @3
+    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[Sized<i32>]] @3
     storage_dead(@3)
     storage_live(@13)
     storage_live(@14)

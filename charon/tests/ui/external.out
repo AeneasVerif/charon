@@ -74,8 +74,11 @@ impl Copy for u32 {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 #[lang_item("mem_swap")]
 pub fn core::mem::swap<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 mut (T))
@@ -160,22 +163,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ZeroablePrimitive<T>,
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
-
 // Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
 pub fn unwrap<T>(@1: Option<T>[@TraitClause0]) -> T
@@ -193,6 +180,23 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 #[lang_item("vec_new")]
 pub fn alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::new<T>() -> Vec<T>[@TraitClause0, Sized<Global>]
 where
@@ -203,30 +207,6 @@ pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: 
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]))
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for Vec<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0_1> = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
-    fn drop_in_place = {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    vtable: {impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
-}
 
 fn UNIT_METADATA()
 {
@@ -295,7 +275,7 @@ pub fn test_vec_push()
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop[{impl Drop for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
     storage_dead(v@1)
     return
 }

@@ -100,7 +100,7 @@ Options:
           List of traits for which we transform associated types to type parameters. The syntax is like `--include`, see the doc there.
 
       --hide-marker-traits
-          Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show up
+          Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct` anywhere they show up
 
       --remove-adt-clauses
           Remove trait clauses from type declarations. Must be combined with `--remove-associated-types` for type declarations that use trait associated types in their fields, otherwise this will result in errors
@@ -112,7 +112,7 @@ Options:
           Trait method declarations take a `Self: Trait` clause as parameter, so that they can be reused by multiple trait impls. This however causes trait definitions to be mutually recursive with their method declarations. This flag removes `Self` clauses that aren't used to break this mutual recursion
 
       --add-drop-bounds
-          Whether to add `Drop` bounds everywhere to enable proper tracking of what code runs on a given `drop` call
+          Whether to add `Destruct` bounds everywhere to enable proper tracking of what code runs on a given `drop` call
 
       --start-from <START_FROM>
           A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)

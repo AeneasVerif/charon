@@ -343,7 +343,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
             TransItemSourceKind::TraitImpl(
                 kind @ (TraitImplSource::Closure(..)
-                | TraitImplSource::ImplicitDrop
+                | TraitImplSource::ImplicitDestruct
                 | TraitImplSource::TraitAlias),
             ) => {
                 if let TraitImplSource::Closure(..) = kind {
@@ -362,10 +362,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fn_name = kind.method_name().to_string();
                 name.name
                     .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
-            }
-            TransItemSourceKind::EmptyDropMethod => {
-                name.name
-                    .push(PathElem::Ident("drop".to_string(), Disambiguator::ZERO));
             }
             TransItemSourceKind::DropInPlaceMethod(..) => {
                 name.name.push(PathElem::Ident(

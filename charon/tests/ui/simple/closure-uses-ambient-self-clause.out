@@ -12,6 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -19,22 +30,6 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -105,24 +100,13 @@ trait Thing<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::<tuple_1>::{impl Drop for (A)}::drop
-fn {impl Drop for (A)}::drop<'_0, A>(@1: &'_0 mut ((A)))
-{
-    let @0: (); // return
-    let @1: &'_0 mut ((A)); // arg #1
+// Full name: test_crate::<tuple_1>::{impl Destruct for (A)}::drop_in_place
+fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
 
-    @0 := ()
-    return
-}
-
-// Full name: test_crate::<tuple_1>::{impl Drop for (A)}::drop_in_place
-fn {impl Drop for (A)}::drop_in_place<A>(@1: *mut (A))
-
-// Full name: test_crate::<tuple_1>::{impl Drop for (A)}
-impl<A> Drop for (A) {
+// Full name: test_crate::<tuple_1>::{impl Destruct for (A)}
+impl<A> Destruct for (A) {
     parent_clause0 = MetaSized<(A)>
-    fn drop<'_0_1> = {impl Drop for (A)}::drop<'_0_1, A>
-    fn drop_in_place = {impl Drop for (A)}::drop_in_place<A>
+    fn drop_in_place = {impl Destruct for (A)}::drop_in_place<A>
     non-dyn-compatible
 }
 
@@ -146,7 +130,7 @@ where
     @0 := ()
     @3 := move ((tupled_args@2).0)
     @0 := ()
-    drop[Drop<@TraitClause0::Item>] @3
+    drop[Destruct<@TraitClause0::Item>] @3
     return
 }
 
@@ -172,12 +156,12 @@ where
     @5 := move (i@1)
     @4 := (move (@5))
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@2), move (@4))
-    drop[Drop<@TraitClause0::Item>] @5
+    drop[Destruct<@TraitClause0::Item>] @5
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@2)
     storage_dead(@3)
-    drop[Drop<@TraitClause0::Item>] i@1
+    drop[Destruct<@TraitClause0::Item>] i@1
     return
 }
 
@@ -212,7 +196,7 @@ where
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
-    drop[Drop<closure<Self>[@TraitClause0]>] @1
+    drop[Destruct<closure<Self>[@TraitClause0]>] @1
     return
 }
 

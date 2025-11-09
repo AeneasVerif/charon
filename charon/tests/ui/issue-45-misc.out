@@ -431,8 +431,12 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -444,24 +448,6 @@ where
   Continue(C),
   Break(B),
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
@@ -578,7 +564,7 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(i32)> for closure}::call_mut<'_>(move (@3), move (@2))
-    drop[Drop<closure>] @1
+    drop[Destruct<closure>] @1
     return
 }
 

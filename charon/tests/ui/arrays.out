@@ -76,21 +76,16 @@ where
     vtable: {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx, Clause0_Output>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Clause0_Output)
 where
@@ -280,31 +275,18 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-// Full name: test_crate::<array>::{impl Drop for Array<T, N>}::drop
-fn {impl Drop for Array<T, N>}::drop<'_0, T, const N : usize>(@1: &'_0 mut (Array<T, N>))
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let @0: (); // return
-    let @1: &'_0 mut (Array<T, N>); // arg #1
-
-    @0 := ()
-    return
-}
-
-// Full name: test_crate::<array>::{impl Drop for Array<T, N>}::drop_in_place
-fn {impl Drop for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut Array<T, N>)
+// Full name: test_crate::<array>::{impl Destruct for Array<T, N>}::drop_in_place
+fn {impl Destruct for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut Array<T, N>)
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: test_crate::<array>::{impl Drop for Array<T, N>}
-impl<T, const N : usize> Drop for Array<T, N>
+// Full name: test_crate::<array>::{impl Destruct for Array<T, N>}
+impl<T, const N : usize> Destruct for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = MetaSized<Array<T, N>>
-    fn drop<'_0_1> = {impl Drop for Array<T, N>}::drop<'_0_1, T, N>[@TraitClause0]
-    fn drop_in_place = {impl Drop for Array<T, N>}::drop_in_place<T, N>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for Array<T, N>}::drop_in_place<T, N>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -382,7 +364,7 @@ where
     storage_dead(@3)
     @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{impl Drop for Array<T, N>}<T, 32 : usize>[@TraitClause0]] s@1
+    drop[{impl Destruct for Array<T, N>}<T, 32 : usize>[@TraitClause0]] s@1
     return
 }
 

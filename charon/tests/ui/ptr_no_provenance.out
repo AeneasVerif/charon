@@ -241,8 +241,12 @@ pub trait Unpin<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ptr::metadata::Pointee
 #[lang_item("pointee_trait")]

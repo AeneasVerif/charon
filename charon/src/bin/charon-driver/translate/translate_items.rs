@@ -124,8 +124,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     &TraitImplSource::Closure(kind) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
                     }
-                    TraitImplSource::ImplicitDrop => {
-                        bt_ctx.translate_implicit_drop_impl(id, item_meta, &def)?
+                    TraitImplSource::ImplicitDestruct => {
+                        bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
@@ -150,13 +150,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
-                self.translated.fun_decls.set_slot(id, fun_decl);
-            }
-            TransItemSourceKind::EmptyDropMethod => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
-                let fun_decl = bt_ctx.translate_empty_drop_method(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::DropInPlaceMethod(impl_kind) => {
@@ -845,10 +838,10 @@ impl ItemTransCtx<'_, '_> {
             }
         }
 
-        if def.lang_item.as_deref() == Some("drop") {
+        if def.lang_item.as_deref() == Some("destruct") {
             // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
             let (method_name, method_binder) =
-                self.prepare_drop_in_trait_method(def, span, def_id, None);
+                self.prepare_drop_in_place_method(def, span, def_id, None);
             self.mark_method_as_used(def_id, method_name);
             methods.push(method_binder.map(|fn_ref| TraitMethod {
                 name: method_name,
@@ -1096,15 +1089,12 @@ impl ItemTransCtx<'_, '_> {
         }
 
         let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-        if implemented_trait_def.lang_item.as_deref() == Some("drop") {
-            // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
-            let (name, method) = self.prepare_drop_in_trait_method(
-                def,
+        if implemented_trait_def.lang_item.as_deref() == Some("destruct") {
+            raise_error!(
+                self,
                 span,
-                trait_id,
-                Some(TraitImplSource::Normal),
+                "found an explicit impl of `core::marker::Destruct`, this should not happen"
             );
-            methods.push((name, method));
         }
 
         Ok(TraitImpl {

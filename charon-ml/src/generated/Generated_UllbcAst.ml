@@ -38,9 +38,9 @@ and statement_kind =
   | Drop of place * trait_ref
       (** Drop the value at the given place.
 
-          This calls [<T as Drop>::drop_in_place(&raw mut place)] and marks the
-          place as moved-out-of. The [drop_in_place] method is added by Charon,
-          it contains the same code as the [core::ptr::drop_in_place<T>]
+          This calls [<T as Destruct>::drop_in_place(&raw mut place)] and marks
+          the place as moved-out-of. The [drop_in_place] method is added by
+          Charon, it contains the same code as the [core::ptr::drop_in_place<T>]
           builtin). *)
   | Assert of assertion
       (** A built-in assert, which corresponds to runtime checks that we remove,

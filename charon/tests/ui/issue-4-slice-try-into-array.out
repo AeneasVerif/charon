@@ -170,8 +170,12 @@ impl Copy for u8 {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
 pub fn unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T

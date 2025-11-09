@@ -17,6 +17,7 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
@@ -35,16 +36,6 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
@@ -58,7 +49,7 @@ where
     @0 := ()
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop[Drop<Self>] *(self@1)
+    drop[@TraitClause1] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
@@ -87,7 +78,7 @@ where
     @0 := ()
     storage_live(@3)
     @3 := {impl Clone for u8}::clone<'_>(move (source@2))
-    drop[Drop<u8>] *(self@1)
+    drop[@TraitClause0] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
@@ -129,6 +120,9 @@ impl Copy for u8 {
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+
 pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
 {
     let @0: u8; // return
@@ -160,14 +154,6 @@ pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
     @0 := copy (self@1) checked.+ copy (rhs@2)
     return
 }
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 fn UNIT_METADATA()
 {

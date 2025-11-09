@@ -192,7 +192,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
-        use hax::DropData;
+        use hax::DestructData;
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
@@ -318,14 +318,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         id: impl_id,
                         generics,
                     })
-                } else if let hax::BuiltinTraitData::Drop(DropData::Glue { ty, .. }) = trait_data
+                } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
+                    trait_data
                     && let hax::TyKind::Adt(item)
                     | hax::TyKind::Array(item)
                     | hax::TyKind::Slice(item)
                     | hax::TyKind::Tuple(item) = ty.kind()
                 {
-                    let impl_ref =
-                        self.translate_trait_impl_ref(span, item, TraitImplSource::ImplicitDrop)?;
+                    let impl_ref = self.translate_trait_impl_ref(
+                        span,
+                        item,
+                        TraitImplSource::ImplicitDestruct,
+                    )?;
                     TraitRefKind::TraitImpl(impl_ref)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
