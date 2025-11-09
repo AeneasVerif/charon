@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::alloc::layout::Layout
+#[lang_item("alloc_layout")]
+pub opaque type Layout
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -9,6 +13,193 @@ pub trait MetaSized<Self>
 pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::alloc::layout::{Layout}::new
+pub fn new<T>() -> Layout
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::intrinsics::size_of
+pub fn size_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: usize; // return
+
+    undefined_behavior
+}
+
+// Full name: core::intrinsics::align_of
+pub fn align_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: usize; // return
+
+    undefined_behavior
+}
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const SIZE : usize
+    const ALIGN : usize
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub fn SIZE<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: usize; // return
+
+    @0 := size_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub const SIZE<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = SIZE()
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub fn ALIGN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: usize; // return
+
+    @0 := align_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub const ALIGN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGN()
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: bool; // return
+
+    @0 := const (@TraitClause0::SIZE) == const (0 : usize)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub fn LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: Layout; // return
+
+    @0 := new<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub const LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = LAYOUT()
+
+pub fn core::num::{usize}::MAX() -> usize
+{
+    let @0: usize; // return
+
+    @0 := ~(const (0 : usize))
+    return
+}
+
+pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+
+pub fn core::num::{isize}::MAX() -> isize
+{
+    let @0: isize; // return
+    let @1: usize; // anonymous local
+
+    storage_live(@1)
+    @1 := copy (core::num::{usize}::MAX) panic.>> const (1 : i32)
+    @0 := cast<usize, isize>(move (@1))
+    storage_dead(@1)
+    return
+}
+
+pub const core::num::{isize}::MAX: isize = core::num::{isize}::MAX()
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub fn MAX_SLICE_LEN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: usize; // return
+    let @1: usize; // anonymous local
+    let n@2: usize; // local
+    let @3: usize; // anonymous local
+    let @4: usize; // anonymous local
+
+    storage_live(@1)
+    @1 := const (@TraitClause0::SIZE)
+    switch copy (@1) {
+        0 : usize => {
+            @0 := copy (core::num::{usize}::MAX)
+        },
+        _ => {
+            storage_live(n@2)
+            n@2 := copy (@1)
+            storage_live(@3)
+            @3 := cast<isize, usize>(copy (core::num::{isize}::MAX))
+            storage_live(@4)
+            @4 := copy (n@2)
+            @0 := move (@3) panic./ move (@4)
+            storage_dead(@4)
+            storage_dead(@3)
+            storage_dead(n@2)
+        },
+    }
+    storage_dead(@1)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub const MAX_SLICE_LEN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = MAX_SLICE_LEN()
+
+// Full name: core::mem::{impl SizedTypeProperties for T}
+impl<T> SizedTypeProperties for T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = @TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     non-dyn-compatible
 }
 
@@ -28,26 +219,18 @@ where
     let @4: (); // anonymous local
     let @5: *const (); // anonymous local
     let @6: *mut (); // anonymous local
-    let @7: usize; // anonymous local
-    let @8: usize; // anonymous local
-    let @9: bool; // anonymous local
+    let @7: bool; // anonymous local
 
     storage_live(@4)
-    storage_live(@9)
+    storage_live(@7)
     @0 := ()
-    @9 := ub_checks<bool>
-    if copy (@9) {
+    @7 := ub_checks<bool>
+    if copy (@7) {
         storage_live(@5)
         @5 := cast<*const T, *const ()>(copy (src@1))
         storage_live(@6)
         @6 := cast<*mut T, *mut ()>(copy (dst@2))
-        storage_live(@7)
-        @7 := size_of<T>
-        storage_live(@8)
-        @8 := align_of<T>
-        @4 := precondition_check(move (@5), move (@6), move (@7), move (@8), copy (count@3))
-        storage_dead(@8)
-        storage_dead(@7)
+        @4 := precondition_check(move (@5), move (@6), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN), copy (count@3))
         storage_dead(@6)
         storage_dead(@5)
     }

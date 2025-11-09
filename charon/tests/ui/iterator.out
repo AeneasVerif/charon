@@ -22,7 +22,6 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -37,7 +36,6 @@ impl<T, const N : usize> Destruct for IntoIter<T, N>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for IntoIter<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, N>[@TraitClause0]
     non-dyn-compatible
 }

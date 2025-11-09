@@ -17,7 +17,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         match &region.kind {
             ReErased => Ok(Region::Erased),
             ReStatic => Ok(Region::Static),
-            ReBound(id, br) => {
+            ReBound(hax::BoundVarIndexKind::Bound(id), br) => {
                 let var = self.lookup_bound_region(span, *id, br.var)?;
                 Ok(Region::Var(var))
             }
@@ -33,7 +33,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     "Should not exist outside of type inference: {region:?}"
                 )
             }
-            ReLateParam(..) | ReError(..) => {
+            ReBound(..) | ReLateParam(..) | ReError(..) => {
                 raise_error!(self, span, "Unexpected region kind: {region:?}")
             }
         }

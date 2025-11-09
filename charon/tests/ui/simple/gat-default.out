@@ -1,5 +1,5 @@
 
-thread 'rustc' panicked at /rustc-dev/0be8e16088894483a7012c5026c3247c14a0c3c2/compiler/rustc_type_ir/src/binder.rs:776:9:
+thread 'rustc' panicked at /rustc-dev/843f8ce2ebc01d35a30484eadc8a84cdc6130844/compiler/rustc_type_ir/src/binder.rs:781:9:
 type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Hax panicked when translating `test_crate::{impl#0}`.
@@ -9,7 +9,7 @@ error: Hax panicked when translating `test_crate::{impl#0}`.
   | ^^^^^^^^^^^^^^^^^^^^^^
 
 
-thread 'rustc' panicked at /rustc-dev/0be8e16088894483a7012c5026c3247c14a0c3c2/compiler/rustc_type_ir/src/binder.rs:776:9:
+thread 'rustc' panicked at /rustc-dev/843f8ce2ebc01d35a30484eadc8a84cdc6130844/compiler/rustc_type_ir/src/binder.rs:781:9:
 type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
 error: Hax panicked when translating `test_crate::{impl#0}`.
  --> tests/ui/simple/gat-default.rs:9:1

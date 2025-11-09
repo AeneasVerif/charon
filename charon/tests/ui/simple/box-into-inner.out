@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::alloc::layout::Layout
+#[lang_item("alloc_layout")]
+pub opaque type Layout
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -16,12 +20,96 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const SIZE : usize
+    const ALIGN : usize
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub fn SIZE<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub const SIZE<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = SIZE()
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub fn ALIGN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub const ALIGN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGN()
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub fn LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub const LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = LAYOUT()
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub fn MAX_SLICE_LEN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub const MAX_SLICE_LEN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = MAX_SLICE_LEN()
+
+// Full name: core::mem::{impl SizedTypeProperties for T}
+impl<T> SizedTypeProperties for T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = @TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    non-dyn-compatible
+}
 
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
@@ -73,7 +161,6 @@ fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
-    parent_clause0 = {built_in impl MetaSized for String}
     fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }
@@ -100,11 +187,10 @@ fn into_inner(@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}
     let @6: *const String; // anonymous local
     let @7: *const (); // anonymous local
     let @8: usize; // anonymous local
-    let @9: usize; // anonymous local
+    let @9: bool; // anonymous local
     let @10: bool; // anonymous local
     let @11: bool; // anonymous local
     let @12: bool; // anonymous local
-    let @13: bool; // anonymous local
 
     storage_live(@3)
     storage_live(@4)
@@ -116,18 +202,16 @@ fn into_inner(@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
-    storage_live(@13)
     @0 := ()
     storage_live(_x@2)
     @6 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @7 := cast<*const String, *const ()>(copy (@6))
     @8 := transmute<*const (), usize>(copy (@7))
-    @9 := size_of<String>
-    @10 := copy (@9) != const (0 : usize)
-    @11 := copy (@8) == const (0 : usize)
-    @12 := copy (@11) & copy (@10)
-    @13 := ~(copy (@12))
-    assert(copy (@13) == true)
+    @9 := const ({impl SizedTypeProperties for T}<String>[{built_in impl Sized for String}]::SIZE) != const (0 : usize)
+    @10 := copy (@8) == const (0 : usize)
+    @11 := copy (@10) & copy (@9)
+    @12 := ~(copy (@11))
+    assert(copy (@12) == true)
     _x@2 := move (*(@6))
     @0 := ()
     drop[{impl Destruct for String}] _x@2

@@ -34,12 +34,6 @@ trait Trait<Self>
 fn FOO<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
-{
-    let @0: usize; // return
-
-    @0 := const (42 : usize)
-    return
-}
 
 // Full name: trait_default_const::Trait::FOO
 const FOO<Self>: usize

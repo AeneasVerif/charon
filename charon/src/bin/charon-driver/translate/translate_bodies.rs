@@ -13,6 +13,7 @@ use std::panic;
 use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast::StatementKind;
+use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
@@ -496,6 +497,8 @@ impl BodyTransCtx<'_, '_, '_> {
                         ..,
                     ) => CastKind::FnPtr(src_ty, tgt_ty),
                     hax::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),
+                    // TODO
+                    hax::CastKind::Subtype => CastKind::Transmute(src_ty, tgt_ty),
                     hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
                         let meta = match meta {
                             hax::UnsizingMetadata::Length(len) => {
@@ -543,8 +546,6 @@ impl BodyTransCtx<'_, '_, '_> {
                 trace!("NullOp: {:?}", nullop);
                 let ty = self.translate_ty(span, ty)?;
                 let op = match nullop {
-                    hax::NullOp::SizeOf => NullOp::SizeOf,
-                    hax::NullOp::AlignOf => NullOp::AlignOf,
                     hax::NullOp::OffsetOf(fields) => NullOp::OffsetOf(
                         fields
                             .iter()
@@ -749,10 +750,6 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::StatementKind::StorageDead(local) => {
                 let var_id = self.translate_local(local).unwrap();
                 Some(StatementKind::StorageDead(var_id))
-            }
-            hax::StatementKind::Deinit(place) => {
-                let t_place = self.translate_place(span, place)?;
-                Some(StatementKind::Deinit(t_place))
             }
             // This asserts the operand true on pain of UB. We treat it like a normal assertion.
             hax::StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
@@ -1160,10 +1157,29 @@ impl BodyTransCtx<'_, '_, '_> {
         def: &hax::FullDef,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Retrieve the body
-        let Some(body) = self.get_mir(def.this(), span)? else {
-            return Ok(Err(Opaque));
-        };
-        self.translate_body(span, &body, &def.source_text)
+        if let Some(body) = self.get_mir(def.this(), span)? {
+            self.translate_body(span, &body, &def.source_text)
+        } else {
+            if let hax::FullDefKind::Const { value, .. }
+            | hax::FullDefKind::AssocConst { value, .. } = def.kind()
+                && let Some(value) = value
+            {
+                // For globals we can generate a body by evaluating the global.
+                // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
+                // default value no longer has a cross-crate MIR so it's unclear how to retreive
+                // the value. See the `trait-default-const-cross-crate` test.
+                let c = self.translate_constant_expr_to_constant_expr(span, &value)?;
+                let mut bb = BodyBuilder::new(span, 0);
+                let ret = bb.new_var(None, c.ty.clone());
+                bb.push_statement(StatementKind::Assign(
+                    ret,
+                    Rvalue::Use(Operand::Const(Box::new(c))),
+                ));
+                Ok(Ok(Body::Unstructured(bb.build())))
+            } else {
+                Ok(Err(Opaque))
+            }
+        }
     }
 
     /// Translate a function body.

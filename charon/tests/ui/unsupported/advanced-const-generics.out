@@ -10,6 +10,7 @@ error[E9999]: Supposely unreachable place in the Rust AST. The label is "Transla
                       N/#0,
                   ],
               }
+              
   --> tests/ui/unsupported/advanced-const-generics.rs:18:1
    |
 18 | / fn bar<const N: usize>()

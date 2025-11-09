@@ -72,7 +72,6 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -116,7 +115,6 @@ fn {impl Destruct for closure<'_>}::drop_in_place<'a>(@1: *mut closure<'_>)
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'_>}
 impl<'a> Destruct for closure<'_> {
-    parent_clause0 = {built_in impl MetaSized for closure<'_>}
     fn drop_in_place = {impl Destruct for closure<'_>}::drop_in_place<'a>
     non-dyn-compatible
 }

@@ -327,7 +327,6 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -521,15 +520,16 @@ where
     let x@8: &'_ (T); // local
     let @9: (); // anonymous local
     let @10: Arguments<'_>; // anonymous local
-    let args@11: Array<Argument<'_>, 1 : usize>; // local
-    let @12: Argument<'_>; // anonymous local
-    let @13: &'_ (&'_ (T)); // anonymous local
-    let @14: &'_ (&'_ (T)); // anonymous local
-    let @15: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let args@11: (&'_ (&'_ (T))); // local
+    let @12: &'_ (&'_ (T)); // anonymous local
+    let args@13: Array<Argument<'_>, 1 : usize>; // local
+    let @14: Argument<'_>; // anonymous local
+    let @15: &'_ (&'_ (T)); // anonymous local
     let @16: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @17: Array<&'_ (Str), 2 : usize>; // anonymous local
-    let @18: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @17: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @18: Array<&'_ (Str), 2 : usize>; // anonymous local
     let @19: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @20: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -558,33 +558,36 @@ where
                 storage_live(@10)
                 storage_live(args@11)
                 storage_live(@12)
-                storage_live(@13)
-                storage_live(@14)
-                @14 := &x@8
-                @13 := &*(@14)
-                @12 := new_debug<'_, '_, &'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@13))
-                storage_dead(@13)
-                args@11 := [move (@12)]
+                @12 := &x@8
+                args@11 := (move (@12))
                 storage_dead(@12)
+                storage_live(args@13)
+                storage_live(@14)
                 storage_live(@15)
+                @15 := &*((args@11).0)
+                @14 := new_debug<'_, '_, &'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
+                storage_dead(@15)
+                args@13 := [move (@14)]
+                storage_dead(@14)
                 storage_live(@16)
                 storage_live(@17)
-                @17 := [const ("- "), const ("\n")]
-                @16 := &@17
-                @15 := &*(@16)
                 storage_live(@18)
+                @18 := [const ("- "), const ("\n")]
+                @17 := &@18
+                @16 := &*(@17)
                 storage_live(@19)
-                @19 := &args@11
-                @18 := &*(@19)
-                @10 := new_v1<'_, 2 : usize, 1 : usize>(move (@15), move (@18))
+                storage_live(@20)
+                @20 := &args@13
+                @19 := &*(@20)
+                @10 := new_v1<'_, 2 : usize, 1 : usize>(move (@16), move (@19))
+                storage_dead(@20)
                 storage_dead(@19)
                 storage_dead(@18)
                 storage_dead(@17)
                 storage_dead(@16)
-                storage_dead(@15)
                 @9 := _eprint<'_>(move (@10))
                 storage_dead(@10)
-                storage_dead(@14)
+                storage_dead(args@13)
                 storage_dead(args@11)
                 storage_dead(@9)
                 storage_dead(x@8)

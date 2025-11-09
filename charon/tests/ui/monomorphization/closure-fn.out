@@ -34,7 +34,6 @@ struct closure<'_0, '_1> {
 #[lang_item("destruct")]
 pub trait Destruct::<closure<'_, '_>>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
     fn drop_in_place = core::marker::Destruct::drop_in_place::<closure<'_, '_>>
     vtable: core::marker::Destruct::{vtable}::<closure<'_, '_>>
 }
@@ -221,7 +220,6 @@ fn {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>(@1: *mut closure<
 
 // Full name: test_crate::main::closure::{impl Destruct::<closure<'_, '_>>}
 impl<'_0, '_1> Destruct::<closure<'_, '_>> {
-    parent_clause0 = {built_in impl MetaSized::<closure<'_, '_>>}
     fn drop_in_place = {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>
     non-dyn-compatible
 }

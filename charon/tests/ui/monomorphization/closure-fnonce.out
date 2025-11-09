@@ -48,10 +48,19 @@ struct closure {
 #[lang_item("destruct")]
 pub trait Destruct::<closure>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<closure>
     fn drop_in_place = core::marker::Destruct::drop_in_place::<closure>
     vtable: core::marker::Destruct::{vtable}::<closure>
 }
+
+// Full name: core::marker::Destruct::<NotCopy>
+#[lang_item("destruct")]
+pub trait Destruct::<NotCopy>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<NotCopy>
+    vtable: core::marker::Destruct::{vtable}::<NotCopy>
+}
+
+fn core::marker::Destruct::drop_in_place::<NotCopy>(@1: *mut NotCopy)
 
 fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
 
@@ -136,7 +145,6 @@ fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
 
 // Full name: test_crate::main::closure::{impl Destruct::<closure>}
 impl Destruct::<closure> {
-    parent_clause0 = {built_in impl MetaSized::<closure>}
     fn drop_in_place = {impl Destruct::<closure>}::drop_in_place
     non-dyn-compatible
 }
@@ -158,6 +166,25 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     storage_dead(@2)
     drop[{impl Destruct::<closure>}] f@1
     return
+}
+
+// Full name: test_crate::NotCopy::{impl Destruct::<NotCopy>}::drop_in_place
+fn {impl Destruct::<NotCopy>}::drop_in_place(@1: *mut NotCopy)
+{
+    let @0: (); // return
+    let @1: *mut NotCopy; // arg #1
+    let @2: &'_ mut (NotCopy); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: test_crate::NotCopy::{impl Destruct::<NotCopy>}
+impl Destruct::<NotCopy> {
+    fn drop_in_place = {impl Destruct::<NotCopy>}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

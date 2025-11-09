@@ -11,9 +11,7 @@ pub struct Transform;
 /// The special `alloc::boxed::box_new(x)` intrinsic becomes the following:
 ///
 /// ```text
-/// @2 := size_of<i32>
-/// @3 := align_of<i32>
-/// @4 := alloc::alloc::exchange_malloc(move (@2), move (@3))
+/// @4 := alloc::alloc::exchange_malloc(const .., const ..)
 /// storage_live(@5)
 /// @5 := shallow_init_box::<i32>(move (@4))
 /// // possibly some intermediate statements
@@ -27,33 +25,26 @@ impl UllbcPass for Transform {
             return;
         }
 
-        // We need to find a block that has exchange_malloc as the following terminator:
+        // We need to find a block that has exchange_malloc as the terminator:
         // ```text
-        // @4 := alloc::alloc::exchange_malloc(move (@2), move (@3))
+        // @4 := alloc::alloc::exchange_malloc(..)
         // ```
-        // We then chekc that that this block ends with two assignments:
-        // ```text
-        // @2 := size_of<i32>
-        // @3 := align_of<i32>
-        // ```
-        // If that is the case, we look at the target block and check that it starts with`
+        // We then check that that the target block starts with:
         // ```text
         // storage_live(@5)
         // @5 := shallow_init_box::<i32>(move (@4))
         // ```
-        // We then look for the assignment into the box and take a not of its index.
+        // We then look for the assignment into the box and take a note of its index.
         // ```text
         // *(@5) := x
         // ```
         // Finally, we replace all these assignments with a call to `@5 = Box::new(x)`
-        // We do so by replacing the terminator (exchange_malloc) with the correct call
-        // and replacing the assignment @3 := align_of<i32> with the storage live.
-        // Everything else becomes Nop.
+        // We do so by replacing the terminator (exchange_malloc) with the correct call and adding
+        // a `StorageLive`. Everything else becomes Nop.
 
         for candidate_block_idx in b.body.all_indices() {
             let second_block;
-            let at_5;
-            let at_5_ty;
+            let box_place;
             let box_generics;
             let value_to_write;
             let old_assign_idx;
@@ -72,16 +63,8 @@ impl UllbcPass for Transform {
                         },
                         on_unwind,
                 } = &candidate_block.terminator.kind
-                // The call has two move arguments
-                && let [Operand::Move(arg0), Operand::Move(arg1)] = malloc_args.as_slice()
-                && let [ .., Statement {
-                            kind: StatementKind::Assign(size, Rvalue::NullaryOp(NullOp::SizeOf, _)),
-                            ..
-                        }, Statement {
-                            kind: StatementKind::Assign(align, Rvalue::NullaryOp(NullOp::AlignOf, _)),
-                            ..
-                        }] = candidate_block.statements.as_slice()
-                && arg0 == size && arg1 == align
+                // The call has two const arguments
+                && let [Operand::Const(..), Operand::Const(..)] = malloc_args.as_slice()
                 && let Some(target_block) = b.body.get(*target_block_idx)
                 && let [Statement {
                             kind: StatementKind::StorageLive(target_var),
@@ -94,7 +77,7 @@ impl UllbcPass for Transform {
                 && alloc_use == malloc_dest
                 && let Some(local_id) = box_make.as_local()
                 && local_id == *target_var
-                && let TyKind::Adt(ty_ref) = b.locals[*target_var].ty.kind()
+                && let TyKind::Adt(ty_ref) = box_make.ty().kind()
                 && let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id
                 && let Some((assign_idx_in_rest, val, span)) = rest.iter().enumerate().find_map(|(idx, st)| {
                     if let Statement {
@@ -111,8 +94,7 @@ impl UllbcPass for Transform {
                     }
                 })
             {
-                at_5 = local_id;
-                at_5_ty = box_make.ty().clone();
+                box_place = box_make.clone();
                 old_assign_idx = assign_idx_in_rest + 2; // +2 because rest skips the first two statements
                 value_to_write = val.clone();
                 box_generics = ty_ref.generics.clone();
@@ -124,14 +106,12 @@ impl UllbcPass for Transform {
             }
 
             let first_block = b.body.get_mut(candidate_block_idx).unwrap();
-            // Remove the `size_of` and `align_of` assignments.
-            first_block.statements.pop();
-            first_block.statements.pop();
+            let box_place_local = box_place.as_local().unwrap();
             let value_to_write = match value_to_write {
                 Rvalue::Use(op) => op,
                 _ => {
                     // We need to create a new variable to store the value.
-                    let name = b.locals[at_5].name.clone();
+                    let name = b.locals[box_place_local].name.clone();
                     let ty = box_generics.types[0].clone();
                     let var = b.locals.new_var(name, ty);
                     first_block.statements.push(Statement::new(
@@ -147,7 +127,7 @@ impl UllbcPass for Transform {
             };
             first_block.statements.push(Statement::new(
                 assign_span,
-                StatementKind::StorageLive(at_5),
+                StatementKind::StorageLive(box_place_local),
             ));
             first_block.terminator.kind = TerminatorKind::Call {
                 call: Call {
@@ -156,7 +136,7 @@ impl UllbcPass for Transform {
                         box_generics,
                     )),
                     args: vec![value_to_write],
-                    dest: Place::new(at_5, at_5_ty),
+                    dest: box_place,
                 },
                 target: second_block,
                 on_unwind: unwind_target,

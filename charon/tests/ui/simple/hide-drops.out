@@ -1,16 +1,11 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    vtable: {vtable}
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
@@ -24,7 +19,6 @@ fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
-    parent_clause0 = {built_in impl MetaSized for String}
     fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }

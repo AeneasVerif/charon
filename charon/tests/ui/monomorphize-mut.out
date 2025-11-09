@@ -103,7 +103,6 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -111,7 +110,6 @@ pub trait Destruct<Self>
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut (_)><'_0, T0>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<&_ mut (_)><'_0, T0>
     fn drop_in_place = core::marker::Destruct::drop_in_place::<&_ mut (_)><'_0, T0>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -130,7 +128,6 @@ pub trait core::marker::Destruct::<core::option::Option::<&_ mut (_)><_, _>[@Tra
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
     fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
     vtable: core::marker::Destruct::{vtable}
 }
@@ -151,7 +148,6 @@ where
     [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
     [@TraitClause1]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1]
     fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1]
     vtable: core::marker::Destruct::{vtable}
 }
