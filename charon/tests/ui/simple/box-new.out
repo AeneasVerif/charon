@@ -43,7 +43,7 @@ pub trait Allocator<Self>
     vtable: core::alloc::Allocator::{vtable}
 }
 
-pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 
@@ -67,14 +67,14 @@ fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
 pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
 
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
-    parent_clause0 = MetaSized<Global>
+    parent_clause0 = {built_in impl MetaSized for Global}
     fn allocate<'_0_1> = {impl Allocator for Global}::allocate<'_0_1>
     fn deallocate<'_0_1> = {impl Allocator for Global}::deallocate<'_0_1>
     vtable: {impl Allocator for Global}::{vtable}
@@ -94,7 +94,7 @@ where
     [@TraitClause1]: Sized<A>,
     [@TraitClause2]: Allocator<A>,
 {
-    parent_clause0 = MetaSized<alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1)), missing(@TraitClauseBound(1, 2))]}
     fn drop_in_place = {impl Destruct for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     non-dyn-compatible
 }
@@ -113,12 +113,12 @@ const UNIT_METADATA: () = @Fun0()
 fn main()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let @1: alloc::boxed::Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
 
     @0 := ()
     storage_live(@1)
-    @1 := @BoxNew<i32>[Sized<i32>](const (42 : i32))
-    drop[{impl Destruct for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]] @1
+    @1 := @BoxNew<i32>[{built_in impl Sized for i32}](const (42 : i32))
+    drop[{impl Destruct for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

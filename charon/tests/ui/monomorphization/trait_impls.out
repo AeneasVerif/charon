@@ -57,7 +57,7 @@ pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 
 // Full name: test_crate::{impl Trait::<bool>}
 impl Trait::<bool> {
-    parent_clause0 = MetaSized::<bool>
+    parent_clause0 = {built_in impl MetaSized::<bool>}
     fn method<'_0_1> = {impl Trait::<bool>}::method<'_0_1>
     vtable: {impl Trait::<bool>}::{vtable}
 }
@@ -74,7 +74,7 @@ fn do_test::<bool>(@1: bool)
     @2 := &x@1
     @0 := {impl Trait::<bool>}::method<'_>(move (@2))
     storage_dead(@2)
-    drop[Destruct::<bool>] x@1
+    drop[{built_in impl Destruct::<bool>}] x@1
     return
 }
 

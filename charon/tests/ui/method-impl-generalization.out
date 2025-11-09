@@ -99,13 +99,13 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<T>] _other@2
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _other@2
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = Sized<()>
+    parent_clause0 = {built_in impl Sized for ()}
     fn method1 = {impl Trait for ()}::method1
     fn method2<T, [@TraitClause0_1]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_1]
     non-dyn-compatible
@@ -137,8 +137,8 @@ fn {impl MyCompare<&'a (())> for &'a (())}::compare<'a>(@1: &'a (()), @2: &'a ((
 
 // Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}
 impl<'a> MyCompare<&'a (())> for &'a (()) {
-    parent_clause0 = Sized<&'_ (())>
-    parent_clause1 = Sized<&'_ (())>
+    parent_clause0 = {built_in impl Sized for &'_ (())}
+    parent_clause1 = {built_in impl Sized for &'_ (())}
     fn compare = {impl MyCompare<&'a (())> for &'a (())}::compare<'a>
     non-dyn-compatible
 }
@@ -226,7 +226,7 @@ fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
     non-dyn-compatible
 }

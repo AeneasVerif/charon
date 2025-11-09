@@ -31,7 +31,7 @@ pub fn {impl Default for u32}::default() -> u32
 
 // Full name: core::default::{impl Default for u32}
 impl Default for u32 {
-    parent_clause0 = Sized<u32>
+    parent_clause0 = {built_in impl Sized for u32}
     fn default = {impl Default for u32}::default
     non-dyn-compatible
 }
@@ -161,7 +161,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@10)
         storage_live(@11)
         @11 := &*(s@1) with_metadata(copy (s@1.metadata))
-        @10 := len<'_, u32>[Sized<u32>](move (@11))
+        @10 := len<'_, u32>[{built_in impl Sized for u32}](move (@11))
         storage_dead(@11)
         @8 := move (@9) < move (@10)
         if move (@8) {
@@ -260,7 +260,7 @@ pub fn {impl Default for Foo}::default() -> Foo
 
 // Full name: test_crate::{impl Default for Foo}
 impl Default for Foo {
-    parent_clause0 = Sized<Foo>
+    parent_clause0 = {built_in impl Sized for Foo}
     fn default = {impl Default for Foo}::default
     non-dyn-compatible
 }
@@ -290,7 +290,7 @@ pub fn {impl Default for Bar}::default() -> Bar
 
 // Full name: test_crate::{impl Default for Bar}
 impl Default for Bar {
-    parent_clause0 = Sized<Bar>
+    parent_clause0 = {built_in impl Sized for Bar}
     fn default = {impl Default for Bar}::default
     non-dyn-compatible
 }
@@ -305,7 +305,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<T>] @1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @1
     return
 }
 
@@ -344,7 +344,7 @@ fn foo()
     let @29: &'_ (u32); // anonymous local
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
-    let @32: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @32: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
     let @33: &'_ (Array<u32, 10 : usize>); // anonymous local
     let @34: &'_ (u32); // anonymous local
 
@@ -367,7 +367,7 @@ fn foo()
     @5 := Foo { x: move (@6), y: move (@7) }
     storage_dead(@7)
     storage_dead(@6)
-    @4 := eat<Foo>[Sized<Foo>](move (@5))
+    @4 := eat<Foo>[{built_in impl Sized for Foo}](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@10)
@@ -390,7 +390,7 @@ fn foo()
     @12 := Bar { x: move (@13), super_long_field_name: move (@14) }
     storage_dead(@14)
     storage_dead(@13)
-    @11 := eat<Bar>[Sized<Bar>](move (@12))
+    @11 := eat<Bar>[{built_in impl Sized for Bar}](move (@12))
     storage_dead(@12)
     storage_dead(@11)
     storage_live(a@15)

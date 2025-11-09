@@ -124,7 +124,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
 {
-    parent_clause0 = MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -175,13 +175,13 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
 {
-    parent_clause0 = MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>
-    parent_clause1 = Sized<()>
-    parent_clause2 = Tuple<()>
+    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause1 = {built_in impl Sized for ()}
+    parent_clause2 = {built_in impl Tuple for ()}
     parent_clause3 = {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
-    parent_clause4 = Destruct<()>
-    parent_clause5 = Sized<()>
-    parent_clause6 = Destruct<()>
+    parent_clause4 = {built_in impl Destruct for ()}
+    parent_clause5 = {built_in impl Sized for ()}
+    parent_clause6 = {built_in impl Destruct for ()}
     type Output = ()
     fn call_once = {impl FnOnce<()> for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
@@ -208,7 +208,7 @@ fn {impl Destruct for test_crate::bar::closure}::drop_in_place(@1: *mut test_cra
 
 // Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}
 impl Destruct for test_crate::bar::closure {
-    parent_clause0 = MetaSized<test_crate::bar::closure>
+    parent_clause0 = {built_in impl MetaSized for test_crate::bar::closure}
     fn drop_in_place = {impl Destruct for test_crate::bar::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -258,13 +258,13 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
 
 // Full name: test_crate::bar::{impl FnOnce<()> for test_crate::bar::closure}
 impl FnOnce<()> for test_crate::bar::closure {
-    parent_clause0 = MetaSized<test_crate::bar::closure>
-    parent_clause1 = Sized<()>
-    parent_clause2 = Tuple<()>
+    parent_clause0 = {built_in impl MetaSized for test_crate::bar::closure}
+    parent_clause1 = {built_in impl Sized for ()}
+    parent_clause2 = {built_in impl Tuple for ()}
     parent_clause3 = {impl Destruct for test_crate::bar::closure}
-    parent_clause4 = Destruct<()>
-    parent_clause5 = Sized<()>
-    parent_clause6 = Destruct<()>
+    parent_clause4 = {built_in impl Destruct for ()}
+    parent_clause5 = {built_in impl Sized for ()}
+    parent_clause6 = {built_in impl Destruct for ()}
     type Output = ()
     fn call_once = {impl FnOnce<()> for test_crate::bar::closure}::call_once
     non-dyn-compatible
@@ -272,24 +272,24 @@ impl FnOnce<()> for test_crate::bar::closure {
 
 // Full name: test_crate::bar::{impl FnMut<()> for test_crate::bar::closure}
 impl FnMut<()> for test_crate::bar::closure {
-    parent_clause0 = MetaSized<test_crate::bar::closure>
+    parent_clause0 = {built_in impl MetaSized for test_crate::bar::closure}
     parent_clause1 = {impl FnOnce<()> for test_crate::bar::closure}
-    parent_clause2 = Sized<()>
-    parent_clause3 = Tuple<()>
+    parent_clause2 = {built_in impl Sized for ()}
+    parent_clause3 = {built_in impl Tuple for ()}
     parent_clause4 = {impl Destruct for test_crate::bar::closure}
-    parent_clause5 = Destruct<()>
+    parent_clause5 = {built_in impl Destruct for ()}
     fn call_mut<'_0_1> = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::closure}
 impl Fn<()> for test_crate::bar::closure {
-    parent_clause0 = MetaSized<test_crate::bar::closure>
+    parent_clause0 = {built_in impl MetaSized for test_crate::bar::closure}
     parent_clause1 = {impl FnMut<()> for test_crate::bar::closure}
-    parent_clause2 = Sized<()>
-    parent_clause3 = Tuple<()>
+    parent_clause2 = {built_in impl Sized for ()}
+    parent_clause3 = {built_in impl Tuple for ()}
     parent_clause4 = {impl Destruct for test_crate::bar::closure}
-    parent_clause5 = Destruct<()>
+    parent_clause5 = {built_in impl Destruct for ()}
     fn call<'_0_1> = {impl Fn<()> for test_crate::bar::closure}::call<'_0_1>
     non-dyn-compatible
 }

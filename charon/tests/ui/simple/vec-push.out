@@ -155,16 +155,16 @@ where
 }
 
 // Full name: test_crate::vec
-fn vec<'_0>(@1: &'_0 mut (Vec<u32>[Sized<u32>, Sized<Global>]))
+fn vec<'_0>(@1: &'_0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]))
 {
     let @0: (); // return
-    let x@1: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // arg #1
-    let @2: &'_ mut (Vec<u32>[Sized<u32>, Sized<Global>]); // anonymous local
+    let x@1: &'_ mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]); // arg #1
+    let @2: &'_ mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]); // anonymous local
 
     @0 := ()
     storage_live(@2)
     @2 := &two-phase-mut *(x@1)
-    @0 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@2), const (42 : u32))
+    @0 := push<'_, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move (@2), const (42 : u32))
     storage_dead(@2)
     return
 }

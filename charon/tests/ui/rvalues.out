@@ -124,7 +124,7 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -343,7 +343,7 @@ fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}
 impl Destruct for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     fn drop_in_place = {impl Destruct for closure}::drop_in_place
     non-dyn-compatible
 }
@@ -421,10 +421,10 @@ fn fn_casts()
 
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8)> for closure}
 impl FnOnce<(u8)> for closure {
-    parent_clause0 = MetaSized<closure>
-    parent_clause1 = Sized<(u8)>
-    parent_clause2 = Tuple<(u8)>
-    parent_clause3 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for (u8)}
+    parent_clause2 = {built_in impl Tuple for (u8)}
+    parent_clause3 = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<(u8)> for closure}::call_once
     non-dyn-compatible
@@ -432,20 +432,20 @@ impl FnOnce<(u8)> for closure {
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8)> for closure}
 impl FnMut<(u8)> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnOnce<(u8)> for closure}
-    parent_clause2 = Sized<(u8)>
-    parent_clause3 = Tuple<(u8)>
+    parent_clause2 = {built_in impl Sized for (u8)}
+    parent_clause3 = {built_in impl Tuple for (u8)}
     fn call_mut<'_0_1> = {impl FnMut<(u8)> for closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8)> for closure}
 impl Fn<(u8)> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnMut<(u8)> for closure}
-    parent_clause2 = Sized<(u8)>
-    parent_clause3 = Tuple<(u8)>
+    parent_clause2 = {built_in impl Sized for (u8)}
+    parent_clause3 = {built_in impl Tuple for (u8)}
     fn call<'_0_1> = {impl Fn<(u8)> for closure}::call<'_0_1>
     non-dyn-compatible
 }
@@ -454,17 +454,17 @@ impl Fn<(u8)> for closure {
 fn boxes()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
-    let @2: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // anonymous local
+    let @1: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
+    let @2: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
 
     @0 := ()
     storage_live(@1)
     storage_live(@2)
-    @2 := @BoxNew<i32>[MetaSized<i32>, Sized<Global>](const (42 : i32))
+    @2 := @BoxNew<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](const (42 : i32))
     @1 := move (@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @2
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @2
     storage_dead(@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] @1
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

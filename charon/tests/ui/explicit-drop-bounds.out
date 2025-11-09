@@ -32,7 +32,7 @@ fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
-    parent_clause0 = MetaSized<String>
+    parent_clause0 = {built_in impl MetaSized for String}
     fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }
@@ -93,11 +93,11 @@ where
 
 // Full name: test_crate::{impl Trait<u32> for ()}
 impl Trait<u32> for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<u32>
-    parent_clause2 = Destruct<()>
-    parent_clause3 = Destruct<u32>
-    parent_clause4 = Sized<String>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for u32}
+    parent_clause2 = {built_in impl Destruct for ()}
+    parent_clause3 = {built_in impl Destruct for u32}
+    parent_clause4 = {built_in impl Sized for String}
     parent_clause5 = {impl Destruct for String}
     type Type = String
     fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Destruct<U>> = {impl Trait<u32> for ()}::foo<U>[@TraitClause0_1, @TraitClause1_1]
@@ -135,7 +135,7 @@ fn main()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
-    @1 := use_trait<u32, ()>[Sized<u32>, Sized<()>, {impl Trait<u32> for ()}, Destruct<u32>, Destruct<()>](const (42 : u32), move (@2))
+    @1 := use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, {impl Trait<u32> for ()}, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const (42 : u32), move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

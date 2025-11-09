@@ -31,7 +31,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
-    parent_clause0 = Sized<u8>
+    parent_clause0 = {built_in impl Sized for u8}
     fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -77,7 +77,7 @@ pub fn {impl Default for bool}::default() -> bool
 
 // Full name: core::default::{impl Default for bool}
 impl Default for bool {
-    parent_clause0 = Sized<bool>
+    parent_clause0 = {built_in impl Sized for bool}
     fn default = {impl Default for bool}::default
     non-dyn-compatible
 }
@@ -128,7 +128,7 @@ where
     storage_live(@1)
     @1 := @TraitClause1::default()
     @0 := Struct { 0: move (@1) }
-    drop[Destruct<A>] @1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @1
     storage_dead(@1)
     return
 }
@@ -139,7 +139,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Default<A>,
 {
-    parent_clause0 = Sized<Struct<A>[@TraitClause0]>
+    parent_clause0 = {built_in impl Sized for Struct<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn default = {impl Default for Struct<A>[@TraitClause0]}::default<A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -183,9 +183,9 @@ where
     [@TraitClause2]: Clone<A>,
     [@TraitClause3]: PartialEq<B, bool>,
 {
-    parent_clause0 = MetaSized<Struct<A>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Struct<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = @TraitClause1
-    parent_clause2 = Sized<(A, B)>
+    parent_clause2 = {built_in impl Sized for (missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1)))}
     fn method<C, [@TraitClause0_1]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_1]
     non-dyn-compatible
 }
@@ -195,16 +195,16 @@ fn main()
 {
     let @0: (); // return
     let _x@1: (u8, bool); // local
-    let _y@2: Struct<bool>[Sized<bool>]; // local
+    let _y@2: Struct<bool>[{built_in impl Sized for bool}]; // local
     let @3: (); // anonymous local
 
     @0 := ()
     storage_live(_x@1)
     _x@1 := (const (0 : u8), const (false))
     storage_live(_y@2)
-    _y@2 := {impl Default for Struct<A>[@TraitClause0]}::default<bool>[Sized<bool>, {impl Default for bool}]()
+    _y@2 := {impl Default for Struct<A>[@TraitClause0]}::default<bool>[{built_in impl Sized for bool}, {impl Default for bool}]()
     storage_live(@3)
-    @3 := {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[Sized<u8>, Sized<bool>, {impl Clone for u8}, {impl PartialEq<bool> for bool}, Sized<String>]()
+    @3 := {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, {impl Clone for u8}, {impl PartialEq<bool> for bool}, {built_in impl Sized for String}]()
     storage_dead(@3)
     @0 := ()
     storage_dead(_y@2)

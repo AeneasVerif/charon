@@ -112,7 +112,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<F>] @1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @1
     return
 }
 
@@ -124,7 +124,7 @@ pub fn flibidi()
 
     @0 := ()
     storage_live(@1)
-    @1 := test_crate::call<'_, for<'a> flabada<'a>>[Sized<for<'a> flabada<'a>>, Fn<for<'a> flabada<'a>, (&'_ (())), &'_ (())>](const (flabada<'_>))
+    @1 := test_crate::call<'_, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'_ (())), &'_ (())> for for<'a> flabada<'a>}](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     return

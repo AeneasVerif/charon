@@ -176,7 +176,7 @@ fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
 
 // Full name: test_crate::gives_fn::closure::{impl Destruct for closure}
 impl Destruct for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     fn drop_in_place = {impl Destruct for closure}::drop_in_place
     non-dyn-compatible
 }
@@ -198,10 +198,10 @@ fn {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>(@1: closure, @2: (
 
 // Full name: test_crate::gives_fn::{impl FnOnce<(&'_ mut (u32))> for closure}
 impl<'_0> FnOnce<(&'_ mut (u32))> for closure {
-    parent_clause0 = MetaSized<closure>
-    parent_clause1 = Sized<(&'_ mut (u32))>
-    parent_clause2 = Tuple<(&'_ mut (u32))>
-    parent_clause3 = Sized<bool>
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for (&'_ mut (u32))}
+    parent_clause2 = {built_in impl Tuple for (&'_ mut (u32))}
+    parent_clause3 = {built_in impl Sized for bool}
     type Output = bool
     fn call_once = {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>
     non-dyn-compatible
@@ -209,20 +209,20 @@ impl<'_0> FnOnce<(&'_ mut (u32))> for closure {
 
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_ mut (u32))> for closure}
 impl<'_0> FnMut<(&'_ mut (u32))> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnOnce<(&'_ mut (u32))> for closure}<'_0>
-    parent_clause2 = Sized<(&'_ mut (u32))>
-    parent_clause3 = Tuple<(&'_ mut (u32))>
+    parent_clause2 = {built_in impl Sized for (&'_ mut (u32))}
+    parent_clause3 = {built_in impl Tuple for (&'_ mut (u32))}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::gives_fn::{impl Fn<(&'_ mut (u32))> for closure}
 impl<'_0> Fn<(&'_ mut (u32))> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnMut<(&'_ mut (u32))> for closure}<'_0>
-    parent_clause2 = Sized<(&'_ mut (u32))>
-    parent_clause3 = Tuple<(&'_ mut (u32))>
+    parent_clause2 = {built_in impl Sized for (&'_ mut (u32))}
+    parent_clause3 = {built_in impl Tuple for (&'_ mut (u32))}
     fn call<'_0_1> = {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '_0_1>
     non-dyn-compatible
 }

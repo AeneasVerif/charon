@@ -221,7 +221,7 @@ fn {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>(@1: *mut closure<
 
 // Full name: test_crate::main::closure::{impl Destruct::<closure<'_, '_>>}
 impl<'_0, '_1> Destruct::<closure<'_, '_>> {
-    parent_clause0 = MetaSized::<closure<'_, '_>>
+    parent_clause0 = {built_in impl MetaSized::<closure<'_, '_>>}
     fn drop_in_place = {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>
     non-dyn-compatible
 }
@@ -336,29 +336,29 @@ fn main()
 
 // Full name: test_crate::main::{impl FnOnce::<closure<'_, '_>, (u8, u8)>}
 impl<'_0, '_1> FnOnce::<closure<'_, '_>, (u8, u8)> {
-    parent_clause0 = MetaSized::<closure<'_, '_>>
-    parent_clause1 = Sized::<(u8, u8)>
-    parent_clause2 = Tuple::<(u8, u8)>
+    parent_clause0 = {built_in impl MetaSized::<closure<'_, '_>>}
+    parent_clause1 = {built_in impl Sized::<(u8, u8)>}
+    parent_clause2 = {built_in impl Tuple::<(u8, u8)>}
     fn call_once = {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_0, '_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnMut::<closure<'_, '_>, (u8, u8)>}
 impl<'_0, '_1> FnMut::<closure<'_, '_>, (u8, u8)> {
-    parent_clause0 = MetaSized::<closure<'_, '_>>
+    parent_clause0 = {built_in impl MetaSized::<closure<'_, '_>>}
     parent_clause1 = {impl FnOnce::<closure<'_, '_>, (u8, u8)>}<'_0, '_1>
-    parent_clause2 = Sized::<(u8, u8)>
-    parent_clause3 = Tuple::<(u8, u8)>
+    parent_clause2 = {built_in impl Sized::<(u8, u8)>}
+    parent_clause3 = {built_in impl Tuple::<(u8, u8)>}
     fn call_mut<'_0_1> = {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl Fn::<closure<'_, '_>, (u8, u8)>}
 impl<'_0, '_1> Fn::<closure<'_, '_>, (u8, u8)> {
-    parent_clause0 = MetaSized::<closure<'_, '_>>
+    parent_clause0 = {built_in impl MetaSized::<closure<'_, '_>>}
     parent_clause1 = {impl FnMut::<closure<'_, '_>, (u8, u8)>}<'_0, '_1>
-    parent_clause2 = Sized::<(u8, u8)>
-    parent_clause3 = Tuple::<(u8, u8)>
+    parent_clause2 = {built_in impl Sized::<(u8, u8)>}
+    parent_clause3 = {built_in impl Tuple::<(u8, u8)>}
     fn call<'_0_1> = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_0_1>
     non-dyn-compatible
 }

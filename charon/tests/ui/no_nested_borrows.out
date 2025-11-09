@@ -68,7 +68,7 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -133,7 +133,7 @@ pub enum List<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[MetaSized<List<T>[@TraitClause0]>, Sized<Global>]),
+  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]),
   Nil,
 }
 
@@ -147,7 +147,7 @@ impl<T> Destruct for List<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<List<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for List<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -195,10 +195,10 @@ where
 }
 
 // Full name: test_crate::use_tuple_struct
-pub fn use_tuple_struct<'_0>(@1: &'_0 mut (Tuple<u32, u32>[Sized<u32>, Sized<u32>]))
+pub fn use_tuple_struct<'_0>(@1: &'_0 mut (Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]))
 {
     let @0: (); // return
-    let x@1: &'_ mut (Tuple<u32, u32>[Sized<u32>, Sized<u32>]); // arg #1
+    let x@1: &'_ mut (Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]); // arg #1
 
     @0 := ()
     (*(x@1)).0 := const (1 : u32)
@@ -207,9 +207,9 @@ pub fn use_tuple_struct<'_0>(@1: &'_0 mut (Tuple<u32, u32>[Sized<u32>, Sized<u32
 }
 
 // Full name: test_crate::create_tuple_struct
-pub fn create_tuple_struct(@1: u32, @2: u64) -> Tuple<u32, u64>[Sized<u32>, Sized<u64>]
+pub fn create_tuple_struct(@1: u32, @2: u64) -> Tuple<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]
 {
-    let @0: Tuple<u32, u64>[Sized<u32>, Sized<u64>]; // return
+    let @0: Tuple<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]; // return
     let x@1: u32; // arg #1
     let y@2: u64; // arg #2
     let @3: u32; // anonymous local
@@ -226,9 +226,9 @@ pub fn create_tuple_struct(@1: u32, @2: u64) -> Tuple<u32, u64>[Sized<u32>, Size
 }
 
 // Full name: test_crate::create_pair
-pub fn create_pair(@1: u32, @2: u64) -> Pair<u32, u64>[Sized<u32>, Sized<u64>]
+pub fn create_pair(@1: u32, @2: u64) -> Pair<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]
 {
-    let @0: Pair<u32, u64>[Sized<u32>, Sized<u64>]; // return
+    let @0: Pair<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]; // return
     let x@1: u32; // arg #1
     let y@2: u64; // arg #2
     let @3: u32; // anonymous local
@@ -262,7 +262,7 @@ impl<T> Destruct for IdType<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<IdType<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for IdType<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -292,9 +292,9 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := IdType { 0: move (@2) }
-    drop[Destruct<T>] @2
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @2
     storage_dead(@2)
-    drop[Destruct<T>] x@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@1
     return
 }
 
@@ -346,11 +346,11 @@ pub fn test2()
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
-    let p@7: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // local
+    let p@7: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // local
     let @8: u32; // anonymous local
     let @9: u32; // anonymous local
-    let s@10: Sum<u32, bool>[Sized<u32>, Sized<bool>]; // local
-    let o@11: One<u64>[Sized<u64>]; // local
+    let s@10: Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}]; // local
+    let o@11: One<u64>[{built_in impl Sized for u64}]; // local
     let e0@12: EmptyEnum; // local
     let e1@13: EmptyEnum; // local
     let enum0@14: Enum; // local
@@ -435,22 +435,22 @@ pub fn get_max(@1: u32, @2: u32) -> u32
 pub fn test_list1()
 {
     let @0: (); // return
-    let l@1: List<i32>[Sized<i32>]; // local
-    let @2: alloc::boxed::Box<List<i32>[Sized<i32>]>[MetaSized<List<i32>[Sized<i32>]>, Sized<Global>]; // anonymous local
-    let @3: List<i32>[Sized<i32>]; // anonymous local
+    let l@1: List<i32>[{built_in impl Sized for i32}]; // local
+    let @2: alloc::boxed::Box<List<i32>[{built_in impl Sized for i32}]>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]; // anonymous local
+    let @3: List<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     @0 := ()
     storage_live(l@1)
     storage_live(@2)
     storage_live(@3)
     @3 := List::Nil {  }
-    @2 := @BoxNew<List<i32>[Sized<i32>]>[Sized<List<i32>[Sized<i32>]>](move (@3))
+    @2 := @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move (@3))
     storage_dead(@3)
     l@1 := List::Cons { 0: const (0 : i32), 1: move (@2) }
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<i32>[Sized<i32>], Global>[MetaSized<List<i32>[Sized<i32>]>, Sized<Global>]] @2
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] @2
     storage_dead(@2)
     @0 := ()
-    drop[{impl Destruct for List<T>[@TraitClause0]}<i32>[Sized<i32>]] l@1
+    drop[{impl Destruct for List<T>[@TraitClause0]}<i32>[{built_in impl Sized for i32}]] l@1
     storage_dead(l@1)
     return
 }
@@ -459,27 +459,27 @@ pub fn test_list1()
 pub fn test_box1()
 {
     let @0: (); // return
-    let b@1: alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]; // local
+    let b@1: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // local
     let x@2: &'_ mut (i32); // local
-    let @3: &'_ mut (alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]); // anonymous local
+    let @3: &'_ mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]); // anonymous local
     let x@4: &'_ (i32); // local
-    let @5: &'_ (alloc::boxed::Box<i32>[MetaSized<i32>, Sized<Global>]); // anonymous local
+    let @5: &'_ (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]); // anonymous local
     let @6: bool; // anonymous local
     let @7: i32; // anonymous local
 
     @0 := ()
     storage_live(b@1)
-    b@1 := @BoxNew<i32>[Sized<i32>](const (0 : i32))
+    b@1 := @BoxNew<i32>[{built_in impl Sized for i32}](const (0 : i32))
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
-    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_, i32, Global>[MetaSized<i32>, Sized<Global>](move (@3))
+    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move (@3))
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
-    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_, i32, Global>[MetaSized<i32>, Sized<Global>](move (@5))
+    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move (@5))
     storage_dead(@5)
     storage_live(@6)
     storage_live(@7)
@@ -496,7 +496,7 @@ pub fn test_box1()
     @0 := ()
     storage_dead(x@4)
     storage_dead(x@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[MetaSized<i32>, Sized<Global>]] b@1
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b@1
     storage_dead(b@1)
     return
 }
@@ -555,7 +555,7 @@ where
     let @0: (T, List<T>[@TraitClause0]); // return
     let l@1: List<T>[@TraitClause0]; // arg #1
     let hd@2: T; // local
-    let tl@3: alloc::boxed::Box<List<T>[@TraitClause0]>[MetaSized<List<T>[@TraitClause0]>, Sized<Global>]; // local
+    let tl@3: alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]; // local
     let @4: T; // anonymous local
     let @5: List<T>[@TraitClause0]; // anonymous local
 
@@ -577,11 +577,11 @@ where
     @0 := (move (@4), move (@5))
     drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] @5
     storage_dead(@5)
-    drop[Destruct<T>] @4
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @4
     storage_dead(@4)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[MetaSized<List<T>[@TraitClause0]>, Sized<Global>]] tl@3
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[{built_in impl MetaSized for List<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]] tl@3
     storage_dead(tl@3)
-    drop[Destruct<T>] hd@2
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] hd@2
     storage_dead(hd@2)
     drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] l@1
     return
@@ -602,7 +602,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
   Leaf(T),
-  Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[MetaSized<Tree<T>[@TraitClause0]>, Sized<Global>]),
+  Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[{built_in impl MetaSized for Tree<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]),
 }
 
 // Full name: test_crate::NodeElem
@@ -610,7 +610,7 @@ pub enum NodeElem<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[MetaSized<Tree<T>[@TraitClause0]>, Sized<Global>], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[MetaSized<NodeElem<T>[@TraitClause0]>, Sized<Global>]),
+  Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[{built_in impl MetaSized for Tree<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[{built_in impl MetaSized for NodeElem<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]),
   Nil,
 }
 
@@ -724,9 +724,9 @@ where
 }
 
 // Full name: test_crate::new_tuple1
-pub fn new_tuple1() -> StructWithTuple<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn new_tuple1() -> StructWithTuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: StructWithTuple<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @0: StructWithTuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
     let @1: (u32, u32); // anonymous local
 
     storage_live(@1)
@@ -737,9 +737,9 @@ pub fn new_tuple1() -> StructWithTuple<u32, u32>[Sized<u32>, Sized<u32>]
 }
 
 // Full name: test_crate::new_tuple2
-pub fn new_tuple2() -> StructWithTuple<i16, i16>[Sized<i16>, Sized<i16>]
+pub fn new_tuple2() -> StructWithTuple<i16, i16>[{built_in impl Sized for i16}, {built_in impl Sized for i16}]
 {
-    let @0: StructWithTuple<i16, i16>[Sized<i16>, Sized<i16>]; // return
+    let @0: StructWithTuple<i16, i16>[{built_in impl Sized for i16}, {built_in impl Sized for i16}]; // return
     let @1: (i16, i16); // anonymous local
 
     storage_live(@1)
@@ -750,9 +750,9 @@ pub fn new_tuple2() -> StructWithTuple<i16, i16>[Sized<i16>, Sized<i16>]
 }
 
 // Full name: test_crate::new_tuple3
-pub fn new_tuple3() -> StructWithTuple<u64, i64>[Sized<u64>, Sized<i64>]
+pub fn new_tuple3() -> StructWithTuple<u64, i64>[{built_in impl Sized for u64}, {built_in impl Sized for i64}]
 {
-    let @0: StructWithTuple<u64, i64>[Sized<u64>, Sized<i64>]; // return
+    let @0: StructWithTuple<u64, i64>[{built_in impl Sized for u64}, {built_in impl Sized for i64}]; // return
     let @1: (u64, i64); // anonymous local
 
     storage_live(@1)
@@ -772,10 +772,10 @@ where
 }
 
 // Full name: test_crate::new_pair1
-pub fn new_pair1() -> StructWithPair<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn new_pair1() -> StructWithPair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: StructWithPair<u32, u32>[Sized<u32>, Sized<u32>]; // return
-    let @1: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // anonymous local
+    let @0: StructWithPair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
+    let @1: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
 
     storage_live(@1)
     // This actually doesn't make rustc generate a constant...

@@ -31,7 +31,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
-    parent_clause0 = Sized<i32>
+    parent_clause0 = {built_in impl Sized for i32}
     fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -67,7 +67,7 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -81,7 +81,7 @@ where
 
 // Full name: alloc::slice::{Slice<T>}::into_vec
 #[lang_item("slice_into_vec")]
-pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[MetaSized<Slice<T>>, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[{built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -98,14 +98,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: alloc::vec::from_elem
 #[lang_item("vec_from_elem")]
-pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T>[@TraitClause0, Sized<Global>]
+pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -124,11 +124,11 @@ const UNIT_METADATA: () = @Fun0()
 fn foo()
 {
     let @0: (); // return
-    let _v@1: Vec<i32>[Sized<i32>, Sized<Global>]; // local
-    let @2: alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]; // anonymous local
-    let @3: alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]; // anonymous local
-    let @4: alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]; // anonymous local
-    let _v2@5: Vec<i32>[Sized<i32>, Sized<Global>]; // local
+    let _v@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let @2: alloc::boxed::Box<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]; // anonymous local
+    let @3: alloc::boxed::Box<Array<i32, 1 : usize>>[{built_in impl MetaSized for Array<i32, 1 : usize>}, {built_in impl Sized for Global}]; // anonymous local
+    let @4: alloc::boxed::Box<Array<i32, 1 : usize>>[{built_in impl MetaSized for Array<i32, 1 : usize>}, {built_in impl Sized for Global}]; // anonymous local
+    let _v2@5: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
     @0 := ()
@@ -138,21 +138,21 @@ fn foo()
     storage_live(@6)
     @6 := [const (1 : i32)]
     storage_live(@4)
-    @4 := @BoxNew<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>](move (@6))
+    @4 := @BoxNew<Array<i32, 1 : usize>>[{built_in impl MetaSized for Array<i32, 1 : usize>}, {built_in impl Sized for Global}](move (@6))
     @3 := move (@4)
-    @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>], 1 : usize>(move (@3))
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 1 : usize>, Global>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]] @3
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 1 : usize>, Global>[MetaSized<Array<i32, 1 : usize>>, Sized<Global>]] @4
+    @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[{built_in impl MetaSized for Array<i32, 1 : usize>}, {built_in impl Sized for Global}], alloc::boxed::Box<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}], 1 : usize>(move (@3))
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 1 : usize>, Global>[{built_in impl MetaSized for Array<i32, 1 : usize>}, {built_in impl Sized for Global}]] @3
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 1 : usize>, Global>[{built_in impl MetaSized for Array<i32, 1 : usize>}, {built_in impl Sized for Global}]] @4
     storage_dead(@4)
     storage_dead(@3)
-    _v@1 := into_vec<i32, Global>[Sized<i32>, Sized<Global>](move (@2))
+    _v@1 := into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move (@2))
     storage_dead(@2)
     storage_live(_v2@5)
-    _v2@5 := from_elem<i32>[Sized<i32>, {impl Clone for i32}](const (1 : i32), const (10 : usize))
+    _v2@5 := from_elem<i32>[{built_in impl Sized for i32}, {impl Clone for i32}](const (1 : i32), const (10 : usize))
     @0 := ()
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v2@5
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v2@5
     storage_dead(_v2@5)
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[Sized<i32>, Sized<Global>]] _v@1
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v@1
     storage_dead(_v@1)
     return
 }
@@ -164,10 +164,10 @@ pub struct Foo {}
 pub fn bar()
 {
     let @0: (); // return
-    let @1: Vec<Foo>[Sized<Foo>, Sized<Global>]; // anonymous local
-    let @2: alloc::boxed::Box<Slice<Foo>>[MetaSized<Slice<Foo>>, Sized<Global>]; // anonymous local
-    let @3: alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]; // anonymous local
-    let @4: alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]; // anonymous local
+    let @1: Vec<Foo>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]; // anonymous local
+    let @2: alloc::boxed::Box<Slice<Foo>>[{built_in impl MetaSized for Slice<Foo>}, {built_in impl Sized for Global}]; // anonymous local
+    let @3: alloc::boxed::Box<Array<Foo, 1 : usize>>[{built_in impl MetaSized for Array<Foo, 1 : usize>}, {built_in impl Sized for Global}]; // anonymous local
+    let @4: alloc::boxed::Box<Array<Foo, 1 : usize>>[{built_in impl MetaSized for Array<Foo, 1 : usize>}, {built_in impl Sized for Global}]; // anonymous local
     let @5: Foo; // anonymous local
     let @6: Array<Foo, 1 : usize>; // anonymous local
 
@@ -178,19 +178,19 @@ pub fn bar()
     storage_live(@6)
     @6 := [move (@5)]
     storage_live(@4)
-    @4 := @BoxNew<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>](move (@6))
+    @4 := @BoxNew<Array<Foo, 1 : usize>>[{built_in impl MetaSized for Array<Foo, 1 : usize>}, {built_in impl Sized for Global}](move (@6))
     storage_live(@5)
     @5 := Foo {  }
     storage_dead(@5)
     @3 := move (@4)
-    @2 := unsize_cast<alloc::boxed::Box<Array<Foo, 1 : usize>>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<Foo>>[MetaSized<Slice<Foo>>, Sized<Global>], 1 : usize>(move (@3))
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<Foo, 1 : usize>, Global>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]] @3
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<Foo, 1 : usize>, Global>[MetaSized<Array<Foo, 1 : usize>>, Sized<Global>]] @4
+    @2 := unsize_cast<alloc::boxed::Box<Array<Foo, 1 : usize>>[{built_in impl MetaSized for Array<Foo, 1 : usize>}, {built_in impl Sized for Global}], alloc::boxed::Box<Slice<Foo>>[{built_in impl MetaSized for Slice<Foo>}, {built_in impl Sized for Global}], 1 : usize>(move (@3))
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<Foo, 1 : usize>, Global>[{built_in impl MetaSized for Array<Foo, 1 : usize>}, {built_in impl Sized for Global}]] @3
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<Foo, 1 : usize>, Global>[{built_in impl MetaSized for Array<Foo, 1 : usize>}, {built_in impl Sized for Global}]] @4
     storage_dead(@4)
     storage_dead(@3)
-    @1 := into_vec<Foo, Global>[Sized<Foo>, Sized<Global>](move (@2))
+    @1 := into_vec<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<Foo, Global>[Sized<Foo>, Sized<Global>]] @1
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

@@ -32,8 +32,8 @@ trait Trait<Self, Self_Type>
 
 // Full name: test_crate::{impl Trait<bool> for u32}
 impl Trait<bool> for u32 {
-    parent_clause0 = MetaSized<u32>
-    parent_clause1 = Sized<bool>
+    parent_clause0 = {built_in impl MetaSized for u32}
+    parent_clause1 = {built_in impl Sized for bool}
     vtable: {impl Trait<bool> for u32}::{vtable}
 }
 

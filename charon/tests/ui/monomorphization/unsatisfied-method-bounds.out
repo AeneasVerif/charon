@@ -97,7 +97,7 @@ fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 (A))
 
 // Full name: test_crate::{impl MyIterator::<A>}
 impl MyIterator::<A> {
-    parent_clause0 = MetaSized::<A>
+    parent_clause0 = {built_in impl MetaSized::<A>}
     fn method<'_0_1> = {impl MyIterator::<A>}::method<'_0_1>
     vtable: {impl MyIterator::<A>}::{vtable}
 }
@@ -115,7 +115,7 @@ fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 (B))
 
 // Full name: test_crate::{impl MyIterator::<B>}
 impl MyIterator::<B> {
-    parent_clause0 = MetaSized::<B>
+    parent_clause0 = {built_in impl MetaSized::<B>}
     fn method<'_0_1> = {impl MyIterator::<B>}::method<'_0_1>
     vtable: {impl MyIterator::<B>}::{vtable}
 }

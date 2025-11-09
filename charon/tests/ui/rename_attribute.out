@@ -68,7 +68,7 @@ pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 
 // Full name: test_crate::{impl BoolTrait for bool}
 impl BoolTrait for bool {
-    parent_clause0 = MetaSized<bool>
+    parent_clause0 = {built_in impl MetaSized for bool}
     fn get_bool<'_0_1> = {impl BoolTrait for bool}::get_bool<'_0_1>
     fn ret_true<'_0_1> = {impl BoolTrait for bool}::ret_true<'_0_1>
     vtable: {impl BoolTrait for bool}::{vtable}

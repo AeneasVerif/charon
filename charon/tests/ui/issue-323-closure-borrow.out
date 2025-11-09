@@ -137,7 +137,7 @@ fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
 
 // Full name: test_crate::new::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {
-    parent_clause0 = MetaSized<closure<'_0>>
+    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0))>}
     fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
     non-dyn-compatible
 }
@@ -160,10 +160,10 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
 
 // Full name: test_crate::new::{impl FnOnce<()> for closure<'_0>}
 impl<'_0> FnOnce<()> for closure<'_0> {
-    parent_clause0 = MetaSized<closure<'_0>>
-    parent_clause1 = Sized<()>
-    parent_clause2 = Tuple<()>
-    parent_clause3 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0))>}
+    parent_clause1 = {built_in impl Sized for ()}
+    parent_clause2 = {built_in impl Tuple for ()}
+    parent_clause3 = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<()> for closure<'_0>}::call_once<'_0>
     non-dyn-compatible
@@ -171,10 +171,10 @@ impl<'_0> FnOnce<()> for closure<'_0> {
 
 // Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}
 impl<'_0> FnMut<()> for closure<'_0> {
-    parent_clause0 = MetaSized<closure<'_0>>
+    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0))>}
     parent_clause1 = {impl FnOnce<()> for closure<'_0>}<'_0>
-    parent_clause2 = Sized<()>
-    parent_clause3 = Tuple<()>
+    parent_clause2 = {built_in impl Sized for ()}
+    parent_clause3 = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }

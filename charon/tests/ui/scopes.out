@@ -31,7 +31,7 @@ fn {impl Trait<'a> for &'a (())}::method<'a, 'b>(@1: &'b (&'a (()))) -> &'b (())
 
 // Full name: test_crate::{impl Trait<'a> for &'a (())}
 impl<'a> Trait<'a> for &'a (()) {
-    parent_clause0 = MetaSized<&'_ (())>
+    parent_clause0 = {built_in impl MetaSized for &'_ (())}
     fn method<'b> = {impl Trait<'a> for &'a (())}::method<'a, 'b>
     vtable: {impl Trait<'a> for &'a (())}::{vtable}<'a>
 }

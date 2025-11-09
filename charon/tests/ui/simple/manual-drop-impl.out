@@ -62,7 +62,7 @@ struct Foo<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  vec: Vec<T>[@TraitClause0, Sized<Global>],
+  vec: Vec<T>[@TraitClause0, {built_in impl Sized for Global}],
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place
@@ -75,7 +75,7 @@ impl<T> Destruct for Foo<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Foo<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Foo<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -98,20 +98,20 @@ impl<T> Drop for Foo<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Foo<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Foo<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop<'_0_1> = {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
     vtable: {impl Drop for Foo<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::drop_foo
-fn drop_foo(@1: Foo<u32>[Sized<u32>])
+fn drop_foo(@1: Foo<u32>[{built_in impl Sized for u32}])
 {
     let @0: (); // return
-    let @1: Foo<u32>[Sized<u32>]; // arg #1
+    let @1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[Sized<u32>]] @1
+    drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
     return
 }
 

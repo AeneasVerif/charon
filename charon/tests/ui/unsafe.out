@@ -91,7 +91,7 @@ where
     [@TraitClause0]: Ord<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
@@ -111,7 +111,7 @@ impl Eq for () {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}::partial_cmp
-pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> Option<Ordering>[Sized<Ordering>]
+pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}
 impl PartialOrd<()> for () {
@@ -153,12 +153,12 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 
 // Full name: core::fmt::{impl Debug for ()}::fmt
-pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (()), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (()), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 
 // Full name: core::fmt::{impl Debug for ()}
 impl Debug for () {
@@ -298,11 +298,11 @@ fn call_unsafe_fn()
 
     @0 := ()
     storage_live(x@1)
-    x@1 := null<u32>[{impl#1}<u32>[Pointee<u32> where Metadata  = ()]]()
+    x@1 := null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    @2 := read<u32>[Sized<u32>](move (@3))
+    @2 := read<u32>[{built_in impl Sized for u32}](move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -319,7 +319,7 @@ fn deref_raw_ptr()
 
     @0 := ()
     storage_live(x@1)
-    x@1 := null<u32>[{impl#1}<u32>[Pointee<u32> where Metadata  = ()]]()
+    x@1 := null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(@2)
     @2 := copy (*(x@1))
     storage_dead(@2)
@@ -337,7 +337,7 @@ trait Trait<Self>
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     vtable: {impl Trait for ()}::{vtable}
 }
 

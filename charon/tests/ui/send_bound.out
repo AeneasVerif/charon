@@ -49,7 +49,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<M>] _msg@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _msg@1
     return
 }
 
@@ -64,7 +64,7 @@ fn main()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
-    @1 := foo<()>[Sized<()>, Send<()>](move (@2))
+    @1 := foo<()>[{built_in impl Sized for ()}, {built_in impl Send for ()}](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

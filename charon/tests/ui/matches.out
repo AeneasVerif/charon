@@ -68,7 +68,7 @@ where
     let x@1: T; // arg #1
 
     @0 := move (x@1)
-    drop[Destruct<T>] x@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@1
     return
 }
 
@@ -137,7 +137,7 @@ pub fn test3(@1: E2) -> u32
         },
     }
     storage_live(z@4)
-    z@4 := id<u32>[Sized<u32>](const (3 : u32))
+    z@4 := id<u32>[{built_in impl Sized for u32}](const (3 : u32))
     storage_live(@5)
     @5 := copy (y@2)
     storage_live(@6)

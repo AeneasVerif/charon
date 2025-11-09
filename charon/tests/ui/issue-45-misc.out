@@ -72,7 +72,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
-    parent_clause0 = Sized<u8>
+    parent_clause0 = {built_in impl Sized for u8}
     fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -141,7 +141,7 @@ where
     [@TraitClause0]: Ord<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
@@ -155,7 +155,7 @@ impl PartialEq<u8> for u8 {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}::partial_cmp
-pub fn {impl PartialOrd<u8> for u8}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> Option<Ordering>[Sized<Ordering>]
+pub fn {impl PartialOrd<u8> for u8}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}
 impl PartialOrd<u8> for u8 {
@@ -206,7 +206,7 @@ pub trait Step<Self>
     non-dyn-compatible
 }
 
-pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[Sized<usize>])
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     [@TraitClause0]: Step<Self>,
 
@@ -219,17 +219,17 @@ where
     [@TraitClause0]: Step<Self>,
 
 // Full name: core::iter::range::{impl Step for u8}::steps_between
-pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> (usize, Option<usize>[Sized<usize>])
+pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 
 // Full name: core::iter::range::{impl Step for u8}::forward_checked
-pub fn {impl Step for u8}::forward_checked(@1: u8, @2: usize) -> Option<u8>[Sized<u8>]
+pub fn {impl Step for u8}::forward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 
 // Full name: core::iter::range::{impl Step for u8}::backward_checked
-pub fn {impl Step for u8}::backward_checked(@1: u8, @2: usize) -> Option<u8>[Sized<u8>]
+pub fn {impl Step for u8}::backward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 
 // Full name: core::iter::range::{impl Step for u8}
 impl Step for u8 {
-    parent_clause0 = Sized<u8>
+    parent_clause0 = {built_in impl Sized for u8}
     parent_clause1 = {impl Clone for u8}
     parent_clause2 = {impl PartialOrd<u8> for u8}
     fn steps_between<'_0_1, '_1_1> = {impl Step for u8}::steps_between<'_0_1, '_1_1>
@@ -271,7 +271,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
 {
-    parent_clause0 = MetaSized<Range<A>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Range<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = @TraitClause0
     type Item = A
     fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]
@@ -557,7 +557,7 @@ fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}
 impl Destruct for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     fn drop_in_place = {impl Destruct for closure}::drop_in_place
     non-dyn-compatible
 }
@@ -579,10 +579,10 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
 
 // Full name: test_crate::map::{impl FnOnce<(i32)> for closure}
 impl FnOnce<(i32)> for closure {
-    parent_clause0 = MetaSized<closure>
-    parent_clause1 = Sized<(i32)>
-    parent_clause2 = Tuple<(i32)>
-    parent_clause3 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for (i32)}
+    parent_clause2 = {built_in impl Tuple for (i32)}
+    parent_clause3 = {built_in impl Sized for i32}
     type Output = i32
     fn call_once = {impl FnOnce<(i32)> for closure}::call_once
     non-dyn-compatible
@@ -590,10 +590,10 @@ impl FnOnce<(i32)> for closure {
 
 // Full name: test_crate::map::{impl FnMut<(i32)> for closure}
 impl FnMut<(i32)> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnOnce<(i32)> for closure}
-    parent_clause2 = Sized<(i32)>
-    parent_clause3 = Tuple<(i32)>
+    parent_clause2 = {built_in impl Sized for (i32)}
+    parent_clause3 = {built_in impl Tuple for (i32)}
     fn call_mut<'_0_1> = {impl FnMut<(i32)> for closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
@@ -609,7 +609,7 @@ pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
     @2 := copy (x@1)
     storage_live(@3)
     @3 := closure {  }
-    @0 := core::array::{Array<T, N>}::map<i32, closure, i32, 256 : usize>[Sized<i32>, Sized<closure>, Sized<i32>, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
+    @0 := core::array::{Array<T, N>}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -629,12 +629,12 @@ fn cbd(@1: Array<u8, 33 : usize>)
 {
     let @0: (); // return
     let prf_input@1: Array<u8, 33 : usize>; // arg #1
-    let @2: Range<u8>[Sized<u8>]; // anonymous local
-    let @3: Range<u8>[Sized<u8>]; // anonymous local
-    let iter@4: Range<u8>[Sized<u8>]; // local
-    let @5: Option<u8>[Sized<u8>]; // anonymous local
-    let @6: &'_ mut (Range<u8>[Sized<u8>]); // anonymous local
-    let @7: &'_ mut (Range<u8>[Sized<u8>]); // anonymous local
+    let @2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let @3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let iter@4: Range<u8>[{built_in impl Sized for u8}]; // local
+    let @5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let @6: &'_ mut (Range<u8>[{built_in impl Sized for u8}]); // anonymous local
+    let @7: &'_ mut (Range<u8>[{built_in impl Sized for u8}]); // anonymous local
     let i@8: u8; // local
     let @9: u8; // anonymous local
     let @10: usize; // anonymous local
@@ -645,7 +645,7 @@ fn cbd(@1: Array<u8, 33 : usize>)
     storage_live(@2)
     storage_live(@3)
     @3 := Range { start: const (0 : u8), end: const (3 : u8) }
-    @2 := {impl IntoIterator for I}::into_iter<Range<u8>[Sized<u8>]>[Sized<Range<u8>[Sized<u8>]>, {impl Iterator for Range<A>[@TraitClause0]}<u8>[Sized<u8>, {impl Step for u8}]](move (@3))
+    @2 := {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move (@3))
     storage_dead(@3)
     storage_live(iter@4)
     iter@4 := move (@2)
@@ -655,7 +655,7 @@ fn cbd(@1: Array<u8, 33 : usize>)
         storage_live(@7)
         @7 := &mut iter@4
         @6 := &two-phase-mut *(@7)
-        @5 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[Sized<u8>, {impl Step for u8}](move (@6))
+        @5 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move (@6))
         storage_dead(@6)
         match @5 {
             Option::None => {
@@ -715,7 +715,7 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @19: &'_ (usize); // anonymous local
     let @20: &'_ (usize); // anonymous local
     let @21: &'_ (usize); // anonymous local
-    let @22: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @22: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -726,14 +726,14 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@6)
         storage_live(@7)
         @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
-        @6 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@7))
+        @6 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
         storage_dead(@7)
         @5 := &@6
         storage_live(@8)
         storage_live(@9)
         storage_live(@10)
         @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
-        @9 := core::slice::{Slice<T>}::len<'_, u8>[Sized<u8>](move (@10))
+        @9 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
         storage_dead(@10)
         @8 := &@9
         @4 := (move (@5), move (@8))

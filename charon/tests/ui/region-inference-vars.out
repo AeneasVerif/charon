@@ -50,9 +50,9 @@ where
     [@TraitClause1]: Sized<Self>,
 
 // Full name: test_crate::{impl MyTryFrom<&'_0 (bool)> for bool}::from
-pub fn {impl MyTryFrom<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<bool, ()>[Sized<bool>, Sized<()>]
+pub fn {impl MyTryFrom<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
-    let @0: Result<bool, ()>[Sized<bool>, Sized<()>]; // return
+    let @0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
     let v@1: &'_ (bool); // arg #1
     let @2: bool; // anonymous local
 
@@ -65,9 +65,9 @@ pub fn {impl MyTryFrom<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Res
 
 // Full name: test_crate::{impl MyTryFrom<&'_0 (bool)> for bool}
 impl<'_0> MyTryFrom<&'_0 (bool)> for bool {
-    parent_clause0 = MetaSized<bool>
-    parent_clause1 = Sized<&'_ (bool)>
-    parent_clause2 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for bool}
+    parent_clause1 = {built_in impl Sized for &'_ (bool)}
+    parent_clause2 = {built_in impl Sized for ()}
     type Error = ()
     fn from = {impl MyTryFrom<&'_0 (bool)> for bool}::from<'_0>
     vtable: {impl MyTryFrom<&'_0 (bool)> for bool}::{vtable}<'_0>

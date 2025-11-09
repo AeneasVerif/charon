@@ -162,7 +162,7 @@ fn {impl Trait for Foo}::provided2<'_0>(@1: &'_0 (Foo))
 
 // Full name: test_crate::{impl Trait for Foo}
 impl Trait for Foo {
-    parent_clause0 = MetaSized<Foo>
+    parent_clause0 = {built_in impl MetaSized for Foo}
     fn required<'_0_1> = {impl Trait for Foo}::required<'_0_1>
     fn provided1<'_0_1> = {impl Trait for Foo}::provided1<'_0_1>
     fn provided2<'_0_1> = {impl Trait for Foo}::provided2<'_0_1>
@@ -239,7 +239,7 @@ fn {impl Trait for Bar}::provided2<'_0>(@1: &'_0 (Bar))
 
 // Full name: test_crate::{impl Trait for Bar}
 impl Trait for Bar {
-    parent_clause0 = MetaSized<Bar>
+    parent_clause0 = {built_in impl MetaSized for Bar}
     fn required<'_0_1> = {impl Trait for Bar}::required<'_0_1>
     fn provided1<'_0_1> = {impl Trait for Bar}::provided1<'_0_1>
     fn provided2<'_0_1> = {impl Trait for Bar}::provided2<'_0_1>

@@ -45,7 +45,7 @@ where
     }
     else {
         @0 := Option::None {  }
-        drop[Destruct<T>] t@2
+        drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] t@2
         return
     }
     storage_live(@3)
@@ -115,8 +115,8 @@ pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
 
 // Full name: core::convert::num::{impl From<i32> for i64}
 impl From<i32> for i64 {
-    parent_clause0 = Sized<i64>
-    parent_clause1 = Sized<i32>
+    parent_clause0 = {built_in impl Sized for i64}
+    parent_clause1 = {built_in impl Sized for i32}
     fn from = {impl From<i32> for i64}::from
     non-dyn-compatible
 }
@@ -204,7 +204,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -285,7 +285,7 @@ fn use_inlines() -> u32
     storage_dead(@6)
     storage_dead(@2)
     storage_live(@8)
-    @8 := inline_generic<bool>[Sized<bool>]()
+    @8 := inline_generic<bool>[{built_in impl Sized for bool}]()
     @9 := copy (@1) panic.+ copy (@8)
     @0 := move (@9)
     storage_dead(@8)
@@ -294,9 +294,9 @@ fn use_inlines() -> u32
 }
 
 // Full name: test_crate::bool_to_opt
-fn bool_to_opt(@1: bool) -> Option<()>[Sized<()>]
+fn bool_to_opt(@1: bool) -> Option<()>[{built_in impl Sized for ()}]
 {
-    let @0: Option<()>[Sized<()>]; // return
+    let @0: Option<()>[{built_in impl Sized for ()}]; // return
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
     let @3: (); // anonymous local
@@ -305,7 +305,7 @@ fn bool_to_opt(@1: bool) -> Option<()>[Sized<()>]
     @2 := copy (b@1)
     storage_live(@3)
     @3 := ()
-    @0 := then_some<()>[Sized<()>](move (@2), move (@3))
+    @0 := then_some<()>[{built_in impl Sized for ()}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -326,14 +326,14 @@ fn convert(@1: i32) -> i64
 }
 
 // Full name: test_crate::vec
-fn vec(@1: Vec<u32>[Sized<u32>, Sized<Global>])
+fn vec(@1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let @0: (); // return
-    let _x@1: Vec<u32>[Sized<u32>, Sized<Global>]; // arg #1
+    let _x@1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] _x@1
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x@1
     return
 }
 
@@ -357,7 +357,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<T>] _x@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _x@1
     return
 }
 

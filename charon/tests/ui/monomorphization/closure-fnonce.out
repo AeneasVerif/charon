@@ -136,7 +136,7 @@ fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
 
 // Full name: test_crate::main::closure::{impl Destruct::<closure>}
 impl Destruct::<closure> {
-    parent_clause0 = MetaSized::<closure>
+    parent_clause0 = {built_in impl MetaSized::<closure>}
     fn drop_in_place = {impl Destruct::<closure>}::drop_in_place
     non-dyn-compatible
 }
@@ -184,9 +184,9 @@ fn main()
 
 // Full name: test_crate::main::{impl FnOnce::<closure, (u8)>}
 impl FnOnce::<closure, (u8)> {
-    parent_clause0 = MetaSized::<closure>
-    parent_clause1 = Sized::<(u8)>
-    parent_clause2 = Tuple::<(u8)>
+    parent_clause0 = {built_in impl MetaSized::<closure>}
+    parent_clause1 = {built_in impl Sized::<(u8)>}
+    parent_clause2 = {built_in impl Tuple::<(u8)>}
     fn call_once = {impl FnOnce::<closure, (u8)>}::call_once
     non-dyn-compatible
 }

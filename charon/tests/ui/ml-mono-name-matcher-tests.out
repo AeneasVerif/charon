@@ -159,8 +159,8 @@ pub fn {impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom:
 
 // Full name: core::slice::index::{impl Index::<Slice<bool>, RangeFrom::<usize>>}::<bool, RangeFrom::<usize>>
 impl Index::<Slice<bool>, RangeFrom::<usize>> {
-    parent_clause0 = MetaSized::<Slice<bool>>
-    parent_clause1 = MetaSized::<RangeFrom::<usize>>
+    parent_clause0 = {built_in impl MetaSized::<Slice<bool>>}
+    parent_clause1 = {built_in impl MetaSized::<RangeFrom::<usize>>}
     fn index<'_0_1> = {impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_0_1>
     vtable: {impl Index::<Slice<bool>, RangeFrom::<usize>>}::{vtable}::<bool, RangeFrom::<usize>>
 }
@@ -174,7 +174,7 @@ pub trait Sealed::<RangeFrom::<usize>>
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed::<RangeFrom::<usize>>}
 impl Sealed::<RangeFrom::<usize>> {
-    parent_clause0 = MetaSized::<RangeFrom::<usize>>
+    parent_clause0 = {built_in impl MetaSized::<RangeFrom::<usize>>}
     vtable: {impl Sealed::<RangeFrom::<usize>>}::{vtable}
 }
 
@@ -226,9 +226,9 @@ pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::index_mut::<bool><'
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::<bool>
 impl SliceIndex::<RangeFrom::<usize>, Slice<bool>> {
-    parent_clause0 = MetaSized::<RangeFrom::<usize>>
+    parent_clause0 = {built_in impl MetaSized::<RangeFrom::<usize>>}
     parent_clause1 = {impl Sealed::<RangeFrom::<usize>>}
-    parent_clause2 = MetaSized::<Slice<bool>>
+    parent_clause2 = {built_in impl MetaSized::<Slice<bool>>}
     fn get<'_0_1> = {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool><'_0_1>
     fn get_mut<'_0_1> = {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_mut::<bool><'_0_1>
     fn get_unchecked = {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_unchecked::<bool>
@@ -366,9 +366,9 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<i32> { item: move (@2) }
-    drop[Destruct::<i32>] @2
+    drop[{built_in impl Destruct::<i32>}] @2
     storage_dead(@2)
-    drop[Destruct::<i32>] item@1
+    drop[{built_in impl Destruct::<i32>}] item@1
     return
 }
 
@@ -381,9 +381,9 @@ fn test_crate::{MonoContainer::<&'_ (Str)>}::create::<&'_ (Str)>(@1: &'_ (Str)) 
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<&'_ (Str)> { item: move (@2) }
-    drop[Destruct::<&'_ (Str)>] @2
+    drop[{built_in impl Destruct::<&'_ (Str)>}] @2
     storage_dead(@2)
-    drop[Destruct::<&'_ (Str)>] item@1
+    drop[{built_in impl Destruct::<&'_ (Str)>}] item@1
     return
 }
 

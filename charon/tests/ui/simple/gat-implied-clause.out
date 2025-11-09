@@ -83,10 +83,10 @@ where
     @3 := &x@1
     @2 := (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Destruct<@TraitClause1::LifetimeGat>] @2
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::LifetimeGat}] @2
     storage_dead(@2)
     @0 := ()
-    drop[Destruct<@TraitClause1::LifetimeGat>] x@1
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::LifetimeGat}] x@1
     return
 }
 
@@ -107,10 +107,10 @@ where
     @3 := &x@1
     @2 := (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Destruct<@TraitClause1::NonLifetimeGat>] @2
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::NonLifetimeGat}] @2
     storage_dead(@2)
     @0 := ()
-    drop[Destruct<@TraitClause1::NonLifetimeGat>] x@1
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::NonLifetimeGat}] x@1
     return
 }
 
