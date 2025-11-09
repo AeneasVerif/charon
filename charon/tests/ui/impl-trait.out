@@ -169,11 +169,9 @@ fn use_foo()
     storage_dead(@5)
     @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[{built_in impl Destruct for u32}] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop[{built_in impl Destruct for ()}] foo@1
     storage_dead(foo@1)
     return
 }

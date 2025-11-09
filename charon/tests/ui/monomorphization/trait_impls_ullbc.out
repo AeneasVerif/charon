@@ -95,8 +95,6 @@ fn do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb2: {
-        drop[{built_in impl Destruct::<bool>}] expected@2;
-        drop[{built_in impl Destruct::<bool>}] init@1;
         unwind_continue;
     }
 
@@ -105,8 +103,6 @@ fn do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@4);
         storage_dead(@3);
         @0 := ();
-        drop[{built_in impl Destruct::<bool>}] expected@2;
-        drop[{built_in impl Destruct::<bool>}] init@1;
         return;
     }
 

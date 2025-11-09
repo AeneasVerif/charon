@@ -366,9 +366,7 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<i32> { item: move (@2) }
-    drop[{built_in impl Destruct::<i32>}] @2
     storage_dead(@2)
-    drop[{built_in impl Destruct::<i32>}] item@1
     return
 }
 
@@ -381,9 +379,7 @@ fn test_crate::{MonoContainer::<&'_ (Str)>}::create::<&'_ (Str)>(@1: &'_ (Str)) 
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<&'_ (Str)> { item: move (@2) }
-    drop[{built_in impl Destruct::<&'_ (Str)>}] @2
     storage_dead(@2)
-    drop[{built_in impl Destruct::<&'_ (Str)>}] item@1
     return
 }
 

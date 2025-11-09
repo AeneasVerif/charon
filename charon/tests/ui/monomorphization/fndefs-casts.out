@@ -210,7 +210,6 @@ fn takes_closure::<for<'_0_1> foo::<u32><'_0_1>>(@1: for<'_0_1> foo::<u32><'_0_1
     storage_dead(@2)
     storage_dead(@6)
     storage_dead(@5)
-    drop[{built_in impl Destruct::<for<'_0_1> foo::<u32><'_0_1>>}] c@1
     return
 }
 

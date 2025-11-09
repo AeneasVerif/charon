@@ -74,7 +74,6 @@ fn do_test::<bool>(@1: bool)
     @2 := &x@1
     @0 := {impl Trait::<bool>}::method<'_>(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct::<bool>}] x@1
     return
 }
 
