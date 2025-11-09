@@ -47,7 +47,7 @@ fn {impl Trait for ()}::method()
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn method = {impl Trait for ()}::method
     vtable: {impl Trait for ()}::{vtable}
 }

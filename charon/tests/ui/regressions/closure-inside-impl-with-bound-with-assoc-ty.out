@@ -17,12 +17,11 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -166,6 +165,23 @@ where
     return
 }
 
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>(@1: *mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
+
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
+impl<F, Clause1_Repr> Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
+{
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    fn drop_in_place = {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once
 fn {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>(@1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: (()))
 where
@@ -181,7 +197,7 @@ where
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop[Destruct<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>] @1
+    drop[{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]] @1
     return
 }
 
@@ -191,10 +207,10 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
-    parent_clause1 = Sized<(())>
-    parent_clause2 = Tuple<(())>
-    parent_clause3 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause1 = {built_in impl Sized for (())}
+    parent_clause2 = {built_in impl Tuple for (())}
+    parent_clause3 = {built_in impl Sized for ()}
     fn call_once = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -205,10 +221,10 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     parent_clause1 = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
-    parent_clause2 = Sized<(())>
-    parent_clause3 = Tuple<(())>
+    parent_clause2 = {built_in impl Sized for (())}
+    parent_clause3 = {built_in impl Tuple for (())}
     fn call_mut<'_0_1> = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_0_1, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -219,10 +235,10 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = MetaSized<closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     parent_clause1 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
-    parent_clause2 = Sized<(())>
-    parent_clause3 = Tuple<(())>
+    parent_clause2 = {built_in impl Sized for (())}
+    parent_clause3 = {built_in impl Tuple for (())}
     fn call<'_0_1> = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0_1, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }

@@ -78,7 +78,7 @@ impl<T> HasMethod for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn method<Clause0_Type, [@TraitClause0_1]: HasType<Option<T>[@TraitClause0], Clause0_Type>> = {impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }

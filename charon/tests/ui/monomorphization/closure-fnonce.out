@@ -49,12 +49,11 @@ struct closure {
 pub trait Destruct::<closure>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure>
-    fn drop_in_place = drop_in_place::<closure>
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<closure>
     vtable: core::marker::Destruct::{vtable}::<closure>
 }
 
-// Full name: core::marker::Destruct::drop_in_place::<closure>
-fn drop_in_place::<closure>(@1: *mut closure)
+fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
 
 // Full name: core::marker::Tuple::<(u8)>
 #[lang_item("tuple_trait")]
@@ -122,6 +121,26 @@ fn {impl FnOnce::<closure, (u8)>}::call_once(@1: closure, @2: (u8)) -> u8
     return
 }
 
+// Full name: test_crate::main::closure::{impl Destruct::<closure>}::drop_in_place
+fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
+{
+    let @0: (); // return
+    let @1: *mut closure; // arg #1
+    let @2: &'_ mut (closure); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: test_crate::main::closure::{impl Destruct::<closure>}
+impl Destruct::<closure> {
+    parent_clause0 = {built_in impl MetaSized::<closure>}
+    fn drop_in_place = {impl Destruct::<closure>}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::apply_to_zero_once::<closure>
 fn apply_to_zero_once::<closure>(@1: closure) -> u8
 {
@@ -137,7 +156,7 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     @0 := {impl FnOnce::<closure, (u8)>}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Destruct::<closure>] f@1
+    drop[{impl Destruct::<closure>}] f@1
     return
 }
 
@@ -165,9 +184,9 @@ fn main()
 
 // Full name: test_crate::main::{impl FnOnce::<closure, (u8)>}
 impl FnOnce::<closure, (u8)> {
-    parent_clause0 = MetaSized::<closure>
-    parent_clause1 = Sized::<(u8)>
-    parent_clause2 = Tuple::<(u8)>
+    parent_clause0 = {built_in impl MetaSized::<closure>}
+    parent_clause1 = {built_in impl Sized::<(u8)>}
+    parent_clause2 = {built_in impl Tuple::<(u8)>}
     fn call_once = {impl FnOnce::<closure, (u8)>}::call_once
     non-dyn-compatible
 }

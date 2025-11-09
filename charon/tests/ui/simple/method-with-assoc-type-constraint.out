@@ -68,14 +68,14 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<I>] iter@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] iter@1
     return
 }
 
 // Full name: test_crate::{impl FromIterator<()> for ()}
 impl FromIterator<()> for () {
-    parent_clause0 = Sized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl Sized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     fn from_iter<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: IntoIterator<I, ()>> = {impl FromIterator<()> for ()}::from_iter<I>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }

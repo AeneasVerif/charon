@@ -94,7 +94,7 @@ pub trait Debug<Self>
 }
 
 // Full name: core::fmt::Debug::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 
@@ -173,7 +173,7 @@ pub trait DiscriminantKind<Self>
 }
 
 // Full name: core::intrinsics::discriminant_value
-pub fn discriminant_value<'_0, T>(@1: &'_0 (T)) -> DiscriminantKind<T>::Discriminant
+pub fn discriminant_value<'_0, T>(@1: &'_0 (T)) -> {built_in impl DiscriminantKind for missing(@TypeBound(1, 0))}::Discriminant
 where
     [@TraitClause0]: Sized<T>,
 
@@ -215,7 +215,7 @@ enum Enum {
 
 // Full name: test_crate::{impl StructuralPartialEq for Enum}
 impl StructuralPartialEq for Enum {
-    parent_clause0 = MetaSized<Enum>
+    parent_clause0 = {built_in impl MetaSized for Enum}
     vtable: {impl StructuralPartialEq for Enum}::{vtable}
 }
 

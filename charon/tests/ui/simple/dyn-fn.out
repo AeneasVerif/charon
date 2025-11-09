@@ -17,12 +17,11 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -172,6 +171,16 @@ fn {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_1>(@1: &'_1 mut (c
     return
 }
 
+// Full name: test_crate::gives_fn::closure::{impl Destruct for closure}::drop_in_place
+fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+
+// Full name: test_crate::gives_fn::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    parent_clause0 = {built_in impl MetaSized for closure}
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::gives_fn::{impl FnOnce<(&'_ mut (u32))> for closure}::call_once
 fn {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>(@1: closure, @2: (&'_0 mut (u32))) -> bool
 {
@@ -183,16 +192,16 @@ fn {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>(@1: closure, @2: (
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop[Destruct<closure>] @1
+    drop[{impl Destruct for closure}] @1
     return
 }
 
 // Full name: test_crate::gives_fn::{impl FnOnce<(&'_ mut (u32))> for closure}
 impl<'_0> FnOnce<(&'_ mut (u32))> for closure {
-    parent_clause0 = MetaSized<closure>
-    parent_clause1 = Sized<(&'_ mut (u32))>
-    parent_clause2 = Tuple<(&'_ mut (u32))>
-    parent_clause3 = Sized<bool>
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for (&'_ mut (u32))}
+    parent_clause2 = {built_in impl Tuple for (&'_ mut (u32))}
+    parent_clause3 = {built_in impl Sized for bool}
     type Output = bool
     fn call_once = {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>
     non-dyn-compatible
@@ -200,20 +209,20 @@ impl<'_0> FnOnce<(&'_ mut (u32))> for closure {
 
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_ mut (u32))> for closure}
 impl<'_0> FnMut<(&'_ mut (u32))> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnOnce<(&'_ mut (u32))> for closure}<'_0>
-    parent_clause2 = Sized<(&'_ mut (u32))>
-    parent_clause3 = Tuple<(&'_ mut (u32))>
+    parent_clause2 = {built_in impl Sized for (&'_ mut (u32))}
+    parent_clause3 = {built_in impl Tuple for (&'_ mut (u32))}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::gives_fn::{impl Fn<(&'_ mut (u32))> for closure}
 impl<'_0> Fn<(&'_ mut (u32))> for closure {
-    parent_clause0 = MetaSized<closure>
+    parent_clause0 = {built_in impl MetaSized for closure}
     parent_clause1 = {impl FnMut<(&'_ mut (u32))> for closure}<'_0>
-    parent_clause2 = Sized<(&'_ mut (u32))>
-    parent_clause3 = Tuple<(&'_ mut (u32))>
+    parent_clause2 = {built_in impl Sized for (&'_ mut (u32))}
+    parent_clause3 = {built_in impl Tuple for (&'_ mut (u32))}
     fn call<'_0_1> = {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '_0_1>
     non-dyn-compatible
 }

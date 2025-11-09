@@ -24,7 +24,7 @@ fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
-    parent_clause0 = MetaSized<String>
+    parent_clause0 = {built_in impl MetaSized for String}
     fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }

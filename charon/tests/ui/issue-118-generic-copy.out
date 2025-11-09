@@ -72,14 +72,14 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 
 // Full name: test_crate::{impl Clone for Foo}
 impl Clone for Foo {
-    parent_clause0 = Sized<Foo>
+    parent_clause0 = {built_in impl Sized for Foo}
     fn clone<'_0_1> = {impl Clone for Foo}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
-    parent_clause0 = MetaSized<Foo>
+    parent_clause0 = {built_in impl MetaSized for Foo}
     parent_clause1 = {impl Clone for Foo}
     non-dyn-compatible
 }

@@ -31,7 +31,7 @@ pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
 
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
-    parent_clause0 = Sized<u32>
+    parent_clause0 = {built_in impl Sized for u32}
     fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -42,7 +42,7 @@ pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_
 
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}
 impl<'_0, T> Clone for &'_0 (T) {
-    parent_clause0 = Sized<&'_ (T)>
+    parent_clause0 = {built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}
     fn clone<'_0_1> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_1, T>
     non-dyn-compatible
 }
@@ -52,12 +52,11 @@ impl<'_0, T> Clone for &'_0 (T) {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -129,8 +128,8 @@ pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<u32>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for u32}
     parent_clause2 = {impl Clone for u32}
     type Type = u32
     fn get_ty<'_0_1> = {impl Foo for ()}::get_ty<'_0_1>
@@ -170,11 +169,9 @@ fn use_foo()
     storage_dead(@5)
     @2 := {impl Clone for u32}::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Destruct<u32>] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop[Destruct<()>] foo@1
     storage_dead(foo@1)
     return
 }
@@ -213,8 +210,8 @@ pub fn {impl RPITIT for ()}::make_foo()
 
 // Full name: test_crate::{impl RPITIT for ()}
 impl RPITIT for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {impl Foo for ()}
     type  = ()
     fn make_foo = {impl RPITIT for ()}::make_foo
@@ -247,11 +244,11 @@ where
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Destruct<@TraitClause1::parent_clause2::Type>] @2
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::parent_clause2::Type}] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop[Destruct<@TraitClause1::>] foo@1
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::}] foo@1
     storage_dead(foo@1)
     return
 }
@@ -283,11 +280,11 @@ where
 }
 
 // Full name: test_crate::wrap::{impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once
-fn {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 (U))) -> WrapClone<&'_0 (U)>[Sized<&'_0 (U)>, {impl Clone for &'_0 (T)}<'_, U>]
+fn {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 (U))) -> WrapClone<&'_0 (U)>[{built_in impl Sized for &missing('_Bound(1, 0)) (missing(@TypeBound(1, 0)))}, {impl Clone for &'_0 (T)}<'_, U>]
 where
     [@TraitClause0]: Sized<U>,
 {
-    let @0: WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]; // return
+    let @0: WrapClone<&'_ (U)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Clone for &'_0 (T)}<'_, U>]; // return
     let @1: closure<U>[@TraitClause0]; // arg #1
     let tupled_args@2: (&'_0 (U)); // arg #2
     let x@3: &'_ (U); // local
@@ -307,12 +304,27 @@ impl<'_0, U> FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]
 where
     [@TraitClause0]: Sized<U>,
 {
-    parent_clause0 = MetaSized<closure<U>[@TraitClause0]>
-    parent_clause1 = Sized<(&'_ (U))>
-    parent_clause2 = Tuple<(&'_ (U))>
-    parent_clause3 = Sized<WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]>
-    type Output = WrapClone<&'_ (U)>[Sized<&'_ (U)>, {impl Clone for &'_0 (T)}<'_, U>]
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause1 = {built_in impl Sized for (&'_ (missing(@TypeBound(1, 0))))}
+    parent_clause2 = {built_in impl Tuple for (&'_ (missing(@TypeBound(1, 0))))}
+    parent_clause3 = {built_in impl Sized for WrapClone<&'_ (missing(@TypeBound(1, 0)))>[{built_in impl Sized for &'_ (missing(@TypeBound(2, 0)))}, {impl Clone for &'_0 (T)}<'_, missing(@TypeBound(1, 0))>]}
+    type Output = WrapClone<&'_ (U)>[{built_in impl Sized for &'_ (missing(@TypeBound(2, 0)))}, {impl Clone for &'_0 (T)}<'_, U>]
     fn call_once = {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<U>,
+
+// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}
+impl<U> Destruct for closure<U>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<U>,
+{
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    fn drop_in_place = {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -320,9 +332,9 @@ where
 pub fn use_wrap()
 {
     let @0: (); // return
-    let f@1: closure<u32>[Sized<u32>]; // local
-    let @2: WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}<'_, u32>]; // anonymous local
-    let @3: closure<u32>[Sized<u32>]; // anonymous local
+    let f@1: closure<u32>[{built_in impl Sized for u32}]; // local
+    let @2: WrapClone<&'_ (u32)>[{built_in impl Sized for &'_ (u32)}, {impl Clone for &'_0 (T)}<'_, u32>]; // anonymous local
+    let @3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
     let @4: (&'_ (u32)); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
@@ -330,7 +342,7 @@ pub fn use_wrap()
 
     @0 := ()
     storage_live(f@1)
-    f@1 := wrap<u32>[Sized<u32>]()
+    f@1 := wrap<u32>[{built_in impl Sized for u32}]()
     storage_live(@2)
     storage_live(@3)
     @3 := move (f@1)
@@ -342,7 +354,7 @@ pub fn use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_, u32>[Sized<u32>](move (@3), move (@4))
+    @2 := {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_, u32>[{built_in impl Sized for u32}](move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)
@@ -350,7 +362,7 @@ pub fn use_wrap()
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
-    drop[Destruct<closure<u32>[Sized<u32>]>] f@1
+    drop[{impl Destruct for closure<U>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] f@1
     storage_dead(f@1)
     return
 }

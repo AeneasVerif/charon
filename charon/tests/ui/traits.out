@@ -100,7 +100,7 @@ impl<T> Destruct for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -149,7 +149,7 @@ impl<A, B> Destruct for (A, B)
 where
     [@TraitClause0]: Sized<A>,
 {
-    parent_clause0 = MetaSized<(A, B)>
+    parent_clause0 = {built_in impl MetaSized for (missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1)))}
     fn drop_in_place = {impl Destruct for (A, B)}::drop_in_place<A, B>[@TraitClause0]
     non-dyn-compatible
 }
@@ -191,7 +191,7 @@ pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 
 // Full name: test_crate::{impl BoolTrait for bool}
 impl BoolTrait for bool {
-    parent_clause0 = MetaSized<bool>
+    parent_clause0 = {built_in impl MetaSized for bool}
     fn get_bool<'_0_1> = {impl BoolTrait for bool}::get_bool<'_0_1>
     fn ret_true<'_0_1> = {impl BoolTrait for bool}::ret_true<'_0_1>
     vtable: {impl BoolTrait for bool}::{vtable}
@@ -262,7 +262,7 @@ impl<T> BoolTrait for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn get_bool<'_0_1> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_1, T>[@TraitClause0]
     fn ret_true<'_0_1> = {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_1, T>[@TraitClause0]
     vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
@@ -313,7 +313,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop[Destruct<T>] x@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@1
     return
 }
 
@@ -341,7 +341,7 @@ pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
 
 // Full name: test_crate::{impl ToU64 for u64}
 impl ToU64 for u64 {
-    parent_clause0 = MetaSized<u64>
+    parent_clause0 = {built_in impl MetaSized for u64}
     fn to_u64 = {impl ToU64 for u64}::to_u64
     vtable: {impl ToU64 for u64}::{vtable}
 }
@@ -385,7 +385,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: ToU64<A>,
 {
-    parent_clause0 = MetaSized<(A, A)>
+    parent_clause0 = {built_in impl MetaSized for (missing(@TypeBound(1, 0)), missing(@TypeBound(1, 0)))}
     fn to_u64 = {impl ToU64 for (A, A)}::to_u64<A>[@TraitClause0, @TraitClause1]
     vtable: {impl ToU64 for (A, A)}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
@@ -457,7 +457,7 @@ impl<T> Destruct for Wrapper<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Wrapper<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -486,21 +486,21 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Wrapper<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn to_u64 = {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1]
     vtable: {impl ToU64 for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: test_crate::h1
-pub fn h1(@1: Wrapper<u64>[Sized<u64>]) -> u64
+pub fn h1(@1: Wrapper<u64>[{built_in impl Sized for u64}]) -> u64
 {
     let @0: u64; // return
-    let x@1: Wrapper<u64>[Sized<u64>]; // arg #1
-    let @2: Wrapper<u64>[Sized<u64>]; // anonymous local
+    let x@1: Wrapper<u64>[{built_in impl Sized for u64}]; // arg #1
+    let @2: Wrapper<u64>[{built_in impl Sized for u64}]; // anonymous local
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[Sized<u64>, {impl ToU64 for u64}](move (@2))
+    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[{built_in impl Sized for u64}, {impl ToU64 for u64}](move (@2))
     storage_dead(@2)
     return
 }
@@ -552,8 +552,8 @@ pub fn {impl ToType<bool> for u64}::to_type(@1: u64) -> bool
 
 // Full name: test_crate::{impl ToType<bool> for u64}
 impl ToType<bool> for u64 {
-    parent_clause0 = MetaSized<u64>
-    parent_clause1 = Sized<bool>
+    parent_clause0 = {built_in impl MetaSized for u64}
+    parent_clause1 = {built_in impl Sized for bool}
     fn to_type = {impl ToType<bool> for u64}::to_type
     vtable: {impl ToType<bool> for u64}::{vtable}
 }
@@ -589,7 +589,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Destruct<T2>] y@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] y@1
     return
 }
 
@@ -625,7 +625,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Destruct<T2>] y@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] y@1
     return
 }
 
@@ -701,7 +701,7 @@ where
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop[Destruct<T>] x@2
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@2
     return
 }
 
@@ -719,7 +719,7 @@ where
 
 // Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}
 impl TestTrait for TestType1 {
-    parent_clause0 = MetaSized<TestType1>
+    parent_clause0 = {built_in impl MetaSized for TestType1}
     fn test<'_0_1> = {impl TestTrait for TestType1}::test<'_0_1>
     vtable: {impl TestTrait for TestType1}::{vtable}
 }
@@ -752,7 +752,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToType<bool, T>,
 {
-    parent_clause0 = MetaSized<BoolWrapper>
+    parent_clause0 = {built_in impl MetaSized for BoolWrapper}
     parent_clause1 = @TraitClause0
     fn to_type = {impl ToType<T> for BoolWrapper}::to_type<T>[@TraitClause0, @TraitClause1]
     vtable: {impl ToType<T> for BoolWrapper}::{vtable}<T>[@TraitClause0, @TraitClause1]
@@ -820,9 +820,9 @@ pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), 
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}
 impl WithConstTy<32 : usize> for bool {
-    parent_clause0 = MetaSized<bool>
-    parent_clause1 = Sized<u8>
-    parent_clause2 = Sized<u64>
+    parent_clause0 = {built_in impl MetaSized for bool}
+    parent_clause1 = {built_in impl Sized for u8}
+    parent_clause2 = {built_in impl Sized for u64}
     parent_clause3 = {impl ToU64 for u64}
     const LEN1 = LEN1
     const LEN2 = LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}]
@@ -855,7 +855,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Destruct<@TraitClause1::W>] @1
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::W}] @1
     return
 }
 
@@ -873,7 +873,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
     storage_dead(@2)
-    drop[Destruct<@TraitClause1::W>] x@1
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::W}] x@1
     return
 }
 
@@ -1002,13 +1002,13 @@ pub trait ChildTrait1<Self>
 
 // Full name: test_crate::{impl ParentTrait1 for usize}
 impl ParentTrait1 for usize {
-    parent_clause0 = MetaSized<usize>
+    parent_clause0 = {built_in impl MetaSized for usize}
     vtable: {impl ParentTrait1 for usize}::{vtable}
 }
 
 // Full name: test_crate::{impl ChildTrait1 for usize}
 impl ChildTrait1 for usize {
-    parent_clause0 = MetaSized<usize>
+    parent_clause0 = {built_in impl MetaSized for usize}
     parent_clause1 = {impl ParentTrait1 for usize}
     vtable: {impl ChildTrait1 for usize}::{vtable}
 }
@@ -1094,16 +1094,16 @@ where
 
 // Full name: test_crate::{impl WithTarget for u32}
 impl WithTarget for u32 {
-    parent_clause0 = MetaSized<u32>
-    parent_clause1 = Sized<u32>
+    parent_clause0 = {built_in impl MetaSized for u32}
+    parent_clause1 = {built_in impl Sized for u32}
     type Target = u32
     vtable: {impl WithTarget for u32}::{vtable}
 }
 
 // Full name: test_crate::{impl ParentTrait2 for u32}
 impl ParentTrait2 for u32 {
-    parent_clause0 = MetaSized<u32>
-    parent_clause1 = Sized<u32>
+    parent_clause0 = {built_in impl MetaSized for u32}
+    parent_clause1 = {built_in impl Sized for u32}
     parent_clause2 = {impl WithTarget for u32}
     type U = u32
     vtable: {impl ParentTrait2 for u32}::{vtable}
@@ -1121,7 +1121,7 @@ pub fn {impl ChildTrait2 for u32}::convert(@1: u32) -> u32
 
 // Full name: test_crate::{impl ChildTrait2 for u32}
 impl ChildTrait2 for u32 {
-    parent_clause0 = MetaSized<u32>
+    parent_clause0 = {built_in impl MetaSized for u32}
     parent_clause1 = {impl ParentTrait2 for u32}
     fn convert = {impl ChildTrait2 for u32}::convert
     non-dyn-compatible
@@ -1231,7 +1231,7 @@ impl<T, const N : usize> Trait for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Array<T, N>>
+    parent_clause0 = {built_in impl MetaSized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
     const LEN = {impl Trait for Array<T, N>}::LEN<T, N>[@TraitClause0]
     non-dyn-compatible
 }
@@ -1261,7 +1261,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Wrapper<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     const LEN = {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -1289,20 +1289,20 @@ where
 }
 
 // Full name: test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO
-pub fn FOO<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
+pub fn FOO<T, U>() -> Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<T>,
 {
-    let @0: Result<T, i32>[@TraitClause0, Sized<i32>]; // return
+    let @0: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]; // return
 
     @0 := Result::Err { 0: const (0 : i32) }
     return
 }
 
 // Full name: test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}::FOO
-pub const FOO<T, U>: Result<T, i32>[@TraitClause0, Sized<i32>]
+pub const FOO<T, U>: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -1310,26 +1310,26 @@ where
  = FOO()
 
 // Full name: test_crate::use_foo1
-pub fn use_foo1<T, U>() -> Result<T, i32>[@TraitClause0, Sized<i32>]
+pub fn use_foo1<T, U>() -> Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<T>,
 {
-    let @0: Result<T, i32>[@TraitClause0, Sized<i32>]; // return
+    let @0: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]; // return
 
     @0 := copy (FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2])
     return
 }
 
 // Full name: test_crate::use_foo2
-pub fn use_foo2<T, U>() -> Result<U, i32>[@TraitClause1, Sized<i32>]
+pub fn use_foo2<T, U>() -> Result<U, i32>[@TraitClause1, {built_in impl Sized for i32}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<U>,
 {
-    let @0: Result<U, i32>[@TraitClause1, Sized<i32>]; // return
+    let @0: Result<U, i32>[@TraitClause1, {built_in impl Sized for i32}]; // return
 
     @0 := copy (FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2])
     return
@@ -1347,17 +1347,17 @@ trait RecursiveImpl<Self>
 
 // Full name: test_crate::{impl RecursiveImpl for ()}
 impl RecursiveImpl for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {impl RecursiveImpl for ()}
     type Item = ()
     vtable: {impl RecursiveImpl for ()}::{vtable}
 }
 
 // Full name: test_crate::flabada
-pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[Sized<(bool, &'a (()))>]
+pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[{built_in impl Sized for (bool, &missing('_Bound(1, 0)) (()))}]
 {
-    let @0: Wrapper<(bool, &'_ (()))>[Sized<(bool, &'_ (()))>]; // return
+    let @0: Wrapper<(bool, &'_ (()))>[{built_in impl Sized for (bool, &'_ (()))}]; // return
     let _x@1: &'_ (()); // arg #1
 
     panic(core::panicking::panic)
@@ -1367,14 +1367,14 @@ pub fn test_crate::call<'a, F>(@1: F)
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Fn<F, (&'a (()))>,
-    @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a (()))>[Sized<(bool, &'_ (()))>],
+    @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a (()))>[{built_in impl Sized for (bool, &'_ (()))}],
 {
     let @0: (); // return
     let @1: F; // arg #1
 
     @0 := ()
     @0 := ()
-    drop[Destruct<F>] @1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @1
     return
 }
 
@@ -1386,7 +1386,7 @@ pub fn flibidi()
 
     @0 := ()
     storage_live(@1)
-    @1 := test_crate::call<'_, for<'a> flabada<'a>>[Sized<for<'a> flabada<'a>>, Fn<for<'a> flabada<'a>, (&'_ (()))>](const (flabada<'_>))
+    @1 := test_crate::call<'_, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'_ (()))> for for<'a> flabada<'a>}](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     return

@@ -62,7 +62,7 @@ fn {impl Ops for Portable}::ntt_multiply() -> Portable
 
 // Full name: test_crate::{impl Ops for Portable}
 impl Ops for Portable {
-    parent_clause0 = MetaSized<Portable>
+    parent_clause0 = {built_in impl MetaSized for Portable}
     fn ZERO = {impl Ops for Portable}::ZERO
     fn ntt_multiply = {impl Ops for Portable}::ntt_multiply
     non-dyn-compatible

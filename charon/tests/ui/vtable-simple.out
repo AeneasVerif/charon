@@ -33,7 +33,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
-    parent_clause0 = Sized<i32>
+    parent_clause0 = {built_in impl Sized for i32}
     fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -134,7 +134,7 @@ where
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Destruct<i32>::drop_in_place), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -151,7 +151,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = @TraitClause0
     fn modify<'_0_1, '_1_1> = {impl Modifiable<T> for i32}::modify<'_0_1, '_1_1, T>[@TraitClause0, @TraitClause1]
     vtable: {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]
@@ -211,7 +211,7 @@ fn main()
     @4 := const (42 : i32)
     @3 := &@4
     @2 := &*(@3)
-    @1 := modify_trait_object<'_, i32>[Sized<i32>, {impl Clone for i32}](move (@2))
+    @1 := modify_trait_object<'_, i32>[{built_in impl Sized for i32}, {impl Clone for i32}](move (@2))
     storage_dead(@2)
     storage_dead(@4)
     storage_dead(@3)

@@ -1684,6 +1684,23 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
     }
 }
 
+impl TraitDeclRef {
+    fn format_as_impl<C: AstFormatter>(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut pred = self.clone();
+        let self_ty = pred.generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        let pred = pred.with_ctx(ctx);
+        match self_ty {
+            Some(self_ty) => {
+                let self_ty = self_ty.with_ctx(ctx);
+                write!(f, "{pred} for {self_ty}")?;
+            }
+            // Monomorphized traits don't have self types.
+            None => write!(f, "{pred}")?,
+        }
+        Ok(())
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let full_name = self.item_meta.name.with_ctx(ctx);
@@ -1694,23 +1711,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "impl{generics} ")?;
-        let mut impl_trait = self.impl_trait.clone();
-        match impl_trait
-            .generics
-            .types
-            .remove_and_shift_ids(TypeVarId::ZERO)
-        {
-            Some(self_ty) => {
-                let self_ty = self_ty.with_ctx(ctx);
-                let impl_trait = impl_trait.with_ctx(ctx);
-                write!(f, "{impl_trait} for {self_ty}")?;
-            }
-            // TODO(mono): A monomorphized trait doesn't take arguments.
-            None => {
-                let impl_trait = impl_trait.with_ctx(ctx);
-                write!(f, "{impl_trait}")?;
-            }
-        }
+        self.impl_trait.format_as_impl(ctx, f)?;
         write!(f, "{clauses}")?;
 
         let newline = if clauses.is_empty() {
@@ -1794,7 +1795,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
             }
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto { types, .. } => {
-                write!(f, "{}", self.trait_decl_ref.with_ctx(ctx))?;
+                write!(f, "{{built_in impl ")?;
+                self.trait_decl_ref.skip_binder.format_as_impl(ctx, f)?;
                 if !types.is_empty() {
                     let types = types
                         .iter()
@@ -1805,6 +1807,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                         .join(", ");
                     write!(f, " where {types}")?;
                 }
+                write!(f, "}}")?;
                 Ok(())
             }
             TraitRefKind::Dyn { .. } => write!(f, "{}", self.trait_decl_ref.with_ctx(ctx)),

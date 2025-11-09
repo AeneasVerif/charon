@@ -106,14 +106,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
-    parent_clause1 = MetaSized<Slice<T>>
+    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause1 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
     fn borrow<'_0_1> = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::borrow<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
 
 // Full name: alloc::slice::{impl ToOwned for Slice<T>}::to_owned
-pub fn {impl ToOwned for Slice<T>}::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> Vec<T>[@TraitClause0, Sized<Global>]
+pub fn {impl ToOwned for Slice<T>}::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -124,10 +124,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<Slice<T>>
-    parent_clause1 = Sized<Vec<T>[@TraitClause0, Sized<Global>]>
-    parent_clause2 = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, Sized<Global>]
-    type Owned = Vec<T>[@TraitClause0, Sized<Global>]
+    parent_clause0 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
+    parent_clause1 = {built_in impl Sized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), {built_in impl Sized for Global}]}
+    parent_clause2 = {impl Borrow<Slice<T>> for Vec<T>[@TraitClause0, @TraitClause1]}<T, Global>[@TraitClause0, {built_in impl Sized for Global}]
+    type Owned = Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
     fn to_owned<'_0_1> = {impl ToOwned for Slice<T>}::to_owned<'_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -154,12 +154,12 @@ where
 pub type Generic2<'a, T>
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>, = Cow<'a, Slice<T>>[MetaSized<Slice<T>>, {impl ToOwned for Slice<T>}<T>[@TraitClause0, @TraitClause1]]
+    [@TraitClause1]: Clone<T>, = Cow<'a, Slice<T>>[{built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}, {impl ToOwned for Slice<T>}<T>[@TraitClause0, @TraitClause1]]
 
 // Full name: type_alias::GenericWithoutBound
 pub type GenericWithoutBound<'a, T>
 where
-    [@TraitClause0]: Sized<T>, = Cow<'a, Slice<T>>[MetaSized<Slice<T>>, UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)]
+    [@TraitClause0]: Sized<T>, = Cow<'a, Slice<T>>[{built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}, UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)]
 
 
 

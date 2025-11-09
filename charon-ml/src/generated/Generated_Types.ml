@@ -258,6 +258,29 @@ and builtin_fun_id =
 
           Converted from [AggregateKind::RawPtr] *)
 
+(** Describes a built-in impl. Mostly lists the implemented trait, sometimes
+    with more details about the contents of the implementation. *)
+and builtin_impl_data =
+  | BuiltinSized
+  | BuiltinMetaSized
+  | BuiltinTuple
+  | BuiltinSend
+  | BuiltinSync
+  | BuiltinPointee
+  | BuiltinDiscriminantKind
+  | BuiltinUnpin
+  | BuiltinFreeze
+  | BuiltinNoopDestruct
+      (** An impl of [Destruct] for a type with no drop glue. *)
+  | BuiltinUntrackedDestruct
+      (** An impl of [Destruct] for a type parameter, which we could not resolve
+          because [--add-drop-bounds] was not set. *)
+  | BuiltinFn
+  | BuiltinFnMut
+  | BuiltinFnOnce
+  | BuiltinCopy
+  | BuiltinClone
+
 (** One of 8 built-in indexing operations. *)
 and builtin_index_op = {
   is_array : bool;  (** Whether this is a slice or array. *)
@@ -488,12 +511,15 @@ and trait_ref_kind =
           including trait method declarations. Not present in trait
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
-      trait_ref list * (trait_item_name * trait_assoc_ty_impl) list
+      builtin_impl_data
+      * trait_ref list
+      * (trait_item_name * trait_assoc_ty_impl) list
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.
 
           Fields:
+          - [builtin_data]
           - [parent_trait_refs]: Exactly like the same field on [TraitImpl]: the
             [TraitRef]s required to satisfy the implied predicates on the trait
             declaration. E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl

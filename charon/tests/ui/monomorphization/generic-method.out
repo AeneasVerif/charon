@@ -35,7 +35,7 @@ trait Foo::<u64>
 
 // Full name: test_crate::{impl Foo::<u64>}
 impl Foo::<u64> {
-    parent_clause0 = MetaSized::<u64>
+    parent_clause0 = {built_in impl MetaSized::<u64>}
     non-dyn-compatible
 }
 

@@ -87,7 +87,7 @@ where
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn method<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Clone<T>> = {impl Trait for ()}::method<T>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
@@ -98,7 +98,7 @@ fn main()
     let @0: (); // return
 
     @0 := ()
-    @0 := {impl Trait for ()}::method<()>[Sized<()>, Clone<()>]()
+    @0 := {impl Trait for ()}::method<()>[{built_in impl Sized for ()}, {built_in impl Clone for ()}]()
     return
 }
 

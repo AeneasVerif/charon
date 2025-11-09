@@ -69,7 +69,7 @@ where
 
 // Full name: test_crate::foo::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn defaulted<'_0_1> = {impl Trait for ()}::defaulted<'_0_1>
     vtable: {impl Trait for ()}::{vtable}
 }

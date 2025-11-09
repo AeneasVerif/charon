@@ -84,7 +84,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Destruct<impl FnOnce(u8) -> u8>] f@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] f@1
     return
 }
 
@@ -114,7 +114,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     storage_live(@4)
     storage_live(@5)
     @5 := move ((@1).0)
-    @4 := drop<NotCopy>[Sized<NotCopy>](move (@5))
+    @4 := drop<NotCopy>[{built_in impl Sized for NotCopy}](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -127,10 +127,10 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for closure}
 impl FnOnce<(u8)> for closure {
-    parent_clause0 = MetaSized<closure>
-    parent_clause1 = Sized<(u8)>
-    parent_clause2 = Tuple<(u8)>
-    parent_clause3 = Sized<u8>
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for (u8)}
+    parent_clause2 = {built_in impl Tuple for (u8)}
+    parent_clause3 = {built_in impl Sized for u8}
     type Output = u8
     fn call_once = {impl FnOnce<(u8)> for closure}::call_once
     non-dyn-compatible
@@ -150,7 +150,7 @@ fn main()
     storage_live(@2)
     storage_live(@3)
     @3 := closure { 0: move (z@1) }
-    @2 := apply_to_zero_once<closure>[Sized<closure>, {impl FnOnce<(u8)> for closure}](move (@3))
+    @2 := apply_to_zero_once<closure>[{built_in impl Sized for closure}, {impl FnOnce<(u8)> for closure}](move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

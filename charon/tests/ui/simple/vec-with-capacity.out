@@ -129,21 +129,21 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Vec<T>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
-// Full name: alloc::vec::{Vec<T>[@TraitClause0, Sized<Global>]}::with_capacity
+// Full name: alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::with_capacity
 #[lang_item("vec_with_capacity")]
-pub fn with_capacity<T>(@1: usize) -> Vec<T>[@TraitClause0, Sized<Global>]
+pub fn with_capacity<T>(@1: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Vec<T>[@TraitClause0, Sized<Global>]; // return
+    let @0: Vec<T>[@TraitClause0, {built_in impl Sized for Global}]; // return
     let capacity@1: usize; // arg #1
-    let @2: RawVec<T, Global>[@TraitClause0, Sized<Global>]; // anonymous local
-    let @3: RawVecInner<Global>[Sized<Global>]; // anonymous local
+    let @2: RawVec<T, Global>[@TraitClause0, {built_in impl Sized for Global}]; // anonymous local
+    let @3: RawVecInner<Global>[{built_in impl Sized for Global}]; // anonymous local
     let @4: Global; // anonymous local
     let @5: PhantomData<T>; // anonymous local
 
@@ -151,7 +151,7 @@ where
     storage_live(@3)
     storage_live(@4)
     @4 := Global {  }
-    @3 := with_capacity_in<Global>[Sized<Global>](move (capacity@1), move (@4), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
+    @3 := with_capacity_in<Global>[{built_in impl Sized for Global}](move (capacity@1), move (@4), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
     storage_live(@5)
     @5 := PhantomData {  }
     @2 := RawVec { 0: move (@3), 1: move (@5) }
@@ -175,12 +175,12 @@ const UNIT_METADATA: () = @Fun0()
 fn vec()
 {
     let @0: (); // return
-    let @1: Vec<u32>[Sized<u32>, Sized<Global>]; // anonymous local
+    let @1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     @0 := ()
     storage_live(@1)
-    @1 := with_capacity<u32>[Sized<u32>](const (42 : usize))
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] @1
+    @1 := with_capacity<u32>[{built_in impl Sized for u32}](const (42 : usize))
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

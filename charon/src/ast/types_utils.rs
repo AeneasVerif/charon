@@ -870,6 +870,7 @@ impl TraitRef {
         trait_id: TraitDeclId,
         ty: Ty,
         parents: Vector<TraitClauseId, TraitRef>,
+        builtin_data: BuiltinImplData,
     ) -> Self {
         let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
             id: trait_id,
@@ -877,10 +878,22 @@ impl TraitRef {
         });
         TraitRef {
             kind: TraitRefKind::BuiltinOrAuto {
+                builtin_data,
                 parent_trait_refs: parents,
                 types: Default::default(),
             },
             trait_decl_ref,
+        }
+    }
+}
+
+impl BuiltinImplData {
+    pub fn as_closure_kind(&self) -> Option<ClosureKind> {
+        match self {
+            BuiltinImplData::FnOnce => Some(ClosureKind::FnOnce),
+            BuiltinImplData::FnMut => Some(ClosureKind::FnMut),
+            BuiltinImplData::Fn => Some(ClosureKind::Fn),
+            _ => None,
         }
     }
 }
