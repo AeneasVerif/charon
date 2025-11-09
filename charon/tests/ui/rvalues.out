@@ -338,6 +338,16 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8
     return
 }
 
+// Full name: test_crate::fn_casts::closure::{impl Destruct for closure}::drop_in_place
+fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+
+// Full name: test_crate::fn_casts::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    parent_clause0 = MetaSized<closure>
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8)> for closure}::call_once
 fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
 {
@@ -350,7 +360,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(u8)> for closure}::call_mut<'_>(move (@3), move (@2))
-    drop[Destruct<closure>] @1
+    drop[{impl Destruct for closure}] @1
     return
 }
 

@@ -388,18 +388,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             && include_late_bound
         {
             // Add the lifetime generics coming from the by-ref upvars.
-            args.upvar_tys.iter().for_each(|ty| {
-                if matches!(
-                    ty.kind(),
-                    hax::TyKind::Ref(
-                        hax::Region {
-                            kind: hax::RegionKind::ReErased
-                        },
-                        ..
-                    )
-                ) {
-                    self.the_only_binder_mut().push_upvar_region();
-                }
+            args.iter_upvar_borrows().for_each(|_| {
+                self.the_only_binder_mut().push_upvar_region();
             });
         }
 

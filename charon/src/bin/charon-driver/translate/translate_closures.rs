@@ -100,19 +100,7 @@ impl ItemTransCtx<'_, '_> {
         let upvar_binder = hax::Binder {
             value: (),
             bound_vars: closure
-                .upvar_tys
-                .iter()
-                .filter(|ty| {
-                    matches!(
-                        ty.kind(),
-                        hax::TyKind::Ref(
-                            hax::Region {
-                                kind: hax::RegionKind::ReErased
-                            },
-                            ..
-                        )
-                    )
-                })
+                .iter_upvar_borrows()
                 .map(|_| hax::BoundVariableKind::Region(hax::BoundRegionKind::Anon))
                 .collect(),
         };

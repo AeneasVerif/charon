@@ -276,6 +276,16 @@ fn {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 
     return
 }
 
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
+fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
+
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
+impl<'_0> Destruct for closure<'_0> {
+    parent_clause0 = MetaSized<closure<'_0>>
+    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main::{impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once
 fn {impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<'_0>, @2: (&'_1 (i32)))
 {
@@ -288,7 +298,7 @@ fn {impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
-    drop[Destruct<closure<'_0>>] @1
+    drop[{impl Destruct for closure<'_0>}<'_>] @1
     return
 }
 

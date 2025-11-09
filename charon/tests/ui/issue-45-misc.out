@@ -431,12 +431,11 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -553,6 +552,16 @@ fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (i
     return
 }
 
+// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
+fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+
+// Full name: test_crate::map::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    parent_clause0 = MetaSized<closure>
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::map::{impl FnOnce<(i32)> for closure}::call_once
 fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
 {
@@ -564,7 +573,7 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(i32)> for closure}::call_mut<'_>(move (@3), move (@2))
-    drop[Destruct<closure>] @1
+    drop[{impl Destruct for closure}] @1
     return
 }
 

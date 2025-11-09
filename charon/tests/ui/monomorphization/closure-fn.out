@@ -35,12 +35,11 @@ struct closure<'_0, '_1> {
 pub trait Destruct::<closure<'_, '_>>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
-    fn drop_in_place = drop_in_place::<closure<'_, '_>>
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<closure<'_, '_>>
     vtable: core::marker::Destruct::{vtable}::<closure<'_, '_>>
 }
 
-// Full name: core::marker::Destruct::drop_in_place::<closure<'_, '_>>
-fn drop_in_place::<closure<'_, '_>>(@1: *mut closure<'_, '_>)
+fn core::marker::Destruct::drop_in_place::<closure<'_, '_>>(@1: *mut closure<'_, '_>)
 
 // Full name: core::marker::Tuple::<(u8, u8)>
 #[lang_item("tuple_trait")]
@@ -207,6 +206,26 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut (closure<'_, '_>)) -> u8
     return
 }
 
+// Full name: test_crate::main::closure::{impl Destruct::<closure<'_, '_>>}::drop_in_place
+fn {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>(@1: *mut closure<'_, '_>)
+{
+    let @0: (); // return
+    let @1: *mut closure<'_0, '_1>; // arg #1
+    let @2: &'_ mut (closure<'_0, '_1>); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: test_crate::main::closure::{impl Destruct::<closure<'_, '_>>}
+impl<'_0, '_1> Destruct::<closure<'_, '_>> {
+    parent_clause0 = MetaSized::<closure<'_, '_>>
+    fn drop_in_place = {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main::{impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once
 fn {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_0, '_1>(@1: closure<'_0, '_1>, @2: (u8, u8)) -> u8
 {
@@ -218,7 +237,7 @@ fn {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_0, '_1>(@1: closure<'
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
-    drop[Destruct::<closure<'_, '_>>] @1
+    drop[{impl Destruct::<closure<'_, '_>>}<'_, '_>] @1
     return
 }
 
@@ -237,7 +256,7 @@ fn apply_to_once::<closure<'_, '_>>(@1: closure<'_, '_>) -> u8
     @0 := {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_, '_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Destruct::<closure<'_, '_>>] f@1
+    drop[{impl Destruct::<closure<'_, '_>>}<'_, '_>] f@1
     return
 }
 

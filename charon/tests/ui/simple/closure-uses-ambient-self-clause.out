@@ -182,6 +182,21 @@ where
     return
 }
 
+// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>(@1: *mut closure<Self>[@TraitClause0])
+where
+    [@TraitClause0]: Thing<Self>,
+
+// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}
+impl<Self> Destruct for closure<Self>[@TraitClause0]
+where
+    [@TraitClause0]: Thing<Self>,
+{
+    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
+    fn drop_in_place = {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>[@TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::Thing::foo::{impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once
 fn {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>(@1: closure<Self>[@TraitClause0], @2: (@TraitClause0::Item))
 where
@@ -196,7 +211,7 @@ where
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
-    drop[Destruct<closure<Self>[@TraitClause0]>] @1
+    drop[{impl Destruct for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]] @1
     return
 }
 

@@ -17,12 +17,11 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -113,6 +112,23 @@ where
   T,
 }
 
+// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>(@1: *mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Destruct<T>,
+
+// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}
+impl<T> Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Destruct<T>,
+{
+    parent_clause0 = MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>
+    fn drop_in_place = {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::foo
 fn foo<T>(@1: T)
 where
@@ -126,7 +142,7 @@ where
     @0 := ()
     storage_live(@2)
     @2 := test_crate::foo::closure { 0: move (x@1) }
-    drop[Destruct<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>] @2
+    drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @2
     storage_dead(@2)
     @0 := ()
     drop[@TraitClause1] x@1
@@ -149,7 +165,7 @@ where
     @3 := move ((@1).0)
     @0 := drop<T>[@TraitClause0, @TraitClause1](move (@3))
     storage_dead(@3)
-    drop[Destruct<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>] @1
+    drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @1
     return
 }
 
@@ -162,7 +178,7 @@ where
     parent_clause0 = MetaSized<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
-    parent_clause3 = Destruct<test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]>
+    parent_clause3 = {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause4 = Destruct<()>
     parent_clause5 = Sized<()>
     parent_clause6 = Destruct<()>
@@ -185,6 +201,16 @@ fn bar()
     @0 := ()
     storage_dead(x@1)
     return
+}
+
+// Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}::drop_in_place
+fn {impl Destruct for test_crate::bar::closure}::drop_in_place(@1: *mut test_crate::bar::closure)
+
+// Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}
+impl Destruct for test_crate::bar::closure {
+    parent_clause0 = MetaSized<test_crate::bar::closure>
+    fn drop_in_place = {impl Destruct for test_crate::bar::closure}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::closure}::call
@@ -226,7 +252,7 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_>(move (@3), move (@2))
-    drop[Destruct<test_crate::bar::closure>] @1
+    drop[{impl Destruct for test_crate::bar::closure}] @1
     return
 }
 
@@ -235,7 +261,7 @@ impl FnOnce<()> for test_crate::bar::closure {
     parent_clause0 = MetaSized<test_crate::bar::closure>
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
-    parent_clause3 = Destruct<test_crate::bar::closure>
+    parent_clause3 = {impl Destruct for test_crate::bar::closure}
     parent_clause4 = Destruct<()>
     parent_clause5 = Sized<()>
     parent_clause6 = Destruct<()>
@@ -250,7 +276,7 @@ impl FnMut<()> for test_crate::bar::closure {
     parent_clause1 = {impl FnOnce<()> for test_crate::bar::closure}
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>
-    parent_clause4 = Destruct<test_crate::bar::closure>
+    parent_clause4 = {impl Destruct for test_crate::bar::closure}
     parent_clause5 = Destruct<()>
     fn call_mut<'_0_1> = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0_1>
     non-dyn-compatible
@@ -262,7 +288,7 @@ impl Fn<()> for test_crate::bar::closure {
     parent_clause1 = {impl FnMut<()> for test_crate::bar::closure}
     parent_clause2 = Sized<()>
     parent_clause3 = Tuple<()>
-    parent_clause4 = Destruct<test_crate::bar::closure>
+    parent_clause4 = {impl Destruct for test_crate::bar::closure}
     parent_clause5 = Destruct<()>
     fn call<'_0_1> = {impl Fn<()> for test_crate::bar::closure}::call<'_0_1>
     non-dyn-compatible

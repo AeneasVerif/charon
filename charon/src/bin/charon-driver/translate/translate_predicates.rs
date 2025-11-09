@@ -320,17 +320,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     })
                 } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
                     trait_data
-                    && let hax::TyKind::Adt(item)
-                    | hax::TyKind::Array(item)
-                    | hax::TyKind::Slice(item)
-                    | hax::TyKind::Tuple(item) = ty.kind()
                 {
-                    let impl_ref = self.translate_trait_impl_ref(
-                        span,
-                        item,
-                        TraitImplSource::ImplicitDestruct,
-                    )?;
-                    TraitRefKind::TraitImpl(impl_ref)
+                    match ty.kind() {
+                        hax::TyKind::Adt(item)
+                        | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
+                        | hax::TyKind::Array(item)
+                        | hax::TyKind::Slice(item)
+                        | hax::TyKind::Tuple(item) => {
+                            let mut impl_ref = self.translate_trait_impl_ref(
+                                span,
+                                item,
+                                TraitImplSource::ImplicitDestruct,
+                            )?;
+                            if let hax::TyKind::Closure(args) = ty.kind() {
+                                // Add lifetimes for the upvar ty borrows.
+                                for _ in args.iter_upvar_borrows() {
+                                    impl_ref.generics.regions.push(Region::Erased);
+                                }
+                            }
+                            TraitRefKind::TraitImpl(impl_ref)
+                        }
+                        _ => raise_error!(
+                            self,
+                            span,
+                            "failed to translate drop glue for type {ty:?}"
+                        ),
+                    }
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types

@@ -58,12 +58,11 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
@@ -124,6 +123,23 @@ where
     return
 }
 
+// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, const K : usize>(@1: *mut closure<T, K>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Ops<T, K>,
+
+// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}
+impl<T, const K : usize> Destruct for closure<T, K>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Ops<T, K>,
+{
+    parent_clause0 = MetaSized<closure<T, K>[@TraitClause0, @TraitClause1]>
+    fn drop_in_place = {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, K>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::test::{impl FnOnce<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_once
 fn {impl FnOnce<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_once<T, const K : usize>(@1: closure<T, K>[@TraitClause0, @TraitClause1], @2: (usize)) -> T
 where
@@ -138,7 +154,7 @@ where
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, K>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop[Destruct<closure<T, K>[@TraitClause0, @TraitClause1]>] @1
+    drop[{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]] @1
     return
 }
 

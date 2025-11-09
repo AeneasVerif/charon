@@ -52,12 +52,11 @@ impl<'_0, T> Clone for &'_0 (T) {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -316,6 +315,21 @@ where
     non-dyn-compatible
 }
 
+// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<U>,
+
+// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}
+impl<U> Destruct for closure<U>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<U>,
+{
+    parent_clause0 = MetaSized<closure<U>[@TraitClause0]>
+    fn drop_in_place = {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>[@TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::use_wrap
 pub fn use_wrap()
 {
@@ -350,7 +364,7 @@ pub fn use_wrap()
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
-    drop[Destruct<closure<u32>[Sized<u32>]>] f@1
+    drop[{impl Destruct for closure<U>[@TraitClause0]}<u32>[Sized<u32>]] f@1
     storage_dead(f@1)
     return
 }
