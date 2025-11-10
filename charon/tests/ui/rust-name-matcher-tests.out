@@ -89,8 +89,8 @@ impl<T> Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))::parent_clause0, {built_in impl Sized for Global}]}
-    parent_clause1 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}
+    parent_clause1 = {built_in impl Sized for Option<T>[@TraitClause0]}
     fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::method<T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
@@ -113,7 +113,7 @@ impl<T> Trait<T> for Slice<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
+    parent_clause0 = {built_in impl MetaSized for Slice<T>}
     parent_clause1 = @TraitClause0
     fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for Slice<T>}::method<T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
@@ -137,7 +137,7 @@ impl<'_0, T> Trait<T> for &'_0 (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<missing(@TypeBound(1, 0))>)}
+    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<T>)}
     parent_clause1 = @TraitClause0
     fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for &'_0 (Slice<T>)}::method<'_0, T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
@@ -163,9 +163,9 @@ where
     storage_live(@2)
     @2 := move (value@1)
     @0 := Generic { value: move (@2) }
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @2
+    drop[{built_in impl Destruct for T}] @2
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] value@1
+    drop[{built_in impl Destruct for T}] value@1
     return
 }
 

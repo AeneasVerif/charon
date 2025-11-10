@@ -119,7 +119,7 @@ where
     @2 := move (value@1)
     @0 := @BoxNew<T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] value@1
+    drop[{built_in impl Destruct for T}] value@1
     return
 }
 
@@ -146,7 +146,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause2::new<T>[@TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] x@1
+    drop[{built_in impl Destruct for T}] x@1
     return
 }
 

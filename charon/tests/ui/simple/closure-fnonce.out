@@ -83,7 +83,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] f@1
+    drop[{built_in impl Destruct for impl FnOnce(u8) -> u8}] f@1
     return
 }
 

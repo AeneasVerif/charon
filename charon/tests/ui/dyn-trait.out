@@ -179,7 +179,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::construct
-fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : 'static)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]
+fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : 'static)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Display<T>,
@@ -194,7 +194,7 @@ fn destruct<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + 
 
     storage_live(@2)
     @2 := &*(x@1) with_metadata(copy (x@1.metadata))
-    @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)}, Display<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>](move (@2))
+    @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, Display<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>](move (@2))
     storage_dead(@2)
     return
 }

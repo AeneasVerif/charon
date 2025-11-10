@@ -259,7 +259,7 @@ impl<T> BoolTrait for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Option<T>[@TraitClause0]}
     fn get_bool<'_0_1> = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0_1, T>[@TraitClause0]
     fn ret_true<'_0_1> = {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_1, T>[@TraitClause0]
     vtable: {impl BoolTrait for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
@@ -310,7 +310,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@1
+    drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -382,7 +382,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: ToU64<A>,
 {
-    parent_clause0 = {built_in impl MetaSized for (missing(@TypeBound(1, 0)), missing(@TypeBound(1, 0)))}
+    parent_clause0 = {built_in impl MetaSized for (A, A)}
     fn to_u64 = {impl ToU64 for (A, A)}::to_u64<A>[@TraitClause0, @TraitClause1]
     vtable: {impl ToU64 for (A, A)}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
@@ -482,7 +482,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Wrapper<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Wrapper<T>[@TraitClause0]}
     fn to_u64 = {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1]
     vtable: {impl ToU64 for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
@@ -585,7 +585,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] y@1
+    drop[{built_in impl Destruct for T2}] y@1
     return
 }
 
@@ -621,7 +621,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] y@1
+    drop[{built_in impl Destruct for T2}] y@1
     return
 }
 
@@ -697,7 +697,7 @@ where
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@2
+    drop[{built_in impl Destruct for T}] x@2
     return
 }
 
@@ -851,7 +851,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::W}] @1
+    drop[{built_in impl Destruct for @TraitClause1::W}] @1
     return
 }
 
@@ -869,7 +869,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 1))::W}] x@1
+    drop[{built_in impl Destruct for @TraitClause1::W}] x@1
     return
 }
 
@@ -1227,7 +1227,7 @@ impl<T, const N : usize> Trait for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
+    parent_clause0 = {built_in impl MetaSized for Array<T, N>}
     const LEN = {impl Trait for Array<T, N>}::LEN<T, N>[@TraitClause0]
     non-dyn-compatible
 }
@@ -1257,7 +1257,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Wrapper<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Wrapper<T>[@TraitClause0]}
     const LEN = {impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -1351,7 +1351,7 @@ impl RecursiveImpl for () {
 }
 
 // Full name: test_crate::flabada
-pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[{built_in impl Sized for (bool, &missing('_Bound(1, 0)) (()))}]
+pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[{built_in impl Sized for (bool, &'a (()))}]
 {
     let @0: Wrapper<(bool, &'_ (()))>[{built_in impl Sized for (bool, &'_ (()))}]; // return
     let _x@1: &'_ (()); // arg #1
@@ -1370,7 +1370,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @1
+    drop[{built_in impl Destruct for F}] @1
     return
 }
 

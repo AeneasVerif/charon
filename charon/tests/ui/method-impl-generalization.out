@@ -98,7 +98,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _other@2
+    drop[{built_in impl Destruct for T}] _other@2
     return
 }
 

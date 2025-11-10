@@ -454,7 +454,7 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -463,8 +463,8 @@ impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Iter<'_, missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause1 = {built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}
+    parent_clause0 = {built_in impl MetaSized for Iter<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for &'_ (T)}
     type Item = &'a (T)
     fn next<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
     vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
@@ -480,9 +480,9 @@ impl<'a, T> IntoIterator for &'a (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<missing(@TypeBound(1, 0))>)}
-    parent_clause1 = {built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}
-    parent_clause2 = {built_in impl Sized for Iter<'_, missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<T>)}
+    parent_clause1 = {built_in impl Sized for &'_ (T)}
+    parent_clause2 = {built_in impl Sized for Iter<'_, T>[@TraitClause0]}
     parent_clause3 = {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, T>[@TraitClause0]
     type Item = &'a (T)
     type IntoIter = Iter<'a, T>[@TraitClause0]
@@ -514,7 +514,7 @@ where
     let @2: Iter<'_, T>[@TraitClause0]; // anonymous local
     let @3: &'_ (Slice<T>); // anonymous local
     let iter@4: Iter<'_, T>[@TraitClause0]; // local
-    let @5: Option<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // anonymous local
+    let @5: Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]; // anonymous local
     let @6: &'_ mut (Iter<'_, T>[@TraitClause0]); // anonymous local
     let @7: &'_ mut (Iter<'_, T>[@TraitClause0]); // anonymous local
     let x@8: &'_ (T); // local
@@ -565,7 +565,7 @@ where
                 storage_live(@14)
                 storage_live(@15)
                 @15 := &*((args@11).0)
-                @14 := new_debug<'_, '_, &'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
+                @14 := new_debug<'_, '_, &'_ (T)>[{built_in impl Sized for &'_ (T)}, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
                 storage_dead(@15)
                 args@13 := [move (@14)]
                 storage_dead(@14)

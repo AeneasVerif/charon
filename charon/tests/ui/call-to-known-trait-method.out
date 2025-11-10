@@ -127,7 +127,7 @@ where
     storage_live(@1)
     @1 := @TraitClause1::default()
     @0 := Struct { 0: move (@1) }
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @1
+    drop[{built_in impl Destruct for A}] @1
     storage_dead(@1)
     return
 }
@@ -138,7 +138,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Default<A>,
 {
-    parent_clause0 = {built_in impl Sized for Struct<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl Sized for Struct<A>[@TraitClause0]}
     fn default = {impl Default for Struct<A>[@TraitClause0]}::default<A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -182,9 +182,9 @@ where
     [@TraitClause2]: Clone<A>,
     [@TraitClause3]: PartialEq<B, bool>,
 {
-    parent_clause0 = {built_in impl MetaSized for Struct<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Struct<A>[@TraitClause0]}
     parent_clause1 = @TraitClause1
-    parent_clause2 = {built_in impl Sized for (missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1)))}
+    parent_clause2 = {built_in impl Sized for (A, B)}
     fn method<C, [@TraitClause0_1]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_1]
     non-dyn-compatible
 }

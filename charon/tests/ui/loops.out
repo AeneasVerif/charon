@@ -322,7 +322,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
 {
-    parent_clause0 = {built_in impl MetaSized for Range<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Range<A>[@TraitClause0]}
     parent_clause1 = @TraitClause0
     type Item = A
     fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]
@@ -661,11 +661,11 @@ pub trait SliceIndex<Self, T>
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[{built_in impl Sized for &missing('_Bound(1, 0)) (missing(@TraitClauseBound(1, 0))::Output)}]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[{built_in impl Sized for &'_0 (@TraitClause0::Output)}]
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[{built_in impl Sized for &missing('_Bound(1, 0)) mut (missing(@TraitClauseBound(1, 0))::Output)}]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[{built_in impl Sized for &'_0 mut (@TraitClause0::Output)}]
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 
@@ -686,12 +686,12 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get
-pub fn {impl SliceIndex<Slice<T>> for usize}::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> Option<&'_0 (T)>[{built_in impl Sized for &missing('_Bound(1, 0)) (missing(@TypeBound(1, 0)))}]
+pub fn {impl SliceIndex<Slice<T>> for usize}::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> Option<&'_0 (T)>[{built_in impl Sized for &'_0 (T)}]
 where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_mut
-pub fn {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (T)>[{built_in impl Sized for &missing('_Bound(1, 0)) mut (missing(@TypeBound(1, 0)))}]
+pub fn {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (T)>[{built_in impl Sized for &'_0 mut (T)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -722,7 +722,7 @@ where
 {
     parent_clause0 = {built_in impl MetaSized for usize}
     parent_clause1 = {impl Sealed for usize}
-    parent_clause2 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
+    parent_clause2 = {built_in impl MetaSized for Slice<T>}
     parent_clause3 = @TraitClause0::parent_clause0
     type Output = T
     fn get<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::get<'_0_1, T>[@TraitClause0]
@@ -766,7 +766,7 @@ where
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 2))]}
+    parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause3::parent_clause3
     type Output = @TraitClause3::Output
@@ -790,7 +790,7 @@ where
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 2))]}
+    parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
     parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
     parent_clause2 = @TraitClause1::parent_clause0
     fn index_mut<'_0_1> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
@@ -1940,7 +1940,7 @@ pub enum List<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]),
+  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]),
   Nil,
 }
 
@@ -2008,7 +2008,7 @@ where
     let ls@1: &'_ mut (List<T>[@TraitClause0]); // arg #1
     let i@2: u32; // arg #2
     let x@3: &'_ mut (T); // local
-    let tl@4: &'_ mut (alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for Global}]); // local
+    let tl@4: &'_ mut (alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]); // local
     let @5: bool; // anonymous local
     let @6: u32; // anonymous local
     let @7: &'_ mut (List<T>[@TraitClause0]); // anonymous local

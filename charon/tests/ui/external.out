@@ -157,7 +157,7 @@ where
   Some(T),
 }
 
-pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<T>(@1: T) -> Option<NonZero<T>[@TraitClause0, @TraitClause1]>[{built_in impl Sized for NonZero<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}]
+pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<T>(@1: T) -> Option<NonZero<T>[@TraitClause0, @TraitClause1]>[{built_in impl Sized for NonZero<T>[@TraitClause0, @TraitClause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ZeroablePrimitive<T>,

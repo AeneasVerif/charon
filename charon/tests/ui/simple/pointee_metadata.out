@@ -213,7 +213,7 @@ pub trait Pointee<Self>
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::to_raw_parts
-pub fn to_raw_parts<T>(@1: *const T) -> (*const (), {built_in impl Pointee for missing(@TypeBound(1, 0))}::Metadata)
+pub fn to_raw_parts<T>(@1: *const T) -> (*const (), {built_in impl Pointee for T}::Metadata)
 
 fn UNIT_METADATA()
 {

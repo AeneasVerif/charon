@@ -96,7 +96,7 @@ impl<T> Drop for Foo<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Foo<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Foo<T>[@TraitClause0]}
     fn drop<'_0_1> = {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
     vtable: {impl Drop for Foo<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }

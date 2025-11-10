@@ -173,7 +173,7 @@ pub trait DiscriminantKind<Self>
 }
 
 // Full name: core::intrinsics::discriminant_value
-pub fn discriminant_value<'_0, T>(@1: &'_0 (T)) -> {built_in impl DiscriminantKind for missing(@TypeBound(1, 0))}::Discriminant
+pub fn discriminant_value<'_0, T>(@1: &'_0 (T)) -> {built_in impl DiscriminantKind for T}::Discriminant
 where
     [@TraitClause0]: Sized<T>,
 

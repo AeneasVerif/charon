@@ -45,7 +45,7 @@ where
     T : 'b,
 
 // Full name: core::cell::{RefCell<T>[@TraitClause0]}::try_borrow
-pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>[@TraitClause0])) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[{built_in impl Sized for Ref<missing('_Bound(1, 0)), missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}, {built_in impl Sized for BorrowError}]
+pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>[@TraitClause0])) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[{built_in impl Sized for Ref<'_0, T>[@TraitClause0]}, {built_in impl Sized for BorrowError}]
 where
     [@TraitClause0]: MetaSized<T>,
 
@@ -111,7 +111,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::wrap
-fn wrap<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[{built_in impl Sized for &missing('_Bound(1, 0)) (u32)}]
+fn wrap<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[{built_in impl Sized for &'a (u32)}]
 {
     let @0: Option<&'_ (u32)>[{built_in impl Sized for &'_ (u32)}]; // return
     let x@1: &'_ (u32); // arg #1

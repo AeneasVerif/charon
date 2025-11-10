@@ -73,7 +73,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {built_in impl MetaSized for Foo}
-    parent_clause1 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause1 = {built_in impl Sized for Option<T>[@TraitClause0]}
     type Type<U, [@TraitClause0_1]: Sized<U>> = (T, U)
     non-dyn-compatible
 }

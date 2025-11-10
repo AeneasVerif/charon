@@ -135,16 +135,16 @@ pub fn test_crate::LendingIterator::next<'a, Self>(@1: &'a mut (Self)) -> Option
 where
     [@TraitClause0]: LendingIterator<Self>,
 
-// Full name: test_crate::{impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]}::next
-pub fn {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]}::next<'a, 'b, T>(@1: &'b mut (Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}])) -> Option<&'b (T)>[{built_in impl Sized for &missing('_Bound(1, 1)) (missing(@TypeBound(1, 0)))}]
+// Full name: test_crate::{impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}::next
+pub fn {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}::next<'a, 'b, T>(@1: &'b mut (Option<&'a (T)>[{built_in impl Sized for &'_ (T)}])) -> Option<&'b (T)>[{built_in impl Sized for &'b (T)}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // return
-    let self@1: &'_ mut (Option<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]); // arg #1
+    let @0: Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]; // return
+    let self@1: &'_ mut (Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]); // arg #1
     let item@2: &'_ mut (&'_ (T)); // local
     let item@3: &'_ (T); // local
-    let @4: Option<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // anonymous local
+    let @4: Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]; // anonymous local
     let @5: &'_ (T); // anonymous local
 
     match *(self@1) {
@@ -172,14 +172,14 @@ where
     return
 }
 
-// Full name: test_crate::{impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]}
-impl<'a, T> LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
+// Full name: test_crate::{impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}
+impl<'a, T> LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Option<&'_ (missing(@TypeBound(1, 0)))>[{built_in impl Sized for &'_ (missing(@TypeBound(2, 0)))}]}
-    type Item<'b, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(3, 0)))}] : 'b> = &'b (T)
-    fn next<'b> = {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]}::next<'a, 'b, T>[@TraitClause0]
+    parent_clause0 = {built_in impl MetaSized for Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]}
+    type Item<'b, Option<&'a (T)>[{built_in impl Sized for &'_ (T)}] : 'b> = &'b (T)
+    fn next<'b> = {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}::next<'a, 'b, T>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -227,11 +227,11 @@ where
         @9 := move (item@6)
         @8 := (move (@9))
         @3 := @TraitClause3::call_mut<'_>(move (@7), move (@8))
-        drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 2))::Item}] @9
+        drop[{built_in impl Destruct for @TraitClause2::Item}] @9
         storage_dead(@9)
         storage_dead(@8)
         storage_dead(@7)
-        drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 2))::Item}] item@6
+        drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
         storage_dead(item@6)
         drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
         storage_dead(@4)
@@ -240,8 +240,8 @@ where
     @0 := ()
     drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
     storage_dead(@4)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] f@2
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] iter@1
+    drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
+    drop[{built_in impl Destruct for I}] iter@1
     return
 }
 
@@ -300,7 +300,7 @@ fn {impl FnOnce<(&'_ (i32))> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ (i32))> for closure<'_0>}
 impl<'_0, '_1> FnOnce<(&'_ (i32))> for closure<'_0> {
-    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0))>}
+    parent_clause0 = {built_in impl MetaSized for closure<'_0>}
     parent_clause1 = {built_in impl Sized for (&'_ (i32))}
     parent_clause2 = {built_in impl Tuple for (&'_ (i32))}
     parent_clause3 = {built_in impl Sized for ()}
@@ -311,7 +311,7 @@ impl<'_0, '_1> FnOnce<(&'_ (i32))> for closure<'_0> {
 
 // Full name: test_crate::main::{impl FnMut<(&'_ (i32))> for closure<'_0>}
 impl<'_0, '_1> FnMut<(&'_ (i32))> for closure<'_0> {
-    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0))>}
+    parent_clause0 = {built_in impl MetaSized for closure<'_0>}
     parent_clause1 = {impl FnOnce<(&'_ (i32))> for closure<'_0>}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (&'_ (i32))}
     parent_clause3 = {built_in impl Tuple for (&'_ (i32))}
@@ -369,7 +369,7 @@ pub fn main()
     @9 := &mut sum@5
     @8 := closure { 0: move (@9) }
     storage_dead(@9)
-    @6 := for_each<Option<&'_ (i32)>[{built_in impl Sized for &'_ (i32)}], closure<'_>>[{built_in impl Sized for Option<&'_ (i32)>[{built_in impl Sized for &'_ (i32)}]}, {built_in impl Sized for closure<'_>}, {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]}<'_, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ (i32))> for closure<'_0>}<'_, '_>](move (@7), move (@8))
+    @6 := for_each<Option<&'_ (i32)>[{built_in impl Sized for &'_ (i32)}], closure<'_>>[{built_in impl Sized for Option<&'_ (i32)>[{built_in impl Sized for &'_ (i32)}]}, {built_in impl Sized for closure<'_>}, {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}<'_, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ (i32))> for closure<'_0>}<'_, '_>](move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     storage_dead(@6)
