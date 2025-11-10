@@ -25,6 +25,7 @@ pub trait Sized<Self>
 pub fn new<T>(@1: T) -> RefCell<T>[@TraitClause0::parent_clause0]
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -48,6 +49,7 @@ where
 pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>[@TraitClause0])) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[{built_in impl Sized for Ref<'_0, T>[@TraitClause0]}, {built_in impl Sized for BorrowError}]
 where
     [@TraitClause0]: MetaSized<T>,
+= <opaque>
 
 // Full name: core::clone::Clone
 #[lang_item("clone")]
@@ -63,6 +65,7 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -73,6 +76,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -89,6 +93,7 @@ fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
+= <opaque>
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}
 impl<T, E> Destruct for Result<T, E>[@TraitClause0, @TraitClause1]

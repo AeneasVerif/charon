@@ -16,20 +16,10 @@ open Expressions
 open GAst
 include Generated_GAstOfJson
 
-let rec maybe_opaque_body_of_json
-    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
-    (ctx : of_json_ctx) (js : json) : ('body gexpr_body option, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Ok", body) ] ->
-        let* body = body_of_json ctx body in
-        Ok (Some body)
-    | `Assoc [ ("Err", `Null) ] -> Ok None
-    | _ -> Error "")
-
 (* This is written by hand because the corresponding rust type is not type-generic. *)
-and gfun_decl_of_json
-    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
+let rec gfun_decl_of_json
+    (body_of_json :
+      of_json_ctx -> json -> ('body gexpr_body option, string) result)
     (ctx : of_json_ctx) (js : json) : ('body gfun_decl, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -49,7 +39,7 @@ and gfun_decl_of_json
         let* is_global_initializer =
           option_of_json global_decl_id_of_json ctx is_global_initializer
         in
-        let* body = maybe_opaque_body_of_json body_of_json ctx body in
+        let* body = body_of_json ctx body in
         Ok { def_id; item_meta; signature; src; is_global_initializer; body }
     | _ -> Error "")
 
@@ -79,7 +69,8 @@ and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
-    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
+    (body_of_json :
+      of_json_ctx -> json -> ('body gexpr_body option, string) result)
     (js : json) : ('body gcrate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -166,7 +157,8 @@ and gtranslated_crate_of_json
     | _ -> Error "")
 
 and gcrate_of_json
-    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
+    (body_of_json :
+      of_json_ctx -> json -> ('body gexpr_body option, string) result)
     (js : json) : ('body gcrate, string) result =
   match js with
   | `Assoc [ ("charon_version", charon_version); ("translated", translated) ] ->

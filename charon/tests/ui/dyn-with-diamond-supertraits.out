@@ -28,6 +28,7 @@ pub trait Add<Self, Rhs>
 
 // Full name: core::ops::arith::{impl Add<i32> for &'_0 (i32)}::add
 pub fn {impl Add<i32> for &'_0 (i32)}::add<'_0>(@1: &'_0 (i32), @2: i32) -> i32
+= <opaque>
 
 // Full name: core::ops::arith::{impl Add<i32> for &'_0 (i32)}
 impl<'_0> Add<i32> for &'_0 (i32) {
@@ -49,11 +50,13 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 #[lang_item("add")]
 pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
 where
     [@TraitClause0]: Add<Self, Rhs>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -85,6 +88,7 @@ trait Super<Self, T>
 fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
 where
     [@TraitClause0]: Super<Self, T>,
+= <method_without_default_body>
 
 struct test_crate::Internal::{vtable}<Ty0> {
   size: usize,
@@ -107,6 +111,7 @@ trait Internal<Self>
 fn test_crate::Internal::internal_method<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Internal
 where
     [@TraitClause0]: Internal<Self>,
+= <method_without_default_body>
 
 struct test_crate::Left::{vtable}<Ty0, Ty1> {
   size: usize,
@@ -131,6 +136,7 @@ trait Left<Self>
 fn test_crate::Left::left_method<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Left
 where
     [@TraitClause0]: Left<Self>,
+= <method_without_default_body>
 
 struct test_crate::Right::{vtable}<T, Ty0, Ty1> {
   size: usize,
@@ -158,6 +164,7 @@ trait Right<Self, T>
 fn test_crate::Right::right_method<'_0, Self, T>(@1: &'_0 (Self)) -> @TraitClause0::Right
 where
     [@TraitClause0]: Right<Self, T>,
+= <method_without_default_body>
 
 struct test_crate::Join::{vtable}<T, Ty0, Ty1, Ty2, Ty3> {
   size: usize,
@@ -183,6 +190,7 @@ trait Join<Self, T>
 fn test_crate::Join::join_method<'_0, Self, T>(@1: &'_0 (Self)) -> (@TraitClause0::parent_clause1::Left, @TraitClause0::parent_clause2::Right)
 where
     [@TraitClause0]: Join<Self, T>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Super<i32> for i32}::super_method
 fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32

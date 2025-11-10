@@ -34,6 +34,7 @@ fn test_crate::Trait::method<Self>()
 where
     [@TraitClause0]: Trait<Self>,
     [@TraitClause1]: Sized<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method
 fn {impl Trait for ()}::method()

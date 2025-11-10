@@ -27,6 +27,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -64,10 +65,12 @@ pub trait FnMut<Self, Args>
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -83,6 +86,7 @@ where
 fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}
 impl<T> Destruct for Option<T>[@TraitClause0]
@@ -124,6 +128,7 @@ pub trait LendingIterator<Self>
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}::drop_in_place
 fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
+= <opaque>
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}
 impl<A> Destruct for (A) {
@@ -134,6 +139,7 @@ impl<A> Destruct for (A) {
 pub fn test_crate::LendingIterator::next<'a, Self>(@1: &'a mut (Self)) -> Option<@TraitClause0::Item>[(@TraitClause0::Item::[@TraitClause0])]
 where
     [@TraitClause0]: LendingIterator<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}::next
 pub fn {impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}::next<'a, 'b, T>(@1: &'b mut (Option<&'a (T)>[{built_in impl Sized for &'_ (T)}])) -> Option<&'b (T)>[{built_in impl Sized for &'b (T)}]
@@ -275,6 +281,7 @@ fn {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
 fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
+= <opaque>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {

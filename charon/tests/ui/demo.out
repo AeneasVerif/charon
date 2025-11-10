@@ -478,6 +478,7 @@ pub trait Counter<Self>
 pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
 where
     [@TraitClause0]: Counter<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Counter for usize}::incr
 pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize

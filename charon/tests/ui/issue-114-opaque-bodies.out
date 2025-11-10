@@ -68,6 +68,7 @@ pub trait PartialEq<Self, Rhs>
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+= <method_without_default_body>
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
@@ -101,6 +102,7 @@ pub trait From<Self, T>
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 where
     [@TraitClause0]: From<Self, T>,
+= <method_without_default_body>
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
 pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
@@ -125,6 +127,7 @@ impl From<i32> for i64 {
 pub struct PhantomData<T> {}
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
@@ -195,6 +198,7 @@ fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
@@ -226,6 +230,7 @@ pub fn inline_sometimes() -> u32
 
 // Full name: issue_114_opaque_bodies_aux::inline_never
 pub fn inline_never() -> u32
+= <missing>
 
 // Full name: issue_114_opaque_bodies_aux::inline_generic
 pub fn inline_generic<T>() -> u32

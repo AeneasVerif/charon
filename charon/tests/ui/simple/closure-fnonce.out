@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -36,6 +37,7 @@ pub fn drop<T>(@1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
+= <opaque>
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -53,6 +55,7 @@ pub trait FnOnce<Self, Args>
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

@@ -26,6 +26,7 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
@@ -39,6 +40,7 @@ pub trait PartialEq<Self, Rhs>
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -50,6 +52,7 @@ pub trait Eq<Self>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
 pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
 impl PartialEq<u8> for u8 {
@@ -61,6 +64,7 @@ impl PartialEq<u8> for u8 {
 pub fn {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 (&'_1 (A)), @2: &'_3 (&'_0 (B))) -> bool
 where
     [@TraitClause0]: PartialEq<A, B>,
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}
 impl<'_0, '_1, A, B> PartialEq<&'_0 (B)> for &'_1 (A)
@@ -97,6 +101,7 @@ pub trait Debug<Self>
 pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
+= <opaque>
 
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
@@ -121,16 +126,19 @@ where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
     [@TraitClause2]: Hasher<H>,
+= <opaque>
 
 // Full name: core::hash::Hasher::finish
 pub fn finish<'_0, Self>(@1: &'_0 (Self)) -> u64
 where
     [@TraitClause0]: Hasher<Self>,
+= <opaque>
 
 // Full name: core::hash::Hasher::write
 pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
 where
     [@TraitClause0]: Hasher<Self>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -176,6 +184,7 @@ pub trait DiscriminantKind<Self>
 pub fn discriminant_value<'_0, T>(@1: &'_0 (T)) -> {built_in impl DiscriminantKind for T}::Discriminant
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::marker::StructuralPartialEq
 #[lang_item("structural_peq")]
@@ -195,6 +204,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {

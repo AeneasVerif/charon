@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::ops::deref::Deref
 #[lang_item("deref")]
@@ -36,6 +37,7 @@ pub trait Deref<Self>
 pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Target)
 where
     [@TraitClause0]: Deref<Self>,
+= <opaque>
 
 // Full name: core::ops::deref::DerefMut
 #[lang_item("deref_mut")]
@@ -50,6 +52,7 @@ pub trait DerefMut<Self>
 pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (@TraitClause0::parent_clause0::Target)
 where
     [@TraitClause0]: DerefMut<Self>,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -60,6 +63,7 @@ fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -76,6 +80,7 @@ pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::dere
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -94,6 +99,7 @@ pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::d
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -139,6 +145,7 @@ where
 fn {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut List<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: test_crate::List::{impl Destruct for List<T>[@TraitClause0]}
 impl<T> Destruct for List<T>[@TraitClause0]
@@ -253,6 +260,7 @@ where
 fn {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut IdType<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: test_crate::IdType::{impl Destruct for IdType<T>[@TraitClause0]}
 impl<T> Destruct for IdType<T>[@TraitClause0]

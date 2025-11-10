@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -28,6 +29,7 @@ pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
 fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+= <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl Destruct for Global {
@@ -42,6 +44,7 @@ where
     [@TraitClause1]: Sized<A>,
     [@TraitClause3]: Destruct<T>,
     [@TraitClause4]: Destruct<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
 impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
@@ -61,6 +64,7 @@ pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
@@ -83,6 +87,7 @@ fn {impl Destruct for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut A
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
+= <opaque>
 
 // Full name: test_crate::<array>::{impl Destruct for Array<T, N>}
 impl<T, const N : usize> Destruct for Array<T, N>
@@ -99,6 +104,7 @@ fn {impl Destruct for Slice<T>}::drop_in_place<T>(@1: *mut Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
+= <opaque>
 
 // Full name: test_crate::<slice>::{impl Destruct for Slice<T>}
 impl<T> Destruct for Slice<T>
@@ -116,6 +122,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Destruct<A>,
     [@TraitClause2]: Destruct<B>,
+= <opaque>
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
 impl<A, B> Destruct for (A, B)

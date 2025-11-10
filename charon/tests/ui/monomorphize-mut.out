@@ -154,17 +154,21 @@ where
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn core::marker::Destruct::drop_in_place::<&_ mut (_)><'_0, T0>(@1: *mut &'_0 mut (T0))
+= <opaque>
 
 fn core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause0]><'_0, T0>(@1: *mut core::option::Option::<&_ mut (_)><'_0, T0>[@TraitClause0])
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
+= <opaque>
 
 fn core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>(@1: *mut core::option::Option::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut (_)><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
     [@TraitClause1]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]

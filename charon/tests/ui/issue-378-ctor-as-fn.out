@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -36,6 +37,7 @@ where
 fn Some<T>(@1: T) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -43,6 +45,7 @@ pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
@@ -53,6 +56,7 @@ impl Destruct for String {
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
 pub fn new() -> String
+= <opaque>
 
 fn UNIT_METADATA()
 {

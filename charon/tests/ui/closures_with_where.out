@@ -52,6 +52,7 @@ where
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: FnMut<F, (usize)>,
     @TraitClause2::parent_clause1::Output = T,
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -62,14 +63,17 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -93,6 +97,7 @@ trait Ops<Self, const K : usize>
 fn of_usize<Self, const K : usize>(@1: usize) -> Self
 where
     [@TraitClause0]: Ops<Self, K>,
+= <method_without_default_body>
 
 // Full name: test_crate::test::closure
 struct closure<T, const K : usize>
@@ -127,6 +132,7 @@ fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_plac
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, K>,
+= <opaque>
 
 // Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}
 impl<T, const K : usize> Destruct for closure<T, K>[@TraitClause0, @TraitClause1]

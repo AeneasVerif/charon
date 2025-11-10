@@ -26,6 +26,7 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -46,6 +47,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -69,12 +71,14 @@ trait Trait<Self>
 fn test_crate::Trait::method1<Self>(@1: Self, @2: &'static (u32)) -> bool
 where
     [@TraitClause0]: Trait<Self>,
+= <method_without_default_body>
 
 fn test_crate::Trait::method2<Self, T>(@1: Self, @2: T)
 where
     [@TraitClause0]: Trait<Self>,
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: Copy<T>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method1
 fn {impl Trait for ()}::method1(@1: (), @2: &'static (u32)) -> bool
@@ -122,6 +126,7 @@ trait MyCompare<Self, Other>
 fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
 where
     [@TraitClause0]: MyCompare<Self, Other>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}::compare
 fn {impl MyCompare<&'a (())> for &'a (())}::compare<'a>(@1: &'a (()), @2: &'a (())) -> bool
@@ -211,6 +216,7 @@ trait Foo<Self>
 fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
 where
     [@TraitClause0]: Foo<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::foo
 fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())

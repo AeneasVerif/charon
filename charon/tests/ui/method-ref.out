@@ -42,6 +42,7 @@ trait Ord<Self>
 fn cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::min
 fn min<T>()

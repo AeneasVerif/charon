@@ -7,6 +7,7 @@ use itertools::Itertools;
 use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::prelude::DiGraphMap;
+use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
@@ -72,7 +73,7 @@ macro_rules! sanity_check {
 pub use sanity_check;
 
 /// Common error used during the translation.
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Error {
     pub span: Span,
     pub msg: String,

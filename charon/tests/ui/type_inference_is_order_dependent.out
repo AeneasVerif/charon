@@ -25,9 +25,11 @@ pub trait Default<Self>
 pub fn core::default::Default::default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
+= <opaque>
 
 // Full name: core::default::{impl Default for bool}::default
 pub fn {impl Default for bool}::default() -> bool
+= <opaque>
 
 // Full name: core::default::{impl Default for bool}
 impl Default for bool {
@@ -67,9 +69,11 @@ pub trait Debug<Self>
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
+= <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}::fmt
 pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}
 impl Debug for bool {
@@ -86,9 +90,11 @@ pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
+= <opaque>
 
 // Full name: core::fmt::rt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), P>), @2: &'a (Array<Argument<'a>, A>)) -> Arguments<'a>
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -100,9 +106,11 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -142,6 +150,7 @@ trait Join<Self, U>
 fn test_crate::Join::test<Self, U>()
 where
     [@TraitClause0]: Join<Self, U>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Join<U> for T}::test
 fn {impl Join<U> for T}::test<T, U>()

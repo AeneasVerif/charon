@@ -851,10 +851,9 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let body = match impl_kind {
-            _ if item_meta.opacity.with_private_contents().is_opaque() => Err(Opaque),
+            _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
             TraitImplSource::Normal => {
-                let body = self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?;
-                Ok(body)
+                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
             }
             _ => {
                 raise_error!(
@@ -983,14 +982,9 @@ impl ItemTransCtx<'_, '_> {
         );
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Err(Opaque)
+            Body::Opaque
         } else {
-            Ok(self.translate_vtable_shim_body(
-                span,
-                &target_receiver,
-                &signature,
-                impl_func_def,
-            )?)
+            self.translate_vtable_shim_body(span, &target_receiver, &signature, impl_func_def)?
         };
 
         Ok(FunDecl {

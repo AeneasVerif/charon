@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
@@ -34,6 +35,7 @@ pub trait Drop<Self>
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -68,6 +70,7 @@ where
 fn {impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Foo<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: test_crate::Foo::{impl Destruct for Foo<T>[@TraitClause0]}
 impl<T> Destruct for Foo<T>[@TraitClause0]

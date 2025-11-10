@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -28,6 +29,7 @@ pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
 fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+= <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl Destruct for Global {
@@ -67,6 +69,7 @@ where
     [@TraitClause1]: Sized<A>,
     [@TraitClause3]: Destruct<T>,
     [@TraitClause4]: Destruct<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
@@ -103,6 +106,7 @@ impl Destruct for String {
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
 pub fn new() -> String
+= <opaque>
 
 // Full name: test_crate::use_string
 fn use_string(@1: String)

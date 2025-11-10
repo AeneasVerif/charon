@@ -215,9 +215,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
 
 impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let tab = ctx.indent();
+        write!(f, "\n{tab}")?;
         match self {
-            Body::Unstructured(b) => write!(f, "{}", b.with_ctx(ctx)),
-            Body::Structured(b) => write!(f, "{}", b.with_ctx(ctx)),
+            Body::Unstructured(body) => {
+                let body = body.with_ctx(ctx);
+                write!(f, "{{\n{body}{tab}}}")
+            }
+            Body::Structured(body) => {
+                let body = body.with_ctx(ctx);
+                write!(f, "{{\n{body}{tab}}}")
+            }
+            Body::TraitMethodWithoutDefault => write!(f, "= <method_without_default_body>"),
+            Body::Opaque => write!(f, "= <opaque>"),
+            Body::Missing => write!(f, "= <missing>"),
+            Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
         }
     }
 }
@@ -467,16 +479,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             write!(f, " -> {}", self.signature.output.with_ctx(ctx))?;
         };
         write!(f, "{preds}")?;
-
-        // Body
-        match &self.body {
-            Ok(body) => {
-                let tab = ctx.indent();
-                let body = body.with_ctx(ctx);
-                write!(f, "\n{tab}{{\n{body}{tab}}}")?;
-            }
-            Err(Opaque) => {}
-        }
+        write!(f, "{}", self.body.with_ctx(ctx))?;
 
         Ok(())
     }

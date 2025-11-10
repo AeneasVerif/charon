@@ -14,6 +14,7 @@ pub trait Sized<Self>
 
 // Full name: core::num::{u32}::MAX
 pub fn MAX() -> u32
+= <opaque>
 
 // Full name: core::num::{u32}::MAX
 pub const MAX: u32 = MAX()

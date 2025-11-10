@@ -1150,15 +1150,19 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
+    /// Translate the MIR body of this definition if it has one. Catches any error and returns
+    /// `Body::Error` instead
+    pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef) -> Body {
+        match self.translate_def_body_inner(span, def) {
+            Ok(body) => body,
+            Err(e) => Body::Error(e),
+        }
+    }
     /// Translate the MIR body of this definition if it has one.
-    pub fn translate_def_body(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-    ) -> Result<Result<Body, Opaque>, Error> {
+    fn translate_def_body_inner(&mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
         // Retrieve the body
         if let Some(body) = self.get_mir(def.this(), span)? {
-            self.translate_body(span, &body, &def.source_text)
+            Ok(self.translate_body(span, &body, &def.source_text))
         } else {
             if let hax::FullDefKind::Const { value, .. }
             | hax::FullDefKind::AssocConst { value, .. } = def.kind()
@@ -1175,29 +1179,31 @@ impl BodyTransCtx<'_, '_, '_> {
                     ret,
                     Rvalue::Use(Operand::Const(Box::new(c))),
                 ));
-                Ok(Ok(Body::Unstructured(bb.build())))
+                Ok(Body::Unstructured(bb.build()))
             } else {
-                Ok(Err(Opaque))
+                Ok(Body::Missing)
             }
         }
     }
 
-    /// Translate a function body.
+    /// Translate a function body. Catches errors and returns `Body::Error` instead.
     pub fn translate_body(
         &mut self,
         span: Span,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
-    ) -> Result<Result<Body, Opaque>, Error> {
+    ) -> Body {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
         let res = panic::catch_unwind(move || this.translate_body_aux(body, source_text));
         match res {
-            Ok(Ok(body)) => Ok(body),
+            Ok(Ok(body)) => body,
             // Translation error
-            Ok(Err(e)) => Err(e),
+            Ok(Err(e)) => Body::Error(e),
+            // Panic
             Err(_) => {
-                raise_error!(self, span, "Thread panicked when extracting body.");
+                let e = register_error!(self, span, "Thread panicked when extracting body.");
+                Body::Error(e)
             }
         }
     }
@@ -1206,7 +1212,7 @@ impl BodyTransCtx<'_, '_, '_> {
         &mut self,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
-    ) -> Result<Result<Body, Opaque>, Error> {
+    ) -> Result<Body, Error> {
         // Compute the span information
         let span = self.translate_span_from_hax(&body.span);
 
@@ -1231,12 +1237,12 @@ impl BodyTransCtx<'_, '_, '_> {
         }
 
         // Create the body
-        Ok(Ok(Body::Unstructured(ExprBody {
+        Ok(Body::Unstructured(ExprBody {
             span,
             locals: mem::take(&mut self.locals),
             body: mem::take(&mut self.blocks),
             comments: self.translate_body_comments(source_text, span),
-        })))
+        }))
     }
 }
 

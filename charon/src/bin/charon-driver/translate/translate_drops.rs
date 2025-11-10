@@ -9,22 +9,17 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         def: &hax::FullDef,
-    ) -> Result<Result<Body, Opaque>, Error> {
+    ) -> Result<Body, Error> {
         let (hax::FullDefKind::Adt { drop_glue, .. } | hax::FullDefKind::Closure { drop_glue, .. }) =
             def.kind()
         else {
-            return Ok(Err(Opaque));
+            return Ok(Body::Opaque);
         };
         let Some(body) = drop_glue else {
-            return Ok(Err(Opaque));
+            return Ok(Body::Opaque);
         };
 
-        let mut bt_ctx = BodyTransCtx::new(self);
-        Ok(match bt_ctx.translate_body(span, body, &def.source_text) {
-            Ok(Ok(body)) => Ok(body),
-            Ok(Err(Opaque)) => Err(Opaque),
-            Err(_) => Err(Opaque),
-        })
+        Ok(BodyTransCtx::new(self).translate_body(span, body, &def.source_text))
     }
 
     /// Translate the body of the fake `Destruct::drop_in_place` method we're adding to the
@@ -85,7 +80,7 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Err(Opaque)
+            Body::Opaque
         } else {
             self.translate_drop_in_place_method_body(span, def)?
         };

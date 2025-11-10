@@ -29,9 +29,11 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
@@ -49,6 +51,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
@@ -67,6 +70,7 @@ pub trait SizedTypeProperties<Self>
 pub fn SIZE<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
 #[lang_item("mem_size_const")]
@@ -80,6 +84,7 @@ where
 pub fn ALIGN<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
@@ -92,6 +97,7 @@ where
 pub fn IS_ZST<Self>() -> bool
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub const IS_ZST<Self>: bool
@@ -103,6 +109,7 @@ where
 pub fn LAYOUT<Self>() -> Layout
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub const LAYOUT<Self>: Layout
@@ -114,6 +121,7 @@ where
 pub fn MAX_SLICE_LEN<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub const MAX_SLICE_LEN<Self>: usize
@@ -142,12 +150,14 @@ pub struct Global {}
 // Full name: alloc::alloc::exchange_malloc
 #[lang_item("exchange_malloc")]
 unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
 fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -172,12 +182,14 @@ pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[{built_in impl MetaSized f
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
 fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
@@ -195,6 +207,7 @@ pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T>[@TraitClause0, {built_in impl Si
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

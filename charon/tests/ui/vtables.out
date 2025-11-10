@@ -27,9 +27,11 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
@@ -69,9 +71,11 @@ pub trait Display<Self>
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
+= <opaque>
 
 // Full name: core::fmt::{impl Display for Str}::fmt
 pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
@@ -88,6 +92,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -112,6 +117,7 @@ pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
@@ -121,9 +127,11 @@ impl Destruct for String {
 
 // Full name: alloc::string::{String}::is_empty
 pub fn is_empty<'_0>(@1: &'_0 (String)) -> bool
+= <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
 pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
+= <opaque>
 
 // Full name: alloc::string::{impl Clone for String}
 impl Clone for String {
@@ -145,12 +153,14 @@ pub trait ToString<Self>
 pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> String
 where
     [@TraitClause0]: ToString<Self>,
+= <opaque>
 
 // Full name: alloc::string::{impl ToString for T}::to_string
 pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 (T)) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
+= <opaque>
 
 // Full name: alloc::string::{impl ToString for T}
 impl<T> ToString for T
@@ -193,6 +203,7 @@ trait Super<Self, T>
 fn test_crate::Super::super_method<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> i32
 where
     [@TraitClause0]: Super<Self, T>,
+= <method_without_default_body>
 
 struct test_crate::Checkable::{vtable}<T> {
   size: usize,
@@ -216,6 +227,7 @@ trait Checkable<Self, T>
 fn test_crate::Checkable::check<'_0, Self, T>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: Checkable<Self, T>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Super<i32> for i32}::super_method
 fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
@@ -362,6 +374,7 @@ trait NoParam<Self>
 fn test_crate::NoParam::dummy<'_0, Self>(@1: &'_0 (Self))
 where
     [@TraitClause0]: NoParam<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl NoParam for i32}::dummy
 fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
@@ -440,6 +453,7 @@ trait Modifiable<Self, T>
 fn test_crate::Modifiable::modify<'_0, '_1, Self, T>(@1: &'_0 mut (Self), @2: &'_1 (T)) -> T
 where
     [@TraitClause0]: Modifiable<Self, T>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify
 fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(@1: &'_0 mut (i32), @2: &'_1 (T)) -> T
@@ -574,6 +588,7 @@ trait BaseOn<Self, T>
 fn test_crate::BaseOn::operate_on<'_0, '_1, Self, T>(@1: &'_0 (Self), @2: &'_1 (T))
 where
     [@TraitClause0]: BaseOn<Self, T>,
+= <method_without_default_body>
 
 struct test_crate::Both32And64::{vtable} {
   size: usize,
@@ -886,6 +901,7 @@ trait LifetimeTrait<Self>
 fn test_crate::LifetimeTrait::lifetime_method<'a, '_1, Self>(@1: &'_1 (Self), @2: &'a (@TraitClause0::Ty)) -> &'a (@TraitClause0::Ty)
 where
     [@TraitClause0]: LifetimeTrait<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method
 fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'a (i32)) -> &'a (i32)

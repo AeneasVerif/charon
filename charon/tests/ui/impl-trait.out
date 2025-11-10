@@ -25,9 +25,11 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
@@ -39,6 +41,7 @@ impl Clone for u32 {
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}::clone
 #[lang_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}
 impl<'_0, T> Clone for &'_0 (T) {
@@ -56,6 +59,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -81,6 +85,7 @@ pub trait FnOnce<Self, Args>
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -106,6 +111,7 @@ pub trait Foo<Self>
 pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Type)
 where
     [@TraitClause0]: Foo<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::get_ty
 pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
@@ -316,6 +322,7 @@ where
 fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
 where
     [@TraitClause0]: Sized<U>,
+= <opaque>
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}
 impl<U> Destruct for closure<U>[@TraitClause0]

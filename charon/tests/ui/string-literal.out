@@ -37,9 +37,11 @@ pub trait Display<Self>
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
+= <opaque>
 
 // Full name: core::fmt::{impl Display for Str}::fmt
 pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
@@ -56,6 +58,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -63,6 +66,7 @@ pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
@@ -83,12 +87,14 @@ pub trait ToString<Self>
 pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> String
 where
     [@TraitClause0]: ToString<Self>,
+= <opaque>
 
 // Full name: alloc::string::{impl ToString for T}::to_string
 pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 (T)) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
+= <opaque>
 
 // Full name: alloc::string::{impl ToString for T}
 impl<T> ToString for T

@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -59,6 +60,7 @@ where
 fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(@1: *mut HashMap<S>[@TraitClause0])
 where
     [@TraitClause0]: Sized<S>,
+= <opaque>
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[@TraitClause0]}
 impl<S> Destruct for HashMap<S>[@TraitClause0]

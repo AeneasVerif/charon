@@ -46,10 +46,12 @@ pub trait Allocator<Self>
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
+= <opaque>
 
 pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout)
 where
     [@TraitClause0]: Allocator<Self>,
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -60,6 +62,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -67,9 +70,11 @@ pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
 pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+= <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
 pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
+= <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
@@ -85,6 +90,7 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
     [@TraitClause2]: Allocator<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
 impl<T, A> Destruct for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]

@@ -33,6 +33,7 @@ pub opaque type Argument<'a>
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
+= <opaque>
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -63,6 +64,7 @@ pub trait SizedTypeProperties<Self>
 pub fn SIZE<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
 #[lang_item("mem_size_const")]
@@ -76,6 +78,7 @@ where
 pub fn ALIGN<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
@@ -88,6 +91,7 @@ where
 pub fn IS_ZST<Self>() -> bool
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub const IS_ZST<Self>: bool
@@ -99,6 +103,7 @@ where
 pub fn LAYOUT<Self>() -> Layout
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub const LAYOUT<Self>: Layout
@@ -110,6 +115,7 @@ where
 pub fn MAX_SLICE_LEN<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub const MAX_SLICE_LEN<Self>: usize
@@ -143,6 +149,7 @@ where
 
 // Full name: core::panicking::panic_nounwind_fmt
 pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -297,6 +304,7 @@ where
 pub fn as_ptr<'_0, T>(@1: &'_0 (Slice<T>)) -> *const T
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: test_crate::main
 fn main()

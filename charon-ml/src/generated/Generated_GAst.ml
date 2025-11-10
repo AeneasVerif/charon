@@ -42,6 +42,9 @@ type assertion = {
 and call = { func : fn_operand; args : operand list; dest : place }
 and copy_non_overlapping = { src : operand; dst : operand; count : operand }
 
+(** Common error used during the translation. *)
+and error = { span : span; msg : string }
+
 (** A function operand is used in function calls. It either designates a
     top-level function, or a place in case we are using function pointers stored
     in local variables. *)

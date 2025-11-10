@@ -26,6 +26,7 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -36,6 +37,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -85,14 +87,17 @@ pub trait Fn<Self, Args>
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -296,6 +301,7 @@ fn {impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closu
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+= <opaque>
 
 // Full name: test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}
 impl<'a, '_1, T> Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]
@@ -390,6 +396,7 @@ fn {impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closu
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+= <opaque>
 
 // Full name: test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}
 impl<'a, '_1, T> Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]
@@ -484,6 +491,7 @@ fn {impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closu
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+= <opaque>
 
 // Full name: test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure::{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}
 impl<'a, '_1, T> Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]

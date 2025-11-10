@@ -20,6 +20,7 @@ pub trait Sized<Self>
 pub fn new<T>() -> Layout
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::intrinsics::size_of
 pub fn size_of<T>() -> usize
@@ -205,6 +206,7 @@ where
 
 // Full name: core::ptr::copy_nonoverlapping::precondition_check
 fn precondition_check(@1: *const (), @2: *mut (), @3: usize, @4: usize, @5: usize)
+= <opaque>
 
 // Full name: core::ptr::copy_nonoverlapping
 #[lang_item("ptr_copy_nonoverlapping")]

@@ -22,6 +22,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -55,6 +56,7 @@ where
     [@TraitClause0]: FromIterator<Self, A>,
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: IntoIterator<T, A>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
 pub fn {impl FromIterator<()> for ()}::from_iter<I>(@1: I)

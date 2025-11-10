@@ -34,6 +34,7 @@ pub trait BoolTrait<Self>
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
+= <method_without_default_body>
 
 pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 where

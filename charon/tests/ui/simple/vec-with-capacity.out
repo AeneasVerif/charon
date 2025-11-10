@@ -29,6 +29,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
@@ -47,6 +48,7 @@ pub trait SizedTypeProperties<Self>
 pub fn SIZE<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
 #[lang_item("mem_size_const")]
@@ -60,6 +62,7 @@ where
 pub fn ALIGN<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
@@ -72,6 +75,7 @@ where
 pub fn IS_ZST<Self>() -> bool
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub const IS_ZST<Self>: bool
@@ -83,6 +87,7 @@ where
 pub fn LAYOUT<Self>() -> Layout
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub const LAYOUT<Self>: Layout
@@ -94,6 +99,7 @@ where
 pub fn MAX_SLICE_LEN<Self>() -> usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub const MAX_SLICE_LEN<Self>: usize
@@ -134,6 +140,7 @@ where
 fn with_capacity_in<A>(@1: usize, @2: A, @3: Layout) -> RawVecInner<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
@@ -151,6 +158,7 @@ fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
