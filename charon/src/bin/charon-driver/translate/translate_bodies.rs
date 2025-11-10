@@ -1152,14 +1152,14 @@ impl BodyTransCtx<'_, '_, '_> {
 
     /// Translate the MIR body of this definition if it has one. Catches any error and returns
     /// `Body::Error` instead
-    pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef) -> Body {
+    pub fn translate_def_body(self, span: Span, def: &hax::FullDef) -> Body {
         match self.translate_def_body_inner(span, def) {
             Ok(body) => body,
             Err(e) => Body::Error(e),
         }
     }
     /// Translate the MIR body of this definition if it has one.
-    fn translate_def_body_inner(&mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
+    fn translate_def_body_inner(mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
         // Retrieve the body
         if let Some(body) = self.get_mir(def.this(), span)? {
             Ok(self.translate_body(span, &body, &def.source_text))
@@ -1188,13 +1188,13 @@ impl BodyTransCtx<'_, '_, '_> {
 
     /// Translate a function body. Catches errors and returns `Body::Error` instead.
     pub fn translate_body(
-        &mut self,
+        mut self,
         span: Span,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
     ) -> Body {
         // Stopgap measure because there are still many panics in charon and hax.
-        let mut this = panic::AssertUnwindSafe(&mut *self);
+        let mut this = panic::AssertUnwindSafe(&mut self);
         let res = panic::catch_unwind(move || this.translate_body_aux(body, source_text));
         match res {
             Ok(Ok(body)) => body,
