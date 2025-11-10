@@ -94,7 +94,6 @@ pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -157,16 +156,17 @@ where
     let @0: (); // return
     let @1: (); // anonymous local
     let @2: Arguments<'_>; // anonymous local
-    let args@3: Array<Argument<'_>, 1 : usize>; // local
-    let @4: Argument<'_>; // anonymous local
-    let @5: &'_ (U); // anonymous local
-    let @6: &'_ (U); // anonymous local
-    let @7: U; // anonymous local
-    let @8: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let args@3: (&'_ (U)); // local
+    let @4: &'_ (U); // anonymous local
+    let @5: U; // anonymous local
+    let args@6: Array<Argument<'_>, 1 : usize>; // local
+    let @7: Argument<'_>; // anonymous local
+    let @8: &'_ (U); // anonymous local
     let @9: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @10: Array<&'_ (Str), 2 : usize>; // anonymous local
-    let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @10: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @11: Array<&'_ (Str), 2 : usize>; // anonymous local
     let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @13: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
 
     @0 := ()
     storage_live(@1)
@@ -174,36 +174,39 @@ where
     storage_live(args@3)
     storage_live(@4)
     storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    @7 := @TraitClause4::default()
-    @6 := &@7
-    @5 := &*(@6)
-    @4 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@5))
-    storage_dead(@5)
-    args@3 := [move (@4)]
+    @5 := @TraitClause4::default()
+    @4 := &@5
+    args@3 := (move (@4))
     storage_dead(@4)
+    storage_live(args@6)
+    storage_live(@7)
     storage_live(@8)
+    @8 := &*((args@3).0)
+    @7 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@8))
+    storage_dead(@8)
+    args@6 := [move (@7)]
+    storage_dead(@7)
     storage_live(@9)
     storage_live(@10)
-    @10 := [const (""), const ("\n")]
-    @9 := &@10
-    @8 := &*(@9)
     storage_live(@11)
+    @11 := [const (""), const ("\n")]
+    @10 := &@11
+    @9 := &*(@10)
     storage_live(@12)
-    @12 := &args@3
-    @11 := &*(@12)
-    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@8), move (@11))
+    storage_live(@13)
+    @13 := &args@6
+    @12 := &*(@13)
+    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@9), move (@12))
+    storage_dead(@13)
     storage_dead(@12)
     storage_dead(@11)
     storage_dead(@10)
     storage_dead(@9)
-    storage_dead(@8)
     @1 := _print<'_>(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] @7
-    storage_dead(@7)
-    storage_dead(@6)
+    storage_dead(args@6)
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] @5
+    storage_dead(@5)
     storage_dead(args@3)
     storage_dead(@1)
     @0 := ()

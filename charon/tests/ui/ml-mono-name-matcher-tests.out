@@ -92,7 +92,6 @@ pub trait MetaSized::<Slice<bool>>
 #[lang_item("destruct")]
 pub trait Destruct::<i32>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<i32>
     fn drop_in_place = drop_in_place::<i32>
     vtable: core::marker::Destruct::{vtable}::<i32>
 }
@@ -101,7 +100,6 @@ pub trait Destruct::<i32>
 #[lang_item("destruct")]
 pub trait Destruct::<&'_ (Str)>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<&'_ (Str)>
     fn drop_in_place = drop_in_place::<&'_ (Str)>
     vtable: core::marker::Destruct::{vtable}::<&'_ (Str)>
 }

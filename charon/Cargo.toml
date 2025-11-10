@@ -110,6 +110,7 @@ popular-crates-test = [
 ignore = "0.4"
 indoc = "2"
 libtest-mimic = "0.8"
+regex = "1"
 snapbox = "0.6"
 tempfile = "3"
 walkdir = "2.3.2"

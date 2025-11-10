@@ -73,9 +73,13 @@ pub struct Placeholder {
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
 
-fn core::slice::index::slice_end_index_len_fail::do_panic::runtime(@1: usize, @2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic::runtime(@1: usize, @2: usize) -> !
 
-fn core::slice::index::slice_index_order_fail::do_panic::runtime(@1: usize, @2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#1::runtime(@1: usize, @2: usize) -> !
+
+fn core::slice::index::slice_index_fail::do_panic#2::runtime(@1: usize, @2: usize) -> !
+
+fn core::slice::index::slice_index_fail::do_panic#3::runtime(@1: usize, @2: usize) -> !
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
 where
@@ -101,22 +105,40 @@ where
   Some(T),
 }
 
-fn core::slice::index::slice_end_index_len_fail::do_panic(@1: usize, @2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic(@1: usize, @2: usize) -> !
 {
     let @0: !; // return
-    let index@1: usize; // arg #1
+    let start@1: usize; // arg #1
     let len@2: usize; // arg #2
 
-    @0 := core::slice::index::slice_end_index_len_fail::do_panic::runtime(move (index@1), move (len@2))
+    @0 := core::slice::index::slice_index_fail::do_panic::runtime(move (start@1), move (len@2))
 }
 
-fn core::slice::index::slice_index_order_fail::do_panic(@1: usize, @2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#1(@1: usize, @2: usize) -> !
 {
     let @0: !; // return
-    let index@1: usize; // arg #1
+    let end@1: usize; // arg #1
+    let len@2: usize; // arg #2
+
+    @0 := core::slice::index::slice_index_fail::do_panic#1::runtime(move (end@1), move (len@2))
+}
+
+fn core::slice::index::slice_index_fail::do_panic#2(@1: usize, @2: usize) -> !
+{
+    let @0: !; // return
+    let start@1: usize; // arg #1
     let end@2: usize; // arg #2
 
-    @0 := core::slice::index::slice_index_order_fail::do_panic::runtime(move (index@1), move (end@2))
+    @0 := core::slice::index::slice_index_fail::do_panic#2::runtime(move (start@1), move (end@2))
+}
+
+fn core::slice::index::slice_index_fail::do_panic#3(@1: usize, @2: usize) -> !
+{
+    let @0: !; // return
+    let end@1: usize; // arg #1
+    let len@2: usize; // arg #2
+
+    @0 := core::slice::index::slice_index_fail::do_panic#3::runtime(move (end@1), move (len@2))
 }
 
 // Full name: core::panicking::panic_nounwind_fmt
@@ -181,36 +203,102 @@ where
     vtable: {impl Index<I> for Slice<T>}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-// Full name: core::slice::index::slice_end_index_len_fail
-fn slice_end_index_len_fail(@1: usize, @2: usize) -> !
+// Full name: core::slice::index::slice_index_fail
+fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
 {
     let @0: !; // return
-    let index@1: usize; // arg #1
-    let len@2: usize; // arg #2
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
-
-    storage_live(@3)
-    @3 := copy (index@1)
-    storage_live(@4)
-    @4 := copy (len@2)
-    @0 := core::slice::index::slice_end_index_len_fail::do_panic(move (@3), move (@4))
-}
-
-// Full name: core::slice::index::slice_index_order_fail
-fn slice_index_order_fail(@1: usize, @2: usize) -> !
-{
-    let @0: !; // return
-    let index@1: usize; // arg #1
+    let start@1: usize; // arg #1
     let end@2: usize; // arg #2
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
+    let len@3: usize; // arg #3
+    let @4: bool; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: usize; // anonymous local
+    let @7: !; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: usize; // anonymous local
+    let @10: bool; // anonymous local
+    let @11: usize; // anonymous local
+    let @12: usize; // anonymous local
+    let @13: !; // anonymous local
+    let @14: usize; // anonymous local
+    let @15: usize; // anonymous local
+    let @16: bool; // anonymous local
+    let @17: usize; // anonymous local
+    let @18: usize; // anonymous local
+    let @19: !; // anonymous local
+    let @20: usize; // anonymous local
+    let @21: usize; // anonymous local
+    let @22: usize; // anonymous local
+    let @23: usize; // anonymous local
 
-    storage_live(@3)
-    @3 := copy (index@1)
     storage_live(@4)
-    @4 := copy (end@2)
-    @0 := core::slice::index::slice_index_order_fail::do_panic(move (@3), move (@4))
+    storage_live(@5)
+    @5 := copy (start@1)
+    storage_live(@6)
+    @6 := copy (len@3)
+    @4 := move (@5) > move (@6)
+    if move (@4) {
+    }
+    else {
+        storage_dead(@6)
+        storage_dead(@5)
+        storage_dead(@4)
+        storage_live(@10)
+        storage_live(@11)
+        @11 := copy (end@2)
+        storage_live(@12)
+        @12 := copy (len@3)
+        @10 := move (@11) > move (@12)
+        if move (@10) {
+        }
+        else {
+            storage_dead(@12)
+            storage_dead(@11)
+            storage_dead(@10)
+            storage_live(@16)
+            storage_live(@17)
+            @17 := copy (start@1)
+            storage_live(@18)
+            @18 := copy (end@2)
+            @16 := move (@17) > move (@18)
+            if move (@16) {
+            }
+            else {
+                storage_dead(@18)
+                storage_dead(@17)
+                storage_dead(@16)
+                storage_live(@22)
+                @22 := copy (end@2)
+                storage_live(@23)
+                @23 := copy (len@3)
+                @0 := core::slice::index::slice_index_fail::do_panic#3(move (@22), move (@23))
+            }
+            storage_dead(@18)
+            storage_dead(@17)
+            storage_live(@19)
+            storage_live(@20)
+            @20 := copy (start@1)
+            storage_live(@21)
+            @21 := copy (end@2)
+            @19 := core::slice::index::slice_index_fail::do_panic#2(move (@20), move (@21))
+        }
+        storage_dead(@12)
+        storage_dead(@11)
+        storage_live(@13)
+        storage_live(@14)
+        @14 := copy (end@2)
+        storage_live(@15)
+        @15 := copy (len@3)
+        @13 := core::slice::index::slice_index_fail::do_panic#1(move (@14), move (@15))
+    }
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_live(@7)
+    storage_live(@8)
+    @8 := copy (start@1)
+    storage_live(@9)
+    @9 := copy (len@3)
+    @7 := core::slice::index::slice_index_fail::do_panic(move (@8), move (@9))
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
@@ -454,7 +542,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
     storage_live(@12)
     @12 := Option::None {  }
-    @7 := Arguments { 0: move (@10), 1: move (@12), 2: move (@11) }
+    @7 := Arguments { 0: copy (@10), 1: move (@12), 2: copy (@11) }
     storage_dead(@11)
     storage_dead(@10)
     @6 := panic_nounwind_fmt<'_>(move (@7), const (false))
@@ -559,7 +647,7 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(copy ({promoted_const}<'_, 1 : usize>))
     storage_live(@12)
     @12 := Option::None {  }
-    @7 := Arguments { 0: move (@10), 1: move (@12), 2: move (@11) }
+    @7 := Arguments { 0: copy (@10), 1: move (@12), 2: copy (@11) }
     storage_dead(@11)
     storage_dead(@10)
     @6 := panic_nounwind_fmt<'_>(move (@7), const (false))
@@ -627,69 +715,71 @@ where
     let @0: &'_ (Slice<T>); // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice@2: &'_ (Slice<T>); // arg #2
-    let @3: !; // anonymous local
-    let new_len@4: usize; // local
-    let @5: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let self@6: usize; // local
-    let rhs@7: usize; // local
-    let @8: bool; // anonymous local
-    let @9: usize; // anonymous local
-    let @10: !; // anonymous local
-    let @11: *const Slice<T>; // anonymous local
-    let @12: *const Slice<T>; // anonymous local
+    let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let self@4: usize; // local
+    let rhs@5: usize; // local
+    let new_len@6: usize; // local
+    let @7: bool; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: *const Slice<T>; // anonymous local
+    let @10: *const Slice<T>; // anonymous local
+    let @11: !; // anonymous local
+    let @12: usize; // anonymous local
     let @13: bool; // anonymous local
     let @14: usize; // anonymous local
     let @15: *const T; // anonymous local
     let @16: *const T; // anonymous local
 
+    storage_live(self@4)
+    storage_live(rhs@5)
+    storage_live(new_len@6)
+    storage_live(@11)
     storage_live(@3)
-    storage_live(new_len@4)
-    storage_live(self@6)
-    storage_live(rhs@7)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@5)
-    self@6 := copy ((self@1).end)
-    rhs@7 := copy ((self@1).start)
+    self@4 := copy ((self@1).end)
+    rhs@5 := copy ((self@1).start)
     storage_live(@13)
-    @13 := copy (self@6) < copy (rhs@7)
+    @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
+        storage_dead(@13)
     }
     else {
         storage_live(@14)
-        @14 := copy (self@6) ub.- copy (rhs@7)
-        @5 := Option::Some { 0: move (@14) }
+        @14 := copy (self@4) ub.- copy (rhs@5)
+        @3 := Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
-        new_len@4 := copy ((@5 as variant Option::Some).0)
-        storage_dead(@5)
+        new_len@6 := copy ((@3 as variant Option::Some).0)
+        storage_live(@7)
         storage_live(@8)
-        @9 := copy (slice@2.metadata)
-        @8 := copy (self@6) > copy (@9)
-        if move (@8) {
+        @8 := copy (slice@2.metadata)
+        @7 := copy (self@4) <= move (@8)
+        if move (@7) {
+            storage_dead(@8)
+            storage_live(@9)
+            storage_live(@10)
+            @10 := &raw const *(slice@2) with_metadata(copy (slice@2.metadata))
+            storage_live(@15)
+            storage_live(@16)
+            @15 := cast<*const Slice<T>, *const T>(copy (@10))
+            @16 := copy (@15) offset copy (rhs@5)
+            @9 := @PtrFromPartsShared<'_, Slice<T>>(copy (@16), copy (new_len@6))
+            storage_dead(@16)
+            storage_dead(@15)
+            storage_dead(@10)
+            @0 := &*(@9) with_metadata(copy (@9.metadata))
+            storage_dead(@9)
+            storage_dead(@3)
+            storage_dead(@7)
+            return
         }
         else {
             storage_dead(@8)
-            storage_live(@11)
-            storage_live(@12)
-            @12 := &raw const *(slice@2) with_metadata(copy (slice@2.metadata))
-            storage_live(@15)
-            storage_live(@16)
-            @15 := cast<*const Slice<T>, *const T>(copy (@12))
-            @16 := copy (@15) offset copy (rhs@7)
-            @11 := @PtrFromPartsShared<'_, Slice<T>>(copy (@16), copy (new_len@4))
-            storage_dead(@16)
-            storage_dead(@15)
-            storage_dead(@12)
-            @0 := &*(@11) with_metadata(copy (@11.metadata))
-            storage_dead(@11)
-            return
         }
-        @10 := slice_end_index_len_fail(move (self@6), move (@9))
     }
-    storage_dead(@13)
-    storage_dead(@5)
-    @3 := slice_index_order_fail(move (rhs@7), move (self@6))
+    storage_dead(@3)
+    storage_live(@12)
+    @12 := copy (slice@2.metadata)
+    @11 := slice_index_fail(move (rhs@5), move (self@4), move (@12))
 }
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
@@ -700,69 +790,71 @@ where
     let @0: &'_ mut (Slice<T>); // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice@2: &'_ mut (Slice<T>); // arg #2
-    let @3: !; // anonymous local
-    let new_len@4: usize; // local
-    let @5: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let self@6: usize; // local
-    let rhs@7: usize; // local
-    let @8: bool; // anonymous local
-    let @9: usize; // anonymous local
-    let @10: !; // anonymous local
-    let @11: *mut Slice<T>; // anonymous local
-    let ptr@12: *mut Slice<T>; // local
+    let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let self@4: usize; // local
+    let rhs@5: usize; // local
+    let new_len@6: usize; // local
+    let @7: bool; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: *mut Slice<T>; // anonymous local
+    let ptr@10: *mut Slice<T>; // local
+    let @11: !; // anonymous local
+    let @12: usize; // anonymous local
     let @13: bool; // anonymous local
     let @14: usize; // anonymous local
     let @15: *mut T; // anonymous local
     let @16: *mut T; // anonymous local
 
+    storage_live(self@4)
+    storage_live(rhs@5)
+    storage_live(new_len@6)
+    storage_live(@11)
     storage_live(@3)
-    storage_live(new_len@4)
-    storage_live(self@6)
-    storage_live(rhs@7)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@5)
-    self@6 := copy ((self@1).end)
-    rhs@7 := copy ((self@1).start)
+    self@4 := copy ((self@1).end)
+    rhs@5 := copy ((self@1).start)
     storage_live(@13)
-    @13 := copy (self@6) < copy (rhs@7)
+    @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
+        storage_dead(@13)
     }
     else {
         storage_live(@14)
-        @14 := copy (self@6) ub.- copy (rhs@7)
-        @5 := Option::Some { 0: move (@14) }
+        @14 := copy (self@4) ub.- copy (rhs@5)
+        @3 := Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
-        new_len@4 := copy ((@5 as variant Option::Some).0)
-        storage_dead(@5)
+        new_len@6 := copy ((@3 as variant Option::Some).0)
+        storage_live(@7)
         storage_live(@8)
-        @9 := copy (slice@2.metadata)
-        @8 := copy (self@6) > copy (@9)
-        if move (@8) {
+        @8 := copy (slice@2.metadata)
+        @7 := copy (self@4) <= move (@8)
+        if move (@7) {
+            storage_dead(@8)
+            storage_live(@9)
+            storage_live(ptr@10)
+            ptr@10 := &raw mut *(slice@2) with_metadata(copy (slice@2.metadata))
+            storage_live(@15)
+            storage_live(@16)
+            @15 := cast<*mut Slice<T>, *mut T>(copy (ptr@10))
+            @16 := copy (@15) offset copy (rhs@5)
+            @9 := @PtrFromPartsMut<'_, Slice<T>>(copy (@16), copy (new_len@6))
+            storage_dead(@16)
+            storage_dead(@15)
+            storage_dead(ptr@10)
+            @0 := &mut *(@9) with_metadata(copy (@9.metadata))
+            storage_dead(@9)
+            storage_dead(@3)
+            storage_dead(@7)
+            return
         }
         else {
             storage_dead(@8)
-            storage_live(@11)
-            storage_live(ptr@12)
-            ptr@12 := &raw mut *(slice@2) with_metadata(copy (slice@2.metadata))
-            storage_live(@15)
-            storage_live(@16)
-            @15 := cast<*mut Slice<T>, *mut T>(copy (ptr@12))
-            @16 := copy (@15) offset copy (rhs@7)
-            @11 := @PtrFromPartsMut<'_, Slice<T>>(copy (@16), copy (new_len@4))
-            storage_dead(@16)
-            storage_dead(@15)
-            storage_dead(ptr@12)
-            @0 := &mut *(@11) with_metadata(copy (@11.metadata))
-            storage_dead(@11)
-            return
         }
-        @10 := slice_end_index_len_fail(move (self@6), move (@9))
     }
-    storage_dead(@13)
-    storage_dead(@5)
-    @3 := slice_index_order_fail(move (rhs@7), move (self@6))
+    storage_dead(@3)
+    storage_live(@12)
+    @12 := copy (slice@2.metadata)
+    @11 := slice_index_fail(move (rhs@5), move (self@4), move (@12))
 }
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}

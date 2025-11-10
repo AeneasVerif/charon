@@ -80,7 +80,6 @@ impl Clone for u32 {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -131,7 +130,6 @@ impl<T> Destruct for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -151,7 +149,6 @@ fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}
 impl<A> Destruct for (A) {
-    parent_clause0 = {built_in impl MetaSized for (missing(@TypeBound(1, 0)))}
     fn drop_in_place = {impl Destruct for (A)}::drop_in_place<A>
     non-dyn-compatible
 }
@@ -308,7 +305,6 @@ fn {impl Destruct for test_crate::test_closure_u32::closure}::drop_in_place(@1: 
 
 // Full name: test_crate::test_closure_u32::closure::{impl Destruct for test_crate::test_closure_u32::closure}
 impl Destruct for test_crate::test_closure_u32::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_u32::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_u32::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -448,7 +444,6 @@ fn {impl Destruct for test_crate::test_closure_u32s::closure}::drop_in_place(@1:
 
 // Full name: test_crate::test_closure_u32s::closure::{impl Destruct for test_crate::test_closure_u32s::closure}
 impl Destruct for test_crate::test_closure_u32s::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_u32s::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_u32s::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -579,7 +574,6 @@ fn {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_in_place(
 
 // Full name: test_crate::test_closure_ref_u32::closure::{impl Destruct for test_crate::test_closure_ref_u32::closure}
 impl Destruct for test_crate::test_closure_ref_u32::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_u32::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -721,7 +715,6 @@ impl<T> Destruct for test_crate::test_closure_ref_param::closure<T>[@TraitClause
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_param::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_param::closure<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     non-dyn-compatible
 }
@@ -890,7 +883,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'_, missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'a, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -1048,7 +1040,6 @@ fn {impl Destruct for test_crate::test_map_option2::closure}::drop_in_place(@1: 
 
 // Full name: test_crate::test_map_option2::closure::{impl Destruct for test_crate::test_map_option2::closure}
 impl Destruct for test_crate::test_map_option2::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_map_option2::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_map_option2::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -1310,7 +1301,6 @@ fn {impl Destruct for test_crate::test_map_option3::closure}::drop_in_place(@1: 
 
 // Full name: test_crate::test_map_option3::closure::{impl Destruct for test_crate::test_map_option3::closure}
 impl Destruct for test_crate::test_map_option3::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_map_option3::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_map_option3::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -1443,7 +1433,6 @@ fn {impl Destruct for test_crate::test_regions::closure}::drop_in_place(@1: *mut
 
 // Full name: test_crate::test_regions::closure::{impl Destruct for test_crate::test_regions::closure}
 impl Destruct for test_crate::test_regions::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_regions::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_regions::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -1528,7 +1517,6 @@ fn {impl Destruct for test_crate::test_regions_casted::closure}::drop_in_place(@
 
 // Full name: test_crate::test_regions_casted::closure::{impl Destruct for test_crate::test_regions_casted::closure}
 impl Destruct for test_crate::test_regions_casted::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_regions_casted::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_regions_casted::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -1718,7 +1706,6 @@ fn {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop
 
 // Full name: test_crate::test_closure_capture::closure::{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}
 impl<'_0, '_1> Destruct for test_crate::test_closure_capture::closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_capture::closure<missing('_Bound(1, 0)), missing('_Bound(1, 1))>}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_in_place<'_0, '_1>
     non-dyn-compatible
 }
@@ -1860,7 +1847,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_clone::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -1946,7 +1932,6 @@ fn {impl Destruct for test_crate::test_array_map::closure}::drop_in_place(@1: *m
 
 // Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}
 impl Destruct for test_crate::test_array_map::closure {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_array_map::closure}
     fn drop_in_place = {impl Destruct for test_crate::test_array_map::closure}::drop_in_place
     non-dyn-compatible
 }
@@ -2082,7 +2067,6 @@ fn {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_in_pl
 
 // Full name: test_crate::test_fnmut_with_ref::closure::{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}
 impl<'_0> Destruct for test_crate::test_fnmut_with_ref::closure<'_0> {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_fnmut_with_ref::closure<missing('_Bound(1, 0))>}
     fn drop_in_place = {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_in_place<'_0>
     non-dyn-compatible
 }

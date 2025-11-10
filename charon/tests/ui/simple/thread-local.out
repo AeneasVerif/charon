@@ -1,4 +1,4 @@
 error: Unsupported constant: "Unhandled constant type"
- --> /rustc/library/std/src/sys/thread_local/native/mod.rs:88:13
+ --> /rustc/library/std/src/sys/thread_local/native/mod.rs:90:13
 
 ERROR Charon failed to translate this code (1 errors)

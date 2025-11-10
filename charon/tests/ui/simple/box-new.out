@@ -55,7 +55,6 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -94,7 +93,6 @@ where
     [@TraitClause1]: Sized<A>,
     [@TraitClause2]: Allocator<A>,
 {
-    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1)), missing(@TraitClauseBound(1, 2))]}
     fn drop_in_place = {impl Destruct for alloc::boxed::Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
     non-dyn-compatible
 }

@@ -53,7 +53,6 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -76,15 +75,17 @@ pub fn {impl Clone for Option<T>[@TraitClause0]}::clone<'_0, T>(@1: &'_0 (Option
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+    [@TraitClause2]: Destruct<T>,
 
 // Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}
 impl<T> Clone for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+    [@TraitClause2]: Destruct<T>,
 {
     parent_clause0 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    fn clone<'_0_1> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_1, T>[@TraitClause0, @TraitClause1]
+    fn clone<'_0_1> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_1, T>[@TraitClause0, @TraitClause1, @TraitClause2]
     non-dyn-compatible
 }
 
@@ -215,7 +216,7 @@ where
 {
     parent_clause0 = {built_in impl MetaSized for Override<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
+    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1, {built_in impl Destruct for missing(@TypeBound(1, 0))}]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
     fn provided<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: PartialEq<U, Option<T>[@TraitClause0]>> = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
@@ -288,7 +289,7 @@ where
 {
     parent_clause0 = {built_in impl MetaSized for NoOverride<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
+    parent_clause2 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1, {built_in impl Destruct for missing(@TypeBound(1, 0))}]
     fn other_method = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
     fn provided<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: PartialEq<U, Option<T>[@TraitClause0]>> = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible

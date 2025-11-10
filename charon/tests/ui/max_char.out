@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn core::char::methods::{char}::MAX() -> char
+// Full name: core::char::MAX
+pub fn MAX() -> char
 {
     let @0: char; // return
 
@@ -8,17 +9,8 @@ pub fn core::char::methods::{char}::MAX() -> char
     return
 }
 
-pub const core::char::methods::{char}::MAX: char = core::char::methods::{char}::MAX()
-
-pub fn core::char::MAX() -> char
-{
-    let @0: char; // return
-
-    @0 := copy (core::char::methods::{char}::MAX)
-    return
-}
-
-pub const core::char::MAX: char = core::char::MAX()
+// Full name: core::char::MAX
+pub const MAX: char = MAX()
 
 fn UNIT_METADATA()
 {
@@ -38,7 +30,7 @@ fn main()
 
     @0 := ()
     storage_live(_max_char@1)
-    _max_char@1 := copy (core::char::MAX)
+    _max_char@1 := copy (MAX)
     @0 := ()
     storage_dead(_max_char@1)
     return

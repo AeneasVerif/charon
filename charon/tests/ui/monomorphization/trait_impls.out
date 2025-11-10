@@ -16,7 +16,6 @@ pub trait Sized::<bool>
 #[lang_item("destruct")]
 pub trait Destruct::<bool>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
     fn drop_in_place = drop_in_place::<bool>
     vtable: core::marker::Destruct::{vtable}::<bool>
 }

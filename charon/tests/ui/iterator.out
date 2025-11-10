@@ -22,7 +22,6 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -37,7 +36,6 @@ impl<T, const N : usize> Destruct for IntoIter<T, N>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for IntoIter<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn drop_in_place = {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, N>[@TraitClause0]
     non-dyn-compatible
 }
@@ -403,9 +401,9 @@ pub trait Ord<Self>
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
     fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
-    fn max<[@TraitClause0_1]: Sized<Self>> = core::cmp::Ord::max<Self>[Self, @TraitClause0_1]
-    fn min<[@TraitClause0_1]: Sized<Self>> = core::cmp::Ord::min<Self>[Self, @TraitClause0_1]
-    fn clamp<[@TraitClause0_1]: Sized<Self>> = clamp<Self>[Self, @TraitClause0_1]
+    fn max<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = core::cmp::Ord::max<Self>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn min<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = core::cmp::Ord::min<Self>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn clamp<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = clamp<Self>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -508,8 +506,8 @@ pub trait Iterator<Self>
     fn min_by<F, [@TraitClause0_1]: Sized<F>, [@TraitClause1_1]: Sized<Self>, [@TraitClause2_1]: for<'_0_2, '_1_2> FnMut<F, (&'_0_2 (Self::Item), &'_1_2 (Self::Item))>, for<'_0_2, '_1_2> @TraitClause2_1::parent_clause1::Output = Ordering> = core::iter::traits::iterator::Iterator::min_by<Self, F>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
     fn rev<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: DoubleEndedIterator<Self>> = core::iter::traits::iterator::Iterator::rev<Self>[Self, @TraitClause0_1, @TraitClause1_1]
     fn unzip<A, B, FromA, FromB, [@TraitClause0_1]: Sized<A>, [@TraitClause1_1]: Sized<B>, [@TraitClause2_1]: Sized<FromA>, [@TraitClause3_1]: Sized<FromB>, [@TraitClause4_1]: Default<FromA>, [@TraitClause5_1]: Extend<FromA, A>, [@TraitClause6_1]: Default<FromB>, [@TraitClause7_1]: Extend<FromB, B>, [@TraitClause8_1]: Sized<Self>, [@TraitClause9_1]: Iterator<Self>, Self::Item = (A, B)> = core::iter::traits::iterator::Iterator::unzip<Self, A, B, FromA, FromB>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1, @TraitClause4_1, @TraitClause5_1, @TraitClause6_1, @TraitClause7_1, @TraitClause8_1, @TraitClause9_1]
-    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<Self>, [@TraitClause2_1]: Iterator<Self>, [@TraitClause3_1]: Copy<T>, T : 'a, Self::Item = &'a (T)> = core::iter::traits::iterator::Iterator::copied<'a, Self, T>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
-    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<Self>, [@TraitClause2_1]: Iterator<Self>, [@TraitClause3_1]: Clone<T>, T : 'a, Self::Item = &'a (T)> = core::iter::traits::iterator::Iterator::cloned<'a, Self, T>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>, [@TraitClause2_1]: Sized<Self>, [@TraitClause3_1]: Iterator<Self>, T : 'a, Self::Item = &'a (T)> = core::iter::traits::iterator::Iterator::copied<'a, Self, T>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Clone<T>, [@TraitClause2_1]: Sized<Self>, [@TraitClause3_1]: Iterator<Self>, T : 'a, Self::Item = &'a (T)> = core::iter::traits::iterator::Iterator::cloned<'a, Self, T>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
     fn cycle<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Clone<Self>> = core::iter::traits::iterator::Iterator::cycle<Self>[Self, @TraitClause0_1, @TraitClause1_1]
     fn array_chunks<const N : usize, [@TraitClause0_1]: Sized<Self>> = core::iter::traits::iterator::Iterator::array_chunks<Self, N>[Self, @TraitClause0_1]
     fn sum<S, [@TraitClause0_1]: Sized<S>, [@TraitClause1_1]: Sized<Self>, [@TraitClause2_1]: Sum<S, Self::Item>> = core::iter::traits::iterator::Iterator::sum<Self, S>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
@@ -1149,25 +1147,25 @@ where
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::copied
 #[lang_item("iter_copied")]
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::copied<'a, T, T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> Copied<IntoIter<T, N>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::copied<'a, T, T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> Copied<IntoIter<T, N>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<IntoIter<T, N>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<IntoIter<T, N>[@TraitClause0]>,
-    [@TraitClause4]: Copy<T>,
+    [@TraitClause2]: Copy<T>,
+    [@TraitClause3]: Sized<IntoIter<T, N>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<IntoIter<T, N>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = &'a (T),
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::cloned
 #[lang_item("iter_cloned")]
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::cloned<'a, T, T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> Cloned<IntoIter<T, N>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::cloned<'a, T, T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> Cloned<IntoIter<T, N>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<IntoIter<T, N>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<IntoIter<T, N>[@TraitClause0]>,
-    [@TraitClause4]: Clone<T>,
+    [@TraitClause2]: Clone<T>,
+    [@TraitClause3]: Sized<IntoIter<T, N>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<IntoIter<T, N>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = &'a (T),
 
@@ -1402,8 +1400,8 @@ where
     fn min_by<F, [@TraitClause0_1]: Sized<F>, [@TraitClause1_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause2_1]: for<'_0_2, '_1_2> FnMut<F, (&'_0_2 (T), &'_1_2 (T))>, for<'_0_2, '_1_2> @TraitClause2_1::parent_clause1::Output = Ordering> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::min_by<T, F, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
     fn rev<[@TraitClause0_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause1_1]: DoubleEndedIterator<IntoIter<T, N>[@TraitClause0]>> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::rev<T, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn unzip<A, B, FromA, FromB, [@TraitClause0_1]: Sized<A>, [@TraitClause1_1]: Sized<B>, [@TraitClause2_1]: Sized<FromA>, [@TraitClause3_1]: Sized<FromB>, [@TraitClause4_1]: Default<FromA>, [@TraitClause5_1]: Extend<FromA, A>, [@TraitClause6_1]: Default<FromB>, [@TraitClause7_1]: Extend<FromB, B>, [@TraitClause8_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause9_1]: Iterator<IntoIter<T, N>[@TraitClause0]>, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = (A, B)> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::unzip<T, A, B, FromA, FromB, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1, @TraitClause4_1, @TraitClause5_1, @TraitClause6_1, @TraitClause7_1, @TraitClause8_1, @TraitClause9_1]
-    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause2_1]: Iterator<IntoIter<T, N>[@TraitClause0]>, [@TraitClause3_1]: Copy<T>, T : 'a, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::copied<'a, T, T, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
-    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause2_1]: Iterator<IntoIter<T, N>[@TraitClause0]>, [@TraitClause3_1]: Clone<T>, T : 'a, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::cloned<'a, T, T, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>, [@TraitClause2_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause3_1]: Iterator<IntoIter<T, N>[@TraitClause0]>, T : 'a, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::copied<'a, T, T, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Clone<T>, [@TraitClause2_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause3_1]: Iterator<IntoIter<T, N>[@TraitClause0]>, T : 'a, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::cloned<'a, T, T, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
     fn cycle<[@TraitClause0_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause1_1]: Clone<IntoIter<T, N>[@TraitClause0]>> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::cycle<T, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn array_chunks<const N : usize, [@TraitClause0_1]: Sized<IntoIter<T, N>[@TraitClause0]>> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::array_chunks<T, N, N>[@TraitClause0, @TraitClause0_1]
     fn sum<S, [@TraitClause0_1]: Sized<S>, [@TraitClause1_1]: Sized<IntoIter<T, N>[@TraitClause0]>, [@TraitClause2_1]: Sum<S, T>> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::sum<T, S, N>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
@@ -1481,18 +1479,21 @@ pub fn core::cmp::Ord::max<Self>(@1: Self, @2: Self) -> Self
 where
     [@TraitClause0]: Ord<Self>,
     [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Destruct<Self>,
 
 #[lang_item("cmp_ord_min")]
 pub fn core::cmp::Ord::min<Self>(@1: Self, @2: Self) -> Self
 where
     [@TraitClause0]: Ord<Self>,
     [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Destruct<Self>,
 
 // Full name: core::cmp::Ord::clamp
 pub fn clamp<Self>(@1: Self, @2: Self, @3: Self) -> Self
 where
     [@TraitClause0]: Ord<Self>,
     [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Destruct<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
@@ -2150,24 +2151,24 @@ where
     @TraitClause0::Item = (A, B),
 
 #[lang_item("iter_copied")]
-pub fn core::iter::traits::iterator::Iterator::copied<'a, Self, T>(@1: Self) -> Copied<Self>[@TraitClause2]
+pub fn core::iter::traits::iterator::Iterator::copied<'a, Self, T>(@1: Self) -> Copied<Self>[@TraitClause3]
 where
     [@TraitClause0]: Iterator<Self>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: Iterator<Self>,
-    [@TraitClause4]: Copy<T>,
+    [@TraitClause2]: Copy<T>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: Iterator<Self>,
     T : 'a,
     @TraitClause0::Item = &'a (T),
 
 #[lang_item("iter_cloned")]
-pub fn core::iter::traits::iterator::Iterator::cloned<'a, Self, T>(@1: Self) -> Cloned<Self>[@TraitClause2]
+pub fn core::iter::traits::iterator::Iterator::cloned<'a, Self, T>(@1: Self) -> Cloned<Self>[@TraitClause3]
 where
     [@TraitClause0]: Iterator<Self>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: Iterator<Self>,
-    [@TraitClause4]: Clone<T>,
+    [@TraitClause2]: Clone<T>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: Iterator<Self>,
     T : 'a,
     @TraitClause0::Item = &'a (T),
 
@@ -2863,25 +2864,25 @@ where
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::copied
 #[lang_item("iter_copied")]
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>(@1: Iter<'a, T>[@TraitClause0]) -> Copied<Iter<'a, T>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>(@1: Iter<'a, T>[@TraitClause0]) -> Copied<Iter<'a, T>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: Copy<T>,
+    [@TraitClause2]: Copy<T>,
+    [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<Iter<'a, T>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T),
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::cloned
 #[lang_item("iter_cloned")]
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>(@1: Iter<'a, T>[@TraitClause0]) -> Cloned<Iter<'a, T>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>(@1: Iter<'a, T>[@TraitClause0]) -> Cloned<Iter<'a, T>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: Clone<T>,
+    [@TraitClause2]: Clone<T>,
+    [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<Iter<'a, T>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T),
 
@@ -3116,8 +3117,8 @@ where
     fn min_by<F, [@TraitClause0_1]: Sized<F>, [@TraitClause1_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2_1]: for<'_0_2, '_1_2> FnMut<F, (&'_0_2 (&'a (T)), &'_1_2 (&'a (T)))>, for<'_0_2, '_1_2> @TraitClause2_1::parent_clause1::Output = Ordering> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::min_by<'a, T, F>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
     fn rev<[@TraitClause0_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause1_1]: DoubleEndedIterator<Iter<'a, T>[@TraitClause0]>> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::rev<'a, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn unzip<A, B, FromA, FromB, [@TraitClause0_1]: Sized<A>, [@TraitClause1_1]: Sized<B>, [@TraitClause2_1]: Sized<FromA>, [@TraitClause3_1]: Sized<FromB>, [@TraitClause4_1]: Default<FromA>, [@TraitClause5_1]: Extend<FromA, A>, [@TraitClause6_1]: Default<FromB>, [@TraitClause7_1]: Extend<FromB, B>, [@TraitClause8_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause9_1]: Iterator<Iter<'a, T>[@TraitClause0]>, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = (A, B)> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::unzip<'a, T, A, B, FromA, FromB>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1, @TraitClause4_1, @TraitClause5_1, @TraitClause6_1, @TraitClause7_1, @TraitClause8_1, @TraitClause9_1]
-    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Iterator<Iter<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Copy<T>, T : 'a, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
-    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Iterator<Iter<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Clone<T>, T : 'a, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>, [@TraitClause2_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Iterator<Iter<'a, T>[@TraitClause0]>, T : 'a, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Clone<T>, [@TraitClause2_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Iterator<Iter<'a, T>[@TraitClause0]>, T : 'a, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
     fn cycle<[@TraitClause0_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause1_1]: Clone<Iter<'a, T>[@TraitClause0]>> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::cycle<'a, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn array_chunks<const N : usize, [@TraitClause0_1]: Sized<Iter<'a, T>[@TraitClause0]>> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::array_chunks<'a, T, N>[@TraitClause0, @TraitClause0_1]
     fn sum<S, [@TraitClause0_1]: Sized<S>, [@TraitClause1_1]: Sized<Iter<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Sum<S, &'a (T)>> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::sum<'a, T, S>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
@@ -3642,25 +3643,25 @@ where
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::copied
 #[lang_item("iter_copied")]
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Copied<Chunks<'a, T>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Copied<Chunks<'a, T>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<Chunks<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<Chunks<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: Copy<T>,
+    [@TraitClause2]: Copy<T>,
+    [@TraitClause3]: Sized<Chunks<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<Chunks<'a, T>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T),
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::cloned
 #[lang_item("iter_cloned")]
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Cloned<Chunks<'a, T>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Cloned<Chunks<'a, T>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<Chunks<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<Chunks<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: Clone<T>,
+    [@TraitClause2]: Clone<T>,
+    [@TraitClause3]: Sized<Chunks<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<Chunks<'a, T>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T),
 
@@ -3895,8 +3896,8 @@ where
     fn min_by<F, [@TraitClause0_1]: Sized<F>, [@TraitClause1_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause2_1]: for<'_0_2, '_1_2> FnMut<F, (&'_0_2 (&'a (Slice<T>)), &'_1_2 (&'a (Slice<T>)))>, for<'_0_2, '_1_2> @TraitClause2_1::parent_clause1::Output = Ordering> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::min_by<'a, T, F>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
     fn rev<[@TraitClause0_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause1_1]: DoubleEndedIterator<Chunks<'a, T>[@TraitClause0]>> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::rev<'a, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn unzip<A, B, FromA, FromB, [@TraitClause0_1]: Sized<A>, [@TraitClause1_1]: Sized<B>, [@TraitClause2_1]: Sized<FromA>, [@TraitClause3_1]: Sized<FromB>, [@TraitClause4_1]: Default<FromA>, [@TraitClause5_1]: Extend<FromA, A>, [@TraitClause6_1]: Default<FromB>, [@TraitClause7_1]: Extend<FromB, B>, [@TraitClause8_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause9_1]: Iterator<Chunks<'a, T>[@TraitClause0]>, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = (A, B)> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::unzip<'a, T, A, B, FromA, FromB>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1, @TraitClause4_1, @TraitClause5_1, @TraitClause6_1, @TraitClause7_1, @TraitClause8_1, @TraitClause9_1]
-    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Iterator<Chunks<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Copy<T>, T : 'a, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
-    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Iterator<Chunks<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Clone<T>, T : 'a, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>, [@TraitClause2_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Iterator<Chunks<'a, T>[@TraitClause0]>, T : 'a, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Clone<T>, [@TraitClause2_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Iterator<Chunks<'a, T>[@TraitClause0]>, T : 'a, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
     fn cycle<[@TraitClause0_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause1_1]: Clone<Chunks<'a, T>[@TraitClause0]>> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::cycle<'a, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn array_chunks<const N : usize, [@TraitClause0_1]: Sized<Chunks<'a, T>[@TraitClause0]>> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::array_chunks<'a, T, N>[@TraitClause0, @TraitClause0_1]
     fn sum<S, [@TraitClause0_1]: Sized<S>, [@TraitClause1_1]: Sized<Chunks<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Sum<S, &'a (Slice<T>)>> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::sum<'a, T, S>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
@@ -4421,25 +4422,25 @@ where
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::copied
 #[lang_item("iter_copied")]
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Copied<ChunksExact<'a, T>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Copied<ChunksExact<'a, T>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<ChunksExact<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<ChunksExact<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: Copy<T>,
+    [@TraitClause2]: Copy<T>,
+    [@TraitClause3]: Sized<ChunksExact<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<ChunksExact<'a, T>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T),
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::cloned
 #[lang_item("iter_cloned")]
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Cloned<ChunksExact<'a, T>[@TraitClause0]>[@TraitClause2]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Cloned<ChunksExact<'a, T>[@TraitClause0]>[@TraitClause3]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Sized<ChunksExact<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: Iterator<ChunksExact<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: Clone<T>,
+    [@TraitClause2]: Clone<T>,
+    [@TraitClause3]: Sized<ChunksExact<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: Iterator<ChunksExact<'a, T>[@TraitClause0]>,
     T : 'a,
     {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T),
 
@@ -4674,8 +4675,8 @@ where
     fn min_by<F, [@TraitClause0_1]: Sized<F>, [@TraitClause1_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause2_1]: for<'_0_2, '_1_2> FnMut<F, (&'_0_2 (&'a (Slice<T>)), &'_1_2 (&'a (Slice<T>)))>, for<'_0_2, '_1_2> @TraitClause2_1::parent_clause1::Output = Ordering> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::min_by<'a, T, F>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
     fn rev<[@TraitClause0_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause1_1]: DoubleEndedIterator<ChunksExact<'a, T>[@TraitClause0]>> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::rev<'a, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn unzip<A, B, FromA, FromB, [@TraitClause0_1]: Sized<A>, [@TraitClause1_1]: Sized<B>, [@TraitClause2_1]: Sized<FromA>, [@TraitClause3_1]: Sized<FromB>, [@TraitClause4_1]: Default<FromA>, [@TraitClause5_1]: Extend<FromA, A>, [@TraitClause6_1]: Default<FromB>, [@TraitClause7_1]: Extend<FromB, B>, [@TraitClause8_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause9_1]: Iterator<ChunksExact<'a, T>[@TraitClause0]>, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = (A, B)> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::unzip<'a, T, A, B, FromA, FromB>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1, @TraitClause4_1, @TraitClause5_1, @TraitClause6_1, @TraitClause7_1, @TraitClause8_1, @TraitClause9_1]
-    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Iterator<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Copy<T>, T : 'a, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
-    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Iterator<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Clone<T>, T : 'a, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn copied<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>, [@TraitClause2_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Iterator<ChunksExact<'a, T>[@TraitClause0]>, T : 'a, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::copied<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
+    fn cloned<'a, T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Clone<T>, [@TraitClause2_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause3_1]: Iterator<ChunksExact<'a, T>[@TraitClause0]>, T : 'a, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::Item = &'a (T)> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::cloned<'a, 'a, T, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1, @TraitClause3_1]
     fn cycle<[@TraitClause0_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause1_1]: Clone<ChunksExact<'a, T>[@TraitClause0]>> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::cycle<'a, T>[@TraitClause0, @TraitClause0_1, @TraitClause1_1]
     fn array_chunks<const N : usize, [@TraitClause0_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::array_chunks<'a, T, N>[@TraitClause0, @TraitClause0_1]
     fn sum<S, [@TraitClause0_1]: Sized<S>, [@TraitClause1_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>, [@TraitClause2_1]: Sum<S, &'a (Slice<T>)>> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::sum<'a, T, S>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]

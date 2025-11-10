@@ -26,7 +26,6 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -151,7 +150,6 @@ pub struct NonNull<T> {
 }
 
 // Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
 pub struct Unique<T> {
   pointer: NonNull<T>,
   _marker: PhantomData<T>,
@@ -204,7 +202,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = {built_in impl MetaSized for Vec<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }

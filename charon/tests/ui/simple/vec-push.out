@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::alloc::layout::Layout
+#[lang_item("alloc_layout")]
+pub opaque type Layout
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -16,13 +20,97 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const SIZE : usize
+    const ALIGN : usize
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub fn SIZE<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub const SIZE<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = SIZE()
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub fn ALIGN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub const ALIGN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGN()
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub fn LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub const LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = LAYOUT()
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub fn MAX_SLICE_LEN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub const MAX_SLICE_LEN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = MAX_SLICE_LEN()
+
+// Full name: core::mem::{impl SizedTypeProperties for T}
+impl<T> SizedTypeProperties for T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = @TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    non-dyn-compatible
+}
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub opaque type UsizeNoHighBit
@@ -32,7 +120,6 @@ pub opaque type UsizeNoHighBit
 pub opaque type NonNull<T>
 
 // Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
 pub opaque type Unique<T>
 
 // Full name: alloc::alloc::Global
@@ -77,6 +164,71 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
+// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push_mut
+pub fn push_mut<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T) -> &'_0 mut (T)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    let @0: &'_ mut (T); // return
+    let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
+    let value@2: T; // arg #2
+    let len@3: usize; // local
+    let @4: bool; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: (); // anonymous local
+    let @7: &'_ mut (RawVec<T, A>[@TraitClause0, @TraitClause1]); // anonymous local
+    let end@8: *mut T; // local
+    let self@9: *mut T; // local
+    let src@10: T; // local
+    let self@11: UsizeNoHighBit; // local
+    let @12: NonNull<u8>; // anonymous local
+
+    storage_live(len@3)
+    storage_live(@6)
+    storage_live(end@8)
+    len@3 := copy ((*(self@1)).len)
+    storage_live(@4)
+    storage_live(@5)
+    switch const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE) {
+        0 : usize => {
+            @5 := const (18446744073709551615 : usize)
+        },
+        _ => {
+            storage_live(self@11)
+            self@11 := copy ((((*(self@1)).buf).0).1)
+            @5 := transmute<UsizeNoHighBit, usize>(copy (self@11))
+            storage_dead(self@11)
+        },
+    }
+    @4 := copy (len@3) == move (@5)
+    if move (@4) {
+        storage_dead(@5)
+        storage_live(@7)
+        @7 := &two-phase-mut (*(self@1)).buf
+        @6 := grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@7))
+        storage_dead(@7)
+    }
+    else {
+        storage_dead(@5)
+    }
+    storage_dead(@4)
+    storage_live(self@9)
+    storage_live(@12)
+    @12 := copy (((((*(self@1)).buf).0).0).0)
+    self@9 := transmute<NonNull<u8>, *mut T>(copy (@12))
+    storage_dead(@12)
+    end@8 := copy (self@9) offset copy (len@3)
+    storage_dead(self@9)
+    storage_live(src@10)
+    src@10 := move (value@2)
+    *(end@8) := copy (src@10)
+    storage_dead(src@10)
+    (*(self@1)).len := copy (len@3) wrap.+ const (1 : usize)
+    @0 := &mut *(end@8)
+    return
+}
+
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
 pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
 where
@@ -86,71 +238,12 @@ where
     let @0: (); // return
     let self@1: &'_ mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
     let value@2: T; // arg #2
-    let len@3: usize; // local
-    let @4: bool; // anonymous local
-    let @5: usize; // anonymous local
-    let self@6: &'_ (RawVec<T, A>[@TraitClause0, @TraitClause1]); // local
-    let @7: (); // anonymous local
-    let @8: &'_ mut (RawVec<T, A>[@TraitClause0, @TraitClause1]); // anonymous local
-    let end@9: *mut T; // local
-    let self@10: *mut T; // local
-    let src@11: T; // local
-    let self@12: &'_ (RawVecInner<A>[@TraitClause1]); // local
-    let elem_size@13: usize; // local
-    let self@14: UsizeNoHighBit; // local
-    let @15: NonNull<u8>; // anonymous local
+    let @3: &'_ mut (T); // anonymous local
 
-    storage_live(len@3)
-    storage_live(@7)
-    storage_live(end@9)
     @0 := ()
-    len@3 := copy ((*(self@1)).len)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(self@6)
-    self@6 := &(*(self@1)).buf
-    storage_live(self@12)
-    self@12 := &((*(self@1)).buf).0
-    storage_live(elem_size@13)
-    elem_size@13 := size_of<T>
-    switch move (elem_size@13) {
-        0 : usize => {
-            @5 := const (18446744073709551615 : usize)
-        },
-        _ => {
-            storage_live(self@14)
-            self@14 := copy ((((*(self@1)).buf).0).1)
-            @5 := transmute<UsizeNoHighBit, usize>(copy (self@14))
-            storage_dead(self@14)
-        },
-    }
-    storage_dead(elem_size@13)
-    storage_dead(self@12)
-    storage_dead(self@6)
-    @4 := copy (len@3) == move (@5)
-    if move (@4) {
-        storage_dead(@5)
-        storage_live(@8)
-        @8 := &two-phase-mut (*(self@1)).buf
-        @7 := grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@8))
-        storage_dead(@8)
-    }
-    else {
-        storage_dead(@5)
-    }
-    storage_dead(@4)
-    storage_live(self@10)
-    storage_live(@15)
-    @15 := copy (((((*(self@1)).buf).0).0).0)
-    self@10 := transmute<NonNull<u8>, *mut T>(copy (@15))
-    storage_dead(@15)
-    end@9 := copy (self@10) offset copy (len@3)
-    storage_dead(self@10)
-    storage_live(src@11)
-    src@11 := move (value@2)
-    *(end@9) := copy (src@11)
-    storage_dead(src@11)
-    (*(self@1)).len := copy (len@3) wrap.+ const (1 : usize)
+    storage_live(@3)
+    @3 := push_mut<'_, T, A>[@TraitClause0, @TraitClause1](move (self@1), move (value@2))
+    storage_dead(@3)
     return
 }
 

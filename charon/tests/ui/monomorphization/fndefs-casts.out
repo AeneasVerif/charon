@@ -87,7 +87,6 @@ fn foo::<u32><'_0>(@1: &'_0 (u32))
 #[lang_item("destruct")]
 pub trait Destruct::<for<'_0_1> foo::<u32><'_0_1>>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<for<'_0_1> foo::<u32><'_0_1>>
     fn drop_in_place = drop_in_place::<for<'_0_1> foo::<u32><'_0_1>>
     vtable: core::marker::Destruct::{vtable}::<for<'_0_1> foo::<u32><'_0_1>>
 }

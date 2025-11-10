@@ -430,7 +430,6 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -557,7 +556,6 @@ fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}
 impl Destruct for closure {
-    parent_clause0 = {built_in impl MetaSized for closure}
     fn drop_in_place = {impl Destruct for closure}::drop_in_place
     non-dyn-compatible
 }

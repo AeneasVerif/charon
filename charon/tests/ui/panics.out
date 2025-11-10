@@ -32,7 +32,7 @@ fn panic1()
     let @0: (); // return
 
     @0 := ()
-    panic(core::panicking::panic_explicit)
+    panic(core::panicking::panic)
 }
 
 // Full name: test_crate::panic2

@@ -72,7 +72,6 @@ impl<'_0, T> Copy for &'_0 (T) {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
@@ -95,15 +94,17 @@ pub fn {impl Clone for Option<T>[@TraitClause0]}::clone<'_0, T>(@1: &'_0 (Option
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+    [@TraitClause2]: Destruct<T>,
 
 // Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}
 impl<T> Clone for Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
+    [@TraitClause2]: Destruct<T>,
 {
     parent_clause0 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    fn clone<'_0_1> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_1, T>[@TraitClause0, @TraitClause1]
+    fn clone<'_0_1> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_1, T>[@TraitClause0, @TraitClause1, @TraitClause2]
     non-dyn-compatible
 }
 
@@ -114,7 +115,7 @@ where
     [@TraitClause1]: Copy<T>,
 {
     parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
+    parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1, {built_in impl Destruct for missing(@TypeBound(1, 0))}]
     non-dyn-compatible
 }
 
@@ -207,7 +208,7 @@ where
     parent_clause0 = {built_in impl MetaSized for &'_ (missing(@TypeBound(1, 0)))}
     parent_clause1 = {impl Copy for &'_0 (T)}<'_, T>
     parent_clause2 = {built_in impl Sized for Option<&'_ (missing(@TypeBound(1, 0)))>[{built_in impl Sized for &'_ (missing(@TypeBound(2, 0)))}]}
-    parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Clone for &'_0 (T)}<'_, T>]
+    parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Clone for &'_0 (T)}<'_, T>, {built_in impl Destruct for &'_ (missing(@TypeBound(1, 0)))}]
     fn use_item_required = {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
     fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(3, 0)))}], Clause0_Item>> = {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
