@@ -172,7 +172,7 @@ where
     [@TraitClause2]: Sized<S>,
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}::get
-pub fn get<'_0, '_1, K, V, S, Q>(@1: &'_0 (HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_1 (Q)) -> Option<&'_0 (V)>[Sized<&'_0 (V)>]
+pub fn get<'_0, '_1, K, V, S, Q>(@1: &'_0 (HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_1 (Q)) -> Option<&'_0 (V)>[{built_in impl Sized for &missing('_Bound(1, 0)) (missing(@TypeBound(1, 1)))}]
 where
     [@TraitClause0]: Sized<K>,
     [@TraitClause1]: Sized<V>,
@@ -224,8 +224,8 @@ where
     [@TraitClause8]: Hash<Q>,
     [@TraitClause9]: BuildHasher<S>,
 {
-    parent_clause0 = MetaSized<HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]>
-    parent_clause1 = MetaSized<&'_ (Q)>
+    parent_clause0 = {built_in impl MetaSized for HashMap<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 2)), missing(@TypeBound(1, 3))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 2)), missing(@TraitClauseBound(1, 3))]}
+    parent_clause1 = {built_in impl MetaSized for &'_ (missing(@TypeBound(1, 1)))}
     parent_clause2 = @TraitClause2::parent_clause0
     type Output = V
     fn index<'_0_1> = {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_0_1, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
@@ -246,7 +246,7 @@ pub fn {impl Hasher for DefaultHasher}::write<'_0, '_1>(@1: &'_0 mut (DefaultHas
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}
 impl Hasher for DefaultHasher {
-    parent_clause0 = MetaSized<DefaultHasher>
+    parent_clause0 = {built_in impl MetaSized for DefaultHasher}
     fn finish<'_0_1> = {impl Hasher for DefaultHasher}::finish<'_0_1>
     fn write<'_0_1, '_1_1> = {impl Hasher for DefaultHasher}::write<'_0_1, '_1_1>
     vtable: {impl Hasher for DefaultHasher}::{vtable}
@@ -257,8 +257,8 @@ pub fn {impl BuildHasher for RandomState}::build_hasher<'_0>(@1: &'_0 (RandomSta
 
 // Full name: std::hash::random::{impl BuildHasher for RandomState}
 impl BuildHasher for RandomState {
-    parent_clause0 = MetaSized<RandomState>
-    parent_clause1 = Sized<DefaultHasher>
+    parent_clause0 = {built_in impl MetaSized for RandomState}
+    parent_clause1 = {built_in impl Sized for DefaultHasher}
     parent_clause2 = {impl Hasher for DefaultHasher}
     type Hasher = DefaultHasher
     fn build_hasher<'_0_1> = {impl BuildHasher for RandomState}::build_hasher<'_0_1>
@@ -276,21 +276,21 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::get_or_insert
-pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>])) -> &'_0 (u32)
+pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}])) -> &'_0 (u32)
 {
     let @0: &'_ (u32); // return
-    let map@1: &'_ mut (HashMap<u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>]); // arg #1
-    let @2: Option<&'_ (u32)>[Sized<&'_ (u32)>]; // anonymous local
-    let @3: &'_ (HashMap<u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>]); // anonymous local
+    let map@1: &'_ mut (HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]); // arg #1
+    let @2: Option<&'_ (u32)>[{built_in impl Sized for &'_ (u32)}]; // anonymous local
+    let @3: &'_ (HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]); // anonymous local
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: u32; // anonymous local
     let v@7: &'_ (u32); // local
-    let @8: Option<u32>[Sized<u32>]; // anonymous local
-    let @9: &'_ mut (HashMap<u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>]); // anonymous local
+    let @8: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let @9: &'_ mut (HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]); // anonymous local
     let @10: &'_ (u32); // anonymous local
     let @11: &'_ (u32); // anonymous local
-    let @12: &'_ (HashMap<u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>]); // anonymous local
+    let @12: &'_ (HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]); // anonymous local
     let @13: &'_ (u32); // anonymous local
     let @14: &'_ (u32); // anonymous local
     let @15: u32; // anonymous local
@@ -304,7 +304,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
     @6 := const (22 : u32)
     @5 := &@6
     @4 := &*(@5)
-    @2 := get<'_, '_, u32, u32, RandomState, u32>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, MetaSized<u32>, {impl Borrow<T> for T}<u32>[MetaSized<u32>], {impl Hash for u32}, {impl Eq for u32}](move (@3), move (@4))
+    @2 := get<'_, '_, u32, u32, RandomState, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {built_in impl MetaSized for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Hash for u32}, {impl Eq for u32}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     match @2 {
@@ -312,7 +312,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
             storage_live(@8)
             storage_live(@9)
             @9 := &two-phase-mut *(map@1)
-            @8 := insert<'_, u32, u32, RandomState>[Sized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@9), const (22 : u32), const (33 : u32))
+            @8 := insert<'_, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@9), const (22 : u32), const (33 : u32))
             storage_dead(@9)
             storage_dead(@8)
             storage_live(@10)
@@ -325,7 +325,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
             @15 := const (22 : u32)
             @14 := &@15
             @13 := &*(@14)
-            @11 := {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_, '_, u32, u32, u32, RandomState>[Sized<u32>, MetaSized<u32>, Sized<u32>, Sized<RandomState>, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[MetaSized<u32>], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@12), move (@13))
+            @11 := {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_, '_, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@12), move (@13))
             storage_dead(@13)
             storage_dead(@12)
             @10 := &*(@11)

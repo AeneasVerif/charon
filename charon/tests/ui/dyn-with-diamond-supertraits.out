@@ -31,36 +31,30 @@ pub fn {impl Add<i32> for &'a (i32)}::add<'a>(@1: &'a (i32), @2: i32) -> i32
 
 // Full name: core::ops::arith::{impl Add<i32> for &'a (i32)}
 impl<'a> Add<i32> for &'a (i32) {
-    parent_clause0 = MetaSized<&'_ (i32)>
-    parent_clause1 = Sized<i32>
-    parent_clause2 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for &'_ (i32)}
+    parent_clause1 = {built_in impl Sized for i32}
+    parent_clause2 = {built_in impl Sized for i32}
     type Output = i32
     fn add = {impl Add<i32> for &'a (i32)}::add<'a>
     vtable: {impl Add<i32> for &'a (i32)}::{vtable}<'a>
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+
 #[lang_item("add")]
 pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
 where
     [@TraitClause0]: Add<Self, Rhs>,
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 fn UNIT_METADATA()
 {
@@ -235,7 +229,7 @@ fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -244,8 +238,8 @@ static {impl Super<i32> for i32}::{vtable}: test_crate::Super::{vtable}<i32> = {
 
 // Full name: test_crate::{impl Super<i32> for i32}
 impl Super<i32> for i32 {
-    parent_clause0 = MetaSized<i32>
-    parent_clause1 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
+    parent_clause1 = {built_in impl Sized for i32}
     fn super_method<'_0_1> = {impl Super<i32> for i32}::super_method<'_0_1>
     vtable: {impl Super<i32> for i32}::{vtable}
 }
@@ -291,7 +285,7 @@ fn {impl Internal for i32}::{vtable}() -> test_crate::Internal::{vtable}<i32>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Internal::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_internal_method: const ({impl Internal for i32}::internal_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Internal::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_internal_method: const ({impl Internal for i32}::internal_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -300,8 +294,8 @@ static {impl Internal for i32}::{vtable}: test_crate::Internal::{vtable}<i32> = 
 
 // Full name: test_crate::{impl Internal for i32}
 impl Internal for i32 {
-    parent_clause0 = MetaSized<i32>
-    parent_clause1 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
+    parent_clause1 = {built_in impl Sized for i32}
     type Internal = i32
     fn internal_method<'_0_1> = {impl Internal for i32}::internal_method<'_0_1>
     vtable: {impl Internal for i32}::{vtable}
@@ -354,7 +348,7 @@ fn {impl Left for i32}::{vtable}() -> test_crate::Left::{vtable}<i32, i32>
     @3 := ()
     storage_live(@4)
     @4 := &{impl Internal for i32}::{vtable}
-    ret@0 := test_crate::Left::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_left_method: const ({impl Left for i32}::left_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4) }
+    ret@0 := test_crate::Left::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_left_method: const ({impl Left for i32}::left_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4) }
     return
 }
 
@@ -363,9 +357,9 @@ static {impl Left for i32}::{vtable}: test_crate::Left::{vtable}<i32, i32> = {im
 
 // Full name: test_crate::{impl Left for i32}
 impl Left for i32 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = {impl Internal for i32}
-    parent_clause2 = Sized<i32>
+    parent_clause2 = {built_in impl Sized for i32}
     type Left = i32
     fn left_method<'_0_1> = {impl Left for i32}::left_method<'_0_1>
     vtable: {impl Left for i32}::{vtable}
@@ -454,7 +448,7 @@ fn {impl Right<i32> for i32}::{vtable}() -> test_crate::Right::{vtable}<i32, i32
     @5 := ()
     storage_live(@6)
     @6 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Right::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_right_method: const ({impl Right<i32> for i32}::right_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
+    ret@0 := test_crate::Right::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_right_method: const ({impl Right<i32> for i32}::right_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -463,11 +457,11 @@ static {impl Right<i32> for i32}::{vtable}: test_crate::Right::{vtable}<i32, i32
 
 // Full name: test_crate::{impl Right<i32> for i32}
 impl Right<i32> for i32 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = {impl Internal for i32}
     parent_clause2 = {impl Super<i32> for i32}
-    parent_clause3 = Sized<i32>
-    parent_clause4 = Sized<i32>
+    parent_clause3 = {built_in impl Sized for i32}
+    parent_clause4 = {built_in impl Sized for i32}
     type Right = i32
     fn right_method<'_0_1> = {impl Right<i32> for i32}::right_method<'_0_1>
     vtable: {impl Right<i32> for i32}::{vtable}
@@ -535,7 +529,7 @@ fn {impl Join<i32> for i32}::{vtable}() -> test_crate::Join::{vtable}<i32, i32, 
     @5 := ()
     storage_live(@6)
     @6 := &{impl Right<i32> for i32}::{vtable}
-    ret@0 := test_crate::Join::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_join_method: const ({impl Join<i32> for i32}::join_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
+    ret@0 := test_crate::Join::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_join_method: const ({impl Join<i32> for i32}::join_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -544,10 +538,10 @@ static {impl Join<i32> for i32}::{vtable}: test_crate::Join::{vtable}<i32, i32, 
 
 // Full name: test_crate::{impl Join<i32> for i32}
 impl Join<i32> for i32 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = {impl Left for i32}
     parent_clause2 = {impl Right<i32> for i32}
-    parent_clause3 = Sized<i32>
+    parent_clause3 = {built_in impl Sized for i32}
     fn join_method<'_0_1> = {impl Join<i32> for i32}::join_method<'_0_1>
     vtable: {impl Join<i32> for i32}::{vtable}
 }

@@ -102,6 +102,35 @@ impl std::ops::IndexMut<LocalId> for Locals {
     }
 }
 
+impl FunDecl {
+    /// Replace the generic parameters of this function with the ones given by the binder.
+    pub fn substitute_params(self, subst: Binder<GenericArgs>) -> Self {
+        let FunDecl {
+            def_id,
+            item_meta,
+            signature,
+            src: kind,
+            is_global_initializer,
+            body,
+        } = self;
+        let signature = FunSig {
+            generics: subst.params,
+            inputs: signature.inputs.substitute(&subst.skip_binder),
+            output: signature.output.substitute(&subst.skip_binder),
+            ..signature
+        };
+        let src = kind.substitute(&subst.skip_binder);
+        let body = body.substitute(&subst.skip_binder);
+        FunDecl {
+            def_id,
+            item_meta,
+            signature,
+            src,
+            is_global_initializer,
+            body,
+        }
+    }
+}
 impl TraitDecl {
     pub fn methods(&self) -> impl Iterator<Item = &Binder<TraitMethod>> {
         self.methods.iter()
@@ -119,7 +148,7 @@ impl Binder<TraitAssocTy> {
     }
 }
 impl Binder<TraitMethod> {
-    pub fn name(&self) -> &TraitItemName {
-        &self.skip_binder.name
+    pub fn name(&self) -> TraitItemName {
+        self.skip_binder.name
     }
 }

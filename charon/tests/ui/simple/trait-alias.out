@@ -31,26 +31,12 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -96,7 +82,7 @@ pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 (Struct)) -> Struct
 
 // Full name: test_crate::{impl Clone for Struct}
 impl Clone for Struct {
-    parent_clause0 = Sized<Struct>
+    parent_clause0 = {built_in impl Sized for Struct}
     fn clone<'_0_1> = {impl Clone for Struct}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -106,9 +92,9 @@ impl<T> Trait<T, u32> for Struct
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Struct>
+    parent_clause0 = {built_in impl MetaSized for Struct}
     parent_clause1 = @TraitClause0
-    parent_clause2 = Sized<u32>
+    parent_clause2 = {built_in impl Sized for u32}
     vtable: {impl Trait<T, u32> for Struct}::{vtable}<T>[@TraitClause0]
 }
 
@@ -154,10 +140,10 @@ where
     @3 := &x@1
     @2 := @TraitClause1::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[Drop<T>] @2
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] @2
     storage_dead(@2)
     @0 := ()
-    drop[Drop<T>] x@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@1
     return
 }
 
@@ -172,7 +158,7 @@ fn use_alias()
     storage_live(@1)
     storage_live(@2)
     @2 := Struct {  }
-    @1 := takes_alias<Struct>[Sized<Struct>, {impl Alias<U> for Self}<Struct, ()>[MetaSized<Struct>, {impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}, Sized<()>]](move (@2))
+    @1 := takes_alias<Struct>[{built_in impl Sized for Struct}, {impl Alias<U> for Self}<Struct, ()>[{built_in impl MetaSized for Struct}, {impl Trait<T, u32> for Struct}<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], {impl Clone for Struct}, {built_in impl Sized for ()}]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

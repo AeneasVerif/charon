@@ -12,21 +12,17 @@ pub trait Sized::<bool>
     non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop::<bool>
-#[lang_item("drop")]
-pub trait Drop::<bool>
+// Full name: core::marker::Destruct::<bool>
+#[lang_item("destruct")]
+pub trait Destruct::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    fn drop<'_0_1> = drop::<bool><'_0_1>
     fn drop_in_place = drop_in_place::<bool>
-    vtable: core::ops::drop::Drop::{vtable}::<bool>
+    vtable: core::marker::Destruct::{vtable}::<bool>
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place::<bool>
+// Full name: core::marker::Destruct::drop_in_place::<bool>
 fn drop_in_place::<bool>(@1: *mut bool)
-
-// Full name: core::ops::drop::Drop::drop::<bool>
-pub fn drop::<bool><'_0>(@1: &'_0 mut (bool))
 
 fn UNIT_METADATA()
 {
@@ -48,8 +44,6 @@ pub trait Trait::<bool>
 
 pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 (bool))
 
-pub fn test_crate::Trait::method<'_0>(@1: &'_0 (bool))
-
 // Full name: test_crate::{impl Trait::<bool>}::method
 pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 {
@@ -63,7 +57,7 @@ pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 
 // Full name: test_crate::{impl Trait::<bool>}
 impl Trait::<bool> {
-    parent_clause0 = MetaSized::<bool>
+    parent_clause0 = {built_in impl MetaSized::<bool>}
     fn method<'_0_1> = {impl Trait::<bool>}::method<'_0_1>
     vtable: {impl Trait::<bool>}::{vtable}
 }
@@ -80,7 +74,6 @@ fn do_test::<bool>(@1: bool)
     @2 := &x@1
     @0 := {impl Trait::<bool>}::method<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop::<bool>] x@1
     return
 }
 

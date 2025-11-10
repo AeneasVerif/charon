@@ -107,6 +107,7 @@ where
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
@@ -116,7 +117,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -151,17 +152,8 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
     return
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-pub fn core::clone::impls::{impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
+// Full name: core::clone::impls::{impl Clone for usize}::clone_from
+pub fn {impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 where
     [@TraitClause0]: Destruct<usize>,
 {
@@ -173,7 +165,7 @@ where
     @0 := ()
     storage_live(@3)
     @3 := {impl Clone for usize}::clone<'_>(move (source@2))
-    drop[Drop<usize>] *(self@1)
+    drop[@TraitClause0] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
@@ -181,15 +173,15 @@ where
 
 // Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
-    parent_clause0 = Sized<usize>
+    parent_clause0 = {built_in impl Sized for usize}
     fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = core::clone::impls::{impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {
-    parent_clause0 = MetaSized<usize>
+    parent_clause0 = {built_in impl MetaSized for usize}
     parent_clause1 = {impl Clone for usize}
     non-dyn-compatible
 }
@@ -237,7 +229,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::fmt::rt::ArgumentType
 enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
+  Placeholder(value: NonNull<()>, formatter: fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a (())>),
   Count(u16),
 }
 
@@ -254,7 +246,7 @@ where
     'a : 'a,
 {
   pieces: &'a (Slice<&'static (Str)>),
-  fmt: Option<&'a (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>],
+  fmt: Option<&'a (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}],
   args: &'a (Slice<Argument<'a>>),
 }
 
@@ -312,13 +304,13 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     let @8: &'_ (Slice<Argument<'_>>); // anonymous local
     let @9: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @10: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @11: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @11: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@2)
     storage_live(pieces@4)
     @0 := ()
     storage_live(@6)
-    @6 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@1))
+    @6 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move (align@1))
     switch move (@6) {
         1 : u32 => {
         },
@@ -348,19 +340,19 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     return
 }
 
-pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[Sized<Alignment>]
+pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
-    let @0: Option<Alignment>[Sized<Alignment>]; // return
+    let @0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
     let align@1: usize; // arg #1
     let @2: Alignment; // anonymous local
     let @3: u32; // anonymous local
     let @4: (); // anonymous local
     let @5: bool; // anonymous local
-    let @6: Option<Alignment>[Sized<Alignment>]; // anonymous local
+    let @6: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
 
     storage_live(@4)
     storage_live(@3)
-    @3 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@1))
+    @3 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy (align@1))
     switch move (@3) {
         1 : u32 => {
         },
@@ -430,7 +422,7 @@ fn is_size_align_valid(@1: usize, @2: usize) -> bool
     let size@1: usize; // arg #1
     let align@2: usize; // arg #2
     let align@3: Alignment; // local
-    let @4: Option<Alignment>[Sized<Alignment>]; // anonymous local
+    let @4: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
     let @5: usize; // anonymous local
     let @6: bool; // anonymous local
     let @7: usize; // anonymous local
@@ -495,11 +487,11 @@ pub trait Allocator<Self>
     fn grow<'_0_1> = core::alloc::Allocator::grow<'_0_1, Self>[Self]
     fn grow_zeroed<'_0_1> = core::alloc::Allocator::grow_zeroed<'_0_1, Self>[Self]
     fn shrink<'_0_1> = core::alloc::Allocator::shrink<'_0_1, Self>[Self]
-    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Self>> = by_ref<'_0_1, Self>[Self, @TraitClause0_1]
+    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Self>> = core::alloc::Allocator::by_ref<'_0_1, Self>[Self, @TraitClause0_1]
     vtable: core::alloc::Allocator::{vtable}
 }
 
-pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 
@@ -545,8 +537,8 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     let @22: Array<Argument<'_>, 0 : usize>; // anonymous local
     let @23: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @24: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @25: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @26: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @25: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
+    let @26: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@5)
     storage_live(pieces@7)
@@ -554,7 +546,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@4)
     storage_live(@12)
     storage_live(@14)
-    @14 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@2))
+    @14 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy (align@2))
     switch move (@14) {
         1 : u32 => {
         },
@@ -649,15 +641,15 @@ where
     undefined_behavior
 }
 
-pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Self); // arg #1
     let layout@2: Layout; // arg #2
-    let @3: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let self@4: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // local
+    let @3: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let self@4: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
     let ptr@5: NonNull<Slice<u8>>; // local
     let @6: (); // anonymous local
     let self@7: *mut u8; // local
@@ -671,7 +663,7 @@ where
     let @15: bool; // anonymous local
     let @16: bool; // anonymous local
     let @17: AllocError; // anonymous local
-    let @18: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @18: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(ptr@5)
     storage_live(@6)
@@ -726,7 +718,7 @@ where
     }
     else {
     }
-    @6 := write_bytes<u8>[Sized<u8>](move (self@7), const (0 : u8), move (count@9))
+    @6 := write_bytes<u8>[{built_in impl Sized for u8}](move (self@7), const (0 : u8), move (count@9))
     storage_dead(@16)
     storage_dead(count@9)
     storage_dead(self@7)
@@ -756,7 +748,7 @@ pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), N>)) -> Arg
     let @3: &'_ (Slice<Argument<'_>>); // anonymous local
     let @4: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @5: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @6: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @6: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
@@ -815,7 +807,7 @@ fn runtime(@1: *const (), @2: *const (), @3: usize, @4: usize) -> bool
     let dst_usize@6: usize; // local
     let @7: !; // anonymous local
     let size@8: usize; // local
-    let @9: Option<usize>[Sized<usize>]; // anonymous local
+    let @9: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let diff@10: usize; // local
     let @11: usize; // anonymous local
     let @12: u64; // anonymous local
@@ -930,9 +922,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     let @42: Array<&'_ (Str), 1 : usize>; // anonymous local
     let @43: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @44: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @45: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @46: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
-    let @47: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @45: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
+    let @46: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
+    let @47: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(ptr@12)
     storage_live(@14)
@@ -953,7 +945,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             is_zst@10 := copy (zero_size@7)
             storage_live(@21)
             storage_live(@23)
-            @23 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@4))
+            @23 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy (align@4))
             switch move (@23) {
                 1 : u32 => {
                 },
@@ -998,7 +990,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                         is_zst@13 := copy (zero_size@7)
                         storage_live(@29)
                         storage_live(@30)
-                        @30 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@4))
+                        @30 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move (align@4))
                         switch move (@30) {
                             1 : u32 => {
                             },
@@ -1170,7 +1162,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                             is_zst@13 := copy (zero_size@7)
                             storage_live(@29)
                             storage_live(@30)
-                            @30 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@4))
+                            @30 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move (align@4))
                             switch move (@30) {
                                 1 : u32 => {
                                 },
@@ -1392,7 +1384,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     is_zst@10 := copy (zero_size@7)
     storage_live(@21)
     storage_live(@23)
-    @23 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](copy (align@4))
+    @23 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy (align@4))
     switch move (@23) {
         1 : u32 => {
         },
@@ -1436,7 +1428,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
             is_zst@13 := copy (zero_size@7)
             storage_live(@29)
             storage_live(@30)
-            @30 := ctpop<usize>[Sized<usize>, {impl Copy for usize}](move (align@4))
+            @30 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move (align@4))
             switch move (@30) {
                 1 : u32 => {
                 },
@@ -1551,17 +1543,17 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
 }
 
-pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Self); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
-    let @5: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let self@6: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // local
+    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let self@6: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
     let new_ptr@7: NonNull<Slice<u8>>; // local
     let src@8: *const u8; // local
     let dst@9: *mut u8; // local
@@ -1575,7 +1567,7 @@ where
     let @17: *mut (); // anonymous local
     let @18: bool; // anonymous local
     let @19: AllocError; // anonymous local
-    let @20: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @20: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_ptr@7)
     storage_live(@12)
@@ -1639,17 +1631,17 @@ where
     return
 }
 
-pub unsafe fn core::alloc::Allocator::grow_zeroed<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub unsafe fn core::alloc::Allocator::grow_zeroed<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Self); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
-    let @5: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let self@6: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // local
+    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let self@6: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
     let new_ptr@7: NonNull<Slice<u8>>; // local
     let src@8: *const u8; // local
     let dst@9: *mut u8; // local
@@ -1663,7 +1655,7 @@ where
     let @17: *mut (); // anonymous local
     let @18: bool; // anonymous local
     let @19: AllocError; // anonymous local
-    let @20: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @20: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_ptr@7)
     storage_live(@12)
@@ -1727,17 +1719,17 @@ where
     return
 }
 
-pub unsafe fn core::alloc::Allocator::shrink<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub unsafe fn core::alloc::Allocator::shrink<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Self); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
-    let @5: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let self@6: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // local
+    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let self@6: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
     let new_ptr@7: NonNull<Slice<u8>>; // local
     let src@8: *const u8; // local
     let dst@9: *mut u8; // local
@@ -1751,7 +1743,7 @@ where
     let @17: *mut (); // anonymous local
     let @18: bool; // anonymous local
     let @19: AllocError; // anonymous local
-    let @20: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @20: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_ptr@7)
     storage_live(@12)
@@ -1815,8 +1807,7 @@ where
     return
 }
 
-// Full name: core::alloc::Allocator::by_ref
-pub fn by_ref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self)
+pub fn core::alloc::Allocator::by_ref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self)
 where
     [@TraitClause0]: Allocator<Self>,
     [@TraitClause1]: Sized<Self>,
@@ -1833,8 +1824,7 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -1847,33 +1837,13 @@ where
     @0 := ()
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop[Drop<Self>] *(self@1)
+    drop[@TraitClause1] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
 }
 
-// Full name: core::intrinsics::size_of_val
-pub unsafe fn size_of_val<T>(@1: *const T) -> usize
-where
-    [@TraitClause0]: MetaSized<T>,
-{
-    let @0: usize; // return
-    let ptr@1: *const T; // arg #1
-
-    undefined_behavior
-}
-
-// Full name: core::intrinsics::align_of_val
-pub unsafe fn align_of_val<T>(@1: *const T) -> usize
-where
-    [@TraitClause0]: MetaSized<T>,
-{
-    let @0: usize; // return
-    let ptr@1: *const T; // arg #1
-
-    undefined_behavior
-}
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::mem::manually_drop::ManuallyDrop
 #[lang_item("manually_drop")]
@@ -1899,7 +1869,8 @@ pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInne
     return
 }
 
-pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from
+pub fn {impl Clone for NonZeroUsizeInner}::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
 where
     [@TraitClause0]: Destruct<NonZeroUsizeInner>,
 {
@@ -1911,7 +1882,7 @@ where
     @0 := ()
     storage_live(@3)
     @3 := {impl Clone for NonZeroUsizeInner}::clone<'_>(move (source@2))
-    drop[Drop<NonZeroUsizeInner>] *(self@1)
+    drop[@TraitClause0] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
@@ -1919,15 +1890,15 @@ where
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}
 impl Clone for NonZeroUsizeInner {
-    parent_clause0 = Sized<NonZeroUsizeInner>
+    parent_clause0 = {built_in impl Sized for NonZeroUsizeInner}
     fn clone<'_0_1> = {impl Clone for NonZeroUsizeInner}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<NonZeroUsizeInner>> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<NonZeroUsizeInner>> = {impl Clone for NonZeroUsizeInner}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroUsizeInner}
 impl Copy for NonZeroUsizeInner {
-    parent_clause0 = MetaSized<NonZeroUsizeInner>
+    parent_clause0 = {built_in impl MetaSized for NonZeroUsizeInner}
     parent_clause1 = {impl Clone for NonZeroUsizeInner}
     non-dyn-compatible
 }
@@ -1953,16 +1924,16 @@ pub trait ZeroablePrimitive<Self>
 
 // Full name: core::num::nonzero::{impl Sealed for usize}
 impl Sealed for usize {
-    parent_clause0 = MetaSized<usize>
+    parent_clause0 = {built_in impl MetaSized for usize}
     vtable: {impl Sealed for usize}::{vtable}
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
 impl ZeroablePrimitive for usize {
-    parent_clause0 = Sized<usize>
+    parent_clause0 = {built_in impl Sized for usize}
     parent_clause1 = {impl Copy for usize}
     parent_clause2 = {impl Sealed for usize}
-    parent_clause3 = Sized<NonZeroUsizeInner>
+    parent_clause3 = {built_in impl Sized for NonZeroUsizeInner}
     parent_clause4 = {impl Copy for NonZeroUsizeInner}
     type NonZeroInner = NonZeroUsizeInner
     non-dyn-compatible
@@ -1977,12 +1948,6 @@ where
 {
   @TraitClause1::NonZeroInner,
 }
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
@@ -2004,7 +1969,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     let @8: &'_ (Slice<Argument<'_>>); // anonymous local
     let @9: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @10: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @11: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @11: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@2)
     storage_live(pieces@4)
@@ -2052,7 +2017,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     let @7: &'_ (Slice<Argument<'_>>); // anonymous local
     let @8: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @9: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @10: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @10: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@2)
     storage_live(pieces@4)
@@ -2096,7 +2061,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     let @9: &'_ (Slice<Argument<'_>>); // anonymous local
     let @10: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @11: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @12: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @12: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@4)
     storage_live(pieces@6)
@@ -2149,9 +2114,9 @@ unsafe fn __rust_no_alloc_shim_is_unstable_v2()
 pub struct Global {}
 
 // Full name: alloc::alloc::{Global}::alloc_impl
-fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let layout@2: Layout; // arg #2
     let zeroed@3: bool; // arg #3
@@ -2163,13 +2128,13 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     let raw_ptr@9: *mut u8; // local
     let layout@10: Layout; // local
     let layout@11: Layout; // local
-    let @12: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<u8>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<u8>>]; // anonymous local
-    let self@13: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // local
-    let self@14: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // local
+    let @12: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<u8>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<u8>}]; // anonymous local
+    let self@13: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // local
+    let self@14: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // local
     let ptr@15: *mut u8; // local
     let ptr@16: NonNull<u8>; // local
     let @17: NonNull<Slice<u8>>; // anonymous local
-    let @18: NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}]; // anonymous local
+    let @18: NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]; // anonymous local
     let @19: Alignment; // anonymous local
     let @20: *const u8; // anonymous local
     let ptr@21: *mut Slice<u8>; // local
@@ -2212,11 +2177,11 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     let @58: *mut (); // anonymous local
     let @59: *const Slice<u8>; // anonymous local
     let @60: bool; // anonymous local
-    let @61: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // anonymous local
+    let @61: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @62: AllocError; // anonymous local
-    let @63: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // anonymous local
+    let @63: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @64: AllocError; // anonymous local
-    let @65: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @65: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(size@4)
     storage_live(ptr@15)
@@ -2405,16 +2370,16 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     self@8 := &layout@2
     storage_live(@19)
     @19 := copy ((layout@2).align)
-    @18 := transmute<Alignment, NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}]>(copy (@19))
+    @18 := transmute<Alignment, NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>(copy (@19))
     storage_dead(@19)
     storage_live(@20)
-    @20 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}], *const u8>(copy (@18))
+    @20 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *const u8>(copy (@18))
     data@7 := NonNull { pointer: copy (@20) }
     storage_dead(@20)
     storage_dead(self@8)
     storage_live(ptr@21)
     storage_live(data@22)
-    data@22 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}], *mut u8>(copy (@18))
+    data@22 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *mut u8>(copy (@18))
     ptr@21 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@22), const (0 : usize))
     storage_dead(data@22)
     storage_live(@25)
@@ -2422,7 +2387,7 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     @26 := ub_checks<bool>
     if copy (@26) {
         storage_live(@24)
-        @24 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}], *mut ()>(copy (@18))
+        @24 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *mut ()>(copy (@18))
         @23 := core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move (@24))
         storage_dead(@24)
     }
@@ -2440,9 +2405,9 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
 }
 
 // Full name: alloc::alloc::{Global}::grow_impl
-unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout, @5: bool) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout, @5: bool) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -2465,9 +2430,9 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     let self@20: NonNull<u8>; // local
     let layout@21: Layout; // local
     let new_size@22: usize; // local
-    let @23: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<u8>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<u8>>]; // anonymous local
-    let self@24: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // local
-    let self@25: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // local
+    let @23: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<u8>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<u8>}]; // anonymous local
+    let self@24: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // local
+    let self@25: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // local
     let ptr@26: *mut u8; // local
     let ptr@27: NonNull<u8>; // local
     let @28: (); // anonymous local
@@ -2475,8 +2440,8 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     let self@30: *mut u8; // local
     let count@31: usize; // local
     let @32: NonNull<Slice<u8>>; // anonymous local
-    let @33: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let self@34: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // local
+    let @33: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let self@34: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
     let new_ptr@35: NonNull<Slice<u8>>; // local
     let src@36: *const u8; // local
     let ptr@37: *mut u8; // local
@@ -2525,12 +2490,12 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     let self@80: &'_ (Layout); // local
     let self@81: &'_ (Layout); // local
     let @82: AllocError; // anonymous local
-    let @83: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
-    let @84: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // anonymous local
+    let @83: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @84: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @85: AllocError; // anonymous local
-    let @86: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // anonymous local
+    let @86: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @87: AllocError; // anonymous local
-    let @88: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @88: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(old_size@6)
     storage_live(@10)
@@ -2860,7 +2825,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 }
                 else {
                 }
-                @28 := write_bytes<u8>[Sized<u8>](move (self@29), const (0 : u8), move (count@31))
+                @28 := write_bytes<u8>[{built_in impl Sized for u8}](move (self@29), const (0 : u8), move (count@31))
                 storage_dead(count@31)
                 storage_dead(self@29)
             }
@@ -2896,9 +2861,9 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let layout@2: Layout; // arg #2
 
@@ -2907,9 +2872,9 @@ pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout)
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate_zeroed
-pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let layout@2: Layout; // arg #2
 
@@ -2990,9 +2955,9 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::grow
-pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -3003,9 +2968,9 @@ pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonN
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::grow_zeroed
-pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -3016,9 +2981,9 @@ pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::shrink
-pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'_ (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -3044,14 +3009,14 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let self@23: NonNull<u8>; // local
     let layout@24: Layout; // local
     let new_size@25: usize; // local
-    let @26: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<u8>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<u8>>]; // anonymous local
-    let self@27: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // local
-    let self@28: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // local
+    let @26: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<u8>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<u8>}]; // anonymous local
+    let self@27: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // local
+    let self@28: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // local
     let ptr@29: *mut u8; // local
     let ptr@30: NonNull<u8>; // local
     let @31: NonNull<Slice<u8>>; // anonymous local
-    let @32: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let self@33: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // local
+    let @32: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let self@33: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
     let new_ptr@34: NonNull<Slice<u8>>; // local
     let src@35: *const u8; // local
     let ptr@36: *mut u8; // local
@@ -3077,7 +3042,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let @56: bool; // anonymous local
     let @57: bool; // anonymous local
     let @58: bool; // anonymous local
-    let @59: NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}]; // anonymous local
+    let @59: NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]; // anonymous local
     let @60: Alignment; // anonymous local
     let @61: *const u8; // anonymous local
     let ptr@62: *mut Slice<u8>; // local
@@ -3120,18 +3085,18 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let self@99: &'_ (Layout); // local
     let self@100: &'_ (Layout); // local
     let @101: AllocError; // anonymous local
-    let @102: Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]; // anonymous local
-    let @103: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<Slice<u8>>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<Slice<u8>>>]; // anonymous local
-    let @104: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // anonymous local
+    let @102: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @103: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let @104: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @105: AllocError; // anonymous local
-    let @106: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @106: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @107: AllocError; // anonymous local
-    let @108: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // anonymous local
+    let @108: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @109: AllocError; // anonymous local
-    let @110: Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]; // anonymous local
-    let @111: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<u8>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<u8>>]; // anonymous local
+    let @110: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @111: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<u8>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @112: AllocError; // anonymous local
-    let @113: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @113: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_size@5)
     storage_live(@7)
@@ -3756,16 +3721,16 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     self@11 := &new_layout@4
     storage_live(@60)
     @60 := copy ((new_layout@4).align)
-    @59 := transmute<Alignment, NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}]>(copy (@60))
+    @59 := transmute<Alignment, NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>(copy (@60))
     storage_dead(@60)
     storage_live(@61)
-    @61 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}], *const u8>(copy (@59))
+    @61 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *const u8>(copy (@59))
     data@10 := NonNull { pointer: copy (@61) }
     storage_dead(@61)
     storage_dead(self@11)
     storage_live(ptr@62)
     storage_live(data@63)
-    data@63 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}], *mut u8>(copy (@59))
+    data@63 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *mut u8>(copy (@59))
     ptr@62 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@63), const (0 : usize))
     storage_dead(data@63)
     storage_live(@66)
@@ -3773,7 +3738,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     @67 := ub_checks<bool>
     if copy (@67) {
         storage_live(@65)
-        @65 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}], *mut ()>(copy (@59))
+        @65 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *mut ()>(copy (@59))
         @64 := core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move (@65))
         storage_dead(@65)
     }
@@ -3790,7 +3755,8 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     return
 }
 
-pub fn alloc::alloc::{impl Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
+// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
+pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 (Global)) -> &'_0 (Global)
 where
     [@TraitClause0]: Sized<Global>,
 {
@@ -3803,14 +3769,14 @@ where
 
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
-    parent_clause0 = MetaSized<Global>
+    parent_clause0 = {built_in impl MetaSized for Global}
     fn allocate<'_0_1> = {impl Allocator for Global}::allocate<'_0_1>
     fn allocate_zeroed<'_0_1> = {impl Allocator for Global}::allocate_zeroed<'_0_1>
     fn deallocate<'_0_1> = {impl Allocator for Global}::deallocate<'_0_1>
     fn grow<'_0_1> = {impl Allocator for Global}::grow<'_0_1>
     fn grow_zeroed<'_0_1> = {impl Allocator for Global}::grow_zeroed<'_0_1>
     fn shrink<'_0_1> = {impl Allocator for Global}::shrink<'_0_1>
-    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = alloc::alloc::{impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
+    fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = {impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
     vtable: {impl Allocator for Global}::{vtable}
 }
 
@@ -3866,7 +3832,7 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
     let size@1: usize; // arg #1
     let align@2: usize; // arg #2
     let layout@3: Layout; // local
-    let @4: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let @4: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
     let ptr@5: NonNull<Slice<u8>>; // local
     let @6: !; // anonymous local
     let @7: bool; // anonymous local
@@ -3926,12 +3892,31 @@ where
   A,
 }
 
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
+fn {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(@1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause2]: Allocator<A>,
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
+impl<T, A> Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause2]: Allocator<A>,
+{
+    parent_clause0 = {built_in impl MetaSized for Box<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1)), missing(@TraitClauseBound(1, 2))]}
+    fn drop_in_place = {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
+}
+
 #[lang_item("box_new")]
-pub fn alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]
+pub fn alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]; // return
+    let @0: Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // return
     let x@1: T; // arg #1
     let @2: usize; // anonymous local
     let @3: usize; // anonymous local
@@ -3951,12 +3936,12 @@ where
     return
 }
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]}::from_raw
-pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]
+// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::from_raw
+pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
 where
     [@TraitClause0]: MetaSized<T>,
 {
-    let @0: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // return
+    let @0: Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // return
     let raw@1: *mut T; // arg #1
     let @2: Unique<T>; // anonymous local
     let @3: NonNull<T>; // anonymous local
@@ -3996,15 +3981,15 @@ where
     return
 }
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]}::into_raw
-pub fn into_raw<T>(@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]) -> *mut T
+// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::into_raw
+pub fn into_raw<T>(@1: Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]) -> *mut T
 where
     [@TraitClause0]: MetaSized<T>,
 {
     let @0: *mut T; // return
-    let b@1: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // arg #1
-    let @2: ManuallyDrop<Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]>[MetaSized<Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]>]; // anonymous local
-    let @3: Box<T, Global>[@TraitClause0, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let b@1: Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // arg #1
+    let @2: ManuallyDrop<Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]>[{built_in impl MetaSized for Box<missing(@TypeBound(1, 0)), Global>[missing(@TraitClauseBound(1, 0)), {built_in impl Sized for Global}, {impl Allocator for Global}]}]; // anonymous local
+    let @3: Box<T, Global>[@TraitClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
     let @4: *const T; // anonymous local
 
     storage_live(@3)
@@ -4044,113 +4029,16 @@ where
     return
 }
 
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
-pub fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(@1: &'_0 mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]))
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
-{
-    let @0: (); // return
-    let self@1: &'_ mut (Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]); // arg #1
-    let layout@2: Layout; // local
-    let t@3: *const T; // local
-    let @4: *mut T; // anonymous local
-    let self@5: &'_ (Layout); // local
-    let @6: (); // anonymous local
-    let @7: &'_ (A); // anonymous local
-    let size@8: usize; // local
-    let align@9: usize; // local
-    let @10: bool; // anonymous local
-    let @11: (); // anonymous local
-    let @12: Alignment; // anonymous local
-    let unique@13: NonNull<u8>; // local
-    let @14: *const u8; // anonymous local
-    let ptr@15: NonNull<T>; // local
-    let ptr@16: PhantomData<T>; // local
-
-    storage_live(layout@2)
-    storage_live(@4)
-    storage_live(@6)
-    storage_live(size@8)
-    storage_live(@11)
-    storage_live(unique@13)
-    storage_live(ptr@15)
-    @0 := ()
-    storage_live(ptr@16)
-    ptr@15 := copy (((*(self@1)).0).pointer)
-    ptr@16 := copy (((*(self@1)).0)._marker)
-    storage_live(t@3)
-    @4 := transmute<NonNull<T>, *mut T>(copy (ptr@15))
-    t@3 := transmute<NonNull<T>, *const T>(copy (ptr@15))
-    storage_live(align@9)
-    size@8 := size_of_val<T>[@TraitClause0](copy (t@3))
-    align@9 := align_of_val<T>[@TraitClause0](move (t@3))
-    storage_live(@10)
-    @10 := ub_checks<bool>
-    if move (@10) {
-        @11 := core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(copy (size@8), copy (align@9))
-    }
-    else {
-    }
-    storage_dead(@10)
-    storage_live(@12)
-    @12 := transmute<usize, Alignment>(copy (align@9))
-    layout@2 := Layout { size: copy (size@8), align: move (@12) }
-    storage_dead(@12)
-    storage_dead(align@9)
-    storage_dead(t@3)
-    storage_live(self@5)
-    self@5 := &layout@2
-    storage_dead(self@5)
-    switch move (size@8) {
-        0 : usize => {
-        },
-        _ => {
-            storage_live(@7)
-            @7 := &(*(self@1)).1
-            storage_live(@14)
-            @14 := cast<*mut T, *const u8>(copy (@4))
-            unique@13 := NonNull { pointer: move (@14) }
-            storage_dead(@14)
-            @6 := @TraitClause2::deallocate<'_>(move (@7), move (unique@13), copy (layout@2))
-            storage_dead(@7)
-        },
-    }
-    storage_dead(ptr@16)
-    return
-}
-
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
-fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(@1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
-
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
-impl<T, A> Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
-{
-    parent_clause0 = MetaSized<Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]>
-    fn drop<'_0_1> = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
-    fn drop_in_place = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::{vtable}<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
-
 // Full name: test_crate::foo
 unsafe fn foo()
 {
     let @0: (); // return
-    let b@1: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // local
+    let b@1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // local
     let p@2: *mut i32; // local
-    let @3: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
+    let @3: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
     let @4: &'_ mut (i32); // anonymous local
-    let @5: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // anonymous local
-    let b@6: Box<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]; // local
+    let @5: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
+    let b@6: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // local
     let @7: *mut i32; // anonymous local
     let i@8: i32; // local
     let @9: *const i32; // anonymous local
@@ -4158,29 +4046,29 @@ unsafe fn foo()
     storage_live(@9)
     @0 := ()
     storage_live(b@1)
-    b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
+    b@1 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new<i32>[{built_in impl Sized for i32}](const (42 : i32))
     storage_live(p@2)
     storage_live(@3)
     @3 := move (b@1)
-    p@2 := into_raw<i32>[MetaSized<i32>](move (@3))
+    p@2 := into_raw<i32>[{built_in impl MetaSized for i32}](move (@3))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, Sized<Global>, {impl Allocator for Global}]}::new<i32>[Sized<i32>](const (42 : i32))
-    @4 := leak<'_, i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}](move (@5))
+    @5 := alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new<i32>[{built_in impl Sized for i32}](const (42 : i32))
+    @4 := leak<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(b@6)
     storage_live(@7)
     @7 := copy (p@2)
-    b@6 := from_raw<i32>[MetaSized<i32>](move (@7))
+    b@6 := from_raw<i32>[{built_in impl MetaSized for i32}](move (@7))
     storage_dead(@7)
     storage_live(i@8)
     @9 := transmute<NonNull<i32>, *const i32>(copy (((b@6).0).pointer))
     i@8 := copy (*(@9))
     @0 := ()
     storage_dead(i@8)
-    drop[{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[MetaSized<i32>, Sized<Global>, {impl Allocator for Global}]] b@6
+    drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]] b@6
     storage_dead(b@6)
     storage_dead(p@2)
     storage_dead(b@1)

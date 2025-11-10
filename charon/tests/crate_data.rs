@@ -179,8 +179,8 @@ fn predicate_origins() -> anyhow::Result<()> {
                 (WhereClauseOnTrait, "Sized"),
                 (WhereClauseOnTrait, "Copy"),
                 (WhereClauseOnTrait, "Default"),
-                (TraitItem(TraitItemName("AssocType".to_owned())), "Sized"),
-                (TraitItem(TraitItemName("AssocType".to_owned())), "Default"),
+                (TraitItem(TraitItemName("AssocType".into())), "Sized"),
+                (TraitItem(TraitItemName("AssocType".into())), "Default"),
             ],
         ),
         // Interesting note: the method definition does not mention the clauses on the trait.
@@ -486,6 +486,15 @@ fn rename_attribute() -> anyhow::Result<()> {
 
     assert_eq!(
         crate_data.fun_decls[5]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
+        Some("retTest")
+    );
+
+    assert_eq!(
+        crate_data.fun_decls[6]
             .item_meta
             .attr_info
             .rename

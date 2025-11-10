@@ -31,7 +31,7 @@ pub fn {impl Default for bool}::default() -> bool
 
 // Full name: core::default::{impl Default for bool}
 impl Default for bool {
-    parent_clause0 = Sized<bool>
+    parent_clause0 = {built_in impl Sized for bool}
     fn default = {impl Default for bool}::default
     non-dyn-compatible
 }
@@ -64,12 +64,12 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 
 // Full name: core::fmt::{impl Debug for bool}::fmt
-pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 
 // Full name: core::fmt::{impl Debug for bool}
 impl Debug for bool {
@@ -90,23 +90,17 @@ where
 // Full name: core::fmt::rt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), P>), @2: &'a (Array<Argument<'a>, A>)) -> Arguments<'a>
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
@@ -207,7 +201,7 @@ where
     storage_dead(@8)
     @1 := _print<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<U>] @7
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] @7
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(args@3)
@@ -270,7 +264,7 @@ where
     let @0: (); // return
 
     @0 := ()
-    @0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, Sized<bool>, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, Sized<bool>, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
+    @0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, {built_in impl Sized for bool}, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, {built_in impl Sized for bool}, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
     return
 }
 

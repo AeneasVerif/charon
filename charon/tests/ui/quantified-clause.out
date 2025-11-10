@@ -91,7 +91,7 @@ where
     [@TraitClause0]: Ord<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
@@ -262,8 +262,12 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -283,24 +287,6 @@ where
   Continue(C),
   Break(B),
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -427,7 +413,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<F>] _f@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _f@1
     return
 }
 
@@ -446,9 +432,9 @@ where
 }
 
 // Full name: test_crate::f
-pub fn f<'a>(@1: &'a (())) -> Option<(&'a (u8))>[Sized<(&'a (u8))>]
+pub fn f<'a>(@1: &'a (())) -> Option<(&'a (u8))>[{built_in impl Sized for (&missing('_Bound(1, 0)) (u8))}]
 {
-    let @0: Option<(&'_ (u8))>[Sized<(&'_ (u8))>]; // return
+    let @0: Option<(&'_ (u8))>[{built_in impl Sized for (&'_ (u8))}]; // return
     let @1: &'_ (()); // arg #1
 
     @0 := Option::None {  }
@@ -470,7 +456,7 @@ where
     [@TraitClause2]: for<'a> IntoIterator<&'a (Result<T, U>[@TraitClause0, @TraitClause1])>,
     [@TraitClause3]: for<'a> Copy<@TraitClause2::Item>,
 {
-    parent_clause0 = MetaSized<Result<T, U>[@TraitClause0, @TraitClause1]>
+    parent_clause0 = {built_in impl MetaSized for Result<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
     vtable: {impl Trait for Result<T, U>[@TraitClause0, @TraitClause1]}::{vtable}<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 

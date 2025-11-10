@@ -40,8 +40,12 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
@@ -71,14 +75,14 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 
 // Full name: test_crate::{impl Clone for Foo}
 impl Clone for Foo {
-    parent_clause0 = Sized<Foo>
+    parent_clause0 = {built_in impl Sized for Foo}
     fn clone<'_0_1> = {impl Clone for Foo}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
-    parent_clause0 = MetaSized<Foo>
+    parent_clause0 = {built_in impl MetaSized for Foo}
     parent_clause1 = {impl Clone for Foo}
     non-dyn-compatible
 }

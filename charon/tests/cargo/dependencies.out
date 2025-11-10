@@ -104,10 +104,10 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
 impl FnOnce<(u32)> for closure {
-    parent_clause0 = MetaSized<closure>
-    parent_clause1 = Sized<(u32)>
-    parent_clause2 = Tuple<(u32)>
-    parent_clause3 = Sized<u32>
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for (u32)}
+    parent_clause2 = {built_in impl Tuple for (u32)}
+    parent_clause3 = {built_in impl Sized for u32}
     type Output = u32
     fn call_once = {impl FnOnce<(u32)> for closure}::call_once
     non-dyn-compatible
@@ -128,7 +128,7 @@ fn silly_incr<'_0>(@1: &'_0 mut (u32))
     @3 := &two-phase-mut *(x@1)
     storage_live(@4)
     @4 := closure {  }
-    @2 := take<'_, u32, closure>[Sized<u32>, Sized<closure>, {impl FnOnce<(u32)> for closure}](move (@3), move (@4))
+    @2 := take<'_, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32)> for closure}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)
@@ -159,7 +159,7 @@ fn main()
     let @17: &'_ (u32); // anonymous local
     let @18: &'_ (u32); // anonymous local
     let @19: &'_ (u32); // anonymous local
-    let @20: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @20: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
 
     @0 := ()
     storage_live(x@1)

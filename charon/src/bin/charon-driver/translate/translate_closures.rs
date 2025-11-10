@@ -100,19 +100,7 @@ impl ItemTransCtx<'_, '_> {
         let upvar_binder = hax::Binder {
             value: (),
             bound_vars: closure
-                .upvar_tys
-                .iter()
-                .filter(|ty| {
-                    matches!(
-                        ty.kind(),
-                        hax::TyKind::Ref(
-                            hax::Region {
-                                kind: hax::RegionKind::ReErased
-                            },
-                            ..
-                        )
-                    )
-                })
+                .iter_upvar_borrows()
                 .map(|_| hax::BoundVariableKind::Region(hax::BoundRegionKind::Anon))
                 .collect(),
         };
@@ -542,7 +530,7 @@ impl ItemTransCtx<'_, '_> {
         let src = ItemSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
-            item_name: TraitItemName(target_kind.method_name().to_owned()),
+            item_name: TraitItemName(target_kind.method_name().into()),
             reuses_default: false,
         };
 
@@ -605,7 +593,7 @@ impl ItemTransCtx<'_, '_> {
             def.this(),
             TransItemSourceKind::ClosureMethod(target_kind),
         );
-        let call_fn_name = TraitItemName(target_kind.method_name().to_string());
+        let call_fn_name = TraitItemName(target_kind.method_name().into());
         let call_fn_binder = {
             let mut method_params = GenericParams::empty();
             match target_kind {

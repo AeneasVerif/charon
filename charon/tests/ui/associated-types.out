@@ -47,7 +47,7 @@ pub fn {impl Clone for &'_0 (T)}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_
 
 // Full name: core::clone::impls::{impl Clone for &'_0 (T)}
 impl<'_0, T> Clone for &'_0 (T) {
-    parent_clause0 = Sized<&'_ (T)>
+    parent_clause0 = {built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}
     fn clone<'_0_1> = {impl Clone for &'_0 (T)}::clone<'_0, '_0_1, T>
     non-dyn-compatible
 }
@@ -63,7 +63,7 @@ pub trait Copy<Self>
 
 // Full name: core::marker::{impl Copy for &'_0 (T)}
 impl<'_0, T> Copy for &'_0 (T) {
-    parent_clause0 = MetaSized<&'_ (T)>
+    parent_clause0 = {built_in impl MetaSized for &'_ (missing(@TypeBound(1, 0)))}
     parent_clause1 = {impl Clone for &'_0 (T)}<'_, T>
     non-dyn-compatible
 }
@@ -73,26 +73,12 @@ impl<'_0, T> Copy for &'_0 (T) {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -116,7 +102,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = Sized<Option<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     fn clone<'_0_1> = {impl Clone for Option<T>[@TraitClause0]}::clone<'_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -127,7 +113,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = {impl Clone for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1::parent_clause1]
     non-dyn-compatible
 }
@@ -168,7 +154,7 @@ where
     parent_clause2 : [@TraitClause2]: Sized<Self_Item>
     parent_clause3 : [@TraitClause3]: Clone<Self_Item>
     fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item>[Self]
-    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_1]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = test_crate::Foo::use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -176,8 +162,7 @@ fn test_crate::Foo::use_item_required<'a, Self, Clause0_Item>(@1: Clause0_Item) 
 where
     [@TraitClause0]: test_crate::Foo<'a, Self, Clause0_Item>,
 
-// Full name: test_crate::Foo::use_item_provided
-fn use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(@1: Clause0_Item) -> Clause0_Item
+fn test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(@1: Clause0_Item) -> Clause0_Item
 where
     [@TraitClause0]: test_crate::Foo<'a, Self, Clause0_Item>,
     [@TraitClause1]: test_crate::Foo<'a, Clause0_Item, Clause1_Item>,
@@ -189,41 +174,42 @@ where
     return
 }
 
-// Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required
-fn {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
+// Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_required
+fn {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_required<'a, T>(@1: Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'_ (T)>[Sized<&'_ (T)>]; // return
-    let x@1: Option<&'_ (T)>[Sized<&'_ (T)>]; // arg #1
+    let @0: Option<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // return
+    let x@1: Option<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // arg #1
 
     @0 := copy (x@1)
     return
 }
 
-fn test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: Option<&'a (T)>[Sized<&'_ (T)>]) -> Option<&'a (T)>[Sized<&'_ (T)>]
+// Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_provided
+fn {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause1_Item>,
+    [@TraitClause1]: test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(2, 0)))}], Clause1_Item>,
 {
-    let @0: Option<&'a (T)>[Sized<&'_ (T)>]; // return
-    let x@1: Option<&'a (T)>[Sized<&'_ (T)>]; // arg #1
+    let @0: Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // return
+    let x@1: Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]; // arg #1
 
     @0 := copy (x@1)
     return
 }
 
-// Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}
-impl<'a, T> test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)
+// Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}
+impl<'a, T> test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<&'_ (T)>
+    parent_clause0 = {built_in impl MetaSized for &'_ (missing(@TypeBound(1, 0)))}
     parent_clause1 = {impl Copy for &'_0 (T)}<'_, T>
-    parent_clause2 = Sized<Option<&'_ (T)>[Sized<&'_ (T)>]>
-    parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[Sized<&'_ (T)>, {impl Clone for &'_0 (T)}<'_, T>]
-    fn use_item_required = {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
-    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>], Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_1]
+    parent_clause2 = {built_in impl Sized for Option<&'_ (missing(@TypeBound(1, 0)))>[{built_in impl Sized for &'_ (missing(@TypeBound(2, 0)))}]}
+    parent_clause3 = {impl Clone for Option<T>[@TraitClause0]}<&'_ (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}, {impl Clone for &'_0 (T)}<'_, T>]
+    fn use_item_required = {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(3, 0)))}], Clause0_Item>> = {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -241,7 +227,8 @@ where
     return
 }
 
-fn test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
+// Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided
+fn {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -262,12 +249,12 @@ where
     [@TraitClause1]: Copy<T>,
     T : 'a,
 {
-    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = {impl Copy for Option<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = @TraitClause0
     parent_clause3 = @TraitClause1::parent_clause1
     fn use_item_required = {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_required<'a, T>[@TraitClause0, @TraitClause1]
-    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, T, Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_1]
+    fn use_item_provided<Clause0_Item, [@TraitClause0_1]: test_crate::Foo<'a, T, Clause0_Item>> = {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -301,14 +288,14 @@ where
 fn call_fn()
 {
     let @0: (); // return
-    let @1: Option<&'_ (bool)>[Sized<&'_ (bool)>]; // anonymous local
-    let @2: Option<&'_ (bool)>[Sized<&'_ (bool)>]; // anonymous local
+    let @1: Option<&'_ (bool)>[{built_in impl Sized for &'_ (bool)}]; // anonymous local
+    let @2: Option<&'_ (bool)>[{built_in impl Sized for &'_ (bool)}]; // anonymous local
 
     @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := Option::None {  }
-    @1 := external_use_item<'_, &'_ (bool), Option<&'_ (bool)>[Sized<&'_ (bool)>], &'_ (bool)>[Sized<&'_ (bool)>, {impl test_crate::Foo<'a, Option<&'a (T)>[Sized<&'_ (T)>]> for &'a (T)}<'_, bool>[Sized<bool>], {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}<'_, &'_ (bool)>[Sized<&'_ (bool)>, {impl Copy for &'_0 (T)}<'_, bool>]](move (@2))
+    @1 := external_use_item<'_, &'_ (bool), Option<&'_ (bool)>[{built_in impl Sized for &'_ (bool)}], &'_ (bool)>[{built_in impl Sized for &'_ (bool)}, {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]> for &'a (T)}<'_, bool>[{built_in impl Sized for bool}], {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}<'_, &'_ (bool)>[{built_in impl Sized for &'_ (bool)}, {impl Copy for &'_0 (T)}<'_, bool>]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()
@@ -327,7 +314,7 @@ where
     let x@1: Clause2_Item; // arg #1
 
     @0 := move (x@1)
-    drop[Drop<Clause2_Item>] x@1
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 2))}] x@1
     return
 }
 
@@ -340,8 +327,8 @@ trait test_crate::loopy::Bar<Self, Self_BarTy>
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()}
 impl test_crate::loopy::Bar<bool> for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<bool>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for bool}
     vtable: {impl test_crate::loopy::Bar<bool> for ()}::{vtable}
 }
 
@@ -358,8 +345,8 @@ trait test_crate::loopy::Foo<Self>
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Foo for ()}
 impl test_crate::loopy::Foo for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {impl test_crate::loopy::Foo for ()}
     parent_clause3 = {impl test_crate::loopy::Bar<bool> for ()}
     type FooTy = ()
@@ -382,11 +369,11 @@ trait Baz<Self, T>
 
 // Full name: test_crate::loopy::{impl Baz<()> for ()}
 impl Baz<()> for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {impl Baz<()> for ()}
     parent_clause3 = {impl test_crate::loopy::Bar<bool> for ()}
-    parent_clause4 = Sized<usize>
+    parent_clause4 = {built_in impl Sized for usize}
     type BazTy = usize
     type Self_Clause3_BarTy = bool
     vtable: {impl Baz<()> for ()}::{vtable}
@@ -407,10 +394,10 @@ where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<u8>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for u8}
     parent_clause2 = @TraitClause0
-    parent_clause3 = Sized<&'_ (T)>
+    parent_clause3 = {built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}
     vtable: {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}::{vtable}<'a, T>[@TraitClause0]
 }
 
@@ -428,13 +415,13 @@ trait test_crate::loopy_with_generics::Foo<'b, Self, T>
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
 impl test_crate::loopy_with_generics::Foo<'static, u16> for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<u16>
-    parent_clause2 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for u16}
+    parent_clause2 = {built_in impl Sized for ()}
     parent_clause3 = {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
-    parent_clause4 = {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}<'_, Option<u16>[Sized<u16>]>[Sized<Option<u16>[Sized<u16>]>]
+    parent_clause4 = {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}<'_, Option<u16>[{built_in impl Sized for u16}]>[{built_in impl Sized for Option<u16>[{built_in impl Sized for u16}]}]
     type FooTy = ()
-    type Self_Clause4_BarTy = &'_ (Option<u16>[Sized<u16>])
+    type Self_Clause4_BarTy = &'_ (Option<u16>[{built_in impl Sized for u16}])
     vtable: {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}::{vtable}
 }
 
@@ -468,10 +455,10 @@ where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<Option<T>[@TraitClause0]>
-    parent_clause2 = Sized<&'_ (())>
-    parent_clause3 = Sized<&'_ ((Option<T>[@TraitClause0], &'_ (())))>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause2 = {built_in impl Sized for &'_ (())}
+    parent_clause3 = {built_in impl Sized for &'_ ((Option<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))], &'_ (())))}
     vtable: {impl test_crate::params::Foo<'a, Option<T>[@TraitClause0], &'a (()), &'a ((Option<T>[@TraitClause0], &'a (())))> for ()}::{vtable}<'a, T>[@TraitClause0]
 }
 

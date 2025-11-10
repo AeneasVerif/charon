@@ -41,26 +41,12 @@ pub trait Copy<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 fn UNIT_METADATA()
 {
@@ -113,13 +99,13 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<T>] _other@2
+    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _other@2
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = Sized<()>
+    parent_clause0 = {built_in impl Sized for ()}
     fn method1 = {impl Trait for ()}::method1
     fn method2<T, [@TraitClause0_1]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_1]
     non-dyn-compatible
@@ -151,8 +137,8 @@ fn {impl MyCompare<&'a (())> for &'a (())}::compare<'a>(@1: &'a (()), @2: &'a ((
 
 // Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}
 impl<'a> MyCompare<&'a (())> for &'a (()) {
-    parent_clause0 = Sized<&'_ (())>
-    parent_clause1 = Sized<&'_ (())>
+    parent_clause0 = {built_in impl Sized for &'_ (())}
+    parent_clause1 = {built_in impl Sized for &'_ (())}
     fn compare = {impl MyCompare<&'a (())> for &'a (())}::compare<'a>
     non-dyn-compatible
 }
@@ -240,7 +226,7 @@ fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
     non-dyn-compatible
 }

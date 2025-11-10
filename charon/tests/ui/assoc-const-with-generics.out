@@ -67,7 +67,7 @@ const {impl HasLen for Array<(), N>}::LEN<const N : usize>: usize = {impl HasLen
 
 // Full name: test_crate::{impl HasLen for Array<(), N>}
 impl<const N : usize> HasLen for Array<(), N> {
-    parent_clause0 = MetaSized<Array<(), N>>
+    parent_clause0 = {built_in impl MetaSized for Array<(), missing(@ConstGenericBound(1, 0))>}
     const LEN = {impl HasLen for Array<(), N>}::LEN<N>
     non-dyn-compatible
 }
@@ -89,7 +89,7 @@ const {impl HasLen for Array<bool, N>}::LEN<const N : usize>: usize = {impl HasL
 
 // Full name: test_crate::{impl HasLen for Array<bool, N>}
 impl<const N : usize> HasLen for Array<bool, N> {
-    parent_clause0 = MetaSized<Array<bool, N>>
+    parent_clause0 = {built_in impl MetaSized for Array<bool, missing(@ConstGenericBound(1, 0))>}
     const LEN = {impl HasLen for Array<bool, N>}::LEN<N>
     non-dyn-compatible
 }
@@ -127,7 +127,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: HasLen<T>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Wrapper<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     const LEN = {impl HasLen for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
@@ -157,7 +157,7 @@ where
 
 // Full name: test_crate::{impl HasDefaultLen<N> for Array<(), N>}
 impl<const N : usize> HasDefaultLen<N> for Array<(), N> {
-    parent_clause0 = MetaSized<Array<(), N>>
+    parent_clause0 = {built_in impl MetaSized for Array<(), missing(@ConstGenericBound(1, 0))>}
     const LEN = test_crate::HasDefaultLen::LEN<Array<(), N>, N>[{impl HasDefaultLen<N> for Array<(), N>}<N>]
     non-dyn-compatible
 }
@@ -185,7 +185,7 @@ pub const {impl HasDefaultLen<N> for Array<bool, N>}::LEN<const N : usize>: usiz
 
 // Full name: test_crate::{impl HasDefaultLen<N> for Array<bool, N>}
 impl<const N : usize> HasDefaultLen<N> for Array<bool, N> {
-    parent_clause0 = MetaSized<Array<bool, N>>
+    parent_clause0 = {built_in impl MetaSized for Array<bool, missing(@ConstGenericBound(1, 0))>}
     const LEN = {impl HasDefaultLen<N> for Array<bool, N>}::LEN<N>
     non-dyn-compatible
 }
@@ -221,7 +221,7 @@ where
 
 // Full name: test_crate::{impl AlsoHasLen for Array<(), N>}
 impl<const N : usize> AlsoHasLen for Array<(), N> {
-    parent_clause0 = MetaSized<Array<(), N>>
+    parent_clause0 = {built_in impl MetaSized for Array<(), missing(@ConstGenericBound(1, 0))>}
     parent_clause1 = {impl HasLen for Array<(), N>}<N>
     const ALSO_LEN = ALSO_LEN<Array<(), N>>[{impl AlsoHasLen for Array<(), N>}<N>]
     non-dyn-compatible

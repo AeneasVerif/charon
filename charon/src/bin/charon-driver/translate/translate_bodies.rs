@@ -724,10 +724,14 @@ impl BodyTransCtx<'_, '_, '_> {
                         let variant_id = match kind {
                             AdtKind::Struct | AdtKind::Union => None,
                             AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
+                            // The rest are fake adt kinds that won't reach here.
+                            _ => unreachable!(),
                         };
                         let field_id = match kind {
                             AdtKind::Struct | AdtKind::Enum => None,
                             AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
+                            // The rest are fake adt kinds that won't reach here.
+                            _ => unreachable!(),
                         };
 
                         let akind = AggregateKind::Adt(tref, variant_id, field_id);
@@ -1087,10 +1091,9 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::FunOperand::Static(item) => {
                 trace!("func: {:?}", item.def_id);
                 let fun_def = self.hax_def(item)?;
-                let name = self.t_ctx.translate_name(&TransItemSource::polymorphic(
-                    &item.def_id,
-                    TransItemSourceKind::Fun,
-                ))?;
+                let item_src =
+                    TransItemSource::from_item(item, TransItemSourceKind::Fun, self.monomorphize());
+                let name = self.t_ctx.translate_name(&item_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
 

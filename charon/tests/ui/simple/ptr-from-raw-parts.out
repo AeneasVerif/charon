@@ -91,7 +91,7 @@ where
     [@TraitClause0]: Ord<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
@@ -111,7 +111,7 @@ impl Eq for () {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}::partial_cmp
-pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> Option<Ordering>[Sized<Ordering>]
+pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(@1: &'_0 (()), @2: &'_1 (())) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}
 impl PartialOrd<()> for () {
@@ -153,12 +153,12 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 
 // Full name: core::fmt::{impl Debug for ()}::fmt
-pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (()), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (()), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 
 // Full name: core::fmt::{impl Debug for ()}
 impl Debug for () {
@@ -241,18 +241,22 @@ pub trait Unpin<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+
 // Full name: core::ptr::metadata::from_raw_parts
-pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: Pointee<T>::Metadata) -> *const T
+pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: {built_in impl Pointee for missing(@TypeBound(1, 0))}::Metadata) -> *const T
 where
     [@TraitClause0]: Sized<impl Thin>,
     [@TraitClause1]: Thin<impl Thin>,
 {
     let @0: *const T; // return
     let data_pointer@1: *const impl Thin; // arg #1
-    let metadata@2: Pointee<T>::Metadata; // arg #2
+    let metadata@2: {built_in impl Pointee for missing(@TypeBound(1, 0))}::Metadata; // arg #2
 
     @0 := @PtrFromPartsShared<'_, T>(copy (data_pointer@1), copy (metadata@2))
     return
@@ -282,7 +286,7 @@ fn main()
     storage_live(@2)
     storage_live(@3)
     @3 := &raw const a@1
-    @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[Sized<Array<u32, 2 : usize>>, {impl#0}<Array<u32, 2 : usize>>[Pointee<Array<u32, 2 : usize>> where Metadata  = ()]](move (@3), const (2 : usize))
+    @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[{built_in impl Sized for Array<u32, 2 : usize>}, {impl#0}<Array<u32, 2 : usize>>[{built_in impl Pointee for Array<u32, 2 : usize> where Metadata  = ()}]](move (@3), const (2 : usize))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

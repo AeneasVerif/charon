@@ -2,6 +2,44 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::Vector;
 
+pub fn recognize_builtin_impl(
+    trait_data: &hax::BuiltinTraitData,
+    trait_def: &hax::FullDef,
+) -> Option<BuiltinImplData> {
+    Some(match trait_data {
+        hax::BuiltinTraitData::Destruct(x) => {
+            match x {
+                hax::DestructData::Noop => BuiltinImplData::NoopDestruct,
+                hax::DestructData::Implicit => BuiltinImplData::UntrackedDestruct,
+                // This is unconditionally replaced by a `TraitImpl`.
+                hax::DestructData::Glue { .. } => return None,
+            }
+        }
+        hax::BuiltinTraitData::Other => match &trait_def.lang_item {
+            None => match trait_def.diagnostic_item.as_deref() {
+                Some("Send") => BuiltinImplData::Send,
+                _ => return None,
+            },
+            Some(litem) => match litem.as_str() {
+                "sized" => BuiltinImplData::Sized,
+                "meta_sized" => BuiltinImplData::MetaSized,
+                "tuple_trait" => BuiltinImplData::Tuple,
+                "unpin" => BuiltinImplData::Unpin,
+                "freeze" => BuiltinImplData::Freeze,
+                "sync" => BuiltinImplData::Sync,
+                "r#fn" => BuiltinImplData::Fn,
+                "fn_mut" => BuiltinImplData::FnMut,
+                "fn_once" => BuiltinImplData::FnOnce,
+                "pointee_trait" => BuiltinImplData::Pointee,
+                "clone" => BuiltinImplData::Clone,
+                "copy" => BuiltinImplData::Copy,
+                "discriminant_kind" => BuiltinImplData::DiscriminantKind,
+                _ => return None,
+            },
+        },
+    })
+}
+
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the given predicates and stores them as resuired preciates of the innermost
     /// binder.
@@ -192,7 +230,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
-        use hax::DropData;
+        use hax::DestructData;
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
@@ -279,29 +317,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = &impl_source.r#trait;
                 let trait_def =
                     self.hax_def(&tref.hax_skip_binder_ref().erase(self.hax_state_with_id()))?;
-                let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
-                    "fn_once" => Some(ClosureKind::FnOnce),
-                    "fn_mut" => Some(ClosureKind::FnMut),
-                    "r#fn" => Some(ClosureKind::Fn),
-                    _ => None,
-                });
-
-                // TODO: here, if closure_ty is a FnDef, we need to generate the matching
-                // trait impls, with an empty state as the first argument.
-                let kind = if let Some(closure_kind) = closure_kind
-                    && let Some(hax::GenericArg::Type(closure_ty)) = impl_source
-                        .r#trait
-                        .hax_skip_binder_ref()
-                        .generic_args
-                        .first()
-                    && let hax::TyKind::Closure(closure_args) = closure_ty.kind()
-                {
-                    let binder =
-                        self.translate_region_binder(span, &impl_source.r#trait, |ctx, _tref| {
-                            ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
-                        })?;
-                    TraitRefKind::TraitImpl(binder.erase())
-                } else if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
+                let kind = if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
                     let impl_id = self.register_item(
                         span,
@@ -318,29 +334,83 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         id: impl_id,
                         generics,
                     })
-                } else if let hax::BuiltinTraitData::Drop(DropData::Glue { ty, .. }) = trait_data
-                    && let hax::TyKind::Adt(item) = ty.kind()
+                } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
+                    trait_data
                 {
-                    let impl_ref =
-                        self.translate_trait_impl_ref(span, item, TraitImplSource::ImplicitDrop)?;
-                    TraitRefKind::TraitImpl(impl_ref)
+                    match ty.kind() {
+                        hax::TyKind::Adt(item)
+                        | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
+                        | hax::TyKind::Array(item)
+                        | hax::TyKind::Slice(item)
+                        | hax::TyKind::Tuple(item) => {
+                            let mut impl_ref = self.translate_trait_impl_ref(
+                                span,
+                                item,
+                                TraitImplSource::ImplicitDestruct,
+                            )?;
+                            if let hax::TyKind::Closure(args) = ty.kind() {
+                                // Add lifetimes for the upvar ty borrows.
+                                for _ in args.iter_upvar_borrows() {
+                                    impl_ref.generics.regions.push(Region::Erased);
+                                }
+                            }
+                            TraitRefKind::TraitImpl(impl_ref)
+                        }
+                        _ => raise_error!(
+                            self,
+                            span,
+                            "failed to translate drop glue for type {ty:?}"
+                        ),
+                    }
                 } else {
-                    let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                    let types = types
-                        .iter()
-                        .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
-                            let name = self.t_ctx.translate_trait_item_name(def_id)?;
-                            let assoc_ty = TraitAssocTyImpl {
-                                value: self.translate_ty(span, ty)?,
-                                implied_trait_refs: self
-                                    .translate_trait_impl_exprs(span, impl_exprs)?,
-                            };
-                            Ok((name, assoc_ty))
-                        })
-                        .try_collect()?;
-                    TraitRefKind::BuiltinOrAuto {
-                        parent_trait_refs,
-                        types,
+                    let Some(builtin_data) = recognize_builtin_impl(trait_data, &trait_def) else {
+                        raise_error!(
+                            self,
+                            span,
+                            "found a built-in trait impl we did not recognize: \
+                            {:?} (lang_item={:?})",
+                            trait_def.def_id(),
+                            trait_def.lang_item,
+                        )
+                    };
+                    // TODO: here, if closure_ty is a FnDef, we need to generate the matching trait
+                    // impls, with an empty state as the first argument.
+                    if let Some(closure_kind) = builtin_data.as_closure_kind()
+                        && let Some(hax::GenericArg::Type(closure_ty)) = impl_source
+                            .r#trait
+                            .hax_skip_binder_ref()
+                            .generic_args
+                            .first()
+                        && let hax::TyKind::Closure(closure_args) = closure_ty.kind()
+                    {
+                        let binder = self.translate_region_binder(
+                            span,
+                            &impl_source.r#trait,
+                            |ctx, _tref| {
+                                ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
+                            },
+                        )?;
+                        TraitRefKind::TraitImpl(binder.erase())
+                    } else {
+                        let parent_trait_refs =
+                            self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                        let types = types
+                            .iter()
+                            .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
+                                let name = self.t_ctx.translate_trait_item_name(def_id)?;
+                                let assoc_ty = TraitAssocTyImpl {
+                                    value: self.translate_ty(span, ty)?,
+                                    implied_trait_refs: self
+                                        .translate_trait_impl_exprs(span, impl_exprs)?,
+                                };
+                                Ok((name, assoc_ty))
+                            })
+                            .try_collect()?;
+                        TraitRefKind::BuiltinOrAuto {
+                            builtin_data,
+                            parent_trait_refs,
+                            types,
+                        }
                     }
                 };
                 TraitRef {

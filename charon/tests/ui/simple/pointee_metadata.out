@@ -94,7 +94,7 @@ where
 
 // Full name: core::cmp::PartialOrd::partial_cmp
 #[lang_item("cmp_partialord_cmp")]
-pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 
@@ -121,7 +121,7 @@ pub trait Debug<Self>
 }
 
 // Full name: core::fmt::Debug::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 
@@ -189,8 +189,12 @@ pub trait Unpin<Self>
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ptr::metadata::Pointee
 #[lang_item("pointee_trait")]
@@ -210,7 +214,7 @@ pub trait Pointee<Self>
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::to_raw_parts
-pub fn to_raw_parts<T>(@1: *const T) -> (*const (), Pointee<T>::Metadata)
+pub fn to_raw_parts<T>(@1: *const T) -> (*const (), {built_in impl Pointee for missing(@TypeBound(1, 0))}::Metadata)
 
 fn UNIT_METADATA()
 {

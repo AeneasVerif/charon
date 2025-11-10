@@ -95,7 +95,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     let @24: u64; // anonymous local
     let @25: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @26: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @27: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+    let @27: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
 
     storage_live(@5)
     storage_live(pieces@7)
@@ -235,14 +235,14 @@ fn main()
     @4 := &s@1
     @3 := @ArrayToSliceShared<'_, i32, 2 : usize>(move (@4))
     storage_dead(@4)
-    ptr@2 := as_ptr<'_, i32>[Sized<i32>](move (@3))
+    ptr@2 := as_ptr<'_, i32>[{built_in impl Sized for i32}](move (@3))
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     @8 := copy (ptr@2)
-    @7 := offset<i32>[Sized<i32>](move (@8), const (1 : isize))
+    @7 := offset<i32>[{built_in impl Sized for i32}](move (@8), const (1 : isize))
     storage_dead(@8)
     @6 := copy (*(@7))
     @5 := move (@6) == const (42 : i32)

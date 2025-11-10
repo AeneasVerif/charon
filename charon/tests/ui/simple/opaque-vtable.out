@@ -39,7 +39,7 @@ static {impl Trait for ()}::{vtable}: test_crate::x::Trait::{vtable} = {impl Tra
 
 // Full name: test_crate::x::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn method<'_0_1> = {impl Trait for ()}::method<'_0_1>
     vtable: {impl Trait for ()}::{vtable}
 }

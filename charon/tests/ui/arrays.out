@@ -37,7 +37,7 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Index<Slice<T>, I, Clause2_Output>,
 {
-    parent_clause0 = MetaSized<Array<T, N>>
+    parent_clause0 = {built_in impl MetaSized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause2
     fn index<'_0_1> = {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_0_1, T, I, Clause2_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2]
@@ -69,30 +69,23 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: IndexMut<Slice<T>, I, Clause2_Clause1_Output>,
 {
-    parent_clause0 = MetaSized<Array<T, N>>
+    parent_clause0 = {built_in impl MetaSized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
     parent_clause1 = {impl Index<I, Clause2_Output> for Array<T, N>}<T, I, Clause2_Clause1_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause1]
     parent_clause2 = @TraitClause1::parent_clause0
     fn index_mut<'_0_1> = {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_0_1, T, I, Clause2_Clause1_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx, Clause0_Output>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Clause0_Output)
 where
@@ -160,7 +153,7 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: SliceIndex<I, Slice<T>, Clause2_Output>,
 {
-    parent_clause0 = MetaSized<Slice<T>>
+    parent_clause0 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause3
     fn index<'_0_1> = {impl Index<I, Clause2_Output> for Slice<T>}::index<'_0_1, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
@@ -181,24 +174,24 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: SliceIndex<I, Slice<T>, Clause2_Output>,
 {
-    parent_clause0 = MetaSized<Slice<T>>
+    parent_clause0 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
     parent_clause1 = {impl Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
     parent_clause2 = @TraitClause1::parent_clause0
     fn index_mut<'_0_1> = {impl IndexMut<I, Clause2_Output> for Slice<T>}::index_mut<'_0_1, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
     vtable: {impl IndexMut<I, Clause2_Output> for Slice<T>}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[Sized<usize>]}
-impl Sealed for Range<usize>[Sized<usize>] {
-    parent_clause0 = MetaSized<Range<usize>[Sized<usize>]>
-    vtable: {impl Sealed for Range<usize>[Sized<usize>]}::{vtable}
+// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
+impl Sealed for Range<usize>[{built_in impl Sized for usize}] {
+    parent_clause0 = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
+    vtable: {impl Sealed for Range<usize>[{built_in impl Sized for usize}]}::{vtable}
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T, Clause0_Output>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Clause0_Output)>[Sized<&'_0 (Clause0_Output)>]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T, Clause0_Output>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Clause0_Output)>[{built_in impl Sized for &missing('_Bound(1, 0)) (missing(@TypeBound(1, 2)))}]
 where
     [@TraitClause0]: SliceIndex<Self, T, Clause0_Output>,
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T, Clause0_Output>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (Clause0_Output)>[Sized<&'_0 mut (Clause0_Output)>]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T, Clause0_Output>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (Clause0_Output)>[{built_in impl Sized for &missing('_Bound(1, 0)) mut (missing(@TypeBound(1, 2)))}]
 where
     [@TraitClause0]: SliceIndex<Self, T, Clause0_Output>,
 
@@ -218,52 +211,52 @@ pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T, Clause0_Output>(@
 where
     [@TraitClause0]: SliceIndex<Self, T, Clause0_Output>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get
-pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[Sized<&'_0 (Slice<T>)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[{built_in impl Sized for &missing('_Bound(1, 0)) (Slice<missing(@TypeBound(1, 0))>)}]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_mut
-pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_mut<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (Slice<T>)>[Sized<&'_0 mut (Slice<T>)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (Slice<T>)>[{built_in impl Sized for &missing('_Bound(1, 0)) mut (Slice<missing(@TypeBound(1, 0))>)}]
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked
-pub unsafe fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked<T>(@1: Range<usize>[Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
+pub unsafe fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: *const Slice<T>) -> *const Slice<T>
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>(@1: Range<usize>[Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: *mut Slice<T>) -> *mut Slice<T>
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index
-pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index_mut
-pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}
-impl<T> SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
+impl<T> SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Range<usize>[Sized<usize>]>
-    parent_clause1 = {impl Sealed for Range<usize>[Sized<usize>]}
-    parent_clause2 = MetaSized<Slice<T>>
-    parent_clause3 = MetaSized<Slice<T>>
-    fn get<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get<'_0_1, T>[@TraitClause0]
-    fn get_mut<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_mut<'_0_1, T>[@TraitClause0]
-    fn get_unchecked = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index<'_0_1, T>[@TraitClause0]
-    fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_0_1, T>[@TraitClause0]
-    vtable: {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}::{vtable}<T>[@TraitClause0]
+    parent_clause0 = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
+    parent_clause1 = {impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
+    parent_clause2 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
+    parent_clause3 = {built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}
+    fn get<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0_1, T>[@TraitClause0]
+    fn get_mut<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_mut<'_0_1, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index<'_0_1, T>[@TraitClause0]
+    fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[@TraitClause0]
+    vtable: {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: core::slice::{Slice<T>}::len
@@ -281,6 +274,21 @@ fn UNIT_METADATA()
 }
 
 const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::<array>::{impl Destruct for Array<T, N>}::drop_in_place
+fn {impl Destruct for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut Array<T, N>)
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::<array>::{impl Destruct for Array<T, N>}
+impl<T, const N : usize> Destruct for Array<T, N>
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = {built_in impl MetaSized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
+    fn drop_in_place = {impl Destruct for Array<T, N>}::drop_in_place<T, N>[@TraitClause0]
+    non-dyn-compatible
+}
 
 // Full name: test_crate::AB
 pub enum AB {
@@ -356,7 +364,7 @@ where
     storage_dead(@3)
     @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[Drop<Array<T, 32 : usize>>] s@1
+    drop[{impl Destruct for Array<T, N>}<T, 32 : usize>[@TraitClause0]] s@1
     return
 }
 
@@ -563,7 +571,7 @@ pub fn slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3: usize) 
     let @4: &'_ (Slice<u32>); // anonymous local
     let @5: &'_ (Slice<u32>); // anonymous local
     let @6: &'_ (Slice<u32>); // anonymous local
-    let @7: Range<usize>[Sized<usize>]; // anonymous local
+    let @7: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
 
@@ -579,7 +587,7 @@ pub fn slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3: usize) 
     @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := {impl Index<I, Clause2_Output> for Slice<T>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Slice<T>}::index<'_, u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5) with_metadata(copy (@5.metadata))
@@ -600,7 +608,7 @@ pub fn slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3: usize)
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (Slice<u32>); // anonymous local
     let @7: &'_ mut (Slice<u32>); // anonymous local
-    let @8: Range<usize>[Sized<usize>]; // anonymous local
+    let @8: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
 
@@ -617,7 +625,7 @@ pub fn slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3: usize)
     @8 := Range { start: move (@9), end: move (@10) }
     storage_dead(@10)
     storage_dead(@9)
-    @6 := {impl IndexMut<I, Clause2_Output> for Slice<T>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]](move (@7), move (@8))
+    @6 := {impl IndexMut<I, Clause2_Output> for Slice<T>}::index_mut<'_, u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]](move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6) with_metadata(copy (@6.metadata))
@@ -671,7 +679,7 @@ pub fn array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize,
     let @4: &'_ (Slice<u32>); // anonymous local
     let @5: &'_ (Slice<u32>); // anonymous local
     let @6: &'_ (Array<u32, 32 : usize>); // anonymous local
-    let @7: Range<usize>[Sized<usize>]; // anonymous local
+    let @7: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
 
@@ -687,7 +695,7 @@ pub fn array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize,
     @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_, u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>, 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5) with_metadata(copy (@5.metadata))
@@ -708,7 +716,7 @@ pub fn array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @2: usize
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (Slice<u32>); // anonymous local
     let @7: &'_ mut (Array<u32, 32 : usize>); // anonymous local
-    let @8: Range<usize>[Sized<usize>]; // anonymous local
+    let @8: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
 
@@ -725,7 +733,7 @@ pub fn array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @2: usize
     @8 := Range { start: move (@9), end: move (@10) }
     storage_dead(@10)
     storage_dead(@9)
-    @6 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@7), move (@8))
+    @6 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_, u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>, 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6) with_metadata(copy (@6.metadata))
@@ -1417,7 +1425,7 @@ pub fn range_all()
     let @4: &'_ mut (Slice<u32>); // anonymous local
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (Array<u32, 4 : usize>); // anonymous local
-    let @7: Range<usize>[Sized<usize>]; // anonymous local
+    let @7: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     @0 := ()
     storage_live(x@1)
@@ -1431,7 +1439,7 @@ pub fn range_all()
     @6 := &mut x@1
     storage_live(@7)
     @7 := Range { start: const (1 : usize), end: const (3 : usize) }
-    @5 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 4 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl IndexMut<I, Clause2_Clause1_Output> for Array<T, N>}::index_mut<'_, u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>, 4 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl IndexMut<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &mut *(@5) with_metadata(copy (@5.metadata))
@@ -1570,7 +1578,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@6)
         storage_live(@7)
         @7 := &*(s@1) with_metadata(copy (s@1.metadata))
-        @6 := len<'_, u32>[Sized<u32>](move (@7))
+        @6 := len<'_, u32>[{built_in impl Sized for u32}](move (@7))
         storage_dead(@7)
         @4 := move (@5) < move (@6)
         if move (@4) {
@@ -1645,12 +1653,12 @@ pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
     storage_live(@5)
     storage_live(@6)
     @6 := &*(s@1) with_metadata(copy (s@1.metadata))
-    @5 := len<'_, u32>[Sized<u32>](move (@6))
+    @5 := len<'_, u32>[{built_in impl Sized for u32}](move (@6))
     storage_dead(@6)
     storage_live(@7)
     storage_live(@8)
     @8 := &*(s2@2) with_metadata(copy (s2@2.metadata))
-    @7 := len<'_, u32>[Sized<u32>](move (@8))
+    @7 := len<'_, u32>[{built_in impl Sized for u32}](move (@8))
     storage_dead(@8)
     @4 := move (@5) == move (@7)
     if move (@4) {
@@ -1672,7 +1680,7 @@ pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
         storage_live(@12)
         storage_live(@13)
         @13 := &*(s@1) with_metadata(copy (s@1.metadata))
-        @12 := len<'_, u32>[Sized<u32>](move (@13))
+        @12 := len<'_, u32>[{built_in impl Sized for u32}](move (@13))
         storage_dead(@13)
         @10 := move (@11) < move (@12)
         if move (@10) {
@@ -1805,7 +1813,7 @@ pub fn f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 
     let @4: &'_ (Slice<u32>); // anonymous local
     let @5: &'_ (Slice<u32>); // anonymous local
     let @6: &'_ (Array<u32, 32 : usize>); // anonymous local
-    let @7: Range<usize>[Sized<usize>]; // anonymous local
+    let @7: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
 
@@ -1821,7 +1829,7 @@ pub fn f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 
     @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}<u32>[Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Array<T, N>}::index<'_, u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>, 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[{built_in impl Sized for usize}], Slice<u32>>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5) with_metadata(copy (@5.metadata))
@@ -2008,7 +2016,7 @@ pub fn zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     storage_live(len@3)
     storage_live(@4)
     @4 := &*(a@1) with_metadata(copy (a@1.metadata))
-    len@3 := len<'_, u8>[Sized<u8>](move (@4))
+    len@3 := len<'_, u8>[{built_in impl Sized for u8}](move (@4))
     storage_dead(@4)
     loop {
         storage_live(@5)
@@ -2064,7 +2072,7 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     storage_live(len@2)
     storage_live(@3)
     @3 := &*(a@1) with_metadata(copy (a@1.metadata))
-    len@2 := len<'_, u8>[Sized<u8>](move (@3))
+    len@2 := len<'_, u8>[{built_in impl Sized for u8}](move (@3))
     storage_dead(@3)
     storage_live(i@4)
     i@4 := const (0 : usize)
@@ -2127,7 +2135,7 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         storage_live(@6)
         storage_live(@7)
         @7 := &*(a@1) with_metadata(copy (a@1.metadata))
-        @6 := len<'_, u32>[Sized<u32>](move (@7))
+        @6 := len<'_, u32>[{built_in impl Sized for u32}](move (@7))
         storage_dead(@7)
         @4 := move (@5) < move (@6)
         if move (@4) {

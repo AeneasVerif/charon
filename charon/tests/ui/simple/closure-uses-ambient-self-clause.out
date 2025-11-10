@@ -12,6 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -19,24 +30,6 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -107,6 +100,16 @@ trait Thing<Self>
     non-dyn-compatible
 }
 
+// Full name: test_crate::<tuple_1>::{impl Destruct for (A)}::drop_in_place
+fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
+
+// Full name: test_crate::<tuple_1>::{impl Destruct for (A)}
+impl<A> Destruct for (A) {
+    parent_clause0 = {built_in impl MetaSized for (missing(@TypeBound(1, 0)))}
+    fn drop_in_place = {impl Destruct for (A)}::drop_in_place<A>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::Thing::foo::closure
 struct closure<Self>
 where
@@ -127,7 +130,7 @@ where
     @0 := ()
     @3 := move ((tupled_args@2).0)
     @0 := ()
-    drop[Drop<@TraitClause0::Item>] @3
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 0))::Item}] @3
     return
 }
 
@@ -153,12 +156,12 @@ where
     @5 := move (i@1)
     @4 := (move (@5))
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@2), move (@4))
-    drop[Drop<@TraitClause0::Item>] @5
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 0))::Item}] @5
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@2)
     storage_dead(@3)
-    drop[Drop<@TraitClause0::Item>] i@1
+    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 0))::Item}] i@1
     return
 }
 
@@ -179,6 +182,21 @@ where
     return
 }
 
+// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>(@1: *mut closure<Self>[@TraitClause0])
+where
+    [@TraitClause0]: Thing<Self>,
+
+// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}
+impl<Self> Destruct for closure<Self>[@TraitClause0]
+where
+    [@TraitClause0]: Thing<Self>,
+{
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    fn drop_in_place = {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>[@TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::Thing::foo::{impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once
 fn {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>(@1: closure<Self>[@TraitClause0], @2: (@TraitClause0::Item))
 where
@@ -193,7 +211,7 @@ where
     @0 := ()
     @3 := &mut @1
     @0 := {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (@3), move (@2))
-    drop[Drop<closure<Self>[@TraitClause0]>] @1
+    drop[{impl Destruct for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]] @1
     return
 }
 
@@ -202,10 +220,10 @@ impl<Self> FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
-    parent_clause1 = Sized<(@TraitClause0::Item)>
-    parent_clause2 = Tuple<(@TraitClause0::Item)>
-    parent_clause3 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause1 = {built_in impl Sized for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause2 = {built_in impl Tuple for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause3 = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>[@TraitClause0]
     non-dyn-compatible
@@ -216,10 +234,10 @@ impl<Self> FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
-    parent_clause2 = Sized<(@TraitClause0::Item)>
-    parent_clause3 = Tuple<(@TraitClause0::Item)>
+    parent_clause2 = {built_in impl Sized for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause3 = {built_in impl Tuple for (missing(@TraitClauseBound(1, 0))::Item)}
     fn call_mut<'_0_1> = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0_1, Self>[@TraitClause0]
     non-dyn-compatible
 }
@@ -229,10 +247,10 @@ impl<Self> Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = MetaSized<closure<Self>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
     parent_clause1 = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
-    parent_clause2 = Sized<(@TraitClause0::Item)>
-    parent_clause3 = Tuple<(@TraitClause0::Item)>
+    parent_clause2 = {built_in impl Sized for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause3 = {built_in impl Tuple for (missing(@TraitClauseBound(1, 0))::Item)}
     fn call<'_0_1> = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_0_1, Self>[@TraitClause0]
     non-dyn-compatible
 }

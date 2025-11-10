@@ -8,7 +8,7 @@
     rust-overlay = {
       # We pin a specific commit because we require a relatively recent version
       # and flake dependents don't look at our flake.lock.
-      url = "github:oxalica/rust-overlay/0751b65633a1785743ca44fd7c14a633c54c1f91";
+      url = "github:oxalica/rust-overlay/4e8e5dfb8e649d3e05d9a173ce9a9cb0498e89c2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     crane.url = "github:ipetkov/crane";
@@ -127,7 +127,7 @@
         };
         devShells.ci = pkgs.mkShell {
           packages = [
-            pkgs.gitAndTools.gh
+            pkgs.gh
             pkgs.jq
             pkgs.python3
             pkgs.toml2json

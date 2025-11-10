@@ -12,21 +12,12 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
 // Full name: core::clone::Clone
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0_1> = clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -35,6 +26,15 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
 
 // Full name: core::clone::Clone::clone_from
 pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
@@ -62,6 +62,9 @@ where
 pub fn once<T>(@1: T) -> Once<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::num::{u32}::wrapping_add
 pub fn wrapping_add(@1: u32, @2: u32) -> u32

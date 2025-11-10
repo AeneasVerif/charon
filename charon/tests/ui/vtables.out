@@ -33,7 +33,7 @@ pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
-    parent_clause0 = Sized<i32>
+    parent_clause0 = {built_in impl Sized for i32}
     fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -66,12 +66,12 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
 
 // Full name: core::fmt::{impl Display for Str}::fmt
-pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 
 // Full name: core::fmt::{impl Display for Str}
 impl Display for Str {
@@ -84,24 +84,11 @@ impl Display for Str {
 pub trait Destruct<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -124,17 +111,13 @@ pub enum AssertKind {
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
-// Full name: alloc::string::String::{impl Drop for String}::drop_in_place
-fn {impl Drop for String}::drop_in_place(@1: *mut String)
-
-// Full name: alloc::string::String::{impl Drop for String}
-impl Drop for String {
-    parent_clause0 = MetaSized<String>
-    fn drop<'_0_1> = {impl Drop for String}::drop<'_0_1>
-    fn drop_in_place = {impl Drop for String}::drop_in_place
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
+    parent_clause0 = {built_in impl MetaSized for String}
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }
 
@@ -146,7 +129,7 @@ pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
 
 // Full name: alloc::string::{impl Clone for String}
 impl Clone for String {
-    parent_clause0 = Sized<String>
+    parent_clause0 = {built_in impl Sized for String}
     fn clone<'_0_1> = {impl Clone for String}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -283,7 +266,7 @@ fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -292,8 +275,8 @@ static {impl Super<i32> for i32}::{vtable}: test_crate::Super::{vtable}<i32> = {
 
 // Full name: test_crate::{impl Super<i32> for i32}
 impl Super<i32> for i32 {
-    parent_clause0 = MetaSized<i32>
-    parent_clause1 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
+    parent_clause1 = {built_in impl Sized for i32}
     fn super_method<'_0_1> = {impl Super<i32> for i32}::super_method<'_0_1>
     vtable: {impl Super<i32> for i32}::{vtable}
 }
@@ -346,7 +329,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     @3 := ()
     storage_live(@4)
     @4 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4) }
+    ret@0 := test_crate::Checkable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4) }
     return
 }
 
@@ -355,9 +338,9 @@ static {impl Checkable<i32> for i32}::{vtable}: test_crate::Checkable::{vtable}<
 
 // Full name: test_crate::{impl Checkable<i32> for i32}
 impl Checkable<i32> for i32 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = {impl Super<i32> for i32}
-    parent_clause2 = Sized<i32>
+    parent_clause2 = {built_in impl Sized for i32}
     fn check<'_0_1> = {impl Checkable<i32> for i32}::check<'_0_1>
     vtable: {impl Checkable<i32> for i32}::{vtable}
 }
@@ -409,7 +392,7 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
 
 // Full name: test_crate::{impl NoParam for i32}
 impl NoParam for i32 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     fn dummy<'_0_1> = {impl NoParam for i32}::dummy<'_0_1>
     vtable: {impl NoParam for i32}::{vtable}
 }
@@ -513,7 +496,7 @@ where
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -530,7 +513,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = @TraitClause0
     fn modify<'_0_1, '_1_1> = {impl Modifiable<T> for i32}::modify<'_0_1, '_1_1, T>[@TraitClause0, @TraitClause1]
     vtable: {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]
@@ -610,12 +593,11 @@ trait Both32And64<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: BaseOn<Self, i32>
     parent_clause2 : [@TraitClause2]: BaseOn<Self, i64>
-    fn both_operate<'_0_1, '_1_1, '_2_1> = both_operate<'_0_1, '_1_1, '_2_1, Self>[Self]
+    fn both_operate<'_0_1, '_1_1, '_2_1> = test_crate::Both32And64::both_operate<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: test_crate::Both32And64::{vtable}
 }
 
-// Full name: test_crate::Both32And64::both_operate
-fn both_operate<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 (i32), @3: &'_2 (i64))
+fn test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 (i32), @3: &'_2 (i64))
 where
     [@TraitClause0]: Both32And64<Self>,
 {
@@ -710,7 +692,7 @@ fn {impl BaseOn<i32> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -719,8 +701,8 @@ static {impl BaseOn<i32> for i32}::{vtable}: test_crate::BaseOn::{vtable}<i32> =
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}
 impl BaseOn<i32> for i32 {
-    parent_clause0 = MetaSized<i32>
-    parent_clause1 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
+    parent_clause1 = {built_in impl Sized for i32}
     fn operate_on<'_0_1, '_1_1> = {impl BaseOn<i32> for i32}::operate_on<'_0_1, '_1_1>
     vtable: {impl BaseOn<i32> for i32}::{vtable}
 }
@@ -786,7 +768,7 @@ fn {impl BaseOn<i64> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -795,13 +777,14 @@ static {impl BaseOn<i64> for i32}::{vtable}: test_crate::BaseOn::{vtable}<i64> =
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}
 impl BaseOn<i64> for i32 {
-    parent_clause0 = MetaSized<i32>
-    parent_clause1 = Sized<i64>
+    parent_clause0 = {built_in impl MetaSized for i32}
+    parent_clause1 = {built_in impl Sized for i64}
     fn operate_on<'_0_1, '_1_1> = {impl BaseOn<i64> for i32}::operate_on<'_0_1, '_1_1>
     vtable: {impl BaseOn<i64> for i32}::{vtable}
 }
 
-fn test_crate::{impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
+// Full name: test_crate::{impl Both32And64 for i32}::both_operate
+fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
 {
     let @0: (); // return
     let self@1: &'_ (i32); // arg #1
@@ -860,7 +843,7 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     @5 := ()
     storage_live(@6)
     @6 := &{impl BaseOn<i64> for i32}::{vtable}
-    ret@0 := test_crate::Both32And64::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
+    ret@0 := test_crate::Both32And64::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@4), super_trait_2: move (@6) }
     return
 }
 
@@ -869,10 +852,10 @@ static {impl Both32And64 for i32}::{vtable}: test_crate::Both32And64::{vtable} =
 
 // Full name: test_crate::{impl Both32And64 for i32}
 impl Both32And64 for i32 {
-    parent_clause0 = MetaSized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = {impl BaseOn<i32> for i32}
     parent_clause2 = {impl BaseOn<i64> for i32}
-    fn both_operate<'_0_1, '_1_1, '_2_1> = test_crate::{impl Both32And64 for i32}::both_operate<'_0_1, '_1_1, '_2_1>
+    fn both_operate<'_0_1, '_1_1, '_2_1> = {impl Both32And64 for i32}::both_operate<'_0_1, '_1_1, '_2_1>
     vtable: {impl Both32And64 for i32}::{vtable}
 }
 
@@ -961,7 +944,7 @@ fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtabl
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::LifetimeTrait::{vtable} { size: move (size@1), align: move (align@2), drop: const (Drop<i32>::drop_in_place), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::LifetimeTrait::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -970,8 +953,8 @@ static {impl LifetimeTrait for i32}::{vtable}: test_crate::LifetimeTrait::{vtabl
 
 // Full name: test_crate::{impl LifetimeTrait for i32}
 impl LifetimeTrait for i32 {
-    parent_clause0 = MetaSized<i32>
-    parent_clause1 = Sized<i32>
+    parent_clause0 = {built_in impl MetaSized for i32}
+    parent_clause1 = {built_in impl Sized for i32}
     type Ty = i32
     fn lifetime_method<'a, '_1_1> = {impl LifetimeTrait for i32}::lifetime_method<'a, '_1_1>
     vtable: {impl LifetimeTrait for i32}::{vtable}
@@ -1085,7 +1068,7 @@ fn main()
     let @36: &'_ (i32); // anonymous local
     let @37: &'_ (i32); // anonymous local
     let @38: &'_ (i32); // anonymous local
-    let @39: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @39: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
     let z@40: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // local
     let @41: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
     let @42: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
@@ -1131,7 +1114,7 @@ fn main()
     let @82: &'_ (i32); // anonymous local
     let @83: &'_ (i32); // anonymous local
     let @84: &'_ (i32); // anonymous local
-    let @85: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
+    let @85: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
 
     @0 := ()
     storage_live(x@1)
@@ -1163,7 +1146,7 @@ fn main()
     @10 := const (99 : i32)
     @9 := &mut @10
     @8 := &mut *(@9)
-    y@7 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '_)), {impl Modifiable<T> for i32}<i32>[Sized<i32>, {impl Clone for i32}]>(move (@8))
+    y@7 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '_)), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move (@8))
     storage_dead(@8)
     storage_dead(@9)
     storage_live(@11)
@@ -1176,11 +1159,11 @@ fn main()
     storage_live(@18)
     @18 := const ("Hello")
     @17 := &*(@18) with_metadata(copy (@18.metadata))
-    @16 := {impl ToString for T}::to_string<'_, Str>[MetaSized<Str>, {impl Display for Str}](move (@17))
+    @16 := {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move (@17))
     storage_dead(@17)
     @15 := &@16
     @14 := &*(@15)
-    @13 := modify_trait_object<'_, String>[Sized<String>, {impl Clone for String}](move (@14))
+    @13 := modify_trait_object<'_, String>[{built_in impl Sized for String}, {impl Clone for String}](move (@14))
     @12 := &@13
     storage_dead(@14)
     @11 := is_empty<'_>(move (@12))
@@ -1188,8 +1171,8 @@ fn main()
     }
     else {
         storage_dead(@12)
-        drop[{impl Drop for String}] @13
-        drop[{impl Drop for String}] @16
+        drop[{impl Destruct for String}] @13
+        drop[{impl Destruct for String}] @16
         storage_dead(@18)
         storage_dead(@16)
         storage_dead(@15)
@@ -1267,7 +1250,7 @@ fn main()
         @45 := const (42 : i32)
         @44 := &@45
         @43 := &*(@44)
-        @42 := to_dyn_obj<'_, i32>[Sized<i32>, {impl NoParam for i32}](move (@43))
+        @42 := to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move (@43))
         @41 := &*(@42) with_metadata(copy (@42.metadata))
         z@40 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)), NoParam<(dyn exists<_dyn> [@TraitClause0_2]: NoParam<_dyn> + _dyn : '_)>>(move (@41))
         storage_dead(@43)
@@ -1404,8 +1387,8 @@ fn main()
         return
     }
     storage_dead(@12)
-    drop[{impl Drop for String}] @13
-    drop[{impl Drop for String}] @16
+    drop[{impl Destruct for String}] @13
+    drop[{impl Destruct for String}] @16
     storage_dead(@18)
     storage_dead(@16)
     storage_dead(@15)
