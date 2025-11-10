@@ -67,7 +67,7 @@ use indexmap::IndexMap;
     // type but can be overridden.
     override(
         DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
-        TypeDeclRef, FunDeclRef, MaybeBuiltinFunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
+        TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,

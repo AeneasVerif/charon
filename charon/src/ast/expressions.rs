@@ -411,6 +411,7 @@ pub struct BuiltinIndexOp {
 pub struct MaybeBuiltinFunDeclRef {
     pub id: FunId,
     pub generics: BoxedArgs,
+    pub trait_ref: Option<TraitRef>,
 }
 
 /// Reference to a trait method.
