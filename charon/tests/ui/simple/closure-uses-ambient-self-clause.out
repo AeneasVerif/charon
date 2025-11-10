@@ -128,7 +128,7 @@ where
     @0 := ()
     @3 := move ((tupled_args@2).0)
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 0))::Item}] @3
+    drop[{built_in impl Destruct for @TraitClause0::Item}] @3
     return
 }
 
@@ -154,12 +154,12 @@ where
     @5 := move (i@1)
     @4 := (move (@5))
     @0 := {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (@2), move (@4))
-    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 0))::Item}] @5
+    drop[{built_in impl Destruct for @TraitClause0::Item}] @5
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@2)
     storage_dead(@3)
-    drop[{built_in impl Destruct for missing(@TraitClauseBound(1, 0))::Item}] i@1
+    drop[{built_in impl Destruct for @TraitClause0::Item}] i@1
     return
 }
 
@@ -217,9 +217,9 @@ impl<Self> FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause1 = {built_in impl Sized for (missing(@TraitClauseBound(1, 0))::Item)}
-    parent_clause2 = {built_in impl Tuple for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause0 = {built_in impl MetaSized for closure<Self>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for (@TraitClause0::Item)}
+    parent_clause2 = {built_in impl Tuple for (@TraitClause0::Item)}
     parent_clause3 = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once<Self>[@TraitClause0]
@@ -231,10 +231,10 @@ impl<Self> FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for closure<Self>[@TraitClause0]}
     parent_clause1 = {impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
-    parent_clause2 = {built_in impl Sized for (missing(@TraitClauseBound(1, 0))::Item)}
-    parent_clause3 = {built_in impl Tuple for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause2 = {built_in impl Sized for (@TraitClause0::Item)}
+    parent_clause3 = {built_in impl Tuple for (@TraitClause0::Item)}
     fn call_mut<'_0_1> = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0_1, Self>[@TraitClause0]
     non-dyn-compatible
 }
@@ -244,10 +244,10 @@ impl<Self> Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]
 where
     [@TraitClause0]: Thing<Self>,
 {
-    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for closure<Self>[@TraitClause0]}
     parent_clause1 = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]
-    parent_clause2 = {built_in impl Sized for (missing(@TraitClauseBound(1, 0))::Item)}
-    parent_clause3 = {built_in impl Tuple for (missing(@TraitClauseBound(1, 0))::Item)}
+    parent_clause2 = {built_in impl Sized for (@TraitClause0::Item)}
+    parent_clause3 = {built_in impl Tuple for (@TraitClause0::Item)}
     fn call<'_0_1> = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_0_1, Self>[@TraitClause0]
     non-dyn-compatible
 }

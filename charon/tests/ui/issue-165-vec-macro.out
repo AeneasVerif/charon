@@ -168,7 +168,7 @@ where
 
 // Full name: alloc::slice::{Slice<T>}::into_vec
 #[lang_item("slice_into_vec")]
-pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[{built_in impl MetaSized for Slice<missing(@TypeBound(1, 0))>}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[{built_in impl MetaSized for Slice<T>}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,

@@ -147,7 +147,7 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
     fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }

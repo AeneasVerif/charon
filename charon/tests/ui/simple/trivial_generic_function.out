@@ -43,7 +43,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] t@1
+    drop[{built_in impl Destruct for T}] t@1
     return
 }
 

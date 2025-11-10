@@ -412,7 +412,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] _f@1
+    drop[{built_in impl Destruct for F}] _f@1
     return
 }
 
@@ -431,7 +431,7 @@ where
 }
 
 // Full name: test_crate::f
-pub fn f<'a>(@1: &'a (())) -> Option<(&'a (u8))>[{built_in impl Sized for (&missing('_Bound(1, 0)) (u8))}]
+pub fn f<'a>(@1: &'a (())) -> Option<(&'a (u8))>[{built_in impl Sized for (&'a (u8))}]
 {
     let @0: Option<(&'_ (u8))>[{built_in impl Sized for (&'_ (u8))}]; // return
     let @1: &'_ (()); // arg #1
@@ -455,7 +455,7 @@ where
     [@TraitClause2]: for<'a> IntoIterator<&'a (Result<T, U>[@TraitClause0, @TraitClause1])>,
     [@TraitClause3]: for<'a> Copy<@TraitClause2::Item>,
 {
-    parent_clause0 = {built_in impl MetaSized for Result<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for Result<T, U>[@TraitClause0, @TraitClause1]}
     vtable: {impl Trait for Result<T, U>[@TraitClause0, @TraitClause1]}::{vtable}<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 

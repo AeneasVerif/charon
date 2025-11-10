@@ -165,10 +165,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {built_in impl Tuple for ()}
-    parent_clause3 = {built_in impl Sized for test_crate::foo::closure::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause3 = {built_in impl Sized for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}
     type Output = test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]
     fn call_once = {impl FnOnce<()> for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
@@ -249,7 +249,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {built_in impl Tuple for ()}
     parent_clause3 = @TraitClause0
@@ -264,7 +264,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {impl FnOnce<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = {built_in impl Sized for ()}
     parent_clause3 = {built_in impl Tuple for ()}
@@ -278,7 +278,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure::closure<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {impl FnMut<()> for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
     parent_clause2 = {built_in impl Sized for ()}
     parent_clause3 = {built_in impl Tuple for ()}

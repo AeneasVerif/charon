@@ -248,14 +248,14 @@ pub trait Destruct<Self>
 fn drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::ptr::metadata::from_raw_parts
-pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: {built_in impl Pointee for missing(@TypeBound(1, 0))}::Metadata) -> *const T
+pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: {built_in impl Pointee for T}::Metadata) -> *const T
 where
     [@TraitClause0]: Sized<impl Thin>,
     [@TraitClause1]: Thin<impl Thin>,
 {
     let @0: *const T; // return
     let data_pointer@1: *const impl Thin; // arg #1
-    let metadata@2: {built_in impl Pointee for missing(@TypeBound(1, 0))}::Metadata; // arg #2
+    let metadata@2: {built_in impl Pointee for T}::Metadata; // arg #2
 
     @0 := @PtrFromPartsShared<'_, T>(copy (data_pointer@1), copy (metadata@2))
     return

@@ -271,7 +271,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
 {
-    parent_clause0 = {built_in impl MetaSized for Range<missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for Range<A>[@TraitClause0]}
     parent_clause1 = @TraitClause0
     type Item = A
     fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]

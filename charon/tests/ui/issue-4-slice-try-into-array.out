@@ -77,7 +77,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::array::{impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from
-pub fn {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from<'_0, T, const N : usize>(@1: &'_0 (Slice<T>)) -> Result<Array<T, N>, TryFromSliceError>[{built_in impl Sized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}, {built_in impl Sized for TryFromSliceError}]
+pub fn {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from<'_0, T, const N : usize>(@1: &'_0 (Slice<T>)) -> Result<Array<T, N>, TryFromSliceError>[{built_in impl Sized for Array<T, N>}, {built_in impl Sized for TryFromSliceError}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -88,8 +88,8 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    parent_clause0 = {built_in impl Sized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
-    parent_clause1 = {built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}
+    parent_clause0 = {built_in impl Sized for Array<T, N>}
+    parent_clause1 = {built_in impl Sized for &'_ (Slice<T>)}
     parent_clause2 = {built_in impl Sized for TryFromSliceError}
     type Error = TryFromSliceError
     fn try_from = {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}::try_from<'_0, T, N>[@TraitClause0, @TraitClause1]

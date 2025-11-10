@@ -106,7 +106,7 @@ where
     let x@1: T; // arg #1
 
     @0 := move (x@1)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] x@1
+    drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -118,7 +118,7 @@ where
     let x@1: &'_0 mut (T0); // arg #1
 
     @0 := move (x@1)
-    drop[{built_in impl core::marker::Destruct::<&_ mut (_)><missing('_Bound(1, 0))> for missing(@TypeBound(1, 0))}] x@1
+    drop[{built_in impl core::marker::Destruct::<&_ mut (_)><'_0> for T0}] x@1
     return
 }
 
@@ -130,7 +130,7 @@ where
     let x@1: Option<&'_0 mut (T0)>; // arg #1
 
     @0 := move (x@1)
-    drop[{built_in impl core::marker::Destruct::<Option<&_ mut (_)>><missing('_Bound(1, 0))> for missing(@TypeBound(1, 0))}] x@1
+    drop[{built_in impl core::marker::Destruct::<Option<&_ mut (_)>><'_0> for T0}] x@1
     return
 }
 
@@ -142,7 +142,7 @@ where
     let x@1: Option<Option<&'_0 mut (T0)>>; // arg #1
 
     @0 := move (x@1)
-    drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut (_)>>><missing('_Bound(1, 0))> for missing(@TypeBound(1, 0))}] x@1
+    drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut (_)>>><'_0> for T0}] x@1
     return
 }
 
@@ -209,11 +209,11 @@ where
     storage_dead(@15)
     @13 := Option::Some { 0: move (@14) }
     storage_dead(@14)
-    @12 := test_crate::identity::<Option<Option<&_ mut (_)>>><'_, A>[{built_in impl core::marker::Sized::<Option<Option<&_ mut (_)>>><'_> for missing(@TypeBound(1, 1))}](move (@13))
+    @12 := test_crate::identity::<Option<Option<&_ mut (_)>>><'_, A>[{built_in impl core::marker::Sized::<Option<Option<&_ mut (_)>>><'_> for A}](move (@13))
     storage_dead(@13)
     storage_dead(@12)
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 1))}] x@1
+    drop[{built_in impl Destruct for A}] x@1
     return
 }
 

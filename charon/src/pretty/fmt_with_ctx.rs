@@ -1796,7 +1796,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto { types, .. } => {
                 write!(f, "{{built_in impl ")?;
-                self.trait_decl_ref.skip_binder.format_as_impl(ctx, f)?;
+                let bound_ctx = &ctx.push_bound_regions(&self.trait_decl_ref.regions);
+                self.trait_decl_ref
+                    .skip_binder
+                    .format_as_impl(bound_ctx, f)?;
                 if !types.is_empty() {
                     let types = types
                         .iter()

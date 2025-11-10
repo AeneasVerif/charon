@@ -659,7 +659,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::next_chunk
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next_chunk<'_0, T, const N : usize, const N : usize>(@1: &'_0 mut (IntoIter<T, N>[@TraitClause0])) -> Result<Array<T, N>, IntoIter<T, N>[{impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 1))>}, {built_in impl Sized for IntoIter<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 1))>[{impl Iterator for IntoIter<T, N>[@TraitClause0]}<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>[missing(@TraitClauseBound(1, 0))]::parent_clause1]}]
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next_chunk<'_0, T, const N : usize, const N : usize>(@1: &'_0 mut (IntoIter<T, N>[@TraitClause0])) -> Result<Array<T, N>, IntoIter<T, N>[{impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<T, N>}, {built_in impl Sized for IntoIter<T, N>[{impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::parent_clause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<IntoIter<T, N>[@TraitClause0]>,
@@ -1341,7 +1341,7 @@ impl<T, const N : usize> Iterator for IntoIter<T, N>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for IntoIter<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause0 = {built_in impl MetaSized for IntoIter<T, N>[@TraitClause0]}
     parent_clause1 = @TraitClause0
     type Item = T
     fn next<'_0_1> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next<'_0_1, T, N>[@TraitClause0]
@@ -1434,9 +1434,9 @@ impl<T, const N : usize> IntoIterator for Array<T, N>
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Array<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>}
+    parent_clause0 = {built_in impl MetaSized for Array<T, N>}
     parent_clause1 = @TraitClause0
-    parent_clause2 = {built_in impl Sized for IntoIter<missing(@TypeBound(1, 0)), missing(@ConstGenericBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
+    parent_clause2 = {built_in impl Sized for IntoIter<T, N>[@TraitClause0]}
     parent_clause3 = {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]
     type Item = T
     type IntoIter = IntoIter<T, N>[@TraitClause0]
@@ -1715,7 +1715,7 @@ pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Sel
 where
     [@TraitClause0]: Iterator<Self>,
 
-pub fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> Result<Array<@TraitClause0::Item, N>, IntoIter<@TraitClause0::Item, N>[@TraitClause0::parent_clause1]>[{built_in impl Sized for Array<missing(@TraitClauseBound(1, 0))::Item, missing(@ConstGenericBound(1, 0))>}, {built_in impl Sized for IntoIter<missing(@TraitClauseBound(1, 0))::Item, missing(@ConstGenericBound(1, 0))>[missing(@TraitClauseBound(1, 0))::parent_clause1]}]
+pub fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> Result<Array<@TraitClause0::Item, N>, IntoIter<@TraitClause0::Item, N>[@TraitClause0::parent_clause1]>[{built_in impl Sized for Array<@TraitClause0::Item, N>}, {built_in impl Sized for IntoIter<@TraitClause0::Item, N>[@TraitClause0::parent_clause1]}]
 where
     [@TraitClause0]: Iterator<Self>,
     [@TraitClause1]: Sized<Self>,
@@ -2371,12 +2371,12 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]
 where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Result<Array<&'a (T), N>, IntoIter<&'a (T), N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<&missing('_Bound(1, 0)) (missing(@TypeBound(1, 0))), missing(@ConstGenericBound(1, 0))>}, {built_in impl Sized for IntoIter<&missing('_Bound(1, 0)) (missing(@TypeBound(1, 0))), missing(@ConstGenericBound(1, 0))>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<missing('_Bound(1, 0)), missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]::parent_clause1]}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0])) -> Result<Array<&'a (T), N>, IntoIter<&'a (T), N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<&'a (T), N>}, {built_in impl Sized for IntoIter<&'a (T), N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>,
@@ -2392,7 +2392,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>(@1: Iter<'a, T>[@TraitClause0]) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>(@1: Iter<'a, T>[@TraitClause0]) -> Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -2402,7 +2402,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -2734,7 +2734,7 @@ where
     @TraitClause3::parent_clause1::Output = bool,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: P) -> Option<&'a (T)>[{built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(@1: &'_1 mut (Iter<'a, T>[@TraitClause0]), @2: P) -> Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<P>,
@@ -3058,8 +3058,8 @@ impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Iter<'_, missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause1 = {built_in impl Sized for &'_ (missing(@TypeBound(1, 0)))}
+    parent_clause0 = {built_in impl MetaSized for Iter<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for &'_ (T)}
     type Item = &'a (T)
     fn next<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
     fn next_chunk<'_0_1, const N : usize, [@TraitClause0_1]: Sized<Iter<'a, T>[@TraitClause0]>> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_0_1, T, N>[@TraitClause0, @TraitClause0_1]
@@ -3149,12 +3149,12 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]
 where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next_chunk
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Result<Array<&'a (Slice<T>), N>, IntoIter<&'a (Slice<T>), N>[{impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<&missing('_Bound(1, 0)) (Slice<missing(@TypeBound(1, 0))>), missing(@ConstGenericBound(1, 0))>}, {built_in impl Sized for IntoIter<&missing('_Bound(1, 0)) (Slice<missing(@TypeBound(1, 0))>), missing(@ConstGenericBound(1, 0))>[{impl Iterator for Chunks<'a, T>[@TraitClause0]}<missing('_Bound(1, 0)), missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]::parent_clause1]}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Result<Array<&'a (Slice<T>), N>, IntoIter<&'a (Slice<T>), N>[{impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<&'a (Slice<T>), N>}, {built_in impl Sized for IntoIter<&'a (Slice<T>), N>[{impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<Chunks<'a, T>[@TraitClause0]>,
@@ -3170,7 +3170,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3180,7 +3180,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3837,8 +3837,8 @@ impl<'a, T> Iterator for Chunks<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Chunks<'_, missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause1 = {built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}
+    parent_clause0 = {built_in impl MetaSized for Chunks<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for &'_ (Slice<T>)}
     type Item = &'a (Slice<T>)
     fn next<'_0_1> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
     fn next_chunk<'_0_1, const N : usize, [@TraitClause0_1]: Sized<Chunks<'a, T>[@TraitClause0]>> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next_chunk<'a, '_0_1, T, N>[@TraitClause0, @TraitClause0_1]
@@ -3928,12 +3928,12 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0])) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0])) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]
 where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next_chunk
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0])) -> Result<Array<&'a (Slice<T>), N>, IntoIter<&'a (Slice<T>), N>[{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<&missing('_Bound(1, 0)) (Slice<missing(@TypeBound(1, 0))>), missing(@ConstGenericBound(1, 0))>}, {built_in impl Sized for IntoIter<&missing('_Bound(1, 0)) (Slice<missing(@TypeBound(1, 0))>), missing(@ConstGenericBound(1, 0))>[{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<missing('_Bound(1, 0)), missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]::parent_clause1]}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0])) -> Result<Array<&'a (Slice<T>), N>, IntoIter<&'a (Slice<T>), N>[{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for Array<&'a (Slice<T>), N>}, {built_in impl Sized for IntoIter<&'a (Slice<T>), N>[{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<ChunksExact<'a, T>[@TraitClause0]>,
@@ -3949,7 +3949,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -3959,7 +3959,7 @@ where
     [@TraitClause0]: Sized<T>,
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut (ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> Option<&'a (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]
 where
     [@TraitClause0]: Sized<T>,
 
@@ -4616,8 +4616,8 @@ impl<'a, T> Iterator for ChunksExact<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for ChunksExact<'_, missing(@TypeBound(1, 0))>[missing(@TraitClauseBound(1, 0))]}
-    parent_clause1 = {built_in impl Sized for &'_ (Slice<missing(@TypeBound(1, 0))>)}
+    parent_clause0 = {built_in impl MetaSized for ChunksExact<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for &'_ (Slice<T>)}
     type Item = &'a (Slice<T>)
     fn next<'_0_1> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
     fn next_chunk<'_0_1, const N : usize, [@TraitClause0_1]: Sized<ChunksExact<'a, T>[@TraitClause0]>> = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next_chunk<'a, '_0_1, T, N>[@TraitClause0, @TraitClause0_1]

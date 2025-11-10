@@ -67,7 +67,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] iter@1
+    drop[{built_in impl Destruct for I}] iter@1
     return
 }
 

@@ -205,7 +205,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {built_in impl Sized for (())}
     parent_clause2 = {built_in impl Tuple for (())}
     parent_clause3 = {built_in impl Sized for ()}
@@ -219,7 +219,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     parent_clause2 = {built_in impl Sized for (())}
     parent_clause3 = {built_in impl Tuple for (())}
@@ -233,7 +233,7 @@ where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
-    parent_clause0 = {built_in impl MetaSized for closure<missing(@TypeBound(1, 0)), missing(@TypeBound(1, 1))>[missing(@TraitClauseBound(1, 0)), missing(@TraitClauseBound(1, 1))]}
+    parent_clause0 = {built_in impl MetaSized for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     parent_clause2 = {built_in impl Sized for (())}
     parent_clause3 = {built_in impl Tuple for (())}

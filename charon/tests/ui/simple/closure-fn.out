@@ -152,7 +152,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{built_in impl Destruct for missing(@TypeBound(1, 0))}] f@1
+    drop[{built_in impl Destruct for impl FnOnce(u8, u8) -> u8}] f@1
     return
 }
 
@@ -252,7 +252,7 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0)), missing('_Bound(1, 1))>}
+    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
     parent_clause1 = {built_in impl Sized for (u8, u8)}
     parent_clause2 = {built_in impl Tuple for (u8, u8)}
     parent_clause3 = {built_in impl Sized for u8}
@@ -263,7 +263,7 @@ impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0)), missing('_Bound(1, 1))>}
+    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
     parent_clause1 = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (u8, u8)}
     parent_clause3 = {built_in impl Tuple for (u8, u8)}
@@ -273,7 +273,7 @@ impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> Fn<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for closure<missing('_Bound(1, 0)), missing('_Bound(1, 1))>}
+    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
     parent_clause1 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (u8, u8)}
     parent_clause3 = {built_in impl Tuple for (u8, u8)}
