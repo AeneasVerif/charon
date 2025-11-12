@@ -48,6 +48,7 @@ pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Err
 where
     [@TraitClause0]: From<Self, T>,
     [@TraitClause1]: Sized<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl From<&'_0 (bool)> for bool}::from
 pub fn {impl From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]

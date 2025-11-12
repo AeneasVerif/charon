@@ -2,6 +2,7 @@
 
 // Full name: core::num::{usize}::MAX
 pub fn MAX() -> usize
+= <opaque>
 
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
@@ -12,6 +13,7 @@ pub opaque type NonNull<T>
 
 // Full name: core::ptr::non_null::{NonNull<T>}::new_unchecked
 pub unsafe fn new_unchecked<T>(@1: *mut T) -> NonNull<T>
+= <opaque>
 
 fn UNIT_METADATA()
 {

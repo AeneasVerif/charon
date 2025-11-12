@@ -75,6 +75,7 @@ pub trait Debug<Self>
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
+= <method_without_default_body>
 
 // Full name: core::fmt::Display
 #[lang_item("Display")]
@@ -87,6 +88,7 @@ pub trait Display<Self>
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
+= <method_without_default_body>
 
 // Full name: core::fmt::LowerHex
 pub trait LowerHex<Self>
@@ -98,6 +100,7 @@ pub trait LowerHex<Self>
 pub fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: LowerHex<Self>,
+= <method_without_default_body>
 
 // Full name: core::fmt::UpperHex
 pub trait UpperHex<Self>
@@ -109,9 +112,11 @@ pub trait UpperHex<Self>
 pub fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: UpperHex<Self>,
+= <method_without_default_body>
 
 // Full name: core::fmt::num::{impl LowerHex for u32}::fmt
 pub fn {impl LowerHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <missing>
 
 // Full name: core::fmt::num::{impl LowerHex for u32}
 impl LowerHex for u32 {
@@ -121,6 +126,7 @@ impl LowerHex for u32 {
 
 // Full name: core::fmt::num::{impl UpperHex for u32}::fmt
 pub fn {impl UpperHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <missing>
 
 // Full name: core::fmt::num::{impl UpperHex for u32}
 impl UpperHex for u32 {
@@ -130,6 +136,7 @@ impl UpperHex for u32 {
 
 // Full name: core::fmt::num::imp::{impl Display for u32}::fmt
 pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <missing>
 
 // Full name: core::fmt::num::{impl Debug for u32}::fmt
 pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
@@ -197,6 +204,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -210,6 +218,7 @@ const UNIT_METADATA: () = @Fun0()
 
 // Full name: core::result::unwrap_failed
 fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: Debug<_dyn> + _dyn : '_1))) -> !
+= <missing>
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where

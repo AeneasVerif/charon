@@ -27,12 +27,15 @@ pub trait Trait<Self>
 pub fn test_crate::x::Trait::method<'_0, Self>(@1: &'_0 (Self))
 where
     [@TraitClause0]: Trait<Self>,
+= <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::method
 pub fn {impl Trait for ()}::method<'_0>(@1: &'_0 (()))
+= <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
 fn {impl Trait for ()}::{vtable}() -> test_crate::x::Trait::{vtable}
+= <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
 static {impl Trait for ()}::{vtable}: test_crate::x::Trait::{vtable} = {impl Trait for ()}::{vtable}()

@@ -69,9 +69,10 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_fun_decl(|_ctx, fun| {
-            let Ok(body) = &mut fun.body else {
+            let body = &mut fun.body;
+            if !body.has_contents() {
                 return;
-            };
+            }
 
             let mut storage_visitor = StorageVisitor::new(body.locals());
             let _ = storage_visitor.visit(body);
@@ -108,6 +109,7 @@ impl TransformPass for Transform {
                     });
                     first_block.statements.splice(0..0, new_statements);
                 }
+                _ => unreachable!(),
             }
         });
     }

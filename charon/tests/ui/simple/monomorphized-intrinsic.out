@@ -8,6 +8,7 @@ enum E1 {
 
 // Full name: core::intrinsics::discriminant_value::<E1>
 pub fn discriminant_value::<E1><'_0>(@1: &'_0 (E1)) -> isize
+= <opaque>
 
 // Full name: test_crate::E2
 enum E2 {
@@ -17,6 +18,7 @@ enum E2 {
 
 // Full name: core::intrinsics::discriminant_value::<E2>
 pub fn discriminant_value::<E2><'_0>(@1: &'_0 (E2)) -> isize
+= <opaque>
 
 // Full name: core::marker::MetaSized::<E1>
 #[lang_item("meta_sized")]

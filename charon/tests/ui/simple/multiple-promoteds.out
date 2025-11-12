@@ -26,6 +26,7 @@ pub trait Add<Self, Rhs>
 
 // Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}::add
 pub fn {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
+= <opaque>
 
 // Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}
 impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {
@@ -41,6 +42,7 @@ impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {
 pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
 where
     [@TraitClause0]: Add<Self, Rhs>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

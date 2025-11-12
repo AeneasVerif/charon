@@ -27,6 +27,7 @@ trait Trait<Self>
 fn test_crate::Trait::required<'_0, Self>(@1: &'_0 (Self))
 where
     [@TraitClause0]: Trait<Self>,
+= <method_without_default_body>
 
 fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
 where

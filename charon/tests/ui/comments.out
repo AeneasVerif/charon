@@ -25,9 +25,11 @@ pub trait Default<Self>
 pub fn core::default::Default::default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
+= <opaque>
 
 // Full name: core::default::{impl Default for u32}::default
 pub fn {impl Default for u32}::default() -> u32
+= <opaque>
 
 // Full name: core::default::{impl Default for u32}
 impl Default for u32 {
@@ -52,6 +54,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -75,6 +78,7 @@ pub enum AssertKind {
 pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

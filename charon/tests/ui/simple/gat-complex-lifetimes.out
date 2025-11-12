@@ -22,6 +22,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -46,6 +47,7 @@ pub trait Foo<Self, T>
 pub fn foo<Self, T>(@1: Self) -> T
 where
     [@TraitClause0]: Foo<Self, T>,
+= <method_without_default_body>
 
 // Full name: test_crate::Bar
 pub trait Bar<'a, Self>

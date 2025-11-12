@@ -734,6 +734,7 @@ pub trait Allocator<Self>
 pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
+= <method_without_default_body>
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -969,6 +970,7 @@ where
 pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout)
 where
     [@TraitClause0]: Allocator<Self>,
+= <method_without_default_body>
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
@@ -2012,6 +2014,7 @@ where
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <method_without_default_body>
 
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
@@ -2033,6 +2036,7 @@ where
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::num::niche_types::NonZeroUsizeInner
 pub struct NonZeroUsizeInner {
@@ -2228,18 +2232,23 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
 
 // Full name: alloc::alloc::__rust_alloc
 unsafe fn __rust_alloc(@1: usize, @2: usize) -> *mut u8
+= <opaque>
 
 // Full name: alloc::alloc::__rust_dealloc
 unsafe fn __rust_dealloc(@1: *mut u8, @2: usize, @3: usize)
+= <opaque>
 
 // Full name: alloc::alloc::__rust_realloc
 unsafe fn __rust_realloc(@1: *mut u8, @2: usize, @3: usize, @4: usize) -> *mut u8
+= <opaque>
 
 // Full name: alloc::alloc::__rust_alloc_zeroed
 unsafe fn __rust_alloc_zeroed(@1: usize, @2: usize) -> *mut u8
+= <opaque>
 
 // Full name: alloc::alloc::__rust_no_alloc_shim_is_unstable_v2
 unsafe fn __rust_no_alloc_shim_is_unstable_v2()
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -3493,6 +3502,7 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
     [@TraitClause2]: Allocator<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}
 impl<T, A> Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]

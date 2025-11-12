@@ -25,6 +25,7 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
@@ -39,6 +40,7 @@ pub trait PartialEq<Self, Rhs>
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -59,6 +61,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -76,6 +79,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
     [@TraitClause2]: Destruct<T>,
+= <opaque>
 
 // Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}
 impl<T> Clone for Option<T>[@TraitClause0]
@@ -113,6 +117,7 @@ trait GenericTrait<Self, T>
 fn test_crate::GenericTrait::other_method<Self, T>()
 where
     [@TraitClause0]: GenericTrait<Self, T>,
+= <method_without_default_body>
 
 fn test_crate::GenericTrait::provided<Self, T, U>(@1: T, @2: U)
 where

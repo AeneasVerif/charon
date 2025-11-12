@@ -25,9 +25,11 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
 pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
@@ -48,9 +50,11 @@ pub trait PartialEq<Self, Rhs>
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}::eq
 pub fn {impl PartialEq<bool> for bool}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
 impl PartialEq<bool> for bool {
@@ -71,9 +75,11 @@ pub trait Default<Self>
 pub fn core::default::Default::default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
+= <opaque>
 
 // Full name: core::default::{impl Default for bool}::default
 pub fn {impl Default for bool}::default() -> bool
+= <opaque>
 
 // Full name: core::default::{impl Default for bool}
 impl Default for bool {
@@ -92,6 +98,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -157,6 +164,7 @@ fn test_crate::Trait::method<Self, B, C, Clause0_Item>()
 where
     [@TraitClause0]: Trait<Self, B, Clause0_Item>,
     [@TraitClause1]: Sized<C>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method
 fn {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>()

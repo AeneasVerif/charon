@@ -10,6 +10,7 @@ pub trait PartialEq::<bool, bool>
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+= <opaque>
 
 // Full name: core::cmp::Eq::<bool>
 #[lang_item("Eq")]
@@ -21,6 +22,7 @@ pub trait Eq::<bool>
 
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
 pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
 impl PartialEq::<bool, bool> {
@@ -56,6 +58,7 @@ pub trait Destruct::<bool>
 
 // Full name: core::marker::Destruct::drop_in_place::<bool>
 fn drop_in_place::<bool>(@1: *mut bool)
+= <opaque>
 
 fn UNIT_METADATA()
 {

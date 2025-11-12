@@ -61,8 +61,10 @@ pub trait Destruct::<NotCopy>
 }
 
 fn core::marker::Destruct::drop_in_place::<NotCopy>(@1: *mut NotCopy)
+= <opaque>
 
 fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
+= <opaque>
 
 // Full name: core::marker::Tuple::<(u8)>
 #[lang_item("tuple_trait")]
@@ -75,6 +77,7 @@ pub trait Tuple::<(u8)>
 // Full name: core::mem::drop::<NotCopy>
 #[lang_item("mem_drop")]
 pub fn drop::<NotCopy>(@1: NotCopy)
+= <opaque>
 
 // Full name: core::ops::function::FnOnce::<closure, (u8)>
 #[lang_item("fn_once")]
@@ -88,8 +91,10 @@ pub trait FnOnce::<closure, (u8)>
 }
 
 pub fn core::ops::function::FnOnce::call_once(@1: closure, @2: (u8)) -> u8
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once::<closure, (u8)>(@1: closure, @2: (u8)) -> u8
+= <opaque>
 
 fn UNIT_METADATA()
 {

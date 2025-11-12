@@ -25,6 +25,7 @@ pub trait Into<Self, T>
 pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
 where
     [@TraitClause0]: Into<Self, T>,
+= <opaque>
 
 // Full name: core::convert::From
 #[lang_item("From")]
@@ -40,6 +41,7 @@ pub trait From<Self, T>
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 where
     [@TraitClause0]: From<Self, T>,
+= <opaque>
 
 // Full name: core::convert::{impl Into<U> for T}::into
 pub fn {impl Into<U> for T}::into<T, U>(@1: T) -> U
@@ -165,15 +167,18 @@ fn foo()
 
 // Full name: test_crate::module::dont_translate_body
 fn dont_translate_body()
+= <opaque>
 
 // Full name: test_crate::exclude_me
 fn exclude_me()
+= <opaque>
 
 // Full name: test_crate::Struct
 struct Struct {}
 
 // Full name: test_crate::extern_fn
 unsafe fn extern_fn(@1: i32)
+= <opaque>
 
 
 

@@ -48,6 +48,7 @@ fn into_iter<Self, T, U>(@1: Self) -> @TraitClause0::
 where
     [@TraitClause0]: Foo<Self, T>,
     [@TraitClause1]: Sized<U>,
+= <method_without_default_body>
 
 
 

@@ -93,6 +93,7 @@ pub trait Destruct::<for<'_0_1> foo::<u32><'_0_1>>
 
 // Full name: core::marker::Destruct::drop_in_place::<for<'_0_1> foo::<u32><'_0_1>>
 fn drop_in_place::<for<'_0_1> foo::<u32><'_0_1>>(@1: *mut for<'_0_1> foo::<u32><'_0_1>)
+= <opaque>
 
 // Full name: core::marker::Tuple::<(&'_ (u32))>
 #[lang_item("tuple_trait")]
@@ -139,15 +140,19 @@ pub trait Fn::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))>
 
 // Full name: core::ops::function::Fn::call
 pub fn call<'_0>(@1: &'_0 (for<'_0_1> foo::<u32><'_0_1>), @2: (&'_ (u32)))
+= <opaque>
 
 // Full name: core::ops::function::Fn::call::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))>
 pub fn call::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))><'_0>(@1: &'_0 (for<'_0_1> foo::<u32><'_0_1>), @2: (&'_ (u32)))
+= <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))>
 pub fn call_mut::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))><'_0>(@1: &'_0 mut (for<'_0_1> foo::<u32><'_0_1>), @2: (&'_ (u32)))
+= <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))>
 pub fn call_once::<for<'_0_1> foo::<u32><'_0_1>, (&'_ (u32))>(@1: for<'_0_1> foo::<u32><'_0_1>, @2: (&'_ (u32)))
+= <opaque>
 
 fn UNIT_METADATA()
 {

@@ -255,7 +255,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 inputs: vec![],
                 output: Ty::mk_unit(),
             },
-            body: Ok(Body::Unstructured(body)),
+            body: Body::Unstructured(body),
         });
         self.translated.global_decls.set_slot(
             global_id,
@@ -496,10 +496,10 @@ impl ItemTransCtx<'_, '_> {
         let is_global_initializer = is_global_initializer
             .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
-        let body = if item_meta.opacity.with_private_contents().is_opaque()
-            || is_trait_method_decl_without_default
-        {
-            Err(Opaque)
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Body::Opaque
+        } else if is_trait_method_decl_without_default {
+            Body::TraitMethodWithoutDefault
         } else if let hax::FullDefKind::Ctor {
             adt_def_id,
             ctor_of,
@@ -509,7 +509,7 @@ impl ItemTransCtx<'_, '_> {
             ..
         } = def.kind()
         {
-            let body = self.build_ctor_body(
+            self.build_ctor_body(
                 span,
                 def,
                 adt_def_id,
@@ -517,20 +517,10 @@ impl ItemTransCtx<'_, '_> {
                 *variant_id,
                 fields,
                 output_ty,
-            )?;
-            Ok(body)
+            )?
         } else {
-            // Translate the body. This doesn't store anything if we can't/decide not to translate
-            // this body.
-            let mut bt_ctx = BodyTransCtx::new(&mut self);
-            match bt_ctx.translate_def_body(item_meta.span, def) {
-                Ok(Ok(body)) => Ok(body),
-                // Opaque declaration
-                Ok(Err(Opaque)) => Err(Opaque),
-                // Translation error.
-                // FIXME: handle error cases more explicitly.
-                Err(_) => Err(Opaque),
-            }
+            // Translate the MIR body for this definition.
+            BodyTransCtx::new(&mut self).translate_def_body(item_meta.span, def)
         };
         Ok(FunDecl {
             def_id,
@@ -1410,7 +1400,7 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
         if !item_meta.opacity.is_transparent() {
-            fun_decl.body = Err(Opaque);
+            fun_decl.body = Body::Opaque;
         }
 
         Ok(fun_decl)

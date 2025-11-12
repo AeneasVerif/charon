@@ -87,12 +87,16 @@ where
 }
 
 fn core::slice::index::slice_index_fail::do_panic::runtime(@1: usize, @2: usize) -> !
+= <missing>
 
 fn core::slice::index::slice_index_fail::do_panic#1::runtime(@1: usize, @2: usize) -> !
+= <missing>
 
 fn core::slice::index::slice_index_fail::do_panic#2::runtime(@1: usize, @2: usize) -> !
+= <missing>
 
 fn core::slice::index::slice_index_fail::do_panic#3::runtime(@1: usize, @2: usize) -> !
+= <missing>
 
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
 fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
@@ -131,6 +135,7 @@ pub trait Index<Self, Idx>
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
 where
     [@TraitClause0]: Index<Self, Idx>,
+= <method_without_default_body>
 
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
@@ -252,6 +257,7 @@ pub trait SliceIndex<Self, T>
 pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (@TraitClause0::Output)
 where
     [@TraitClause0]: SliceIndex<Self, T>,
+= <method_without_default_body>
 
 // Full name: core::slice::index::{impl Index<I> for Slice<T>}::index
 pub fn {impl Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
@@ -396,22 +402,27 @@ impl Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}] {
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[{built_in impl Sized for &'_0 (@TraitClause0::Output)}]
 where
     [@TraitClause0]: SliceIndex<Self, T>,
+= <method_without_default_body>
 
 pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[{built_in impl Sized for &'_0 mut (@TraitClause0::Output)}]
 where
     [@TraitClause0]: SliceIndex<Self, T>,
+= <method_without_default_body>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
 where
     [@TraitClause0]: SliceIndex<Self, T>,
+= <method_without_default_body>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
 where
     [@TraitClause0]: SliceIndex<Self, T>,
+= <method_without_default_body>
 
 pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (@TraitClause0::Output)
 where
     [@TraitClause0]: SliceIndex<Self, T>,
+= <method_without_default_body>
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get
 pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[{built_in impl Sized for &'_0 (Slice<T>)}]

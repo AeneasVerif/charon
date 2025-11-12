@@ -67,6 +67,7 @@ where
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: FnMut<F, ()>,
     @TraitClause2::parent_clause1::Output = Option<T>[@TraitClause0],
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -77,14 +78,17 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -112,6 +116,7 @@ fn {impl FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'_>}::drop_in_place
 fn {impl Destruct for closure<'_>}::drop_in_place<'a>(@1: *mut closure<'_>)
+= <opaque>
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'_>}
 impl<'a> Destruct for closure<'_> {

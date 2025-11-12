@@ -1,8 +1,6 @@
 //! Implementations for [crate::gast]
 
 use crate::ast::*;
-use crate::llbc_ast;
-use crate::ullbc_ast;
 
 impl FnPtrKind {
     pub fn mk_builtin(aid: BuiltinFunId) -> Self {
@@ -11,33 +9,14 @@ impl FnPtrKind {
 }
 
 impl Body {
-    pub fn as_unstructured(&self) -> Option<&ullbc_ast::ExprBody> {
-        if let Self::Unstructured(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-    pub fn as_unstructured_mut(&mut self) -> Option<&mut ullbc_ast::ExprBody> {
-        if let Self::Unstructured(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-
-    pub fn as_structured(&self) -> Option<&llbc_ast::ExprBody> {
-        if let Self::Structured(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-    pub fn as_structured_mut(&mut self) -> Option<&mut llbc_ast::ExprBody> {
-        if let Self::Structured(v) = self {
-            Some(v)
-        } else {
-            None
+    /// Whether there is an actual body with statements etc, as opposed to the body being missing
+    /// for some reason.
+    pub fn has_contents(&self) -> bool {
+        match self {
+            Body::Unstructured(..) | Body::Structured(..) => true,
+            Body::TraitMethodWithoutDefault | Body::Opaque | Body::Missing | Body::Error(..) => {
+                false
+            }
         }
     }
 
@@ -45,6 +24,7 @@ impl Body {
         match self {
             Body::Structured(body) => &body.locals,
             Body::Unstructured(body) => &body.locals,
+            _ => panic!("called `locals` on a missing body"),
         }
     }
 }

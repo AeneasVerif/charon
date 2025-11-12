@@ -42,6 +42,7 @@ pub trait FnOnce<Self, Args>
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -67,6 +68,7 @@ where
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: FnOnce<F, (T)>,
     @TraitClause2::Output = T,
+= <opaque>
 
 fn UNIT_METADATA()
 {

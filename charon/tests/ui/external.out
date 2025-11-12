@@ -41,19 +41,23 @@ pub fn get<'_0, T>(@1: &'_0 (Cell<T>[@TraitClause0::parent_clause0])) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
+= <opaque>
 
 // Full name: core::cell::{Cell<T>[@TraitClause0]}::get_mut
 pub fn get_mut<'_0, T>(@1: &'_0 mut (Cell<T>[@TraitClause0])) -> &'_0 mut (T)
 where
     [@TraitClause0]: MetaSized<T>,
+= <opaque>
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 (u32)) -> u32
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
@@ -78,17 +82,20 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 #[lang_item("mem_swap")]
 pub fn core::mem::swap<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 mut (T))
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::num::niche_types::NonZeroU32Inner
 pub opaque type NonZeroU32Inner
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}::clone
 pub fn {impl Clone for NonZeroU32Inner}::clone<'_0>(@1: &'_0 (NonZeroU32Inner)) -> NonZeroU32Inner
+= <opaque>
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}
 impl Clone for NonZeroU32Inner {
@@ -161,12 +168,14 @@ pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<T>(@1
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ZeroablePrimitive<T>,
+= <opaque>
 
 // Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
 pub fn unwrap<T>(@1: Option<T>[@TraitClause0]) -> T
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -184,6 +193,7 @@ fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
@@ -199,12 +209,14 @@ where
 pub fn alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::new<T>() -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
 pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

@@ -4,6 +4,7 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
 use derive_generic_visitor::{Drive, DriveMut};
+use macros::EnumAsGetters;
 use macros::{EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 
@@ -24,10 +25,6 @@ pub struct Local {
 pub type Var = Local;
 #[deprecated(note = "use `LocalId` intead")]
 pub type VarId = LocalId;
-
-/// Marker to indicate that a declaration is opaque (i.e. we don't inspect its body).
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct Opaque;
 
 /// The local variables of a body.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
@@ -60,14 +57,29 @@ pub struct GExprBody<T> {
     pub body: T,
 }
 
-/// The body of a function or a constant.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumToGetters)]
+/// The body of a function.
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumAsGetters, EnumToGetters,
+)]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
     /// Body represented with structured control flow. This is what llbc is made of. We restructure
-    /// the control flow in `ullbc_to_llbc`.
+    /// the control flow in the `ullbc_to_llbc` pass.
     Structured(llbc_ast::ExprBody),
+    /// The body of the function item we add for each trait method declaration, if the trait
+    /// doesn't provide a default for that method.
+    TraitMethodWithoutDefault,
+    /// A body that the user chose not to translate, based on opacity settings like
+    /// `--include`/`--opaque`.
+    Opaque,
+    /// A body that was not available. Typically that's function bodies for non-generic and
+    /// non-inlineable std functions, as these are not present in the compiled standard library
+    /// `.rmeta` file shipped with a rust toolchain.
+    Missing,
+    /// We encountered an error while translating this body.
+    #[drive(skip)]
+    Error(Error),
 }
 
 /// Item kind: whether this function/const is part of a trait declaration, trait implementation, or
@@ -157,7 +169,7 @@ pub struct FunDecl {
     /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
-    pub body: Result<Body, Opaque>,
+    pub body: Body,
 }
 
 /// Reference to a function declaration.

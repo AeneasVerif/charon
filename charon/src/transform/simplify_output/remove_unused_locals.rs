@@ -108,13 +108,10 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|_ctx, fun| {
-            if let Ok(body) = &mut fun.body {
-                match body {
-                    Body::Unstructured(body) => remove_unused_locals(body),
-                    Body::Structured(body) => remove_unused_locals(body),
-                }
-            }
+        ctx.for_each_fun_decl(|_ctx, fun| match &mut fun.body {
+            Body::Unstructured(body) => remove_unused_locals(body),
+            Body::Structured(body) => remove_unused_locals(body),
+            _ => {}
         });
     }
 }

@@ -25,6 +25,7 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::fmt::Error
 pub struct Error {}
@@ -53,6 +54,7 @@ pub trait Display<Self>
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -63,6 +65,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -73,6 +76,7 @@ fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -96,6 +100,7 @@ fn {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::rc::Rc::{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Rc<T>[@TraitClause0, @TraitClause1]
@@ -110,6 +115,7 @@ where
 pub fn alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<T>(@1: T) -> Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -117,6 +123,7 @@ pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl Destruct for String {
@@ -126,9 +133,11 @@ impl Destruct for String {
 
 #[lang_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
+= <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
 pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
+= <opaque>
 
 // Full name: alloc::string::{impl Clone for String}
 impl Clone for String {
@@ -139,9 +148,11 @@ impl Clone for String {
 
 // Full name: alloc::string::{impl Display for String}::fmt
 pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
+= <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()

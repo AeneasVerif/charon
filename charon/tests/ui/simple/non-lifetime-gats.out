@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::ops::deref::Deref
 #[lang_item("deref")]
@@ -36,6 +37,7 @@ pub trait Deref<Self>
 pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Target)
 where
     [@TraitClause0]: Deref<Self>,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -46,6 +48,7 @@ fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -62,6 +65,7 @@ pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::dere
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
@@ -102,6 +106,7 @@ pub fn test_crate::PointerFamily::new<Self, T>(@1: T) -> @TraitClause0::Pointer
 where
     [@TraitClause0]: PointerFamily<Self>,
     [@TraitClause1]: Sized<T>,
+= <method_without_default_body>
 
 // Full name: test_crate::BoxFamily
 pub struct BoxFamily {}

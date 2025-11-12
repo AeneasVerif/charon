@@ -21,6 +21,7 @@ pub trait Destruct<Self>
 }
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -70,14 +71,17 @@ pub trait Fn<Self, Args>
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -93,6 +97,7 @@ where
 fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}
 impl<T> Destruct for Option<T>[@TraitClause0]
@@ -141,6 +146,7 @@ pub trait BoolTrait<Self>
 fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
 where
     [@TraitClause0]: Sized<A>,
+= <opaque>
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
 impl<A, B> Destruct for (A, B)
@@ -154,6 +160,7 @@ where
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
+= <method_without_default_body>
 
 pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
@@ -325,6 +332,7 @@ pub trait ToU64<Self>
 pub fn test_crate::ToU64::to_u64<Self>(@1: Self) -> u64
 where
     [@TraitClause0]: ToU64<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl ToU64 for u64}::to_u64
 pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
@@ -448,6 +456,7 @@ where
 fn {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Wrapper<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[@TraitClause0]}
 impl<T> Destruct for Wrapper<T>[@TraitClause0]
@@ -531,6 +540,7 @@ pub trait ToType<Self, T>
 pub fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
 where
     [@TraitClause0]: ToType<Self, T>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl ToType<bool> for u64}::to_type
 pub fn {impl ToType<bool> for u64}::to_type(@1: u64) -> bool
@@ -568,6 +578,7 @@ where
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: ToType<T, Self>,
     [@TraitClause3]: Sized<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::h3
 pub fn h3<T1, T2>(@1: T2) -> T1
@@ -604,6 +615,7 @@ pub fn test_crate::OfTypeBis::of_type<Self, T>(@1: T) -> Self
 where
     [@TraitClause0]: OfTypeBis<Self, T>,
     [@TraitClause1]: Sized<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::h4
 pub fn h4<T1, T2>(@1: T2) -> T1
@@ -712,6 +724,7 @@ trait TestTrait<Self>
 fn test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: TestTrait<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}
 impl TestTrait for TestType1 {
@@ -789,6 +802,7 @@ where
 pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 (Array<u8, LEN>))
 where
     [@TraitClause0]: WithConstTy<Self, LEN>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
 pub fn LEN1() -> usize
@@ -917,10 +931,12 @@ pub trait ParentTrait0<Self>
 pub fn get_name<'_0, Self>(@1: &'_0 (Self)) -> String
 where
     [@TraitClause0]: ParentTrait0<Self>,
+= <method_without_default_body>
 
 pub fn test_crate::ParentTrait0::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
 where
     [@TraitClause0]: ParentTrait0<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::ParentTrait1
 pub trait ParentTrait1<Self>
@@ -1037,6 +1053,7 @@ where
 pub fn into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
 where
     [@TraitClause0]: IntoIterator<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::FromResidual
 trait FromResidual<Self, T>
@@ -1087,6 +1104,7 @@ pub trait ChildTrait2<Self>
 pub fn test_crate::ChildTrait2::convert<Self>(@1: @TraitClause0::parent_clause1::U) -> @TraitClause0::parent_clause1::parent_clause2::Target
 where
     [@TraitClause0]: ChildTrait2<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl WithTarget for u32}
 impl WithTarget for u32 {
@@ -1137,6 +1155,7 @@ pub trait CFnOnce<Self, Args>
 pub fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: CFnOnce<Self, Args>,
+= <method_without_default_body>
 
 // Full name: test_crate::CFnMut
 pub trait CFnMut<Self, Args>
@@ -1151,6 +1170,7 @@ pub trait CFnMut<Self, Args>
 pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: CFnMut<Self, Args>,
+= <method_without_default_body>
 
 // Full name: test_crate::CFn
 pub trait CFn<Self, Args>
@@ -1165,6 +1185,7 @@ pub trait CFn<Self, Args>
 pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: CFn<Self, Args>,
+= <method_without_default_body>
 
 // Full name: test_crate::GetTrait
 pub trait GetTrait<Self>
@@ -1179,6 +1200,7 @@ pub trait GetTrait<Self>
 pub fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
 where
     [@TraitClause0]: GetTrait<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::test_get_trait
 pub fn test_get_trait<'_0, T>(@1: &'_0 (T)) -> @TraitClause1::W

@@ -669,6 +669,15 @@ and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ binder } : dyn_predicate)
     | _ -> Error "")
 
+and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("span", span); ("msg", msg) ] ->
+        let* span = span_of_json ctx span in
+        let* msg = string_of_json ctx msg in
+        Ok ({ span; msg } : error)
+    | _ -> Error "")
+
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with

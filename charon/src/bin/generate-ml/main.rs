@@ -1096,7 +1096,6 @@ fn generate_ml(
         "ItemOpacity",
         "PredicateOrigin",
         "Ty", // We exclude it since `TyKind` is renamed to `ty`
-        "Opaque",
         "Body",
         "FunDecl",
         "TranslatedCrate",
@@ -1260,6 +1259,7 @@ fn generate_ml(
                     "Locals",
                     "FunSig",
                     "CopyNonOverlapping",
+                    "Error",
                 ]),
                 // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
