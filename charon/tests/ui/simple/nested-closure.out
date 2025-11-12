@@ -221,12 +221,18 @@ where
     let @10: (&'_ (u32)); // anonymous local
     let @11: &'_ (u32); // anonymous local
     let @12: &'_ (u32); // anonymous local
-    let @13: u32; // anonymous local
-    let @14: (&'_ (u32)); // anonymous local
+    let @13: (&'_ (u32)); // anonymous local
+    let @14: &'_ (u32); // anonymous local
     let @15: &'_ (u32); // anonymous local
     let @16: &'_ (u32); // anonymous local
-    let @17: u32; // anonymous local
+    let @17: &'_ (u32); // anonymous local
+    let @18: &'_ (u32); // anonymous local
+    let @19: u32; // anonymous local
+    let @20: &'_ (u32); // anonymous local
+    let @21: u32; // anonymous local
 
+    storage_live(@16)
+    storage_live(@17)
     storage_live(clo@2)
     storage_live(@3)
     @3 := &*(*(x@1))
@@ -241,38 +247,42 @@ where
     storage_live(@9)
     @9 := ()
     @7 := {impl Fn<()> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}::call<'_, '_, '_, T>[@TraitClause0, @TraitClause1](move (@8), move (@9))
+    storage_live(@18)
+    storage_live(@19)
+    @19 := const (0 : u32)
+    @18 := &@19
     @6 := &@7
     storage_dead(@9)
     storage_dead(@8)
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
-    storage_live(@13)
-    @13 := const (0 : u32)
-    @12 := &@13
+    @17 := move (@18)
+    @12 := &*(@17)
     @11 := &*(@12)
     @10 := (move (@11))
     @5 := {impl Fn<(&'_ (u32))> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}::call<'_, '_, '_, '_, T>[@TraitClause0, @TraitClause1](move (@6), move (@10))
+    storage_live(@20)
+    storage_live(@21)
+    @21 := const (1 : u32)
+    @20 := &@21
     @4 := &@5
     storage_dead(@11)
     storage_dead(@10)
     storage_dead(@6)
+    storage_live(@13)
     storage_live(@14)
     storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    @17 := const (1 : u32)
-    @16 := &@17
+    @16 := move (@20)
     @15 := &*(@16)
-    @14 := (move (@15))
-    @0 := {impl Fn<(&'_ (u32))> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}::call<'_, '_, '_, '_, T>[@TraitClause0, @TraitClause1](move (@4), move (@14))
-    storage_dead(@15)
+    @14 := &*(@15)
+    @13 := (move (@14))
+    @0 := {impl Fn<(&'_ (u32))> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, '_1, T>[@TraitClause0, @TraitClause1]}::call<'_, '_, '_, '_, T>[@TraitClause0, @TraitClause1](move (@4), move (@13))
     storage_dead(@14)
+    storage_dead(@13)
     storage_dead(@4)
     storage_dead(clo@2)
-    storage_dead(@17)
-    storage_dead(@16)
-    storage_dead(@13)
+    storage_dead(@15)
     storage_dead(@12)
     storage_dead(@7)
     storage_dead(@5)

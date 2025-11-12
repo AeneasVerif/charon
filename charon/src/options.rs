@@ -270,12 +270,9 @@ pub struct CliOpts {
 
 /// The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
 /// optimized is available (or mir elaborated for consts).
-#[derive(
-    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
 pub enum MirLevel {
     /// The MIR just after MIR lowering.
-    #[default]
     Built,
     /// The MIR after const promotion. This is the MIR used by the borrow-checker.
     Promoted,
@@ -493,10 +490,8 @@ impl TranslateOptions {
 
         let mir_level = if options.mir_optimized {
             MirLevel::Optimized
-        } else if options.mir_promoted {
-            MirLevel::Promoted
         } else {
-            options.mir.unwrap_or_default()
+            options.mir.unwrap_or(MirLevel::Promoted)
         };
 
         let item_opacities = {

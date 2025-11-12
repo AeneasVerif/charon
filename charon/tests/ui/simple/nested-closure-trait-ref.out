@@ -125,6 +125,23 @@ where
   T,
 }
 
+// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>(@1: *mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+= <opaque>
+
+// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}
+impl<T> Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    fn drop_in_place = {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::foo::{impl FnOnce<()> for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::call_once
 fn {impl FnOnce<()> for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>(@1: test_crate::foo::closure<T>[@TraitClause0, @TraitClause1], @2: ()) -> test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]
 where
@@ -136,6 +153,7 @@ where
     let tupled_args@2: (); // arg #2
 
     @0 := test_crate::foo::closure::closure { 0: move ((@1).0) }
+    drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @1
     return
 }
 
@@ -160,7 +178,9 @@ where
     @0 := {impl FnOnce<()> for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
+    drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] f@2
     storage_dead(f@2)
+    drop[{built_in impl Destruct for T}] x@1
     return
 }
 

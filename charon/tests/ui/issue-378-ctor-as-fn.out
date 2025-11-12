@@ -159,8 +159,11 @@ fn main()
     let @14: Variant<'_, i32>[{built_in impl Sized for i32}]; // anonymous local
     let @15: &'_ (i32); // anonymous local
     let @16: &'_ (i32); // anonymous local
-    let @17: i32; // anonymous local
+    let @17: &'_ (i32); // anonymous local
+    let @18: &'_ (i32); // anonymous local
+    let @19: i32; // anonymous local
 
+    storage_live(@17)
     @0 := ()
     storage_live(f@1)
     f@1 := const (Some<u8>[{built_in impl Sized for u8}])
@@ -192,6 +195,10 @@ fn main()
     storage_dead(@11)
     storage_dead(@10)
     drop[{impl Destruct for Foo}] @9
+    storage_live(@18)
+    storage_live(@19)
+    @19 := const (42 : i32)
+    @18 := &@19
     storage_dead(@9)
     storage_live(f@12)
     f@12 := const (Variant<'_, i32>[{built_in impl Sized for i32}])
@@ -200,14 +207,12 @@ fn main()
     @14 := copy (f@12)
     storage_live(@15)
     storage_live(@16)
-    storage_live(@17)
-    @17 := const (42 : i32)
-    @16 := &@17
+    @17 := move (@18)
+    @16 := &*(@17)
     @15 := &*(@16)
     @13 := Variant<'_, i32>[{built_in impl Sized for i32}](move (@15))
     storage_dead(@15)
     storage_dead(@14)
-    storage_dead(@17)
     storage_dead(@16)
     storage_dead(@13)
     @0 := ()

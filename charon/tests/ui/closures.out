@@ -2049,8 +2049,15 @@ fn test_fnmut_with_ref()
     let @6: (&'_ (usize)); // anonymous local
     let @7: &'_ (usize); // anonymous local
     let @8: &'_ (usize); // anonymous local
-    let @9: usize; // anonymous local
+    let @9: &'_ (usize); // anonymous local
+    let @10: &'_ (usize); // anonymous local
+    let @11: usize; // anonymous local
 
+    storage_live(@10)
+    storage_live(@11)
+    @11 := const (15 : usize)
+    @10 := &@11
+    storage_live(@9)
     @0 := ()
     storage_live(sum@1)
     sum@1 := const (0 : usize)
@@ -2065,16 +2072,14 @@ fn test_fnmut_with_ref()
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
-    storage_live(@9)
-    @9 := const (15 : usize)
-    @8 := &@9
+    @9 := move (@10)
+    @8 := &*(@9)
     @7 := &*(@8)
     @6 := (move (@7))
     @4 := {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_, '_, '_>(move (@5), move (@6))
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(@5)
-    storage_dead(@9)
     storage_dead(@8)
     storage_dead(@4)
     @0 := ()

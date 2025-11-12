@@ -173,10 +173,13 @@ where
     let @8: &'_ (U); // anonymous local
     let @9: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
     let @10: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @11: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @13: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let @13: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @14: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @15: Array<&'_ (Str), 2 : usize>; // anonymous local
 
+    storage_live(@13)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
@@ -192,21 +195,23 @@ where
     storage_live(@8)
     @8 := &*((args@3).0)
     @7 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@8))
+    storage_live(@14)
+    storage_live(@15)
+    @15 := [const (""), const ("\n")]
+    @14 := &@15
     storage_dead(@8)
     args@6 := [move (@7)]
     storage_dead(@7)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
-    @11 := [const (""), const ("\n")]
-    @10 := &@11
+    @13 := move (@14)
+    @10 := &*(@13)
     @9 := &*(@10)
+    storage_live(@11)
     storage_live(@12)
-    storage_live(@13)
-    @13 := &args@6
-    @12 := &*(@13)
-    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@9), move (@12))
-    storage_dead(@13)
+    @12 := &args@6
+    @11 := &*(@12)
+    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@9), move (@11))
     storage_dead(@12)
     storage_dead(@11)
     storage_dead(@10)
