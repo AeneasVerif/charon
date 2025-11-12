@@ -428,6 +428,22 @@ pub struct Assert {
 pub struct DeclRef<Id> {
     pub id: Id,
     pub generics: BoxedArgs,
+    /// If the item is a trait associated item, `generics` are only those of the item, and this
+    /// contains a reference to the trait.
+    pub trait_ref: Option<TraitRef>,
+}
+
+impl DeclRef<ItemId> {
+    pub fn try_convert_id<Id>(self) -> Result<DeclRef<Id>, <ItemId as TryInto<Id>>::Error>
+    where
+        ItemId: TryInto<Id>,
+    {
+        Ok(DeclRef {
+            id: self.id.try_into()?,
+            generics: self.generics,
+            trait_ref: self.trait_ref,
+        })
+    }
 }
 
 // Implement `DeclRef<_>` -> `FooDeclRef` conversions.
@@ -436,6 +452,7 @@ macro_rules! convert_item_ref {
         impl TryFrom<DeclRef<ItemId>> for $item_ref_ty {
             type Error = ();
             fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+                assert!(item.trait_ref.is_none());
                 Ok($item_ref_ty {
                     id: item.id.try_into()?,
                     generics: item.generics,
@@ -444,6 +461,7 @@ macro_rules! convert_item_ref {
         }
         impl From<DeclRef<$id>> for $item_ref_ty {
             fn from(item: DeclRef<$id>) -> Self {
+                assert!(item.trait_ref.is_none());
                 $item_ref_ty {
                     id: item.id,
                     generics: item.generics,
@@ -454,7 +472,6 @@ macro_rules! convert_item_ref {
 }
 convert_item_ref!(TypeDeclRef(TypeId));
 convert_item_ref!(FunDeclRef(FunDeclId));
-convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
 convert_item_ref!(GlobalDeclRef(GlobalDeclId));
 convert_item_ref!(TraitDeclRef(TraitDeclId));
 convert_item_ref!(TraitImplRef(TraitImplId));
@@ -463,5 +480,21 @@ impl TryFrom<DeclRef<ItemId>> for FnPtr {
     fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
         let id: FunId = item.id.try_into()?;
         Ok(FnPtr::new(id.into(), item.generics))
+    }
+}
+
+impl TryFrom<DeclRef<ItemId>> for MaybeBuiltinFunDeclRef {
+    type Error = ();
+    fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+        Ok(item.try_convert_id::<FunId>()?.into())
+    }
+}
+impl From<DeclRef<FunId>> for MaybeBuiltinFunDeclRef {
+    fn from(item: DeclRef<FunId>) -> Self {
+        MaybeBuiltinFunDeclRef {
+            id: item.id,
+            generics: item.generics,
+            trait_ref: item.trait_ref,
+        }
     }
 }

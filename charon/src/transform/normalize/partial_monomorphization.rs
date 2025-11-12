@@ -433,6 +433,7 @@ impl<'a> PartialMonomorphizer<'a> {
         Some(DeclRef {
             id: new_id,
             generics: Box::new(shape_args),
+            trait_ref: None,
         })
     }
 
