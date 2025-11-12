@@ -370,6 +370,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | FullDefKind::AssocTy { .. } => PredicateOrigin::WhereClauseOnType,
                 FullDefKind::Fn { .. }
                 | FullDefKind::AssocFn { .. }
+                | FullDefKind::Closure { .. }
                 | FullDefKind::Const { .. }
                 | FullDefKind::AssocConst { .. }
                 | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
@@ -379,7 +380,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
                     PredicateOrigin::WhereClauseOnTrait
                 }
-                _ => panic!("Unexpected def: {def:?}"),
+                _ => panic!("Unexpected def: {:?}", def.def_id().kind),
             };
             self.register_predicates(&param_env.predicates, origin.clone())?;
         }
