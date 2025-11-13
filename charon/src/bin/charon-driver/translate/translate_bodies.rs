@@ -1062,23 +1062,8 @@ impl BodyTransCtx<'_, '_, '_> {
                 self.blocks.push(abort.into_block())
             }
         };
-        let on_unwind = match unwind {
-            UnwindAction::Continue => {
-                let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
-                self.blocks.push(unwind_continue.into_block())
-            }
-            UnwindAction::Unreachable => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
-                self.blocks.push(abort.into_block())
-            }
-            UnwindAction::Terminate(..) => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
-                self.blocks.push(abort.into_block())
-            }
-            UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
-        };
+        let on_unwind = self.translate_unwind_action(span, unwind);
+
         Ok(TerminatorKind::Call {
             call,
             target,
@@ -1101,7 +1086,18 @@ impl BodyTransCtx<'_, '_, '_> {
         let place = self.translate_place(span, place)?;
         let tref = self.translate_trait_impl_expr(span, impl_expr)?;
         let target = self.translate_basic_block_id(*target);
+        let on_unwind = self.translate_unwind_action(span, unwind);
 
+        Ok(TerminatorKind::Drop {
+            place,
+            tref,
+            target,
+            on_unwind,
+        })
+    }
+
+    // construct unwind block for the terminators
+    fn translate_unwind_action(&mut self, span: Span, unwind: &UnwindAction) -> BlockId {
         let on_unwind = match unwind {
             UnwindAction::Continue => {
                 let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
@@ -1119,12 +1115,7 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
         };
-        Ok(TerminatorKind::Drop {
-            place,
-            tref,
-            target,
-            on_unwind,
-        })
+        on_unwind
     }
 
     /// Evaluate function arguments in a context, and return the list of computed
