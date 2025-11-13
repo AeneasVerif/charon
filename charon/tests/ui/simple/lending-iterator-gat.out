@@ -222,10 +222,10 @@ where
             },
             _ => {
                 @0 := ()
-                drop[{impl Drop for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+                drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
                 storage_dead(@4)
-                drop[Drop<impl for<'a> FnMut(I::Item<'a>)>] f@2
-                drop[Drop<I>] iter@1
+                drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
+                drop[{built_in impl Destruct for I}] iter@1
                 return
             },
         }
@@ -248,8 +248,8 @@ where
         storage_dead(@4)
         continue 0
     }
-    drop[Drop<impl for<'a> FnMut(I::Item<'a>)>] f@2
-    drop[Drop<I>] iter@1
+    drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
+    drop[{built_in impl Destruct for I}] iter@1
     panic
 }
 
