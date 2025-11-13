@@ -68,19 +68,18 @@ impl TransformPass for Transform {
         // We remove any mention of these traits in generic parameters and arguments.
         let mut exclude = if ctx.options.hide_marker_traits {
             vec![
-                "core::marker::Destruct",
                 "core::marker::PointeeSized",
                 "core::marker::MetaSized",
                 "core::marker::Sized",
                 "core::marker::Tuple",
-                "core::marker::Send",
-                "core::marker::Sync",
-                "core::marker::Unpin",
                 "core::clone::TrivialClone",
             ]
         } else {
             vec![]
         };
+        if ctx.options.hide_marker_traits && !ctx.options.add_destruct_bounds {
+            exclude.push("core::marker::Destruct");
+        }
         if ctx.options.hide_allocator {
             exclude.push("core::alloc::Allocator");
         }
