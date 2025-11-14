@@ -35,13 +35,6 @@ and statement_kind =
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
   | Deinit of place
-  | Drop of place * trait_ref
-      (** Drop the value at the given place.
-
-          This calls [<T as Destruct>::drop_in_place(&raw mut place)] and marks
-          the place as moved-out-of. The [drop_in_place] method is added by
-          Charon, it contains the same code as the [core::ptr::drop_in_place<T>]
-          builtin). *)
   | Assert of assertion
       (** A built-in assert, which corresponds to runtime checks that we remove,
           namely: bounds checks, over/underflow checks, div/rem by zero checks,
@@ -96,6 +89,19 @@ and terminator_kind =
   | Call of call * block_id * block_id
       (** Fields:
           - [call]
+          - [target]
+          - [on_unwind] *)
+  | Drop of place * trait_ref * block_id * block_id
+      (** Drop the value at the given place.
+
+          This calls [<T as Destruct>::drop_in_place(&raw mut place)] and marks
+          the place as moved-out-of. The [drop_in_place] method is added by
+          Charon, it contains the same code as the [core::ptr::drop_in_place<T>]
+          builtin).
+
+          Fields:
+          - [place]
+          - [tref]
           - [target]
           - [on_unwind] *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)

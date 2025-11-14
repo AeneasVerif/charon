@@ -112,7 +112,7 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     use src::TerminatorKind::*;
     match &block.terminator.kind {
         Abort(..) => true,
-        Goto { .. } | Switch { .. } | Return | Call { .. } | UnwindResume => false,
+        Goto { .. } | Switch { .. } | Return | Call { .. } | Drop { .. } | UnwindResume => false,
     }
 }
 
@@ -1465,7 +1465,6 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
         src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
         src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
-        src::StatementKind::Drop(place, tref) => tgt::StatementKind::Drop(place, tref),
         src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
         src::StatementKind::Nop => tgt::StatementKind::Nop,
         src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
@@ -1507,6 +1506,28 @@ fn translate_terminator(
             );
             let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
             let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
+            block.statements.insert(0, st);
+            block
+        }
+        src::TerminatorKind::Drop {
+            place,
+            tref,
+            target,
+            on_unwind: _,
+        } => {
+            // TODO: Have unwinds in the LLBC
+            let target_block = translate_child_block(
+                info,
+                parent_loops,
+                switch_exit_blocks,
+                terminator.span,
+                *target,
+            );
+            let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
+            let st = tgt::Statement::new(
+                src_span,
+                tgt::StatementKind::Drop(place.clone(), tref.clone()),
+            );
             block.statements.insert(0, st);
             block
         }

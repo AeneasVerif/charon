@@ -36,12 +36,6 @@ pub enum StatementKind {
     /// is implicitly deallocated at the end of the function.
     StorageDead(LocalId),
     Deinit(Place),
-    /// Drop the value at the given place.
-    ///
-    /// This calls `<T as Destruct>::drop_in_place(&raw mut place)` and marks the place as
-    /// moved-out-of. The `drop_in_place` method is added by Charon, it contains the same code as
-    /// the `core::ptr::drop_in_place<T>` builtin).
-    Drop(Place, TraitRef),
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
     /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert(Assert),
@@ -96,6 +90,17 @@ pub enum TerminatorKind {
     },
     Call {
         call: Call,
+        target: BlockId,
+        on_unwind: BlockId,
+    },
+    /// Drop the value at the given place.
+    ///
+    /// This calls `<T as Destruct>::drop_in_place(&raw mut place)` and marks the place as
+    /// moved-out-of. The `drop_in_place` method is added by Charon, it contains the same code as
+    /// the `core::ptr::drop_in_place<T>` builtin).
+    Drop {
+        place: Place,
+        tref: TraitRef,
         target: BlockId,
         on_unwind: BlockId,
     },
