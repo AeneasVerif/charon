@@ -138,14 +138,8 @@ fn build_cfg_partial_info_edges(
         cfg.switch_blocks.insert(block_id);
     }
 
-    // Retrieve the block targets
-    let mut targets = body.body.get(block_id).unwrap().targets();
-    // Hack: we don't translate unwind paths in llbc so we ignore them here.
-    if let src::TerminatorKind::Call { target, .. } =
-        body.body.get(block_id).unwrap().terminator.kind
-    {
-        targets = vec![target];
-    }
+    // Retrieve the block targets (we ignore unwind paths for now).
+    let targets = body.body[block_id].targets_ignoring_unwind();
 
     let mut has_backward_edge = false;
 

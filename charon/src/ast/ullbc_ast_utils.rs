@@ -67,16 +67,26 @@ impl BlockData {
             }
             TerminatorKind::Switch { targets, .. } => targets.get_targets(),
             TerminatorKind::Call {
-                call: _,
-                target,
-                on_unwind,
+                target, on_unwind, ..
+            }
+            | TerminatorKind::Drop {
+                target, on_unwind, ..
             } => vec![*target, *on_unwind],
-            TerminatorKind::Drop {
-                place: _,
-                tref: _,
-                target,
-                on_unwind,
-            } => vec![*target, *on_unwind],
+            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+                vec![]
+            }
+        }
+    }
+
+    pub fn targets_ignoring_unwind(&self) -> Vec<BlockId> {
+        match &self.terminator.kind {
+            TerminatorKind::Goto { target } => {
+                vec![*target]
+            }
+            TerminatorKind::Switch { targets, .. } => targets.get_targets(),
+            TerminatorKind::Call { target, .. } | TerminatorKind::Drop { target, .. } => {
+                vec![*target]
+            }
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
                 vec![]
             }
