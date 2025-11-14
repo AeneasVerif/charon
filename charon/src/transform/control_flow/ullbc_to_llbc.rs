@@ -33,7 +33,6 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use petgraph::Direction;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
@@ -101,21 +100,6 @@ fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
     cfg
 }
 
-fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId) -> bool {
-    let block = body.body.get(block_id).unwrap();
-    block.terminator.kind.is_switch()
-}
-
-/// The terminator of the block is a panic, etc.
-fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
-    let block = body.body.get(block_id).unwrap();
-    use src::TerminatorKind::*;
-    match &block.terminator.kind {
-        Abort(..) => true,
-        Goto { .. } | Switch { .. } | Return | Call { .. } | Drop { .. } | UnwindResume => false,
-    }
-}
-
 fn build_cfg_partial_info_edges(
     cfg: &mut CfgInfo,
     ancestors: &HashSet<src::BlockId>,
@@ -134,7 +118,8 @@ fn build_cfg_partial_info_edges(
     ancestors.insert(block_id);
 
     // Check if it is a switch
-    if block_is_switch(body, block_id) {
+    let terminator = &body.body[block_id].terminator;
+    if terminator.kind.is_switch() {
         cfg.switch_blocks.insert(block_id);
     }
 
@@ -170,7 +155,7 @@ fn build_cfg_partial_info_edges(
     // Note that if there is a backward edge, we consider that we don't necessarily
     // go to error.
     if !has_backward_edge
-        && (block_is_error(body, block_id)
+        && (terminator.is_error()
             || (
                 // The targets are empty if this is an error node *or* a return node
                 !targets.is_empty() && targets.iter().all(|tgt| cfg.only_reach_error.contains(tgt))
@@ -258,8 +243,7 @@ fn loop_entry_is_reachable_from_inner(
         }
         explored.insert(bid);
 
-        let next_ids = cfg.cfg.neighbors_directed(bid, Direction::Outgoing);
-        for next_id in next_ids {
+        for next_id in cfg.cfg.neighbors(bid) {
             // Check if this is a backward edge
             if cfg.backward_edges.contains(&(bid, next_id)) {
                 // Backward edge: only allow those going directly to the current
@@ -1656,7 +1640,7 @@ fn translate_block(
     );
     info.explored.insert(block_id);
 
-    let block = info.body.body.get(block_id).unwrap();
+    let block = &info.body.body[block_id];
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = info.cfg.loop_entries.contains(&block_id);
@@ -1793,14 +1777,6 @@ impl TransformPass for Transform {
                 "# Signature:\n{}\n\n# Function definition:\n{}\n",
                 fun.signature.with_ctx(fmt_ctx),
                 fun.with_ctx(fmt_ctx),
-            );
-        }
-        // Print the global variables
-        for global in &ctx.translated.global_decls {
-            trace!(
-                "# Type:\n{}\n\n# Global definition:\n{}\n",
-                global.ty.with_ctx(fmt_ctx),
-                global.with_ctx(fmt_ctx),
             );
         }
 

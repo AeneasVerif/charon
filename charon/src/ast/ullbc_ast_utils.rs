@@ -42,6 +42,16 @@ impl Terminator {
     pub fn goto(span: Span, target: BlockId) -> Self {
         Self::new(span, TerminatorKind::Goto { target })
     }
+    /// Whether this terminator is an unconditional error (panic).
+    pub fn is_error(&self) -> bool {
+        use TerminatorKind::*;
+        match &self.kind {
+            Abort(..) => true,
+            Goto { .. } | Switch { .. } | Return | Call { .. } | Drop { .. } | UnwindResume => {
+                false
+            }
+        }
+    }
 
     pub fn into_block(self) -> BlockData {
         BlockData {
