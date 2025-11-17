@@ -1,7 +1,5 @@
 use super::super::ctx::UllbcPass;
 use crate::{
-    errors::Error,
-    raise_error, register_error,
     transform::{
         TransformCtx,
         ctx::{BodyTransformCtx, UllbcStatementTransformCtx},
@@ -21,7 +19,8 @@ fn is_noop_destruct(tref: &TraitRef) -> bool {
 
 impl<'a> UllbcStatementTransformCtx<'a> {
     /// Transform a Drop to a Call that calls the drop_in_place method.
-    fn transform_drop_to_call(&mut self, term: &mut Terminator) -> Result<(), Error> {
+    /// If we cannot desugar this drop, we just leave it unchanged.
+    fn transform_drop_to_call(&mut self, term: &mut Terminator) {
         if let TerminatorKind::Drop {
             place,
             tref,
@@ -34,7 +33,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 term.kind = TerminatorKind::Goto {
                     target: target.clone(),
                 };
-                return Ok(());
+                return;
             }
 
             let ref_drop_arg = TyKind::RawPtr(place.ty().clone(), RefKind::Mut).into_ty();
@@ -53,17 +52,12 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             // Get the declaration id of drop_in_place from tref
             let trait_id = tref.trait_decl_ref.skip_binder.id;
             let Some(tdecl) = self.ctx.translated.trait_decls.get(trait_id) else {
-                return Ok(());
+                return;
             };
             let method_name = TraitItemName("drop_in_place".into());
             let Some(bound_method) = tdecl.methods.iter().find(|m| m.name() == method_name) else {
-                raise_error!(
-                    self.ctx,
-                    self.span,
-                    "Could not find a method with name \
-                    `{method_name}` in trait `{:?}`",
-                    trait_id,
-                )
+                // skip this drop if we cannot find its method id
+                return;
             };
             let method_decl_id = bound_method.skip_binder.item.id;
 
@@ -82,7 +76,6 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 on_unwind: on_unwind.clone(),
             };
         }
-        Ok(())
     }
 }
 
@@ -94,7 +87,7 @@ impl UllbcPass for Transform {
             return;
         }
         decl.transform_ullbc_terminators(ctx, |ctx, term| {
-            let _ = ctx.transform_drop_to_call(term);
+            ctx.transform_drop_to_call(term);
         });
     }
 }
