@@ -4,11 +4,11 @@
 //! Relooper" (https://dl.acm.org/doi/10.1145/3547621).
 use indexmap::IndexMap;
 use itertools::Itertools;
-use petgraph::algo::dominators::{Dominators, simple_fast};
+use petgraph::algo::dominators::simple_fast;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{DfsPostOrder, Walker};
-use std::collections::HashSet;
-use std::u32;
+use smallvec::SmallVec;
+use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::formatter::IntoFormatter;
@@ -44,20 +44,29 @@ enum SpecialJump {
     Block,
 }
 
+/// Cfg data about a block.
+struct BlockCfgData<'a> {
+    contents: &'a src::BlockData,
+    /// Whether this node is reachable from the root.
+    reachable: bool,
+    /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
+    is_loop_header: bool,
+    /// Blocks that have multiple incoming control-flow edges.
+    is_merge_target: bool,
+    /// Reverse postorder numbering of the blocks. Using `u32` is fine because we already limit
+    /// `BlockId`s to `u32::MAX`. If the node is not reachable, the id is `u32::MAX` and should not
+    /// be used.
+    reverse_postorder_id: u32,
+    /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
+    /// id last.
+    immediately_dominates: SmallVec<[BlockId; 2]>,
+}
+
 struct ReloopCtx<'a> {
-    /// List of source blocks to translate.
-    blocks: &'a Vector<BlockId, src::BlockData>,
+    /// Cfg data for each block.
+    block_data: Vector<BlockId, BlockCfgData<'a>>,
     /// Locals for the target body, so that we can add intermediate variables.
     locals: Locals,
-    /// Reverse postorder numbering of the blocks. Using `u32` is fine because we already limit
-    /// `BlockId`s to `u32::MAX`.
-    reverse_postorder: Vector<BlockId, u32>,
-    /// Dominator tree.
-    dominator_tree: Dominators<BlockId>,
-    /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
-    loop_headers: HashSet<src::BlockId>,
-    /// Blocks that have multiple incoming control-flow edges.
-    merge_targets: HashSet<src::BlockId>,
     /// Stack of blocks we must translate specially in the current context.
     special_jump_stack: Vec<(BlockId, SpecialJump)>,
 }
@@ -71,8 +80,15 @@ type Cfg = DiGraphMap<src::BlockId, ()>;
 
 impl<'a> ReloopCtx<'a> {
     fn new(src_body: &'a src::ExprBody, start_block: BlockId) -> Result<Self, Irreducible> {
-        // Explore the function body to create the control-flow graph without backward
-        // edges, and identify the loop entries (which are destinations of backward edges).
+        let mut block_data = src_body.body.map_ref(|contents| BlockCfgData {
+            contents,
+            reverse_postorder_id: u32::MAX,
+            reachable: false,
+            is_loop_header: false,
+            is_merge_target: false,
+            immediately_dominates: SmallVec::default(),
+        });
+
         // Build the node graph (we ignore unwind paths for now).
         let mut cfg = Cfg::new();
         for (block_id, block) in src_body.body.iter_indexed() {
@@ -82,53 +98,55 @@ impl<'a> ReloopCtx<'a> {
             }
         }
 
-        // Compute the dominator tree.
+        // Compute the dominator tree and reverse postorder numbering.
         let dominator_tree = simple_fast(&cfg, start_block);
-
-        // Compute reverse postorder numbering.
-        let mut reverse_postorder = src_body.body.map_ref_opt(|_| None);
         for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
-            let rev_post_id = reverse_postorder.slot_count() - i;
-            assert!(rev_post_id <= u32::MAX as usize);
-            reverse_postorder.set_slot(block_id, rev_post_id as u32);
+            block_data[block_id].reachable = true;
+            let rev_post_id: usize = block_data.slot_count() - i;
+            block_data[block_id].reverse_postorder_id = rev_post_id.try_into().unwrap();
+            if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
+                block_data[dominator].immediately_dominates.push(block_id);
+            }
         }
 
-        // Compute the forward graph (without backward edges).
-        let mut loop_headers = HashSet::new();
-        let mut merge_targets = HashSet::new();
+        // Fill in the remaining data.
         for src in cfg.nodes() {
-            if reverse_postorder.get(src).is_none() {
-                // Unreachable block
+            if !block_data[src].reachable {
                 continue;
             }
-            for tgt in cfg.neighbors(src) {
-                // Check if the edge is a backward edge.
-                if reverse_postorder[src] >= reverse_postorder[tgt] {
-                    // This is a backward edge
-                    loop_headers.insert(tgt);
-                    // A cfg is reducible iff the target of every back edge dominates the
-                    // edge's source.
-                    if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
-                        return Err(Irreducible(src));
-                    }
-                }
-            }
+
+            // Sort by postorder id. We have to `mem::take` to avoid borrowck issues.
+            let mut dominatees = mem::take(&mut block_data[src].immediately_dominates);
+            dominatees.sort_by_key(|&child| block_data[child].reverse_postorder_id);
+            block_data[src].immediately_dominates = dominatees;
+
+            // Detect merge targets.
             if cfg
                 .neighbors_directed(src, petgraph::Direction::Incoming)
                 .count()
                 >= 2
             {
-                merge_targets.insert(src);
+                block_data[src].is_merge_target = true;
+            }
+
+            // Detect loops.
+            for tgt in cfg.neighbors(src) {
+                // Check if the edge is a backward edge.
+                if block_data[src].reverse_postorder_id >= block_data[tgt].reverse_postorder_id {
+                    // This is a backward edge
+                    block_data[tgt].is_loop_header = true;
+                    // A cfg is reducible iff the target of every back edge dominates the edge's
+                    // source.
+                    if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
+                        return Err(Irreducible(src));
+                    }
+                }
             }
         }
 
         Ok(ReloopCtx {
-            blocks: &src_body.body,
+            block_data,
             locals: src_body.locals.clone(),
-            reverse_postorder,
-            dominator_tree,
-            loop_headers,
-            merge_targets,
             special_jump_stack: Vec::new(),
         })
     }
@@ -147,25 +165,25 @@ impl<'a> ReloopCtx<'a> {
         let old_context_depth = self.special_jump_stack.len();
 
         // Catch jumps to the loop header.
-        if self.loop_headers.contains(&bid) {
+        if self.block_data[bid].is_loop_header {
             self.special_jump_stack.push((bid, SpecialJump::Loop));
         }
 
         // Catch jumps to a merge node. The merge nodes are translated after this node, and we can
         // jump to them using `break`. The child with highest postorder numbering is nested
         // outermost in this scheme.
-        let merge_children = self
-            .dominator_tree
-            .immediately_dominated_by(bid)
-            .filter(|child| self.merge_targets.contains(child))
-            .sorted_by_key(|&child| self.reverse_postorder[child]);
+        let merge_children = self.block_data[bid]
+            .immediately_dominates
+            .iter()
+            .copied()
+            .filter(|&child| self.block_data[child].is_merge_target);
         for child in merge_children.rev() {
             self.special_jump_stack.push((child, SpecialJump::Block));
         }
 
         // Translate this block. Any jumps to the loop header or a merge node will be replaced with
         // `continue`/`break`.
-        let mut block = self.translate_block(&self.blocks[bid]);
+        let mut block = self.translate_block(&self.block_data[bid].contents);
 
         // Pop the contexts and translate what remains.
         while self.special_jump_stack.len() > old_context_depth {
