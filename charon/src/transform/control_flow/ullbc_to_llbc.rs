@@ -60,6 +60,8 @@ struct BlockCfgData<'a> {
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
     /// id last.
     immediately_dominates: SmallVec<[BlockId; 2]>,
+    /// Like `immediately_dominates`, but restricted to nodes that are merge targets.
+    immediately_dominated_merge_targets: SmallVec<[BlockId; 2]>,
 }
 
 struct ReloopCtx<'a> {
@@ -87,6 +89,7 @@ impl<'a> ReloopCtx<'a> {
             is_loop_header: false,
             is_merge_target: false,
             immediately_dominates: SmallVec::default(),
+            immediately_dominated_merge_targets: SmallVec::default(),
         });
 
         // Build the node graph (we ignore unwind paths for now).
@@ -102,10 +105,22 @@ impl<'a> ReloopCtx<'a> {
         let dominator_tree = simple_fast(&cfg, start_block);
         for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
             block_data[block_id].reachable = true;
+
             let rev_post_id: usize = block_data.slot_count() - i;
             block_data[block_id].reverse_postorder_id = rev_post_id.try_into().unwrap();
+
+            // Store the dominator tree in `block_data`.
             if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
                 block_data[dominator].immediately_dominates.push(block_id);
+            }
+
+            // Detect merge targets.
+            if cfg
+                .neighbors_directed(block_id, petgraph::Direction::Incoming)
+                .count()
+                >= 2
+            {
+                block_data[block_id].is_merge_target = true;
             }
         }
 
@@ -119,15 +134,12 @@ impl<'a> ReloopCtx<'a> {
             let mut dominatees = mem::take(&mut block_data[src].immediately_dominates);
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder_id);
             block_data[src].immediately_dominates = dominatees;
-
-            // Detect merge targets.
-            if cfg
-                .neighbors_directed(src, petgraph::Direction::Incoming)
-                .count()
-                >= 2
-            {
-                block_data[src].is_merge_target = true;
-            }
+            block_data[src].immediately_dominated_merge_targets = block_data[src]
+                .immediately_dominates
+                .iter()
+                .copied()
+                .filter(|&child| block_data[child].is_merge_target)
+                .collect();
 
             // Detect loops.
             for tgt in cfg.neighbors(src) {
@@ -172,12 +184,8 @@ impl<'a> ReloopCtx<'a> {
         // Catch jumps to a merge node. The merge nodes are translated after this node, and we can
         // jump to them using `break`. The child with highest postorder numbering is nested
         // outermost in this scheme.
-        let merge_children = self.block_data[bid]
-            .immediately_dominates
-            .iter()
-            .copied()
-            .filter(|&child| self.block_data[child].is_merge_target);
-        for child in merge_children.rev() {
+        let merge_children = &self.block_data[bid].immediately_dominated_merge_targets;
+        for &child in merge_children.iter().rev() {
             self.special_jump_stack.push((child, SpecialJump::Block));
         }
 
