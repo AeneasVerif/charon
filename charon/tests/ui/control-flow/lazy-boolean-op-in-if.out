@@ -1,0 +1,96 @@
+# Final LLBC before serialization:
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::foo
+fn foo() -> bool
+{
+    let @0: bool; // return
+
+    @0 := const (true)
+    return
+}
+
+// Full name: test_crate::bar
+fn bar() -> bool
+{
+    let @0: bool; // return
+
+    @0 := const (false)
+    return
+}
+
+// Full name: test_crate::do_something
+fn do_something()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::do_something_else
+fn do_something_else()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::do_something_at_the_end
+fn do_something_at_the_end()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+    let @2: bool; // anonymous local
+    let @3: bool; // anonymous local
+
+    @0 := ()
+    storage_live(@1)
+    storage_live(@2)
+    // `&&` inside `if` is treated specially by Rust: must like for `if let && let`, it is
+    // considered as directly being control-flow, instead of computing a boolean first.
+    @2 := foo()
+    if move (@2) {
+        storage_live(@3)
+        @3 := bar()
+        if move (@3) {
+            @1 := do_something()
+        }
+        else {
+            @1 := do_something_else()
+        }
+    }
+    else {
+        @1 := do_something_else()
+    }
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_dead(@1)
+    @0 := do_something_at_the_end()
+    return
+}
+
+
+
