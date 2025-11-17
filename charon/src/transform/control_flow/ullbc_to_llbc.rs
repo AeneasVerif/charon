@@ -24,13 +24,13 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_rational::BigRational;
+use petgraph::algo::dominators::simple_fast;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{DfsPostOrder, Walker};
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use std::u32;
 
-use crate::ast::*;
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
 use crate::formatter::IntoFormatter;
@@ -40,6 +40,7 @@ use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::{self as src, BlockId};
+use crate::{ast::*, register_error};
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId, ()>;
@@ -70,9 +71,13 @@ struct CfgInfo {
     pub only_reach_error: HashSet<src::BlockId>,
 }
 
+/// Error indicating that the control-flow graph is not reducible. The contained block id is a
+/// block involved in an irreducible subgraph.
+struct Irreducible(BlockId);
+
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
+fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
     let start_block = BlockId::ZERO;
 
     // Build the node graph (we ignore unwind paths for now).
@@ -83,6 +88,9 @@ fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
             cfg.add_edge(block_id, tgt, ());
         }
     }
+
+    // Compute the dominator tree.
+    let dominator_tree = simple_fast(&cfg, start_block);
 
     // Compute reverse postorder numbering.
     let mut reverse_postorder = body.body.map_ref_opt(|_| None);
@@ -112,6 +120,11 @@ fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
                 // This is a backward edge
                 loop_entries.insert(tgt);
                 backward_edges.insert((src, tgt));
+                // A cfg is reducible iff the target of every back edge dominates the
+                // edge's source.
+                if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
+                    return Err(Irreducible(src));
+                }
             } else {
                 cfg_no_be.add_edge(src, tgt, ());
             }
@@ -136,14 +149,14 @@ fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
         }
     }
 
-    CfgInfo {
+    Ok(CfgInfo {
         cfg,
         cfg_no_be,
         loop_entries,
         backward_edges,
         switch_blocks,
         only_reach_error,
-    }
+    })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -1703,7 +1716,18 @@ fn translate_block(
 fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = build_cfg_info(src_body);
+    let cfg_info = match build_cfg_info(src_body) {
+        Ok(cfg_info) => cfg_info,
+        Err(Irreducible(bid)) => {
+            let span = src_body.body[bid].terminator.span;
+            register_error!(
+                ctx,
+                span,
+                "the control-flow graph of this function is not reducible"
+            );
+            panic!("can't reconstruct irreducible control-flow")
+        }
+    };
     trace!("cfg_info: {:?}", cfg_info);
 
     // Find the exit block for all the loops and switches, if such an exit point
