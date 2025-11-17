@@ -19,15 +19,14 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             on_unwind,
         } = &mut term.kind
         {
-            let ref_drop_arg =
-                { TyKind::Ref(Region::Erased, place.ty().clone(), RefKind::Mut).into_ty() };
+            let ref_drop_arg = TyKind::RawPtr(place.ty().clone(), RefKind::Mut).into_ty();
             let drop_arg = self.fresh_var(Some("drop_arg".into()), ref_drop_arg);
             let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
 
             let unit_metadata = self.fresh_var(None, Ty::mk_unit());
-            let rval = Rvalue::Ref {
+            let rval = Rvalue::RawPtr {
                 place: place.clone(),
-                kind: BorrowKind::Mut,
+                kind: RefKind::Mut,
                 ptr_metadata: Operand::Move(unit_metadata),
             };
             // assign &mut place to drop_arg
