@@ -39,9 +39,9 @@ fn translate_statement(st: &src::Statement) -> tgt::Statement {
     tgt::Statement::new(st.span, kind)
 }
 
-enum ContainingSyntax {
-    Loop { header: BlockId },
-    Block { followed_by: BlockId },
+enum SpecialJump {
+    Loop,
+    Block,
 }
 
 struct ReloopCtx<'a> {
@@ -58,8 +58,8 @@ struct ReloopCtx<'a> {
     loop_headers: HashSet<src::BlockId>,
     /// Blocks that have multiple incoming control-flow edges.
     merge_targets: HashSet<src::BlockId>,
-    /// Stack of syntactic contexts we're in while translating.
-    context_stack: Vec<ContainingSyntax>,
+    /// Stack of blocks we must translate specially in the current context.
+    special_jump_stack: Vec<(BlockId, SpecialJump)>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -129,12 +129,8 @@ impl<'a> ReloopCtx<'a> {
             dominator_tree,
             loop_headers,
             merge_targets,
-            context_stack: Vec::new(),
+            special_jump_stack: Vec::new(),
         })
-    }
-
-    fn is_backward_edge(&self, src: BlockId, tgt: BlockId) -> bool {
-        self.reverse_postorder[src] >= self.reverse_postorder[tgt]
     }
 
     /// Translate this block and all the blocks it dominates, recursively over the dominator tree.
@@ -143,33 +139,42 @@ impl<'a> ReloopCtx<'a> {
         ensure_sufficient_stack(|| self.reloop_block_inner(bid))
     }
     fn reloop_block_inner(&mut self, bid: BlockId) -> tgt::Block {
-        let old_context_depth = self.context_stack.len();
-        // Wrap the output in a loop.
+        // Some of the blocks we might jump to inside this tree can't be translated as normal
+        // blocks: the loop backward edges must become `continue`s and the merge nodes may need
+        // some care if we're jumping to them from distant locations.
+        // For this purpose, we push to the `context_stack` the block ids that must be translated
+        // spoecially. In `translate_jump` we check the stack.
+        let old_context_depth = self.special_jump_stack.len();
+
+        // Catch jumps to the loop header.
         if self.loop_headers.contains(&bid) {
-            self.context_stack
-                .push(ContainingSyntax::Loop { header: bid });
+            self.special_jump_stack.push((bid, SpecialJump::Loop));
         }
 
-        // The children that are merge nodes are not translated directly: instead, they are
-        // translated afterwards, and we use `break` to jump to them. The child with highest
-        // postorder numbering is nested outermost in this scheme.
+        // Catch jumps to a merge node. The merge nodes are translated after this node, and we can
+        // jump to them using `break`. The child with highest postorder numbering is nested
+        // outermost in this scheme.
         let merge_children = self
             .dominator_tree
             .immediately_dominated_by(bid)
             .filter(|child| self.merge_targets.contains(child))
             .sorted_by_key(|&child| self.reverse_postorder[child]);
         for child in merge_children.rev() {
-            self.context_stack
-                .push(ContainingSyntax::Block { followed_by: child });
+            self.special_jump_stack.push((child, SpecialJump::Block));
         }
-        let mut block = self.translate_block(bid);
+
+        // Translate this block. Any jumps to the loop header or a merge node will be replaced with
+        // `continue`/`break`.
+        let mut block = self.translate_block(&self.blocks[bid]);
 
         // Pop the contexts and translate what remains.
-        while self.context_stack.len() > old_context_depth {
+        while self.special_jump_stack.len() > old_context_depth {
             block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block)).into_block();
-            match self.context_stack.pop().unwrap() {
-                ContainingSyntax::Loop { .. } => {}
-                ContainingSyntax::Block { followed_by } => {
+            match self.special_jump_stack.pop().unwrap() {
+                (_, SpecialJump::Loop) => {}
+                (followed_by, SpecialJump::Block) => {
+                    // We must translate the merge nodes after the block used for forward jumps to
+                    // them.
                     let followed_by = self.reloop_block(followed_by);
                     block = block.merge(followed_by);
                 }
@@ -178,15 +183,34 @@ impl<'a> ReloopCtx<'a> {
         block
     }
 
-    fn translate_block(&mut self, bid: BlockId) -> tgt::Block {
-        let block = &self.blocks[bid];
+    // Translate a jump between these two blocks.
+    fn translate_jump(&mut self, span: Span, to: BlockId) -> tgt::Block {
+        match self
+            .special_jump_stack
+            .iter()
+            .rev()
+            .enumerate()
+            .find(|(_, (b, _))| *b == to)
+        {
+            Some((i, (_, context))) => {
+                let kind = match context {
+                    SpecialJump::Loop => tgt::StatementKind::Continue(i),
+                    SpecialJump::Block => tgt::StatementKind::Break(i),
+                };
+                tgt::Statement::new(span, kind).into_block()
+            }
+            None => self.reloop_block(to),
+        }
+    }
+
+    fn translate_block(&mut self, block: &src::BlockData) -> tgt::Block {
         // Translate the statements inside the block
         let statements = block
             .statements
             .iter()
             .map(|st| translate_statement(st))
             .collect_vec();
-        let terminator = self.translate_terminator(bid, &block.terminator);
+        let terminator = self.translate_terminator(&block.terminator);
         // Prepend the statements to the terminator.
         if let Some(st) = tgt::Block::from_seq(statements) {
             st.merge(terminator)
@@ -195,36 +219,7 @@ impl<'a> ReloopCtx<'a> {
         }
     }
 
-    /// Find which context entry contains this node. Returns the "de-bruijn index" of that node,
-    /// i.e. number of scopes needed to reach it.
-    fn find_in_context(&self, bid: BlockId) -> usize {
-        let (i, _) = self
-            .context_stack
-            .iter()
-            .rev()
-            .enumerate()
-            .find(|(_, context)| match context {
-                ContainingSyntax::Loop { header: b }
-                | ContainingSyntax::Block { followed_by: b } => *b == bid,
-            })
-            .unwrap();
-        i
-    }
-
-    // Translate a jump between these two blocks.
-    fn translate_jump(&mut self, span: Span, from: BlockId, to: BlockId) -> tgt::Block {
-        if self.is_backward_edge(from, to) {
-            let i = self.find_in_context(to);
-            tgt::Statement::new(span, tgt::StatementKind::Continue(i)).into_block()
-        } else if self.merge_targets.contains(&to) {
-            let i = self.find_in_context(to);
-            tgt::Statement::new(span, tgt::StatementKind::Break(i)).into_block()
-        } else {
-            self.reloop_block(to)
-        }
-    }
-
-    fn translate_terminator(&mut self, bid: BlockId, terminator: &src::Terminator) -> tgt::Block {
+    fn translate_terminator(&mut self, terminator: &src::Terminator) -> tgt::Block {
         let src_span = terminator.span;
         match &terminator.kind {
             src::TerminatorKind::Abort(kind) => {
@@ -243,7 +238,7 @@ impl<'a> ReloopCtx<'a> {
                 on_unwind: _,
             } => {
                 // TODO: Have unwinds in the LLBC
-                let mut block = self.translate_jump(src_span, bid, *target);
+                let mut block = self.translate_jump(src_span, *target);
                 let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
                 block.statements.insert(0, st);
                 block
@@ -255,7 +250,7 @@ impl<'a> ReloopCtx<'a> {
                 on_unwind: _,
             } => {
                 // TODO: Have unwinds in the LLBC
-                let mut block = self.translate_jump(src_span, bid, *target);
+                let mut block = self.translate_jump(src_span, *target);
                 let st = tgt::Statement::new(
                     src_span,
                     tgt::StatementKind::Drop(place.clone(), tref.clone()),
@@ -263,12 +258,12 @@ impl<'a> ReloopCtx<'a> {
                 block.statements.insert(0, st);
                 block
             }
-            src::TerminatorKind::Goto { target } => self.translate_jump(src_span, bid, *target),
+            src::TerminatorKind::Goto { target } => self.translate_jump(src_span, *target),
             src::TerminatorKind::Switch { discr, targets } => {
                 let switch = match &targets {
                     src::SwitchTargets::If(then_tgt, else_tgt) => {
-                        let then_block = self.translate_jump(src_span, bid, *then_tgt);
-                        let else_block = self.translate_jump(src_span, bid, *else_tgt);
+                        let then_block = self.translate_jump(src_span, *then_tgt);
+                        let else_block = self.translate_jump(src_span, *else_tgt);
                         tgt::Switch::If(discr.clone(), then_block, else_block)
                     }
                     src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
@@ -293,11 +288,11 @@ impl<'a> ReloopCtx<'a> {
                         let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> = branches
                             .into_iter()
                             .map(|(tgt, values)| {
-                                let block = self.translate_jump(src_span, bid, tgt);
+                                let block = self.translate_jump(src_span, tgt);
                                 (values, block)
                             })
                             .collect();
-                        let otherwise_block = self.translate_jump(src_span, bid, *otherwise);
+                        let otherwise_block = self.translate_jump(src_span, *otherwise);
 
                         tgt::Switch::SwitchInt(
                             discr.clone(),
