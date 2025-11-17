@@ -269,7 +269,7 @@ pub struct CliOpts {
 
     #[clap(
         long = "desugar-drops",
-        help = "If activated, transform `Drop(p)` to `Call drop_in_place(&mut p)` for ULLBC"
+        help = "If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`"
     )]
     #[serde(default)]
     pub desugar_drops: bool,

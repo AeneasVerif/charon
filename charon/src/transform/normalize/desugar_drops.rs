@@ -9,6 +9,16 @@ use crate::{
     ullbc_ast::*,
 };
 
+fn is_noop_destruct(tref: &TraitRef) -> bool {
+    matches!(
+        &tref.kind,
+        TraitRefKind::BuiltinOrAuto {
+            builtin_data: BuiltinImplData::NoopDestruct,
+            ..
+        }
+    )
+}
+
 impl<'a> UllbcStatementTransformCtx<'a> {
     /// Transform a Drop to a Call that calls the drop_in_place method.
     fn transform_drop_to_call(&mut self, term: &mut Terminator) -> Result<(), Error> {
@@ -19,115 +29,58 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             on_unwind,
         } = &mut term.kind
         {
+            // check if this drop is noop
+            if is_noop_destruct(tref) {
+                term.kind = TerminatorKind::Goto {
+                    target: target.clone(),
+                };
+                return Ok(());
+            }
+
             let ref_drop_arg = TyKind::RawPtr(place.ty().clone(), RefKind::Mut).into_ty();
             let drop_arg = self.fresh_var(Some("drop_arg".into()), ref_drop_arg);
             let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
 
-            let unit_metadata = self.fresh_var(None, Ty::mk_unit());
+            let ptr_metadata = self.compute_place_metadata(&place);
             let rval = Rvalue::RawPtr {
                 place: place.clone(),
                 kind: RefKind::Mut,
-                ptr_metadata: Operand::Move(unit_metadata),
+                ptr_metadata: ptr_metadata,
             };
-            // assign &mut place to drop_arg
-            self.statements.push(Statement {
-                span: self.span,
-                kind: StatementKind::Assign(drop_arg.clone(), rval),
-                comments_before: Vec::new(),
-            });
+            // assign &raw mut place to drop_arg
+            self.insert_assn_stmt(drop_arg.clone(), rval);
 
-            let item_name = TraitItemName("drop_in_place".into());
+            // Get the declaration id of drop_in_place from tref
+            let trait_id = tref.trait_decl_ref.skip_binder.id;
+            let Some(tdecl) = self.ctx.translated.trait_decls.get(trait_id) else {
+                return Ok(());
+            };
+            let method_name = TraitItemName("drop_in_place".into());
+            let Some(bound_method) = tdecl.methods.iter().find(|m| m.name() == method_name) else {
+                raise_error!(
+                    self.ctx,
+                    self.span,
+                    "Could not find a method with name \
+                    `{method_name}` in trait `{:?}`",
+                    trait_id,
+                )
+            };
+            let method_decl_id = bound_method.skip_binder.item.id;
 
-            match &tref.kind {
-                TraitRefKind::TraitImpl(impl_ref) => {
-                    let Some(item) = self.ctx.translated.get_item(impl_ref.id) else {
-                        raise_error!(
-                            self.ctx,
-                            self.span,
-                            "Could not find TraitImpl item for Destruct trait."
-                        );
-                    };
-                    let ItemRef::TraitImpl(trait_impl) = item else {
-                        raise_error!(
-                            self.ctx,
-                            self.span,
-                            "Expected TraitImpl item for the trait item in Destruct."
-                        );
-                    };
-                    let Some(item_binder) = trait_impl.methods().find(|&x| x.0 == item_name) else {
-                        raise_error!(
-                            self.ctx,
-                            self.span,
-                            "Could not find drop_in_place method in Destruct trait impl."
-                        );
-                    };
-                    let method_id = item_binder.1.skip_binder.id;
-
-                    let fn_ptr = FnPtr::new(
-                        FnPtrKind::Trait(tref.clone(), item_name, method_id),
-                        GenericArgs::empty(),
-                    );
-
-                    let call = Call {
-                        func: FnOperand::Regular(fn_ptr),
-                        args: Vec::from([Operand::Move(drop_arg)]),
-                        dest: drop_ret,
-                    };
-
-                    term.kind = TerminatorKind::Call {
-                        call,
-                        target: target.clone(),
-                        on_unwind: on_unwind.clone(),
-                    }
-                }
-                TraitRefKind::BuiltinOrAuto { builtin_data, .. } => {
-                    match builtin_data {
-                        BuiltinImplData::NoopDestruct => {
-                            // Remove drop statements that are noops.
-                            term.kind = TerminatorKind::Goto {
-                                target: target.clone(),
-                            }
-                        }
-                        BuiltinImplData::UntrackedDestruct => {
-                            // It should not happend with --add-drop-bounds
-                        }
-                        _ => {
-                            raise_error!(
-                                self.ctx,
-                                self.span,
-                                "desugar_drops: Expected NoopDestruct or UntrackedDestruct kind in BuiltinOrAuto."
-                            );
-                        }
-                    }
-                }
-                TraitRefKind::Clause(_) => {
-                    // Call the trait method
-                    let fn_ptr = FnPtr::new(
-                        FnPtrKind::Trait(tref.clone(), item_name, FunDeclId::new(0)),
-                        GenericArgs::empty(),
-                    );
-
-                    let call = Call {
-                        func: FnOperand::Regular(fn_ptr),
-                        args: Vec::from([Operand::Move(drop_arg)]),
-                        dest: drop_ret,
-                    };
-
-                    term.kind = TerminatorKind::Call {
-                        call,
-                        target: target.clone(),
-                        on_unwind: on_unwind.clone(),
-                    }
-                }
-                _ => {
-                    raise_error!(
-                        self.ctx,
-                        self.span,
-                        "Expected TraitImpl, BuiltinOrAuto or Clause in Drop terminator, but encounter {:?}",
-                        tref.kind
-                    );
-                }
-            }
+            let fn_ptr = FnPtr::new(
+                FnPtrKind::Trait(tref.clone(), method_name, method_decl_id),
+                GenericArgs::empty(),
+            );
+            let call = Call {
+                func: FnOperand::Regular(fn_ptr),
+                args: Vec::from([Operand::Move(drop_arg)]),
+                dest: drop_ret,
+            };
+            term.kind = TerminatorKind::Call {
+                call,
+                target: target.clone(),
+                on_unwind: on_unwind.clone(),
+            };
         }
         Ok(())
     }
