@@ -24,13 +24,13 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             let drop_arg = self.fresh_var(Some("drop_arg".into()), ref_drop_arg);
             let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
 
-            // assign &mut place to drop_arg
             let unit_metadata = self.fresh_var(None, Ty::mk_unit());
             let rval = Rvalue::Ref {
                 place: place.clone(),
                 kind: BorrowKind::Mut,
                 ptr_metadata: Operand::Move(unit_metadata),
             };
+            // assign &mut place to drop_arg
             self.statements.push(Statement {
                 span: self.span,
                 kind: StatementKind::Assign(drop_arg.clone(), rval),
@@ -42,25 +42,24 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             match &tref.kind {
                 TraitRefKind::TraitImpl(impl_ref) => {
                     let Some(item) = self.ctx.translated.get_item(impl_ref.id) else {
-                        // TODO: consider that impl_ref is opaque: see hide-drop.rs
                         raise_error!(
                             self.ctx,
                             self.span,
-                            "Could not find TraitImpl for Drop trait."
+                            "Could not find TraitImpl item for Destruct trait."
                         );
                     };
                     let ItemRef::TraitImpl(trait_impl) = item else {
                         raise_error!(
                             self.ctx,
                             self.span,
-                            "Expected TraitImpl item for the trait item in Drop."
+                            "Expected TraitImpl item for the trait item in Destruct."
                         );
                     };
                     let Some(item_binder) = trait_impl.methods().find(|&x| x.0 == item_name) else {
                         raise_error!(
                             self.ctx,
                             self.span,
-                            "Could not find drop_in_place method in Drop trait impl."
+                            "Could not find drop_in_place method in Destruct trait impl."
                         );
                     };
                     let method_id = item_binder.1.skip_binder.id;
@@ -105,7 +104,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 TraitRefKind::Clause(_) => {
                     // Call the trait method
                     let fn_ptr = FnPtr::new(
-                        FnPtrKind::Trait(tref.clone(), item_name, krate::FunDeclId::new(0)),
+                        FnPtrKind::Trait(tref.clone(), item_name, FunDeclId::new(0)),
                         GenericArgs::empty(),
                     );
 
