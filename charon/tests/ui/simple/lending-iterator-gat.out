@@ -221,12 +221,7 @@ where
             Option::Some => {
             },
             _ => {
-                @0 := ()
-                drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
-                storage_dead(@4)
-                drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
-                drop[{built_in impl Destruct for I}] iter@1
-                return
+                break 0
             },
         }
         storage_live(item@6)
@@ -248,9 +243,12 @@ where
         storage_dead(@4)
         continue 0
     }
+    @0 := ()
+    drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+    storage_dead(@4)
     drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
     drop[{built_in impl Destruct for I}] iter@1
-    panic
+    return
 }
 
 // Full name: test_crate::main::closure
