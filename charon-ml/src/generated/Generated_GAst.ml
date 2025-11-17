@@ -414,6 +414,7 @@ type cli_options = {
       (** Named builtin sets of options. Currently used only for dependent
           projects, eveentually should be replaced with semantically-meaningful
           presets. *)
+  desugar_drops : bool;
 }
 
 (** A (group of) top-level declaration(s), properly reordered. *)

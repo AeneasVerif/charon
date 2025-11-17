@@ -20,6 +20,7 @@ pub mod add_missing_info {
 
 /// Passes that effect some kind of normalization on the crate.
 pub mod normalize {
+    pub mod desugar_drops;
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
     pub mod partial_monomorphization;
@@ -98,6 +99,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration
     // items if they're not used. This simplifies the graph of dependencies between definitions.
     NonBody(&simplify_output::remove_unused_self_clause::Transform),
+    // Transform Drops into Calls to drop_in_place.
+    UnstructuredBody(&normalize::desugar_drops::Transform),
     // # Micro-pass: whenever we reference a trait method on a known type, refer to the method
     // `FunDecl` directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
     // remove some sources of mutual recursion.

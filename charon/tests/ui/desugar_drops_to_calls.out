@@ -1,0 +1,325 @@
+# Final LLBC before serialization:
+
+// Full name: core::fmt::Arguments
+#[lang_item("format_arguments")]
+pub opaque type Arguments<'a>
+where
+    'a : 'a,
+
+// Full name: core::fmt::rt::{Arguments<'a>}::new_const
+pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), N>)) -> Arguments<'a>
+= <opaque>
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Destruct<Self>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
+= <opaque>
+
+// Full name: std::io::stdio::_print
+pub fn _print<'_0>(@1: Arguments<'_0>)
+= <opaque>
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
+fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+= <opaque>
+
+// Full name: alloc::alloc::Global::{impl Destruct for Global}
+impl Destruct for Global {
+    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
+fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<T>,
+    [@TraitClause4]: Destruct<A>,
+= <opaque>
+
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
+impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<T>,
+    [@TraitClause4]: Destruct<A>,
+{
+    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    non-dyn-compatible
+}
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
+
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub opaque type Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    [@TraitClause3]: Destruct<T>,
+    [@TraitClause4]: Destruct<type_error("removed allocator parameter")>,
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
+fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<T>,
+    [@TraitClause4]: Destruct<A>,
+= <opaque>
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
+impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<T>,
+    [@TraitClause4]: Destruct<A>,
+{
+    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    non-dyn-compatible
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::use_string
+fn use_string(@1: String)
+{
+    let @0: (); // return
+    let @1: String; // arg #1
+    let drop_arg@2: *mut String; // local
+    let drop_ret@3: (); // local
+
+    @0 := ()
+    @0 := ()
+    storage_live(drop_arg@2)
+    storage_live(drop_ret@3)
+    drop_arg@2 := &raw mut @1
+    drop_ret@3 := {impl Destruct for String}::drop_in_place(move (drop_arg@2))
+    return
+}
+
+// Full name: test_crate::use_vec
+fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}])
+{
+    let @0: (); // return
+    let @1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // arg #1
+    let drop_arg@2: *mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let drop_ret@3: (); // local
+
+    @0 := ()
+    @0 := ()
+    storage_live(drop_arg@2)
+    storage_live(drop_ret@3)
+    drop_arg@2 := &raw mut @1
+    drop_ret@3 := {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@2))
+    return
+}
+
+// Full name: test_crate::drop_unknown
+fn drop_unknown<T>(@1: T)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Destruct<T>,
+{
+    let @0: (); // return
+    let @1: T; // arg #1
+    let drop_arg@2: *mut T; // local
+    let drop_ret@3: (); // local
+
+    @0 := ()
+    @0 := ()
+    storage_live(drop_arg@2)
+    storage_live(drop_ret@3)
+    drop_arg@2 := &raw mut @1
+    drop_ret@3 := @TraitClause1::drop_in_place(move (drop_arg@2))
+    return
+}
+
+// Full name: test_crate::skip_drop_scalar
+fn skip_drop_scalar(@1: i32)
+{
+    let @0: (); // return
+    let @1: i32; // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::Point
+struct Point {
+  x: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}],
+  y: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}],
+}
+
+// Full name: test_crate::{impl Drop for Point}::drop
+pub fn {impl Drop for Point}::drop<'_0>(@1: &'_0 mut (Point))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Point); // arg #1
+    let @2: (); // anonymous local
+    let @3: Arguments<'_>; // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @6: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @7: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @8: Array<&'_ (Str), 1 : usize>; // anonymous local
+
+    storage_live(@7)
+    storage_live(@8)
+    @8 := [const ("Dropping Point\n")]
+    @7 := &@8
+    storage_live(@6)
+    @0 := ()
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @6 := move (@7)
+    @5 := &*(@6)
+    @4 := &*(@5)
+    @3 := new_const<'_, 1 : usize>(move (@4))
+    storage_dead(@4)
+    @2 := _print<'_>(move (@3))
+    storage_dead(@3)
+    storage_dead(@5)
+    storage_dead(@2)
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::Point::{impl Destruct for Point}::drop_in_place
+fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
+{
+    let @0: (); // return
+    let @1: *mut Point; // arg #1
+    let @2: &'_ mut (Point); // anonymous local
+    let @3: &'_ mut (Point); // anonymous local
+    let @4: (); // anonymous local
+    let drop_arg@5: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let drop_ret@6: (); // local
+    let drop_arg@7: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let drop_ret@8: (); // local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @0 := ()
+    @2 := &mut *(@1)
+    @3 := &mut *(@2)
+    @4 := {impl Drop for Point}::drop<'_>(move (@3))
+    storage_live(drop_arg@5)
+    storage_live(drop_ret@6)
+    drop_arg@5 := &raw mut (*(@2)).x
+    drop_ret@6 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@5))
+    storage_live(drop_arg@7)
+    storage_live(drop_ret@8)
+    drop_arg@7 := &raw mut (*(@2)).y
+    drop_ret@8 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@7))
+    return
+}
+
+// Full name: test_crate::Point::{impl Destruct for Point}
+impl Destruct for Point {
+    fn drop_in_place = {impl Destruct for Point}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Drop for Point}
+impl Drop for Point {
+    parent_clause0 = {built_in impl MetaSized for Point}
+    parent_clause1 = {impl Destruct for Point}
+    fn drop<'_0_1> = {impl Drop for Point}::drop<'_0_1>
+    vtable: {impl Drop for Point}::{vtable}
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let p@1: Point; // local
+    let @2: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let @3: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let drop_arg@4: *mut Point; // local
+    let drop_ret@5: (); // local
+
+    @0 := ()
+    storage_live(p@1)
+    storage_live(@2)
+    @2 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (1 : i32))
+    storage_live(@3)
+    @3 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (2 : i32))
+    p@1 := Point { x: move (@2), y: move (@3) }
+    storage_dead(@3)
+    storage_dead(@2)
+    @0 := ()
+    storage_live(drop_arg@4)
+    storage_live(drop_ret@5)
+    drop_arg@4 := &raw mut p@1
+    drop_ret@5 := {impl Destruct for Point}::drop_in_place(move (drop_arg@4))
+    storage_dead(p@1)
+    return
+}
+
+
+

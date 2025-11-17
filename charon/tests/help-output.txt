@@ -166,5 +166,8 @@ Options:
           - soteria
           - tests
 
+      --desugar-drops
+          If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`
+
   -h, --help
           Print help (see a summary with '-h')
