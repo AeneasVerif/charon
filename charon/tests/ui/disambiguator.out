@@ -34,14 +34,18 @@ fn nonzero_disambiguator()
     let @0: (); // return
     let @1: bool; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const (true)
-    if move (@1) {
-        @0 := test_crate::nonzero_disambiguator::my_function()
-    }
-    else {
-        @0 := test_crate::nonzero_disambiguator::my_function#1()
+    loop {
+        @0 := ()
+        storage_live(@1)
+        @1 := const (true)
+        if move (@1) {
+            @0 := test_crate::nonzero_disambiguator::my_function()
+            break 0
+        }
+        else {
+            @0 := test_crate::nonzero_disambiguator::my_function#1()
+            break 0
+        }
     }
     storage_dead(@1)
     return

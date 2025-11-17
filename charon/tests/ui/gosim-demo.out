@@ -565,9 +565,12 @@ where
     storage_live(@3)
     @3 := copy (slice@1)
     @2 := {impl IntoIterator for &'a (Slice<T>)}::into_iter<'_, T>[@TraitClause0](move (@3))
-    storage_dead(@3)
-    storage_live(iter@4)
-    iter@4 := move (@2)
+    loop {
+        storage_dead(@3)
+        storage_live(iter@4)
+        iter@4 := move (@2)
+        break 0
+    }
     loop {
         storage_live(@5)
         storage_live(@6)
@@ -578,7 +581,12 @@ where
         storage_dead(@6)
         match @5 {
             Option::None => {
-                break 0
+                @0 := ()
+                storage_dead(@7)
+                storage_dead(@5)
+                storage_dead(iter@4)
+                storage_dead(@2)
+                return
             },
             Option::Some => {
                 storage_live(x@8)
@@ -628,12 +636,6 @@ where
             },
         }
     }
-    @0 := ()
-    storage_dead(@7)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
-    return
 }
 
 // Full name: test_crate::main

@@ -5242,9 +5242,12 @@ fn main()
     @4 := {impl IntoIterator for Array<T, N>}::into_iter<i32, 7 : usize>[{built_in impl Sized for i32}](move (@5))
     storage_dead(@5)
     @3 := {impl IntoIterator for I}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move (@4))
-    storage_dead(@4)
-    storage_live(iter@6)
-    iter@6 := move (@3)
+    loop {
+        storage_dead(@4)
+        storage_live(iter@6)
+        iter@6 := move (@3)
+        break 0
+    }
     loop {
         storage_live(@7)
         storage_live(@8)
@@ -5255,7 +5258,194 @@ fn main()
         storage_dead(@8)
         match @7 {
             Option::None => {
-                break 0
+                storage_dead(@9)
+                storage_dead(@7)
+                drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
+                storage_dead(iter@6)
+                drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
+                storage_dead(@3)
+                storage_live(@13)
+                storage_live(@14)
+                storage_live(@15)
+                storage_live(@16)
+                @16 := &a@1
+                @15 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@16))
+                storage_dead(@16)
+                @14 := iter<'_, i32>[{built_in impl Sized for i32}](move (@15))
+                storage_dead(@15)
+                @13 := {impl IntoIterator for I}::into_iter<Iter<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@14))
+                loop {
+                    storage_dead(@14)
+                    storage_live(iter@17)
+                    iter@17 := move (@13)
+                    break 0
+                }
+                loop {
+                    storage_live(@18)
+                    storage_live(@19)
+                    storage_live(@20)
+                    @20 := &mut iter@17
+                    @19 := &two-phase-mut *(@20)
+                    @18 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, i32>[{built_in impl Sized for i32}](move (@19))
+                    storage_dead(@19)
+                    match @18 {
+                        Option::None => {
+                            storage_dead(@20)
+                            storage_dead(@18)
+                            storage_dead(iter@17)
+                            storage_dead(@13)
+                            storage_live(@25)
+                            storage_live(@26)
+                            storage_live(@27)
+                            storage_live(@28)
+                            @28 := &a@1
+                            @27 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@28))
+                            storage_dead(@28)
+                            @26 := chunks<'_, i32>[{built_in impl Sized for i32}](move (@27), const (2 : usize))
+                            storage_dead(@27)
+                            @25 := {impl IntoIterator for I}::into_iter<Chunks<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@26))
+                            loop {
+                                storage_dead(@26)
+                                storage_live(iter@29)
+                                iter@29 := move (@25)
+                                break 0
+                            }
+                            loop {
+                                storage_live(@30)
+                                storage_live(@31)
+                                storage_live(@32)
+                                @32 := &mut iter@29
+                                @31 := &two-phase-mut *(@32)
+                                @30 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, i32>[{built_in impl Sized for i32}](move (@31))
+                                storage_dead(@31)
+                                match @30 {
+                                    Option::None => {
+                                        storage_dead(@32)
+                                        storage_dead(@30)
+                                        storage_dead(iter@29)
+                                        storage_dead(@25)
+                                        storage_live(@34)
+                                        storage_live(@35)
+                                        storage_live(@36)
+                                        storage_live(@37)
+                                        @37 := &a@1
+                                        @36 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@37))
+                                        storage_dead(@37)
+                                        @35 := chunks_exact<'_, i32>[{built_in impl Sized for i32}](move (@36), const (2 : usize))
+                                        storage_dead(@36)
+                                        @34 := {impl IntoIterator for I}::into_iter<ChunksExact<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@35))
+                                        loop {
+                                            storage_dead(@35)
+                                            storage_live(iter@38)
+                                            iter@38 := move (@34)
+                                            break 0
+                                        }
+                                        loop {
+                                            storage_live(@39)
+                                            storage_live(@40)
+                                            storage_live(@41)
+                                            @41 := &mut iter@38
+                                            @40 := &two-phase-mut *(@41)
+                                            @39 := {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'_, '_, i32>[{built_in impl Sized for i32}](move (@40))
+                                            storage_dead(@40)
+                                            match @39 {
+                                                Option::None => {
+                                                    storage_dead(@41)
+                                                    storage_dead(@39)
+                                                    storage_dead(iter@38)
+                                                    storage_dead(@34)
+                                                    storage_live(expected@43)
+                                                    expected@43 := const (28 : i32)
+                                                    storage_live(@44)
+                                                    storage_live(@45)
+                                                    @45 := &i@2
+                                                    storage_live(@46)
+                                                    @46 := &expected@43
+                                                    @44 := (move (@45), move (@46))
+                                                    storage_dead(@46)
+                                                    storage_dead(@45)
+                                                    storage_live(left_val@47)
+                                                    left_val@47 := copy ((@44).0)
+                                                    storage_live(right_val@48)
+                                                    right_val@48 := copy ((@44).1)
+                                                    storage_live(@49)
+                                                    storage_live(@50)
+                                                    @50 := copy (*(left_val@47))
+                                                    storage_live(@51)
+                                                    @51 := copy (*(right_val@48))
+                                                    @49 := move (@50) == move (@51)
+                                                    if move (@49) {
+                                                        storage_dead(@51)
+                                                        storage_dead(@50)
+                                                        storage_dead(@49)
+                                                        storage_dead(right_val@48)
+                                                        storage_dead(left_val@47)
+                                                        storage_dead(@44)
+                                                        @0 := ()
+                                                        storage_dead(expected@43)
+                                                        storage_dead(i@2)
+                                                        storage_dead(a@1)
+                                                        return
+                                                    }
+                                                    else {
+                                                        storage_dead(@51)
+                                                        storage_dead(@50)
+                                                        storage_live(kind@52)
+                                                        kind@52 := AssertKind::Eq {  }
+                                                        storage_live(@53)
+                                                        @53 := move (kind@52)
+                                                        storage_live(@54)
+                                                        storage_live(@55)
+                                                        @55 := &*(left_val@47)
+                                                        @54 := &*(@55)
+                                                        storage_live(@56)
+                                                        storage_live(@57)
+                                                        @57 := &*(right_val@48)
+                                                        @56 := &*(@57)
+                                                        storage_live(@58)
+                                                        @58 := Option::None {  }
+                                                        panic(core::panicking::assert_failed)
+                                                    }
+                                                },
+                                                Option::Some => {
+                                                    @42 := copy (i@2) panic.+ const (1 : i32)
+                                                    i@2 := move (@42)
+                                                    storage_dead(@41)
+                                                    storage_dead(@39)
+                                                    continue 0
+                                                },
+                                            }
+                                        }
+                                    },
+                                    Option::Some => {
+                                        @33 := copy (i@2) panic.+ const (1 : i32)
+                                        i@2 := move (@33)
+                                        storage_dead(@32)
+                                        storage_dead(@30)
+                                        continue 0
+                                    },
+                                }
+                            }
+                        },
+                        Option::Some => {
+                            storage_live(v@21)
+                            v@21 := copy ((@18 as variant Option::Some).0)
+                            storage_live(@22)
+                            storage_live(@23)
+                            @23 := &two-phase-mut i@2
+                            storage_live(@24)
+                            @24 := copy (v@21)
+                            @22 := {impl AddAssign<&'_0 (i32)> for i32}::add_assign<'_, '_>(move (@23), move (@24))
+                            storage_dead(@24)
+                            storage_dead(@23)
+                            storage_dead(@22)
+                            storage_dead(v@21)
+                            storage_dead(@20)
+                            storage_dead(@18)
+                            continue 0
+                        },
+                    }
+                }
             },
             Option::Some => {
                 storage_live(v@10)
@@ -5272,188 +5462,6 @@ fn main()
             },
         }
     }
-    storage_dead(@9)
-    storage_dead(@7)
-    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
-    storage_dead(iter@6)
-    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
-    storage_dead(@3)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    @16 := &a@1
-    @15 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@16))
-    storage_dead(@16)
-    @14 := iter<'_, i32>[{built_in impl Sized for i32}](move (@15))
-    storage_dead(@15)
-    @13 := {impl IntoIterator for I}::into_iter<Iter<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@14))
-    storage_dead(@14)
-    storage_live(iter@17)
-    iter@17 := move (@13)
-    loop {
-        storage_live(@18)
-        storage_live(@19)
-        storage_live(@20)
-        @20 := &mut iter@17
-        @19 := &two-phase-mut *(@20)
-        @18 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'_, '_, i32>[{built_in impl Sized for i32}](move (@19))
-        storage_dead(@19)
-        match @18 {
-            Option::None => {
-                break 0
-            },
-            Option::Some => {
-                storage_live(v@21)
-                v@21 := copy ((@18 as variant Option::Some).0)
-                storage_live(@22)
-                storage_live(@23)
-                @23 := &two-phase-mut i@2
-                storage_live(@24)
-                @24 := copy (v@21)
-                @22 := {impl AddAssign<&'_0 (i32)> for i32}::add_assign<'_, '_>(move (@23), move (@24))
-                storage_dead(@24)
-                storage_dead(@23)
-                storage_dead(@22)
-                storage_dead(v@21)
-                storage_dead(@20)
-                storage_dead(@18)
-                continue 0
-            },
-        }
-    }
-    storage_dead(@20)
-    storage_dead(@18)
-    storage_dead(iter@17)
-    storage_dead(@13)
-    storage_live(@25)
-    storage_live(@26)
-    storage_live(@27)
-    storage_live(@28)
-    @28 := &a@1
-    @27 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@28))
-    storage_dead(@28)
-    @26 := chunks<'_, i32>[{built_in impl Sized for i32}](move (@27), const (2 : usize))
-    storage_dead(@27)
-    @25 := {impl IntoIterator for I}::into_iter<Chunks<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@26))
-    storage_dead(@26)
-    storage_live(iter@29)
-    iter@29 := move (@25)
-    loop {
-        storage_live(@30)
-        storage_live(@31)
-        storage_live(@32)
-        @32 := &mut iter@29
-        @31 := &two-phase-mut *(@32)
-        @30 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, i32>[{built_in impl Sized for i32}](move (@31))
-        storage_dead(@31)
-        match @30 {
-            Option::None => {
-                break 0
-            },
-            Option::Some => {
-                @33 := copy (i@2) panic.+ const (1 : i32)
-                i@2 := move (@33)
-                storage_dead(@32)
-                storage_dead(@30)
-                continue 0
-            },
-        }
-    }
-    storage_dead(@32)
-    storage_dead(@30)
-    storage_dead(iter@29)
-    storage_dead(@25)
-    storage_live(@34)
-    storage_live(@35)
-    storage_live(@36)
-    storage_live(@37)
-    @37 := &a@1
-    @36 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@37))
-    storage_dead(@37)
-    @35 := chunks_exact<'_, i32>[{built_in impl Sized for i32}](move (@36), const (2 : usize))
-    storage_dead(@36)
-    @34 := {impl IntoIterator for I}::into_iter<ChunksExact<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@35))
-    storage_dead(@35)
-    storage_live(iter@38)
-    iter@38 := move (@34)
-    loop {
-        storage_live(@39)
-        storage_live(@40)
-        storage_live(@41)
-        @41 := &mut iter@38
-        @40 := &two-phase-mut *(@41)
-        @39 := {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'_, '_, i32>[{built_in impl Sized for i32}](move (@40))
-        storage_dead(@40)
-        match @39 {
-            Option::None => {
-                break 0
-            },
-            Option::Some => {
-                @42 := copy (i@2) panic.+ const (1 : i32)
-                i@2 := move (@42)
-                storage_dead(@41)
-                storage_dead(@39)
-                continue 0
-            },
-        }
-    }
-    storage_dead(@41)
-    storage_dead(@39)
-    storage_dead(iter@38)
-    storage_dead(@34)
-    storage_live(expected@43)
-    expected@43 := const (28 : i32)
-    storage_live(@44)
-    storage_live(@45)
-    @45 := &i@2
-    storage_live(@46)
-    @46 := &expected@43
-    @44 := (move (@45), move (@46))
-    storage_dead(@46)
-    storage_dead(@45)
-    storage_live(left_val@47)
-    left_val@47 := copy ((@44).0)
-    storage_live(right_val@48)
-    right_val@48 := copy ((@44).1)
-    storage_live(@49)
-    storage_live(@50)
-    @50 := copy (*(left_val@47))
-    storage_live(@51)
-    @51 := copy (*(right_val@48))
-    @49 := move (@50) == move (@51)
-    if move (@49) {
-    }
-    else {
-        storage_dead(@51)
-        storage_dead(@50)
-        storage_live(kind@52)
-        kind@52 := AssertKind::Eq {  }
-        storage_live(@53)
-        @53 := move (kind@52)
-        storage_live(@54)
-        storage_live(@55)
-        @55 := &*(left_val@47)
-        @54 := &*(@55)
-        storage_live(@56)
-        storage_live(@57)
-        @57 := &*(right_val@48)
-        @56 := &*(@57)
-        storage_live(@58)
-        @58 := Option::None {  }
-        panic(core::panicking::assert_failed)
-    }
-    storage_dead(@51)
-    storage_dead(@50)
-    storage_dead(@49)
-    storage_dead(right_val@48)
-    storage_dead(left_val@47)
-    storage_dead(@44)
-    @0 := ()
-    storage_dead(expected@43)
-    storage_dead(i@2)
-    storage_dead(a@1)
-    return
 }
 
 

@@ -18,22 +18,27 @@ fn main()
     let @2: bool; // anonymous local
     let @3: bool; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    @0 := ()
-    storage_live(@1)
-    @1 := const (0.5 : f64)
-    @3 := const (0.10000000000000001 : f64) == copy (@1)
-    if move (@3) {
+    loop {
+        storage_live(@2)
+        storage_live(@3)
         @0 := ()
-    }
-    else {
-        @2 := const (0.20000000000000001 : f64) == copy (@1)
-        if move (@2) {
+        storage_live(@1)
+        @1 := const (0.5 : f64)
+        @3 := const (0.10000000000000001 : f64) == copy (@1)
+        if move (@3) {
             @0 := ()
+            break 0
         }
         else {
-            @0 := ()
+            @2 := const (0.20000000000000001 : f64) == copy (@1)
+            if move (@2) {
+                @0 := ()
+                break 0
+            }
+            else {
+                @0 := ()
+                break 0
+            }
         }
     }
     storage_dead(@1)

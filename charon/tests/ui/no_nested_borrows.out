@@ -415,21 +415,25 @@ pub fn get_max(@1: u32, @2: u32) -> u32
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
-    @4 := copy (x@1)
-    storage_live(@5)
-    @5 := copy (y@2)
-    @3 := move (@4) >= move (@5)
-    if move (@3) {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := copy (x@1)
-    }
-    else {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := copy (y@2)
+    loop {
+        storage_live(@3)
+        storage_live(@4)
+        @4 := copy (x@1)
+        storage_live(@5)
+        @5 := copy (y@2)
+        @3 := move (@4) >= move (@5)
+        if move (@3) {
+            storage_dead(@5)
+            storage_dead(@4)
+            @0 := copy (x@1)
+            break 0
+        }
+        else {
+            storage_dead(@5)
+            storage_dead(@4)
+            @0 := copy (y@2)
+            break 0
+        }
     }
     storage_dead(@3)
     return
@@ -490,19 +494,19 @@ pub fn test_box1()
     @7 := copy (*(x@4))
     @6 := move (@7) == const (1 : i32)
     if move (@6) {
+        storage_dead(@7)
+        storage_dead(@6)
+        @0 := ()
+        storage_dead(x@4)
+        storage_dead(x@2)
+        drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b@1
+        storage_dead(b@1)
+        return
     }
     else {
         storage_dead(@7)
         panic(core::panicking::panic)
     }
-    storage_dead(@7)
-    storage_dead(@6)
-    @0 := ()
-    storage_dead(x@4)
-    storage_dead(x@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b@1
-    storage_dead(b@1)
-    return
 }
 
 // Full name: test_crate::copy_int
@@ -541,14 +545,14 @@ where
 
     match *(l@1) {
         List::Cons => {
+            @0 := const (true)
+            return
         },
         List::Nil => {
             @0 := const (false)
             return
         },
     }
-    @0 := const (true)
-    return
 }
 
 // Full name: test_crate::split_list
@@ -565,30 +569,30 @@ where
 
     match l@1 {
         List::Cons => {
+            storage_live(hd@2)
+            hd@2 := move ((l@1 as variant List::Cons).0)
+            storage_live(tl@3)
+            tl@3 := move ((l@1 as variant List::Cons).1)
+            storage_live(@4)
+            @4 := move (hd@2)
+            storage_live(@5)
+            @5 := move (*(tl@3))
+            @0 := (move (@4), move (@5))
+            drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] @5
+            storage_dead(@5)
+            drop[{built_in impl Destruct for T}] @4
+            storage_dead(@4)
+            drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]] tl@3
+            storage_dead(tl@3)
+            drop[{built_in impl Destruct for T}] hd@2
+            storage_dead(hd@2)
+            drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] l@1
+            return
         },
         _ => {
             panic(core::panicking::panic)
         },
     }
-    storage_live(hd@2)
-    hd@2 := move ((l@1 as variant List::Cons).0)
-    storage_live(tl@3)
-    tl@3 := move ((l@1 as variant List::Cons).1)
-    storage_live(@4)
-    @4 := move (hd@2)
-    storage_live(@5)
-    @5 := move (*(tl@3))
-    @0 := (move (@4), move (@5))
-    drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] @5
-    storage_dead(@5)
-    drop[{built_in impl Destruct for T}] @4
-    storage_dead(@4)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]] tl@3
-    storage_dead(tl@3)
-    drop[{built_in impl Destruct for T}] hd@2
-    storage_dead(hd@2)
-    drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] l@1
-    return
 }
 
 // Full name: test_crate::test_char
@@ -629,25 +633,29 @@ pub fn even(@1: u32) -> bool
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
 
-    storage_live(@6)
-    storage_live(@2)
-    storage_live(@3)
-    @3 := copy (x@1)
-    @2 := move (@3) == const (0 : u32)
-    if move (@2) {
-        storage_dead(@3)
-        @0 := const (true)
-    }
-    else {
-        storage_dead(@3)
-        storage_live(@4)
-        storage_live(@5)
-        @5 := copy (x@1)
-        @6 := copy (@5) panic.- const (1 : u32)
-        @4 := move (@6)
-        storage_dead(@5)
-        @0 := odd(move (@4))
-        storage_dead(@4)
+    loop {
+        storage_live(@6)
+        storage_live(@2)
+        storage_live(@3)
+        @3 := copy (x@1)
+        @2 := move (@3) == const (0 : u32)
+        if move (@2) {
+            storage_dead(@3)
+            @0 := const (true)
+            break 0
+        }
+        else {
+            storage_dead(@3)
+            storage_live(@4)
+            storage_live(@5)
+            @5 := copy (x@1)
+            @6 := copy (@5) panic.- const (1 : u32)
+            @4 := move (@6)
+            storage_dead(@5)
+            @0 := odd(move (@4))
+            storage_dead(@4)
+            break 0
+        }
     }
     storage_dead(@2)
     return
@@ -664,25 +672,29 @@ pub fn odd(@1: u32) -> bool
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
 
-    storage_live(@6)
-    storage_live(@2)
-    storage_live(@3)
-    @3 := copy (x@1)
-    @2 := move (@3) == const (0 : u32)
-    if move (@2) {
-        storage_dead(@3)
-        @0 := const (false)
-    }
-    else {
-        storage_dead(@3)
-        storage_live(@4)
-        storage_live(@5)
-        @5 := copy (x@1)
-        @6 := copy (@5) panic.- const (1 : u32)
-        @4 := move (@6)
-        storage_dead(@5)
-        @0 := even(move (@4))
-        storage_dead(@4)
+    loop {
+        storage_live(@6)
+        storage_live(@2)
+        storage_live(@3)
+        @3 := copy (x@1)
+        @2 := move (@3) == const (0 : u32)
+        if move (@2) {
+            storage_dead(@3)
+            @0 := const (false)
+            break 0
+        }
+        else {
+            storage_dead(@3)
+            storage_live(@4)
+            storage_live(@5)
+            @5 := copy (x@1)
+            @6 := copy (@5) panic.- const (1 : u32)
+            @4 := move (@6)
+            storage_dead(@5)
+            @0 := even(move (@4))
+            storage_dead(@4)
+            break 0
+        }
     }
     storage_dead(@2)
     return

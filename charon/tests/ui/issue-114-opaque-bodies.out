@@ -41,17 +41,17 @@ where
     let @3: T; // anonymous local
 
     if copy (self@1) {
+        storage_live(@3)
+        @3 := move (t@2)
+        @0 := Option::Some { 0: move (@3) }
+        storage_dead(@3)
+        return
     }
     else {
         @0 := Option::None {  }
         drop[{built_in impl Destruct for T}] t@2
         return
     }
-    storage_live(@3)
-    @3 := move (t@2)
-    @0 := Option::Some { 0: move (@3) }
-    storage_dead(@3)
-    return
 }
 
 // Full name: core::cmp::PartialEq

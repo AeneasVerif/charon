@@ -101,19 +101,22 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
     let @7: &'_ mut (Slice<String>); // anonymous local
     let @8: &'_ mut (String); // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    @0 := ()
-    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
-    @3 := copy (@2.metadata)
-    @4 := const (0 : usize)
+    loop {
+        storage_live(@2)
+        storage_live(@3)
+        storage_live(@4)
+        storage_live(@5)
+        storage_live(@6)
+        @0 := ()
+        @2 := &mut *(@1) with_metadata(copy (@1.metadata))
+        @3 := copy (@2.metadata)
+        @4 := const (0 : usize)
+        break 0
+    }
     loop {
         @6 := copy (@4) == copy (@3)
         if move (@6) {
-            break 0
+            return
         }
         else {
             storage_live(@7)
@@ -126,7 +129,6 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
             continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<slice>::{impl Destruct::<Slice<String>>}::<String>
@@ -204,23 +206,26 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
     let @9: &'_ mut (Slice<String>); // anonymous local
     let @10: &'_ mut (String); // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    @0 := ()
-    @2 := &mut *(@1)
-    @3 := &raw mut *(@2)
-    @4 := unsize_cast<*mut Array<String, 4 : usize>, *mut Slice<String>, 4 : usize>(move (@3))
-    @5 := copy (@4.metadata)
-    @6 := const (0 : usize)
+    loop {
+        storage_live(@2)
+        storage_live(@3)
+        storage_live(@4)
+        storage_live(@5)
+        storage_live(@6)
+        storage_live(@7)
+        storage_live(@8)
+        @0 := ()
+        @2 := &mut *(@1)
+        @3 := &raw mut *(@2)
+        @4 := unsize_cast<*mut Array<String, 4 : usize>, *mut Slice<String>, 4 : usize>(move (@3))
+        @5 := copy (@4.metadata)
+        @6 := const (0 : usize)
+        break 0
+    }
     loop {
         @8 := copy (@6) == copy (@5)
         if move (@8) {
-            break 0
+            return
         }
         else {
             storage_live(@9)
@@ -233,7 +238,6 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
             continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct::<Array<String, 4 : usize>>}::<String, 4 : usize>

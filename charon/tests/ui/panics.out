@@ -141,6 +141,9 @@ fn panic5()
     storage_live(@1)
     @1 := const (false)
     if move (@1) {
+        storage_dead(@1)
+        @0 := ()
+        return
     }
     else {
         storage_live(@6)
@@ -157,9 +160,6 @@ fn panic5()
         storage_dead(@3)
         panic(core::panicking::panic_fmt)
     }
-    storage_dead(@1)
-    @0 := ()
-    return
 }
 
 // Full name: test_crate::panic6

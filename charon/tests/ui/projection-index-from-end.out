@@ -35,25 +35,25 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     @4 := const (1 : usize)
     @5 := move (@2) >= move (@4)
     if move (@5) {
+        storage_live(_named@6)
+        storage_live(@7)
+        @7 := &*(x@1) with_metadata(copy (x@1.metadata))
+        storage_live(@8)
+        @8 := len(*(x@1))
+        storage_live(@9)
+        @9 := copy (@8) ub.- const (1 : usize)
+        storage_dead(@8)
+        storage_live(@10)
+        @10 := @SliceIndexShared<'_, ()>(move (@7), copy (@9))
+        _named@6 := &*(@10)
+        @0 := ()
+        storage_dead(_named@6)
+        return
     }
     else {
         @0 := ()
         return
     }
-    storage_live(_named@6)
-    storage_live(@7)
-    @7 := &*(x@1) with_metadata(copy (x@1.metadata))
-    storage_live(@8)
-    @8 := len(*(x@1))
-    storage_live(@9)
-    @9 := copy (@8) ub.- const (1 : usize)
-    storage_dead(@8)
-    storage_live(@10)
-    @10 := @SliceIndexShared<'_, ()>(move (@7), copy (@9))
-    _named@6 := &*(@10)
-    @0 := ()
-    storage_dead(_named@6)
-    return
 }
 
 

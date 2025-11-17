@@ -62,33 +62,42 @@ fn main()
     // Needed a few convolutions to make it emit a `break` instead of moving the `return`
     // inside the loop.
     @1 := foo()
-    if move (@1) {
+    loop {
+        loop {
+            if move (@1) {
+                break 0
+            }
+            else {
+                break 1
+            }
+        }
         loop {
             storage_live(@2)
             @2 := do_something()
             storage_dead(@2)
             storage_live(@3)
             @3 := foo()
-            if move (@3) {
-                break 0
-            }
-            else {
-                storage_live(@4)
-                @4 := bar()
-                if move (@4) {
+            loop {
+                if move (@3) {
                     break 0
                 }
                 else {
-                    storage_dead(@4)
-                    storage_dead(@3)
-                    continue 0
+                    storage_live(@4)
+                    @4 := bar()
+                    if move (@4) {
+                        break 0
+                    }
+                    else {
+                        storage_dead(@4)
+                        storage_dead(@3)
+                        continue 1
+                    }
                 }
             }
+            storage_dead(@4)
+            storage_dead(@3)
+            break 1
         }
-        storage_dead(@4)
-        storage_dead(@3)
-    }
-    else {
     }
     storage_dead(@1)
     @0 := do_something_at_the_end()

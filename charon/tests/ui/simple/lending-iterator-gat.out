@@ -155,27 +155,27 @@ where
 
     match *(self@1) {
         Option::Some => {
+            storage_live(item@2)
+            item@2 := &mut (*(self@1) as variant Option::Some).0
+            storage_live(item@3)
+            item@3 := &*(*(item@2))
+            storage_live(@4)
+            @4 := Option::None {  }
+            *(self@1) := move (@4)
+            storage_dead(@4)
+            storage_live(@5)
+            @5 := &*(item@3)
+            @0 := Option::Some { 0: move (@5) }
+            storage_dead(@5)
+            storage_dead(item@3)
+            storage_dead(item@2)
+            return
         },
         _ => {
             @0 := Option::None {  }
             return
         },
     }
-    storage_live(item@2)
-    item@2 := &mut (*(self@1) as variant Option::Some).0
-    storage_live(item@3)
-    item@3 := &*(*(item@2))
-    storage_live(@4)
-    @4 := Option::None {  }
-    *(self@1) := move (@4)
-    storage_dead(@4)
-    storage_live(@5)
-    @5 := &*(item@3)
-    @0 := Option::Some { 0: move (@5) }
-    storage_dead(@5)
-    storage_dead(item@3)
-    storage_dead(item@2)
-    return
 }
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]}
@@ -209,8 +209,11 @@ where
     let @8: (@TraitClause2::Item); // anonymous local
     let @9: @TraitClause2::Item; // anonymous local
 
-    storage_live(@3)
-    @0 := ()
+    loop {
+        storage_live(@3)
+        @0 := ()
+        break 0
+    }
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -219,36 +222,35 @@ where
         storage_dead(@5)
         match @4 {
             Option::Some => {
+                storage_live(item@6)
+                item@6 := move ((@4 as variant Option::Some).0)
+                storage_live(@7)
+                @7 := &mut f@2
+                storage_live(@8)
+                storage_live(@9)
+                @9 := move (item@6)
+                @8 := (move (@9))
+                @3 := @TraitClause3::call_mut<'_>(move (@7), move (@8))
+                drop[{built_in impl Destruct for @TraitClause2::Item}] @9
+                storage_dead(@9)
+                storage_dead(@8)
+                storage_dead(@7)
+                drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
+                storage_dead(item@6)
+                drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+                storage_dead(@4)
+                continue 0
             },
             _ => {
-                break 0
+                @0 := ()
+                drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+                storage_dead(@4)
+                drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
+                drop[{built_in impl Destruct for I}] iter@1
+                return
             },
         }
-        storage_live(item@6)
-        item@6 := move ((@4 as variant Option::Some).0)
-        storage_live(@7)
-        @7 := &mut f@2
-        storage_live(@8)
-        storage_live(@9)
-        @9 := move (item@6)
-        @8 := (move (@9))
-        @3 := @TraitClause3::call_mut<'_>(move (@7), move (@8))
-        drop[{built_in impl Destruct for @TraitClause2::Item}] @9
-        storage_dead(@9)
-        storage_dead(@8)
-        storage_dead(@7)
-        drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
-        storage_dead(item@6)
-        drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
-        storage_dead(@4)
-        continue 0
     }
-    @0 := ()
-    drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
-    storage_dead(@4)
-    drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
-    drop[{built_in impl Destruct for I}] iter@1
-    return
 }
 
 // Full name: test_crate::main::closure
@@ -413,6 +415,17 @@ pub fn main()
     @16 := copy (*(right_val@13))
     @14 := move (@15) == move (@16)
     if move (@14) {
+        storage_dead(@16)
+        storage_dead(@15)
+        storage_dead(@14)
+        storage_dead(right_val@13)
+        storage_dead(left_val@12)
+        storage_dead(@9)
+        @0 := ()
+        storage_dead(sum@4)
+        storage_dead(iter@2)
+        storage_dead(x@1)
+        return
     }
     else {
         storage_dead(@16)
@@ -433,17 +446,6 @@ pub fn main()
         @23 := Option::None {  }
         panic(core::panicking::assert_failed)
     }
-    storage_dead(@16)
-    storage_dead(@15)
-    storage_dead(@14)
-    storage_dead(right_val@13)
-    storage_dead(left_val@12)
-    storage_dead(@9)
-    @0 := ()
-    storage_dead(sum@4)
-    storage_dead(iter@2)
-    storage_dead(x@1)
-    return
 }
 
 

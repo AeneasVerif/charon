@@ -36,18 +36,22 @@ where
     let @6: bool; // anonymous local
     let @7: &'_ mut (T); // anonymous local
 
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    @6 := copy (b@1)
-    if move (@6) {
-        storage_live(@7)
-        @7 := &mut *(x@2)
-        @5 := &mut *(@7)
-        storage_dead(@7)
-    }
-    else {
-        @5 := &mut *(y@3)
+    loop {
+        storage_live(@4)
+        storage_live(@5)
+        storage_live(@6)
+        @6 := copy (b@1)
+        if move (@6) {
+            storage_live(@7)
+            @7 := &mut *(x@2)
+            @5 := &mut *(@7)
+            storage_dead(@7)
+            break 0
+        }
+        else {
+            @5 := &mut *(y@3)
+            break 0
+        }
     }
     @4 := &mut *(@5)
     storage_dead(@6)
@@ -105,55 +109,55 @@ pub fn choose_test()
     @10 := copy (*(z@3))
     @9 := move (@10) == const (1 : i32)
     if move (@9) {
+        storage_dead(@10)
+        storage_dead(@9)
+        storage_live(@11)
+        storage_live(@12)
+        // drop(z)
+        @12 := copy (x@1)
+        @11 := move (@12) == const (1 : i32)
+        if move (@11) {
+            storage_dead(@12)
+            storage_dead(@11)
+            storage_live(@13)
+            storage_live(@14)
+            @14 := copy (y@2)
+            @13 := move (@14) == const (0 : i32)
+            if move (@13) {
+                storage_dead(@14)
+                storage_dead(@13)
+                storage_live(@15)
+                storage_live(@16)
+                @16 := copy (*(z@3))
+                @15 := move (@16) == const (1 : i32)
+                if move (@15) {
+                    storage_dead(@16)
+                    storage_dead(@15)
+                    @0 := ()
+                    storage_dead(z@3)
+                    storage_dead(y@2)
+                    storage_dead(x@1)
+                    return
+                }
+                else {
+                    storage_dead(@16)
+                    panic(core::panicking::panic)
+                }
+            }
+            else {
+                storage_dead(@14)
+                panic(core::panicking::panic)
+            }
+        }
+        else {
+            storage_dead(@12)
+            panic(core::panicking::panic)
+        }
     }
     else {
         storage_dead(@10)
         panic(core::panicking::panic)
     }
-    storage_dead(@10)
-    storage_dead(@9)
-    storage_live(@11)
-    storage_live(@12)
-    // drop(z)
-    @12 := copy (x@1)
-    @11 := move (@12) == const (1 : i32)
-    if move (@11) {
-    }
-    else {
-        storage_dead(@12)
-        panic(core::panicking::panic)
-    }
-    storage_dead(@12)
-    storage_dead(@11)
-    storage_live(@13)
-    storage_live(@14)
-    @14 := copy (y@2)
-    @13 := move (@14) == const (0 : i32)
-    if move (@13) {
-    }
-    else {
-        storage_dead(@14)
-        panic(core::panicking::panic)
-    }
-    storage_dead(@14)
-    storage_dead(@13)
-    storage_live(@15)
-    storage_live(@16)
-    @16 := copy (*(z@3))
-    @15 := move (@16) == const (1 : i32)
-    if move (@15) {
-    }
-    else {
-        storage_dead(@16)
-        panic(core::panicking::panic)
-    }
-    storage_dead(@16)
-    storage_dead(@15)
-    @0 := ()
-    storage_dead(z@3)
-    storage_dead(y@2)
-    storage_dead(x@1)
-    return
 }
 
 

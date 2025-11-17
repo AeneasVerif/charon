@@ -676,9 +676,12 @@ fn cbd(@1: Array<u8, 33 : usize>)
     storage_live(@3)
     @3 := Range { start: const (0 : u8), end: const (3 : u8) }
     @2 := {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move (@3))
-    storage_dead(@3)
-    storage_live(iter@4)
-    iter@4 := move (@2)
+    loop {
+        storage_dead(@3)
+        storage_live(iter@4)
+        iter@4 := move (@2)
+        break 0
+    }
     loop {
         storage_live(@5)
         storage_live(@6)
@@ -689,7 +692,12 @@ fn cbd(@1: Array<u8, 33 : usize>)
         storage_dead(@6)
         match @5 {
             Option::None => {
-                break 0
+                @0 := ()
+                storage_dead(@7)
+                storage_dead(@5)
+                storage_dead(iter@4)
+                storage_dead(@2)
+                return
             },
             Option::Some => {
                 storage_live(i@8)
@@ -712,12 +720,6 @@ fn cbd(@1: Array<u8, 33 : usize>)
             },
         }
     }
-    @0 := ()
-    storage_dead(@7)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
-    return
 }
 
 // Full name: test_crate::select
@@ -747,69 +749,73 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @21: &'_ (usize); // anonymous local
     let @22: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
 
-    @0 := ()
-    storage_live(@3)
-    @3 := const (true)
-    if move (@3) {
-        storage_live(@4)
-        storage_live(@5)
-        storage_live(@6)
-        storage_live(@7)
-        @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
-        @6 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
-        storage_dead(@7)
-        @5 := &@6
-        storage_live(@8)
-        storage_live(@9)
-        storage_live(@10)
-        @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
-        @9 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
-        storage_dead(@10)
-        @8 := &@9
-        @4 := (move (@5), move (@8))
-        storage_dead(@8)
-        storage_dead(@5)
-        storage_live(left_val@11)
-        left_val@11 := copy ((@4).0)
-        storage_live(right_val@12)
-        right_val@12 := copy ((@4).1)
-        storage_live(@13)
-        storage_live(@14)
-        @14 := copy (*(left_val@11))
-        storage_live(@15)
-        @15 := copy (*(right_val@12))
-        @13 := move (@14) == move (@15)
-        if move (@13) {
+    loop {
+        @0 := ()
+        storage_live(@3)
+        @3 := const (true)
+        if move (@3) {
+            storage_live(@4)
+            storage_live(@5)
+            storage_live(@6)
+            storage_live(@7)
+            @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
+            @6 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
+            storage_dead(@7)
+            @5 := &@6
+            storage_live(@8)
+            storage_live(@9)
+            storage_live(@10)
+            @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
+            @9 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
+            storage_dead(@10)
+            @8 := &@9
+            @4 := (move (@5), move (@8))
+            storage_dead(@8)
+            storage_dead(@5)
+            storage_live(left_val@11)
+            left_val@11 := copy ((@4).0)
+            storage_live(right_val@12)
+            right_val@12 := copy ((@4).1)
+            storage_live(@13)
+            storage_live(@14)
+            @14 := copy (*(left_val@11))
+            storage_live(@15)
+            @15 := copy (*(right_val@12))
+            @13 := move (@14) == move (@15)
+            if move (@13) {
+                storage_dead(@15)
+                storage_dead(@14)
+                storage_dead(@13)
+                storage_dead(right_val@12)
+                storage_dead(left_val@11)
+                storage_dead(@9)
+                storage_dead(@6)
+                storage_dead(@4)
+                break 0
+            }
+            else {
+                storage_dead(@15)
+                storage_dead(@14)
+                storage_live(kind@16)
+                kind@16 := AssertKind::Eq {  }
+                storage_live(@17)
+                @17 := move (kind@16)
+                storage_live(@18)
+                storage_live(@19)
+                @19 := &*(left_val@11)
+                @18 := &*(@19)
+                storage_live(@20)
+                storage_live(@21)
+                @21 := &*(right_val@12)
+                @20 := &*(@21)
+                storage_live(@22)
+                @22 := Option::None {  }
+                panic(core::panicking::assert_failed)
+            }
         }
         else {
-            storage_dead(@15)
-            storage_dead(@14)
-            storage_live(kind@16)
-            kind@16 := AssertKind::Eq {  }
-            storage_live(@17)
-            @17 := move (kind@16)
-            storage_live(@18)
-            storage_live(@19)
-            @19 := &*(left_val@11)
-            @18 := &*(@19)
-            storage_live(@20)
-            storage_live(@21)
-            @21 := &*(right_val@12)
-            @20 := &*(@21)
-            storage_live(@22)
-            @22 := Option::None {  }
-            panic(core::panicking::assert_failed)
+            break 0
         }
-        storage_dead(@15)
-        storage_dead(@14)
-        storage_dead(@13)
-        storage_dead(right_val@12)
-        storage_dead(left_val@11)
-        storage_dead(@9)
-        storage_dead(@6)
-        storage_dead(@4)
-    }
-    else {
     }
     storage_dead(@3)
     @0 := ()

@@ -25,48 +25,55 @@ fn f() -> usize
     let @9: i32; // anonymous local
     let @10: i32; // anonymous local
 
-    storage_live(@5)
-    storage_live(@10)
-    storage_live(i@1)
-    i@1 := const (0 : i32)
-    storage_live(j@2)
-    j@2 := const (0 : i32)
+    loop {
+        storage_live(@5)
+        storage_live(@10)
+        storage_live(i@1)
+        i@1 := const (0 : i32)
+        storage_live(j@2)
+        j@2 := const (0 : i32)
+        break 0
+    }
     loop {
         storage_live(@3)
         storage_live(@4)
         @4 := copy (i@1)
         @3 := move (@4) < const (32 : i32)
         if move (@3) {
-            storage_dead(@4)
-            @5 := copy (j@2) panic.+ const (1 : i32)
-            j@2 := move (@5)
-            storage_live(@6)
-            storage_live(@7)
-            @7 := copy (j@2)
-            @6 := move (@7) > const (16 : i32)
-            if move (@6) {
-                storage_dead(@7)
-                j@2 := copy (j@2) panic./ const (2 : i32)
-            }
-            else {
-                storage_dead(@7)
-                storage_live(@8)
-                storage_live(@9)
-                @9 := copy (j@2)
-                @8 := move (@9) > const (32 : i32)
-                if move (@8) {
-                    storage_dead(@9)
-                    @0 := const (1 : usize)
-                    storage_dead(@8)
-                    storage_dead(@6)
-                    storage_dead(@3)
-                    storage_dead(j@2)
-                    storage_dead(i@1)
-                    return
+            loop {
+                storage_dead(@4)
+                @5 := copy (j@2) panic.+ const (1 : i32)
+                j@2 := move (@5)
+                storage_live(@6)
+                storage_live(@7)
+                @7 := copy (j@2)
+                @6 := move (@7) > const (16 : i32)
+                if move (@6) {
+                    storage_dead(@7)
+                    j@2 := copy (j@2) panic./ const (2 : i32)
+                    break 0
                 }
                 else {
-                    storage_dead(@9)
-                    storage_dead(@8)
+                    storage_dead(@7)
+                    storage_live(@8)
+                    storage_live(@9)
+                    @9 := copy (j@2)
+                    @8 := move (@9) > const (32 : i32)
+                    if move (@8) {
+                        storage_dead(@9)
+                        @0 := const (1 : usize)
+                        storage_dead(@8)
+                        storage_dead(@6)
+                        storage_dead(@3)
+                        storage_dead(j@2)
+                        storage_dead(i@1)
+                        return
+                    }
+                    else {
+                        storage_dead(@9)
+                        storage_dead(@8)
+                        break 0
+                    }
                 }
             }
             storage_dead(@6)
@@ -76,15 +83,14 @@ fn f() -> usize
             continue 0
         }
         else {
-            break 0
+            storage_dead(@4)
+            storage_dead(@3)
+            @0 := const (0 : usize)
+            storage_dead(j@2)
+            storage_dead(i@1)
+            return
         }
     }
-    storage_dead(@4)
-    storage_dead(@3)
-    @0 := const (0 : usize)
-    storage_dead(j@2)
-    storage_dead(i@1)
-    return
 }
 
 

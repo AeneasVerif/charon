@@ -30,24 +30,32 @@ fn f0()
     let @2: bool; // anonymous local
     let x@3: u8; // local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const (0 : i32) < const (1 : i32)
-    if move (@1) {
-        storage_live(@2)
-        @2 := const (0 : i32) < const (1 : i32)
-        if move (@2) {
+    loop {
+        @0 := ()
+        storage_live(@1)
+        @1 := const (0 : i32) < const (1 : i32)
+        if move (@1) {
+            loop {
+                storage_live(@2)
+                @2 := const (0 : i32) < const (1 : i32)
+                if move (@2) {
+                    break 0
+                }
+                else {
+                    break 0
+                }
+            }
+            storage_dead(@2)
+            storage_live(x@3)
+            x@3 := copy (CONST)
+            @0 := ()
+            storage_dead(x@3)
+            break 0
         }
         else {
+            @0 := ()
+            break 0
         }
-        storage_dead(@2)
-        storage_live(x@3)
-        x@3 := copy (CONST)
-        @0 := ()
-        storage_dead(x@3)
-    }
-    else {
-        @0 := ()
     }
     storage_dead(@1)
     return
@@ -69,34 +77,48 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     let @10: i32; // anonymous local
     let x@11: u8; // local
 
-    @0 := ()
-    storage_live(previous_true_hints_seen@2)
-    previous_true_hints_seen@2 := const (0 : usize)
-    storage_live(i@3)
-    i@3 := const (0 : i32)
+    loop {
+        @0 := ()
+        storage_live(previous_true_hints_seen@2)
+        previous_true_hints_seen@2 := const (0 : usize)
+        storage_live(i@3)
+        i@3 := const (0 : i32)
+        break 0
+    }
     loop {
         storage_live(@4)
         storage_live(@5)
         @5 := copy (i@3)
         @4 := move (@5) < const (1 : i32)
         if move (@4) {
-            storage_dead(@5)
-            storage_live(@6)
-            @6 := const (0 : i32) < const (1 : i32)
-            if move (@6) {
-            }
-            else {
-                storage_live(@7)
-                @7 := const (1 : i32) > const (1 : i32)
-                if move (@7) {
+            loop {
+                loop {
+                    storage_dead(@5)
+                    storage_live(@6)
+                    @6 := const (0 : i32) < const (1 : i32)
+                    if move (@6) {
+                        break 0
+                    }
+                    else {
+                        storage_live(@7)
+                        @7 := const (1 : i32) > const (1 : i32)
+                        if move (@7) {
+                            break 0
+                        }
+                        else {
+                            break 1
+                        }
+                    }
                 }
-                else {
-                }
+                break 0
             }
-            storage_dead(@7)
-            storage_dead(@6)
-            storage_live(j@8)
-            j@8 := const (0 : i32)
+            loop {
+                storage_dead(@7)
+                storage_dead(@6)
+                storage_live(j@8)
+                j@8 := const (0 : i32)
+                break 0
+            }
             loop {
                 storage_live(@9)
                 storage_live(@10)
@@ -111,25 +133,23 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
                     continue 0
                 }
                 else {
-                    break 0
+                    storage_dead(@10)
+                    storage_dead(@9)
+                    storage_dead(j@8)
+                    storage_dead(@4)
+                    continue 1
                 }
             }
-            storage_dead(@10)
-            storage_dead(@9)
-            storage_dead(j@8)
-            storage_dead(@4)
-            continue 0
         }
         else {
-            break 0
+            storage_dead(@5)
+            @0 := ()
+            storage_dead(@4)
+            storage_dead(i@3)
+            storage_dead(previous_true_hints_seen@2)
+            return
         }
     }
-    storage_dead(@5)
-    @0 := ()
-    storage_dead(@4)
-    storage_dead(i@3)
-    storage_dead(previous_true_hints_seen@2)
-    return
 }
 
 
