@@ -365,6 +365,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("no_ops_to_function_calls", no_ops_to_function_calls);
           ("raw_boxes", raw_boxes);
           ("preset", preset);
+          ("desugar_drops", desugar_drops);
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
         let* lib = bool_of_json ctx lib in
@@ -414,6 +415,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* raw_boxes = bool_of_json ctx raw_boxes in
         let* preset = option_of_json preset_of_json ctx preset in
+        let* desugar_drops = bool_of_json ctx desugar_drops in
         Ok
           ({
              ullbc;
@@ -456,6 +458,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              no_ops_to_function_calls;
              raw_boxes;
              preset;
+             desugar_drops;
            }
             : cli_options)
     | _ -> Error "")

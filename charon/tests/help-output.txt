@@ -166,5 +166,8 @@ Options:
           - soteria
           - tests
 
+      --desugar-drops
+          If activated, transform `Drop(p)` to `Call drop_in_place(&mut p)` for ULLBC
+
   -h, --help
           Print help (see a summary with '-h')
