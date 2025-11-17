@@ -106,6 +106,25 @@ where
     return
 }
 
+// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
+fn {vtable_drop_shim}<T>(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let ret@0: (); // return
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_); // arg #1
+    let target_self@2: *mut i32; // local
+    let drop_ret@3: (); // local
+
+    ret@0 := ()
+    storage_live(target_self@2)
+    storage_live(drop_ret@3)
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    drop_ret@3 := {built_in impl Destruct for i32}::drop_in_place(move (target_self@2))
+    return
+}
+
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify::{vtable_method}
 fn {vtable_method}<'_0, '_1, T>(@1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), @2: &'_1 (T)) -> T
 where
@@ -137,7 +156,7 @@ where
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({built_in impl Destruct for i32}::drop_in_place), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({vtable_drop_shim}<T>[@TraitClause0, @TraitClause1]), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 

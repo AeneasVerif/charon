@@ -78,6 +78,8 @@ pub enum TransItemSourceKind {
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
     /// implementation.
     VTableMethod,
+    /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
+    VTableDropShim,
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -292,7 +294,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     | ClosureAsFnCast
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
-                    | VTableMethod => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableMethod
+                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
