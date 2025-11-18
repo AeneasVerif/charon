@@ -209,11 +209,8 @@ where
     let @8: (@TraitClause2::Item); // anonymous local
     let @9: @TraitClause2::Item; // anonymous local
 
-    loop {
-        storage_live(@3)
-        @0 := ()
-        break 0
-    }
+    storage_live(@3)
+    @0 := ()
     loop {
         storage_live(@4)
         storage_live(@5)

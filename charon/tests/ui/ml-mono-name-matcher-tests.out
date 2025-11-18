@@ -360,16 +360,13 @@ fn funs_with_disambiguator(@1: bool) -> u32
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
 
-    loop {
-        storage_live(@2)
-        @2 := copy (b@1)
-        if move (@2) {
-            @0 := test_crate::funs_with_disambiguator::f()
-        }
-        else {
-            @0 := test_crate::funs_with_disambiguator::f#1()
-        }
-        break 0
+    storage_live(@2)
+    @2 := copy (b@1)
+    if move (@2) {
+        @0 := test_crate::funs_with_disambiguator::f()
+    }
+    else {
+        @0 := test_crate::funs_with_disambiguator::f#1()
     }
     storage_dead(@2)
     return

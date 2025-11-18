@@ -195,34 +195,31 @@ where
     let @6: (T); // anonymous local
     let @7: T; // anonymous local
 
-    loop {
-        match x@1 {
-            Option::None => {
-                @0 := Option::None {  }
-            },
-            Option::Some => {
-                storage_live(x@3)
-                x@3 := move ((x@1 as variant Option::Some).0)
-                storage_live(@4)
-                storage_live(@5)
-                @5 := &f@2
-                storage_live(@6)
-                storage_live(@7)
-                @7 := move (x@3)
-                @6 := (move (@7))
-                @4 := @TraitClause2::call<'_>(move (@5), move (@6))
-                drop[{built_in impl Destruct for T}] @7
-                storage_dead(@7)
-                storage_dead(@6)
-                storage_dead(@5)
-                @0 := Option::Some { 0: move (@4) }
-                drop[{built_in impl Destruct for T}] @4
-                storage_dead(@4)
-                drop[{built_in impl Destruct for T}] x@3
-                storage_dead(x@3)
-            },
-        }
-        break 0
+    match x@1 {
+        Option::None => {
+            @0 := Option::None {  }
+        },
+        Option::Some => {
+            storage_live(x@3)
+            x@3 := move ((x@1 as variant Option::Some).0)
+            storage_live(@4)
+            storage_live(@5)
+            @5 := &f@2
+            storage_live(@6)
+            storage_live(@7)
+            @7 := move (x@3)
+            @6 := (move (@7))
+            @4 := @TraitClause2::call<'_>(move (@5), move (@6))
+            drop[{built_in impl Destruct for T}] @7
+            storage_dead(@7)
+            storage_dead(@6)
+            storage_dead(@5)
+            @0 := Option::Some { 0: move (@4) }
+            drop[{built_in impl Destruct for T}] @4
+            storage_dead(@4)
+            drop[{built_in impl Destruct for T}] x@3
+            storage_dead(x@3)
+        },
     }
     drop[{built_in impl Destruct for F}] f@2
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1

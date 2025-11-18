@@ -565,12 +565,9 @@ where
     storage_live(@3)
     @3 := copy (slice@1)
     @2 := {impl IntoIterator for &'a (Slice<T>)}::into_iter<'_, T>[@TraitClause0](move (@3))
-    loop {
-        storage_dead(@3)
-        storage_live(iter@4)
-        iter@4 := move (@2)
-        break 0
-    }
+    storage_dead(@3)
+    storage_live(iter@4)
+    iter@4 := move (@2)
     loop {
         storage_live(@5)
         storage_live(@6)

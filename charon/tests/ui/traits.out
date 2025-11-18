@@ -214,19 +214,16 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     storage_live(@3)
     @3 := &x@1
     @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
-    loop {
-        if move (@2) {
-            storage_dead(@3)
-            storage_live(@4)
-            @4 := &x@1
-            @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
-            storage_dead(@4)
-        }
-        else {
-            storage_dead(@3)
-            @0 := const (false)
-        }
-        break 0
+    if move (@2) {
+        storage_dead(@3)
+        storage_live(@4)
+        @4 := &x@1
+        @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
+        storage_dead(@4)
+    }
+    else {
+        storage_dead(@3)
+        @0 := const (false)
     }
     storage_dead(@2)
     return
@@ -290,19 +287,16 @@ where
     storage_live(@3)
     @3 := &x@1
     @2 := {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (@3))
-    loop {
-        if move (@2) {
-            storage_dead(@3)
-            storage_live(@4)
-            @4 := &x@1
-            @0 := {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
-            storage_dead(@4)
-        }
-        else {
-            storage_dead(@3)
-            @0 := const (false)
-        }
-        break 0
+    if move (@2) {
+        storage_dead(@3)
+        storage_live(@4)
+        @4 := &x@1
+        @0 := {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
+        storage_dead(@4)
+    }
+    else {
+        storage_dead(@3)
+        @0 := const (false)
     }
     storage_dead(@2)
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
@@ -694,26 +688,23 @@ where
     // blocks).
     @4 := move (x@2)
     x@3 := @TraitClause1::to_u64(move (@4))
-    loop {
-        storage_dead(@4)
-        storage_live(y@5)
-        y@5 := TestType1 { 0: const (0 : u64) }
-        storage_live(@6)
-        storage_live(@7)
-        @7 := copy (x@3)
-        @6 := move (@7) > const (0 : u64)
-        if move (@6) {
-            storage_dead(@7)
-            storage_live(@8)
-            @8 := &y@5
-            @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
-            storage_dead(@8)
-        }
-        else {
-            storage_dead(@7)
-            @0 := const (false)
-        }
-        break 0
+    storage_dead(@4)
+    storage_live(y@5)
+    y@5 := TestType1 { 0: const (0 : u64) }
+    storage_live(@6)
+    storage_live(@7)
+    @7 := copy (x@3)
+    @6 := move (@7) > const (0 : u64)
+    if move (@6) {
+        storage_dead(@7)
+        storage_live(@8)
+        @8 := &y@5
+        @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
+        storage_dead(@8)
+    }
+    else {
+        storage_dead(@7)
+        @0 := const (false)
     }
     storage_dead(@6)
     storage_dead(y@5)

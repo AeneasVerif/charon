@@ -1,6 +1,6 @@
 //! ULLBC to LLBC
 //!
-//! Reconstruct the control-flow of the ULLBC function bodies, using the algorithm from "Beyond
+//! Reconstruct the control-flow of the ULLBC function bodies. Based on the algorithm from "Beyond
 //! Relooper" (https://dl.acm.org/doi/10.1145/3547621).
 use indexmap::IndexMap;
 use itertools::Itertools;
@@ -39,10 +39,19 @@ fn translate_statement(st: &src::Statement) -> tgt::Statement {
     tgt::Statement::new(st.span, kind)
 }
 
+/// Block id that must be handled specifically when jumping to it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SpecialJump {
+    // Continue to the head of the loop.
     Loop,
-    Block,
+    // Break forward.
+    JumpForward,
+    // Do nothing, the desired block is already the next one.
+    Fallthrough,
 }
+
+/// Control-Flow Graph
+type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Cfg data about a block.
 struct BlockCfgData<'a> {
@@ -53,34 +62,39 @@ struct BlockCfgData<'a> {
     is_loop_header: bool,
     /// Blocks that have multiple incoming control-flow edges.
     is_merge_target: bool,
+    /// Blocks that have incoming control-flow edges that require forward jumps, i.e. can't simply
+    /// be translated as the exit to a `switch` node.
+    is_nontrivial_merge_target: bool,
     /// Reverse postorder numbering of the blocks. Using `u32` is fine because we already limit
     /// `BlockId`s to `u32::MAX`. If the node is not reachable, the id is `u32::MAX` and should not
     /// be used.
     reverse_postorder_id: u32,
+    /// Block that immediately dominates this one. `None` for the root an unreachable nodes.
+    dominator: Option<BlockId>,
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
-    /// id last.
+    /// id first.
     immediately_dominates: SmallVec<[BlockId; 2]>,
     /// Like `immediately_dominates`, but restricted to nodes that are merge targets.
     immediately_dominated_merge_targets: SmallVec<[BlockId; 2]>,
 }
 
 struct ReloopCtx<'a> {
+    /// The control-flow graph.
+    cfg: Cfg,
     /// Cfg data for each block.
     block_data: Vector<BlockId, BlockCfgData<'a>>,
     /// Locals for the target body, so that we can add intermediate variables.
     locals: Locals,
-    /// Stack of blocks we must translate specially in the current context.
+    /// Stack of block ids we can't just recursively translate in the current context.
     /// A useful invariant is that the block at the top of the stack is the block where
-    /// control-flow will jump naturally at the end of the current block.
+    /// control-flow will continue naturally at the end of the current block. Therefore this stack
+    /// also works as a list of blocks left to translate after the current one.
     special_jump_stack: Vec<(BlockId, SpecialJump)>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
 /// block involved in an irreducible subgraph.
 struct Irreducible(BlockId);
-
-/// Control-Flow Graph
-type Cfg = DiGraphMap<src::BlockId, ()>;
 
 impl<'a> ReloopCtx<'a> {
     fn new(src_body: &'a src::ExprBody, start_block: BlockId) -> Result<Self, Irreducible> {
@@ -90,6 +104,8 @@ impl<'a> ReloopCtx<'a> {
             reachable: false,
             is_loop_header: false,
             is_merge_target: false,
+            is_nontrivial_merge_target: false,
+            dominator: None,
             immediately_dominates: SmallVec::default(),
             immediately_dominated_merge_targets: SmallVec::default(),
         });
@@ -113,6 +129,7 @@ impl<'a> ReloopCtx<'a> {
 
             // Store the dominator tree in `block_data`.
             if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
+                block_data[block_id].dominator = Some(dominator);
                 block_data[dominator].immediately_dominates.push(block_id);
             }
 
@@ -135,6 +152,7 @@ impl<'a> ReloopCtx<'a> {
             // Sort by postorder id. We have to `mem::take` to avoid borrowck issues.
             let mut dominatees = mem::take(&mut block_data[src].immediately_dominates);
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder_id);
+            dominatees.reverse();
             block_data[src].immediately_dominates = dominatees;
             block_data[src].immediately_dominated_merge_targets = block_data[src]
                 .immediately_dominates
@@ -159,10 +177,38 @@ impl<'a> ReloopCtx<'a> {
         }
 
         Ok(ReloopCtx {
+            cfg,
             block_data,
             locals: src_body.locals.clone(),
             special_jump_stack: Vec::new(),
         })
+    }
+
+    /// We traverse the dominator tree just like `reloop_block`, keeping track of which block will
+    /// be executed next after this one. We use this to detect merge blocks that don't need forward
+    /// jumps, i.e. that can be implemented as simple `switch` blocks. This must match the form of
+    /// `reloop_block` to be correct.
+    fn detect_trivial_merges(&mut self, bid: BlockId, mut next: Option<BlockId>) {
+        if self.block_data[bid].is_loop_header {
+            next = Some(bid);
+        }
+
+        for child in self.block_data[bid]
+            .immediately_dominated_merge_targets
+            .clone()
+        {
+            self.detect_trivial_merges(child, next);
+            next = Some(child);
+        }
+
+        for tgt in self.cfg.neighbors(bid).collect_vec() {
+            if next != Some(tgt) {
+                self.block_data[tgt].is_nontrivial_merge_target = true;
+            }
+            if tgt != bid && !self.block_data[tgt].is_merge_target {
+                self.detect_trivial_merges(tgt, next)
+            }
+        }
     }
 
     /// Translate this block and all the blocks it dominates, recursively over the dominator tree.
@@ -187,8 +233,13 @@ impl<'a> ReloopCtx<'a> {
         // jump to them using `break`. The child with highest postorder numbering is nested
         // outermost in this scheme.
         let merge_children = &self.block_data[bid].immediately_dominated_merge_targets;
-        for &child in merge_children.iter().rev() {
-            self.special_jump_stack.push((child, SpecialJump::Block));
+        for &child in merge_children {
+            let jump = if self.block_data[child].is_nontrivial_merge_target {
+                SpecialJump::JumpForward
+            } else {
+                SpecialJump::Fallthrough
+            };
+            self.special_jump_stack.push((child, jump));
         }
 
         // Translate this block. Any jumps to the loop header or a merge node will be replaced with
@@ -202,15 +253,21 @@ impl<'a> ReloopCtx<'a> {
                     block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block))
                         .into_block();
                 }
-                (followed_by, SpecialJump::Block) => {
+                (followed_by, SpecialJump::JumpForward) => {
                     // We add a `loop { ...; break }` so that we can use `break` to jump forward.
                     let span = block.span;
                     block = block.merge(
                         tgt::Statement::new(span, tgt::StatementKind::Break(0)).into_block(),
                     );
                     block = tgt::Statement::new(span, tgt::StatementKind::Loop(block)).into_block();
-                    // We must translate the merge nodes after the block used for forward jumps to
-                    // them.
+                    // Control-flow that jumps to `followed_by` will break out of the above loop,
+                    // so the target block can just follow this loop.
+                    let followed_by = self.reloop_block(followed_by);
+                    block = block.merge(followed_by);
+                }
+                (followed_by, SpecialJump::Fallthrough) => {
+                    // Control-flow that jumps to `followed_by` will reach here, so the target
+                    // block can just be translated here.
                     let followed_by = self.reloop_block(followed_by);
                     block = block.merge(followed_by);
                 }
@@ -221,20 +278,35 @@ impl<'a> ReloopCtx<'a> {
 
     // Translate a jump between these two blocks.
     fn translate_jump(&mut self, span: Span, to: BlockId) -> tgt::Block {
+        // The top of the stack is where control-flow goes naturally, no need to add a
+        // `break`/`continue`.
+        if let Some((b, _)) = self.special_jump_stack.last()
+            && *b == to
+        {
+            return tgt::Statement::new(span, tgt::StatementKind::Nop).into_block();
+        }
+        let mut depth = 0;
         match self
             .special_jump_stack
             .iter()
             .rev()
-            .enumerate()
-            .find(|(_, (b, _))| *b == to)
+            .map(|(b, ctx)| {
+                let i = depth;
+                // Fallthrough blocks don't add a level of loop nesting so they don't count towards
+                // depth.
+                if !matches!(ctx, SpecialJump::Fallthrough) {
+                    depth += 1;
+                }
+                (i, *b, ctx)
+            })
+            .find(|(_, b, _)| *b == to)
         {
-            Some((i, (_, context))) => {
+            Some((depth, _, context)) => {
                 let kind = match context {
-                    // The top of the stack is where control-flow goes naturally, no need to add a
-                    // `break`/`continue`.
-                    _ if i == 0 => tgt::StatementKind::Nop,
-                    SpecialJump::Loop => tgt::StatementKind::Continue(i),
-                    SpecialJump::Block => tgt::StatementKind::Break(i),
+                    // Must only happen at the top of the stack, caught above.
+                    SpecialJump::Fallthrough => unreachable!(),
+                    SpecialJump::Loop => tgt::StatementKind::Continue(depth),
+                    SpecialJump::JumpForward => tgt::StatementKind::Break(depth),
                 };
                 tgt::Statement::new(span, kind).into_block()
             }
@@ -370,6 +442,7 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
             panic!("can't reconstruct irreducible control-flow")
         }
     };
+    reloop_ctx.detect_trivial_merges(start_block, None);
     let tgt_body = reloop_ctx.reloop_block(start_block);
 
     *body = Body::Structured(tgt::ExprBody {

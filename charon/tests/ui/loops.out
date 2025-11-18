@@ -880,16 +880,13 @@ pub fn test_loop1(@1: u32) -> u32
     let @9: u32; // anonymous local
     let @10: u32; // anonymous local
 
-    loop {
-        storage_live(@8)
-        storage_live(@9)
-        storage_live(@10)
-        storage_live(i@2)
-        i@2 := const (0 : u32)
-        storage_live(s@3)
-        s@3 := const (0 : u32)
-        break 0
-    }
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(i@2)
+    i@2 := const (0 : u32)
+    storage_live(s@3)
+    s@3 := const (0 : u32)
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -949,43 +946,40 @@ pub fn test_loop2(@1: u32) -> u32
         break 0
     }
     loop {
-        loop {
-            storage_live(@4)
-            storage_live(@5)
-            @5 := copy (i@2)
-            storage_live(@6)
-            @6 := copy (max@1)
-            @4 := move (@5) < move (@6)
-            if move (@4) {
-                storage_dead(@6)
-                storage_dead(@5)
-                storage_live(@7)
-                storage_live(@8)
-                @8 := copy (i@2)
-                @7 := move (@8) == const (17 : u32)
-                if move (@7) {
-                    storage_dead(@8)
-                    storage_dead(@7)
-                }
-                else {
-                    storage_dead(@8)
-                    storage_dead(@7)
-                    storage_live(@9)
-                    @9 := copy (i@2)
-                    @10 := copy (s@3) panic.+ copy (@9)
-                    s@3 := move (@10)
-                    storage_dead(@9)
-                    @11 := copy (i@2) panic.+ const (1 : u32)
-                    i@2 := move (@11)
-                    storage_dead(@4)
-                    continue 1
-                }
+        storage_live(@4)
+        storage_live(@5)
+        @5 := copy (i@2)
+        storage_live(@6)
+        @6 := copy (max@1)
+        @4 := move (@5) < move (@6)
+        if move (@4) {
+            storage_dead(@6)
+            storage_dead(@5)
+            storage_live(@7)
+            storage_live(@8)
+            @8 := copy (i@2)
+            @7 := move (@8) == const (17 : u32)
+            if move (@7) {
+                storage_dead(@8)
+                storage_dead(@7)
             }
             else {
-                storage_dead(@6)
-                storage_dead(@5)
+                storage_dead(@8)
+                storage_dead(@7)
+                storage_live(@9)
+                @9 := copy (i@2)
+                @10 := copy (s@3) panic.+ copy (@9)
+                s@3 := move (@10)
+                storage_dead(@9)
+                @11 := copy (i@2) panic.+ const (1 : u32)
+                i@2 := move (@11)
+                storage_dead(@4)
+                continue 0
             }
-            break 0
+        }
+        else {
+            storage_dead(@6)
+            storage_dead(@5)
         }
         storage_dead(@4)
         @0 := copy (s@3)
@@ -1043,11 +1037,8 @@ pub fn test_loop3(@1: u32) -> u32
         @7 := copy (max@1)
         @5 := move (@6) < move (@7)
         if move (@5) {
-            loop {
-                storage_dead(@7)
-                storage_dead(@6)
-                break 0
-            }
+            storage_dead(@7)
+            storage_dead(@6)
             loop {
                 storage_live(@8)
                 storage_live(@9)
@@ -1168,11 +1159,8 @@ pub fn test_loop4(@1: u32) -> u32
             @7 := copy (max@1)
             @5 := move (@6) < move (@7)
             if move (@5) {
-                loop {
-                    storage_dead(@7)
-                    storage_dead(@6)
-                    break 0
-                }
+                storage_dead(@7)
+                storage_dead(@6)
                 loop {
                     storage_live(@8)
                     storage_live(@9)
@@ -1287,11 +1275,8 @@ pub fn test_loop5(@1: u32) -> u32
         @7 := copy (max@1)
         @5 := move (@6) < move (@7)
         if move (@5) {
-            loop {
-                storage_dead(@7)
-                storage_dead(@6)
-                break 0
-            }
+            storage_dead(@7)
+            storage_dead(@6)
             loop {
                 storage_live(@8)
                 storage_live(@9)
@@ -1368,43 +1353,40 @@ pub fn test_loop6(@1: u32) -> u32
         break 0
     }
     loop {
-        loop {
-            storage_live(@4)
-            storage_live(@5)
-            @5 := copy (i@2)
-            storage_live(@6)
-            @6 := copy (max@1)
-            @4 := move (@5) < move (@6)
-            if move (@4) {
-                storage_dead(@6)
-                storage_dead(@5)
-                storage_live(@7)
-                storage_live(@8)
-                @8 := copy (i@2)
-                @7 := move (@8) > const (3 : u32)
-                if move (@7) {
-                    storage_dead(@8)
-                    storage_dead(@7)
-                }
-                else {
-                    storage_dead(@8)
-                    storage_dead(@7)
-                    storage_live(@9)
-                    @9 := copy (i@2)
-                    @10 := copy (s@3) panic.+ copy (@9)
-                    s@3 := move (@10)
-                    storage_dead(@9)
-                    @11 := copy (i@2) panic.+ const (1 : u32)
-                    i@2 := move (@11)
-                    storage_dead(@4)
-                    continue 1
-                }
+        storage_live(@4)
+        storage_live(@5)
+        @5 := copy (i@2)
+        storage_live(@6)
+        @6 := copy (max@1)
+        @4 := move (@5) < move (@6)
+        if move (@4) {
+            storage_dead(@6)
+            storage_dead(@5)
+            storage_live(@7)
+            storage_live(@8)
+            @8 := copy (i@2)
+            @7 := move (@8) > const (3 : u32)
+            if move (@7) {
+                storage_dead(@8)
+                storage_dead(@7)
             }
             else {
-                storage_dead(@6)
-                storage_dead(@5)
+                storage_dead(@8)
+                storage_dead(@7)
+                storage_live(@9)
+                @9 := copy (i@2)
+                @10 := copy (s@3) panic.+ copy (@9)
+                s@3 := move (@10)
+                storage_dead(@9)
+                @11 := copy (i@2) panic.+ const (1 : u32)
+                i@2 := move (@11)
+                storage_dead(@4)
+                continue 0
             }
-            break 0
+        }
+        else {
+            storage_dead(@6)
+            storage_dead(@5)
         }
         storage_dead(@4)
         // All the below nodes are exit candidates (each of them is referenced twice)
@@ -1458,43 +1440,40 @@ pub fn test_loop7(@1: u32) -> u32
                 break 0
             }
             loop {
-                loop {
-                    storage_live(@7)
-                    storage_live(@8)
-                    @8 := copy (i@2)
-                    storage_live(@9)
-                    @9 := copy (max@1)
-                    @7 := move (@8) < move (@9)
-                    if move (@7) {
-                        storage_dead(@9)
-                        storage_dead(@8)
-                        storage_live(@10)
-                        storage_live(@11)
-                        @11 := copy (i@2)
-                        @10 := move (@11) > const (3 : u32)
-                        if move (@10) {
-                            storage_dead(@11)
-                            storage_dead(@10)
-                        }
-                        else {
-                            storage_dead(@11)
-                            storage_dead(@10)
-                            storage_live(@12)
-                            @12 := copy (i@2)
-                            @13 := copy (s@3) panic.+ copy (@12)
-                            s@3 := move (@13)
-                            storage_dead(@12)
-                            @14 := copy (i@2) panic.+ const (1 : u32)
-                            i@2 := move (@14)
-                            storage_dead(@7)
-                            continue 1
-                        }
+                storage_live(@7)
+                storage_live(@8)
+                @8 := copy (i@2)
+                storage_live(@9)
+                @9 := copy (max@1)
+                @7 := move (@8) < move (@9)
+                if move (@7) {
+                    storage_dead(@9)
+                    storage_dead(@8)
+                    storage_live(@10)
+                    storage_live(@11)
+                    @11 := copy (i@2)
+                    @10 := move (@11) > const (3 : u32)
+                    if move (@10) {
+                        storage_dead(@11)
+                        storage_dead(@10)
                     }
                     else {
-                        storage_dead(@9)
-                        storage_dead(@8)
+                        storage_dead(@11)
+                        storage_dead(@10)
+                        storage_live(@12)
+                        @12 := copy (i@2)
+                        @13 := copy (s@3) panic.+ copy (@12)
+                        s@3 := move (@13)
+                        storage_dead(@12)
+                        @14 := copy (i@2) panic.+ const (1 : u32)
+                        i@2 := move (@14)
+                        storage_dead(@7)
+                        continue 0
                     }
-                    break 0
+                }
+                else {
+                    storage_dead(@9)
+                    storage_dead(@8)
                 }
                 storage_dead(@7)
                 break 1
@@ -1672,12 +1651,9 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_live(@5)
     @5 := Range { start: const (0 : i32), end: const (128 : i32) }
     @4 := {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move (@5))
-    loop {
-        storage_dead(@5)
-        storage_live(iter@6)
-        iter@6 := move (@4)
-        break 0
-    }
+    storage_dead(@5)
+    storage_live(iter@6)
+    iter@6 := move (@4)
     loop {
         storage_live(@7)
         storage_live(@8)
@@ -1731,12 +1707,9 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                             @19 := Range { start: const (0 : usize), end: move (@20) }
                             storage_dead(@20)
                             @18 := {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move (@19))
-                            loop {
-                                storage_dead(@19)
-                                storage_live(iter@21)
-                                iter@21 := move (@18)
-                                break 0
-                            }
+                            storage_dead(@19)
+                            storage_live(iter@21)
+                            iter@21 := move (@18)
                             loop {
                                 storage_live(@22)
                                 storage_live(@23)
@@ -1810,12 +1783,9 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             @6 := Range { start: const (0 : u32), end: move (@7) }
             storage_dead(@7)
             @5 := {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move (@6))
-            loop {
-                storage_dead(@6)
-                storage_live(iter@8)
-                iter@8 := move (@5)
-                break 0
-            }
+            storage_dead(@6)
+            storage_live(iter@8)
+            iter@8 := move (@5)
             loop {
                 storage_live(@9)
                 storage_live(@10)
@@ -1872,16 +1842,13 @@ pub fn test_crate::sum(@1: u32) -> u32
     let @9: u32; // anonymous local
     let @10: u32; // anonymous local
 
-    loop {
-        storage_live(@8)
-        storage_live(@9)
-        storage_live(@10)
-        storage_live(i@2)
-        i@2 := const (0 : u32)
-        storage_live(s@3)
-        s@3 := const (0 : u32)
-        break 0
-    }
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(i@2)
+    i@2 := const (0 : u32)
+    storage_live(s@3)
+    s@3 := const (0 : u32)
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -1931,15 +1898,12 @@ pub fn sum_array<const N : usize>(@1: Array<u32, N>) -> u32
     let @10: &'_ (Array<u32, N>); // anonymous local
     let @11: &'_ (u32); // anonymous local
 
-    loop {
-        storage_live(@8)
-        storage_live(@9)
-        storage_live(i@2)
-        i@2 := const (0 : usize)
-        storage_live(s@3)
-        s@3 := const (0 : u32)
-        break 0
-    }
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(i@2)
+    i@2 := const (0 : usize)
+    storage_live(s@3)
+    s@3 := const (0 : u32)
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -1989,13 +1953,10 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_i
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
 
-    loop {
-        storage_live(@10)
-        @0 := ()
-        storage_live(i@2)
-        i@2 := const (0 : usize)
-        break 0
-    }
+    storage_live(@10)
+    @0 := ()
+    storage_live(i@2)
+    i@2 := const (0 : usize)
     loop {
         storage_live(@3)
         storage_live(@4)
@@ -2057,9 +2018,6 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[{built_in impl Sized for usiz
     let @8: &'_ mut (List<usize>[{built_in impl Sized for usize}]); // anonymous local
 
     loop {
-        break 0
-    }
-    loop {
         match *(ls@1) {
             List::Cons => {
                 storage_live(y@3)
@@ -2115,10 +2073,7 @@ where
     let @7: &'_ mut (List<T>[@TraitClause0]); // anonymous local
     let @8: u32; // anonymous local
 
-    loop {
-        storage_live(@8)
-        break 0
-    }
+    storage_live(@8)
     loop {
         match *(ls@1) {
             List::Cons => {

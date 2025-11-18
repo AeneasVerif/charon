@@ -5242,12 +5242,9 @@ fn main()
     @4 := {impl IntoIterator for Array<T, N>}::into_iter<i32, 7 : usize>[{built_in impl Sized for i32}](move (@5))
     storage_dead(@5)
     @3 := {impl IntoIterator for I}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move (@4))
-    loop {
-        storage_dead(@4)
-        storage_live(iter@6)
-        iter@6 := move (@3)
-        break 0
-    }
+    storage_dead(@4)
+    storage_live(iter@6)
+    iter@6 := move (@3)
     loop {
         storage_live(@7)
         storage_live(@8)
@@ -5274,12 +5271,9 @@ fn main()
                 @14 := iter<'_, i32>[{built_in impl Sized for i32}](move (@15))
                 storage_dead(@15)
                 @13 := {impl IntoIterator for I}::into_iter<Iter<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@14))
-                loop {
-                    storage_dead(@14)
-                    storage_live(iter@17)
-                    iter@17 := move (@13)
-                    break 0
-                }
+                storage_dead(@14)
+                storage_live(iter@17)
+                iter@17 := move (@13)
                 loop {
                     storage_live(@18)
                     storage_live(@19)
@@ -5304,12 +5298,9 @@ fn main()
                             @26 := chunks<'_, i32>[{built_in impl Sized for i32}](move (@27), const (2 : usize))
                             storage_dead(@27)
                             @25 := {impl IntoIterator for I}::into_iter<Chunks<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@26))
-                            loop {
-                                storage_dead(@26)
-                                storage_live(iter@29)
-                                iter@29 := move (@25)
-                                break 0
-                            }
+                            storage_dead(@26)
+                            storage_live(iter@29)
+                            iter@29 := move (@25)
                             loop {
                                 storage_live(@30)
                                 storage_live(@31)
@@ -5334,12 +5325,9 @@ fn main()
                                         @35 := chunks_exact<'_, i32>[{built_in impl Sized for i32}](move (@36), const (2 : usize))
                                         storage_dead(@36)
                                         @34 := {impl IntoIterator for I}::into_iter<ChunksExact<'_, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'_, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'_, i32>[{built_in impl Sized for i32}]](move (@35))
-                                        loop {
-                                            storage_dead(@35)
-                                            storage_live(iter@38)
-                                            iter@38 := move (@34)
-                                            break 0
-                                        }
+                                        storage_dead(@35)
+                                        storage_live(iter@38)
+                                        iter@38 := move (@34)
                                         loop {
                                             storage_live(@39)
                                             storage_live(@40)

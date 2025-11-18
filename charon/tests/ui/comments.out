@@ -154,11 +154,8 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     @5 := move (@7)
     storage_dead(@6)
     @4 := function_call(move (@5))
-    loop {
-        storage_dead(@5)
-        storage_dead(@4)
-        break 0
-    }
+    storage_dead(@5)
+    storage_dead(@4)
     // Start of loop
     loop {
         storage_live(@8)
@@ -193,31 +190,28 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
             storage_dead(@8)
         }
         else {
-            loop {
-                storage_dead(@10)
-                storage_dead(@9)
-                storage_dead(@8)
-                storage_live(@16)
-                storage_live(@17)
-                storage_live(@18)
-                // Assign the result of an `if`.
-                @18 := copy (sum@2)
-                @17 := move (@18) > const (10 : u32)
-                if move (@17) {
-                    storage_dead(@18)
-                    storage_live(@19)
-                    // sum + 100
-                    @19 := copy (sum@2)
-                    @20 := copy (@19) panic.+ const (100 : u32)
-                    @16 := move (@20)
-                    storage_dead(@19)
-                }
-                else {
-                    storage_dead(@18)
-                    // let sum untouched
-                    @16 := copy (sum@2)
-                }
-                break 0
+            storage_dead(@10)
+            storage_dead(@9)
+            storage_dead(@8)
+            storage_live(@16)
+            storage_live(@17)
+            storage_live(@18)
+            // Assign the result of an `if`.
+            @18 := copy (sum@2)
+            @17 := move (@18) > const (10 : u32)
+            if move (@17) {
+                storage_dead(@18)
+                storage_live(@19)
+                // sum + 100
+                @19 := copy (sum@2)
+                @20 := copy (@19) panic.+ const (100 : u32)
+                @16 := move (@20)
+                storage_dead(@19)
+            }
+            else {
+                storage_dead(@18)
+                // let sum untouched
+                @16 := copy (sum@2)
             }
             storage_dead(@17)
             sum@2 := move (@16)

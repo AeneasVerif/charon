@@ -156,24 +156,21 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
     storage_dead(@4)
     switch move (@3) {
         0 : u32 => {
-            loop {
-                storage_dead(@3)
-                storage_live(@5)
-                storage_live(@6)
-                @6 := copy (((*(f@2)).0).flags)
-                @5 := move (@6) & copy (DEBUG_UPPER_HEX_FLAG)
-                storage_dead(@6)
-                switch move (@5) {
-                    0 : u32 => {
-                        storage_dead(@5)
-                        @0 := {impl Display for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
-                    },
-                    _ => {
-                        storage_dead(@5)
-                        @0 := {impl UpperHex for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
-                    },
-                }
-                break 0
+            storage_dead(@3)
+            storage_live(@5)
+            storage_live(@6)
+            @6 := copy (((*(f@2)).0).flags)
+            @5 := move (@6) & copy (DEBUG_UPPER_HEX_FLAG)
+            storage_dead(@6)
+            switch move (@5) {
+                0 : u32 => {
+                    storage_dead(@5)
+                    @0 := {impl Display for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
+                },
+                _ => {
+                    storage_dead(@5)
+                    @0 := {impl UpperHex for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
+                },
             }
             return
         },

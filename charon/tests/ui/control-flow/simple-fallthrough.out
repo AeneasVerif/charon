@@ -75,39 +75,36 @@ fn foo(@1: Option<u32>[{built_in impl Sized for u32}])
     let @7: u32; // anonymous local
 
     loop {
-        loop {
-            storage_live(@3)
-            @0 := ()
-            storage_live(@2)
-            match opt@1 {
-                Option::Some => {
-                    storage_live(x@5)
-                    x@5 := &(opt@1 as variant Option::Some).0
-                    @3 := &shallow opt@1
-                    storage_live(@6)
-                    storage_live(@7)
-                    @7 := copy (*(x@5))
-                    @6 := move (@7) >= const (42 : u32)
-                    if move (@6) {
-                        storage_dead(@7)
-                        storage_dead(@6)
-                        storage_live(x@4)
-                        x@4 := copy ((opt@1 as variant Option::Some).0)
-                        @2 := do_something()
-                        storage_dead(x@4)
-                        storage_dead(x@5)
-                        break 1
-                    }
-                    else {
-                        storage_dead(@7)
-                        storage_dead(@6)
-                        storage_dead(x@5)
-                    }
-                },
-                _ => {
-                },
-            }
-            break 0
+        storage_live(@3)
+        @0 := ()
+        storage_live(@2)
+        match opt@1 {
+            Option::Some => {
+                storage_live(x@5)
+                x@5 := &(opt@1 as variant Option::Some).0
+                @3 := &shallow opt@1
+                storage_live(@6)
+                storage_live(@7)
+                @7 := copy (*(x@5))
+                @6 := move (@7) >= const (42 : u32)
+                if move (@6) {
+                    storage_dead(@7)
+                    storage_dead(@6)
+                    storage_live(x@4)
+                    x@4 := copy ((opt@1 as variant Option::Some).0)
+                    @2 := do_something()
+                    storage_dead(x@4)
+                    storage_dead(x@5)
+                    break 0
+                }
+                else {
+                    storage_dead(@7)
+                    storage_dead(@6)
+                    storage_dead(x@5)
+                }
+            },
+            _ => {
+            },
         }
         @2 := do_something_else()
         break 0

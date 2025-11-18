@@ -30,30 +30,24 @@ fn f0()
     let @2: bool; // anonymous local
     let x@3: u8; // local
 
-    loop {
-        @0 := ()
-        storage_live(@1)
-        @1 := const (0 : i32) < const (1 : i32)
-        if move (@1) {
-            loop {
-                storage_live(@2)
-                @2 := const (0 : i32) < const (1 : i32)
-                if move (@2) {
-                }
-                else {
-                }
-                break 0
-            }
-            storage_dead(@2)
-            storage_live(x@3)
-            x@3 := copy (CONST)
-            @0 := ()
-            storage_dead(x@3)
+    @0 := ()
+    storage_live(@1)
+    @1 := const (0 : i32) < const (1 : i32)
+    if move (@1) {
+        storage_live(@2)
+        @2 := const (0 : i32) < const (1 : i32)
+        if move (@2) {
         }
         else {
-            @0 := ()
         }
-        break 0
+        storage_dead(@2)
+        storage_live(x@3)
+        x@3 := copy (CONST)
+        @0 := ()
+        storage_dead(x@3)
+    }
+    else {
+        @0 := ()
     }
     storage_dead(@1)
     return
@@ -90,32 +84,26 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
         @4 := move (@5) < const (1 : i32)
         if move (@4) {
             loop {
-                loop {
-                    storage_dead(@5)
-                    storage_live(@6)
-                    @6 := const (0 : i32) < const (1 : i32)
-                    if move (@6) {
+                storage_dead(@5)
+                storage_live(@6)
+                @6 := const (0 : i32) < const (1 : i32)
+                if move (@6) {
+                }
+                else {
+                    storage_live(@7)
+                    @7 := const (1 : i32) > const (1 : i32)
+                    if move (@7) {
                     }
                     else {
-                        storage_live(@7)
-                        @7 := const (1 : i32) > const (1 : i32)
-                        if move (@7) {
-                        }
-                        else {
-                            break 1
-                        }
+                        break 0
                     }
-                    break 0
                 }
                 break 0
             }
-            loop {
-                storage_dead(@7)
-                storage_dead(@6)
-                storage_live(j@8)
-                j@8 := const (0 : i32)
-                break 0
-            }
+            storage_dead(@7)
+            storage_dead(@6)
+            storage_live(j@8)
+            j@8 := const (0 : i32)
             loop {
                 storage_live(@9)
                 storage_live(@10)

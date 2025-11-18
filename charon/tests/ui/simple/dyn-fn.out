@@ -120,22 +120,19 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn,
     @6 := &two-phase-mut *(@7)
     @5 := (move (@6))
     @3 := Fn<(dyn exists<_dyn> [@TraitClause0_2]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_2::parent_clause1::parent_clause1::Output = bool), (&'_ mut (u32))>::call<'_>(move (@4), move (@5))
-    loop {
-        if move (@3) {
-            storage_dead(@7)
-            storage_dead(@6)
-            storage_dead(@5)
-            storage_dead(@4)
-            @0 := ()
-        }
-        else {
-            storage_dead(@7)
-            storage_dead(@6)
-            storage_dead(@5)
-            storage_dead(@4)
-            @0 := ()
-        }
-        break 0
+    if move (@3) {
+        storage_dead(@7)
+        storage_dead(@6)
+        storage_dead(@5)
+        storage_dead(@4)
+        @0 := ()
+    }
+    else {
+        storage_dead(@7)
+        storage_dead(@6)
+        storage_dead(@5)
+        storage_dead(@4)
+        @0 := ()
     }
     storage_dead(@3)
     storage_dead(counter@2)
