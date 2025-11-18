@@ -34,7 +34,7 @@ pub struct DefaultHasher {}
 
 // Full name: test_crate::{impl Hasher for DefaultHasher}
 impl Hasher for DefaultHasher {
-    parent_clause0 = MetaSized<DefaultHasher>
+    parent_clause0 = {built_in impl MetaSized for DefaultHasher}
     vtable: {impl Hasher for DefaultHasher}::{vtable}
 }
 
@@ -51,6 +51,7 @@ where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
     [@TraitClause2]: Hasher<H>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Hash for u32}::hash
 pub fn {impl Hash for u32}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
@@ -69,7 +70,7 @@ where
 
 // Full name: test_crate::{impl Hash for u32}
 impl Hash for u32 {
-    parent_clause0 = MetaSized<u32>
+    parent_clause0 = {built_in impl MetaSized for u32}
     fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = {impl Hash for u32}::hash<'_0_1, '_1_1, H>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
@@ -81,27 +82,32 @@ fn main()
     let hasher@1: DefaultHasher; // local
     let @2: (); // anonymous local
     let @3: &'_ (u32); // anonymous local
-    let @4: u32; // anonymous local
+    let @4: &'_ mut (DefaultHasher); // anonymous local
     let @5: &'_ mut (DefaultHasher); // anonymous local
-    let @6: &'_ mut (DefaultHasher); // anonymous local
+    let @6: &'_ (u32); // anonymous local
+    let @7: &'_ (u32); // anonymous local
+    let @8: u32; // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    @8 := const (0 : u32)
+    @7 := &@8
+    storage_live(@6)
     @0 := ()
     storage_live(hasher@1)
     hasher@1 := DefaultHasher {  }
     storage_live(@2)
     storage_live(@3)
+    @6 := move (@7)
+    @3 := &*(@6)
     storage_live(@4)
-    @4 := const (0 : u32)
-    @3 := &@4
     storage_live(@5)
-    storage_live(@6)
-    @6 := &mut hasher@1
-    @5 := &two-phase-mut *(@6)
-    @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[Sized<DefaultHasher>, {impl Hasher for DefaultHasher}](move (@3), move (@5))
-    storage_dead(@5)
-    storage_dead(@3)
-    storage_dead(@6)
+    @5 := &mut hasher@1
+    @4 := &two-phase-mut *(@5)
+    @2 := {impl Hash for u32}::hash<'_, '_, DefaultHasher>[{built_in impl Sized for DefaultHasher}, {impl Hasher for DefaultHasher}](move (@3), move (@4))
     storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@5)
     storage_dead(@2)
     @0 := ()
     storage_dead(hasher@1)

@@ -33,7 +33,6 @@ module Ast = struct
     | StorageDead var_id ->
         indent ^ "storage_dead " ^ local_id_to_string env var_id
     | Deinit p -> indent ^ "deinit " ^ place_to_string env p
-    | Drop (p, _) -> indent ^ "drop " ^ place_to_string env p
     | CopyNonOverlapping { src; dst; count } ->
         indent ^ "copy_non_overlapping(" ^ operand_to_string env src ^ ", "
         ^ operand_to_string env dst ^ ", "
@@ -73,6 +72,9 @@ module Ast = struct
         call_to_string env indent call
         ^ " -> " ^ block_id_to_string tgt ^ "(unwind:"
         ^ block_id_to_string unwind ^ ")"
+    | Drop (p, _, tgt, unwind) ->
+        indent ^ "drop " ^ place_to_string env p ^ " -> "
+        ^ block_id_to_string tgt ^ "(unwind:" ^ block_id_to_string unwind ^ ")"
     | Abort _ -> indent ^ "panic"
     | Return -> indent ^ "return"
     | UnwindResume -> indent ^ "unwind_continue"

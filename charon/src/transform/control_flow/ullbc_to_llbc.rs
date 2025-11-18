@@ -20,7 +20,17 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::ast::*;
+use indexmap::IndexMap;
+use itertools::Itertools;
+use num_bigint::BigInt;
+use num_rational::BigRational;
+use petgraph::algo::dominators::simple_fast;
+use petgraph::algo::toposort;
+use petgraph::graphmap::DiGraphMap;
+use petgraph::visit::{DfsPostOrder, Walker};
+use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
+use std::u32;
+
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
 use crate::formatter::IntoFormatter;
@@ -28,17 +38,9 @@ use crate::llbc_ast as tgt;
 use crate::meta::{Span, combine_span};
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{self as src};
-use indexmap::IndexMap;
-use itertools::Itertools;
-use num_bigint::BigInt;
-use num_rational::BigRational;
-use petgraph::Direction;
-use petgraph::algo::toposort;
-use petgraph::graphmap::DiGraphMap;
-use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
-
 use crate::transform::ctx::TransformPass;
+use crate::ullbc_ast::{self as src, BlockId};
+use crate::{ast::*, register_error};
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId, ()>;
@@ -69,121 +71,92 @@ struct CfgInfo {
     pub only_reach_error: HashSet<src::BlockId>,
 }
 
+/// Error indicating that the control-flow graph is not reducible. The contained block id is a
+/// block involved in an irreducible subgraph.
+struct Irreducible(BlockId);
+
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
-    let mut cfg = CfgInfo {
-        cfg: Cfg::new(),
-        cfg_no_be: Cfg::new(),
-        loop_entries: HashSet::new(),
-        backward_edges: HashSet::new(),
-        switch_blocks: HashSet::new(),
-        only_reach_error: HashSet::new(),
-    };
+fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
+    let start_block = BlockId::ZERO;
 
-    // Add the nodes
-    for block_id in body.body.iter_indices() {
-        cfg.cfg.add_node(block_id);
-        cfg.cfg_no_be.add_node(block_id);
-    }
-
-    // Add the edges
-    let ancestors = HashSet::new();
-    let mut explored = HashSet::new();
-    build_cfg_partial_info_edges(
-        &mut cfg,
-        &ancestors,
-        &mut explored,
-        body,
-        src::BlockId::ZERO,
-    );
-
-    cfg
-}
-
-fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId) -> bool {
-    let block = body.body.get(block_id).unwrap();
-    block.terminator.kind.is_switch()
-}
-
-/// The terminator of the block is a panic, etc.
-fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
-    let block = body.body.get(block_id).unwrap();
-    use src::TerminatorKind::*;
-    match &block.terminator.kind {
-        Abort(..) => true,
-        Goto { .. } | Switch { .. } | Return | Call { .. } | UnwindResume => false,
-    }
-}
-
-fn build_cfg_partial_info_edges(
-    cfg: &mut CfgInfo,
-    ancestors: &HashSet<src::BlockId>,
-    explored: &mut HashSet<src::BlockId>,
-    body: &src::ExprBody,
-    block_id: src::BlockId,
-) {
-    // Check if we already explored the current node
-    if explored.contains(&block_id) {
-        return;
-    }
-    explored.insert(block_id);
-
-    // Insert the current block in the set of ancestors blocks
-    let mut ancestors = ancestors.clone();
-    ancestors.insert(block_id);
-
-    // Check if it is a switch
-    if block_is_switch(body, block_id) {
-        cfg.switch_blocks.insert(block_id);
-    }
-
-    // Retrieve the block targets
-    let mut targets = body.body.get(block_id).unwrap().targets();
-    // Hack: we don't translate unwind paths in llbc so we ignore them here.
-    if let src::TerminatorKind::Call { target, .. } =
-        body.body.get(block_id).unwrap().terminator.kind
-    {
-        targets = vec![target];
-    }
-
-    let mut has_backward_edge = false;
-
-    // Add edges for all the targets and explore them, if they are not predecessors
-    for tgt in &targets {
-        // Insert the edge in the "regular" CFG
-        cfg.cfg.add_edge(block_id, *tgt, ());
-
-        // We need to check if it is a backward edge before inserting it in the
-        // CFG without backward edges and exploring it
-        if ancestors.contains(tgt) {
-            // This is a backward edge
-            has_backward_edge = true;
-            cfg.loop_entries.insert(*tgt);
-            cfg.backward_edges.insert((block_id, *tgt));
-        } else {
-            // Not a backward edge: insert the edge and explore
-            cfg.cfg_no_be.add_edge(block_id, *tgt, ());
-            ensure_sufficient_stack(|| {
-                build_cfg_partial_info_edges(cfg, &ancestors, explored, body, *tgt);
-            })
+    // Build the node graph (we ignore unwind paths for now).
+    let mut cfg = Cfg::new();
+    for (block_id, block) in body.body.iter_indexed() {
+        cfg.add_node(block_id);
+        for tgt in block.targets_ignoring_unwind() {
+            cfg.add_edge(block_id, tgt, ());
         }
     }
 
-    // Check if this node can only reach error nodes:
-    // - we check if the current node ends with an error terminator
-    // - or check that all the targets lead to error nodes
-    // Note that if there is a backward edge, we consider that we don't necessarily
-    // go to error.
-    if !has_backward_edge
-        && (block_is_error(body, block_id)
-            || (
-                // The targets are empty if this is an error node *or* a return node
-                !targets.is_empty() && targets.iter().all(|tgt| cfg.only_reach_error.contains(tgt))
-            ))
-    {
-        cfg.only_reach_error.insert(block_id);
+    // Compute the dominator tree.
+    let dominator_tree = simple_fast(&cfg, start_block);
+
+    // Compute reverse postorder numbering.
+    let mut reverse_postorder = body.body.map_ref_opt(|_| None);
+    for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
+        let rev_post_id = reverse_postorder.slot_count() - i;
+        assert!(rev_post_id <= u32::MAX as usize);
+        reverse_postorder.set_slot(block_id, rev_post_id as u32);
     }
+
+    // Compute the forward graph (without backward edges).
+    let mut cfg_no_be = Cfg::new();
+    let mut loop_entries = HashSet::new();
+    let mut backward_edges = HashSet::new();
+    let mut switch_blocks = HashSet::new();
+    for src in cfg.nodes() {
+        if reverse_postorder.get(src).is_none() {
+            // Unreachable block
+            continue;
+        }
+        cfg_no_be.add_node(src);
+        if body.body[src].terminator.kind.is_switch() {
+            switch_blocks.insert(src);
+        }
+        for tgt in cfg.neighbors(src) {
+            // Check if the edge is a backward edge.
+            if reverse_postorder[src] >= reverse_postorder[tgt] {
+                // This is a backward edge
+                loop_entries.insert(tgt);
+                backward_edges.insert((src, tgt));
+                // A cfg is reducible iff the target of every back edge dominates the
+                // edge's source.
+                if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
+                    return Err(Irreducible(src));
+                }
+            } else {
+                cfg_no_be.add_edge(src, tgt, ());
+            }
+        }
+    }
+
+    // Compute the nodes that can only reach error nodes.
+    let mut only_reach_error = HashSet::new();
+    for block_id in DfsPostOrder::new(&cfg_no_be, start_block).iter(&cfg_no_be) {
+        let block = &body.body[block_id];
+        // The node can only reach error nodes if:
+        // - it is an error node;
+        // - or it has neighbors and they all lead to errors.
+        // Note that if there is a backward edge, `only_reach_error` cannot contain this
+        // node yet. In other words, this does not consider infinite loops as reaching an
+        // error node.
+        let targets = cfg.neighbors(block_id).collect_vec();
+        if block.terminator.is_error()
+            || (!targets.is_empty() && targets.iter().all(|tgt| only_reach_error.contains(tgt)))
+        {
+            only_reach_error.insert(block_id);
+        }
+    }
+
+    Ok(CfgInfo {
+        cfg,
+        cfg_no_be,
+        loop_entries,
+        backward_edges,
+        switch_blocks,
+        only_reach_error,
+    })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -264,8 +237,7 @@ fn loop_entry_is_reachable_from_inner(
         }
         explored.insert(bid);
 
-        let next_ids = cfg.cfg.neighbors_directed(bid, Direction::Outgoing);
-        for next_id in next_ids {
+        for next_id in cfg.cfg.neighbors(bid) {
             // Check if this is a backward edge
             if cfg.backward_edges.contains(&(bid, next_id)) {
                 // Backward edge: only allow those going directly to the current
@@ -1465,7 +1437,6 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
         src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
         src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
-        src::StatementKind::Drop(place, tref) => tgt::StatementKind::Drop(place, tref),
         src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
         src::StatementKind::Nop => tgt::StatementKind::Nop,
         src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
@@ -1507,6 +1478,28 @@ fn translate_terminator(
             );
             let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
             let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
+            block.statements.insert(0, st);
+            block
+        }
+        src::TerminatorKind::Drop {
+            place,
+            tref,
+            target,
+            on_unwind: _,
+        } => {
+            // TODO: Have unwinds in the LLBC
+            let target_block = translate_child_block(
+                info,
+                parent_loops,
+                switch_exit_blocks,
+                terminator.span,
+                *target,
+            );
+            let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
+            let st = tgt::Statement::new(
+                src_span,
+                tgt::StatementKind::Drop(place.clone(), tref.clone()),
+            );
             block.statements.insert(0, st);
             block
         }
@@ -1641,7 +1634,7 @@ fn translate_block(
     );
     info.explored.insert(block_id);
 
-    let block = info.body.body.get(block_id).unwrap();
+    let block = &info.body.body[block_id];
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = info.cfg.loop_entries.contains(&block_id);
@@ -1723,7 +1716,18 @@ fn translate_block(
 fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = build_cfg_info(src_body);
+    let cfg_info = match build_cfg_info(src_body) {
+        Ok(cfg_info) => cfg_info,
+        Err(Irreducible(bid)) => {
+            let span = src_body.body[bid].terminator.span;
+            register_error!(
+                ctx,
+                span,
+                "the control-flow graph of this function is not reducible"
+            );
+            panic!("can't reconstruct irreducible control-flow")
+        }
+    };
     trace!("cfg_info: {:?}", cfg_info);
 
     // Find the exit block for all the loops and switches, if such an exit point
@@ -1778,14 +1782,6 @@ impl TransformPass for Transform {
                 "# Signature:\n{}\n\n# Function definition:\n{}\n",
                 fun.signature.with_ctx(fmt_ctx),
                 fun.with_ctx(fmt_ctx),
-            );
-        }
-        // Print the global variables
-        for global in &ctx.translated.global_decls {
-            trace!(
-                "# Type:\n{}\n\n# Global definition:\n{}\n",
-                global.ty.with_ctx(fmt_ctx),
-                global.with_ctx(fmt_ctx),
             );
         }
 

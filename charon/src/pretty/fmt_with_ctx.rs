@@ -215,9 +215,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
 
 impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let tab = ctx.indent();
+        write!(f, "\n{tab}")?;
         match self {
-            Body::Unstructured(b) => write!(f, "{}", b.with_ctx(ctx)),
-            Body::Structured(b) => write!(f, "{}", b.with_ctx(ctx)),
+            Body::Unstructured(body) => {
+                let body = body.with_ctx(ctx);
+                write!(f, "{{\n{body}{tab}}}")
+            }
+            Body::Structured(body) => {
+                let body = body.with_ctx(ctx);
+                write!(f, "{{\n{body}{tab}}}")
+            }
+            Body::TraitMethodWithoutDefault => write!(f, "= <method_without_default_body>"),
+            Body::Opaque => write!(f, "= <opaque>"),
+            Body::Missing => write!(f, "= <missing>"),
+            Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
         }
     }
 }
@@ -467,16 +479,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             write!(f, " -> {}", self.signature.output.with_ctx(ctx))?;
         };
         write!(f, "{preds}")?;
-
-        // Body
-        match &self.body {
-            Ok(body) => {
-                let tab = ctx.indent();
-                let body = body.with_ctx(ctx);
-                write!(f, "\n{tab}{{\n{body}{tab}}}")?;
-            }
-            Err(Opaque) => {}
-        }
+        write!(f, "{}", self.body.with_ctx(ctx))?;
 
         Ok(())
     }
@@ -1407,14 +1410,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             StatementKind::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
             }
-            StatementKind::Drop(place, tref) => {
-                write!(
-                    f,
-                    "{tab}drop[{}] {}",
-                    tref.with_ctx(ctx),
-                    place.with_ctx(ctx),
-                )
-            }
             StatementKind::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
             StatementKind::Nop => write!(f, "{tab}nop"),
             StatementKind::Error(s) => write!(f, "{tab}@Error({})", s),
@@ -1583,6 +1578,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 let call = call.with_ctx(ctx);
                 write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
             }
+            TerminatorKind::Drop {
+                place,
+                tref,
+                target,
+                on_unwind,
+            } => {
+                write!(
+                    f,
+                    "drop[{}] {} -> bb{target} (unwind: bb{on_unwind})",
+                    tref.with_ctx(ctx),
+                    place.with_ctx(ctx),
+                )
+            }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
             TerminatorKind::Return => write!(f, "return"),
             TerminatorKind::UnwindResume => write!(f, "unwind_continue"),
@@ -1684,6 +1692,23 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
     }
 }
 
+impl TraitDeclRef {
+    fn format_as_impl<C: AstFormatter>(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut pred = self.clone();
+        let self_ty = pred.generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        let pred = pred.with_ctx(ctx);
+        match self_ty {
+            Some(self_ty) => {
+                let self_ty = self_ty.with_ctx(ctx);
+                write!(f, "{pred} for {self_ty}")?;
+            }
+            // Monomorphized traits don't have self types.
+            None => write!(f, "{pred}")?,
+        }
+        Ok(())
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let full_name = self.item_meta.name.with_ctx(ctx);
@@ -1694,23 +1719,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "impl{generics} ")?;
-        let mut impl_trait = self.impl_trait.clone();
-        match impl_trait
-            .generics
-            .types
-            .remove_and_shift_ids(TypeVarId::ZERO)
-        {
-            Some(self_ty) => {
-                let self_ty = self_ty.with_ctx(ctx);
-                let impl_trait = impl_trait.with_ctx(ctx);
-                write!(f, "{impl_trait} for {self_ty}")?;
-            }
-            // TODO(mono): A monomorphized trait doesn't take arguments.
-            None => {
-                let impl_trait = impl_trait.with_ctx(ctx);
-                write!(f, "{impl_trait}")?;
-            }
-        }
+        self.impl_trait.format_as_impl(ctx, f)?;
         write!(f, "{clauses}")?;
 
         let newline = if clauses.is_empty() {
@@ -1794,7 +1803,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
             }
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto { types, .. } => {
-                write!(f, "{}", self.trait_decl_ref.with_ctx(ctx))?;
+                write!(f, "{{built_in impl ")?;
+                let bound_ctx = &ctx.push_bound_regions(&self.trait_decl_ref.regions);
+                self.trait_decl_ref
+                    .skip_binder
+                    .format_as_impl(bound_ctx, f)?;
                 if !types.is_empty() {
                     let types = types
                         .iter()
@@ -1805,6 +1818,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                         .join(", ");
                     write!(f, " where {types}")?;
                 }
+                write!(f, "}}")?;
                 Ok(())
             }
             TraitRefKind::Dyn { .. } => write!(f, "{}", self.trait_decl_ref.with_ctx(ctx)),

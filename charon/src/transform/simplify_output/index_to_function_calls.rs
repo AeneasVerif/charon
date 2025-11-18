@@ -343,12 +343,8 @@ impl Transform {
 /// ```
 impl LlbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        if let Ok(body) = &mut decl.body {
-            self.transform_body_with_param(
-                ctx,
-                body.as_structured_mut().unwrap(),
-                &decl.signature.generics,
-            )
+        if let Some(body) = decl.body.as_structured_mut() {
+            self.transform_body_with_param(ctx, body, &decl.signature.generics)
         }
     }
 }

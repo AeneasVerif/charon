@@ -590,7 +590,7 @@ impl ItemTransCtx<'_, '_> {
     /// global {impl Trait for Foo}::vtable<Args..>: Trait::{vtable}<TraitArgs.., AssocTys..> {
     ///     size: size_of(Foo),
     ///     align: align_of(Foo),
-    ///     drop: <Foo as Drop>::drop,
+    ///     drop: <Foo as Destruct>::drop_in_place,
     ///     method_0: <Foo as Trait>::method_0::{shim},
     ///     method_1: <Foo as Trait>::method_1::{shim},
     ///     ...
@@ -954,25 +954,25 @@ impl ItemTransCtx<'_, '_> {
         //     .translate_fn_ptr(span, &drop_in_place, TransItemSourceKind::Fun)?
         //     .erase();
         let fn_ptr = {
-            // Build a reference to `impl Drop for T`.
-            let drop_trait = self.tcx.lang_items().drop_trait().unwrap();
-            let drop_impl_expr: hax::ImplExpr = {
+            // Build a reference to `impl Destruct for T`.
+            let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
+            let impl_expr: hax::ImplExpr = {
                 let s = self.hax_state_with_id();
                 let rustc_trait_args = trait_ref.rustc_args(s);
                 let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-                let drop_tref =
-                    rustc_middle::ty::TraitRef::new_from_args(self.tcx, drop_trait, generics);
-                hax::solve_trait(s, rustc_middle::ty::Binder::dummy(drop_tref))
+                let tref =
+                    rustc_middle::ty::TraitRef::new_from_args(self.tcx, destruct_trait, generics);
+                hax::solve_trait(s, rustc_middle::ty::Binder::dummy(tref))
             };
-            let drop_tref = self.translate_trait_impl_expr(span, &drop_impl_expr)?;
+            let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
             let method_id = self.register_item(
                 span,
-                drop_impl_expr.r#trait.hax_skip_binder_ref(),
+                impl_expr.r#trait.hax_skip_binder_ref(),
                 TransItemSourceKind::DropInPlaceMethod(None),
             );
-            let item_name = TraitItemName("drop_in_place".to_string());
+            let item_name = TraitItemName("drop_in_place".into());
             FnPtr::new(
-                FnPtrKind::Trait(drop_tref, item_name, method_id),
+                FnPtrKind::Trait(tref, item_name, method_id),
                 GenericArgs::empty(),
             )
         };
@@ -1044,10 +1044,9 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Err(Opaque)
+            Body::Opaque
         } else {
-            self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)
-                .map_err(|_| Opaque)
+            self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)?
         };
 
         Ok(FunDecl {
@@ -1180,15 +1179,15 @@ impl ItemTransCtx<'_, '_> {
         );
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Err(Opaque)
+            Body::Opaque
         } else {
-            Ok(self.translate_vtable_shim_body(
+            self.translate_vtable_shim_body(
                 span,
                 &target_receiver,
                 &signature,
                 impl_func_def,
                 impl_kind,
-            )?)
+            )?
         };
 
         Ok(FunDecl {

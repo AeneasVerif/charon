@@ -12,8 +12,7 @@ pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_function(&self, _ctx: &mut TransformCtx, decl: &mut FunDecl) {
         if decl.signature.output.is_unit() {
-            if let Ok(body) = &mut decl.body {
-                let body = body.as_unstructured_mut().unwrap();
+            if let Some(body) = decl.body.as_unstructured_mut() {
                 let block = &mut body.body[0];
                 let return_place = body.locals.return_place();
                 let assign_st = Statement::new(

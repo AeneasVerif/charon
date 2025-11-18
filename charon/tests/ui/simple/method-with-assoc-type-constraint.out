@@ -12,23 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
     fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
+    vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -62,6 +56,7 @@ where
     [@TraitClause0]: FromIterator<Self, A>,
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: IntoIterator<T, A>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
 pub fn {impl FromIterator<()> for ()}::from_iter<I>(@1: I)
@@ -74,14 +69,14 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<I>] iter@1
+    drop[{built_in impl Destruct for I}] iter@1
     return
 }
 
 // Full name: test_crate::{impl FromIterator<()> for ()}
 impl FromIterator<()> for () {
-    parent_clause0 = Sized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl Sized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     fn from_iter<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: IntoIterator<I, ()>> = {impl FromIterator<()> for ()}::from_iter<I>[@TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }

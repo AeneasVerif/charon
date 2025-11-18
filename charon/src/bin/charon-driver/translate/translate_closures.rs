@@ -100,19 +100,7 @@ impl ItemTransCtx<'_, '_> {
         let upvar_binder = hax::Binder {
             value: (),
             bound_vars: closure
-                .upvar_tys
-                .iter()
-                .filter(|ty| {
-                    matches!(
-                        ty.kind(),
-                        hax::TyKind::Ref(
-                            hax::Region {
-                                kind: hax::RegionKind::ReErased
-                            },
-                            ..
-                        )
-                    )
-                })
+                .iter_upvar_borrows()
                 .map(|_| hax::BoundVariableKind::Region(hax::BoundRegionKind::Anon))
                 .collect(),
         };
@@ -348,72 +336,66 @@ impl ItemTransCtx<'_, '_> {
         target_kind: ClosureKind,
         args: &hax::ClosureArgs,
         signature: &FunSig,
-    ) -> Result<Result<Body, Opaque>, Error> {
+    ) -> Result<Body, Error> {
         use ClosureKind::*;
         let closure_kind = translate_closure_kind(&args.kind);
         Ok(match (target_kind, closure_kind) {
             (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
                 // Translate the function's body normally
-                let mut bt_ctx = BodyTransCtx::new(&mut self);
-                match bt_ctx.translate_def_body(span, def) {
-                    Ok(Ok(mut body)) => {
-                        // The body is translated as if the locals are: ret value, state, arg-1,
-                        // ..., arg-N, rest...
-                        // However, there is only one argument with the tupled closure arguments;
-                        // we must thus shift all locals with index >=2 by 1, and add a new local
-                        // for the tupled arg, giving us: ret value, state, args, arg-1, ...,
-                        // arg-N, rest...
-                        // We then add N statements of the form `locals[N+3] := move locals[2].N`,
-                        // to destructure the arguments.
-                        let GExprBody {
-                            locals,
-                            body: blocks,
-                            ..
-                        } = body.as_unstructured_mut().unwrap();
+                let mut body = BodyTransCtx::new(&mut self).translate_def_body(span, def);
+                // The body is translated as if the locals are: ret value, state, arg-1,
+                // ..., arg-N, rest...
+                // However, there is only one argument with the tupled closure arguments;
+                // we must thus shift all locals with index >=2 by 1, and add a new local
+                // for the tupled arg, giving us: ret value, state, args, arg-1, ...,
+                // arg-N, rest...
+                // We then add N statements of the form `locals[N+3] := move locals[2].N`,
+                // to destructure the arguments.
+                let GExprBody {
+                    locals,
+                    body: blocks,
+                    ..
+                } = body.as_unstructured_mut().unwrap();
 
-                        blocks.dyn_visit_mut(|local: &mut LocalId| {
-                            if local.index() >= 2 {
-                                *local += 1;
-                            }
-                        });
-
-                        let mut old_locals = mem::take(&mut locals.locals).into_iter();
-                        locals.arg_count = 2;
-                        locals.locals.push(old_locals.next().unwrap()); // ret
-                        locals.locals.push(old_locals.next().unwrap()); // state
-                        let tupled_arg = locals
-                            .new_var(Some("tupled_args".to_string()), signature.inputs[1].clone());
-                        locals.locals.extend(old_locals.map(|mut l| {
-                            l.index += 1;
-                            l
-                        }));
-
-                        let untupled_args = signature.inputs[1].as_tuple().unwrap();
-                        let closure_arg_count = untupled_args.elem_count();
-                        let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
-                            let nth_field = tupled_arg.clone().project(
-                                ProjectionElem::Field(
-                                    FieldProjKind::Tuple(closure_arg_count),
-                                    FieldId::new(i),
-                                ),
-                                ty,
-                            );
-                            let local_id = LocalId::new(i + 3);
-                            Statement::new(
-                                span,
-                                StatementKind::Assign(
-                                    locals.place_for_var(local_id),
-                                    Rvalue::Use(Operand::Move(nth_field)),
-                                ),
-                            )
-                        });
-                        blocks[BlockId::ZERO].statements.splice(0..0, new_stts);
-
-                        Ok(body)
+                blocks.dyn_visit_mut(|local: &mut LocalId| {
+                    if local.index() >= 2 {
+                        *local += 1;
                     }
-                    Ok(Err(Opaque)) => Err(Opaque),
-                    Err(_) => Err(Opaque),
-                }
+                });
+
+                let mut old_locals = mem::take(&mut locals.locals).into_iter();
+                locals.arg_count = 2;
+                locals.locals.push(old_locals.next().unwrap()); // ret
+                locals.locals.push(old_locals.next().unwrap()); // state
+                let tupled_arg =
+                    locals.new_var(Some("tupled_args".to_string()), signature.inputs[1].clone());
+                locals.locals.extend(old_locals.map(|mut l| {
+                    l.index += 1;
+                    l
+                }));
+
+                let untupled_args = signature.inputs[1].as_tuple().unwrap();
+                let closure_arg_count = untupled_args.elem_count();
+                let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
+                    let nth_field = tupled_arg.clone().project(
+                        ProjectionElem::Field(
+                            FieldProjKind::Tuple(closure_arg_count),
+                            FieldId::new(i),
+                        ),
+                        ty,
+                    );
+                    let local_id = LocalId::new(i + 3);
+                    Statement::new(
+                        span,
+                        StatementKind::Assign(
+                            locals.place_for_var(local_id),
+                            Rvalue::Use(Operand::Move(nth_field)),
+                        ),
+                    )
+                });
+                blocks[BlockId::ZERO].statements.splice(0..0, new_stts);
+
+                body
             }
             // Target translation:
             //
@@ -433,12 +415,7 @@ impl ItemTransCtx<'_, '_> {
                 else {
                     panic!("missing shim for closure")
                 };
-                let mut bt_ctx = BodyTransCtx::new(&mut self);
-                match bt_ctx.translate_body(span, body, &def.source_text) {
-                    Ok(Ok(body)) => Ok(body),
-                    Ok(Err(Opaque)) => Err(Opaque),
-                    Err(_) => Err(Opaque),
-                }
+                BodyTransCtx::new(&mut self).translate_body(span, body, &def.source_text)
             }
             // Target translation:
             //
@@ -489,7 +466,7 @@ impl ItemTransCtx<'_, '_> {
                     dest: output,
                 });
 
-                Ok(Body::Unstructured(builder.build()))
+                Body::Unstructured(builder.build())
             }
             (Fn, FnOnce) | (Fn, FnMut) | (FnMut, FnOnce) => {
                 panic!(
@@ -542,7 +519,7 @@ impl ItemTransCtx<'_, '_> {
         let src = ItemSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
-            item_name: TraitItemName(target_kind.method_name().to_owned()),
+            item_name: TraitItemName(target_kind.method_name().into()),
             reuses_default: false,
         };
 
@@ -550,7 +527,7 @@ impl ItemTransCtx<'_, '_> {
         let signature = self.translate_closure_method_sig(def, span, args, target_kind)?;
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Err(Opaque)
+            Body::Opaque
         } else {
             self.translate_closure_method_body(span, def, target_kind, args, &signature)?
         };
@@ -605,7 +582,7 @@ impl ItemTransCtx<'_, '_> {
             def.this(),
             TransItemSourceKind::ClosureMethod(target_kind),
         );
-        let call_fn_name = TraitItemName(target_kind.method_name().to_string());
+        let call_fn_name = TraitItemName(target_kind.method_name().into());
         let call_fn_binder = {
             let mut method_params = GenericParams::empty();
             match target_kind {
@@ -671,7 +648,7 @@ impl ItemTransCtx<'_, '_> {
         signature.inputs = args_tuple_ty.as_tuple().unwrap().iter().cloned().collect();
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Err(Opaque)
+            Body::Opaque
         } else {
             // Target translation:
             //
@@ -720,7 +697,7 @@ impl ItemTransCtx<'_, '_> {
                 dest: output,
             });
 
-            Ok(Body::Unstructured(builder.build()))
+            Body::Unstructured(builder.build())
         };
 
         Ok(FunDecl {

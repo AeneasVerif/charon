@@ -137,7 +137,8 @@ fn {impl Trait for ()}::CONST3() -> usize
 // Full name: test_crate::{impl Trait for ()}::CONST3
 const {impl Trait for ()}::CONST3: usize = {impl Trait for ()}::CONST3()
 
-fn test_crate::{impl Trait for ()}::method1()
+// Full name: test_crate::{impl Trait for ()}::method1
+fn {impl Trait for ()}::method1()
 {
     let @0: (); // return
 
@@ -146,7 +147,8 @@ fn test_crate::{impl Trait for ()}::method1()
     return
 }
 
-fn test_crate::{impl Trait for ()}::method2()
+// Full name: test_crate::{impl Trait for ()}::method2
+fn {impl Trait for ()}::method2()
 {
     let @0: (); // return
 
@@ -157,12 +159,12 @@ fn test_crate::{impl Trait for ()}::method2()
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     const CONST1 = {impl Trait for ()}::CONST1
     const CONST2 = {impl Trait for ()}::CONST2
     const CONST3 = {impl Trait for ()}::CONST3
-    fn method1 = test_crate::{impl Trait for ()}::method1
-    fn method2 = test_crate::{impl Trait for ()}::method2
+    fn method1 = {impl Trait for ()}::method1
+    fn method2 = {impl Trait for ()}::method2
     non-dyn-compatible
 }
 
@@ -178,7 +180,8 @@ fn {impl Trait for u8}::CONST2() -> usize
 // Full name: test_crate::{impl Trait for u8}::CONST2
 const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
 
-fn test_crate::{impl Trait for u8}::method1()
+// Full name: test_crate::{impl Trait for u8}::method1
+fn {impl Trait for u8}::method1()
 {
     let @0: (); // return
 
@@ -199,11 +202,11 @@ fn {impl Trait for u8}::method2()
 
 // Full name: test_crate::{impl Trait for u8}
 impl Trait for u8 {
-    parent_clause0 = MetaSized<u8>
+    parent_clause0 = {built_in impl MetaSized for u8}
     const CONST1 = test_crate::Trait::CONST1<u8>[{impl Trait for u8}]
     const CONST2 = {impl Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>[{impl Trait for u8}]
-    fn method1 = test_crate::{impl Trait for u8}::method1
+    fn method1 = {impl Trait for u8}::method1
     fn method2 = {impl Trait for u8}::method2
     non-dyn-compatible
 }

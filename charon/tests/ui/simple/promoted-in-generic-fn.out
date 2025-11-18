@@ -17,6 +17,7 @@ pub trait Sized<Self>
 pub fn size_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

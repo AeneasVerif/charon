@@ -12,21 +12,30 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -54,7 +63,22 @@ struct Foo<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-  vec: Vec<T>[@TraitClause0, Sized<Global>],
+  vec: Vec<T>[@TraitClause0, {built_in impl Sized for Global}],
+}
+
+// Full name: test_crate::Foo::{impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place
+fn {impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Foo<T>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: test_crate::Foo::{impl Destruct for Foo<T>[@TraitClause0]}
+impl<T> Destruct for Foo<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop_in_place = {impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}::drop
@@ -70,31 +94,25 @@ where
     return
 }
 
-// Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}::drop_in_place
-fn {impl Drop for Foo<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Foo<T>[@TraitClause0])
-where
-    [@TraitClause0]: Sized<T>,
-
 // Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}
 impl<T> Drop for Foo<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = MetaSized<Foo<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Foo<T>[@TraitClause0]}
     fn drop<'_0_1> = {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0_1, T>[@TraitClause0]
-    fn drop_in_place = {impl Drop for Foo<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
     vtable: {impl Drop for Foo<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: test_crate::drop_foo
-fn drop_foo(@1: Foo<u32>[Sized<u32>])
+fn drop_foo(@1: Foo<u32>[{built_in impl Sized for u32}])
 {
     let @0: (); // return
-    let @1: Foo<u32>[Sized<u32>]; // arg #1
+    let @1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
 
     @0 := ()
     @0 := ()
-    drop[{impl Drop for Foo<T>[@TraitClause0]}<u32>[Sized<u32>]] @1
+    drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
     return
 }
 

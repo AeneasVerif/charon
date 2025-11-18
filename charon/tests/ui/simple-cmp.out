@@ -12,6 +12,7 @@ pub trait PartialEq<Self, Rhs>
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -74,14 +75,17 @@ pub trait Ord<Self>
 pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
+= <opaque>
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
 pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
@@ -96,9 +100,9 @@ impl Eq for i32 {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
-pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
+pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
-    let @0: Option<Ordering>[Sized<Ordering>]; // return
+    let @0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
     let self@1: &'_ (i32); // arg #1
     let other@2: &'_ (i32); // arg #2
     let @3: Ordering; // anonymous local
@@ -127,6 +131,7 @@ impl PartialOrd<i32> for i32 {
 
 // Full name: core::cmp::impls::{impl Ord for i32}::cmp
 pub fn {impl Ord for i32}::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Ordering
+= <opaque>
 
 // Full name: core::cmp::impls::{impl Ord for i32}
 impl Ord for i32 {
@@ -135,6 +140,18 @@ impl Ord for i32 {
     fn cmp<'_0_1, '_1_1> = {impl Ord for i32}::cmp<'_0_1, '_1_1>
     non-dyn-compatible
 }
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {

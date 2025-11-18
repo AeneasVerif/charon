@@ -17,15 +17,13 @@ impl UllbcPass for Transform {
             .extract(|gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst))
             .filter_map(|(id, gdecl)| {
                 let fdecl = ctx.translated.fun_decls.remove(gdecl.init)?;
-                let body = fdecl.body.ok()?;
-                let body = body.to_unstructured()?;
+                let body = fdecl.body.to_unstructured()?;
                 Some((id, body))
             })
             .collect();
 
         ctx.for_each_fun_decl(|_ctx, decl| {
-            if let Ok(outer_body) = &mut decl.body {
-                let outer_body = outer_body.as_unstructured_mut().unwrap();
+            if let Some(outer_body) = decl.body.as_unstructured_mut() {
                 for block_id in outer_body.body.all_indices() {
                     // Subtle: This generator must be managed to correctly track the indices that will
                     // be generated when pushing onto `outer_body.body`.

@@ -97,8 +97,7 @@ fn spans() -> anyhow::Result<()> {
     // Span of the whole function.
     assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
 
-    let body = function.body.as_ref().unwrap();
-    let body = &body.as_structured().unwrap().body;
+    let body = &function.body.as_structured().unwrap().body;
     // Span of the function body
     assert_eq!(repr_span(body.span), "3:16-10:9");
 
@@ -179,8 +178,8 @@ fn predicate_origins() -> anyhow::Result<()> {
                 (WhereClauseOnTrait, "Sized"),
                 (WhereClauseOnTrait, "Copy"),
                 (WhereClauseOnTrait, "Default"),
-                (TraitItem(TraitItemName("AssocType".to_owned())), "Sized"),
-                (TraitItem(TraitItemName("AssocType".to_owned())), "Default"),
+                (TraitItem(TraitItemName("AssocType".into())), "Sized"),
+                (TraitItem(TraitItemName("AssocType".into())), "Default"),
             ],
         ),
         // Interesting note: the method definition does not mention the clauses on the trait.
@@ -490,6 +489,15 @@ fn rename_attribute() -> anyhow::Result<()> {
             .attr_info
             .rename
             .as_deref(),
+        Some("retTest")
+    );
+
+    assert_eq!(
+        crate_data.fun_decls[6]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("Const_Test")
     );
 
@@ -644,8 +652,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
         repr_name(&crate_data, &function.item_meta.name),
         "test_crate::use_default"
     );
-    let body = function.body.as_ref().unwrap();
-    let body = &body.as_structured().unwrap().body;
+    let body = &function.body.as_structured().unwrap().body;
     let [first_stmt, ..] = body.statements.as_slice() else {
         panic!()
     };

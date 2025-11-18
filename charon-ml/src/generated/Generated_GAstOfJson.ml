@@ -230,6 +230,28 @@ and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
         Ok (PtrFromParts ptr_from_parts)
     | _ -> Error "")
 
+and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_impl_data, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Sized" -> Ok BuiltinSized
+    | `String "MetaSized" -> Ok BuiltinMetaSized
+    | `String "Tuple" -> Ok BuiltinTuple
+    | `String "Send" -> Ok BuiltinSend
+    | `String "Sync" -> Ok BuiltinSync
+    | `String "Pointee" -> Ok BuiltinPointee
+    | `String "DiscriminantKind" -> Ok BuiltinDiscriminantKind
+    | `String "Unpin" -> Ok BuiltinUnpin
+    | `String "Freeze" -> Ok BuiltinFreeze
+    | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
+    | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
+    | `String "Fn" -> Ok BuiltinFn
+    | `String "FnMut" -> Ok BuiltinFnMut
+    | `String "FnOnce" -> Ok BuiltinFnOnce
+    | `String "Copy" -> Ok BuiltinCopy
+    | `String "Clone" -> Ok BuiltinClone
+    | _ -> Error "")
+
 and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_index_op, string) result =
   combine_error_msgs js __FUNCTION__
@@ -343,6 +365,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("no_ops_to_function_calls", no_ops_to_function_calls);
           ("raw_boxes", raw_boxes);
           ("preset", preset);
+          ("desugar_drops", desugar_drops);
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
         let* lib = bool_of_json ctx lib in
@@ -392,6 +415,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* raw_boxes = bool_of_json ctx raw_boxes in
         let* preset = option_of_json preset_of_json ctx preset in
+        let* desugar_drops = bool_of_json ctx desugar_drops in
         Ok
           ({
              ullbc;
@@ -434,6 +458,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              no_ops_to_function_calls;
              raw_boxes;
              preset;
+             desugar_drops;
            }
             : cli_options)
     | _ -> Error "")
@@ -645,6 +670,15 @@ and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("binder", binder) ] ->
         let* binder = binder_of_json ty_of_json ctx binder in
         Ok ({ binder } : dyn_predicate)
+    | _ -> Error "")
+
+and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("span", span); ("msg", msg) ] ->
+        let* span = span_of_json ctx span in
+        let* msg = string_of_json ctx msg in
+        Ok ({ span; msg } : error)
     | _ -> Error "")
 
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
@@ -1863,8 +1897,13 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         [
           ( "BuiltinOrAuto",
             `Assoc
-              [ ("parent_trait_refs", parent_trait_refs); ("types", types) ] );
+              [
+                ("builtin_data", builtin_data);
+                ("parent_trait_refs", parent_trait_refs);
+                ("types", types);
+              ] );
         ] ->
+        let* builtin_data = builtin_impl_data_of_json ctx builtin_data in
         let* parent_trait_refs =
           vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
             parent_trait_refs
@@ -1874,7 +1913,7 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
             (pair_of_json trait_item_name_of_json trait_assoc_ty_impl_of_json)
             ctx types
         in
-        Ok (BuiltinOrAuto (parent_trait_refs, types))
+        Ok (BuiltinOrAuto (builtin_data, parent_trait_refs, types))
     | `String "Dyn" -> Ok Dyn
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json ctx unknown in

@@ -12,9 +12,11 @@ const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo
 unsafe fn foo(@1: i32)
+= <opaque>
 
 // Full name: test_crate::CONST
 fn CONST() -> u8
+= <opaque>
 
 // Full name: test_crate::CONST
 static CONST: u8 = CONST()

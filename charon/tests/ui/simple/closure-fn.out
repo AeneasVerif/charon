@@ -12,6 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -19,24 +30,6 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -78,14 +71,17 @@ pub trait Fn<Self, Args>
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -160,7 +156,7 @@ where
     @0 := @TraitClause1::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[Drop<impl FnOnce(u8, u8) -> u8>] f@1
+    drop[{built_in impl Destruct for impl FnOnce(u8, u8) -> u8}] f@1
     return
 }
 
@@ -234,6 +230,16 @@ fn {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_
     return
 }
 
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}::drop_in_place
+fn {impl Destruct for closure<'_0, '_1>}::drop_in_place<'_0, '_1>(@1: *mut closure<'_0, '_1>)
+= <opaque>
+
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}
+impl<'_0, '_1> Destruct for closure<'_0, '_1> {
+    fn drop_in_place = {impl Destruct for closure<'_0, '_1>}::drop_in_place<'_0, '_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once
 fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closure<'_0, '_1>, @2: (u8, u8)) -> u8
 {
@@ -245,16 +251,16 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
-    drop[Drop<closure<'_0, '_1>>] @1
+    drop[{impl Destruct for closure<'_0, '_1>}<'_, '_>] @1
     return
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<closure<'_0, '_1>>
-    parent_clause1 = Sized<(u8, u8)>
-    parent_clause2 = Tuple<(u8, u8)>
-    parent_clause3 = Sized<u8>
+    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
+    parent_clause1 = {built_in impl Sized for (u8, u8)}
+    parent_clause2 = {built_in impl Tuple for (u8, u8)}
+    parent_clause3 = {built_in impl Sized for u8}
     type Output = u8
     fn call_once = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>
     non-dyn-compatible
@@ -262,20 +268,20 @@ impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<closure<'_0, '_1>>
+    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
     parent_clause1 = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
-    parent_clause2 = Sized<(u8, u8)>
-    parent_clause3 = Tuple<(u8, u8)>
+    parent_clause2 = {built_in impl Sized for (u8, u8)}
+    parent_clause3 = {built_in impl Tuple for (u8, u8)}
     fn call_mut<'_0_1> = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> Fn<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = MetaSized<closure<'_0, '_1>>
+    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
     parent_clause1 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
-    parent_clause2 = Sized<(u8, u8)>
-    parent_clause3 = Tuple<(u8, u8)>
+    parent_clause2 = {built_in impl Sized for (u8, u8)}
+    parent_clause3 = {built_in impl Tuple for (u8, u8)}
     fn call<'_0_1> = {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
@@ -328,7 +334,7 @@ fn main()
     storage_live(@11)
     @11 := &f@3
     @10 := &*(@11)
-    @9 := apply_to<'_, closure<'_, '_>>[Sized<closure<'_, '_>>, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@10))
+    @9 := apply_to<'_, closure<'_, '_>>[{built_in impl Sized for closure<'_, '_>}, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@10))
     storage_dead(@10)
     storage_dead(@11)
     storage_dead(@9)
@@ -337,14 +343,14 @@ fn main()
     storage_live(@14)
     @14 := &mut f@3
     @13 := &two-phase-mut *(@14)
-    @12 := apply_to_mut<'_, closure<'_, '_>>[Sized<closure<'_, '_>>, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@13))
+    @12 := apply_to_mut<'_, closure<'_, '_>>[{built_in impl Sized for closure<'_, '_>}, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@13))
     storage_dead(@13)
     storage_dead(@14)
     storage_dead(@12)
     storage_live(@15)
     storage_live(@16)
     @16 := copy (f@3)
-    @15 := apply_to_once<closure<'_, '_>>[Sized<closure<'_, '_>>, {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@16))
+    @15 := apply_to_once<closure<'_, '_>>[{built_in impl Sized for closure<'_, '_>}, {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move (@16))
     storage_dead(@16)
     storage_dead(@15)
     @0 := ()

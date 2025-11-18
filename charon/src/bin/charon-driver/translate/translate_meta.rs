@@ -332,9 +332,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             self.name_for_item(&src.item)?
         };
         match &src.kind {
+            // Nothing to do for the real items.
+            TransItemSourceKind::Type
+            | TransItemSourceKind::Fun
+            | TransItemSourceKind::Global
+            | TransItemSourceKind::TraitImpl(TraitImplSource::Normal)
+            | TransItemSourceKind::TraitDecl
+            | TransItemSourceKind::InherentImpl
+            | TransItemSourceKind::Module => {}
+
             TransItemSourceKind::TraitImpl(
                 kind @ (TraitImplSource::Closure(..)
-                | TraitImplSource::ImplicitDrop
+                | TraitImplSource::ImplicitDestruct
                 | TraitImplSource::TraitAlias),
             ) => {
                 if let TraitImplSource::Closure(..) = kind {
@@ -343,14 +352,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
+            TransItemSourceKind::DefaultedMethod(_, method_name) => {
+                name.name.push(PathElem::Ident(
+                    method_name.to_string(),
+                    Disambiguator::ZERO,
+                ));
+            }
             TransItemSourceKind::ClosureMethod(kind) => {
                 let fn_name = kind.method_name().to_string();
                 name.name
                     .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
-            }
-            TransItemSourceKind::EmptyDropMethod => {
-                name.name
-                    .push(PathElem::Ident("drop".to_string(), Disambiguator::ZERO));
             }
             TransItemSourceKind::DropInPlaceMethod(..) => {
                 name.name.push(PathElem::Ident(
@@ -374,7 +385,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            _ => {}
         }
         Ok(name)
     }
@@ -422,7 +432,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             } => associated_item,
             _ => panic!("Unexpected def for associated item: {def:?}"),
         };
-        Ok(TraitItemName(assoc.name.clone().unwrap_or_default()))
+        Ok(TraitItemName(
+            assoc.name.as_ref().map(|n| n.into()).unwrap_or_default(),
+        ))
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {

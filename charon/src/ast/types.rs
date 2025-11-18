@@ -107,6 +107,8 @@ pub enum TraitRefKind {
     /// `Sized`. This morally points to an invisible `impl` block; as such it contains
     /// the information we may need from one.
     BuiltinOrAuto {
+        #[drive(skip)]
+        builtin_data: BuiltinImplData,
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
@@ -122,6 +124,35 @@ pub enum TraitRefKind {
     #[charon::rename("UnknownTrait")]
     #[drive(skip)]
     Unknown(String),
+}
+
+/// Describes a built-in impl. Mostly lists the implemented trait, sometimes with more details
+/// about the contents of the implementation.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[charon::variants_prefix("Builtin")]
+pub enum BuiltinImplData {
+    // Marker traits (without methods).
+    Sized,
+    MetaSized,
+    Tuple,
+    Send,
+    Sync,
+    Pointee,
+    DiscriminantKind,
+    Unpin,
+    Freeze,
+
+    // Traits with methods.
+    /// An impl of `Destruct` for a type with no drop glue.
+    NoopDestruct,
+    /// An impl of `Destruct` for a type parameter, which we could not resolve because
+    /// `--add-drop-bounds` was not set.
+    UntrackedDestruct,
+    Fn,
+    FnMut,
+    FnOnce,
+    Copy,
+    Clone,
 }
 
 /// A reference to a trait

@@ -24,18 +24,6 @@ pub trait Sized::<usize>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<bool>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<bool>
@@ -100,37 +88,29 @@ pub trait Sized::<&'_ mut (Slice<bool>)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<Slice<bool>>
 
-// Full name: core::ops::drop::Drop::<i32>
-#[lang_item("drop")]
-pub trait Drop::<i32>
+// Full name: core::marker::Destruct::<i32>
+#[lang_item("destruct")]
+pub trait Destruct::<i32>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<i32>
-    fn drop<'_0_1> = drop::<i32><'_0_1>
     fn drop_in_place = drop_in_place::<i32>
-    vtable: core::ops::drop::Drop::{vtable}::<i32>
+    vtable: core::marker::Destruct::{vtable}::<i32>
 }
 
-// Full name: core::ops::drop::Drop::<&'_ (Str)>
-#[lang_item("drop")]
-pub trait Drop::<&'_ (Str)>
+// Full name: core::marker::Destruct::<&'_ (Str)>
+#[lang_item("destruct")]
+pub trait Destruct::<&'_ (Str)>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<&'_ (Str)>
-    fn drop<'_0_1> = drop::<&'_ (Str)><'_0_1>
     fn drop_in_place = drop_in_place::<&'_ (Str)>
-    vtable: core::ops::drop::Drop::{vtable}::<&'_ (Str)>
+    vtable: core::marker::Destruct::{vtable}::<&'_ (Str)>
 }
 
-// Full name: core::ops::drop::Drop::drop_in_place::<i32>
+// Full name: core::marker::Destruct::drop_in_place::<i32>
 fn drop_in_place::<i32>(@1: *mut i32)
+= <opaque>
 
-// Full name: core::ops::drop::Drop::drop_in_place::<&'_ (Str)>
+// Full name: core::marker::Destruct::drop_in_place::<&'_ (Str)>
 fn drop_in_place::<&'_ (Str)>(@1: *mut &'_ (Str))
-
-// Full name: core::ops::drop::Drop::drop::<i32>
-pub fn drop::<i32><'_0>(@1: &'_0 mut (i32))
-
-// Full name: core::ops::drop::Drop::drop::<&'_ (Str)>
-pub fn drop::<&'_ (Str)><'_0>(@1: &'_0 mut (&'_ (Str)))
+= <opaque>
 
 // Full name: core::ops::range::RangeFrom::<usize>
 #[lang_item("RangeFrom")]
@@ -148,25 +128,14 @@ pub trait Index::<Slice<bool>, RangeFrom::<usize>>
     vtable: core::ops::index::Index::{vtable}::<Slice<bool>, RangeFrom::<usize>><Slice<bool>>
 }
 
-pub fn core::ops::index::Index::index<'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom::<usize>) -> &'_0 (Slice<bool>)
-
 pub fn core::ops::index::Index::index::<Slice<bool>, RangeFrom::<usize>><'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom::<usize>) -> &'_0 (Slice<bool>)
+= <opaque>
 
 // Full name: core::option::Option::<i32>
 #[lang_item("Option")]
 pub enum Option::<i32> {
   None,
   Some(i32),
-}
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
 }
 
 // Full name: core::option::Option::<&'_ (Slice<bool>)>
@@ -185,14 +154,16 @@ pub enum Option::<&'_ mut (Slice<bool>)> {
 
 // Full name: core::option::{Option::<i32>}::is_some::<i32>
 pub fn is_some::<i32><'_0>(@1: &'_0 (Option::<i32>)) -> bool
+= <opaque>
 
 // Full name: core::slice::index::{impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>>
 pub fn {impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_0>(@1: &'_0 (Slice<bool>), @2: RangeFrom::<usize>) -> &'_0 (Slice<bool>)
+= <opaque>
 
 // Full name: core::slice::index::{impl Index::<Slice<bool>, RangeFrom::<usize>>}::<bool, RangeFrom::<usize>>
 impl Index::<Slice<bool>, RangeFrom::<usize>> {
-    parent_clause0 = MetaSized::<Slice<bool>>
-    parent_clause1 = MetaSized::<RangeFrom::<usize>>
+    parent_clause0 = {built_in impl MetaSized::<Slice<bool>>}
+    parent_clause1 = {built_in impl MetaSized::<RangeFrom::<usize>>}
     fn index<'_0_1> = {impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_0_1>
     vtable: {impl Index::<Slice<bool>, RangeFrom::<usize>>}::{vtable}::<bool, RangeFrom::<usize>>
 }
@@ -206,7 +177,7 @@ pub trait Sealed::<RangeFrom::<usize>>
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed::<RangeFrom::<usize>>}
 impl Sealed::<RangeFrom::<usize>> {
-    parent_clause0 = MetaSized::<RangeFrom::<usize>>
+    parent_clause0 = {built_in impl MetaSized::<RangeFrom::<usize>>}
     vtable: {impl Sealed::<RangeFrom::<usize>>}::{vtable}
 }
 
@@ -227,52 +198,52 @@ pub trait SliceIndex::<RangeFrom::<usize>, Slice<bool>>
 }
 
 pub fn core::slice::index::SliceIndex::get::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
-
-pub fn core::slice::index::SliceIndex::get<'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
+= <opaque>
 
 pub fn core::slice::index::SliceIndex::get_mut::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
-
-pub fn core::slice::index::SliceIndex::get_mut<'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
+= <opaque>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked::<RangeFrom::<usize>, Slice<bool>>(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
+= <opaque>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut::<RangeFrom::<usize>, Slice<bool>>(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
+= <opaque>
 
 pub fn core::slice::index::SliceIndex::index::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
-
-pub fn core::slice::index::SliceIndex::index<'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
+= <opaque>
 
 pub fn core::slice::index::SliceIndex::index_mut::<RangeFrom::<usize>, Slice<bool>><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
-
-pub fn core::slice::index::SliceIndex::index_mut<'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> Option::<&'_ (Slice<bool>)>
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_mut::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_mut::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> Option::<&'_ mut (Slice<bool>)>
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_unchecked::<bool>
 pub unsafe fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_unchecked::<bool>(@1: RangeFrom::<usize>, @2: *const Slice<bool>) -> *const Slice<bool>
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_unchecked_mut::<bool>
 pub unsafe fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_unchecked_mut::<bool>(@1: RangeFrom::<usize>, @2: *mut Slice<bool>) -> *mut Slice<bool>
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::index::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::index::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 (Slice<bool>)) -> &'_0 (Slice<bool>)
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::index_mut::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::index_mut::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut (Slice<bool>)) -> &'_0 mut (Slice<bool>)
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::<bool>
 impl SliceIndex::<RangeFrom::<usize>, Slice<bool>> {
-    parent_clause0 = MetaSized::<RangeFrom::<usize>>
+    parent_clause0 = {built_in impl MetaSized::<RangeFrom::<usize>>}
     parent_clause1 = {impl Sealed::<RangeFrom::<usize>>}
-    parent_clause2 = MetaSized::<Slice<bool>>
+    parent_clause2 = {built_in impl MetaSized::<Slice<bool>>}
     fn get<'_0_1> = {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get::<bool><'_0_1>
     fn get_mut<'_0_1> = {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_mut::<bool><'_0_1>
     fn get_unchecked = {impl SliceIndex::<RangeFrom::<usize>, Slice<bool>>}::get_unchecked::<bool>
@@ -308,51 +279,61 @@ fn foo()
     let @0: (); // return
     let @1: bool; // anonymous local
     let @2: &'_ (Option::<i32>); // anonymous local
-    let @3: Option::<i32>; // anonymous local
-    let slice@4: &'_ (Slice<bool>); // local
+    let slice@3: &'_ (Slice<bool>); // local
+    let @4: &'_ (Array<bool, 1 : usize>); // anonymous local
     let @5: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @6: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @7: Array<bool, 1 : usize>; // anonymous local
+    let @6: &'_ (Slice<bool>); // anonymous local
+    let @7: &'_ (Slice<bool>); // anonymous local
     let @8: &'_ (Slice<bool>); // anonymous local
-    let @9: &'_ (Slice<bool>); // anonymous local
-    let @10: &'_ (Slice<bool>); // anonymous local
-    let @11: RangeFrom::<usize>; // anonymous local
+    let @9: RangeFrom::<usize>; // anonymous local
+    let @10: &'_ (Array<bool, 1 : usize>); // anonymous local
+    let @11: &'_ (Option::<i32>); // anonymous local
+    let @12: &'_ (Option::<i32>); // anonymous local
+    let @13: Option::<i32>; // anonymous local
+    let @14: &'_ (Array<bool, 1 : usize>); // anonymous local
+    let @15: Array<bool, 1 : usize>; // anonymous local
 
+    storage_live(@12)
+    storage_live(@13)
+    @13 := Option::<i32>::Some { 0: const (0 : i32) }
+    @12 := &@13
+    storage_live(@10)
+    storage_live(@11)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
-    storage_live(@3)
-    @3 := Option::<i32>::Some { 0: const (0 : i32) }
-    @2 := &@3
+    @11 := move (@12)
+    @2 := &*(@11)
     @1 := is_some::<i32><'_>(move (@2))
+    storage_live(@14)
+    storage_live(@15)
+    @15 := [const (false)]
+    @14 := &@15
     storage_dead(@2)
-    storage_dead(@3)
     storage_dead(@1)
-    storage_live(slice@4)
+    storage_live(slice@3)
+    storage_live(@4)
     storage_live(@5)
+    @10 := move (@14)
+    @5 := &*(@10)
+    @4 := &*(@5)
+    slice@3 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@4))
+    storage_dead(@4)
+    storage_dead(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := [const (false)]
-    @6 := &@7
-    @5 := &*(@6)
-    slice@4 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@5))
-    storage_dead(@5)
-    storage_dead(@6)
     storage_live(@8)
+    @8 := &*(slice@3) with_metadata(copy (slice@3.metadata))
     storage_live(@9)
-    storage_live(@10)
-    @10 := &*(slice@4) with_metadata(copy (slice@4.metadata))
-    storage_live(@11)
-    @11 := RangeFrom::<usize> { start: const (1 : usize) }
-    @9 := {impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_>(move (@10), move (@11))
-    storage_dead(@11)
-    storage_dead(@10)
-    @8 := &*(@9) with_metadata(copy (@9.metadata))
-    storage_dead(@8)
-    @0 := ()
+    @9 := RangeFrom::<usize> { start: const (1 : usize) }
+    @7 := {impl Index::<Slice<bool>, RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_>(move (@8), move (@9))
     storage_dead(@9)
+    storage_dead(@8)
+    @6 := &*(@7) with_metadata(copy (@7.metadata))
+    storage_dead(@6)
+    @0 := ()
     storage_dead(@7)
-    storage_dead(slice@4)
+    storage_dead(slice@3)
     return
 }
 
@@ -401,14 +382,6 @@ struct MonoContainer::<&'_ (Str)> {
   item: &'_ (Str),
 }
 
-// Full name: test_crate::MonoContainer
-struct MonoContainer<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  item: T,
-}
-
 fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::<i32>
 {
     let @0: MonoContainer::<i32>; // return
@@ -418,9 +391,7 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<i32> { item: move (@2) }
-    drop[Drop::<i32>] @2
     storage_dead(@2)
-    drop[Drop::<i32>] item@1
     return
 }
 
@@ -433,9 +404,7 @@ fn test_crate::{MonoContainer::<&'_ (Str)>}::create::<&'_ (Str)>(@1: &'_ (Str)) 
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer::<&'_ (Str)> { item: move (@2) }
-    drop[Drop::<&'_ (Str)>] @2
     storage_dead(@2)
-    drop[Drop::<&'_ (Str)>] item@1
     return
 }
 

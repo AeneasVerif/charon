@@ -14,27 +14,10 @@ pub trait Sized<Self>
 
 // Full name: core::num::{u32}::MAX
 pub fn MAX() -> u32
+= <opaque>
 
 // Full name: core::num::{u32}::MAX
 pub const MAX: u32 = MAX()
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 fn UNIT_METADATA()
 {
@@ -145,9 +128,9 @@ where
 }
 
 // Full name: test_crate::mk_pair1
-pub fn mk_pair1(@1: u32, @2: u32) -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn mk_pair1(@1: u32, @2: u32) -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
     let x@1: u32; // arg #1
     let y@2: u32; // arg #2
     let @3: u32; // anonymous local
@@ -176,16 +159,16 @@ pub fn P0() -> (u32, u32)
 pub const P0: (u32, u32) = P0()
 
 // Full name: test_crate::P1
-pub fn P1() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn P1() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     @0 := mk_pair1(const (0 : u32), const (1 : u32))
     return
 }
 
 // Full name: test_crate::P1
-pub const P1: Pair<u32, u32>[Sized<u32>, Sized<u32>] = P1()
+pub const P1: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}] = P1()
 
 // Full name: test_crate::P2
 pub fn P2() -> (u32, u32)
@@ -200,16 +183,16 @@ pub fn P2() -> (u32, u32)
 pub const P2: (u32, u32) = P2()
 
 // Full name: test_crate::P3
-pub fn P3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn P3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     @0 := Pair { x: const (0 : u32), y: const (1 : u32) }
     return
 }
 
 // Full name: test_crate::P3
-pub const P3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = P3()
+pub const P3: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}] = P3()
 
 // Full name: test_crate::Wrap
 pub struct Wrap<T>
@@ -231,29 +214,27 @@ where
     storage_live(@2)
     @2 := move (value@1)
     @0 := Wrap { value: move (@2) }
-    drop[Drop<T>] @2
     storage_dead(@2)
-    drop[Drop<T>] value@1
     return
 }
 
 // Full name: test_crate::Y
-pub fn Y() -> Wrap<i32>[Sized<i32>]
+pub fn Y() -> Wrap<i32>[{built_in impl Sized for i32}]
 {
-    let @0: Wrap<i32>[Sized<i32>]; // return
+    let @0: Wrap<i32>[{built_in impl Sized for i32}]; // return
 
-    @0 := new<i32>[Sized<i32>](const (2 : i32))
+    @0 := new<i32>[{built_in impl Sized for i32}](const (2 : i32))
     return
 }
 
 // Full name: test_crate::Y
-pub const Y: Wrap<i32>[Sized<i32>] = Y()
+pub const Y: Wrap<i32>[{built_in impl Sized for i32}] = Y()
 
 // Full name: test_crate::unwrap_y
 pub fn unwrap_y() -> i32
 {
     let @0: i32; // return
-    let @1: Wrap<i32>[Sized<i32>]; // anonymous local
+    let @1: Wrap<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(@1)
     @1 := copy (Y)
@@ -409,28 +390,28 @@ pub fn S2() -> u32
 pub static S2: u32 = S2()
 
 // Full name: test_crate::S3
-pub fn S3() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn S3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     @0 := copy (P3)
     return
 }
 
 // Full name: test_crate::S3
-pub static S3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = S3()
+pub static S3: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}] = S3()
 
 // Full name: test_crate::S4
-pub fn S4() -> Pair<u32, u32>[Sized<u32>, Sized<u32>]
+pub fn S4() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
 {
-    let @0: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     @0 := mk_pair1(const (7 : u32), const (8 : u32))
     return
 }
 
 // Full name: test_crate::S4
-pub static S4: Pair<u32, u32>[Sized<u32>, Sized<u32>] = S4()
+pub static S4: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}] = S4()
 
 // Full name: test_crate::V
 pub struct V<T, const N : usize>

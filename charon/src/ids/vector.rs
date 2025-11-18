@@ -175,6 +175,16 @@ where
         self.vector[id].get_or_insert_with(f)
     }
 
+    /// Get a mutable reference into the ith element. If the vector is too short, extend it until
+    /// it has enough elements. If the element doesn't exist, use the provided function to
+    /// initialize it.
+    pub fn get_or_extend_and_insert_default(&mut self, id: I) -> &mut T
+    where
+        T: Default,
+    {
+        self.get_or_extend_and_insert(id, Default::default)
+    }
+
     /// Map each entry to a new one, keeping the same ids.
     pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
         Vector {

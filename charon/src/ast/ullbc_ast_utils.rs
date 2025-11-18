@@ -42,6 +42,16 @@ impl Terminator {
     pub fn goto(span: Span, target: BlockId) -> Self {
         Self::new(span, TerminatorKind::Goto { target })
     }
+    /// Whether this terminator is an unconditional error (panic).
+    pub fn is_error(&self) -> bool {
+        use TerminatorKind::*;
+        match &self.kind {
+            Abort(..) => true,
+            Goto { .. } | Switch { .. } | Return | Call { .. } | Drop { .. } | UnwindResume => {
+                false
+            }
+        }
+    }
 
     pub fn into_block(self) -> BlockData {
         BlockData {
@@ -67,10 +77,26 @@ impl BlockData {
             }
             TerminatorKind::Switch { targets, .. } => targets.get_targets(),
             TerminatorKind::Call {
-                call: _,
-                target,
-                on_unwind,
+                target, on_unwind, ..
+            }
+            | TerminatorKind::Drop {
+                target, on_unwind, ..
             } => vec![*target, *on_unwind],
+            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+                vec![]
+            }
+        }
+    }
+
+    pub fn targets_ignoring_unwind(&self) -> Vec<BlockId> {
+        match &self.terminator.kind {
+            TerminatorKind::Goto { target } => {
+                vec![*target]
+            }
+            TerminatorKind::Switch { targets, .. } => targets.get_targets(),
+            TerminatorKind::Call { target, .. } | TerminatorKind::Drop { target, .. } => {
+                vec![*target]
+            }
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
                 vec![]
             }

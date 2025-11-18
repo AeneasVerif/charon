@@ -32,8 +32,8 @@ pub trait HasOutput<Self, Self_Output>
 
 // Full name: test_crate::{impl HasOutput<()> for ()}
 impl HasOutput<()> for () {
-    parent_clause0 = MetaSized<()>
-    parent_clause1 = Sized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
+    parent_clause1 = {built_in impl Sized for ()}
     vtable: {impl HasOutput<()> for ()}::{vtable}
 }
 
@@ -47,7 +47,7 @@ pub trait HasOutput2<Self, Self_Clause1_Output>
 
 // Full name: test_crate::{impl HasOutput2<()> for ()}
 impl HasOutput2<()> for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     parent_clause1 = {impl HasOutput<()> for ()}
     vtable: {impl HasOutput2<()> for ()}::{vtable}
 }
@@ -66,7 +66,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: HasOutput<T, Clause1_Output>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Wrapper<T>[@TraitClause0]}
     parent_clause1 = @TraitClause1::parent_clause1
     vtable: {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
@@ -77,7 +77,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: HasOutput2<T, Clause1_Clause1_Output>,
 {
-    parent_clause0 = MetaSized<Wrapper<T>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Wrapper<T>[@TraitClause0]}
     parent_clause1 = {impl HasOutput<Clause1_Output> for Wrapper<T>[@TraitClause0]}<T, Clause1_Clause1_Output>[@TraitClause0, @TraitClause1::parent_clause1]
     vtable: {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
 }
@@ -101,7 +101,7 @@ fn main()
     let @0: (); // return
 
     @0 := ()
-    @0 := take<Wrapper<()>[Sized<()>], ()>[Sized<Wrapper<()>[Sized<()>]>, {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[Sized<()>, {impl HasOutput2<()> for ()}]]()
+    @0 := take<Wrapper<()>[{built_in impl Sized for ()}], ()>[{built_in impl Sized for Wrapper<()>[{built_in impl Sized for ()}]}, {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[{built_in impl Sized for ()}, {impl HasOutput2<()> for ()}]]()
     return
 }
 

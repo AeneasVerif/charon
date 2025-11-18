@@ -168,7 +168,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.binding_levels.innermost_mut()
     }
 
-    #[expect(dead_code)]
     pub(crate) fn outermost_generics(&self) -> &GenericParams {
         &self.outermost_binder().params
     }
@@ -176,7 +175,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn outermost_generics_mut(&mut self) -> &mut GenericParams {
         &mut self.outermost_binder_mut().params
     }
-    #[expect(dead_code)]
     pub(crate) fn innermost_generics(&self) -> &GenericParams {
         &self.innermost_binder().params
     }
@@ -372,6 +370,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | FullDefKind::AssocTy { .. } => PredicateOrigin::WhereClauseOnType,
                 FullDefKind::Fn { .. }
                 | FullDefKind::AssocFn { .. }
+                | FullDefKind::Closure { .. }
                 | FullDefKind::Const { .. }
                 | FullDefKind::AssocConst { .. }
                 | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
@@ -381,7 +380,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
                     PredicateOrigin::WhereClauseOnTrait
                 }
-                _ => panic!("Unexpected def: {def:?}"),
+                _ => panic!("Unexpected def: {:?}", def.def_id().kind),
             };
             self.register_predicates(&param_env.predicates, origin.clone())?;
         }
@@ -390,18 +389,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             && include_late_bound
         {
             // Add the lifetime generics coming from the by-ref upvars.
-            args.upvar_tys.iter().for_each(|ty| {
-                if matches!(
-                    ty.kind(),
-                    hax::TyKind::Ref(
-                        hax::Region {
-                            kind: hax::RegionKind::ReErased
-                        },
-                        ..
-                    )
-                ) {
-                    self.the_only_binder_mut().push_upvar_region();
-                }
+            args.iter_upvar_borrows().for_each(|_| {
+                self.the_only_binder_mut().push_upvar_region();
             });
         }
 

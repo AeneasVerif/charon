@@ -58,6 +58,11 @@ module type Id = sig
   val fresh_marked_stateful_generator :
     unit -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
 
+  (** Similar to [fresh_marked_stateful_generator], but initializes the set of
+      marked ids with the provided set of ids *)
+  val fresh_stateful_generator_with_marked :
+    Set.t -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
+
   val mk_stateful_generator : generator -> generator ref * (unit -> id)
   val mk_stateful_generator_starting_at_id : id -> generator ref * (unit -> id)
   val incr : id -> id
@@ -169,15 +174,18 @@ module IdGen () : Id = struct
 
   exception FoundMarked of id
 
-  let fresh_marked_stateful_generator () =
+  let fresh_stateful_generator_with_marked (marked : Set.t) =
     let counter, fresh = fresh_stateful_generator () in
-    let marked = ref Set.empty in
+    let marked = ref marked in
     let fresh () =
       let id = fresh () in
       if Set.mem id !marked then raise (FoundMarked id) else id
     in
     let insert_from_int i = marked := Set.add i !marked in
     (counter, marked, insert_from_int, fresh)
+
+  let fresh_marked_stateful_generator () =
+    fresh_stateful_generator_with_marked Set.empty
 
   let fresh gen = (gen, incr gen)
   let to_int x = x

@@ -26,20 +26,15 @@ pub trait UllbcPass: Sync {
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        if let Ok(body) = &mut decl.body {
-            self.transform_body(ctx, body.as_unstructured_mut().unwrap())
+        if let Some(body) = decl.body.as_unstructured_mut() {
+            self.transform_body(ctx, body)
         }
     }
 
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_fun_decl(|ctx, decl| {
-            let body = decl
-                .body
-                .as_mut()
-                .map(|body| body.as_unstructured_mut().unwrap())
-                .map_err(|opaque| *opaque);
-            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
+            self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
             self.transform_function(ctx, decl);
         });
     }
@@ -51,18 +46,9 @@ pub trait UllbcPass: Sync {
     }
 
     /// Log that the pass is about to be run on this body.
-    fn log_before_body(
-        &self,
-        ctx: &TransformCtx,
-        name: &Name,
-        body: Result<&ullbc_ast::ExprBody, &Opaque>,
-    ) {
+    fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
         let fmt_ctx = &ctx.into_fmt();
-        let body_str = if let Ok(body) = body {
-            body.to_string_with_ctx(fmt_ctx)
-        } else {
-            "<opaque>".to_owned()
-        };
+        let body_str = body.to_string_with_ctx(fmt_ctx);
         trace!(
             "# About to run pass [{}] on `{}`:\n{}",
             self.name(),
@@ -79,20 +65,15 @@ pub trait LlbcPass: Sync {
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        if let Ok(body) = &mut decl.body {
-            self.transform_body(ctx, body.as_structured_mut().unwrap())
+        if let Some(body) = decl.body.as_structured_mut() {
+            self.transform_body(ctx, body)
         }
     }
 
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_fun_decl(|ctx, decl| {
-            let body = decl
-                .body
-                .as_mut()
-                .map(|body| body.as_structured_mut().unwrap())
-                .map_err(|opaque| *opaque);
-            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
+            self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
             self.transform_function(ctx, decl);
         });
     }
@@ -104,18 +85,9 @@ pub trait LlbcPass: Sync {
     }
 
     /// Log that the pass is about to be run on this body.
-    fn log_before_body(
-        &self,
-        ctx: &TransformCtx,
-        name: &Name,
-        body: Result<&llbc_ast::ExprBody, &Opaque>,
-    ) {
+    fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
         let fmt_ctx = &ctx.into_fmt();
-        let body_str = if let Ok(body) = body {
-            body.to_string_with_ctx(fmt_ctx)
-        } else {
-            "<opaque>".to_owned()
-        };
+        let body_str = body.to_string_with_ctx(fmt_ctx);
         trace!(
             "# About to run pass [{}] on `{}`:\n{}",
             self.name(),
@@ -179,11 +151,12 @@ impl<'ctx> TransformCtx {
         let fn_ids = self.translated.fun_decls.all_indices();
         for id in fn_ids {
             if let Some(decl) = self.translated.fun_decls.get_mut(id) {
-                if let Ok(mut body) = mem::replace(&mut decl.body, Err(Opaque)) {
+                if decl.body.has_contents() {
+                    let mut body = mem::replace(&mut decl.body, Body::Opaque);
                     let fun_decl_id = decl.def_id;
                     let is_local = decl.item_meta.is_local;
                     self.with_def_id(fun_decl_id, is_local, |ctx| f(ctx, &mut body));
-                    self.translated.fun_decls[id].body = Ok(body);
+                    self.translated.fun_decls[id].body = body;
                 }
             }
         }
@@ -441,9 +414,8 @@ impl FunDecl {
         ctx: &mut TransformCtx,
         mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Terminator),
     ) {
-        if let Ok(body) = &mut self.body {
+        if let Some(body) = self.body.as_unstructured_mut() {
             let params = &self.signature.generics;
-            let body = body.as_unstructured_mut().unwrap();
             body.body.iter_mut().for_each(|block| {
                 let span = block.terminator.span;
                 let mut ctx = UllbcStatementTransformCtx {
@@ -464,9 +436,8 @@ impl FunDecl {
         ctx: &mut TransformCtx,
         mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Statement),
     ) {
-        if let Ok(body) = &mut self.body {
+        if let Some(body) = self.body.as_unstructured_mut() {
             let params = &self.signature.generics;
-            let body = body.as_unstructured_mut().unwrap();
             body.body.iter_mut().for_each(|block| {
                 block.transform(|st: &mut ullbc_ast::Statement| {
                     let mut ctx = UllbcStatementTransformCtx {

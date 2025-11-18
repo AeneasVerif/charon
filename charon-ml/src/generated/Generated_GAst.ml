@@ -42,6 +42,9 @@ type assertion = {
 and call = { func : fn_operand; args : operand list; dest : place }
 and copy_non_overlapping = { src : operand; dst : operand; count : operand }
 
+(** Common error used during the translation. *)
+and error = { span : span; msg : string }
+
 (** A function operand is used in function calls. It either designates a
     top-level function, or a place in case we are using function pointers stored
     in local variables. *)
@@ -368,8 +371,8 @@ type cli_options = {
       (** List of traits for which we transform associated types to type
           parameters. *)
   hide_marker_traits : bool;
-      (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits
-          anywhere they show up. *)
+      (** Whether to hide various marker traits such as [Sized], [Sync], [Send]
+          and [Destruct] anywhere they show up. *)
   remove_adt_clauses : bool;
       (** Remove trait clauses from type declarations. Must be combined with
           [--remove-associated-types] for type declarations that use trait
@@ -385,8 +388,8 @@ type cli_options = {
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion. *)
   add_drop_bounds : bool;
-      (** Whether to add [Drop] bounds everywhere to enable proper tracking of
-          what code runs on a given [drop] call. *)
+      (** Whether to add [Destruct] bounds everywhere to enable proper tracking
+          of what code runs on a given [drop] call. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to
@@ -411,6 +414,7 @@ type cli_options = {
       (** Named builtin sets of options. Currently used only for dependent
           projects, eveentually should be replaced with semantically-meaningful
           presets. *)
+  desugar_drops : bool;
 }
 
 (** A (group of) top-level declaration(s), properly reordered. *)

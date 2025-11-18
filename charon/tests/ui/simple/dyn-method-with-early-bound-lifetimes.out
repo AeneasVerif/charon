@@ -36,6 +36,7 @@ fn test_crate::Trait::foo<'a, '_1, Self>(@1: &'_1 (Self))
 where
     [@TraitClause0]: Trait<Self>,
     Self : 'a,
+= <method_without_default_body>
 
 fn test_crate::foo<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_0)))
 {

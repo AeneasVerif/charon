@@ -30,7 +30,7 @@ impl VisitAst for UsesClauseVisitor {
         Continue(())
     }
     fn visit_fun_decl(&mut self, x: &FunDecl) -> ControlFlow<Self::Break> {
-        if let Err(Opaque) = x.body {
+        if !x.body.has_contents() {
             // For function without bodies we can't know whether the clause is used so we err on
             // the side of it being used.
             return Break(FoundClause);

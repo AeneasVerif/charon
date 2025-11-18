@@ -181,13 +181,16 @@ impl LlbcPass for Transform {
             .collect();
 
         ctx.for_each_fun_decl(|ctx, decl| {
-            if let Ok(body) = &mut decl.body {
-                let body = body.as_structured_mut().unwrap();
-                self.log_before_body(ctx, &decl.item_meta.name, Ok(&*body));
-                body.body.visit_blocks_bwd(|block: &mut Block| {
-                    Transform::update_block(ctx, block, &discriminant_intrinsic);
-                });
-            };
+            if decl.body.has_contents() {
+                self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
+                decl.body
+                    .as_structured_mut()
+                    .unwrap()
+                    .body
+                    .visit_blocks_bwd(|block: &mut Block| {
+                        Transform::update_block(ctx, block, &discriminant_intrinsic);
+                    });
+            }
         });
     }
 }

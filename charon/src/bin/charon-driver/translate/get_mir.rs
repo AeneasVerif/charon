@@ -4,9 +4,8 @@ use std::panic;
 use std::rc::Rc;
 
 use hax::{HasParamEnv, UnderOwnerState};
-use rustc_hir as hir;
-use rustc_middle::mir::Body;
-use rustc_middle::ty::TyCtxt;
+use rustc_middle::mir;
+use rustc_middle::ty;
 
 use charon_lib::ast::*;
 use charon_lib::options::MirLevel;
@@ -65,16 +64,15 @@ impl ItemTransCtx<'_, '_> {
 
 /// Query the MIR for a function at a specific level. Return `None` in the case of a foreign body
 /// with no MIR available.
+#[tracing::instrument(skip(tcx))]
 fn get_mir_for_def_id_and_level<'tcx>(
-    tcx: TyCtxt<'tcx>,
+    tcx: ty::TyCtxt<'tcx>,
     def_id: &hax::DefId,
     level: MirLevel,
-) -> Option<Body<'tcx>> {
+) -> Option<mir::Body<'tcx>> {
     let rust_def_id = def_id.underlying_rust_def_id();
     match def_id.promoted_id() {
         None => {
-            // Below: we **clone** the bodies to make sure we don't have issues with
-            // locked values (we had in the past).
             if let Some(local_def_id) = rust_def_id.as_local() {
                 match level {
                     MirLevel::Built => {
@@ -106,17 +104,22 @@ fn get_mir_for_def_id_and_level<'tcx>(
             // We pass `-Zalways-encode-mir` so that we get MIR for all the dependencies we compiled
             // ourselves. This doesn't apply to the stdlib; there we only get MIR for const items and
             // generic or inlineable functions.
-            let is_global = rust_def_id.as_local().is_some_and(|local_def_id| {
-                matches!(
-                    tcx.hir_body_owner_kind(local_def_id),
-                    hir::BodyOwnerKind::Const { .. } | hir::BodyOwnerKind::Static(_)
-                )
-            });
-            let body = if tcx.is_mir_available(rust_def_id) && !is_global {
+            let is_global = matches!(
+                def_id.kind,
+                hax::DefKind::Const
+                    | hax::DefKind::AnonConst
+                    | hax::DefKind::AssocConst
+                    | hax::DefKind::InlineConst
+            );
+            let mir_available = tcx.is_mir_available(rust_def_id);
+            let ctfe_mir_available = tcx.is_ctfe_mir_available(rust_def_id);
+            // For globals, prefer ctfe_mir when both are available.
+            let body = if mir_available && !(is_global && ctfe_mir_available) {
                 tcx.optimized_mir(rust_def_id).clone()
-            } else if tcx.is_ctfe_mir_available(rust_def_id) {
+            } else if ctfe_mir_available {
                 tcx.mir_for_ctfe(rust_def_id).clone()
             } else {
+                trace!("no mir available");
                 return None;
             };
             Some(body)

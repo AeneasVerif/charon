@@ -17,7 +17,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         match &region.kind {
             ReErased => Ok(Region::Erased),
             ReStatic => Ok(Region::Static),
-            ReBound(id, br) => {
+            ReBound(hax::BoundVarIndexKind::Bound(id), br) => {
                 let var = self.lookup_bound_region(span, *id, br.var)?;
                 Ok(Region::Var(var))
             }
@@ -33,7 +33,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     "Should not exist outside of type inference: {region:?}"
                 )
             }
-            ReLateParam(..) | ReError(..) => {
+            ReBound(..) | ReLateParam(..) | ReError(..) => {
                 raise_error!(self, span, "Unexpected region kind: {region:?}")
             }
         }
@@ -138,21 +138,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Str), GenericArgs::empty());
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Array(ty, const_param) => {
-                let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
-                let ty = self.translate_ty(span, ty)?;
-                let tref = TypeDeclRef::new(
-                    TypeId::Builtin(BuiltinTy::Array),
-                    GenericArgs::new(Vector::new(), [ty].into(), [c].into(), Vector::new()),
-                );
+            hax::TyKind::Array(item_ref) => {
+                let args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Array), args);
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Slice(ty) => {
-                let ty = self.translate_ty(span, ty)?;
-                let tref = TypeDeclRef::new(
-                    TypeId::Builtin(BuiltinTy::Slice),
-                    GenericArgs::new_for_builtin([ty].into()),
-                );
+            hax::TyKind::Slice(item_ref) => {
+                let args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Slice), args);
+                TyKind::Adt(tref)
+            }
+            hax::TyKind::Tuple(item_ref) => {
+                let args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let tref = TypeDeclRef::new(TypeId::Tuple, args);
                 TyKind::Adt(tref)
             }
             hax::TyKind::Ref(region, ty, mutability) => {
@@ -176,15 +174,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     RefKind::Shared
                 };
                 TyKind::RawPtr(ty, kind)
-            }
-            hax::TyKind::Tuple(substs) => {
-                let mut params = Vector::new();
-                for param in substs.iter() {
-                    let param_ty = self.translate_ty(span, param)?;
-                    params.push(param_ty);
-                }
-                let tref = TypeDeclRef::new(TypeId::Tuple, GenericArgs::new_for_builtin(params));
-                TyKind::Adt(tref)
             }
 
             hax::TyKind::Param(param) => {
@@ -372,6 +361,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Get the tail type, which determines the metadata of `ty`.
         let tail_ty = tcx.struct_tail_raw(
             ty,
+            &rustc_middle::traits::ObligationCause::dummy(),
             |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
             || {},
         );
@@ -664,6 +654,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
             }
+            // The rest are fake adt kinds that won't reach here.
+            _ => unreachable!(),
         };
 
         if item_meta
@@ -762,6 +754,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             AdtKind::Struct => TypeDeclKind::Struct(translated_variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(translated_variants),
             AdtKind::Union => TypeDeclKind::Union(translated_variants[0].fields.clone()),
+            // The rest are fake adt kinds that won't reach here.
+            _ => unreachable!(),
         };
 
         Ok(type_def_kind)

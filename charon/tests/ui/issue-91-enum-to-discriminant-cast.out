@@ -25,6 +25,7 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -39,9 +40,13 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -71,14 +76,14 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 
 // Full name: test_crate::{impl Clone for Foo}
 impl Clone for Foo {
-    parent_clause0 = Sized<Foo>
+    parent_clause0 = {built_in impl Sized for Foo}
     fn clone<'_0_1> = {impl Clone for Foo}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
-    parent_clause0 = MetaSized<Foo>
+    parent_clause0 = {built_in impl MetaSized for Foo}
     parent_clause1 = {impl Clone for Foo}
     non-dyn-compatible
 }
@@ -99,32 +104,16 @@ fn main()
     let @3: Foo; // anonymous local
     let @4: isize; // anonymous local
     let @5: u8; // anonymous local
-    let @6: bool; // anonymous local
-    let @7: u8; // anonymous local
-    let @8: Foo; // anonymous local
+    let @6: Foo; // anonymous local
+    let @7: isize; // anonymous local
+    let x@8: Ordering; // local
     let @9: isize; // anonymous local
-    let @10: u8; // anonymous local
-    let @11: bool; // anonymous local
-    let x@12: Ordering; // local
-    let @13: isize; // anonymous local
-    let @14: Ordering; // anonymous local
-    let @15: isize; // anonymous local
-    let @16: u8; // anonymous local
-    let @17: bool; // anonymous local
-    let @18: bool; // anonymous local
-    let @19: bool; // anonymous local
+    let @10: Ordering; // anonymous local
+    let @11: isize; // anonymous local
 
     storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@9)
-    storage_live(@10)
+    storage_live(@7)
     storage_live(@11)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    storage_live(@19)
     @0 := ()
     storage_live(x@1)
     x@1 := Foo::A {  }
@@ -132,38 +121,27 @@ fn main()
     storage_live(@3)
     @3 := copy (x@1)
     @4 := @discriminant(@3)
-    @5 := cast<isize, u8>(copy (@4))
-    @6 := copy (@5) <= const (1 : u8)
-    assert(move (@6) == true)
     @2 := cast<isize, isize>(move (@4))
     storage_dead(@3)
     storage_dead(@2)
-    storage_live(@7)
-    storage_live(@8)
-    @8 := copy (x@1)
-    @9 := @discriminant(@8)
-    @10 := cast<isize, u8>(copy (@9))
-    @11 := copy (@10) <= const (1 : u8)
-    assert(move (@11) == true)
-    @7 := cast<isize, u8>(move (@9))
-    storage_dead(@8)
-    storage_dead(@7)
-    storage_live(x@12)
-    x@12 := Ordering::Greater {  }
-    storage_live(@13)
-    storage_live(@14)
-    @14 := move (x@12)
-    @15 := @discriminant(@14)
-    @16 := cast<isize, u8>(copy (@15))
-    @17 := copy (@16) >= const (255 : u8)
-    @18 := copy (@16) <= const (1 : u8)
-    @19 := move (@17) | move (@18)
-    assert(move (@19) == true)
-    @13 := cast<isize, isize>(move (@15))
-    storage_dead(@14)
-    storage_dead(@13)
+    storage_live(@5)
+    storage_live(@6)
+    @6 := copy (x@1)
+    @7 := @discriminant(@6)
+    @5 := cast<isize, u8>(move (@7))
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_live(x@8)
+    x@8 := Ordering::Greater {  }
+    storage_live(@9)
+    storage_live(@10)
+    @10 := move (x@8)
+    @11 := @discriminant(@10)
+    @9 := cast<isize, isize>(move (@11))
+    storage_dead(@10)
+    storage_dead(@9)
     @0 := ()
-    storage_dead(x@12)
+    storage_dead(x@8)
     storage_dead(x@1)
     return
 }

@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
@@ -26,7 +26,7 @@ pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -34,19 +34,9 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <method_without_default_body>
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -59,7 +49,7 @@ where
     @0 := ()
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop[Drop<Self>] *(self@1)
+    drop[@TraitClause1] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
@@ -75,7 +65,8 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
     return
 }
 
-pub fn core::clone::impls::{impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
+// Full name: core::clone::impls::{impl Clone for u8}::clone_from
+pub fn {impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
 where
     [@TraitClause0]: Destruct<u8>,
 {
@@ -87,7 +78,7 @@ where
     @0 := ()
     storage_live(@3)
     @3 := {impl Clone for u8}::clone<'_>(move (source@2))
-    drop[Drop<u8>] *(self@1)
+    drop[@TraitClause0] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     return
@@ -95,9 +86,9 @@ where
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
-    parent_clause0 = Sized<u8>
+    parent_clause0 = {built_in impl Sized for u8}
     fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<u8>> = core::clone::impls::{impl Clone for u8}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<u8>> = {impl Clone for u8}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -124,10 +115,14 @@ where
 
 // Full name: core::marker::{impl Copy for u8}
 impl Copy for u8 {
-    parent_clause0 = MetaSized<u8>
+    parent_clause0 = {built_in impl MetaSized for u8}
     parent_clause1 = {impl Clone for u8}
     non-dyn-compatible
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
 {
@@ -135,7 +130,7 @@ pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
     let self@1: u8; // arg #1
     let rhs@2: u8; // arg #2
 
-    @0 := core::intrinsics::saturating_add<u8>[Sized<u8>, {impl Copy for u8}](move (self@1), move (rhs@2))
+    @0 := core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, {impl Copy for u8}](move (self@1), move (rhs@2))
     return
 }
 
@@ -160,14 +155,6 @@ pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
     @0 := copy (self@1) checked.+ copy (rhs@2)
     return
 }
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 fn UNIT_METADATA()
 {

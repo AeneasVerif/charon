@@ -2,12 +2,14 @@
 
 // Full name: core::num::{usize}::MAX
 pub fn MAX() -> usize
+= <opaque>
 
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
 // Full name: core::num::{u128}::to_ne_bytes
 pub fn to_ne_bytes(@1: u128) -> Array<u8, 16 : usize>
+= <opaque>
 
 fn UNIT_METADATA()
 {

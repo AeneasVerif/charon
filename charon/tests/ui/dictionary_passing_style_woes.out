@@ -26,6 +26,7 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -40,27 +41,13 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -113,7 +100,7 @@ where
     let t@1: Clause1_Item; // arg #1
 
     @0 := move (t@1)
-    drop[Drop<Clause1_Item>] t@1
+    drop[{built_in impl Destruct for Clause1_Item}] t@1
     return
 }
 
@@ -132,7 +119,7 @@ where
     @2 := move (t@1)
     @0 := callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[Drop<Clause1_Item>] t@1
+    drop[{built_in impl Destruct for Clause1_Item}] t@1
     return
 }
 
@@ -149,6 +136,7 @@ trait X<Self, Self_Assoc>
 fn method<'_0, Self, Clause0_Assoc>(@1: &'_0 (Self)) -> Clause0_Assoc
 where
     [@TraitClause0]: X<Self, Clause0_Assoc>,
+= <method_without_default_body>
 
 // Full name: test_crate::A
 trait A<Self, Self_Clause1_Assoc>
@@ -180,7 +168,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<T>] x@1
+    drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -198,7 +186,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
     storage_dead(@2)
-    drop[Drop<T>] x@1
+    drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -228,9 +216,9 @@ where
     @4 := b<T, Clause2_Clause1_Assoc>[@TraitClause0, @TraitClause2](move (@5))
     storage_dead(@5)
     @0 := (move (@2), move (@4))
-    drop[Drop<Clause1_Clause1_Assoc>] @4
+    drop[{built_in impl Destruct for Clause1_Clause1_Assoc}] @4
     storage_dead(@4)
-    drop[Drop<Clause1_Clause1_Assoc>] @2
+    drop[{built_in impl Destruct for Clause1_Clause1_Assoc}] @2
     storage_dead(@2)
     return
 }

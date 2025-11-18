@@ -201,6 +201,9 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     if first == "vec" {
                         first = "list".to_string();
                     }
+                    if first == "ustr" {
+                        first = "string".to_string();
+                    }
                     expr.insert(0, first + "_of_json");
                 }
                 TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
@@ -273,6 +276,9 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     if base_ty == "vec" {
                         base_ty = "list".to_string();
+                    }
+                    if base_ty == "ustr" {
+                        base_ty = "string".to_string();
                     }
                     if base_ty == "vector" {
                         base_ty = "list".to_string();
@@ -1090,7 +1096,6 @@ fn generate_ml(
         "ItemOpacity",
         "PredicateOrigin",
         "Ty", // We exclude it since `TyKind` is renamed to `ty`
-        "Opaque",
         "Body",
         "FunDecl",
         "TranslatedCrate",
@@ -1254,6 +1259,7 @@ fn generate_ml(
                     "Locals",
                     "FunSig",
                     "CopyNonOverlapping",
+                    "Error",
                 ]),
                 // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {

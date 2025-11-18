@@ -4,12 +4,10 @@ pub mod utils;
 
 /// Passes that finish translation, i.e. required for the output to be a valid output.
 pub mod finish_translation {
-    pub mod duplicate_defaulted_methods;
     pub mod filter_invisible_trait_impls;
     pub mod insert_assign_return_unit;
     pub mod insert_ptr_metadata;
     pub mod insert_storage_lives;
-    pub mod remove_unused_methods;
 }
 
 /// Passes that compute extra info to be stored in the crate.
@@ -22,6 +20,7 @@ pub mod add_missing_info {
 
 /// Passes that effect some kind of normalization on the crate.
 pub mod normalize {
+    pub mod desugar_drops;
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
     pub mod partial_monomorphization;
@@ -41,6 +40,7 @@ pub mod resugar {
 
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
+    pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod hide_marker_traits;
     pub mod index_intermediate_assigns;
@@ -79,10 +79,6 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&finish_translation::filter_invisible_trait_impls::Transform),
-    // Remove the trait/impl methods that were not translated (because not used).
-    NonBody(&finish_translation::remove_unused_methods::Transform),
-    // Add missing methods to trait impls by duplicating the default method.
-    NonBody(&finish_translation::duplicate_defaulted_methods::Transform),
     // Compute the metadata & insert for Rvalue
     UnstructuredBody(&finish_translation::insert_ptr_metadata::Transform),
     // # Micro-pass: add the missing assignments to the return value.
@@ -103,6 +99,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration
     // items if they're not used. This simplifies the graph of dependencies between definitions.
     NonBody(&simplify_output::remove_unused_self_clause::Transform),
+    // Transform Drops into Calls to drop_in_place.
+    UnstructuredBody(&normalize::desugar_drops::Transform),
     // # Micro-pass: whenever we reference a trait method on a known type, refer to the method
     // `FunDecl` directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
     // remove some sources of mutual recursion.
@@ -121,6 +119,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
 pub static ULLBC_PASSES: &[Pass] = &[
     // Inline promoted consts into their parent bodies.
     UnstructuredBody(&simplify_output::inline_promoted_consts::Transform),
+    // Remove drop statements that are noops.
+    UnstructuredBody(&simplify_output::filter_trivial_drops::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
     // graph size of the CFG.
     // This must be done early as some resugaring passes depend on it.

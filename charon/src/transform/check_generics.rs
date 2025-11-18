@@ -202,10 +202,10 @@ impl CheckGenericsVisitor<'_> {
     fn assert_matches_method(
         &self,
         trait_id: TraitDeclId,
-        method_name: &TraitItemName,
+        method_name: TraitItemName,
         args: &GenericArgs,
     ) {
-        let target = &GenericsSource::Method(trait_id, method_name.clone());
+        let target = &GenericsSource::Method(trait_id, method_name);
         let Some(trait_decl) = self.ctx.translated.trait_decls.get(trait_id) else {
             return;
         };
@@ -260,6 +260,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
                 types,
+                ..
             } => {
                 let trait_id = x.trait_decl_ref.skip_binder.id;
                 let target = GenericsSource::item(trait_id);
@@ -330,7 +331,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(trait_ref, method_name, _) => {
                 let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
-                self.assert_matches_method(trait_id, method_name, &x.generics);
+                self.assert_matches_method(trait_id, *method_name, &x.generics);
             }
         }
     }

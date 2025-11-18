@@ -1337,7 +1337,7 @@ impl TransformPass for Transform {
                     }),
                 };
                 modifications.compute_replacements(|path| {
-                    let new_type_name = TraitItemName(path.to_name());
+                    let new_type_name = TraitItemName(path.to_name().into());
                     tr.types.push(Binder::empty(
                         BinderKind::TraitType(tr.def_id, new_type_name.clone()),
                         TraitAssocTy {
@@ -1378,7 +1378,7 @@ impl TransformPass for Transform {
                         timpl.types.clear();
                     }
                     for path in decl_modifs.required_extra_assoc_types() {
-                        let new_type_name = TraitItemName(path.to_name());
+                        let new_type_name = TraitItemName(path.to_name().into());
                         if let Some(ty) = type_replacements.find(&path) {
                             trace!("Adding associated type {new_type_name} = {ty:?}");
                             timpl.types.push((

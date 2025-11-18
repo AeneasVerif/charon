@@ -100,8 +100,25 @@ impl TransformPass for Transform {
             .copied()
             .collect();
 
-        for &id in &exclude {
-            ctx.translated.trait_decls.remove(id);
+        // Remove the marker traits and their methods.
+        for &trait_id in &exclude {
+            if let Some(tdecl) = &ctx.translated.trait_decls.get(trait_id) {
+                for method in &tdecl.methods {
+                    ctx.translated.fun_decls.remove(method.skip_binder.item.id);
+                }
+            }
+            ctx.translated.trait_decls.remove(trait_id);
+        }
+        // Also remove any impls for these traits.
+        for impl_id in ctx.translated.trait_impls.all_indices() {
+            if let Some(timpl) = &ctx.translated.trait_impls.get(impl_id)
+                && exclude.contains(&timpl.impl_trait.id)
+            {
+                for (_, method) in &timpl.methods {
+                    ctx.translated.fun_decls.remove(method.skip_binder.id);
+                }
+                ctx.translated.trait_impls.remove(impl_id);
+            }
         }
 
         let _ = ctx

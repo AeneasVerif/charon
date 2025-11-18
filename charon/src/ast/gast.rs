@@ -4,6 +4,7 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
 use derive_generic_visitor::{Drive, DriveMut};
+use macros::EnumAsGetters;
 use macros::{EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 
@@ -24,10 +25,6 @@ pub struct Local {
 pub type Var = Local;
 #[deprecated(note = "use `LocalId` intead")]
 pub type VarId = LocalId;
-
-/// Marker to indicate that a declaration is opaque (i.e. we don't inspect its body).
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct Opaque;
 
 /// The local variables of a body.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
@@ -60,14 +57,29 @@ pub struct GExprBody<T> {
     pub body: T,
 }
 
-/// The body of a function or a constant.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumToGetters)]
+/// The body of a function.
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumAsGetters, EnumToGetters,
+)]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
     /// Body represented with structured control flow. This is what llbc is made of. We restructure
-    /// the control flow in `ullbc_to_llbc`.
+    /// the control flow in the `ullbc_to_llbc` pass.
     Structured(llbc_ast::ExprBody),
+    /// The body of the function item we add for each trait method declaration, if the trait
+    /// doesn't provide a default for that method.
+    TraitMethodWithoutDefault,
+    /// A body that the user chose not to translate, based on opacity settings like
+    /// `--include`/`--opaque`.
+    Opaque,
+    /// A body that was not available. Typically that's function bodies for non-generic and
+    /// non-inlineable std functions, as these are not present in the compiled standard library
+    /// `.rmeta` file shipped with a rust toolchain.
+    Missing,
+    /// We encountered an error while translating this body.
+    #[drive(skip)]
+    Error(Error),
 }
 
 /// Item kind: whether this function/const is part of a trait declaration, trait implementation, or
@@ -157,7 +169,7 @@ pub struct FunDecl {
     /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
-    pub body: Result<Body, Opaque>,
+    pub body: Body,
 }
 
 /// Reference to a function declaration.
@@ -208,10 +220,21 @@ pub struct GlobalDeclRef {
 }
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq, Hash, PartialOrd, Ord,
+    Debug,
+    Clone,
+    Copy,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
 )]
 #[drive(skip)]
-pub struct TraitItemName(pub String);
+pub struct TraitItemName(pub ustr::Ustr);
 
 /// A trait **declaration**.
 ///
@@ -417,6 +440,22 @@ pub struct Assert {
 pub struct DeclRef<Id> {
     pub id: Id,
     pub generics: BoxedArgs,
+    /// If the item is a trait associated item, `generics` are only those of the item, and this
+    /// contains a reference to the trait.
+    pub trait_ref: Option<TraitRef>,
+}
+
+impl DeclRef<ItemId> {
+    pub fn try_convert_id<Id>(self) -> Result<DeclRef<Id>, <ItemId as TryInto<Id>>::Error>
+    where
+        ItemId: TryInto<Id>,
+    {
+        Ok(DeclRef {
+            id: self.id.try_into()?,
+            generics: self.generics,
+            trait_ref: self.trait_ref,
+        })
+    }
 }
 
 // Implement `DeclRef<_>` -> `FooDeclRef` conversions.
@@ -425,6 +464,7 @@ macro_rules! convert_item_ref {
         impl TryFrom<DeclRef<ItemId>> for $item_ref_ty {
             type Error = ();
             fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+                assert!(item.trait_ref.is_none());
                 Ok($item_ref_ty {
                     id: item.id.try_into()?,
                     generics: item.generics,
@@ -433,6 +473,7 @@ macro_rules! convert_item_ref {
         }
         impl From<DeclRef<$id>> for $item_ref_ty {
             fn from(item: DeclRef<$id>) -> Self {
+                assert!(item.trait_ref.is_none());
                 $item_ref_ty {
                     id: item.id,
                     generics: item.generics,
@@ -443,7 +484,6 @@ macro_rules! convert_item_ref {
 }
 convert_item_ref!(TypeDeclRef(TypeId));
 convert_item_ref!(FunDeclRef(FunDeclId));
-convert_item_ref!(MaybeBuiltinFunDeclRef(FunId));
 convert_item_ref!(GlobalDeclRef(GlobalDeclId));
 convert_item_ref!(TraitDeclRef(TraitDeclId));
 convert_item_ref!(TraitImplRef(TraitImplId));
@@ -452,5 +492,21 @@ impl TryFrom<DeclRef<ItemId>> for FnPtr {
     fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
         let id: FunId = item.id.try_into()?;
         Ok(FnPtr::new(id.into(), item.generics))
+    }
+}
+
+impl TryFrom<DeclRef<ItemId>> for MaybeBuiltinFunDeclRef {
+    type Error = ();
+    fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+        Ok(item.try_convert_id::<FunId>()?.into())
+    }
+}
+impl From<DeclRef<FunId>> for MaybeBuiltinFunDeclRef {
+    fn from(item: DeclRef<FunId>) -> Self {
+        MaybeBuiltinFunDeclRef {
+            id: item.id,
+            generics: item.generics,
+            trait_ref: item.trait_ref,
+        }
     }
 }

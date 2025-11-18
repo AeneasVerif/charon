@@ -39,15 +39,14 @@ fn main()
     @0 := ()
     storage_live(res@1)
     res@1 := Result::<u32, u32>::Ok { 0: const (0 : u32) }
-    storage_live(n@2)
     match res@1 {
         Result::<u32, u32>::Ok => {
         },
         _ => {
-            storage_dead(n@2)
-            panic(core::panicking::panic_explicit)
+            panic(core::panicking::panic)
         },
     }
+    storage_live(n@2)
     n@2 := copy ((res@1 as variant Result::<u32, u32>::Ok).0)
     @0 := ()
     storage_dead(n@2)

@@ -19,16 +19,25 @@ error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphi
   |                  ^
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2781:1
+ --> /rustc/library/alloc/src/string.rs:2866:1
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2806:1
-
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/marker.rs:179:1
+ --> /rustc/library/core/src/marker.rs:178:1
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/core/src/fmt/mod.rs:1007:1
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2868:5
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/core/src/marker.rs:178:1
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/core/src/fmt/mod.rs:1007:1
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2868:5
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/core/src/fmt/mod.rs:1007:1
@@ -38,9 +47,6 @@ note: the error occurred when translating `core::fmt::Display::<type_error("`dyn
   |
 7 |     x.to_string()
   |     -------------
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/fmt/mod.rs:1007:1
-
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
  --> /rustc/library/core/src/fmt/mod.rs:1007:1
 
@@ -67,7 +73,7 @@ error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphi
  --> /rustc/library/core/src/fmt/mod.rs:1032:5
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/marker.rs:179:1
+ --> /rustc/library/core/src/marker.rs:178:1
 
 note: the error occurred when translating `core::marker::MetaSized::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
  --> tests/ui/monomorphization/dyn-trait.rs:7:5
@@ -75,13 +81,10 @@ note: the error occurred when translating `core::marker::MetaSized::<type_error(
 7 |     x.to_string()
   |     -------------
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/marker.rs:179:1
+ --> /rustc/library/core/src/marker.rs:178:1
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/marker.rs:179:1
-
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/core/src/marker.rs:179:1
+ --> /rustc/library/core/src/marker.rs:178:1
 
 note: the error occurred when translating `core::marker::MetaSized::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
  --> tests/ui/monomorphization/dyn-trait.rs:7:5
@@ -89,83 +92,48 @@ note: the error occurred when translating `core::marker::MetaSized::<type_error(
 7 |     x.to_string()
   |     -------------
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2624:1
+ --> /rustc/library/alloc/src/string.rs:2684:1
 
 note: the error occurred when translating `alloc::string::{impl core::fmt::Display::<alloc::string::String>}::{vtable}`, which is (transitively) used at the following location(s):
   --> tests/ui/monomorphization/dyn-trait.rs:12:27
    |
 12 |     let _ = dyn_to_string(&str);
    |                           ----
-error: Item `alloc::string::{impl#23}` caused errors; ignoring.
- --> /rustc/library/alloc/src/string.rs:2624:1
+error: Item `alloc::string::{impl#25}` caused errors; ignoring.
+ --> /rustc/library/alloc/src/string.rs:2684:1
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2781:1
-
-note: the error occurred when translating `alloc::string::ToString::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
- --> tests/ui/monomorphization/dyn-trait.rs:7:5
-  |
-7 |     x.to_string()
-  |     -------------
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2781:1
-
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2781:1
-
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2795:5
-
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2781:1
-
-note: the error occurred when translating `alloc::string::ToString::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
- --> tests/ui/monomorphization/dyn-trait.rs:7:5
-  |
-7 |     x.to_string()
-  |     -------------
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2795:5
-
-note: the error occurred when translating `alloc::string::ToString::to_string`, which is (transitively) used at the following location(s):
- --> tests/ui/monomorphization/dyn-trait.rs:7:5
-  |
-7 |     x.to_string()
-  |     -------------
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2795:5
-
-note: the error occurred when translating `alloc::string::ToString::to_string::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
- --> tests/ui/monomorphization/dyn-trait.rs:7:5
-  |
-7 |     x.to_string()
-  |     -------------
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2795:5
-
-error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2806:1
+ --> /rustc/library/alloc/src/string.rs:2866:1
 
 note: the error occurred when translating `alloc::string::{impl#4}::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
- --> tests/ui/monomorphization/dyn-trait.rs:7:5
-  |
-7 |     x.to_string()
-  |     -------------
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2806:1
+ --> /rustc/library/alloc/src/string.rs:2841:1
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2806:1
+ --> /rustc/library/alloc/src/string.rs:2866:1
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2808:5
+ --> /rustc/library/alloc/src/string.rs:2868:5
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2806:1
+ --> /rustc/library/alloc/src/string.rs:2841:1
 
-note: the error occurred when translating `alloc::string::{impl#5}::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
+note: the error occurred when translating `alloc::string::ToString::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2808:5
+ --> /rustc/library/alloc/src/string.rs:2841:1
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2855:5
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2855:5
+
+note: the error occurred when translating `alloc::string::ToString::to_string::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2855:5
+
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2868:5
 
 note: the error occurred when translating `alloc::string::{impl alloc::string::ToString::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>}::to_string::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
  --> tests/ui/monomorphization/dyn-trait.rs:7:5
@@ -173,14 +141,17 @@ note: the error occurred when translating `alloc::string::{impl alloc::string::T
 7 |     x.to_string()
   |     -------------
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2808:5
+ --> /rustc/library/alloc/src/string.rs:2868:5
 
 error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
- --> /rustc/library/alloc/src/string.rs:2795:5
+ --> /rustc/library/alloc/src/string.rs:2868:5
 
-note: the error occurred when translating `alloc::string::ToString::to_string`, which is (transitively) used at the following location(s):
+note: the error occurred when translating `alloc::string::{impl alloc::string::ToString::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>}::to_string::<type_error("`dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead")>`, which is (transitively) used at the following location(s):
  --> tests/ui/monomorphization/dyn-trait.rs:7:5
   |
 7 |     x.to_string()
   |     -------------
-ERROR Charon failed to translate this code (36 errors)
+error: `dyn Trait` is not yet supported with `--monomorphize`; use `--monomorphize-conservative` instead
+ --> /rustc/library/alloc/src/string.rs:2868:5
+
+ERROR Charon failed to translate this code (34 errors)

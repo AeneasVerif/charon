@@ -25,23 +25,26 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
-    parent_clause0 = Sized<i32>
+    parent_clause0 = {built_in impl Sized for i32}
     fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
 pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
+= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
-    parent_clause0 = Sized<usize>
+    parent_clause0 = {built_in impl Sized for usize}
     fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -58,6 +61,7 @@ pub trait PartialEq<Self, Rhs>
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -108,14 +112,17 @@ pub trait Ord<Self>
 pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
+= <opaque>
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
 pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl PartialEq<i32> for i32 {
@@ -125,6 +132,7 @@ impl PartialEq<i32> for i32 {
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
 pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
 impl PartialEq<usize> for usize {
@@ -133,7 +141,8 @@ impl PartialEq<usize> for usize {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
-pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
+pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
 impl PartialOrd<i32> for i32 {
@@ -143,7 +152,8 @@ impl PartialOrd<i32> for i32 {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
-pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> Option<Ordering>[Sized<Ordering>]
+pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
 impl PartialOrd<usize> for usize {
@@ -166,6 +176,7 @@ pub trait Default<Self>
 pub fn default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
+= <opaque>
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
 pub trait TrustedRandomAccessNoCoerce<Self>
@@ -188,30 +199,36 @@ pub trait Step<Self>
     non-dyn-compatible
 }
 
-pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[Sized<usize>])
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     [@TraitClause0]: Step<Self>,
+= <opaque>
 
 pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
 where
     [@TraitClause0]: Step<Self>,
+= <opaque>
 
 pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
 where
     [@TraitClause0]: Step<Self>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> (usize, Option<usize>[Sized<usize>])
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
-pub fn {impl Step for usize}::forward_checked(@1: usize, @2: usize) -> Option<usize>[Sized<usize>]
+pub fn {impl Step for usize}::forward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
-pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[Sized<usize>]
+pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}
 impl Step for usize {
-    parent_clause0 = Sized<usize>
+    parent_clause0 = {built_in impl Sized for usize}
     parent_clause1 = {impl Clone for usize}
     parent_clause2 = {impl PartialOrd<usize> for usize}
     fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
@@ -221,17 +238,20 @@ impl Step for usize {
 }
 
 // Full name: core::iter::range::{impl Step for i32}::steps_between
-pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> (usize, Option<usize>[Sized<usize>])
+pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::forward_checked
-pub fn {impl Step for i32}::forward_checked(@1: i32, @2: usize) -> Option<i32>[Sized<i32>]
+pub fn {impl Step for i32}::forward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::backward_checked
-pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[Sized<i32>]
+pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}
 impl Step for i32 {
-    parent_clause0 = Sized<i32>
+    parent_clause0 = {built_in impl Sized for i32}
     parent_clause1 = {impl Clone for i32}
     parent_clause2 = {impl PartialOrd<i32> for i32}
     fn steps_between<'_0_1, '_1_1> = {impl Step for i32}::steps_between<'_0_1, '_1_1>
@@ -266,6 +286,7 @@ pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut (R
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
 impl<A> Iterator for Range<A>[@TraitClause0]
@@ -273,7 +294,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
 {
-    parent_clause0 = MetaSized<Range<A>[@TraitClause0]>
+    parent_clause0 = {built_in impl MetaSized for Range<A>[@TraitClause0]}
     parent_clause1 = @TraitClause0
     type Item = A
     fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]
@@ -295,6 +316,7 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Iterator<I>,
     @TraitClause2::Item = A,
+= <opaque>
 
 // Full name: core::iter::traits::accum::Product
 pub trait Product<Self, A>
@@ -311,6 +333,7 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Iterator<I>,
     @TraitClause2::Item = A,
+= <opaque>
 
 // Full name: core::iter::traits::collect::IntoIterator
 #[lang_item("IntoIterator")]
@@ -346,17 +369,20 @@ where
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: IntoIterator<T>,
     @TraitClause2::Item = A,
+= <opaque>
 
 #[lang_item("into_iter")]
 pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
 where
     [@TraitClause0]: IntoIterator<Self>,
+= <opaque>
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
 pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
+= <opaque>
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}
 impl<I> IntoIterator for I
@@ -390,6 +416,7 @@ where
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: IntoIterator<T>,
     @TraitClause2::Item = A,
+= <opaque>
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator
 #[lang_item("DoubleEndedIterator")]
@@ -405,6 +432,7 @@ pub trait DoubleEndedIterator<Self>
 pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
 where
     [@TraitClause0]: DoubleEndedIterator<Self>,
+= <opaque>
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator
 pub trait ExactSizeIterator<Self>
@@ -418,6 +446,7 @@ pub trait ExactSizeIterator<Self>
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -432,9 +461,13 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -484,11 +517,13 @@ pub trait FnMut<Self, Args>
 pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once
 pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 // Full name: core::ops::try_trait::FromResidual
 #[lang_item("FromResidual")]
@@ -520,18 +555,21 @@ pub trait Try<Self>
 pub fn from_output<Self>(@1: @TraitClause0::Output) -> Self
 where
     [@TraitClause0]: Try<Self>,
+= <opaque>
 
 // Full name: core::ops::try_trait::Try::branch
 #[lang_item("branch")]
 pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause1::parent_clause1, @TraitClause0::parent_clause2]
 where
     [@TraitClause0]: Try<Self>,
+= <opaque>
 
 // Full name: core::ops::try_trait::FromResidual::from_residual
 #[lang_item("from_residual")]
 pub fn from_residual<Self, R>(@1: R) -> Self
 where
     [@TraitClause0]: FromResidual<Self, R>,
+= <opaque>
 
 // Full name: core::ops::try_trait::Residual
 pub trait Residual<Self, O>
@@ -566,29 +604,29 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let step_out@1: usize; // arg #1
     let step_in@2: usize; // arg #2
     let s@3: usize; // local
-    let @4: Range<i32>[Sized<i32>]; // anonymous local
-    let @5: Range<i32>[Sized<i32>]; // anonymous local
-    let iter@6: Range<i32>[Sized<i32>]; // local
-    let @7: Option<i32>[Sized<i32>]; // anonymous local
-    let @8: &'_ mut (Range<i32>[Sized<i32>]); // anonymous local
-    let @9: &'_ mut (Range<i32>[Sized<i32>]); // anonymous local
+    let @4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let iter@6: Range<i32>[{built_in impl Sized for i32}]; // local
+    let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @8: &'_ mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @9: &'_ mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
     let @10: isize; // anonymous local
     let @11: usize; // anonymous local
-    let @12: Range<usize>[Sized<usize>]; // anonymous local
-    let @13: Range<usize>[Sized<usize>]; // anonymous local
+    let @12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let @13: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @14: usize; // anonymous local
-    let iter@15: Range<usize>[Sized<usize>]; // local
-    let @16: Option<usize>[Sized<usize>]; // anonymous local
-    let @17: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
-    let @18: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
+    let iter@15: Range<usize>[{built_in impl Sized for usize}]; // local
+    let @16: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let @17: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @18: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
     let @19: isize; // anonymous local
-    let @20: Range<usize>[Sized<usize>]; // anonymous local
-    let @21: Range<usize>[Sized<usize>]; // anonymous local
+    let @20: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let @21: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @22: usize; // anonymous local
-    let iter@23: Range<usize>[Sized<usize>]; // local
-    let @24: Option<usize>[Sized<usize>]; // anonymous local
-    let @25: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
-    let @26: &'_ mut (Range<usize>[Sized<usize>]); // anonymous local
+    let iter@23: Range<usize>[{built_in impl Sized for usize}]; // local
+    let @24: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let @25: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @26: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
     let @27: isize; // anonymous local
     let @28: usize; // anonymous local
     let @29: bool; // anonymous local
@@ -605,7 +643,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@4);
         storage_live(@5);
         @5 := Range { start: const (0 : i32), end: const (128 : i32) };
-        @4 := {impl IntoIterator for I}::into_iter<Range<i32>[Sized<i32>]>[Sized<Range<i32>[Sized<i32>]>, {impl Iterator for Range<A>[@TraitClause0]}<i32>[Sized<i32>, {impl Step for i32}]](move (@5)) -> bb1 (unwind: bb2);
+        @4 := {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move (@5)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -625,7 +663,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@9);
         @9 := &mut iter@6;
         @8 := &two-phase-mut *(@9);
-        @7 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[Sized<i32>, {impl Step for i32}](move (@8)) -> bb4 (unwind: bb2);
+        @7 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move (@8)) -> bb4 (unwind: bb2);
     }
 
     bb4: {
@@ -645,7 +683,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         @14 := copy (step_out@1);
         @13 := Range { start: const (0 : usize), end: move (@14) };
         storage_dead(@14);
-        @12 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}<usize>[Sized<usize>, {impl Step for usize}]](move (@13)) -> bb8 (unwind: bb2);
+        @12 := {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move (@13)) -> bb8 (unwind: bb2);
     }
 
     bb6: {
@@ -673,7 +711,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@18);
         @18 := &mut iter@15;
         @17 := &two-phase-mut *(@18);
-        @16 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@17)) -> bb10 (unwind: bb2);
+        @16 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move (@17)) -> bb10 (unwind: bb2);
     }
 
     bb10: {
@@ -700,7 +738,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         @22 := copy (step_in@2);
         @21 := Range { start: const (0 : usize), end: move (@22) };
         storage_dead(@22);
-        @20 := {impl IntoIterator for I}::into_iter<Range<usize>[Sized<usize>]>[Sized<Range<usize>[Sized<usize>]>, {impl Iterator for Range<A>[@TraitClause0]}<usize>[Sized<usize>, {impl Step for usize}]](move (@21)) -> bb14 (unwind: bb2);
+        @20 := {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move (@21)) -> bb14 (unwind: bb2);
     }
 
     bb13: {
@@ -720,7 +758,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@26);
         @26 := &mut iter@23;
         @25 := &two-phase-mut *(@26);
-        @24 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[Sized<usize>, {impl Step for usize}](move (@25)) -> bb16 (unwind: bb2);
+        @24 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move (@25)) -> bb16 (unwind: bb2);
     }
 
     bb16: {

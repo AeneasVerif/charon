@@ -93,7 +93,7 @@ pub fn choose_test()
     storage_live(@7)
     @7 := &mut y@2
     @6 := &two-phase-mut *(@7)
-    z@3 := choose<'_, i32>[Sized<i32>](const (true), move (@4), move (@6))
+    z@3 := choose<'_, i32>[{built_in impl Sized for i32}](const (true), move (@4), move (@6))
     storage_dead(@6)
     storage_dead(@4)
     storage_dead(@7)

@@ -24,7 +24,7 @@ pub enum Action {
 
 /// If `IN_CI=1`, check that the contents of `path` matches `output`, otherwise overwrite the file
 /// with the given output.
-pub fn compare_or_overwrite(output: String, path: &Path) -> snapbox::assert::Result<()> {
+pub fn compare_or_overwrite(output: impl AsRef<str>, path: &Path) -> snapbox::assert::Result<()> {
     let action = if std::env::var("IN_CI").as_deref() == Ok("1") {
         Action::Verify
     } else {

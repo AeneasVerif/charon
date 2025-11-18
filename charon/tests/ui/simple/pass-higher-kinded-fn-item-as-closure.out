@@ -12,6 +12,18 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -19,24 +31,6 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
@@ -77,16 +71,19 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause1_Clause1_Output
 where
     [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
+= <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut (Self), @2: Args) -> Clause0_Clause1_Output
 where
     [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
+= <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once
 pub fn call_once<Self, Args, Clause0_Output>(@1: Self, @2: Args) -> Clause0_Output
 where
     [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -118,7 +115,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<F>] @1
+    drop[{built_in impl Destruct for F}] @1
     return
 }
 
@@ -130,7 +127,7 @@ pub fn flibidi()
 
     @0 := ()
     storage_live(@1)
-    @1 := test_crate::call<'_, for<'a> flabada<'a>>[Sized<for<'a> flabada<'a>>, Fn<for<'a> flabada<'a>, (&'_ (())), &'_ (())>](const (flabada<'_>))
+    @1 := test_crate::call<'_, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'_ (())), &'_ (())> for for<'a> flabada<'a>}](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     return

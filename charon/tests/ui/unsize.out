@@ -25,6 +25,7 @@ pub trait Clone<Self>
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::fmt::Error
 pub struct Error {}
@@ -50,60 +51,41 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
+= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
-    fn drop_in_place = core::ops::drop::Drop::drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-fn core::ops::drop::Drop::drop_in_place<Self>(@1: *mut Self)
-
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
-    fn drop_in_place = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: alloc::rc::Rc
@@ -113,70 +95,64 @@ where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
-pub fn alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, Sized<Global>]}::new<T>(@1: T) -> Rc<T>[@TraitClause0::parent_clause0, Sized<Global>]
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: alloc::rc::{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop
-pub fn {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Rc<T>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::rc::Rc::{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Rc<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
+= <opaque>
 
-// Full name: alloc::rc::{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Rc<T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::rc::{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Drop for Rc<T>[@TraitClause0, @TraitClause1]
+// Full name: alloc::rc::Rc::{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for Rc<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    parent_clause0 = MetaSized<Rc<T>[@TraitClause0, @TraitClause1]>
-    fn drop<'_0_1> = {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
-    fn drop_in_place = {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    vtable: {impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
+
+pub fn alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<T>(@1: T) -> Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Drop for String}::drop
-fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+= <opaque>
 
-// Full name: alloc::string::String::{impl Drop for String}::drop_in_place
-fn {impl Drop for String}::drop_in_place(@1: *mut String)
-
-// Full name: alloc::string::String::{impl Drop for String}
-impl Drop for String {
-    parent_clause0 = MetaSized<String>
-    fn drop<'_0_1> = {impl Drop for String}::drop<'_0_1>
-    fn drop_in_place = {impl Drop for String}::drop_in_place
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
     non-dyn-compatible
 }
 
 #[lang_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
+= <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
 pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
+= <opaque>
 
 // Full name: alloc::string::{impl Clone for String}
 impl Clone for String {
-    parent_clause0 = Sized<String>
+    parent_clause0 = {built_in impl Sized for String}
     fn clone<'_0_1> = {impl Clone for String}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: alloc::string::{impl Display for String}::fmt
-pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
+= <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()
@@ -205,22 +181,22 @@ fn foo()
     let @2: &'_ (Slice<i32>); // anonymous local
     let @3: &'_ (Array<i32, 2 : usize>); // anonymous local
     let @4: &'_ (Array<i32, 2 : usize>); // anonymous local
-    let @5: alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]; // anonymous local
-    let @6: alloc::boxed::Box<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]; // anonymous local
+    let @5: alloc::boxed::Box<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]; // anonymous local
+    let @6: alloc::boxed::Box<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]; // anonymous local
     let @7: Array<i32, 2 : usize>; // anonymous local
-    let @8: Rc<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]; // anonymous local
-    let @9: Rc<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]; // anonymous local
+    let @8: Rc<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]; // anonymous local
+    let @9: Rc<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]; // anonymous local
     let @10: Array<i32, 2 : usize>; // anonymous local
     let string@11: String; // local
     let @12: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)); // anonymous local
     let @13: &'_ (String); // anonymous local
     let @14: &'_ (String); // anonymous local
-    let @15: alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>, Sized<Global>]; // anonymous local
-    let @16: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>]; // anonymous local
+    let @15: alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]; // anonymous local
+    let @16: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let @17: String; // anonymous local
     let @18: &'_ (String); // anonymous local
-    let @19: Rc<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>, Sized<Global>]; // anonymous local
-    let @20: Rc<String>[MetaSized<String>, Sized<Global>]; // anonymous local
+    let @19: Rc<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]; // anonymous local
+    let @20: Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let @21: String; // anonymous local
     let @22: &'_ (String); // anonymous local
 
@@ -240,23 +216,23 @@ fn foo()
     storage_live(@6)
     storage_live(@7)
     @7 := copy (array@1)
-    @6 := @BoxNew<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@7))
-    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>], alloc::boxed::Box<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>], 2 : usize>(move (@6))
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]] @6
+    @6 := @BoxNew<Array<i32, 2 : usize>>[{built_in impl Sized for Array<i32, 2 : usize>}](move (@7))
+    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}], alloc::boxed::Box<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}], 2 : usize>(move (@6))
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]] @6
     storage_dead(@7)
     storage_dead(@6)
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Slice<i32>, Global>[MetaSized<Slice<i32>>, Sized<Global>]] @5
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Slice<i32>, Global>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]] @5
     storage_dead(@5)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
     @10 := copy (array@1)
-    @9 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, Sized<Global>]}::new<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@10))
-    @8 := unsize_cast<Rc<Array<i32, 2 : usize>>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>], Rc<Slice<i32>>[MetaSized<Slice<i32>>, Sized<Global>]>(move (@9))
-    drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[MetaSized<Array<i32, 2 : usize>>, Sized<Global>]] @9
+    @9 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<Array<i32, 2 : usize>>[{built_in impl Sized for Array<i32, 2 : usize>}](move (@10))
+    @8 := unsize_cast<Rc<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}], Rc<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]>(move (@9))
+    drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]] @9
     storage_dead(@10)
     storage_dead(@9)
-    drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<Slice<i32>, Global>[MetaSized<Slice<i32>>, Sized<Global>]] @8
+    drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<Slice<i32>, Global>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]] @8
     storage_dead(@8)
     storage_live(string@11)
     string@11 := alloc::string::{String}::new()
@@ -276,12 +252,12 @@ fn foo()
     @18 := &string@11
     @17 := {impl Clone for String}::clone<'_>(move (@18))
     storage_dead(@18)
-    @16 := @BoxNew<String>[Sized<String>](move (@17))
-    @15 := unsize_cast<alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>], alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>, Sized<Global>], {impl Display for String}>(move (@16))
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[MetaSized<String>, Sized<Global>]] @16
+    @16 := @BoxNew<String>[{built_in impl Sized for String}](move (@17))
+    @15 := unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}], {impl Display for String}>(move (@16))
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] @16
     storage_dead(@17)
     storage_dead(@16)
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_), Global>[MetaSized<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>, Sized<Global>]] @15
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_), Global>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]] @15
     storage_dead(@15)
     storage_live(@19)
     storage_live(@20)
@@ -290,15 +266,15 @@ fn foo()
     @22 := &string@11
     @21 := {impl Clone for String}::clone<'_>(move (@22))
     storage_dead(@22)
-    @20 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, Sized<Global>]}::new<String>[Sized<String>](move (@21))
-    @19 := unsize_cast<Rc<String>[MetaSized<String>, Sized<Global>], Rc<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[MetaSized<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>, Sized<Global>]>(move (@20))
-    drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<String, Global>[MetaSized<String>, Sized<Global>]] @20
+    @20 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move (@21))
+    @19 := unsize_cast<Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Rc<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]>(move (@20))
+    drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] @20
     storage_dead(@21)
     storage_dead(@20)
-    drop[{impl Drop for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_), Global>[MetaSized<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>, Sized<Global>]] @19
+    drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_), Global>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]] @19
     storage_dead(@19)
     @0 := ()
-    drop[{impl Drop for String}] string@11
+    drop[{impl Destruct for String}] string@11
     storage_dead(string@11)
     storage_dead(array@1)
     return

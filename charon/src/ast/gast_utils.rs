@@ -1,8 +1,6 @@
 //! Implementations for [crate::gast]
 
 use crate::ast::*;
-use crate::llbc_ast;
-use crate::ullbc_ast;
 
 impl FnPtrKind {
     pub fn mk_builtin(aid: BuiltinFunId) -> Self {
@@ -11,33 +9,14 @@ impl FnPtrKind {
 }
 
 impl Body {
-    pub fn as_unstructured(&self) -> Option<&ullbc_ast::ExprBody> {
-        if let Self::Unstructured(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-    pub fn as_unstructured_mut(&mut self) -> Option<&mut ullbc_ast::ExprBody> {
-        if let Self::Unstructured(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-
-    pub fn as_structured(&self) -> Option<&llbc_ast::ExprBody> {
-        if let Self::Structured(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-    pub fn as_structured_mut(&mut self) -> Option<&mut llbc_ast::ExprBody> {
-        if let Self::Structured(v) = self {
-            Some(v)
-        } else {
-            None
+    /// Whether there is an actual body with statements etc, as opposed to the body being missing
+    /// for some reason.
+    pub fn has_contents(&self) -> bool {
+        match self {
+            Body::Unstructured(..) | Body::Structured(..) => true,
+            Body::TraitMethodWithoutDefault | Body::Opaque | Body::Missing | Body::Error(..) => {
+                false
+            }
         }
     }
 
@@ -45,6 +24,7 @@ impl Body {
         match self {
             Body::Structured(body) => &body.locals,
             Body::Unstructured(body) => &body.locals,
+            _ => panic!("called `locals` on a missing body"),
         }
     }
 }
@@ -102,6 +82,35 @@ impl std::ops::IndexMut<LocalId> for Locals {
     }
 }
 
+impl FunDecl {
+    /// Replace the generic parameters of this function with the ones given by the binder.
+    pub fn substitute_params(self, subst: Binder<GenericArgs>) -> Self {
+        let FunDecl {
+            def_id,
+            item_meta,
+            signature,
+            src: kind,
+            is_global_initializer,
+            body,
+        } = self;
+        let signature = FunSig {
+            generics: subst.params,
+            inputs: signature.inputs.substitute(&subst.skip_binder),
+            output: signature.output.substitute(&subst.skip_binder),
+            ..signature
+        };
+        let src = kind.substitute(&subst.skip_binder);
+        let body = body.substitute(&subst.skip_binder);
+        FunDecl {
+            def_id,
+            item_meta,
+            signature,
+            src,
+            is_global_initializer,
+            body,
+        }
+    }
+}
 impl TraitDecl {
     pub fn methods(&self) -> impl Iterator<Item = &Binder<TraitMethod>> {
         self.methods.iter()
@@ -119,7 +128,7 @@ impl Binder<TraitAssocTy> {
     }
 }
 impl Binder<TraitMethod> {
-    pub fn name(&self) -> &TraitItemName {
-        &self.skip_binder.name
+    pub fn name(&self) -> TraitItemName {
+        self.skip_binder.name
     }
 }

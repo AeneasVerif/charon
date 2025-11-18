@@ -26,6 +26,7 @@ pub trait Clone<Self>
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -40,27 +41,13 @@ pub trait Copy<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0_1> = drop<'_0_1, Self>[Self]
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::ops::drop::Drop::{vtable}
-}
-
-// Full name: core::ops::drop::Drop::drop_in_place
+// Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
-where
-    [@TraitClause0]: Drop<Self>,
+= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -84,12 +71,14 @@ trait Trait<Self>
 fn test_crate::Trait::method1<Self>(@1: Self, @2: &'static (u32)) -> bool
 where
     [@TraitClause0]: Trait<Self>,
+= <method_without_default_body>
 
 fn test_crate::Trait::method2<Self, T>(@1: Self, @2: T)
 where
     [@TraitClause0]: Trait<Self>,
     [@TraitClause1]: Sized<T>,
     [@TraitClause2]: Copy<T>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method1
 fn {impl Trait for ()}::method1(@1: (), @2: &'static (u32)) -> bool
@@ -113,13 +102,13 @@ where
 
     @0 := ()
     @0 := ()
-    drop[Drop<T>] _other@2
+    drop[{built_in impl Destruct for T}] _other@2
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = Sized<()>
+    parent_clause0 = {built_in impl Sized for ()}
     fn method1 = {impl Trait for ()}::method1
     fn method2<T, [@TraitClause0_1]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_1]
     non-dyn-compatible
@@ -137,6 +126,7 @@ trait MyCompare<Self, Other>
 fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
 where
     [@TraitClause0]: MyCompare<Self, Other>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}::compare
 fn {impl MyCompare<&'a (())> for &'a (())}::compare<'a>(@1: &'a (()), @2: &'a (())) -> bool
@@ -151,8 +141,8 @@ fn {impl MyCompare<&'a (())> for &'a (())}::compare<'a>(@1: &'a (()), @2: &'a ((
 
 // Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}
 impl<'a> MyCompare<&'a (())> for &'a (()) {
-    parent_clause0 = Sized<&'_ (())>
-    parent_clause1 = Sized<&'_ (())>
+    parent_clause0 = {built_in impl Sized for &'_ (())}
+    parent_clause1 = {built_in impl Sized for &'_ (())}
     fn compare = {impl MyCompare<&'a (())> for &'a (())}::compare<'a>
     non-dyn-compatible
 }
@@ -165,52 +155,67 @@ fn main()
     let @2: (); // anonymous local
     let @3: &'_ (u32); // anonymous local
     let @4: &'_ (u32); // anonymous local
-    let @5: u32; // anonymous local
-    let @6: bool; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: &'_ (()); // anonymous local
     let @7: &'_ (()); // anonymous local
-    let @8: (); // anonymous local
+    let @8: &'_ (()); // anonymous local
     let @9: &'_ (()); // anonymous local
     let @10: &'_ (()); // anonymous local
-    let @11: (); // anonymous local
+    let @11: &'_ (u32); // anonymous local
+    let @12: &'_ (u32); // anonymous local
+    let @13: u32; // anonymous local
+    let @14: &'_ (()); // anonymous local
+    let @15: (); // anonymous local
+    let @16: &'_ (()); // anonymous local
+    let @17: (); // anonymous local
 
+    storage_live(@12)
+    storage_live(@13)
+    @13 := const (1 : u32)
+    @12 := &@13
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := ()
     storage_live(@3)
     storage_live(@4)
-    storage_live(@5)
-    @5 := const (1 : u32)
-    @4 := &@5
+    @11 := move (@12)
+    @4 := &*(@11)
     @3 := &*(@4)
     @1 := {impl Trait for ()}::method1(move (@2), move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
-    storage_dead(@5)
-    storage_dead(@4)
-    storage_dead(@1)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
+    storage_live(@14)
+    storage_live(@15)
     // TODO: this gives incorrect predicates
     // let _ = ().method2(false);
     // Not allowed to use the more precise signature.
     // let _ = ().method2(String::new());
-    @8 := ()
-    @7 := &@8
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
-    @11 := ()
-    @10 := &@11
-    @9 := &*(@10)
-    @6 := {impl MyCompare<&'a (())> for &'a (())}::compare<'_>(move (@7), move (@9))
-    storage_dead(@9)
+    @15 := ()
+    @14 := &@15
+    storage_live(@16)
+    storage_live(@17)
+    @17 := ()
+    @16 := &@17
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_dead(@4)
+    storage_dead(@1)
+    storage_live(@5)
+    storage_live(@6)
+    @10 := move (@14)
+    @6 := &*(@10)
+    storage_live(@7)
+    storage_live(@8)
+    @9 := move (@16)
+    @8 := &*(@9)
+    @7 := &*(@8)
+    @5 := {impl MyCompare<&'a (())> for &'a (())}::compare<'_>(move (@6), move (@7))
     storage_dead(@7)
-    storage_dead(@11)
-    storage_dead(@10)
-    storage_dead(@8)
     storage_dead(@6)
+    storage_dead(@8)
+    storage_dead(@5)
     @0 := ()
     return
 }
@@ -226,6 +231,7 @@ trait Foo<Self>
 fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
 where
     [@TraitClause0]: Foo<Self>,
+= <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::foo
 fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
@@ -240,7 +246,7 @@ fn {impl Foo for ()}::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = MetaSized<()>
+    parent_clause0 = {built_in impl MetaSized for ()}
     fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
     non-dyn-compatible
 }
@@ -254,23 +260,28 @@ fn call_foo<'e>(@1: &'e (())) -> &'e (())
     let @3: &'_ (()); // anonymous local
     let @4: &'_ (()); // anonymous local
     let @5: &'_ (()); // anonymous local
-    let @6: (); // anonymous local
+    let @6: &'_ (()); // anonymous local
+    let @7: &'_ (()); // anonymous local
+    let @8: (); // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    // Calls have erased lifetimes so we can't notice the discrepancy if there is one.
+    @8 := ()
+    @7 := &@8
+    storage_live(@6)
     storage_live(@2)
     storage_live(@3)
-    // Calls have erased lifetimes so we can't notice the discrepancy if there is one.
     @3 := &*(x@1)
     storage_live(@4)
     storage_live(@5)
-    storage_live(@6)
-    @6 := ()
-    @5 := &@6
+    @6 := move (@7)
+    @5 := &*(@6)
     @4 := &*(@5)
     @2 := {impl Foo for ()}::foo<'_, '_>(move (@3), move (@4))
     @0 := &*(@2)
     storage_dead(@4)
     storage_dead(@3)
-    storage_dead(@6)
     storage_dead(@5)
     storage_dead(@2)
     return

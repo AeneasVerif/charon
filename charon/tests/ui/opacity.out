@@ -25,6 +25,7 @@ pub trait Into<Self, T>
 pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
 where
     [@TraitClause0]: Into<Self, T>,
+= <opaque>
 
 // Full name: core::convert::From
 #[lang_item("From")]
@@ -40,6 +41,7 @@ pub trait From<Self, T>
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 where
     [@TraitClause0]: From<Self, T>,
+= <opaque>
 
 // Full name: core::convert::{impl Into<U> for T}::into
 pub fn {impl Into<U> for T}::into<T, U>(@1: T) -> U
@@ -80,8 +82,8 @@ pub fn {impl From<u32> for u64}::from(@1: u32) -> u64
 
 // Full name: core::convert::num::{impl From<u32> for u64}
 impl From<u32> for u64 {
-    parent_clause0 = Sized<u64>
-    parent_clause1 = Sized<u32>
+    parent_clause0 = {built_in impl Sized for u64}
+    parent_clause1 = {built_in impl Sized for u32}
     fn from = {impl From<u32> for u64}::from
     non-dyn-compatible
 }
@@ -126,54 +128,67 @@ fn foo()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'_ (Option<i32>[Sized<i32>]); // anonymous local
-    let @3: Option<i32>[Sized<i32>]; // anonymous local
-    let @4: u64; // anonymous local
-    let @5: &'_ (Slice<i32>); // anonymous local
+    let @2: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @3: u64; // anonymous local
+    let @4: &'_ (Slice<i32>); // anonymous local
+    let @5: &'_ (i32); // anonymous local
     let @6: &'_ (i32); // anonymous local
     let @7: &'_ (i32); // anonymous local
-    let @8: i32; // anonymous local
+    let @8: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @9: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @10: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @11: &'_ (i32); // anonymous local
+    let @12: i32; // anonymous local
 
+    storage_live(@9)
+    storage_live(@10)
+    @10 := Option::Some { 0: const (0 : i32) }
+    @9 := &@10
+    storage_live(@7)
+    storage_live(@8)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
-    storage_live(@3)
-    @3 := Option::Some { 0: const (0 : i32) }
-    @2 := &@3
-    @1 := is_some<'_, i32>[Sized<i32>](move (@2))
+    @8 := move (@9)
+    @2 := &*(@8)
+    @1 := is_some<'_, i32>[{built_in impl Sized for i32}](move (@2))
     storage_dead(@2)
-    storage_dead(@3)
     storage_dead(@1)
+    storage_live(@3)
+    @3 := {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const (42 : u32))
+    storage_live(@11)
+    storage_live(@12)
+    @12 := const (0 : i32)
+    @11 := &@12
+    storage_dead(@3)
     storage_live(@4)
-    @4 := {impl Into<U> for T}::into<u32, u64>[Sized<u32>, Sized<u64>, {impl From<u32> for u64}](const (42 : u32))
-    storage_dead(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    @8 := const (0 : i32)
-    @7 := &@8
+    @7 := move (@11)
     @6 := &*(@7)
-    @5 := from_ref<'_, i32>[Sized<i32>](move (@6))
-    storage_dead(@6)
-    storage_dead(@8)
-    storage_dead(@7)
+    @5 := &*(@6)
+    @4 := from_ref<'_, i32>[{built_in impl Sized for i32}](move (@5))
     storage_dead(@5)
+    storage_dead(@6)
+    storage_dead(@4)
     @0 := ()
     return
 }
 
 // Full name: test_crate::module::dont_translate_body
 fn dont_translate_body()
+= <opaque>
 
 // Full name: test_crate::exclude_me
 fn exclude_me()
+= <opaque>
 
 // Full name: test_crate::Struct
 struct Struct {}
 
 // Full name: test_crate::extern_fn
 unsafe fn extern_fn(@1: i32)
+= <opaque>
 
 
 

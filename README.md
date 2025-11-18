@@ -66,7 +66,9 @@ breaking changes in its API are planned. See the [limitations](./docs/limitation
 
 If you use nix, you can directly run `nix run github:AeneasVerif/charon`. Otherwise, read on.
 
-You first need to install [`rustup`](https://www.rust-lang.org/tools/install).
+You first need to install [`rustup`](https://www.rust-lang.org/tools/install) and uninstall any
+`rust` or `cargo` package previously installed in your system, e.g. via `brew`, as they sometimes
+conflict with `rustup`.
 
 As Charon is set up with cargo, rustup will automatically download and install the proper packages
 upon building the project. If you only want to build the Rust project (in `./charon`), run `make

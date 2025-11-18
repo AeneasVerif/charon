@@ -33,6 +33,24 @@ module List = struct
     let ls, _ = split_at ls (j - i) in
     ls
 
+  (** Split into chunks of last [n] (but the last chunk whose length can be < n)
+  *)
+  let rec chunks n ls =
+    if n <= 0 then invalid_arg "chunks: chunk size must be positive"
+    else
+      match ls with
+      | [] -> []
+      | _ ->
+          let rec take_n acc k xs =
+            if k = 0 then (List.rev acc, xs)
+            else
+              match xs with
+              | [] -> (List.rev acc, [])
+              | x :: xs -> take_n (x :: acc) (k - 1) xs
+          in
+          let chunk, rest = take_n [] n ls in
+          chunk :: chunks n rest
+
   (** Pop the last element of a list
 
       Raise [Failure] if the list is empty. *)
