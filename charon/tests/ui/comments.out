@@ -157,9 +157,9 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     loop {
         storage_dead(@5)
         storage_dead(@4)
-        // Start of loop
         break 0
     }
+    // Start of loop
     loop {
         storage_live(@8)
         storage_live(@9)
@@ -191,7 +191,6 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
             i@3 := move (@15)
             // Before end of loop
             storage_dead(@8)
-            continue 0
         }
         else {
             loop {
@@ -212,14 +211,13 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
                     @20 := copy (@19) panic.+ const (100 : u32)
                     @16 := move (@20)
                     storage_dead(@19)
-                    break 0
                 }
                 else {
                     storage_dead(@18)
                     // let sum untouched
                     @16 := copy (sum@2)
-                    break 0
                 }
+                break 0
             }
             storage_dead(@17)
             sum@2 := move (@16)

@@ -221,13 +221,12 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
             @4 := &x@1
             @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
             storage_dead(@4)
-            break 0
         }
         else {
             storage_dead(@3)
             @0 := const (false)
-            break 0
         }
+        break 0
     }
     storage_dead(@2)
     return
@@ -298,13 +297,12 @@ where
             @4 := &x@1
             @0 := {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
             storage_dead(@4)
-            break 0
         }
         else {
             storage_dead(@3)
             @0 := const (false)
-            break 0
         }
+        break 0
     }
     storage_dead(@2)
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
@@ -710,13 +708,12 @@ where
             @8 := &y@5
             @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
             storage_dead(@8)
-            break 0
         }
         else {
             storage_dead(@7)
             @0 := const (false)
-            break 0
         }
+        break 0
     }
     storage_dead(@6)
     storage_dead(y@5)

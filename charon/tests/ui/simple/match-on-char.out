@@ -23,13 +23,12 @@ fn main()
         switch copy (@1) {
             a => {
                 @0 := ()
-                break 0
             },
             _ => {
                 @0 := ()
-                break 0
             },
         }
+        break 0
     }
     storage_dead(@1)
     return

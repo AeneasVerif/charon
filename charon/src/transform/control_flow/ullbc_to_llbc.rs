@@ -70,6 +70,8 @@ struct ReloopCtx<'a> {
     /// Locals for the target body, so that we can add intermediate variables.
     locals: Locals,
     /// Stack of blocks we must translate specially in the current context.
+    /// A useful invariant is that the block at the top of the stack is the block where
+    /// control-flow will jump naturally at the end of the current block.
     special_jump_stack: Vec<(BlockId, SpecialJump)>,
 }
 
@@ -195,10 +197,18 @@ impl<'a> ReloopCtx<'a> {
 
         // Pop the contexts and translate what remains.
         while self.special_jump_stack.len() > old_context_depth {
-            block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block)).into_block();
             match self.special_jump_stack.pop().unwrap() {
-                (_, SpecialJump::Loop) => {}
+                (_, SpecialJump::Loop) => {
+                    block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block))
+                        .into_block();
+                }
                 (followed_by, SpecialJump::Block) => {
+                    // We add a `loop { ...; break }` so that we can use `break` to jump forward.
+                    let span = block.span;
+                    block = block.merge(
+                        tgt::Statement::new(span, tgt::StatementKind::Break(0)).into_block(),
+                    );
+                    block = tgt::Statement::new(span, tgt::StatementKind::Loop(block)).into_block();
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
                     let followed_by = self.reloop_block(followed_by);
@@ -220,6 +230,9 @@ impl<'a> ReloopCtx<'a> {
         {
             Some((i, (_, context))) => {
                 let kind = match context {
+                    // The top of the stack is where control-flow goes naturally, no need to add a
+                    // `break`/`continue`.
+                    _ if i == 0 => tgt::StatementKind::Nop,
                     SpecialJump::Loop => tgt::StatementKind::Continue(i),
                     SpecialJump::Block => tgt::StatementKind::Break(i),
                 };

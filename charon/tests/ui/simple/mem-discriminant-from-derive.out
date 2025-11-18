@@ -299,27 +299,25 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
                                     break 1
                                 },
                                 _ => {
-                                    break 0
                                 },
                             }
                         },
                         _ => {
-                            break 0
                         },
                     }
+                    break 0
                 }
                 @0 := const (true)
                 break 0
             }
             storage_dead(@10)
-            break 0
         }
         else {
             storage_dead(@9)
             storage_dead(@8)
             @0 := const (false)
-            break 0
         }
+        break 0
     }
     storage_dead(@7)
     storage_dead(__arg1_discr@5)

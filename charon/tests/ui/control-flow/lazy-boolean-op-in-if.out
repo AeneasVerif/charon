@@ -82,12 +82,11 @@ fn main()
                     break 1
                 }
                 else {
-                    break 0
                 }
             }
             else {
-                break 0
             }
+            break 0
         }
         @1 := do_something_else()
         break 0

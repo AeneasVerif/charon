@@ -111,13 +111,12 @@ where
         match opt@1 {
             Option::None => {
                 @0 := const (0 : isize)
-                break 0
             },
             Option::Some => {
                 @0 := const (1 : isize)
-                break 0
             },
         }
+        break 0
     }
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
     return

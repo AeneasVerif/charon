@@ -716,7 +716,6 @@ fn cbd(@1: Array<u8, 33 : usize>)
                 storage_dead(i@8)
                 storage_dead(@7)
                 storage_dead(@5)
-                continue 0
             },
         }
     }
@@ -791,7 +790,6 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
                 storage_dead(@9)
                 storage_dead(@6)
                 storage_dead(@4)
-                break 0
             }
             else {
                 storage_dead(@15)
@@ -814,8 +812,8 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
             }
         }
         else {
-            break 0
         }
+        break 0
     }
     storage_dead(@3)
     @0 := ()

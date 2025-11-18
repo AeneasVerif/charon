@@ -39,23 +39,21 @@ fn f0()
                 storage_live(@2)
                 @2 := const (0 : i32) < const (1 : i32)
                 if move (@2) {
-                    break 0
                 }
                 else {
-                    break 0
                 }
+                break 0
             }
             storage_dead(@2)
             storage_live(x@3)
             x@3 := copy (CONST)
             @0 := ()
             storage_dead(x@3)
-            break 0
         }
         else {
             @0 := ()
-            break 0
         }
+        break 0
     }
     storage_dead(@1)
     return
@@ -97,18 +95,17 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
                     storage_live(@6)
                     @6 := const (0 : i32) < const (1 : i32)
                     if move (@6) {
-                        break 0
                     }
                     else {
                         storage_live(@7)
                         @7 := const (1 : i32) > const (1 : i32)
                         if move (@7) {
-                            break 0
                         }
                         else {
                             break 1
                         }
                     }
+                    break 0
                 }
                 break 0
             }
@@ -130,7 +127,6 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
                     x@11 := copy (CONST)
                     storage_dead(x@11)
                     storage_dead(@9)
-                    continue 0
                 }
                 else {
                     storage_dead(@10)

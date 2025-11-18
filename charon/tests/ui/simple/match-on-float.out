@@ -27,19 +27,17 @@ fn main()
         @3 := const (0.10000000000000001 : f64) == copy (@1)
         if move (@3) {
             @0 := ()
-            break 0
         }
         else {
             @2 := const (0.20000000000000001 : f64) == copy (@1)
             if move (@2) {
                 @0 := ()
-                break 0
             }
             else {
                 @0 := ()
-                break 0
             }
         }
+        break 0
     }
     storage_dead(@1)
     return

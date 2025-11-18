@@ -91,18 +91,17 @@ pub fn test2(@1: E2) -> u32
             E2::V1 => {
                 storage_live(n@2)
                 n@2 := copy ((x@1 as variant E2::V1).0)
-                break 0
             },
             E2::V2 => {
                 storage_live(n@2)
                 n@2 := copy ((x@1 as variant E2::V2).0)
-                break 0
             },
             E2::V3 => {
                 @0 := const (0 : u32)
                 return
             },
         }
+        break 0
     }
     @0 := copy (n@2)
     storage_dead(n@2)
@@ -129,18 +128,17 @@ pub fn test3(@1: E2) -> u32
                 E2::V1 => {
                     storage_live(n@3)
                     n@3 := copy ((x@1 as variant E2::V1).0)
-                    break 0
                 },
                 E2::V2 => {
                     storage_live(n@3)
                     n@3 := copy ((x@1 as variant E2::V2).0)
-                    break 0
                 },
                 E2::V3 => {
                     y@2 := const (0 : u32)
                     break 1
                 },
             }
+            break 0
         }
         y@2 := copy (n@3)
         storage_dead(n@3)

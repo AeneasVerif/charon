@@ -127,7 +127,6 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn,
             storage_dead(@5)
             storage_dead(@4)
             @0 := ()
-            break 0
         }
         else {
             storage_dead(@7)
@@ -135,8 +134,8 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn,
             storage_dead(@5)
             storage_dead(@4)
             @0 := ()
-            break 0
         }
+        break 0
     }
     storage_dead(@3)
     storage_dead(counter@2)

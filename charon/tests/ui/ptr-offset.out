@@ -223,7 +223,6 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
             storage_dead(b@12)
             storage_dead(rhs@9)
             storage_dead(overflow@19)
-            break 0
         }
         else {
             storage_dead(b@12)
@@ -257,9 +256,9 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
                 return
             }
             else {
-                break 0
             }
         }
+        break 0
     }
     storage_live(@6)
     storage_live(@8)
@@ -298,11 +297,10 @@ where
             @4 := cast<*const T, *const ()>(copy (self@1))
             @3 := precondition_check(move (@4), copy (count@2), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE))
             storage_dead(@4)
-            break 0
         }
         else {
-            break 0
         }
+        break 0
     }
     @0 := copy (self@1) offset copy (count@2)
     return

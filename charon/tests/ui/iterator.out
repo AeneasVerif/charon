@@ -5412,7 +5412,6 @@ fn main()
                                                     i@2 := move (@42)
                                                     storage_dead(@41)
                                                     storage_dead(@39)
-                                                    continue 0
                                                 },
                                             }
                                         }
@@ -5422,7 +5421,6 @@ fn main()
                                         i@2 := move (@33)
                                         storage_dead(@32)
                                         storage_dead(@30)
-                                        continue 0
                                     },
                                 }
                             }
@@ -5442,7 +5440,6 @@ fn main()
                             storage_dead(v@21)
                             storage_dead(@20)
                             storage_dead(@18)
-                            continue 0
                         },
                     }
                 }
@@ -5458,7 +5455,6 @@ fn main()
                 storage_dead(v@10)
                 storage_dead(@9)
                 storage_dead(@7)
-                continue 0
             },
         }
     }

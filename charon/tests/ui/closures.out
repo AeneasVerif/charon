@@ -199,7 +199,6 @@ where
         match x@1 {
             Option::None => {
                 @0 := Option::None {  }
-                break 0
             },
             Option::Some => {
                 storage_live(x@3)
@@ -221,9 +220,9 @@ where
                 storage_dead(@4)
                 drop[{built_in impl Destruct for T}] x@3
                 storage_dead(x@3)
-                break 0
             },
         }
+        break 0
     }
     drop[{built_in impl Destruct for F}] f@2
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1

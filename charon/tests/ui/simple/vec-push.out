@@ -201,16 +201,15 @@ where
         switch const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE) {
             0 : usize => {
                 @5 := const (18446744073709551615 : usize)
-                break 0
             },
             _ => {
                 storage_live(self@11)
                 self@11 := copy ((((*(self@1)).buf).0).1)
                 @5 := transmute<UsizeNoHighBit, usize>(copy (self@11))
                 storage_dead(self@11)
-                break 0
             },
         }
+        break 0
     }
     loop {
         @4 := copy (len@3) == move (@5)
@@ -220,12 +219,11 @@ where
             @7 := &two-phase-mut (*(self@1)).buf
             @6 := grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@7))
             storage_dead(@7)
-            break 0
         }
         else {
             storage_dead(@5)
-            break 0
         }
+        break 0
     }
     storage_dead(@4)
     storage_live(self@9)

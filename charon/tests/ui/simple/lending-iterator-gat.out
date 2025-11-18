@@ -239,7 +239,6 @@ where
                 storage_dead(item@6)
                 drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
                 storage_dead(@4)
-                continue 0
             },
             _ => {
                 @0 := ()

@@ -41,12 +41,11 @@ pub fn bar()
         @2 := const (Opaque(`ConstantExprKind::Cast {{..}}`)) == copy (@1)
         if move (@2) {
             @0 := ()
-            break 0
         }
         else {
             @0 := ()
-            break 0
         }
+        break 0
     }
     storage_dead(@1)
     return

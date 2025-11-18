@@ -65,11 +65,11 @@ fn main()
     loop {
         loop {
             if move (@1) {
-                break 0
             }
             else {
                 break 1
             }
+            break 0
         }
         loop {
             storage_live(@2)
@@ -79,13 +79,11 @@ fn main()
             @3 := foo()
             loop {
                 if move (@3) {
-                    break 0
                 }
                 else {
                     storage_live(@4)
                     @4 := bar()
                     if move (@4) {
-                        break 0
                     }
                     else {
                         storage_dead(@4)
@@ -93,11 +91,13 @@ fn main()
                         continue 1
                     }
                 }
+                break 0
             }
             storage_dead(@4)
             storage_dead(@3)
             break 1
         }
+        break 0
     }
     storage_dead(@1)
     @0 := do_something_at_the_end()

@@ -632,7 +632,6 @@ where
                 storage_dead(x@8)
                 storage_dead(@7)
                 storage_dead(@5)
-                continue 0
             },
         }
     }

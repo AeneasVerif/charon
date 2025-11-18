@@ -50,12 +50,11 @@ where
             @7 := &mut *(x@2)
             @5 := &mut *(@7)
             storage_dead(@7)
-            break 0
         }
         else {
             @5 := &mut *(y@3)
-            break 0
         }
+        break 0
     }
     @4 := &mut *(@5)
     storage_dead(@6)
@@ -225,7 +224,6 @@ where
                 if move (@5) {
                     storage_dead(@6)
                     @0 := &*(x@3)
-                    break 0
                 }
                 else {
                     storage_dead(@6)
@@ -243,8 +241,8 @@ where
                     storage_dead(@9)
                     storage_dead(@8)
                     storage_dead(@7)
-                    break 0
                 }
+                break 0
             }
             storage_dead(@5)
             storage_dead(tl@4)
@@ -302,7 +300,6 @@ where
                     @11 := &mut *(x@5)
                     @8 := &mut *(@11)
                     storage_dead(@11)
-                    break 0
                 }
                 else {
                     storage_dead(@10)
@@ -320,8 +317,8 @@ where
                     storage_dead(@14)
                     storage_dead(@13)
                     storage_dead(@12)
-                    break 0
                 }
+                break 0
             }
             @7 := &mut *(@8)
             storage_dead(@9)
@@ -391,7 +388,6 @@ where
                     storage_dead(@8)
                     storage_dead(tl@4)
                     storage_dead(x@3)
-                    continue 0
                 }
             },
             _ => {
@@ -424,7 +420,6 @@ pub fn i32_id(@1: i32) -> i32
         if move (@2) {
             storage_dead(@3)
             @0 := const (0 : i32)
-            break 0
         }
         else {
             storage_dead(@3)
@@ -440,8 +435,8 @@ pub fn i32_id(@1: i32) -> i32
             @8 := copy (@4) panic.+ const (1 : i32)
             @0 := move (@8)
             storage_dead(@4)
-            break 0
         }
+        break 0
     }
     storage_dead(@2)
     return
@@ -475,13 +470,12 @@ where
                 storage_dead(@6)
                 storage_dead(@5)
                 storage_dead(tl@4)
-                break 0
             },
             CList::CNil => {
                 @3 := move (l@1)
-                break 0
             },
         }
+        break 0
     }
     @2 := &mut *(@3)
     @0 := &mut *(@2)

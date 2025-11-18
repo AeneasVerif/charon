@@ -173,12 +173,11 @@ pub fn {impl HasDefaultLen<N> for Array<bool, N>}::LEN<const N : usize>() -> usi
         @1 := const (true)
         if move (@1) {
             @0 := const (N)
-            break 0
         }
         else {
             @0 := const ({impl HasDefaultLen<N> for Array<bool, N>}<N>::LEN)
-            break 0
         }
+        break 0
     }
     storage_dead(@1)
     return

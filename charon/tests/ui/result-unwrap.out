@@ -167,14 +167,13 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Fo
                     0 : u32 => {
                         storage_dead(@5)
                         @0 := {impl Display for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
-                        break 0
                     },
                     _ => {
                         storage_dead(@5)
                         @0 := {impl UpperHex for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
-                        break 0
                     },
                 }
+                break 0
             }
             return
         },

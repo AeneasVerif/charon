@@ -126,7 +126,6 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
             @5 := &raw mut *(@8)
             @4 := move (@4) wrap.+ const (1 : usize)
             drop[{impl Destruct::<String>}] *(@5)
-            continue 0
         }
     }
 }
@@ -235,7 +234,6 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
             @7 := &raw mut *(@10)
             @6 := move (@6) wrap.+ const (1 : usize)
             drop[{impl Destruct::<String>}] *(@7)
-            continue 0
         }
     }
 }

@@ -97,13 +97,12 @@ where
             @4 := &x@1
             @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
             storage_dead(@4)
-            break 0
         }
         else {
             storage_dead(@3)
             @0 := const (false)
-            break 0
         }
+        break 0
     }
     storage_dead(@2)
     return

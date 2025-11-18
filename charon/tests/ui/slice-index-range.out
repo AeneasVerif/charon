@@ -376,7 +376,6 @@ where
             @12 := copy (self@4) < copy (rhs@5)
             if move (@12) {
                 storage_dead(@12)
-                break 0
             }
             else {
                 storage_live(@13)
@@ -410,9 +409,9 @@ where
                 }
                 else {
                     storage_dead(@8)
-                    break 0
                 }
             }
+            break 0
         }
         storage_dead(@3)
         storage_live(@16)
@@ -460,7 +459,6 @@ where
             @12 := copy (self@4) < copy (rhs@5)
             if move (@12) {
                 storage_dead(@12)
-                break 0
             }
             else {
                 storage_live(@13)
@@ -494,9 +492,9 @@ where
                 }
                 else {
                     storage_dead(@8)
-                    break 0
                 }
             }
+            break 0
         }
         storage_dead(@3)
         storage_live(@16)
@@ -550,12 +548,11 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
                 return
             }
             else {
-                break 0
             }
         }
         else {
-            break 0
         }
+        break 0
     }
     storage_live(@7)
     storage_live(@9)
@@ -609,11 +606,10 @@ where
             storage_dead(@7)
             storage_dead(@6)
             storage_dead(@5)
-            break 0
         }
         else {
-            break 0
         }
+        break 0
     }
     storage_dead(@3)
     storage_live(@9)
@@ -663,12 +659,11 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
                 return
             }
             else {
-                break 0
             }
         }
         else {
-            break 0
         }
+        break 0
     }
     storage_live(@7)
     storage_live(@9)
@@ -722,11 +717,10 @@ where
             storage_dead(@7)
             storage_dead(@6)
             storage_dead(@5)
-            break 0
         }
         else {
-            break 0
         }
+        break 0
     }
     storage_dead(@3)
     storage_live(@9)
@@ -779,7 +773,6 @@ where
         @13 := copy (self@4) < copy (rhs@5)
         if move (@13) {
             storage_dead(@13)
-            break 0
         }
         else {
             storage_live(@14)
@@ -813,9 +806,9 @@ where
             }
             else {
                 storage_dead(@8)
-                break 0
             }
         }
+        break 0
     }
     storage_dead(@3)
     storage_live(@12)
@@ -858,7 +851,6 @@ where
         @13 := copy (self@4) < copy (rhs@5)
         if move (@13) {
             storage_dead(@13)
-            break 0
         }
         else {
             storage_live(@14)
@@ -892,9 +884,9 @@ where
             }
             else {
                 storage_dead(@8)
-                break 0
             }
         }
+        break 0
     }
     storage_dead(@3)
     storage_live(@12)

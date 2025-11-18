@@ -51,7 +51,6 @@ fn f() -> usize
                 if move (@6) {
                     storage_dead(@7)
                     j@2 := copy (j@2) panic./ const (2 : i32)
-                    break 0
                 }
                 else {
                     storage_dead(@7)
@@ -72,15 +71,14 @@ fn f() -> usize
                     else {
                         storage_dead(@9)
                         storage_dead(@8)
-                        break 0
                     }
                 }
+                break 0
             }
             storage_dead(@6)
             @10 := copy (i@1) panic.+ const (1 : i32)
             i@1 := move (@10)
             storage_dead(@3)
-            continue 0
         }
         else {
             storage_dead(@4)

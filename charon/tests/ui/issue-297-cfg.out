@@ -517,14 +517,13 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
                 else {
                     storage_dead(@8)
                     storage_dead(@7)
-                    break 0
                 }
             }
             else {
                 storage_dead(@5)
                 storage_dead(@4)
-                break 0
             }
+            break 0
         }
         break 0
     }
@@ -741,13 +740,12 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                             }
                             else {
                                 storage_dead(@34)
-                                break 0
                             }
                         }
                         else {
                             storage_dead(@32)
-                            break 0
                         }
+                        break 0
                     }
                     break 0
                 }
@@ -784,13 +782,12 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                             }
                             else {
                                 storage_dead(@41)
-                                break 0
                             }
                         }
                         else {
                             storage_dead(@39)
-                            break 0
                         }
+                        break 0
                     }
                     break 0
                 }
@@ -804,7 +801,6 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_dead(bytes@11)
                 storage_dead(@10)
                 storage_dead(@8)
-                continue 0
             },
         }
     }

@@ -102,13 +102,12 @@ fn foo(@1: Option<u32>[{built_in impl Sized for u32}])
                         storage_dead(@7)
                         storage_dead(@6)
                         storage_dead(x@5)
-                        break 0
                     }
                 },
                 _ => {
-                    break 0
                 },
             }
+            break 0
         }
         @2 := do_something_else()
         break 0
