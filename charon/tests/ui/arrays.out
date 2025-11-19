@@ -1245,8 +1245,7 @@ pub fn index_all() -> u32
         storage_live(_y@3)
         _y@3 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
         storage_dead(_y@3)
-    }
-    else {
+    } else {
         storage_live(_z@4)
         _z@4 := [const (0 : u32)]
         storage_dead(_z@4)
@@ -1606,8 +1605,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_dead(@7)
         @4 := move (@5) < move (@6)
         if move (@4) {
-        }
-        else {
+        } else {
             break 0
         }
         storage_dead(@6)
@@ -1686,8 +1684,7 @@ pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
     storage_dead(@8)
     @4 := move (@5) == move (@7)
     if move (@4) {
-    }
-    else {
+    } else {
         storage_dead(@7)
         storage_dead(@5)
         panic(core::panicking::panic)
@@ -1708,8 +1705,7 @@ pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
         storage_dead(@13)
         @10 := move (@11) < move (@12)
         if move (@10) {
-        }
-        else {
+        } else {
             break 0
         }
         storage_dead(@12)
@@ -2008,8 +2004,7 @@ pub fn ite()
         storage_dead(@8)
         @0 := ()
         storage_dead(y@3)
-    }
-    else {
+    } else {
         @0 := ()
     }
     storage_dead(@2)
@@ -2064,8 +2059,7 @@ pub fn zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
             i@2 := move (@9)
             storage_dead(@5)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -2114,8 +2108,7 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
             i@4 := move (@8)
             storage_dead(@5)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -2163,8 +2156,7 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         storage_dead(@7)
         @4 := move (@5) < move (@6)
         if move (@4) {
-        }
-        else {
+        } else {
             break 0
         }
         storage_dead(@6)
@@ -2303,8 +2295,7 @@ fn slice_pattern_4<'_0>(@1: &'_0 (Slice<()>))
     @4 := const (1 : usize)
     @5 := move (@2) == move (@4)
     if move (@5) {
-    }
-    else {
+    } else {
         @0 := ()
         return
     }

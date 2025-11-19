@@ -168,8 +168,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_dead(@11)
         @8 := move (@9) < move (@10)
         if move (@8) {
-        }
-        else {
+        } else {
             break 0
         }
         storage_dead(@10)
@@ -211,8 +210,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @20 := copy (@19) panic.+ const (100 : u32)
         @16 := move (@20)
         storage_dead(@19)
-    }
-    else {
+    } else {
         storage_dead(@18)
         // let sum untouched
         @16 := copy (sum@2)
@@ -433,8 +431,7 @@ fn foo()
     @24 := copy (*(right_val@21))
     @22 := move (@23) == move (@24)
     if move (@22) {
-    }
-    else {
+    } else {
         storage_dead(@24)
         storage_dead(@23)
         storage_live(kind@25)

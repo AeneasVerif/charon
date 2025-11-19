@@ -235,8 +235,7 @@ where
         @4 := precondition_check(move (@5), move (@6), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN), copy (count@3))
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     copy_nonoverlapping(copy (src@1), copy (dst@2), copy (count@3))
     return

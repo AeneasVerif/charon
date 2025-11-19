@@ -324,8 +324,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
     @6 := copy (len@3)
     @4 := move (@5) > move (@6)
     if move (@4) {
-    }
-    else {
+    } else {
         storage_dead(@6)
         storage_dead(@5)
         storage_dead(@4)
@@ -336,8 +335,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
         @12 := copy (len@3)
         @10 := move (@11) > move (@12)
         if move (@10) {
-        }
-        else {
+        } else {
             storage_dead(@12)
             storage_dead(@11)
             storage_dead(@10)
@@ -348,8 +346,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
             @18 := copy (end@2)
             @16 := move (@17) > move (@18)
             if move (@16) {
-            }
-            else {
+            } else {
                 storage_dead(@18)
                 storage_dead(@17)
                 storage_dead(@16)
@@ -462,8 +459,7 @@ where
         storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
-    }
-    else {
+    } else {
         storage_live(@13)
         @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
@@ -491,8 +487,7 @@ where
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@3)
             storage_live(@16)
@@ -542,8 +537,7 @@ where
         storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
-    }
-    else {
+    } else {
         storage_live(@13)
         @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
@@ -571,8 +565,7 @@ where
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@3)
             storage_live(@16)
@@ -625,11 +618,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
             storage_dead(@5)
             storage_dead(@4)
             return
+        } else {
         }
-        else {
-        }
-    }
-    else {
+    } else {
     }
     storage_live(@12)
     storage_live(@13)
@@ -686,8 +677,7 @@ where
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     storage_live(@9)
@@ -736,11 +726,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
             storage_dead(@5)
             storage_dead(@4)
             return
+        } else {
         }
-        else {
-        }
-    }
-    else {
+    } else {
     }
     storage_live(@12)
     storage_live(@13)
@@ -797,8 +785,7 @@ where
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     storage_live(@9)
@@ -850,8 +837,7 @@ where
     @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
         storage_dead(@13)
-    }
-    else {
+    } else {
         storage_live(@14)
         @14 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@14) }
@@ -880,8 +866,7 @@ where
             storage_dead(@3)
             storage_dead(@7)
             return
-        }
-        else {
+        } else {
             storage_dead(@8)
         }
     }
@@ -925,8 +910,7 @@ where
     @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
         storage_dead(@13)
-    }
-    else {
+    } else {
         storage_live(@14)
         @14 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@14) }
@@ -955,8 +939,7 @@ where
             storage_dead(@3)
             storage_dead(@7)
             return
-        }
-        else {
+        } else {
             storage_dead(@8)
         }
     }
@@ -1022,15 +1005,13 @@ where
         storage_live(@17)
         @17 := Option::None {  }
         @0 := move (@17)
-    }
-    else {
+    } else {
         self@15 := move ((self@1).start)
         self@16 := move ((self@1).exhausted)
         exclusive_end@5 := copy (self@4) wrap.+ const (1 : usize)
         if copy (self@16) {
             self@15 := copy (exclusive_end@5)
-        }
-        else {
+        } else {
         }
         storage_live(@8)
         storage_live(@11)
@@ -1042,8 +1023,7 @@ where
             @0 := move (@18)
             storage_dead(@6)
             storage_dead(@8)
-        }
-        else {
+        } else {
             new_len@12 := copy (exclusive_end@5) ub.- copy (self@15)
             storage_dead(@11)
             storage_live(@6)
@@ -1066,8 +1046,7 @@ where
                 @8 := &*(@9) with_metadata(copy (@9.metadata))
                 @0 := Option::Some { 0: copy (@8) }
                 storage_dead(@9)
-            }
-            else {
+            } else {
                 storage_dead(@7)
                 storage_live(@18)
                 @18 := Option::None {  }
@@ -1118,15 +1097,13 @@ where
         storage_live(@17)
         @17 := Option::None {  }
         @0 := move (@17)
-    }
-    else {
+    } else {
         self@15 := move ((self@1).start)
         self@16 := move ((self@1).exhausted)
         exclusive_end@5 := copy (self@4) wrap.+ const (1 : usize)
         if copy (self@16) {
             self@15 := copy (exclusive_end@5)
-        }
-        else {
+        } else {
         }
         storage_live(@8)
         storage_live(@11)
@@ -1138,8 +1115,7 @@ where
             @0 := move (@18)
             storage_dead(@6)
             storage_dead(@8)
-        }
-        else {
+        } else {
             new_len@12 := copy (exclusive_end@5) ub.- copy (self@15)
             storage_dead(@11)
             storage_live(@6)
@@ -1162,8 +1138,7 @@ where
                 @8 := &mut *(@9) with_metadata(copy (@9.metadata))
                 @0 := Option::Some { 0: copy (@8) }
                 storage_dead(@9)
-            }
-            else {
+            } else {
                 storage_dead(@7)
                 storage_live(@18)
                 @18 := Option::None {  }
@@ -1207,8 +1182,7 @@ where
     exclusive_end@3 := copy (self@11) wrap.+ const (1 : usize)
     if copy (self@12) {
         self@10 := copy (exclusive_end@3)
-    }
-    else {
+    } else {
     }
     storage_live(new_len@7)
     storage_live(@4)
@@ -1218,8 +1192,7 @@ where
         @6 := copy (slice@2.metadata)
         @5 := {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy (self@10), copy (exclusive_end@3), move (@6))
         storage_dead(@6)
-    }
-    else {
+    } else {
     }
     storage_dead(@4)
     new_len@7 := copy (exclusive_end@3) ub.- copy (self@10)
@@ -1264,8 +1237,7 @@ where
     exclusive_end@3 := copy (self@11) wrap.+ const (1 : usize)
     if copy (self@12) {
         self@10 := copy (exclusive_end@3)
-    }
-    else {
+    } else {
     }
     storage_live(new_len@7)
     storage_live(@4)
@@ -1275,8 +1247,7 @@ where
         @6 := copy (slice@2.metadata)
         @5 := {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy (self@10), copy (exclusive_end@3), move (@6))
         storage_dead(@6)
-    }
-    else {
+    } else {
     }
     storage_dead(@4)
     new_len@7 := copy (exclusive_end@3) ub.- copy (self@10)
@@ -1340,8 +1311,7 @@ where
         storage_dead(@9)
         if copy (exhausted@5) {
             start@3 := copy (end@4)
-        }
-        else {
+        } else {
         }
         storage_live(@10)
         storage_live(self@11)
@@ -1355,8 +1325,7 @@ where
             storage_dead(rhs@12)
             storage_dead(self@11)
             storage_dead(@10)
-        }
-        else {
+        } else {
             storage_live(@18)
             @18 := copy (self@11) ub.- copy (rhs@12)
             @10 := Option::Some { 0: move (@18) }
@@ -1382,8 +1351,7 @@ where
             storage_dead(@7)
             return
         }
-    }
-    else {
+    } else {
         storage_dead(@8)
     }
     storage_dead(@7)
@@ -1439,8 +1407,7 @@ where
         storage_dead(@9)
         if copy (exhausted@5) {
             start@3 := copy (end@4)
-        }
-        else {
+        } else {
         }
         storage_live(@10)
         storage_live(self@11)
@@ -1454,8 +1421,7 @@ where
             storage_dead(rhs@12)
             storage_dead(self@11)
             storage_dead(@10)
-        }
-        else {
+        } else {
             storage_live(@18)
             @18 := copy (self@11) ub.- copy (rhs@12)
             @10 := Option::Some { 0: move (@18) }
@@ -1481,8 +1447,7 @@ where
             storage_dead(@7)
             return
         }
-    }
-    else {
+    } else {
         storage_dead(@8)
     }
     storage_dead(@7)

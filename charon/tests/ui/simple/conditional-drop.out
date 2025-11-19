@@ -107,16 +107,14 @@ fn main()
         storage_dead(@4)
         storage_dead(@3)
         @0 := ()
-    }
-    else {
+    } else {
         @0 := ()
     }
     storage_dead(@2)
     // `b` is dropped implicitly here
     if copy (@5) {
         drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] b@1
-    }
-    else {
+    } else {
     }
     @5 := const (false)
     storage_dead(b@1)

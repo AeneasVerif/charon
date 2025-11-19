@@ -49,8 +49,7 @@ where
         @7 := &mut *(x@2)
         @5 := &mut *(@7)
         storage_dead(@7)
-    }
-    else {
+    } else {
         @5 := &mut *(y@3)
     }
     @4 := &mut *(@5)
@@ -225,8 +224,7 @@ where
     if move (@5) {
         storage_dead(@6)
         @0 := &*(x@3)
-    }
-    else {
+    } else {
         storage_dead(@6)
         storage_live(@7)
         storage_live(@8)
@@ -298,8 +296,7 @@ where
         @11 := &mut *(x@5)
         @8 := &mut *(@11)
         storage_dead(@11)
-    }
-    else {
+    } else {
         storage_dead(@10)
         storage_live(@12)
         storage_live(@13)
@@ -358,8 +355,7 @@ where
                 @6 := copy (i@2)
                 @5 := move (@6) == const (0 : u32)
                 if move (@5) {
-                }
-                else {
+                } else {
                     storage_dead(@6)
                     storage_dead(@5)
                     @7 := copy (i@2) panic.- const (1 : u32)
@@ -408,8 +404,7 @@ pub fn i32_id(@1: i32) -> i32
     if move (@2) {
         storage_dead(@3)
         @0 := const (0 : i32)
-    }
-    else {
+    } else {
         storage_dead(@3)
         storage_live(@4)
         storage_live(@5)

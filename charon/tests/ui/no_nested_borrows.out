@@ -425,8 +425,7 @@ pub fn get_max(@1: u32, @2: u32) -> u32
         storage_dead(@5)
         storage_dead(@4)
         @0 := copy (x@1)
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
         @0 := copy (y@2)
@@ -490,8 +489,7 @@ pub fn test_box1()
     @7 := copy (*(x@4))
     @6 := move (@7) == const (1 : i32)
     if move (@6) {
-    }
-    else {
+    } else {
         storage_dead(@7)
         panic(core::panicking::panic)
     }
@@ -637,8 +635,7 @@ pub fn even(@1: u32) -> bool
     if move (@2) {
         storage_dead(@3)
         @0 := const (true)
-    }
-    else {
+    } else {
         storage_dead(@3)
         storage_live(@4)
         storage_live(@5)
@@ -672,8 +669,7 @@ pub fn odd(@1: u32) -> bool
     if move (@2) {
         storage_dead(@3)
         @0 := const (false)
-    }
-    else {
+    } else {
         storage_dead(@3)
         storage_live(@4)
         storage_live(@5)
