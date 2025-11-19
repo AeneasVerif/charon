@@ -906,6 +906,18 @@ impl ItemTransCtx<'_, '_> {
         Ok(Body::Unstructured(builder.build()))
     }
 
+    /// The target vtable drop_shim body looks like:
+    /// ```ignore
+    /// local ret@0 : ();
+    /// // the shim receiver of this drop_shim function
+    /// local shim_self@1 : ShimReceiverTy;
+    /// // the target receiver of the drop_shim
+    /// local target_self@2 : TargetReceiverTy;
+    /// // perform some conversion to cast / re-box the drop_shim receiver to the target receiver
+    /// target_self@2 := concretize_cast<ShimReceiverTy, TargetReceiverTy>(shim_self@1);
+    /// // call the drop_in_place function
+    /// drop_in_place(target_self@2);
+    /// ```
     fn translate_vtable_drop_shim_body(
         &mut self,
         span: Span,
@@ -930,7 +942,8 @@ impl ItemTransCtx<'_, '_> {
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        // TODO: write a new function for it?
+        // Given the target_receiver type `T`, use Hax to solve `T: Destruct`
+        // and translate the resolved result to `TraitRef` of the `drop_in_place`
         let fn_ptr = {
             // Build a reference to `impl Destruct for T`.
             let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
