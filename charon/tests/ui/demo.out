@@ -209,44 +209,44 @@ where
     storage_live(@11)
     match *(l@1) {
         CList::CCons => {
+            storage_live(x@3)
+            x@3 := &(*(l@1) as variant CList::CCons).0
+            storage_live(tl@4)
+            tl@4 := &(*(l@1) as variant CList::CCons).1
+            storage_live(@5)
+            storage_live(@6)
+            @6 := copy (i@2)
+            @5 := move (@6) == const (0 : u32)
+            if move (@5) {
+                storage_dead(@6)
+                @0 := &*(x@3)
+            }
+            else {
+                storage_dead(@6)
+                storage_live(@7)
+                storage_live(@8)
+                @8 := &*(*(tl@4))
+                storage_live(@9)
+                storage_live(@10)
+                @10 := copy (i@2)
+                @11 := copy (@10) panic.- const (1 : u32)
+                @9 := move (@11)
+                storage_dead(@10)
+                @7 := list_nth<'_, T>[@TraitClause0](move (@8), move (@9))
+                @0 := &*(@7)
+                storage_dead(@9)
+                storage_dead(@8)
+                storage_dead(@7)
+            }
+            storage_dead(@5)
+            storage_dead(tl@4)
+            storage_dead(x@3)
+            return
         },
         CList::CNil => {
             panic(core::panicking::panic)
         },
     }
-    storage_live(x@3)
-    x@3 := &(*(l@1) as variant CList::CCons).0
-    storage_live(tl@4)
-    tl@4 := &(*(l@1) as variant CList::CCons).1
-    storage_live(@5)
-    storage_live(@6)
-    @6 := copy (i@2)
-    @5 := move (@6) == const (0 : u32)
-    if move (@5) {
-        storage_dead(@6)
-        @0 := &*(x@3)
-    }
-    else {
-        storage_dead(@6)
-        storage_live(@7)
-        storage_live(@8)
-        @8 := &*(*(tl@4))
-        storage_live(@9)
-        storage_live(@10)
-        @10 := copy (i@2)
-        @11 := copy (@10) panic.- const (1 : u32)
-        @9 := move (@11)
-        storage_dead(@10)
-        @7 := list_nth<'_, T>[@TraitClause0](move (@8), move (@9))
-        @0 := &*(@7)
-        storage_dead(@9)
-        storage_dead(@8)
-        storage_dead(@7)
-    }
-    storage_dead(@5)
-    storage_dead(tl@4)
-    storage_dead(x@3)
-    return
 }
 
 // Full name: test_crate::list_nth_mut
@@ -277,57 +277,57 @@ where
     storage_live(@4)
     match *(l@1) {
         CList::CCons => {
+            storage_live(x@5)
+            x@5 := &mut (*(l@1) as variant CList::CCons).0
+            storage_live(tl@6)
+            tl@6 := &mut (*(l@1) as variant CList::CCons).1
+            storage_live(@7)
+            storage_live(@8)
+            storage_live(@9)
+            storage_live(@10)
+            @10 := copy (i@2)
+            @9 := move (@10) == const (0 : u32)
+            if move (@9) {
+                storage_dead(@10)
+                storage_live(@11)
+                @11 := &mut *(x@5)
+                @8 := &mut *(@11)
+                storage_dead(@11)
+            }
+            else {
+                storage_dead(@10)
+                storage_live(@12)
+                storage_live(@13)
+                @13 := &two-phase-mut *(*(tl@6))
+                storage_live(@14)
+                storage_live(@15)
+                @15 := copy (i@2)
+                @16 := copy (@15) panic.- const (1 : u32)
+                @14 := move (@16)
+                storage_dead(@15)
+                @12 := list_nth_mut<'_, T>[@TraitClause0](move (@13), move (@14))
+                @8 := &mut *(@12)
+                storage_dead(@14)
+                storage_dead(@13)
+                storage_dead(@12)
+            }
+            @7 := &mut *(@8)
+            storage_dead(@9)
+            @4 := &mut *(@7)
+            storage_dead(@8)
+            storage_dead(@7)
+            storage_dead(tl@6)
+            storage_dead(x@5)
+            @3 := &mut *(@4)
+            @0 := &mut *(@3)
+            storage_dead(@4)
+            storage_dead(@3)
+            return
         },
         CList::CNil => {
             panic(core::panicking::panic)
         },
     }
-    storage_live(x@5)
-    x@5 := &mut (*(l@1) as variant CList::CCons).0
-    storage_live(tl@6)
-    tl@6 := &mut (*(l@1) as variant CList::CCons).1
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
-    @10 := copy (i@2)
-    @9 := move (@10) == const (0 : u32)
-    if move (@9) {
-        storage_dead(@10)
-        storage_live(@11)
-        @11 := &mut *(x@5)
-        @8 := &mut *(@11)
-        storage_dead(@11)
-    }
-    else {
-        storage_dead(@10)
-        storage_live(@12)
-        storage_live(@13)
-        @13 := &two-phase-mut *(*(tl@6))
-        storage_live(@14)
-        storage_live(@15)
-        @15 := copy (i@2)
-        @16 := copy (@15) panic.- const (1 : u32)
-        @14 := move (@16)
-        storage_dead(@15)
-        @12 := list_nth_mut<'_, T>[@TraitClause0](move (@13), move (@14))
-        @8 := &mut *(@12)
-        storage_dead(@14)
-        storage_dead(@13)
-        storage_dead(@12)
-    }
-    @7 := &mut *(@8)
-    storage_dead(@9)
-    @4 := &mut *(@7)
-    storage_dead(@8)
-    storage_dead(@7)
-    storage_dead(tl@6)
-    storage_dead(x@5)
-    @3 := &mut *(@4)
-    @0 := &mut *(@3)
-    storage_dead(@4)
-    storage_dead(@3)
-    return
 }
 
 // Full name: test_crate::list_nth_mut1
@@ -358,6 +358,12 @@ where
                 @6 := copy (i@2)
                 @5 := move (@6) == const (0 : u32)
                 if move (@5) {
+                    storage_dead(@6)
+                    @0 := &mut *(x@3)
+                    storage_dead(@5)
+                    storage_dead(tl@4)
+                    storage_dead(x@3)
+                    return
                 }
                 else {
                     storage_dead(@6)
@@ -370,14 +376,7 @@ where
                     storage_dead(@8)
                     storage_dead(tl@4)
                     storage_dead(x@3)
-                    continue 0
                 }
-                storage_dead(@6)
-                @0 := &mut *(x@3)
-                storage_dead(@5)
-                storage_dead(tl@4)
-                storage_dead(x@3)
-                return
             },
             _ => {
                 panic(core::panicking::panic)

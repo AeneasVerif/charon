@@ -242,6 +242,8 @@ where
 
     match *(x@1) {
         Option::None => {
+            @0 := Option::None {  }
+            return
         },
         Option::Some => {
             storage_live(x@3)
@@ -261,8 +263,6 @@ where
             return
         },
     }
-    @0 := Option::None {  }
-    return
 }
 
 // Full name: test_crate::test_map_option1

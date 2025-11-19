@@ -578,7 +578,12 @@ where
         storage_dead(@6)
         match @5 {
             Option::None => {
-                break 0
+                @0 := ()
+                storage_dead(@7)
+                storage_dead(@5)
+                storage_dead(iter@4)
+                storage_dead(@2)
+                return
             },
             Option::Some => {
                 storage_live(x@8)
@@ -624,16 +629,9 @@ where
                 storage_dead(x@8)
                 storage_dead(@7)
                 storage_dead(@5)
-                continue 0
             },
         }
     }
-    @0 := ()
-    storage_dead(@7)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
-    return
 }
 
 // Full name: test_crate::main

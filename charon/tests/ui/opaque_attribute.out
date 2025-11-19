@@ -75,6 +75,8 @@ where
 
     match *(self@1) {
         Option::None => {
+            @0 := const (false)
+            return
         },
         Option::Some => {
             storage_live(x@2)
@@ -87,8 +89,6 @@ where
             return
         },
     }
-    @0 := const (false)
-    return
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}

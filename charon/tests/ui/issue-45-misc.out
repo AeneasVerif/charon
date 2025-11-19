@@ -689,7 +689,12 @@ fn cbd(@1: Array<u8, 33 : usize>)
         storage_dead(@6)
         match @5 {
             Option::None => {
-                break 0
+                @0 := ()
+                storage_dead(@7)
+                storage_dead(@5)
+                storage_dead(iter@4)
+                storage_dead(@2)
+                return
             },
             Option::Some => {
                 storage_live(i@8)
@@ -708,16 +713,9 @@ fn cbd(@1: Array<u8, 33 : usize>)
                 storage_dead(i@8)
                 storage_dead(@7)
                 storage_dead(@5)
-                continue 0
             },
         }
     }
-    @0 := ()
-    storage_dead(@7)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
-    return
 }
 
 // Full name: test_crate::select
@@ -780,6 +778,14 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         @15 := copy (*(right_val@12))
         @13 := move (@14) == move (@15)
         if move (@13) {
+            storage_dead(@15)
+            storage_dead(@14)
+            storage_dead(@13)
+            storage_dead(right_val@12)
+            storage_dead(left_val@11)
+            storage_dead(@9)
+            storage_dead(@6)
+            storage_dead(@4)
         }
         else {
             storage_dead(@15)
@@ -800,14 +806,6 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
             @22 := Option::None {  }
             panic(core::panicking::assert_failed)
         }
-        storage_dead(@15)
-        storage_dead(@14)
-        storage_dead(@13)
-        storage_dead(right_val@12)
-        storage_dead(left_val@11)
-        storage_dead(@9)
-        storage_dead(@6)
-        storage_dead(@4)
     }
     else {
     }

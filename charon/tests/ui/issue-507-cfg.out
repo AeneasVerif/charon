@@ -69,29 +69,36 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     let @10: i32; // anonymous local
     let x@11: u8; // local
 
-    @0 := ()
-    storage_live(previous_true_hints_seen@2)
-    previous_true_hints_seen@2 := const (0 : usize)
-    storage_live(i@3)
-    i@3 := const (0 : i32)
+    loop {
+        @0 := ()
+        storage_live(previous_true_hints_seen@2)
+        previous_true_hints_seen@2 := const (0 : usize)
+        storage_live(i@3)
+        i@3 := const (0 : i32)
+        break 0
+    }
     loop {
         storage_live(@4)
         storage_live(@5)
         @5 := copy (i@3)
         @4 := move (@5) < const (1 : i32)
         if move (@4) {
-            storage_dead(@5)
-            storage_live(@6)
-            @6 := const (0 : i32) < const (1 : i32)
-            if move (@6) {
-            }
-            else {
-                storage_live(@7)
-                @7 := const (1 : i32) > const (1 : i32)
-                if move (@7) {
+            loop {
+                storage_dead(@5)
+                storage_live(@6)
+                @6 := const (0 : i32) < const (1 : i32)
+                if move (@6) {
                 }
                 else {
+                    storage_live(@7)
+                    @7 := const (1 : i32) > const (1 : i32)
+                    if move (@7) {
+                    }
+                    else {
+                        break 0
+                    }
                 }
+                break 0
             }
             storage_dead(@7)
             storage_dead(@6)
@@ -108,28 +115,25 @@ fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
                     x@11 := copy (CONST)
                     storage_dead(x@11)
                     storage_dead(@9)
-                    continue 0
                 }
                 else {
-                    break 0
+                    storage_dead(@10)
+                    storage_dead(@9)
+                    storage_dead(j@8)
+                    storage_dead(@4)
+                    continue 1
                 }
             }
-            storage_dead(@10)
-            storage_dead(@9)
-            storage_dead(j@8)
-            storage_dead(@4)
-            continue 0
         }
         else {
-            break 0
+            storage_dead(@5)
+            @0 := ()
+            storage_dead(@4)
+            storage_dead(i@3)
+            storage_dead(previous_true_hints_seen@2)
+            return
         }
     }
-    storage_dead(@5)
-    @0 := ()
-    storage_dead(@4)
-    storage_dead(i@3)
-    storage_dead(previous_true_hints_seen@2)
-    return
 }
 
 

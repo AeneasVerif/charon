@@ -113,7 +113,7 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
     loop {
         @6 := copy (@4) == copy (@3)
         if move (@6) {
-            break 0
+            return
         }
         else {
             storage_live(@7)
@@ -123,10 +123,8 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
             @5 := &raw mut *(@8)
             @4 := move (@4) wrap.+ const (1 : usize)
             drop[{impl Destruct::<String>}] *(@5)
-            continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<slice>::{impl Destruct::<Slice<String>>}::<String>
@@ -220,7 +218,7 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
     loop {
         @8 := copy (@6) == copy (@5)
         if move (@8) {
-            break 0
+            return
         }
         else {
             storage_live(@9)
@@ -230,10 +228,8 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
             @7 := &raw mut *(@10)
             @6 := move (@6) wrap.+ const (1 : usize)
             drop[{impl Destruct::<String>}] *(@7)
-            continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct::<Array<String, 4 : usize>>}::<String, 4 : usize>

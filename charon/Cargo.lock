@@ -255,6 +255,7 @@ dependencies = [
  "serde-map-to-array",
  "serde_json",
  "serde_stacker",
+ "smallvec",
  "snapbox",
  "stacker",
  "strip-ansi-escapes",

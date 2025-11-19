@@ -340,19 +340,19 @@ fn main()
     @6 := copy (*(@7))
     @5 := move (@6) == const (42 : i32)
     if move (@5) {
+        storage_dead(@6)
+        storage_dead(@7)
+        storage_dead(@5)
+        @0 := ()
+        storage_dead(ptr@2)
+        storage_dead(s@1)
+        return
     }
     else {
         storage_dead(@6)
         storage_dead(@7)
         panic(core::panicking::panic)
     }
-    storage_dead(@6)
-    storage_dead(@7)
-    storage_dead(@5)
-    @0 := ()
-    storage_dead(ptr@2)
-    storage_dead(s@1)
-    return
 }
 
 
