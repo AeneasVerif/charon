@@ -344,8 +344,7 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(
                 self,
                 span,
-                "`dyn Trait` is not yet supported with `--monomorphize`; \
-                use `--monomorphize-conservative` instead"
+                "`dyn Trait` is not yet supported with `--monomorphize`"
             )
         }
         Ok(())
