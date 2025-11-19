@@ -2,42 +2,45 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::Vector;
 
-pub fn recognize_builtin_impl(
-    trait_data: &hax::BuiltinTraitData,
-    trait_def: &hax::FullDef,
-) -> Option<BuiltinImplData> {
-    Some(match trait_data {
-        hax::BuiltinTraitData::Destruct(x) => {
-            match x {
-                hax::DestructData::Noop => BuiltinImplData::NoopDestruct,
-                hax::DestructData::Implicit => BuiltinImplData::UntrackedDestruct,
-                // This is unconditionally replaced by a `TraitImpl`.
-                hax::DestructData::Glue { .. } => return None,
+impl<'tcx> TranslateCtx<'tcx> {
+    pub fn recognize_builtin_impl(
+        &self,
+        trait_data: &hax::BuiltinTraitData,
+        trait_def: &hax::FullDef,
+    ) -> Option<BuiltinImplData> {
+        Some(match trait_data {
+            hax::BuiltinTraitData::Destruct(x) => {
+                match x {
+                    hax::DestructData::Noop => BuiltinImplData::NoopDestruct,
+                    hax::DestructData::Implicit => BuiltinImplData::UntrackedDestruct,
+                    // This is unconditionally replaced by a `TraitImpl`.
+                    hax::DestructData::Glue { .. } => return None,
+                }
             }
-        }
-        hax::BuiltinTraitData::Other => match &trait_def.lang_item {
-            None => match trait_def.diagnostic_item.as_deref() {
-                Some("Send") => BuiltinImplData::Send,
-                _ => return None,
+            hax::BuiltinTraitData::Other => match &trait_def.lang_item {
+                _ if self
+                    .tcx
+                    .trait_is_auto(trait_def.def_id().underlying_rust_def_id()) =>
+                {
+                    BuiltinImplData::Auto
+                }
+                None => return None,
+                Some(litem) => match litem.as_str() {
+                    "sized" => BuiltinImplData::Sized,
+                    "meta_sized" => BuiltinImplData::MetaSized,
+                    "tuple_trait" => BuiltinImplData::Tuple,
+                    "r#fn" => BuiltinImplData::Fn,
+                    "fn_mut" => BuiltinImplData::FnMut,
+                    "fn_once" => BuiltinImplData::FnOnce,
+                    "pointee_trait" => BuiltinImplData::Pointee,
+                    "clone" => BuiltinImplData::Clone,
+                    "copy" => BuiltinImplData::Copy,
+                    "discriminant_kind" => BuiltinImplData::DiscriminantKind,
+                    _ => return None,
+                },
             },
-            Some(litem) => match litem.as_str() {
-                "sized" => BuiltinImplData::Sized,
-                "meta_sized" => BuiltinImplData::MetaSized,
-                "tuple_trait" => BuiltinImplData::Tuple,
-                "unpin" => BuiltinImplData::Unpin,
-                "freeze" => BuiltinImplData::Freeze,
-                "sync" => BuiltinImplData::Sync,
-                "r#fn" => BuiltinImplData::Fn,
-                "fn_mut" => BuiltinImplData::FnMut,
-                "fn_once" => BuiltinImplData::FnOnce,
-                "pointee_trait" => BuiltinImplData::Pointee,
-                "clone" => BuiltinImplData::Clone,
-                "copy" => BuiltinImplData::Copy,
-                "discriminant_kind" => BuiltinImplData::DiscriminantKind,
-                _ => return None,
-            },
-        },
-    })
+        })
+    }
 }
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -363,7 +366,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ),
                     }
                 } else {
-                    let Some(builtin_data) = recognize_builtin_impl(trait_data, &trait_def) else {
+                    let Some(builtin_data) = self.recognize_builtin_impl(trait_data, &trait_def)
+                    else {
                         raise_error!(
                             self,
                             span,

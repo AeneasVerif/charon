@@ -385,8 +385,7 @@ fn funs_with_disambiguator(@1: bool) -> u32
     @2 := copy (b@1)
     if move (@2) {
         @0 := test_crate::funs_with_disambiguator::f()
-    }
-    else {
+    } else {
         @0 := test_crate::funs_with_disambiguator::f#1()
     }
     storage_dead(@2)

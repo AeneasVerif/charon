@@ -1474,7 +1474,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     let ctx = &ctx.increase_indent();
                     write!(
                         f,
-                        "if {} {{\n{}{tab}}}\n{tab}else {{\n{}{tab}}}",
+                        "if {} {{\n{}{tab}}} else {{\n{}{tab}}}",
                         discr.with_ctx(ctx),
                         true_st.with_ctx(ctx),
                         false_st.with_ctx(ctx),

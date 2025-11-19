@@ -143,8 +143,7 @@ where
         storage_dead(@5)
         storage_dead(@4)
         @0 := @TraitClause0::other_method()
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
         @0 := ()
@@ -202,8 +201,7 @@ where
         storage_dead(@5)
         storage_dead(@4)
         @0 := {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
         @0 := ()
@@ -274,8 +272,7 @@ where
         storage_dead(@5)
         storage_dead(@4)
         @0 := {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
         @0 := ()

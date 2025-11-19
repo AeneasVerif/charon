@@ -237,12 +237,9 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Sized" -> Ok BuiltinSized
     | `String "MetaSized" -> Ok BuiltinMetaSized
     | `String "Tuple" -> Ok BuiltinTuple
-    | `String "Send" -> Ok BuiltinSend
-    | `String "Sync" -> Ok BuiltinSync
     | `String "Pointee" -> Ok BuiltinPointee
     | `String "DiscriminantKind" -> Ok BuiltinDiscriminantKind
-    | `String "Unpin" -> Ok BuiltinUnpin
-    | `String "Freeze" -> Ok BuiltinFreeze
+    | `String "Auto" -> Ok BuiltinAuto
     | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
     | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "Fn" -> Ok BuiltinFn

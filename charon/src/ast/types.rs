@@ -135,12 +135,10 @@ pub enum BuiltinImplData {
     Sized,
     MetaSized,
     Tuple,
-    Send,
-    Sync,
     Pointee,
     DiscriminantKind,
-    Unpin,
-    Freeze,
+    // Auto traits (defined with `auto trait ...`).
+    Auto,
 
     // Traits with methods.
     /// An impl of `Destruct` for a type with no drop glue.

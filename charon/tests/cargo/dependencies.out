@@ -202,8 +202,7 @@ fn main()
     @12 := copy (*(right_val@9))
     @10 := move (@11) == move (@12)
     if move (@10) {
-    }
-    else {
+    } else {
         storage_dead(@12)
         storage_dead(@11)
         storage_live(kind@13)

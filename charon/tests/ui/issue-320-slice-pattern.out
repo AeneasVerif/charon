@@ -232,8 +232,7 @@ fn slice_pat4<'_0>(@1: &'_0 (Slice<u32>))
     @4 := const (1 : usize)
     @5 := move (@2) == move (@4)
     if move (@5) {
-    }
-    else {
+    } else {
         @0 := ()
         return
     }
@@ -279,8 +278,7 @@ fn slice_pat5<'_0>(@1: &'_0 (Unsized))
     @5 := const (1 : usize)
     @6 := move (@2) == move (@5)
     if move (@6) {
-    }
-    else {
+    } else {
         @0 := ()
         return
     }

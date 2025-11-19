@@ -114,8 +114,7 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
         @6 := copy (@4) == copy (@3)
         if move (@6) {
             break 0
-        }
-        else {
+        } else {
             storage_live(@7)
             @7 := &mut *(@2) with_metadata(copy (@2.metadata))
             storage_live(@8)
@@ -221,8 +220,7 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
         @8 := copy (@6) == copy (@5)
         if move (@8) {
             break 0
-        }
-        else {
+        } else {
             storage_live(@9)
             @9 := &mut *(@4) with_metadata(copy (@4.metadata))
             storage_live(@10)

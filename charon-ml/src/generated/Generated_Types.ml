@@ -264,12 +264,9 @@ and builtin_impl_data =
   | BuiltinSized
   | BuiltinMetaSized
   | BuiltinTuple
-  | BuiltinSend
-  | BuiltinSync
   | BuiltinPointee
   | BuiltinDiscriminantKind
-  | BuiltinUnpin
-  | BuiltinFreeze
+  | BuiltinAuto
   | BuiltinNoopDestruct
       (** An impl of [Destruct] for a type with no drop glue. *)
   | BuiltinUntrackedDestruct

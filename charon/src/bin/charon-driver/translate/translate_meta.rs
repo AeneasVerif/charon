@@ -53,7 +53,23 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                                 rewritten_path
                             }
                         } else {
-                            path.clone()
+                            // Find the cargo home directory: according to cargo docs and having a
+                            // look at the cargo source, it's either the `$CARGO_HOME` var or
+                            // `$HOME/.cargo`
+                            let cargo_home = std::env::var("CARGO_HOME")
+                                .map(PathBuf::from)
+                                .ok()
+                                .or_else(|| std::env::home_dir().map(|p| p.join(".cargo")));
+                            if let Some(cargo_home) = cargo_home
+                                && let Ok(path) = path.strip_prefix(cargo_home)
+                            {
+                                // Avoid some more machine-dependent paths in the llbc output.
+                                let mut rewritten_path: PathBuf = "/cargo".into();
+                                rewritten_path.extend(path);
+                                rewritten_path
+                            } else {
+                                path.clone()
+                            }
                         };
                         FileName::Local(path)
                     }

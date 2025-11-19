@@ -510,13 +510,11 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
             storage_dead(@7)
             @9 := copy (sampled@2) panic.+ const (100 : usize)
             sampled@2 := move (@9)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@7)
         }
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
     }
@@ -718,12 +716,10 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         storage_dead(@36)
                         @37 := copy (sampled@3) panic.+ const (1 : usize)
                         sampled@3 := move (@37)
-                    }
-                    else {
+                    } else {
                         storage_dead(@34)
                     }
-                }
-                else {
+                } else {
                     storage_dead(@32)
                 }
                 storage_dead(@33)
@@ -753,12 +749,10 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         storage_dead(@43)
                         @44 := copy (sampled@3) panic.+ const (1 : usize)
                         sampled@3 := move (@44)
-                    }
-                    else {
+                    } else {
                         storage_dead(@41)
                     }
-                }
-                else {
+                } else {
                     storage_dead(@39)
                 }
                 storage_dead(@40)

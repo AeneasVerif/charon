@@ -246,8 +246,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
     @6 := copy (len@3)
     @4 := move (@5) > move (@6)
     if move (@4) {
-    }
-    else {
+    } else {
         storage_dead(@6)
         storage_dead(@5)
         storage_dead(@4)
@@ -258,8 +257,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
         @12 := copy (len@3)
         @10 := move (@11) > move (@12)
         if move (@10) {
-        }
-        else {
+        } else {
             storage_dead(@12)
             storage_dead(@11)
             storage_dead(@10)
@@ -270,8 +268,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
             @18 := copy (end@2)
             @16 := move (@17) > move (@18)
             if move (@16) {
-            }
-            else {
+            } else {
                 storage_dead(@18)
                 storage_dead(@17)
                 storage_dead(@16)
@@ -378,8 +375,7 @@ where
         storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
-    }
-    else {
+    } else {
         storage_live(@13)
         @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
@@ -407,8 +403,7 @@ where
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@3)
             storage_live(@16)
@@ -458,8 +453,7 @@ where
         storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
-    }
-    else {
+    } else {
         storage_live(@13)
         @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
@@ -487,8 +481,7 @@ where
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@3)
             storage_live(@16)
@@ -539,11 +532,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
             storage_dead(@5)
             storage_dead(@4)
             return
+        } else {
         }
-        else {
-        }
-    }
-    else {
+    } else {
     }
     storage_live(@7)
     storage_live(@9)
@@ -596,8 +587,7 @@ where
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     storage_live(@9)
@@ -644,11 +634,9 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
             storage_dead(@5)
             storage_dead(@4)
             return
+        } else {
         }
-        else {
-        }
-    }
-    else {
+    } else {
     }
     storage_live(@7)
     storage_live(@9)
@@ -701,8 +689,7 @@ where
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     storage_live(@9)
@@ -754,8 +741,7 @@ where
     @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
         storage_dead(@13)
-    }
-    else {
+    } else {
         storage_live(@14)
         @14 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@14) }
@@ -784,8 +770,7 @@ where
             storage_dead(@3)
             storage_dead(@7)
             return
-        }
-        else {
+        } else {
             storage_dead(@8)
         }
     }
@@ -829,8 +814,7 @@ where
     @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
         storage_dead(@13)
-    }
-    else {
+    } else {
         storage_live(@14)
         @14 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@14) }
@@ -859,8 +843,7 @@ where
             storage_dead(@3)
             storage_dead(@7)
             return
-        }
-        else {
+        } else {
             storage_dead(@8)
         }
     }
@@ -928,8 +911,7 @@ fn main()
     @7 := copy (*(@10))
     @6 := move (@7) == const (3 : i32)
     if move (@6) {
-    }
-    else {
+    } else {
         storage_dead(@7)
         storage_dead(@8)
         panic(core::panicking::panic)

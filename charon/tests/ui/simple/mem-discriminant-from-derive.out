@@ -304,8 +304,7 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
             },
         }
         storage_dead(@10)
-    }
-    else {
+    } else {
         storage_dead(@9)
         storage_dead(@8)
         @0 := const (false)

@@ -413,8 +413,7 @@ pub fn main()
     @16 := copy (*(right_val@13))
     @14 := move (@15) == move (@16)
     if move (@14) {
-    }
-    else {
+    } else {
         storage_dead(@16)
         storage_dead(@15)
         storage_live(kind@17)

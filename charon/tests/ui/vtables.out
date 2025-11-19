@@ -416,8 +416,7 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
     @3 := copy (*(self@1))
     @2 := move (@3) > const (0 : i32)
     if move (@2) {
-    }
-    else {
+    } else {
         storage_dead(@3)
         panic(core::panicking::panic)
     }
@@ -708,8 +707,7 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i3
     @5 := copy (*(t@2))
     @3 := move (@4) > move (@5)
     if move (@3) {
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
         panic(core::panicking::panic)
@@ -797,8 +795,7 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i6
     @6 := copy (*(t@2))
     @3 := move (@4) > move (@6)
     if move (@3) {
-    }
-    else {
+    } else {
         storage_dead(@6)
         storage_dead(@4)
         panic(core::panicking::panic)
@@ -1001,8 +998,7 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'
     @5 := copy (*(arg@2))
     @3 := move (@4) > move (@5)
     if move (@3) {
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
         panic(core::panicking::panic)
@@ -1280,8 +1276,7 @@ fn main()
     @5 := &*(x@1) with_metadata(copy (x@1.metadata))
     @4 := (move (*(@5.metadata)).method_check)(move (@5))
     if move (@4) {
-    }
-    else {
+    } else {
         storage_dead(@5)
         panic(core::panicking::panic)
     }
@@ -1316,8 +1311,7 @@ fn main()
     storage_dead(@13)
     @10 := is_empty<'_>(move (@11))
     if move (@10) {
-    }
-    else {
+    } else {
         storage_dead(@11)
         drop[{impl Destruct for String}] @12
         drop[{impl Destruct for String}] @15
@@ -1362,8 +1356,7 @@ fn main()
         @30 := copy (*(right_val@27))
         @28 := move (@29) == move (@30)
         if move (@28) {
-        }
-        else {
+        } else {
             storage_dead(@30)
             storage_dead(@29)
             storage_live(kind@31)
@@ -1512,8 +1505,7 @@ fn main()
         @69 := copy (*(right_val@66))
         @67 := move (@68) == move (@69)
         if move (@67) {
-        }
-        else {
+        } else {
             storage_dead(@69)
             storage_dead(@68)
             storage_live(kind@70)
