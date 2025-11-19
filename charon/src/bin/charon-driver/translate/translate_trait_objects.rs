@@ -915,8 +915,7 @@ impl ItemTransCtx<'_, '_> {
     /// local target_self@2 : TargetReceiverTy;
     /// // perform some conversion to cast / re-box the drop_shim receiver to the target receiver
     /// target_self@2 := concretize_cast<ShimReceiverTy, TargetReceiverTy>(shim_self@1);
-    /// // call the drop_in_place function
-    /// drop_in_place(target_self@2);
+    /// Drop(*target_self@2);
     /// ```
     fn translate_vtable_drop_shim_body(
         &mut self,
@@ -930,7 +929,6 @@ impl ItemTransCtx<'_, '_> {
         builder.new_var(Some("ret".into()), Ty::mk_unit());
         let dyn_self = builder.new_var(Some("dyn_self".into()), shim_receiver.clone());
         let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
-        let drop_ret_place = builder.new_var(Some("drop_ret".into()), Ty::mk_unit());
 
         // Perform the core concretization cast.
         let rval = Rvalue::UnaryOp(
@@ -942,38 +940,24 @@ impl ItemTransCtx<'_, '_> {
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        // Given the target_receiver type `T`, use Hax to solve `T: Destruct`
-        // and translate the resolved result to `TraitRef` of the `drop_in_place`
-        let fn_ptr = {
-            // Build a reference to `impl Destruct for T`.
-            let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
-            let impl_expr: hax::ImplExpr = {
-                let s = self.hax_state_with_id();
-                let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
-                let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-                let tref =
-                    rustc_middle::ty::TraitRef::new_from_args(self.tcx, destruct_trait, generics);
-                hax::solve_trait(s, rustc_middle::ty::Binder::dummy(tref))
-            };
-            let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
-            let method_id = self.register_item(
-                span,
-                impl_expr.r#trait.hax_skip_binder_ref(),
-                TransItemSourceKind::DropInPlaceMethod(None),
-            );
-            let item_name = TraitItemName("drop_in_place".into());
-            FnPtr::new(
-                FnPtrKind::Trait(tref, item_name, method_id),
-                GenericArgs::empty(),
-            )
+        // Build a reference to `impl Destruct for T`. Given the
+        // target_receiver type `T`, use Hax to solve `T: Destruct`
+        // and translate the resolved result to `TraitRef` of the
+        // `drop_in_place`
+        let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
+        let impl_expr: hax::ImplExpr = {
+            let s = self.hax_state_with_id();
+            let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+            let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
+            let tref =
+                rustc_middle::ty::TraitRef::new_from_args(self.tcx, destruct_trait, generics);
+            hax::solve_trait(s, rustc_middle::ty::Binder::dummy(tref))
         };
+        let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
 
-        // call drop_in_place
-        builder.call(Call {
-            func: FnOperand::Regular(fn_ptr),
-            args: Vec::from([Operand::Move(target_self.clone())]),
-            dest: drop_ret_place,
-        });
+        // Drop(*target_self)
+        let drop_arg = target_self.clone().deref();
+        builder.insert_drop(drop_arg, tref);
 
         Ok(Body::Unstructured(builder.build()))
     }
@@ -999,9 +983,11 @@ impl ItemTransCtx<'_, '_> {
                 "Trying to generate a vtable drop shim for a non-trait impl"
             );
         };
+
+        // `*mut dyn Trait`
         let ref_dyn_self =
             TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
-
+        // `*mut T` for `impl Trait for T`
         let ref_target_self = {
             let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
             TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
