@@ -575,10 +575,11 @@ pub fn translate<'tcx, 'ctx>(
     let mut hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
+            item_ref_use_concrete_impl: true,
             inline_anon_consts: true,
             bounds_options: hax::options::BoundsOptions {
                 resolve_destruct: options.add_drop_bounds,
-                prune_sized: false,
+                prune_sized: options.hide_marker_traits,
             },
         },
     );
