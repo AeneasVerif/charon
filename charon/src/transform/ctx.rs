@@ -219,6 +219,18 @@ pub trait BodyTransformCtx: Sized {
         var
     }
 
+    /// Assign an rvalue to a place, unless the rvalue is a move in which case we just use the
+    /// moved place.
+    fn rval_to_place(&mut self, rvalue: Rvalue, ty: Ty) -> Place {
+        if let Rvalue::Use(Operand::Move(place)) = rvalue {
+            place
+        } else {
+            let var = self.fresh_var(None, ty);
+            self.insert_assn_stmt(var.clone(), rvalue);
+            var
+        }
+    }
+
     /// When `from_end` is true, we need to compute `len(p) - last_arg` instead of just using `last_arg`.
     /// Otherwise, we simply return `last_arg`.
     /// New local variables are created as needed.
@@ -408,49 +420,132 @@ impl BodyTransformCtx for UllbcStatementTransformCtx<'_> {
     }
 }
 
-impl FunDecl {
-    pub fn transform_ullbc_terminators(
-        &mut self,
-        ctx: &mut TransformCtx,
-        mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Terminator),
-    ) {
-        if let Some(body) = self.body.as_unstructured_mut() {
-            let params = &self.signature.generics;
-            body.body.iter_mut().for_each(|block| {
-                let span = block.terminator.span;
-                let mut ctx = UllbcStatementTransformCtx {
-                    ctx,
-                    params,
-                    locals: &mut body.locals,
-                    span,
-                    statements: std::mem::take(&mut block.statements),
-                };
-                f(&mut ctx, &mut block.terminator);
-                block.statements = ctx.statements;
-            });
-        }
+pub struct LlbcStatementTransformCtx<'a> {
+    pub ctx: &'a mut TransformCtx,
+    pub params: &'a GenericParams,
+    pub locals: &'a mut Locals,
+    /// Span of the statement being explored
+    pub span: Span,
+    /// Statements to prepend to the statement currently being explored.
+    pub statements: Vec<llbc_ast::Statement>,
+}
+
+impl BodyTransformCtx for LlbcStatementTransformCtx<'_> {
+    fn get_ctx(&self) -> &TransformCtx {
+        self.ctx
+    }
+    fn get_params(&self) -> &GenericParams {
+        self.params
+    }
+    fn get_locals_mut(&mut self) -> &mut Locals {
+        self.locals
     }
 
+    fn insert_storage_live_stmt(&mut self, local: LocalId) {
+        self.statements.push(llbc_ast::Statement::new(
+            self.span,
+            llbc_ast::StatementKind::StorageLive(local),
+        ));
+    }
+
+    fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
+        self.statements.push(llbc_ast::Statement::new(
+            self.span,
+            llbc_ast::StatementKind::Assign(place, rvalue),
+        ));
+    }
+
+    fn insert_storage_dead_stmt(&mut self, local: LocalId) {
+        self.statements.push(llbc_ast::Statement::new(
+            self.span,
+            llbc_ast::StatementKind::StorageDead(local),
+        ));
+    }
+}
+
+impl FunDecl {
     pub fn transform_ullbc_statements(
         &mut self,
         ctx: &mut TransformCtx,
         mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Statement),
     ) {
         if let Some(body) = self.body.as_unstructured_mut() {
-            let params = &self.signature.generics;
+            let mut ctx = UllbcStatementTransformCtx {
+                ctx,
+                params: &self.signature.generics,
+                locals: &mut body.locals,
+                span: self.item_meta.span,
+                statements: Vec::new(),
+            };
             body.body.iter_mut().for_each(|block| {
-                block.transform(|st: &mut ullbc_ast::Statement| {
-                    let mut ctx = UllbcStatementTransformCtx {
-                        ctx,
-                        params,
-                        locals: &mut body.locals,
-                        span: st.span,
-                        statements: Vec::new(),
-                    };
-                    f(&mut ctx, st);
-                    ctx.statements
-                });
+                ctx.statements = Vec::with_capacity(block.statements.len());
+                for mut st in mem::take(&mut block.statements) {
+                    ctx.span = st.span;
+                    f(&mut ctx, &mut st);
+                    ctx.statements.push(st);
+                }
+                block.statements = mem::take(&mut ctx.statements);
             });
+        }
+    }
+
+    pub fn transform_ullbc_terminators(
+        &mut self,
+        ctx: &mut TransformCtx,
+        mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut ullbc_ast::Terminator),
+    ) {
+        if let Some(body) = self.body.as_unstructured_mut() {
+            let mut ctx = UllbcStatementTransformCtx {
+                ctx,
+                params: &self.signature.generics,
+                locals: &mut body.locals,
+                span: self.item_meta.span,
+                statements: Vec::new(),
+            };
+            body.body.iter_mut().for_each(|block| {
+                ctx.span = block.terminator.span;
+                ctx.statements = mem::take(&mut block.statements);
+                f(&mut ctx, &mut block.terminator);
+                block.statements = mem::take(&mut ctx.statements);
+            });
+        }
+    }
+
+    pub fn transform_ullbc_operands(
+        &mut self,
+        ctx: &mut TransformCtx,
+        mut f: impl FnMut(&mut UllbcStatementTransformCtx, &mut Operand),
+    ) {
+        self.transform_ullbc_statements(ctx, |ctx, st| {
+            st.kind.dyn_visit_in_body_mut(|op: &mut Operand| f(ctx, op));
+        });
+        self.transform_ullbc_terminators(ctx, |ctx, st| {
+            st.kind.dyn_visit_in_body_mut(|op: &mut Operand| f(ctx, op));
+        });
+    }
+
+    pub fn transform_llbc_statements(
+        &mut self,
+        ctx: &mut TransformCtx,
+        mut f: impl FnMut(&mut LlbcStatementTransformCtx, &mut llbc_ast::Statement),
+    ) {
+        if let Some(body) = self.body.as_structured_mut() {
+            let mut ctx = LlbcStatementTransformCtx {
+                ctx,
+                locals: &mut body.locals,
+                statements: Vec::new(),
+                span: self.item_meta.span,
+                params: &self.signature.generics,
+            };
+            body.body.visit_blocks_bwd(|block: &mut llbc_ast::Block| {
+                ctx.statements = Vec::with_capacity(block.statements.len());
+                for mut st in mem::take(&mut block.statements) {
+                    ctx.span = st.span;
+                    f(&mut ctx, &mut st);
+                    ctx.statements.push(st);
+                }
+                block.statements = mem::take(&mut ctx.statements)
+            })
         }
     }
 }
