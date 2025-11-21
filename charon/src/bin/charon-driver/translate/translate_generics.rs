@@ -1,9 +1,7 @@
 use super::translate_ctx::ItemTransCtx;
 use charon_lib::ast::*;
-use charon_lib::common::hash_by_addr::HashByAddr;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::sync::Arc;
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
 /// corresponding to the parameters and clauses to the items. We may then encounter inner binding
@@ -39,10 +37,10 @@ pub(crate) struct BindingLevel {
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translate const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
-    /// Cache the translation of types. This harnesses the deduplication of `TyKind` that hax does.
+    /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
-    pub type_trans_cache: HashMap<HashByAddr<Arc<hax::TyKind>>, Ty>,
+    pub type_trans_cache: HashMap<hax::Ty, Ty>,
 }
 
 /// Small helper: we ignore some region names (when they are equal to "'_")

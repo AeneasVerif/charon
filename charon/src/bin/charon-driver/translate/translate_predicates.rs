@@ -218,10 +218,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             Ok(res) => Ok(res),
             Err(err) => {
                 register_error!(self, span, "Error during trait resolution: {}", &err.msg);
-                Ok(TraitRef {
-                    kind: TraitRefKind::Unknown(err.msg),
+                Ok(TraitRef::new(
+                    TraitRefKind::Unknown(err.msg),
                     trait_decl_ref,
-                })
+                ))
             }
         }
     }
@@ -240,10 +240,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ImplExprAtom::Concrete(item) => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
-                TraitRef {
-                    kind: TraitRefKind::TraitImpl(impl_ref),
-                    trait_decl_ref,
-                }
+                TraitRef::new(TraitRefKind::TraitImpl(impl_ref), trait_decl_ref)
             }
             ImplExprAtom::SelfImpl {
                 r#trait: trait_ref,
@@ -273,10 +270,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Apply the path
                 for path_elem in path {
                     use hax::ImplExprPathChunk::*;
-                    let trait_ref = Box::new(TraitRef {
-                        kind: tref_kind,
-                        trait_decl_ref: current_pred,
-                    });
+                    let trait_ref = Box::new(TraitRef::new(tref_kind, current_pred));
                     match path_elem {
                         AssocItem {
                             item,
@@ -302,15 +296,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     }
                 }
 
-                TraitRef {
-                    kind: tref_kind,
-                    trait_decl_ref,
-                }
+                TraitRef::new(tref_kind, trait_decl_ref)
             }
-            ImplExprAtom::Dyn => TraitRef {
-                kind: TraitRefKind::Dyn,
-                trait_decl_ref,
-            },
+            ImplExprAtom::Dyn => TraitRef::new(TraitRefKind::Dyn, trait_decl_ref),
             ImplExprAtom::Builtin {
                 trait_data,
                 impl_exprs,
@@ -417,16 +405,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         }
                     }
                 };
-                TraitRef {
-                    kind,
-                    trait_decl_ref,
-                }
+                TraitRef::new(kind, trait_decl_ref)
             }
             ImplExprAtom::Error(msg) => {
-                let trait_ref = TraitRef {
-                    kind: TraitRefKind::Unknown(msg.clone()),
-                    trait_decl_ref,
-                };
+                let trait_ref = TraitRef::new(TraitRefKind::Unknown(msg.clone()), trait_decl_ref);
                 if self.error_on_impl_expr_error {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }

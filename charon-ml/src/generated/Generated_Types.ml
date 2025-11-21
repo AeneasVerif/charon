@@ -381,6 +381,11 @@ and generic_params = {
 (** Reference to a global declaration. *)
 and global_decl_ref = { id : global_decl_id; generics : generic_args }
 
+(** Hash-consed data structure: a reference-counted wrapper that guarantees that
+    two equal value will be stored at the same address. This makes it possible
+    to use the pointer address as a hash value. *)
+and 'a0 hash_consed = 'a0
+
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
@@ -436,8 +441,12 @@ and trait_param = {
   trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 
-(** A reference to a trait *)
-and trait_ref = {
+(** A reference to a trait.
+
+    This type is hash-consed, [TraitRefContents] contains the actual data. *)
+and trait_ref = trait_ref_contents hash_consed
+
+and trait_ref_contents = {
   kind : trait_ref_kind;
   trait_decl_ref : trait_decl_ref region_binder;
       (** Not necessary, but useful *)

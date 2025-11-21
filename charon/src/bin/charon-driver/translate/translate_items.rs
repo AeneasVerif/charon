@@ -651,12 +651,10 @@ impl ItemTransCtx<'_, '_> {
         else {
             unreachable!()
         };
-        let self_trait_ref = TraitRef {
-            kind: TraitRefKind::SelfId,
-            trait_decl_ref: RegionBinder::empty(
-                self.translate_trait_predicate(span, self_predicate)?,
-            ),
-        };
+        let self_trait_ref = TraitRef::new(
+            TraitRefKind::SelfId,
+            RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?),
+        );
         let items: Vec<(TraitItemName, &hax::AssocItem)> = items
             .iter()
             .map(|item| -> Result<_, Error> {
@@ -886,13 +884,13 @@ impl ItemTransCtx<'_, '_> {
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
         // A `TraitRef` that points to this impl with the correct generics.
-        let self_predicate = TraitRef {
-            kind: TraitRefKind::TraitImpl(TraitImplRef {
+        let self_predicate = TraitRef::new(
+            TraitRefKind::TraitImpl(TraitImplRef {
                 id: def_id,
                 generics: Box::new(self.the_only_binder().params.identity_args()),
             }),
-            trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
-        };
+            RegionBinder::empty(implemented_trait.clone()),
+        );
 
         let vtable =
             self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;

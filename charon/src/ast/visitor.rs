@@ -12,7 +12,7 @@
 /// Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
 use std::{any::Any, collections::HashMap};
 
-use crate::ast::*;
+use crate::{ast::*, common::hash_consing::*};
 use derive_generic_visitor::*;
 use index_vec::Idx;
 use indexmap::IndexMap;
@@ -61,12 +61,13 @@ use indexmap::IndexMap;
         for<A: AstVisitable, B: AstVisitable> Result<A, B>,
         for<A: AstVisitable, B: AstVisitable> OutlivesPred<A, B>,
         for<T: AstVisitable> Vec<T>,
+        for<T: AstVisitable + HashConsable> HashConsed<T>,
         for<I: Idx, T: AstVisitable> Vector<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
-        DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
+        DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefContents, TraitRefKind,
         TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,

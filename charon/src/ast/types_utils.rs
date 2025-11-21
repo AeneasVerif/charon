@@ -1,5 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
+use crate::common::hash_consing::HashConsed;
 use crate::formatter::IntoFormatter;
 use crate::ids::Vector;
 use crate::pretty::FmtWithCtx;
@@ -19,10 +20,10 @@ impl TraitParam {
 
     /// Like `identity_tref` but uses variables bound at the given depth.
     pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> TraitRef {
-        TraitRef {
-            kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
-            trait_decl_ref: self.trait_.clone().move_under_binders(depth),
-        }
+        TraitRef::new(
+            TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
+            self.trait_.clone().move_under_binders(depth),
+        )
     }
 }
 
@@ -666,6 +667,18 @@ impl<T> ItemBinder<CurrentItem, T> {
 }
 
 impl Ty {
+    pub fn new(kind: TyKind) -> Self {
+        Ty(HashConsed::new(kind))
+    }
+
+    pub fn kind(&self) -> &TyKind {
+        self.0.inner()
+    }
+
+    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
+        self.0.with_inner_mut(f)
+    }
+
     /// Return the unit type
     pub fn mk_unit() -> Ty {
         Self::mk_tuple(vec![])
@@ -866,6 +879,14 @@ impl TraitDeclRef {
 }
 
 impl TraitRef {
+    pub fn new(kind: TraitRefKind, trait_decl_ref: PolyTraitDeclRef) -> Self {
+        TraitRefContents {
+            kind,
+            trait_decl_ref,
+        }
+        .intern()
+    }
+
     pub fn new_builtin(
         trait_id: TraitDeclId,
         ty: Ty,
@@ -876,14 +897,32 @@ impl TraitRef {
             id: trait_id,
             generics: Box::new(GenericArgs::new_types([ty].into())),
         });
-        TraitRef {
-            kind: TraitRefKind::BuiltinOrAuto {
+        Self::new(
+            TraitRefKind::BuiltinOrAuto {
                 builtin_data,
                 parent_trait_refs: parents,
                 types: Default::default(),
             },
             trait_decl_ref,
-        }
+        )
+    }
+
+    /// Get mutable access to the contents. This cloned the value and will re-intern the modified
+    /// value at the end of the function.
+    pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
+        self.0.with_inner_mut(f)
+    }
+}
+impl TraitRefContents {
+    pub fn intern(self) -> TraitRef {
+        TraitRef(HashConsed::new(self))
+    }
+}
+
+impl std::ops::Deref for TraitRef {
+    type Target = TraitRefContents;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
