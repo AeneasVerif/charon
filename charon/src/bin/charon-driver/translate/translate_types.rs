@@ -3,7 +3,7 @@ use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
-use hax::{HasParamEnv, Visibility};
+use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -453,6 +453,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let tcx = self.t_ctx.tcx;
         let rdefid = item.def_id.as_rust_def_id().unwrap();
         let hax_state = self.hax_state_with_id();
+        assert_eq!(hax_state.owner_id(), rdefid);
         let ty_env = hax_state.typing_env();
         let ty = tcx
             .type_of(rdefid)
