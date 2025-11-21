@@ -115,7 +115,7 @@ pub mod hash_consing {
     use serde::{Deserialize, Serialize};
     use std::collections::HashSet;
     use std::hash::Hash;
-    use std::ops::ControlFlow;
+    use std::ops::{ControlFlow, Deref};
     use std::sync::{Arc, LazyLock, RwLock};
 
     /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
@@ -182,6 +182,13 @@ pub mod hash_consing {
                 arc
             };
             Self(HashByAddr(arc))
+        }
+    }
+
+    impl<T> Deref for HashConsed<T> {
+        type Target = T;
+        fn deref(&self) -> &Self::Target {
+            self.inner()
         }
     }
 
