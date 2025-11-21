@@ -109,14 +109,14 @@ pub mod type_map {
 
 pub mod hash_consing {
     use derive_generic_visitor::{Drive, DriveMut, Visit, VisitMut};
-
-    use super::hash_by_addr::HashByAddr;
-    use super::type_map::{Mappable, Mapper, TypeMap};
+    use indexmap::IndexSet;
     use serde::{Deserialize, Serialize};
-    use std::collections::HashSet;
     use std::hash::Hash;
     use std::ops::{ControlFlow, Deref};
-    use std::sync::{Arc, LazyLock, RwLock};
+    use std::sync::Arc;
+
+    use super::hash_by_addr::HashByAddr;
+    use super::type_map::Mappable;
 
     /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
     /// value will be stored at the same address. This makes it possible to use the pointer address
@@ -131,6 +131,54 @@ pub mod hash_consing {
     }
 
     pub trait HashConsable = Hash + PartialEq + Eq + Clone + Mappable;
+
+    // Private module that contains the static we'll use as interning map. A value of type
+    // `HashCons` MUST NOT be created in any other way than this table, else hashing and euqality
+    // on it will be broken. Note that this likely means that if a crate uses charon both as a
+    // direct dependency and as a dylib, then the static will be duplicated, causing hashing and
+    // equality on `HashCons` to be broken.
+    mod intern_table {
+        use indexmap::IndexSet;
+        use std::sync::{Arc, LazyLock, RwLock};
+
+        use super::super::hash_by_addr::HashByAddr;
+        use super::super::type_map::{Mappable, Mapper, TypeMap};
+        use super::{HashConsable, HashConsed};
+
+        struct InternMapper;
+        impl Mapper for InternMapper {
+            type Value<T: Mappable> = IndexSet<Arc<T>>;
+        }
+        // This is a static mutable `IndexSet<Arc<T>>` that records for each `T` value a unique
+        // `Arc<T>` that contains the same value. Values inside the set are hashed/compared
+        // as is normal for `T`.
+        // Once we've gotten an `Arc` out of the set however, we're sure that "T-equality"
+        // implies address-equality, hence the `HashByAddr` wrapper preserves correct equality
+        // and hashing behavior.
+        static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> =
+            LazyLock::new(|| Default::default());
+
+        pub fn intern<T: HashConsable>(inner: T) -> HashConsed<T> {
+            if INTERNED.read().unwrap().get::<T>().is_none() {
+                INTERNED.write().unwrap().insert::<T>(IndexSet::default());
+            }
+            let read_guard = INTERNED.read().unwrap();
+            let arc = if let Some(arc) = (*read_guard).get::<T>().unwrap().get(&inner) {
+                arc.clone()
+            } else {
+                drop(read_guard);
+                let arc: Arc<T> = Arc::new(inner);
+                INTERNED
+                    .write()
+                    .unwrap()
+                    .get_mut::<T>()
+                    .unwrap()
+                    .insert(arc.clone());
+                arc
+            };
+            HashConsed(HashByAddr(arc))
+        }
+    }
 
     impl<T> HashConsed<T>
     where
@@ -153,37 +201,7 @@ pub mod hash_consing {
         /// Deduplicate the values by hashing them. This deduplication is crucial for the hashing
         /// function to be correct. This is the only function allowed to create `Self` values.
         fn intern(inner: T) -> Self {
-            struct InternMapper;
-            impl Mapper for InternMapper {
-                type Value<T: Mappable> = HashSet<Arc<T>>;
-            }
-            // This is a static mutable `HashSet<Arc<T>>` that records for each `T` value a unique
-            // `Arc<T>` that contains the same value. Values inside the set are hashed/compared
-            // as is normal for `T`.
-            // Once we've gotten an `Arc` out of the set however, we're sure that "T-equality"
-            // implies address-equality, hence the `HashByAddr` wrapper preserves correct equality
-            // and hashing behavior.
-            static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> =
-                LazyLock::new(|| Default::default());
-
-            if INTERNED.read().unwrap().get::<T>().is_none() {
-                INTERNED.write().unwrap().insert::<T>(HashSet::default());
-            }
-            let read_guard = INTERNED.read().unwrap();
-            let arc = if let Some(arc) = (*read_guard).get::<T>().unwrap().get(&inner) {
-                arc.clone()
-            } else {
-                drop(read_guard);
-                let arc: Arc<T> = Arc::new(inner);
-                INTERNED
-                    .write()
-                    .unwrap()
-                    .get_mut::<T>()
-                    .unwrap()
-                    .insert(arc.clone());
-                arc
-            };
-            Self(HashByAddr(arc))
+            intern_table::intern(inner)
         }
     }
 
