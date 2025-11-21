@@ -1169,7 +1169,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
     }
 
     // Process trait refs
-    fn enter_trait_ref(&mut self, tref: &mut TraitRef) {
+    fn enter_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
         self.process_poly_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
         match &mut tref.kind {
             TraitRefKind::BuiltinOrAuto { types, .. } => {

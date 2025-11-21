@@ -67,7 +67,7 @@ use indexmap::IndexMap;
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
-        DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
+        DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefContents, TraitRefKind,
         TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,

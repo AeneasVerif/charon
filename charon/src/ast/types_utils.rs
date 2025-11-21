@@ -880,10 +880,11 @@ impl TraitDeclRef {
 
 impl TraitRef {
     pub fn new(kind: TraitRefKind, trait_decl_ref: PolyTraitDeclRef) -> Self {
-        TraitRef {
+        TraitRefContents {
             kind,
             trait_decl_ref,
         }
+        .intern()
     }
 
     pub fn new_builtin(
@@ -904,6 +905,24 @@ impl TraitRef {
             },
             trait_decl_ref,
         )
+    }
+
+    /// Get mutable access to the contents. This cloned the value and will re-intern the modified
+    /// value at the end of the function.
+    pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
+        self.0.with_inner_mut(f)
+    }
+}
+impl TraitRefContents {
+    pub fn intern(self) -> TraitRef {
+        TraitRef(HashConsed::new(self))
+    }
+}
+
+impl std::ops::Deref for TraitRef {
+    type Target = TraitRefContents;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

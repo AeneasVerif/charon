@@ -1014,7 +1014,7 @@ fn main() -> Result<()> {
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
-        cmd.arg("--exclude=charon_lib::common::hash_consing::HashConsed");
+        cmd.arg("--exclude=charon_lib::common::hash_by_addr::HashByAddr");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
         cmd.arg("--");
@@ -1048,6 +1048,7 @@ fn generate_ml(
         // TODO: remove the need for this hack.
         ("RegionParam", "(region_id, string option) indexed_var"),
         ("TypeParam", "(type_var_id, string) indexed_var"),
+        ("HashConsed", "'a0"),
     ];
     let manual_json_impls = &[
         // Hand-written because we filter out `None` values.
@@ -1070,6 +1071,14 @@ fn generate_ml(
                     let* file_id = FileId.id_of_json ctx json in
                     let file = FileId.Map.find file_id ctx in
                     Ok file
+                "#,
+            ),
+        ),
+        (
+            "HashConsed",
+            indoc!(
+                r#"
+                | json -> arg0_of_json ctx json
                 "#,
             ),
         ),

@@ -153,9 +153,14 @@ pub enum BuiltinImplData {
     Clone,
 }
 
-/// A reference to a trait
+/// A reference to a trait.
+///
+/// This type is hash-consed, `TraitRefContents` contains the actual data.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
-pub struct TraitRef {
+pub struct TraitRef(pub HashConsed<TraitRefContents>);
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct TraitRefContents {
     pub kind: TraitRefKind,
     /// Not necessary, but useful
     pub trait_decl_ref: PolyTraitDeclRef,

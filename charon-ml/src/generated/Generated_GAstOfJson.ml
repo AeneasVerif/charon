@@ -1015,6 +1015,18 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AnonConst" -> Ok AnonConst
     | _ -> Error "")
 
+and hash_consed_of_json :
+    'a0.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a0 hash_consed, string) result =
+ fun arg0_of_json ctx js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | json -> arg0_of_json ctx json
+    | _ -> Error "")
+
 and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
     (impl_elem, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1860,12 +1872,19 @@ and trait_ref_of_json (ctx : of_json_ctx) (js : json) :
     (trait_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | x -> hash_consed_of_json trait_ref_contents_of_json ctx x
+    | _ -> Error "")
+
+and trait_ref_contents_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_ref_contents, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
     | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
         let* kind = trait_ref_kind_of_json ctx kind in
         let* trait_decl_ref =
           region_binder_of_json trait_decl_ref_of_json ctx trait_decl_ref
         in
-        Ok ({ kind; trait_decl_ref } : trait_ref)
+        Ok ({ kind; trait_decl_ref } : trait_ref_contents)
     | _ -> Error "")
 
 and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
