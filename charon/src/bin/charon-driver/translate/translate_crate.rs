@@ -176,7 +176,7 @@ impl TransItemSource {
     fn sort_key(&self) -> impl Ord + '_ {
         let item_id = match &self.item {
             RustcItem::Poly(_) => None,
-            RustcItem::Mono(item) => Some(item.id()),
+            RustcItem::Mono(item) => Some(&item.generic_args),
         };
         (self.def_id().index, &self.kind, item_id)
     }
