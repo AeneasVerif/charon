@@ -20,10 +20,10 @@ impl TraitParam {
 
     /// Like `identity_tref` but uses variables bound at the given depth.
     pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> TraitRef {
-        TraitRef {
-            kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
-            trait_decl_ref: self.trait_.clone().move_under_binders(depth),
-        }
+        TraitRef::new(
+            TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
+            self.trait_.clone().move_under_binders(depth),
+        )
     }
 }
 
@@ -879,6 +879,13 @@ impl TraitDeclRef {
 }
 
 impl TraitRef {
+    pub fn new(kind: TraitRefKind, trait_decl_ref: PolyTraitDeclRef) -> Self {
+        TraitRef {
+            kind,
+            trait_decl_ref,
+        }
+    }
+
     pub fn new_builtin(
         trait_id: TraitDeclId,
         ty: Ty,
@@ -889,14 +896,14 @@ impl TraitRef {
             id: trait_id,
             generics: Box::new(GenericArgs::new_types([ty].into())),
         });
-        TraitRef {
-            kind: TraitRefKind::BuiltinOrAuto {
+        Self::new(
+            TraitRefKind::BuiltinOrAuto {
                 builtin_data,
                 parent_trait_refs: parents,
                 types: Default::default(),
             },
             trait_decl_ref,
-        }
+        )
     }
 }
 
