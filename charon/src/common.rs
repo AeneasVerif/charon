@@ -130,9 +130,11 @@ pub mod hash_consing {
         }
     }
 
+    pub trait HashConsable = Hash + PartialEq + Eq + Clone + Mappable;
+
     impl<T> HashConsed<T>
     where
-        T: Hash + PartialEq + Eq + Clone + Mappable,
+        T: HashConsable,
     {
         pub fn new(inner: T) -> Self {
             Self::intern(inner)
@@ -202,7 +204,7 @@ pub mod hash_consing {
     /// Manual impl to make sure we re-establish sharing!
     impl<'de, T> Deserialize<'de> for HashConsed<T>
     where
-        T: Hash + PartialEq + Eq + Clone + Mappable,
+        T: HashConsable,
         T: Deserialize<'de>,
     {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -222,7 +224,7 @@ pub mod hash_consing {
     /// Note: this explores the inner value mutably by cloning and re-hashing afterwards.
     impl<'s, T, V> DriveMut<'s, V> for HashConsed<T>
     where
-        T: Hash + PartialEq + Eq + Clone + Mappable,
+        T: HashConsable,
         V: for<'a> VisitMut<'a, T>,
     {
         fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {

@@ -771,37 +771,8 @@ pub enum ConstGeneric {
 ///
 /// Warning: the `DriveMut` impls of `Ty` needs to clone and re-hash the modified type to maintain
 /// the hash-consing invariant. This is expensive, avoid visiting types mutably when not needed.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Ty(HashConsed<TyKind>);
-
-impl Ty {
-    pub fn new(kind: TyKind) -> Self {
-        Ty(HashConsed::new(kind))
-    }
-
-    pub fn kind(&self) -> &TyKind {
-        self.0.inner()
-    }
-
-    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
-        self.0.with_inner_mut(f)
-    }
-}
-
-impl<'s, V: Visit<'s, TyKind>> Drive<'s, V> for Ty {
-    fn drive_inner(&'s self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
-        self.0.drive_inner(v)
-    }
-}
-/// This explores the type mutably by cloning and re-hashing afterwards.
-impl<'s, V> DriveMut<'s, V> for Ty
-where
-    for<'a> V: VisitMut<'a, TyKind>,
-{
-    fn drive_inner_mut(&'s mut self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
-        self.0.drive_inner_mut(v)
-    }
-}
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Ty(pub HashConsed<TyKind>);
 
 #[derive(
     Debug,

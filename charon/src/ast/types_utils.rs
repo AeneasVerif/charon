@@ -1,5 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
+use crate::common::hash_consing::HashConsed;
 use crate::formatter::IntoFormatter;
 use crate::ids::Vector;
 use crate::pretty::FmtWithCtx;
@@ -666,6 +667,18 @@ impl<T> ItemBinder<CurrentItem, T> {
 }
 
 impl Ty {
+    pub fn new(kind: TyKind) -> Self {
+        Ty(HashConsed::new(kind))
+    }
+
+    pub fn kind(&self) -> &TyKind {
+        self.0.inner()
+    }
+
+    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
+        self.0.with_inner_mut(f)
+    }
+
     /// Return the unit type
     pub fn mk_unit() -> Ty {
         Self::mk_tuple(vec![])
