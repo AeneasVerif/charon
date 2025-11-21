@@ -1,6 +1,5 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
 use hax::{HasOwnerId, HasParamEnv, Visibility};
@@ -71,23 +70,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
-    pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
-        let cache_key = HashByAddr(ty.inner().clone());
+    pub(crate) fn translate_ty(&mut self, span: Span, hax_ty: &hax::Ty) -> Result<Ty, Error> {
         if let Some(ty) = self
             .innermost_binder()
             .type_trans_cache
-            .get(&cache_key)
+            .get(&hax_ty)
             .cloned()
         {
-            return Ok(ty.clone());
+            return Ok(ty);
         }
         // Catch the error to avoid a single error stopping the translation of a whole item.
         let ty = self
-            .translate_ty_inner(span, ty)
+            .translate_ty_inner(span, hax_ty)
             .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
         self.innermost_binder_mut()
             .type_trans_cache
-            .insert(cache_key, ty.clone());
+            .insert(hax_ty.clone(), ty.clone());
         Ok(ty)
     }
 
