@@ -1,0 +1,10 @@
+error: Unsupported constant: "TranslateUneval"
+  --> tests/ui/simple/closure-inside-inline-const.rs:8:5
+   |
+ 8 | /     const {
+ 9 | |         let _f = || 42;
+10 | |         std::mem::size_of::<T>()
+11 | |     }
+   | |_____^
+
+ERROR Charon failed to translate this code (1 errors)
