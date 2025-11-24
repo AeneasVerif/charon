@@ -28,7 +28,7 @@ fn main()
 
     @0 := ()
     storage_live(@1)
-    @1 := offset_of(?)<A>
+    @1 := const (0 : usize)
     storage_dead(@1)
     @0 := ()
     return

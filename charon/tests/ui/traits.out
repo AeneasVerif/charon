@@ -1289,7 +1289,7 @@ where
 {
     let @0: usize; // return
 
-    @0 := const ({impl Trait for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]::LEN)
+    @0 := copy ({impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1])
     return
 }
 

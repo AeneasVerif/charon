@@ -351,11 +351,14 @@ impl ItemTransCtx<'_, '_> {
                 // arg-N, rest...
                 // We then add N statements of the form `locals[N+3] := move locals[2].N`,
                 // to destructure the arguments.
-                let GExprBody {
+                let Body::Unstructured(GExprBody {
                     locals,
                     body: blocks,
                     ..
-                } = body.as_unstructured_mut().unwrap();
+                }) = &mut body
+                else {
+                    return Ok(body);
+                };
 
                 blocks.dyn_visit_mut(|local: &mut LocalId| {
                     if local.index() >= 2 {

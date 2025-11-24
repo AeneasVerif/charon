@@ -593,6 +593,12 @@ impl LiteralTy {
     }
 }
 
+impl From<LiteralTy> for Ty {
+    fn from(value: LiteralTy) -> Self {
+        TyKind::Literal(value).into_ty()
+    }
+}
+
 /// A value of type `T` bound by the generic parameters of item
 /// `item`. Used when dealing with multiple items at a time, to
 /// ensure we don't mix up generics.

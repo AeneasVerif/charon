@@ -1,4 +1,3 @@
-//@ known-failure
 //@ aux-crate=closure-inside-inline-const.rs
 //@ charon-args=--include=closure_inside_inline_const
 fn bar<T>() {

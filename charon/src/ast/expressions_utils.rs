@@ -252,4 +252,19 @@ impl FnPtr {
             generics: generics.into(),
         }
     }
+
+    /// Get the generics for the pre-monomorphization item.
+    pub fn pre_mono_generics<'a>(&'a self, krate: &'a TranslatedCrate) -> &'a GenericArgs {
+        match *self.kind {
+            FnPtrKind::Fun(FunId::Regular(fun_id)) => krate
+                .item_name(fun_id)
+                .unwrap()
+                .mono_args()
+                .unwrap_or(&self.generics),
+            //  We don't mono builtins.
+            FnPtrKind::Fun(FunId::Builtin(..)) => &self.generics,
+            // Can't happen in mono mode.
+            FnPtrKind::Trait(..) => &self.generics,
+        }
+    }
 }

@@ -118,6 +118,7 @@ where
 = <opaque>
 
 // Full name: core::hash::BuildHasher
+#[lang_item("BuildHasher")]
 pub trait BuildHasher<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>

@@ -1,4 +1,4 @@
 [toolchain]
-channel = "nightly-2025-11-08"
+channel = "nightly-2025-11-23"
 components = [ "rustc-dev", "llvm-tools-preview", "rust-src", "miri" ]
 targets = [ "x86_64-apple-darwin", "i686-unknown-linux-gnu", "powerpc64-unknown-linux-gnu", "riscv64gc-unknown-none-elf" ]

@@ -3,8 +3,6 @@
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]

@@ -53,7 +53,7 @@ pub trait AstFormatter: Sized {
     where
         GenericParams: HasVectorOf<Id, Output = T>;
 
-    fn format_enum_variant(
+    fn format_enum_variant_name(
         &self,
         f: &mut fmt::Formatter<'_>,
         type_id: TypeDeclId,
@@ -67,7 +67,17 @@ pub trait AstFormatter: Sized {
         } else {
             &variant_id.to_pretty_string()
         };
-        write!(f, "{}::{variant}", type_id.with_ctx(self))
+        write!(f, "{variant}")
+    }
+    fn format_enum_variant(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        type_id: TypeDeclId,
+        variant_id: VariantId,
+    ) -> fmt::Result {
+        write!(f, "{}::", type_id.with_ctx(self))?;
+        self.format_enum_variant_name(f, type_id, variant_id)?;
+        Ok(())
     }
 
     fn format_field_name(

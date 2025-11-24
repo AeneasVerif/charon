@@ -4,6 +4,11 @@
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
+// Full name: core::intrinsics::offset_of
+#[lang_item("offset_of")]
+pub fn offset_of<T>(@1: u32, @2: u32) -> usize
+= <opaque>
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -653,6 +658,7 @@ where
     let @12: usize; // anonymous local
     let @13: usize; // anonymous local
     let @14: usize; // anonymous local
+    let @15: usize; // anonymous local
 
     storage_live(@9)
     storage_live(@12)
@@ -661,11 +667,13 @@ where
     size@1 := size_of<T>[@TraitClause0]()
     storage_live(align@2)
     align@2 := align_of<T>[@TraitClause0]()
-    storage_live(ub@3)
+    storage_live(@15)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
+    @15 := offset_of(Struct<T>[@TraitClause0].b)<usize>
+    storage_live(ub@3)
     ub@3 := ub_checks<bool>
     storage_live(offset@4)
-    offset@4 := offset_of(?)<Struct<T>[@TraitClause0]>
+    offset@4 := move (@15)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)

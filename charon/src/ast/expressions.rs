@@ -176,9 +176,10 @@ pub enum UnOp {
 pub enum NullOp {
     SizeOf,
     AlignOf,
-    #[drive(skip)]
-    OffsetOf(Vec<(usize, FieldId)>),
+    OffsetOf(TypeDeclRef, Option<VariantId>, FieldId),
     UbChecks,
+    OverflowChecks,
+    ContractChecks,
 }
 
 /// For all the variants: the first type gives the source type, the second one gives

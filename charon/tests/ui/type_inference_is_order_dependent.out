@@ -44,8 +44,14 @@ pub struct Error {}
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub opaque type Argument<'a>
+
+// Full name: core::fmt::{Arguments<'a>}::new
+pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a (Array<u8, N>), @2: &'a (Array<Argument<'a>, M>)) -> Arguments<'a>
+= <opaque>
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -81,19 +87,11 @@ impl Debug for bool {
     vtable: {impl Debug for bool}::{vtable}
 }
 
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
 pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
-= <opaque>
-
-// Full name: core::fmt::rt::{Arguments<'a>}::new_v1
-pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), P>), @2: &'a (Array<Argument<'a>, A>)) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -171,15 +169,14 @@ where
     let args@6: Array<Argument<'_>, 1 : usize>; // local
     let @7: Argument<'_>; // anonymous local
     let @8: &'_ (U); // anonymous local
-    let @9: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @10: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @9: &'_ (Array<u8, 4 : usize>); // anonymous local
+    let @10: &'_ (Array<u8, 4 : usize>); // anonymous local
     let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @13: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @14: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @15: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @13: Array<u8, 4 : usize>; // anonymous local
+    let @14: (); // anonymous local
+    let @15: &'_ (Array<u8, 4 : usize>); // anonymous local
 
-    storage_live(@13)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
@@ -195,23 +192,24 @@ where
     storage_live(@8)
     @8 := &*((args@3).0)
     @7 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@8))
-    storage_live(@14)
-    storage_live(@15)
-    @15 := [const (""), const ("\n")]
-    @14 := &@15
     storage_dead(@8)
     args@6 := [move (@7)]
     storage_dead(@7)
     storage_live(@9)
     storage_live(@10)
-    @13 := move (@14)
-    @10 := &*(@13)
+    storage_live(@13)
+    @13 := [const (192 : u8), const (1 : u8), const (10 : u8), const (0 : u8)]
+    storage_live(@14)
+    @14 := ()
+    storage_live(@15)
+    @15 := &@13
+    @10 := move (@15)
     @9 := &*(@10)
     storage_live(@11)
     storage_live(@12)
     @12 := &args@6
     @11 := &*(@12)
-    @2 := new_v1<'_, 2 : usize, 1 : usize>(move (@9), move (@11))
+    @2 := new<'_, 4 : usize, 1 : usize>(move (@9), move (@11))
     storage_dead(@12)
     storage_dead(@11)
     storage_dead(@10)
