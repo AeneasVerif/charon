@@ -142,6 +142,9 @@ Options:
       --no-serialize
           Don't serialize the final (U)LLBC to a file.
 
+      --no-dedup-serialized-ast
+          Don't deduplicate values in the .(u)llbc file. This makes the file easier to inspect.
+
       --print-original-ullbc
           Print the ULLBC immediately after extraction from MIR.
 

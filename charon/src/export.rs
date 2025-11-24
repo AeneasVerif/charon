@@ -1,4 +1,5 @@
 use crate::ast::*;
+use crate::common::hash_consing::with_dedup_serialization;
 use crate::transform::TransformCtx;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fs::File;
@@ -49,10 +50,15 @@ impl CrateData {
             return Err(());
         };
         // Write to the file.
-        match serde_json::to_writer(&outfile, self) {
+        let res = if self.translated.options.no_dedup_serialized_ast {
+            serde_json::to_writer(&outfile, self)
+        } else {
+            with_dedup_serialization(|| serde_json::to_writer(&outfile, self))
+        };
+        match res {
             Ok(()) => {}
             Err(err) => {
-                error!("Could not write to `{target_filename:?}`: {err:?}");
+                error!("Could not serialize to `{target_filename:?}`: {err:?}");
                 return Err(());
             }
         }
