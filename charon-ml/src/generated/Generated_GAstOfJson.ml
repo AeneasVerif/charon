@@ -355,6 +355,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("abort_on_error", abort_on_error);
           ("error_on_warnings", error_on_warnings);
           ("no_serialize", no_serialize);
+          ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
           ("print_built_llbc", print_built_llbc);
@@ -404,6 +405,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* abort_on_error = bool_of_json ctx abort_on_error in
         let* error_on_warnings = bool_of_json ctx error_on_warnings in
         let* no_serialize = bool_of_json ctx no_serialize in
+        let* no_dedup_serialized_ast =
+          bool_of_json ctx no_dedup_serialized_ast
+        in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
         let* print_ullbc = bool_of_json ctx print_ullbc in
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
@@ -450,6 +454,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              abort_on_error;
              error_on_warnings;
              no_serialize;
+             no_dedup_serialized_ast;
              print_original_ullbc;
              print_ullbc;
              print_built_llbc;

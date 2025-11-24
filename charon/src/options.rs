@@ -229,6 +229,12 @@ pub struct CliOpts {
     #[serde(default)]
     pub no_serialize: bool,
     #[clap(
+        long,
+        help = "Don't deduplicate values in the .(u)llbc file. This makes the file easier to inspect."
+    )]
+    #[serde(default)]
+    pub no_dedup_serialized_ast: bool,
+    #[clap(
         long = "print-original-ullbc",
         help = "Print the ULLBC immediately after extraction from MIR."
     )]
@@ -364,6 +370,7 @@ impl CliOpts {
                     self.ullbc = true;
                 }
                 Preset::Tests => {
+                    self.no_dedup_serialized_ast = true; // Helps debug
                     self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
