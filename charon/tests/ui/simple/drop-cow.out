@@ -93,7 +93,24 @@ where
     [@TraitClause2]: Destruct<B>,
     B : 'a,
     B : 'a,
-= <missing>
+{
+    let @0: (); // return
+    let @1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let @2: &'_ mut (Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        Cow::Borrowed => {
+        },
+        _ => {
+            drop[@TraitClause1::parent_clause4] (*(@2) as variant Cow::Owned).0
+            return
+        },
+    }
+    return
+}
 
 // Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}
 impl<'a, B> Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]
