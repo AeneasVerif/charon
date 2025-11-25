@@ -386,18 +386,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } else {
                         let parent_trait_refs =
                             self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                        let types = types
-                            .iter()
-                            .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
-                                let name = self.t_ctx.translate_trait_item_name(def_id)?;
-                                let assoc_ty = TraitAssocTyImpl {
-                                    value: self.translate_ty(span, ty)?,
-                                    implied_trait_refs: self
-                                        .translate_trait_impl_exprs(span, impl_exprs)?,
-                                };
-                                Ok((name, assoc_ty))
-                            })
-                            .try_collect()?;
+                        let types = if self.monomorphize() {
+                            vec![]
+                        } else {
+                            types
+                                .iter()
+                                .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
+                                    let name = self.t_ctx.translate_trait_item_name(def_id)?;
+                                    let assoc_ty = TraitAssocTyImpl {
+                                        value: self.translate_ty(span, ty)?,
+                                        implied_trait_refs: self
+                                            .translate_trait_impl_exprs(span, impl_exprs)?,
+                                    };
+                                    Ok((name, assoc_ty))
+                                })
+                                .try_collect()?
+                        };
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,
                             parent_trait_refs,

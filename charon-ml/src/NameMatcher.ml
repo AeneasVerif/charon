@@ -762,28 +762,18 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
         match d.src with
         | TraitImplItem (_, trait_ref, method_name, _)
           when c.match_with_trait_decl_refs ->
-            (* FIXME: this is a hack to circumvent the fact that sometimes
-               Charon does not retrieve the proper number of parameters:
-               before doing the substitution, check that the number of generic
-               arguments matches the number of generic parameters.
-            *)
-            if
-              TypesUtils.generic_params_lengths d.signature.generics
-              = TypesUtils.generic_args_lengths func.generics
-            then
-              let subst =
-                Substitute.make_subst_from_generics d.signature.generics
-                  func.generics
-              in
-              let trait_ref =
-                Substitute.trait_decl_ref_substitute subst trait_ref
-              in
-              (* TODO: recover the method generics somehow *)
-              let method_generics = TypesUtils.empty_generic_args in
-              match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
-                { binder_value = trait_ref; binder_regions = [] }
-                method_name method_generics
-            else false
+            let subst =
+              Substitute.make_subst_from_generics d.signature.generics
+                func.generics
+            in
+            let trait_ref =
+              Substitute.trait_decl_ref_substitute subst trait_ref
+            in
+            (* TODO: recover the method generics somehow *)
+            let method_generics = TypesUtils.empty_generic_args in
+            match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
+              { binder_value = trait_ref; binder_regions = [] }
+              method_name method_generics
         | _ -> false
       in
       match_function_name || match_trait_ref
