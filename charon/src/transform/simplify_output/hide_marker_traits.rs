@@ -76,6 +76,7 @@ impl TransformPass for Transform {
                 "core::marker::Send",
                 "core::marker::Sync",
                 "core::marker::Unpin",
+                "core::clone::TrivialClone",
             ]
         } else {
             vec![]

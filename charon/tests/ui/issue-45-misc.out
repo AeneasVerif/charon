@@ -191,8 +191,6 @@ where
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
 pub trait TrustedRandomAccessNoCoerce<Self>
@@ -534,12 +532,12 @@ where
     Self::parent_clause3::Output = O,
     Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<O>
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
+    non-dyn-compatible
 }
 
 // Full name: core::panicking::AssertKind

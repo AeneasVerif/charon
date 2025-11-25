@@ -1295,12 +1295,14 @@ and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
     (match js with
     | `String "SizeOf" -> Ok SizeOf
     | `String "AlignOf" -> Ok AlignOf
-    | `Assoc [ ("OffsetOf", offset_of) ] ->
-        let* offset_of =
-          list_of_json (pair_of_json int_of_json field_id_of_json) ctx offset_of
-        in
-        Ok (OffsetOf offset_of)
+    | `Assoc [ ("OffsetOf", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = type_decl_ref_of_json ctx x_0 in
+        let* x_1 = option_of_json variant_id_of_json ctx x_1 in
+        let* x_2 = field_id_of_json ctx x_2 in
+        Ok (OffsetOf (x_0, x_1, x_2))
     | `String "UbChecks" -> Ok UbChecks
+    | `String "OverflowChecks" -> Ok OverflowChecks
+    | `String "ContractChecks" -> Ok ContractChecks
     | _ -> Error "")
 
 and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =

@@ -1,4 +1,7 @@
-error: Unsupported constant: "Unhandled constant type"
- --> /rustc/library/std/src/sys/thread_local/native/mod.rs:90:13
+error: charon does not support thread local references
+ --> /rustc/library/std/src/sys/thread_local/native/mod.rs:97:25
 
-ERROR Charon failed to translate this code (1 errors)
+error: charon does not support thread local references
+ --> /rustc/library/std/src/sys/thread_local/native/mod.rs:105:25
+
+ERROR Charon failed to translate this code (2 errors)

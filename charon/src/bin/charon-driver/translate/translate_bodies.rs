@@ -542,23 +542,13 @@ impl BodyTransCtx<'_, '_, '_> {
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
-            hax::Rvalue::NullaryOp(nullop, ty) => {
-                trace!("NullOp: {:?}", nullop);
-                let ty = self.translate_ty(span, ty)?;
-                let op = match nullop {
-                    hax::NullOp::OffsetOf(fields) => NullOp::OffsetOf(
-                        fields
-                            .iter()
-                            .copied()
-                            .map(|(n, idx)| (n, translate_field_id(idx)))
-                            .collect(),
-                    ),
-                    hax::NullOp::UbChecks => NullOp::UbChecks,
-                    hax::NullOp::ContractChecks => {
-                        raise_error!(self, span, "charon does not support contracts");
-                    }
+            hax::Rvalue::NullaryOp(hax::NullOp::RuntimeChecks(check)) => {
+                let op = match check {
+                    hax::RuntimeChecks::UbChecks => NullOp::UbChecks,
+                    hax::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
+                    hax::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
                 };
-                Ok(Rvalue::NullaryOp(op, ty))
+                Ok(Rvalue::NullaryOp(op, LiteralTy::Bool.into()))
             }
             hax::Rvalue::UnaryOp(unop, operand) => {
                 let operand = self.translate_operand(span, operand)?;

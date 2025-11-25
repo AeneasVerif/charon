@@ -972,12 +972,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Name {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let op = match self {
             NullOp::SizeOf => "size_of",
             NullOp::AlignOf => "align_of",
-            NullOp::OffsetOf(_) => "offset_of(?)",
+            &NullOp::OffsetOf(ref ty, variant, field) => {
+                let tid = *ty.id.as_adt().expect("found offset_of of a non-adt type");
+                write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
+                if let Some(variant) = variant {
+                    ctx.format_enum_variant_name(f, tid, variant)?;
+                    write!(f, ".")?;
+                }
+                ctx.format_field_name(f, tid, variant, field)?;
+                write!(f, ")")?;
+                return Ok(());
+            }
             NullOp::UbChecks => "ub_checks",
+            NullOp::OverflowChecks => "overflow_checks",
+            NullOp::ContractChecks => "contract_checks",
         };
         write!(f, "{op}")
     }

@@ -88,6 +88,8 @@ and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
   | AlignOf -> "align_of"
   | OffsetOf _ -> "offset_of(?)"
   | UbChecks -> "ub_checks"
+  | ContractChecks -> "contract_checks"
+  | OverflowChecks -> "overflow_checks"
 
 and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   match unop with

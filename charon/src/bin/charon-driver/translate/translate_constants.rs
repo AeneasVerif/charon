@@ -92,15 +92,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .try_collect()?;
                 expressions::ConstantExprKind::Adt(None, fields)
             }
-            ConstantExprKind::TraitConst { impl_expr, name } => {
-                let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
-                let name = TraitItemName(name.into());
-                expressions::ConstantExprKind::TraitConst(trait_ref, name)
-            }
-            ConstantExprKind::GlobalName(item) => {
-                let global_ref = self.translate_global_decl_ref(span, item)?;
-                expressions::ConstantExprKind::Global(global_ref)
-            }
+            ConstantExprKind::NamedGlobal(item) => match &item.in_trait {
+                Some(impl_expr) => {
+                    let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
+                    // Trait consts can't have their own generics.
+                    assert!(item.generic_args.is_empty());
+                    let name = self.translate_trait_item_name(&item.def_id)?;
+                    expressions::ConstantExprKind::TraitConst(trait_ref, name)
+                }
+                None => {
+                    let global_ref = self.translate_global_decl_ref(span, item)?;
+                    expressions::ConstantExprKind::Global(global_ref)
+                }
+            },
             ConstantExprKind::Borrow(v)
                 if let ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
                     v.contents.as_ref() =>

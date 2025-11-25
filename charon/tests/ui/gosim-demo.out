@@ -121,8 +121,14 @@ pub struct Error {}
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub opaque type Argument<'a>
+
+// Full name: core::fmt::{Arguments<'a>}::new
+pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a (Array<u8, N>), @2: &'a (Array<Argument<'a>, M>)) -> Arguments<'a>
+= <opaque>
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -173,19 +179,11 @@ impl Debug for i32 {
     vtable: {impl Debug for i32}::{vtable}
 }
 
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
 pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
-= <opaque>
-
-// Full name: core::fmt::rt::{Arguments<'a>}::new_v1
-pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), P>), @2: &'a (Array<Argument<'a>, A>)) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
@@ -460,12 +458,12 @@ where
     Self::parent_clause3::Output = O,
     Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<O>
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
+    non-dyn-compatible
 }
 
 // Full name: core::slice::iter::Iter
@@ -551,15 +549,14 @@ where
     let args@13: Array<Argument<'_>, 1 : usize>; // local
     let @14: Argument<'_>; // anonymous local
     let @15: &'_ (&'_ (T)); // anonymous local
-    let @16: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @17: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @16: &'_ (Array<u8, 7 : usize>); // anonymous local
+    let @17: &'_ (Array<u8, 7 : usize>); // anonymous local
     let @18: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @19: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @20: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @21: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
-    let @22: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @20: Array<u8, 7 : usize>; // anonymous local
+    let @21: (); // anonymous local
+    let @22: &'_ (Array<u8, 7 : usize>); // anonymous local
 
-    storage_live(@20)
     @0 := ()
     storage_live(@2)
     storage_live(@3)
@@ -595,23 +592,24 @@ where
                 storage_live(@15)
                 @15 := &*((args@11).0)
                 @14 := new_debug<'_, '_, &'_ (T)>[{built_in impl Sized for &'_ (T)}, {impl Debug for &'_0 (T)}<'_, T>[@TraitClause1]](move (@15))
-                storage_live(@21)
-                storage_live(@22)
-                @22 := [const ("- "), const ("\n")]
-                @21 := &@22
                 storage_dead(@15)
                 args@13 := [move (@14)]
                 storage_dead(@14)
                 storage_live(@16)
                 storage_live(@17)
-                @20 := move (@21)
-                @17 := &*(@20)
+                storage_live(@20)
+                @20 := [const (2 : u8), const (45 : u8), const (32 : u8), const (192 : u8), const (1 : u8), const (10 : u8), const (0 : u8)]
+                storage_live(@21)
+                @21 := ()
+                storage_live(@22)
+                @22 := &@20
+                @17 := move (@22)
                 @16 := &*(@17)
                 storage_live(@18)
                 storage_live(@19)
                 @19 := &args@13
                 @18 := &*(@19)
-                @10 := new_v1<'_, 2 : usize, 1 : usize>(move (@16), move (@18))
+                @10 := new<'_, 7 : usize, 1 : usize>(move (@16), move (@18))
                 storage_dead(@19)
                 storage_dead(@18)
                 storage_dead(@17)
