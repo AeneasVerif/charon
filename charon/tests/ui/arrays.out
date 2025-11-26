@@ -383,7 +383,7 @@ where
     storage_dead(@3)
     @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Array<T, N>}<T, 32 : usize>[@TraitClause0]] s@1
+    conditional_drop[{impl Destruct for Array<T, N>}<T, 32 : usize>[@TraitClause0]] s@1
     return
 }
 

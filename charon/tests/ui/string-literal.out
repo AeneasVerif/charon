@@ -173,7 +173,7 @@ fn main()
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()
-    drop[{impl Destruct for String}] _s@1
+    conditional_drop[{impl Destruct for String}] _s@1
     storage_dead(_s@1)
     return
 }

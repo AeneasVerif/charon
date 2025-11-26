@@ -147,10 +147,10 @@ where
     @0 := ()
     storage_live(@2)
     @2 := test_crate::foo::closure { 0: move (x@1) }
-    drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @2
+    conditional_drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @2
     storage_dead(@2)
     @0 := ()
-    drop[@TraitClause1] x@1
+    conditional_drop[@TraitClause1] x@1
     return
 }
 
@@ -170,7 +170,7 @@ where
     @3 := move ((@1).0)
     @0 := drop<T>[@TraitClause0, @TraitClause1, @TraitClause1](move (@3))
     storage_dead(@3)
-    drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @1
+    conditional_drop[{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]] @1
     return
 }
 

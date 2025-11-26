@@ -214,7 +214,7 @@ where
     @1 := _print<'_>(move (@2))
     storage_dead(@2)
     storage_dead(args@6)
-    drop[{built_in impl Destruct for U}] @5
+    conditional_drop[{built_in impl Destruct for U}] @5
     storage_dead(@5)
     storage_dead(args@3)
     storage_dead(@1)

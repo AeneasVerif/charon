@@ -285,7 +285,7 @@ pub fn test_vec_push()
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v@1
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v@1
     storage_dead(v@1)
     return
 }

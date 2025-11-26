@@ -194,7 +194,7 @@ fn main()
     @9 := Foo(const (42 : u32), move (@11))
     storage_dead(@11)
     storage_dead(@10)
-    drop[{impl Destruct for Foo}] @9
+    conditional_drop[{impl Destruct for Foo}] @9
     storage_live(@18)
     storage_live(@19)
     @19 := const (42 : i32)

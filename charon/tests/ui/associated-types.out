@@ -322,7 +322,7 @@ where
     let x@1: Clause2_Item; // arg #1
 
     @0 := move (x@1)
-    drop[{built_in impl Destruct for Clause2_Item}] x@1
+    conditional_drop[{built_in impl Destruct for Clause2_Item}] x@1
     return
 }
 

@@ -5272,9 +5272,9 @@ fn main()
     }
     storage_dead(@9)
     storage_dead(@7)
-    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
+    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
     storage_dead(iter@6)
-    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
+    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
     storage_dead(@3)
     storage_live(@13)
     storage_live(@14)

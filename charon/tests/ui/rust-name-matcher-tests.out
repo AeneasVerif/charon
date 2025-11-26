@@ -165,9 +165,9 @@ where
     storage_live(@2)
     @2 := move (value@1)
     @0 := Generic { value: move (@2) }
-    drop[{built_in impl Destruct for T}] @2
+    conditional_drop[{built_in impl Destruct for T}] @2
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] value@1
+    conditional_drop[{built_in impl Destruct for T}] value@1
     return
 }
 

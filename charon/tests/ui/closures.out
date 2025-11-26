@@ -210,19 +210,19 @@ where
             @7 := move (x@3)
             @6 := (move (@7))
             @4 := @TraitClause2::call<'_>(move (@5), move (@6))
-            drop[{built_in impl Destruct for T}] @7
+            conditional_drop[{built_in impl Destruct for T}] @7
             storage_dead(@7)
             storage_dead(@6)
             storage_dead(@5)
             @0 := Option::Some { 0: move (@4) }
-            drop[{built_in impl Destruct for T}] @4
+            conditional_drop[{built_in impl Destruct for T}] @4
             storage_dead(@4)
-            drop[{built_in impl Destruct for T}] x@3
+            conditional_drop[{built_in impl Destruct for T}] x@3
             storage_dead(x@3)
         },
     }
-    drop[{built_in impl Destruct for F}] f@2
-    drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    conditional_drop[{built_in impl Destruct for F}] f@2
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -255,7 +255,7 @@ where
             storage_dead(@6)
             storage_dead(@5)
             @0 := Option::Some { 0: move (@4) }
-            drop[{built_in impl Destruct for T}] @4
+            conditional_drop[{built_in impl Destruct for T}] @4
             storage_dead(@4)
             storage_dead(x@3)
             return
@@ -1154,7 +1154,7 @@ where
     let x@1: T; // arg #1
 
     @0 := move (x@1)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -1208,7 +1208,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::clone<'_>(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -1256,7 +1256,7 @@ where
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -1798,7 +1798,7 @@ where
     @4 := &x@3
     @0 := @TraitClause1::clone<'_>(move (@4))
     storage_dead(@4)
-    drop[{built_in impl Destruct for T}] x@3
+    conditional_drop[{built_in impl Destruct for T}] x@3
     return
 }
 
@@ -1827,13 +1827,13 @@ where
     @6 := move (x@1)
     @5 := (move (@6))
     @0 := {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@5))
-    drop[{built_in impl Destruct for T}] @6
+    conditional_drop[{built_in impl Destruct for T}] @6
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(@3)
     storage_dead(f@2)
     storage_dead(@4)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 

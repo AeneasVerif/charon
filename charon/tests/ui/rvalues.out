@@ -574,9 +574,9 @@ fn boxes()
     storage_live(@2)
     @2 := @BoxNew<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](const (42 : i32))
     @1 := move (@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @2
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @2
     storage_dead(@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

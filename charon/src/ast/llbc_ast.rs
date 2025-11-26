@@ -39,13 +39,10 @@ pub enum StatementKind {
     Deinit(Place),
     /// Drop the value at the given place.
     ///
-    /// For MIR built and promoted, this is a conditional drop: the value will only be dropped if
-    /// it has not already been moved out. For MIR elaborated and optimized, this is a real drop.
-    ///
-    /// This then calls `<T as Destruct>::drop_in_place(&raw mut place)` and marks the place as
-    /// moved-out-of. The `drop_in_place` method is added by Charon, it contains the same code as
-    /// the `core::ptr::drop_in_place<T>` builtin).
-    Drop(Place, TraitRef),
+    /// Depending on `DropKind`, this may be a real call to `drop_in_place`, or a conditional call
+    /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
+    /// for more details; to get precise drops use `--precise-drops`.
+    Drop(Place, TraitRef, #[drive(skip)] DropKind),
     Assert(Assert),
     Call(Call),
     /// Panic also handles "unreachable". We keep the name of the panicking function that was

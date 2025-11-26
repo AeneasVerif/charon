@@ -29,6 +29,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// The translation context for the item.
     pub i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>,
 
+    /// What kind of drops we get in this body.
+    pub drop_kind: DropKind,
     /// The (regular) variables in the current function body.
     pub locals: Locals,
     /// The map from rust variable indices to translated variables indices.
@@ -46,9 +48,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
 }
 
 impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
-    pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>) -> Self {
+    pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>, drop_kind: DropKind) -> Self {
         BodyTransCtx {
             i_ctx,
+            drop_kind,
             locals: Default::default(),
             locals_map: Default::default(),
             blocks: Default::default(),
@@ -139,7 +142,11 @@ impl ItemTransCtx<'_, '_> {
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
     ) -> Body {
-        let mut ctx = BodyTransCtx::new(self);
+        let drop_kind = match body.phase {
+            hax::MirPhase::Built | hax::MirPhase::Analysis(..) => DropKind::Conditional,
+            hax::MirPhase::Runtime(..) => DropKind::Precise,
+        };
+        let mut ctx = BodyTransCtx::new(self, drop_kind);
         let mut ctx = panic::AssertUnwindSafe(&mut ctx);
         // Stopgap measure because there are still many panics in charon and hax.
         let res = panic::catch_unwind(move || ctx.translate_body(body, source_text));
@@ -1132,6 +1139,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let on_unwind = self.translate_unwind_action(span, unwind);
 
         Ok(TerminatorKind::Drop {
+            kind: self.drop_kind,
             place,
             tref,
             target,

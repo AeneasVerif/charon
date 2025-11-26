@@ -660,6 +660,14 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ offset; tag_ty; encoding } : discriminant_layout)
     | _ -> Error "")
 
+and drop_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (drop_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Precise" -> Ok Precise
+    | `String "Conditional" -> Ok Conditional
+    | _ -> Error "")
+
 and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
     (dyn_predicate, string) result =
   combine_error_msgs js __FUNCTION__
