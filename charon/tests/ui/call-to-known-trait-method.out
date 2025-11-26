@@ -134,7 +134,7 @@ where
     storage_live(@1)
     @1 := @TraitClause1::default()
     @0 := Struct { 0: move (@1) }
-    drop[{built_in impl Destruct for A}] @1
+    conditional_drop[{built_in impl Destruct for A}] @1
     storage_dead(@1)
     return
 }

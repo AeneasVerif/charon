@@ -1,5 +1,4 @@
-//@ charon-args=--mir=elaborated
-//@ charon-args=--add-drop-bounds
+//@ charon-args=--precise-drops
 //@ charon-args=--include=alloc::string::String
 fn use_string(_: String) {}
 

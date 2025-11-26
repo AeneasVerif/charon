@@ -1482,6 +1482,7 @@ fn translate_terminator(
             block
         }
         src::TerminatorKind::Drop {
+            kind,
             place,
             tref,
             target,
@@ -1498,7 +1499,7 @@ fn translate_terminator(
             let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
             let st = tgt::Statement::new(
                 src_span,
-                tgt::StatementKind::Drop(place.clone(), tref.clone()),
+                tgt::StatementKind::Drop(place.clone(), tref.clone(), kind.clone()),
             );
             block.statements.insert(0, st);
             block

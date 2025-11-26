@@ -231,21 +231,21 @@ where
         @9 := move (item@6)
         @8 := (move (@9))
         @3 := @TraitClause3::call_mut<'_>(move (@7), move (@8))
-        drop[{built_in impl Destruct for @TraitClause2::Item}] @9
+        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] @9
         storage_dead(@9)
         storage_dead(@8)
         storage_dead(@7)
-        drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
+        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
         storage_dead(item@6)
-        drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+        conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
         storage_dead(@4)
         continue 0
     }
     @0 := ()
-    drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
     storage_dead(@4)
-    drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
-    drop[{built_in impl Destruct for I}] iter@1
+    conditional_drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
+    conditional_drop[{built_in impl Destruct for I}] iter@1
     return
 }
 

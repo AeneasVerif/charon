@@ -1465,8 +1465,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::Deinit(place) => {
                 write!(f, "deinit({})", place.with_ctx(ctx))
             }
-            StatementKind::Drop(place, tref) => {
-                write!(f, "drop[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
+            StatementKind::Drop(place, tref, kind) => {
+                let kind = match kind {
+                    DropKind::Precise => "drop",
+                    DropKind::Conditional => "conditional_drop",
+                };
+                write!(f, "{kind}[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
             }
             StatementKind::Assert(assert) => {
                 write!(f, "{}", assert.with_ctx(ctx),)
@@ -1591,14 +1595,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
             }
             TerminatorKind::Drop {
+                kind,
                 place,
                 tref,
                 target,
                 on_unwind,
             } => {
+                let kind = match kind {
+                    DropKind::Precise => "drop",
+                    DropKind::Conditional => "conditional_drop",
+                };
                 write!(
                     f,
-                    "drop[{}] {} -> bb{target} (unwind: bb{on_unwind})",
+                    "{kind}[{}] {} -> bb{target} (unwind: bb{on_unwind})",
                     tref.with_ctx(ctx),
                     place.with_ctx(ctx),
                 )

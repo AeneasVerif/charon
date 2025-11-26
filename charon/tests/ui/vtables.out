@@ -1302,8 +1302,8 @@ fn main()
     if move (@10) {
     } else {
         storage_dead(@11)
-        drop[{impl Destruct for String}] @12
-        drop[{impl Destruct for String}] @15
+        conditional_drop[{impl Destruct for String}] @12
+        conditional_drop[{impl Destruct for String}] @15
         storage_dead(@17)
         storage_dead(@15)
         storage_dead(@14)
@@ -1531,8 +1531,8 @@ fn main()
         return
     }
     storage_dead(@11)
-    drop[{impl Destruct for String}] @12
-    drop[{impl Destruct for String}] @15
+    conditional_drop[{impl Destruct for String}] @12
+    conditional_drop[{impl Destruct for String}] @15
     storage_dead(@17)
     storage_dead(@15)
     storage_dead(@14)

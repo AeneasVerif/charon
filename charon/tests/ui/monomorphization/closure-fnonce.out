@@ -169,7 +169,7 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     @0 := {impl FnOnce::<closure, (u8)>}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{impl Destruct::<closure>}] f@1
+    conditional_drop[{impl Destruct::<closure>}] f@1
     return
 }
 

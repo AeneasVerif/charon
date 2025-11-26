@@ -1,0 +1,52 @@
+# Final LLBC before serialization:
+
+// Full name: core::mem::drop
+#[lang_item("mem_drop")]
+pub fn drop<T>(@1: T)
+= <opaque>
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::Foo
+struct Foo {
+  x: alloc::boxed::Box<u32>,
+  y: alloc::boxed::Box<u32>,
+  z: alloc::boxed::Box<u32>,
+}
+
+// Full name: test_crate::foo
+fn foo(@1: Foo)
+{
+    let @0: (); // return
+    let f@1: Foo; // arg #1
+    let @2: (); // anonymous local
+    let @3: alloc::boxed::Box<u32>; // anonymous local
+
+    @0 := ()
+    storage_live(@2)
+    storage_live(@3)
+    @3 := move ((f@1).x)
+    @2 := drop<alloc::boxed::Box<u32>>(move (@3))
+    storage_dead(@3)
+    storage_dead(@2)
+    @0 := ()
+    // Only `y` and `z` should be dropped here
+    drop[{impl#2}<u32, Global>] (f@1).y
+    drop[{impl#2}<u32, Global>] (f@1).z
+    return
+}
+
+
+

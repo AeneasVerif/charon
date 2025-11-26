@@ -179,11 +179,19 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
-    /// Whether to add `Destruct` bounds everywhere to enable proper tracking of what code runs on
-    /// a given `drop` call.
+    /// Whether to precisely translate drops and drop-related code. For this, we add explicit
+    /// `Destruct` bounds to all generic parameters, and set the MIR level to at least
+    /// `elaborated`.
+    ///
+    /// Without this option, drops may be "conditional" and we may lack information about what code
+    /// is run on drop in a given polymorphic function body.
     #[clap(long)]
     #[serde(default)]
-    pub add_drop_bounds: bool,
+    pub precise_drops: bool,
+    /// If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`.
+    #[clap(long)]
+    #[serde(default)]
+    pub desugar_drops: bool,
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
     /// from the path `crate` (which translates the whole crate).
@@ -266,13 +274,6 @@ pub struct CliOpts {
     #[clap(long = "preset")]
     #[arg(value_enum)]
     pub preset: Option<Preset>,
-
-    #[clap(
-        long = "desugar-drops",
-        help = "If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`"
-    )]
-    #[serde(default)]
-    pub desugar_drops: bool,
 }
 
 /// The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
@@ -299,6 +300,9 @@ pub enum Preset {
     /// The default translation used before May 2025. After that, many passes were made optional
     /// and disabled by default.
     OldDefaults,
+    /// Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more
+    /// passes optional.
+    RawMir,
     Aeneas,
     Eurydice,
     Soteria,
@@ -322,6 +326,11 @@ impl CliOpts {
             match preset {
                 Preset::OldDefaults => {
                     self.hide_allocator = !self.raw_boxes;
+                }
+                Preset::RawMir => {
+                    self.extract_opaque_bodies = true;
+                    self.raw_boxes = true;
+                    self.ullbc = true;
                 }
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
@@ -481,6 +490,7 @@ pub struct TranslateOptions {
     pub remove_associated_types: Vec<NamePattern>,
     /// Transform Drop to Call drop_in_place
     pub desugar_drops: bool,
+    pub add_destruct_bounds: bool,
 }
 
 impl TranslateOptions {
@@ -497,11 +507,14 @@ impl TranslateOptions {
             }
         };
 
-        let mir_level = if options.mir_optimized {
+        let mut mir_level = if options.mir_optimized {
             MirLevel::Optimized
         } else {
             options.mir.unwrap_or(MirLevel::Promoted)
         };
+        if options.precise_drops {
+            mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
+        }
 
         let item_opacities = {
             use ItemOpacity::*;
@@ -562,6 +575,7 @@ impl TranslateOptions {
             raw_boxes: options.raw_boxes,
             remove_associated_types,
             translate_all_methods: options.translate_all_methods,
+            add_destruct_bounds: options.precise_drops,
             desugar_drops: options.desugar_drops,
         }
     }

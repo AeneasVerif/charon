@@ -48,7 +48,7 @@ fn use_string(@1: String)
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for String}] @1
+    conditional_drop[{impl Destruct for String}] @1
     return
 }
 
@@ -62,7 +62,7 @@ fn main()
     storage_live(_s@1)
     _s@1 := new()
     @0 := ()
-    drop[{impl Destruct for String}] _s@1
+    conditional_drop[{impl Destruct for String}] _s@1
     storage_dead(_s@1)
     return
 }

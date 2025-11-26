@@ -171,7 +171,7 @@ fn main()
     @2 := closure {  }
     @1 := catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + [@TraitClause1_1]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_3]: Any<_dyn> + [@TraitClause1_3]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]}]] @1
+    conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + [@TraitClause1_1]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_3]: Any<_dyn> + [@TraitClause1_3]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]}]] @1
     storage_dead(@1)
     @0 := ()
     return

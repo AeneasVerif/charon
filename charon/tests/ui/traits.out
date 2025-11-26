@@ -297,7 +297,7 @@ where
         @0 := const (false)
     }
     storage_dead(@2)
-    drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -315,7 +315,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -378,7 +378,7 @@ where
     @0 := move (@6)
     storage_dead(@4)
     storage_dead(@2)
-    drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self@1
+    conditional_drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self@1
     return
 }
 
@@ -406,7 +406,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -424,7 +424,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -479,7 +479,7 @@ where
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
+    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
     return
 }
 
@@ -522,7 +522,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -594,7 +594,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T2}] y@1
+    conditional_drop[{built_in impl Destruct for T2}] y@1
     return
 }
 
@@ -631,7 +631,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T2}] y@1
+    conditional_drop[{built_in impl Destruct for T2}] y@1
     return
 }
 
@@ -706,7 +706,7 @@ where
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop[{built_in impl Destruct for T}] x@2
+    conditional_drop[{built_in impl Destruct for T}] x@2
     return
 }
 
@@ -862,7 +862,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for @TraitClause1::W}] @1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] @1
     return
 }
 
@@ -880,7 +880,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for @TraitClause1::W}] x@1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] x@1
     return
 }
 
@@ -1389,7 +1389,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for F}] @1
+    conditional_drop[{built_in impl Destruct for F}] @1
     return
 }
 

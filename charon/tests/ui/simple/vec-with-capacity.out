@@ -216,7 +216,7 @@ fn vec()
     @0 := ()
     storage_live(@1)
     @1 := with_capacity<u32>[{built_in impl Sized for u32}](const (42 : usize))
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] @1
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

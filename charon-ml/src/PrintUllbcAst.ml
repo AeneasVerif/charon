@@ -72,7 +72,7 @@ module Ast = struct
         call_to_string env indent call
         ^ " -> " ^ block_id_to_string tgt ^ "(unwind:"
         ^ block_id_to_string unwind ^ ")"
-    | Drop (p, _, tgt, unwind) ->
+    | Drop (_, p, _, tgt, unwind) ->
         indent ^ "drop " ^ place_to_string env p ^ " -> "
         ^ block_id_to_string tgt ^ "(unwind:" ^ block_id_to_string unwind ^ ")"
     | Abort _ -> indent ^ "panic"

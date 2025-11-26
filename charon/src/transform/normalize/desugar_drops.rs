@@ -22,6 +22,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
     /// If we cannot desugar this drop, we just leave it unchanged.
     fn transform_drop_to_call(&mut self, term: &mut Terminator) {
         if let TerminatorKind::Drop {
+            kind: DropKind::Precise,
             place,
             tref,
             target,

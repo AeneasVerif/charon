@@ -49,7 +49,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for M}] _msg@1
+    conditional_drop[{built_in impl Destruct for M}] _msg@1
     return
 }
 

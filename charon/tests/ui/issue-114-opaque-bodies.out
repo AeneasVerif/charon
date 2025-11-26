@@ -334,7 +334,7 @@ fn vec(@1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Glob
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x@1
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x@1
     return
 }
 
@@ -358,7 +358,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for T}] _x@1
+    conditional_drop[{built_in impl Destruct for T}] _x@1
     return
 }
 

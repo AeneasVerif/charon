@@ -1233,7 +1233,6 @@ fn generate_ml(
                     ],
                 })), &[
                     "Binder",
-                    "AbortKind",
                     "TypeDecl",
                 ]),
             ]),
@@ -1263,6 +1262,7 @@ fn generate_ml(
                     extra_types: &[],
                 })), &[
                     "Call",
+                    "DropKind",
                     "Assert",
                     "ItemSource",
                     "Locals",

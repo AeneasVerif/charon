@@ -667,20 +667,9 @@ class ['self] map_type_decl_base =
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
   end
 
-(** (U)LLBC is a language with side-effects: a statement may abort in a way that
-    isn't tracked by control-flow. The two kinds of abort are:
-    - Panic (may unwind or not depending on compilation setting);
-    - Undefined behavior: *)
-type abort_kind =
-  | Panic of name option  (** A built-in panicking function. *)
-  | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
-  | UnwindTerminate
-      (** Unwind had to stop for Abi reasons or because cleanup code panicked
-          again. *)
-
 (** Describes modifiers to the alignment and packing of the corresponding type.
     Represents [repr(align(n))] and [repr(packed(n))]. *)
-and alignment_modifier = Align of int | Pack of int
+type alignment_modifier = Align of int | Pack of int
 
 (** Additional information for closures. *)
 and closure_info = {

@@ -1,5 +1,4 @@
-//@ charon-args=--mir=elaborated
-//@ charon-args=--add-drop-bounds
+//@ charon-args=--precise-drops
 
 trait Modifiable<T> {
     fn modify(&mut self, arg: &T) -> T;

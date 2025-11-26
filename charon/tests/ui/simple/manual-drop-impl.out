@@ -112,7 +112,7 @@ fn drop_foo(@1: Foo<u32>[{built_in impl Sized for u32}])
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
+    conditional_drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
     return
 }
 
