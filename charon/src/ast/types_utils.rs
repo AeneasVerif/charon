@@ -760,18 +760,13 @@ impl Ty {
                 match ty_ref.id {
                     TypeId::Adt(type_decl_id) => {
                         let Some(decl) = ty_decls.get(type_decl_id) else {
-                            return PtrMetadata::InheritFrom(Ty::new(TyKind::Error(format!(
-                                "Internal Error: type decl id not found during getting metadata: {type_decl_id}"
-                            ))));
+                            return PtrMetadata::InheritFrom(self.clone());
                         };
-                        match &decl.ptr_metadata {
+                        match decl.ptr_metadata.clone().substitute(&ty_ref.generics) {
                             // if it depends on some type, recursion with the binding env
-                            PtrMetadata::InheritFrom(ty) => {
-                                let ty = ty.clone().substitute(&ty_ref.generics);
-                                ty.get_ptr_metadata(translated)
-                            }
-                            // otherwise, simply returns it
-                            meta => meta.clone().substitute(&ty_ref.generics),
+                            PtrMetadata::InheritFrom(ty) => ty.get_ptr_metadata(translated),
+                            // otherwise, simply return it
+                            meta => meta,
                         }
                     }
                     // the metadata of a tuple is simply the last field
@@ -794,13 +789,7 @@ impl Ty {
             }
             TyKind::DynTrait(pred) => match pred.vtable_ref(translated) {
                 Some(vtable) => PtrMetadata::VTable(vtable),
-                None => PtrMetadata::InheritFrom(
-                    TyKind::Error(format!(
-                        "Vtable for dyn trait {} not found",
-                        pred.with_ctx(&translated.into_fmt())
-                    ))
-                    .into(),
-                ),
+                None => PtrMetadata::InheritFrom(self.clone()),
             },
             TyKind::TraitType(..) | TyKind::TypeVar(_) => PtrMetadata::InheritFrom(self.clone()),
             TyKind::Literal(_)
