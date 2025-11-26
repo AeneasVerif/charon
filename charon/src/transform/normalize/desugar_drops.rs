@@ -40,12 +40,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             let drop_arg = self.fresh_var(Some("drop_arg".into()), ref_drop_arg);
             let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
 
-            let ptr_metadata = self.compute_place_metadata(&place);
-            let rval = Rvalue::RawPtr {
-                place: place.clone(),
-                kind: RefKind::Mut,
-                ptr_metadata: ptr_metadata,
-            };
+            let rval = self.raw_borrow(place.clone(), RefKind::Mut);
             // assign &raw mut place to drop_arg
             self.insert_assn_stmt(drop_arg.clone(), rval);
 

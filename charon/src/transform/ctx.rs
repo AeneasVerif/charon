@@ -375,6 +375,25 @@ pub trait BodyTransformCtx: Sized {
         );
         compute_place_metadata_inner(self, place, &metadata_ty).unwrap_or_else(|| no_metadata(self))
     }
+
+    /// Create a `&` borrow of the place.
+    fn borrow(&mut self, place: Place, kind: BorrowKind) -> Rvalue {
+        let ptr_metadata = self.compute_place_metadata(&place);
+        Rvalue::Ref {
+            place,
+            kind,
+            ptr_metadata,
+        }
+    }
+    /// Create a `&raw` borrow of the place.
+    fn raw_borrow(&mut self, place: Place, kind: RefKind) -> Rvalue {
+        let ptr_metadata = self.compute_place_metadata(&place);
+        Rvalue::RawPtr {
+            place,
+            kind,
+            ptr_metadata,
+        }
+    }
 }
 
 pub struct UllbcStatementTransformCtx<'a> {

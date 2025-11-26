@@ -173,9 +173,8 @@ where
     let @10: &'_ (Array<u8, 4 : usize>); // anonymous local
     let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
     let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @13: (); // anonymous local
-    let @14: Array<u8, 4 : usize>; // anonymous local
-    let @15: &'_ (Array<u8, 4 : usize>); // anonymous local
+    let @13: Array<u8, 4 : usize>; // anonymous local
+    let @14: &'_ (Array<u8, 4 : usize>); // anonymous local
 
     @0 := ()
     storage_live(@1)
@@ -198,12 +197,10 @@ where
     storage_live(@9)
     storage_live(@10)
     storage_live(@13)
-    @13 := ()
+    @13 := [const (192 : u8), const (1 : u8), const (10 : u8), const (0 : u8)]
     storage_live(@14)
-    @14 := [const (192 : u8), const (1 : u8), const (10 : u8), const (0 : u8)]
-    storage_live(@15)
-    @15 := &@14
-    @10 := move (@15)
+    @14 := &@13
+    @10 := move (@14)
     @9 := &*(@10)
     storage_live(@11)
     storage_live(@12)

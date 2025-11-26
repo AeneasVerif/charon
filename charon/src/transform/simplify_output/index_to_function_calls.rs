@@ -73,9 +73,6 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             .into_ty()
         };
 
-        // do something similar to the `input_var` below, but for the metadata.
-        let ptr_metadata = self.ctx.compute_place_metadata(subplace);
-
         // Push the statements:
         // `storage_live(tmp0)`
         // `tmp0 = &{mut}p`
@@ -83,11 +80,8 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             let input_var = self.ctx.fresh_var(None, input_ty);
             let kind = StatementKind::Assign(
                 input_var.clone(),
-                Rvalue::Ref {
-                    place: subplace.clone(),
-                    kind: BorrowKind::mutable(mut_access),
-                    ptr_metadata,
-                },
+                self.ctx
+                    .borrow(subplace.clone(), BorrowKind::mutable(mut_access)),
             );
             self.ctx
                 .statements

@@ -64,8 +64,6 @@ fn transform_constant_expr(
             )
         }
         ConstantExprKind::Ref(bval) => {
-            // This is a reference to a global constant, which must be Sized, so no metadata
-            let unit_metadata = ctx.rval_to_place(Rvalue::unit_value(), Ty::mk_unit());
             let place = match bval.kind {
                 ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
                 _ => {
@@ -78,15 +76,10 @@ fn transform_constant_expr(
                 }
             };
             // Borrow the place.
-            Rvalue::Ref {
-                place,
-                kind: BorrowKind::Shared,
-                ptr_metadata: Operand::Move(unit_metadata),
-            }
+            ctx.borrow(place, BorrowKind::Shared)
         }
         ConstantExprKind::Ptr(rk, bval) => {
             // As the value is originally an argument, it must be Sized, hence no metadata
-            let unit_metadata = ctx.rval_to_place(Rvalue::unit_value(), Ty::mk_unit());
             let place = match bval.kind {
                 ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
                 _ => {
@@ -99,11 +92,7 @@ fn transform_constant_expr(
                 }
             };
             // Borrow the value
-            Rvalue::RawPtr {
-                place,
-                kind: rk,
-                ptr_metadata: Operand::Move(unit_metadata),
-            }
+            ctx.raw_borrow(place, rk)
         }
         ConstantExprKind::Adt(variant, fields) => {
             let fields = fields

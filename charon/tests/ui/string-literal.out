@@ -135,19 +135,16 @@ fn BAR() -> &'static (Slice<u8>)
     let @0: &'_ (Slice<u8>); // return
     let @1: &'_ (Array<u8, 5 : usize>); // anonymous local
     let @2: &'_ (Array<u8, 5 : usize>); // anonymous local
-    let @3: (); // anonymous local
-    let @4: Array<u8, 5 : usize>; // anonymous local
-    let @5: &'_ (Array<u8, 5 : usize>); // anonymous local
+    let @3: Array<u8, 5 : usize>; // anonymous local
+    let @4: &'_ (Array<u8, 5 : usize>); // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    @3 := ()
+    @3 := [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
     storage_live(@4)
-    @4 := [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
-    storage_live(@5)
-    @5 := &@4
-    @2 := move (@5)
+    @4 := &@3
+    @2 := move (@4)
     @1 := &*(@2)
     @0 := @ArrayToSliceShared<'_, u8, 5 : usize>(move (@1))
     storage_dead(@2)
