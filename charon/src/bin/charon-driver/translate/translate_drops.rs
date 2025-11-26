@@ -1,4 +1,4 @@
-use crate::translate::{translate_bodies::BodyTransCtx, translate_crate::TransItemSourceKind};
+use crate::translate::translate_crate::TransItemSourceKind;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
@@ -19,7 +19,7 @@ impl ItemTransCtx<'_, '_> {
             return Ok(Body::Opaque);
         };
 
-        Ok(BodyTransCtx::new(self).translate_body(span, body, &def.source_text))
+        Ok(self.translate_body(span, body, &def.source_text))
     }
 
     /// Translate the body of the fake `Destruct::drop_in_place` method we're adding to the

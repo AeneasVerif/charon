@@ -94,6 +94,21 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     }
 }
 
+impl ItemTransCtx<'_, '_> {
+    pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef) -> Body {
+        BodyTransCtx::new(self).translate_def_body(span, def)
+    }
+
+    pub fn translate_body(
+        &mut self,
+        span: Span,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
+        source_text: &Option<String>,
+    ) -> Body {
+        BodyTransCtx::new(self).translate_body(span, body, source_text)
+    }
+}
+
 impl BodyTransCtx<'_, '_, '_> {
     pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<LocalId> {
         use rustc_index::Idx;
@@ -1159,7 +1174,7 @@ impl BodyTransCtx<'_, '_, '_> {
 
     /// Translate the MIR body of this definition if it has one. Catches any error and returns
     /// `Body::Error` instead
-    pub fn translate_def_body(self, span: Span, def: &hax::FullDef) -> Body {
+    fn translate_def_body(self, span: Span, def: &hax::FullDef) -> Body {
         match self.translate_def_body_inner(span, def) {
             Ok(body) => body,
             Err(e) => Body::Error(e),
@@ -1194,7 +1209,7 @@ impl BodyTransCtx<'_, '_, '_> {
     }
 
     /// Translate a function body. Catches errors and returns `Body::Error` instead.
-    pub fn translate_body(
+    fn translate_body(
         mut self,
         span: Span,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,

@@ -1,4 +1,3 @@
-use super::translate_bodies::BodyTransCtx;
 use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
@@ -527,7 +526,7 @@ impl ItemTransCtx<'_, '_> {
             )?
         } else {
             // Translate the MIR body for this definition.
-            BodyTransCtx::new(&mut self).translate_def_body(item_meta.span, def)
+            self.translate_def_body(item_meta.span, def)
         };
         Ok(FunDecl {
             def_id,
