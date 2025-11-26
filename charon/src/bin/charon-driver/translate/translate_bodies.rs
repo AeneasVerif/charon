@@ -409,9 +409,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::Ref {
                     place,
                     kind: borrow_kind,
-                    // Use `()` as a placeholder now.
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::mk_const_unit(),
+                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+                        ty: Ty::mk_unit(),
+                    })),
                 })
             }
             hax::Rvalue::RawPtr(mtbl, place) => {
@@ -424,9 +426,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::RawPtr {
                     place,
                     kind: mtbl,
-                    // Use `()` as a placeholder now.
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::mk_const_unit(),
+                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+                        ty: Ty::mk_unit(),
+                    })),
                 })
             }
             hax::Rvalue::Cast(cast_kind, hax_operand, tgt_ty) => {
