@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--remove-associated-types=*
 //@ charon-args=--hide-marker-traits
 fn iter(n: usize) {

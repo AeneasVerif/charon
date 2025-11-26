@@ -21,9 +21,9 @@ pub trait Try<Self, Self_Output, Self_Residual>
 }
 
 // Full name: test_crate::Residual
-pub trait Residual<Self, O, Self_TryType, Self_Clause0_Output, Self_Clause0_Residual>
+pub trait Residual<Self, O, Self_TryType>
 {
-    parent_clause0 : [@TraitClause0]: Try<Self_TryType, Self_Clause0_Output, Self_Clause0_Residual>
+    parent_clause0 : [@TraitClause0]: Try<Self_TryType, O, Self>
     vtable: test_crate::Residual::{vtable}<O, Self_TryType>
 }
 
