@@ -95,17 +95,64 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
 }
 
 impl ItemTransCtx<'_, '_> {
+    /// Translate the MIR body of this definition if it has one. Catches any error and returns
+    /// `Body::Error` instead
     pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef) -> Body {
-        BodyTransCtx::new(self).translate_def_body(span, def)
+        match self.translate_def_body_inner(span, def) {
+            Ok(body) => body,
+            Err(e) => Body::Error(e),
+        }
     }
 
+    fn translate_def_body_inner(&mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
+        // Retrieve the body
+        if let Some(body) = self.get_mir(def.this(), span)? {
+            Ok(self.translate_body(span, &body, &def.source_text))
+        } else {
+            if let hax::FullDefKind::Const { value, .. }
+            | hax::FullDefKind::AssocConst { value, .. } = def.kind()
+                && let Some(value) = value
+            {
+                // For globals we can generate a body by evaluating the global.
+                // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
+                // default value no longer has a cross-crate MIR so it's unclear how to retreive
+                // the value. See the `trait-default-const-cross-crate` test.
+                let c = self.translate_constant_expr_to_constant_expr(span, &value)?;
+                let mut bb = BodyBuilder::new(span, 0);
+                let ret = bb.new_var(None, c.ty.clone());
+                bb.push_statement(StatementKind::Assign(
+                    ret,
+                    Rvalue::Use(Operand::Const(Box::new(c))),
+                ));
+                Ok(Body::Unstructured(bb.build()))
+            } else {
+                Ok(Body::Missing)
+            }
+        }
+    }
+
+    /// Translate a function body. Catches errors and returns `Body::Error` instead.
+    /// That's the entrypoint of this module.
     pub fn translate_body(
         &mut self,
         span: Span,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
     ) -> Body {
-        BodyTransCtx::new(self).translate_body(span, body, source_text)
+        let mut ctx = BodyTransCtx::new(self);
+        let mut ctx = panic::AssertUnwindSafe(&mut ctx);
+        // Stopgap measure because there are still many panics in charon and hax.
+        let res = panic::catch_unwind(move || ctx.translate_body(body, source_text));
+        match res {
+            Ok(Ok(body)) => body,
+            // Translation error
+            Ok(Err(e)) => Body::Error(e),
+            // Panic
+            Err(_) => {
+                let e = register_error!(self, span, "Thread panicked when extracting body.");
+                Body::Error(e)
+            }
+        }
     }
 }
 
@@ -1172,65 +1219,7 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Translate the MIR body of this definition if it has one. Catches any error and returns
-    /// `Body::Error` instead
-    fn translate_def_body(self, span: Span, def: &hax::FullDef) -> Body {
-        match self.translate_def_body_inner(span, def) {
-            Ok(body) => body,
-            Err(e) => Body::Error(e),
-        }
-    }
-    /// Translate the MIR body of this definition if it has one.
-    fn translate_def_body_inner(mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
-        // Retrieve the body
-        if let Some(body) = self.get_mir(def.this(), span)? {
-            Ok(self.translate_body(span, &body, &def.source_text))
-        } else {
-            if let hax::FullDefKind::Const { value, .. }
-            | hax::FullDefKind::AssocConst { value, .. } = def.kind()
-                && let Some(value) = value
-            {
-                // For globals we can generate a body by evaluating the global.
-                // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
-                // default value no longer has a cross-crate MIR so it's unclear how to retreive
-                // the value. See the `trait-default-const-cross-crate` test.
-                let c = self.translate_constant_expr_to_constant_expr(span, &value)?;
-                let mut bb = BodyBuilder::new(span, 0);
-                let ret = bb.new_var(None, c.ty.clone());
-                bb.push_statement(StatementKind::Assign(
-                    ret,
-                    Rvalue::Use(Operand::Const(Box::new(c))),
-                ));
-                Ok(Body::Unstructured(bb.build()))
-            } else {
-                Ok(Body::Missing)
-            }
-        }
-    }
-
-    /// Translate a function body. Catches errors and returns `Body::Error` instead.
     fn translate_body(
-        mut self,
-        span: Span,
-        body: &hax::MirBody<hax::mir_kinds::Unknown>,
-        source_text: &Option<String>,
-    ) -> Body {
-        // Stopgap measure because there are still many panics in charon and hax.
-        let mut this = panic::AssertUnwindSafe(&mut self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(body, source_text));
-        match res {
-            Ok(Ok(body)) => body,
-            // Translation error
-            Ok(Err(e)) => Body::Error(e),
-            // Panic
-            Err(_) => {
-                let e = register_error!(self, span, "Thread panicked when extracting body.");
-                Body::Error(e)
-            }
-        }
-    }
-
-    fn translate_body_aux(
         &mut self,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
