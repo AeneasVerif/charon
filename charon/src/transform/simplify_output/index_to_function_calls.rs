@@ -47,13 +47,6 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             FnOperand::Regular(FnPtr::new(FnPtrKind::mk_builtin(builtin_fun), generics))
         };
 
-        let input_ty = TyKind::Ref(
-            Region::Erased,
-            subplace.ty().clone(),
-            RefKind::mutable(mut_access),
-        )
-        .into_ty();
-
         let elem_ty = tref.generics.types[0].clone();
         let output_inner_ty = if matches!(pe, Index { .. }) {
             elem_ty
@@ -76,18 +69,9 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         // Push the statements:
         // `storage_live(tmp0)`
         // `tmp0 = &{mut}p`
-        let input_var = {
-            let input_var = self.ctx.fresh_var(None, input_ty);
-            let kind = StatementKind::Assign(
-                input_var.clone(),
-                self.ctx
-                    .borrow(subplace.clone(), BorrowKind::mutable(mut_access)),
-            );
+        let input_var =
             self.ctx
-                .statements
-                .push(Statement::new(self.ctx.span, kind));
-            input_var
-        };
+                .borrow_to_new_var(subplace.clone(), BorrowKind::mutable(mut_access), None);
 
         // Construct the arguments to pass to the indexing function.
         let mut args = vec![Operand::Move(input_var)];

@@ -129,6 +129,15 @@ impl BorrowKind {
     }
 }
 
+impl From<BorrowKind> for RefKind {
+    fn from(value: BorrowKind) -> Self {
+        match value {
+            BorrowKind::Shared | BorrowKind::Shallow => RefKind::Shared,
+            BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable => RefKind::Mut,
+        }
+    }
+}
+
 impl ProjectionElem {
     /// Compute the type obtained when applying the current projection to a place of type `ty`.
     pub fn project_type(&self, krate: &TranslatedCrate, ty: &Ty) -> Result<Ty, ()> {

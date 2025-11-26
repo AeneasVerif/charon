@@ -407,6 +407,28 @@ pub trait BodyTransformCtx: Sized {
             ptr_metadata,
         }
     }
+
+    /// Store a `&` borrow of the place into a new place.
+    fn borrow_to_new_var(&mut self, place: Place, kind: BorrowKind, name: Option<String>) -> Place {
+        let ref_ty = TyKind::Ref(Region::Erased, place.ty().clone(), kind.into()).into_ty();
+        let target_place = self.fresh_var(name, ref_ty);
+        let rvalue = self.borrow(place, kind);
+        self.insert_assn_stmt(target_place.clone(), rvalue);
+        target_place
+    }
+    /// Store a `&raw` borrow of the place into a new place.
+    fn raw_borrow_to_new_var(
+        &mut self,
+        place: Place,
+        kind: RefKind,
+        name: Option<String>,
+    ) -> Place {
+        let ref_ty = TyKind::RawPtr(place.ty().clone(), kind).into_ty();
+        let target_place = self.fresh_var(name, ref_ty);
+        let rvalue = self.raw_borrow(place, kind);
+        self.insert_assn_stmt(target_place.clone(), rvalue);
+        target_place
+    }
 }
 
 pub struct UllbcStatementTransformCtx<'a> {
