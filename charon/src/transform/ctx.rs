@@ -316,6 +316,18 @@ pub trait BodyTransformCtx: Sized {
 
     /// Emit statements that compute the metadata of the given place. Returns an operand containing the
     /// metadata value.
+    ///
+    /// E.g., for:
+    /// ```ignore
+    /// let x = &(*ptr).field;
+    /// ```
+    /// if `(*ptr).field` is a DST like `[i32]`, this will get the metadata from the appropriate
+    /// pointer:
+    /// ```ignore
+    /// let len = ptr.metadata;
+    /// ```
+    /// and return `Operand::Move(len)`.
+    ///
     fn compute_place_metadata(&mut self, place: &Place) -> Operand {
         /// No metadata. We use the `unit_metadata` global to avoid having to define unit locals
         /// everywhere.
