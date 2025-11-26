@@ -1,5 +1,4 @@
-//@ charon-args=--mir=elaborated
-//@ charon-args=--add-drop-bounds
+//@ charon-args=--precise-drops
 fn drop_array(_: [String; 4]) {}
 
 fn drop_slice(_: Box<[String]>) {}

@@ -72,7 +72,7 @@ where
 
     @0 := ()
     @0 := ()
-    conditional_drop[@TraitClause2] x@1
+    drop[@TraitClause2] x@1
     return
 }
 
@@ -87,7 +87,7 @@ where
 
     @0 := ()
     @0 := ()
-    conditional_drop[@TraitClause1] x@1
+    drop[@TraitClause1] x@1
     return
 }
 
@@ -119,8 +119,8 @@ where
 
     @0 := ()
     @0 := ()
-    conditional_drop[@TraitClause4] _y@2
-    conditional_drop[@TraitClause3] _x@1
+    drop[@TraitClause4] _y@2
+    drop[@TraitClause3] _x@1
     return
 }
 

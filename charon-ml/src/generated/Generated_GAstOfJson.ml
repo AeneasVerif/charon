@@ -346,7 +346,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("remove_adt_clauses", remove_adt_clauses);
           ("hide_allocator", hide_allocator);
           ("remove_unused_self_clauses", remove_unused_self_clauses);
-          ("add_drop_bounds", add_drop_bounds);
+          ("precise_drops", precise_drops);
+          ("desugar_drops", desugar_drops);
           ("start_from", start_from);
           ("no_cargo", no_cargo);
           ("rustc_args", rustc_args);
@@ -362,7 +363,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("no_ops_to_function_calls", no_ops_to_function_calls);
           ("raw_boxes", raw_boxes);
           ("preset", preset);
-          ("desugar_drops", desugar_drops);
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
         let* lib = bool_of_json ctx lib in
@@ -394,7 +394,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* remove_unused_self_clauses =
           bool_of_json ctx remove_unused_self_clauses
         in
-        let* add_drop_bounds = bool_of_json ctx add_drop_bounds in
+        let* precise_drops = bool_of_json ctx precise_drops in
+        let* desugar_drops = bool_of_json ctx desugar_drops in
         let* start_from = list_of_json string_of_json ctx start_from in
         let* no_cargo = bool_of_json ctx no_cargo in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
@@ -412,7 +413,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* raw_boxes = bool_of_json ctx raw_boxes in
         let* preset = option_of_json preset_of_json ctx preset in
-        let* desugar_drops = bool_of_json ctx desugar_drops in
         Ok
           ({
              ullbc;
@@ -439,7 +439,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              remove_adt_clauses;
              hide_allocator;
              remove_unused_self_clauses;
-             add_drop_bounds;
+             precise_drops;
+             desugar_drops;
              start_from;
              no_cargo;
              rustc_args;
@@ -455,7 +456,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              no_ops_to_function_calls;
              raw_boxes;
              preset;
-             desugar_drops;
            }
             : cli_options)
     | _ -> Error "")

@@ -1,5 +1,4 @@
-//@ charon-args=--mir=elaborated
-//@ charon-args=--add-drop-bounds
+//@ charon-args=--precise-drops
 struct A {
     x: Box<u32>,
     b: B,

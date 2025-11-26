@@ -111,8 +111,13 @@ Options:
       --remove-unused-self-clauses
           Trait method declarations take a `Self: Trait` clause as parameter, so that they can be reused by multiple trait impls. This however causes trait definitions to be mutually recursive with their method declarations. This flag removes `Self` clauses that aren't used to break this mutual recursion
 
-      --add-drop-bounds
-          Whether to add `Destruct` bounds everywhere to enable proper tracking of what code runs on a given `drop` call
+      --precise-drops
+          Whether to precisely translate drops and drop-related code. For this, we add explicit `Destruct` bounds to all generic parameters, and set the MIR level to at least `elaborated`.
+          
+          Without this option, drops may be "conditional" and we may lack information about what code is run on drop in a given polymorphic function body.
+
+      --desugar-drops
+          If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`
 
       --start-from <START_FROM>
           A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)
@@ -165,9 +170,6 @@ Options:
           - eurydice
           - soteria
           - tests
-
-      --desugar-drops
-          If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`
 
   -h, --help
           Print help (see a summary with '-h')

@@ -429,9 +429,17 @@ type cli_options = {
           trait definitions to be mutually recursive with their method
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion. *)
-  add_drop_bounds : bool;
-      (** Whether to add [Destruct] bounds everywhere to enable proper tracking
-          of what code runs on a given [drop] call. *)
+  precise_drops : bool;
+      (** Whether to precisely translate drops and drop-related code. For this,
+          we add explicit [Destruct] bounds to all generic parameters, and set
+          the MIR level to at least [elaborated].
+
+          Without this option, drops may be "conditional" and we may lack
+          information about what code is run on drop in a given polymorphic
+          function body. *)
+  desugar_drops : bool;
+      (** If activated, transform [Drop(p)] to [Call drop_in_place(&raw mut p)].
+      *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to
@@ -456,7 +464,6 @@ type cli_options = {
       (** Named builtin sets of options. Currently used only for dependent
           projects, eveentually should be replaced with semantically-meaningful
           presets. *)
-  desugar_drops : bool;
 }
 
 (** A (group of) top-level declaration(s), properly reordered. *)

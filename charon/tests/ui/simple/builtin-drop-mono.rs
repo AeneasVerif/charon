@@ -1,5 +1,4 @@
-//@ charon-args=--mir=elaborated
-//@ charon-args=--add-drop-bounds
+//@ charon-args=--precise-drops
 //@ charon-args=--monomorphize
 //@ charon-args=--include=core::marker::Destruct
 fn drop_array(_: [String; 4]) {}
