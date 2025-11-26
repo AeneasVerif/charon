@@ -889,25 +889,25 @@ pub fn incr_array_self<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
     let s@1: &'_ mut (Array<u32, 2 : usize>); // arg #1
     let @2: usize; // anonymous local
     let @3: u32; // anonymous local
-    let @4: &'_ mut (Array<u32, 2 : usize>); // anonymous local
-    let @5: &'_ mut (u32); // anonymous local
-    let @6: &'_ (Array<u32, 2 : usize>); // anonymous local
-    let @7: &'_ (u32); // anonymous local
+    let @4: &'_ (Array<u32, 2 : usize>); // anonymous local
+    let @5: &'_ (u32); // anonymous local
+    let @6: &'_ mut (Array<u32, 2 : usize>); // anonymous local
+    let @7: &'_ mut (u32); // anonymous local
 
     storage_live(@3)
     @0 := ()
     storage_live(@2)
     @2 := const (0 : usize)
-    storage_live(@6)
-    @6 := &*(s@1)
-    storage_live(@7)
-    @7 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@6), copy (@2))
-    @3 := copy (*(@7)) panic.+ const (1 : u32)
     storage_live(@4)
-    @4 := &mut *(s@1)
+    @4 := &*(s@1)
     storage_live(@5)
-    @5 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@4), copy (@2))
-    *(@5) := move (@3)
+    @5 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@4), copy (@2))
+    @3 := copy (*(@5)) panic.+ const (1 : u32)
+    storage_live(@6)
+    @6 := &mut *(s@1)
+    storage_live(@7)
+    @7 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@6), copy (@2))
+    *(@7) := move (@3)
     storage_dead(@2)
     @0 := ()
     return
@@ -920,25 +920,25 @@ pub fn incr_slice_self<'_0>(@1: &'_0 mut (Slice<u32>))
     let s@1: &'_ mut (Slice<u32>); // arg #1
     let @2: usize; // anonymous local
     let @3: u32; // anonymous local
-    let @4: &'_ mut (Slice<u32>); // anonymous local
-    let @5: &'_ mut (u32); // anonymous local
-    let @6: &'_ (Slice<u32>); // anonymous local
-    let @7: &'_ (u32); // anonymous local
+    let @4: &'_ (Slice<u32>); // anonymous local
+    let @5: &'_ (u32); // anonymous local
+    let @6: &'_ mut (Slice<u32>); // anonymous local
+    let @7: &'_ mut (u32); // anonymous local
 
     storage_live(@3)
     @0 := ()
     storage_live(@2)
     @2 := const (0 : usize)
-    storage_live(@6)
-    @6 := &*(s@1) with_metadata(copy (s@1.metadata))
-    storage_live(@7)
-    @7 := @SliceIndexShared<'_, u32>(move (@6), copy (@2))
-    @3 := copy (*(@7)) panic.+ const (1 : u32)
     storage_live(@4)
-    @4 := &mut *(s@1) with_metadata(copy (s@1.metadata))
+    @4 := &*(s@1) with_metadata(copy (s@1.metadata))
     storage_live(@5)
-    @5 := @SliceIndexMut<'_, u32>(move (@4), copy (@2))
-    *(@5) := move (@3)
+    @5 := @SliceIndexShared<'_, u32>(move (@4), copy (@2))
+    @3 := copy (*(@5)) panic.+ const (1 : u32)
+    storage_live(@6)
+    @6 := &mut *(s@1) with_metadata(copy (s@1.metadata))
+    storage_live(@7)
+    @7 := @SliceIndexMut<'_, u32>(move (@6), copy (@2))
+    *(@7) := move (@3)
     storage_dead(@2)
     @0 := ()
     return
@@ -1714,19 +1714,19 @@ pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
         storage_live(@15)
         storage_live(@16)
         @16 := copy (i@9)
-        storage_live(@24)
-        @24 := &*(s@1) with_metadata(copy (s@1.metadata))
-        storage_live(@25)
-        @25 := @SliceIndexShared<'_, u32>(move (@24), copy (@16))
-        @15 := copy (*(@25))
+        storage_live(@22)
+        @22 := &*(s@1) with_metadata(copy (s@1.metadata))
+        storage_live(@23)
+        @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@16))
+        @15 := copy (*(@23))
         storage_live(@17)
         storage_live(@18)
         @18 := copy (i@9)
-        storage_live(@22)
-        @22 := &*(s2@2) with_metadata(copy (s2@2.metadata))
-        storage_live(@23)
-        @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@18))
-        @17 := copy (*(@23))
+        storage_live(@24)
+        @24 := &*(s2@2) with_metadata(copy (s2@2.metadata))
+        storage_live(@25)
+        @25 := @SliceIndexShared<'_, u32>(move (@24), copy (@18))
+        @17 := copy (*(@25))
         @19 := copy (@15) panic.+ copy (@17)
         @14 := move (@19)
         storage_dead(@17)
@@ -2227,11 +2227,11 @@ where
 
     @0 := ()
     storage_live(_a@2)
-    storage_live(@9)
-    @9 := &mut x@1
-    storage_live(@10)
-    @10 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@9), const (0 : usize))
-    _a@2 := move (*(@10))
+    storage_live(@5)
+    @5 := &mut x@1
+    storage_live(@6)
+    @6 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@5), const (0 : usize))
+    _a@2 := move (*(@6))
     storage_live(_b@3)
     storage_live(@7)
     @7 := &mut x@1
@@ -2239,11 +2239,11 @@ where
     @8 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@7), const (1 : usize))
     _b@3 := move (*(@8))
     storage_live(_c@4)
-    storage_live(@5)
-    @5 := &mut x@1
-    storage_live(@6)
-    @6 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@5), const (2 : usize))
-    _c@4 := move (*(@6))
+    storage_live(@9)
+    @9 := &mut x@1
+    storage_live(@10)
+    @10 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@9), const (2 : usize))
+    _c@4 := move (*(@10))
     @0 := ()
     storage_dead(_c@4)
     storage_dead(_b@3)

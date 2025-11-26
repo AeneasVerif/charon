@@ -455,10 +455,10 @@ impl ItemTransCtx<'_, '_> {
 
                 builder.push_statement(StatementKind::Assign(
                     reborrow.clone(),
-                    // the state must be Sized, hence `()` as ptr-metadata
                     Rvalue::Ref {
                         place: deref_state,
                         kind: BorrowKind::Shared,
+                        // The state must be Sized, hence `()` as ptr-metadata
                         ptr_metadata: Operand::mk_const_unit(),
                     },
                 ));

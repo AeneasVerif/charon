@@ -132,15 +132,6 @@ impl Block {
         let _ = BlockVisitor::new(|_| {}, f).visit(self);
     }
 
-    /// Apply a transformer to all the statements, in a bottom-up manner.
-    ///
-    /// The transformer should:
-    /// - mutate the current statement in place
-    /// - return the sequence of statements to introduce before the current statement
-    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, mut f: F) {
-        self.transform_sequences(|slice| f(&mut slice[0]));
-    }
-
     /// Apply a transformer to all the statements, in a bottom-up manner. Compared to `transform`,
     /// this also gives access to the following statements if any. Statements that are not part of
     /// a sequence will be traversed as `[st]`. Statements that are will be traversed twice: once

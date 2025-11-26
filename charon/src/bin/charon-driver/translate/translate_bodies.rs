@@ -352,48 +352,33 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Translate an operand with its type
-    fn translate_operand_with_type(
-        &mut self,
-        span: Span,
-        operand: &hax::Operand,
-    ) -> Result<(Operand, Ty), Error> {
-        trace!();
-        match operand {
+    /// Translate an operand
+    fn translate_operand(&mut self, span: Span, operand: &hax::Operand) -> Result<Operand, Error> {
+        Ok(match operand {
             hax::Operand::Copy(place) => {
                 let p = self.translate_place(span, place)?;
-                let ty = p.ty().clone();
-                Ok((Operand::Copy(p), ty))
+                Operand::Copy(p)
             }
             hax::Operand::Move(place) => {
                 let p = self.translate_place(span, place)?;
-                let ty = p.ty().clone();
-                Ok((Operand::Move(p), ty))
+                Operand::Move(p)
             }
             hax::Operand::Constant(const_op) => match &const_op.kind {
                 hax::ConstOperandKind::Value(constant) => {
                     let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
-                    let ty = constant.ty.clone();
-                    Ok((Operand::Const(Box::new(constant)), ty))
+                    Operand::Const(Box::new(constant))
                 }
                 hax::ConstOperandKind::Promoted(item) => {
-                    let ty = self.translate_ty(span, &const_op.ty)?;
                     // A promoted constant that could not be evaluated.
                     let global_ref = self.translate_global_decl_ref(span, item)?;
                     let constant = ConstantExpr {
                         kind: ConstantExprKind::Global(global_ref),
-                        ty: ty.clone(),
+                        ty: self.translate_ty(span, &const_op.ty)?,
                     };
-                    Ok((Operand::Const(Box::new(constant)), ty))
+                    Operand::Const(Box::new(constant))
                 }
             },
-        }
-    }
-
-    /// Translate an operand
-    fn translate_operand(&mut self, span: Span, operand: &hax::Operand) -> Result<Operand, Error> {
-        trace!();
-        Ok(self.translate_operand_with_type(span, operand)?.0)
+        })
     }
 
     /// Translate an rvalue
@@ -413,9 +398,10 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             hax::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_constant_expr_to_const_generic(span, cnst)?;
-                let (operand, t) = self.translate_operand_with_type(span, operand)?;
+                let op = self.translate_operand(span, operand)?;
+                let ty = op.ty().clone();
                 // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(operand, t, c))
+                Ok(Rvalue::Repeat(op, ty, c))
             }
             hax::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -423,9 +409,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::Ref {
                     place,
                     kind: borrow_kind,
-                    // Use `()` as a placeholder now.
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::mk_const_unit(),
+                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+                        ty: Ty::mk_unit(),
+                    })),
                 })
             }
             hax::Rvalue::RawPtr(mtbl, place) => {
@@ -438,9 +426,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::RawPtr {
                     place,
                     kind: mtbl,
-                    // Use `()` as a placeholder now.
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::mk_const_unit(),
+                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+                        ty: Ty::mk_unit(),
+                    })),
                 })
             }
             hax::Rvalue::Cast(cast_kind, hax_operand, tgt_ty) => {
@@ -449,7 +439,8 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tgt_ty = self.translate_ty(span, tgt_ty)?;
 
                 // Translate the operand
-                let (mut operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
+                let mut operand = self.translate_operand(span, hax_operand)?;
+                let src_ty = operand.ty().clone();
 
                 let cast_kind = match cast_kind {
                     hax::CastKind::IntToInt
@@ -531,7 +522,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
-                        CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta)
+                        CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }
                 };
                 let unop = UnOp::Cast(cast_kind);
@@ -811,10 +802,10 @@ impl BodyTransCtx<'_, '_, '_> {
                 ..
             } => {
                 // Translate the operand which gives the discriminant
-                let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
-
+                let discr = self.translate_operand(span, discr)?;
                 // Translate the switch targets
-                let targets = self.translate_switch_targets(span, &discr_ty, targets, otherwise)?;
+                let targets =
+                    self.translate_switch_targets(span, discr.ty(), targets, otherwise)?;
 
                 ullbc_ast::TerminatorKind::Switch { discr, targets }
             }

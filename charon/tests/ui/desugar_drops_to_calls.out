@@ -150,8 +150,8 @@ fn use_string(@1: String)
     @0 := ()
     @0 := ()
     storage_live(drop_arg@2)
-    storage_live(drop_ret@3)
     drop_arg@2 := &raw mut @1
+    storage_live(drop_ret@3)
     drop_ret@3 := {impl Destruct for String}::drop_in_place(move (drop_arg@2))
     return
 }
@@ -167,8 +167,8 @@ fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
     @0 := ()
     @0 := ()
     storage_live(drop_arg@2)
-    storage_live(drop_ret@3)
     drop_arg@2 := &raw mut @1
+    storage_live(drop_ret@3)
     drop_ret@3 := {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@2))
     return
 }
@@ -187,8 +187,8 @@ where
     @0 := ()
     @0 := ()
     storage_live(drop_arg@2)
-    storage_live(drop_ret@3)
     drop_arg@2 := &raw mut @1
+    storage_live(drop_ret@3)
     drop_ret@3 := @TraitClause1::drop_in_place(move (drop_arg@2))
     return
 }
@@ -250,12 +250,12 @@ fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
     @3 := &mut *(@2)
     @4 := {impl Drop for Point}::drop<'_>(move (@3))
     storage_live(drop_arg@5)
-    storage_live(drop_ret@6)
     drop_arg@5 := &raw mut (*(@2)).x
+    storage_live(drop_ret@6)
     drop_ret@6 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@5))
     storage_live(drop_arg@7)
-    storage_live(drop_ret@8)
     drop_arg@7 := &raw mut (*(@2)).y
+    storage_live(drop_ret@8)
     drop_ret@8 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@7))
     return
 }
@@ -295,8 +295,8 @@ fn main()
     storage_dead(@2)
     @0 := ()
     storage_live(drop_arg@4)
-    storage_live(drop_ret@5)
     drop_arg@4 := &raw mut p@1
+    storage_live(drop_ret@5)
     drop_ret@5 := {impl Destruct for Point}::drop_in_place(move (drop_arg@4))
     storage_dead(p@1)
     return

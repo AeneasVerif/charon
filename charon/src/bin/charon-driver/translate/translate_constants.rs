@@ -58,13 +58,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         v: &hax::ConstantExpr,
     ) -> Result<ConstantExpr, Error> {
-        use hax::ConstantExprKind;
         let ty = self.translate_ty(span, &v.ty)?;
         let kind = match v.contents.as_ref() {
-            ConstantExprKind::Literal(lit) => {
+            hax::ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_constant_expr_kind(span, lit)?
             }
-            ConstantExprKind::Adt { info, fields } => {
+            hax::ConstantExprKind::Adt { info, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
@@ -75,75 +74,74 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     None
                 };
-                expressions::ConstantExprKind::Adt(vid, fields)
+                ConstantExprKind::Adt(vid, fields)
             }
-            ConstantExprKind::Array { fields } => {
+            hax::ConstantExprKind::Array { fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|x| self.translate_constant_expr_to_constant_expr(span, x))
                     .try_collect()?;
-                expressions::ConstantExprKind::Array(fields)
+
+                ConstantExprKind::Array(fields)
             }
-            ConstantExprKind::Tuple { fields } => {
+            hax::ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, f))
                     .try_collect()?;
-                expressions::ConstantExprKind::Adt(None, fields)
+                ConstantExprKind::Adt(None, fields)
             }
-            ConstantExprKind::NamedGlobal(item) => match &item.in_trait {
+            hax::ConstantExprKind::NamedGlobal(item) => match &item.in_trait {
                 Some(impl_expr) => {
                     let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
                     // Trait consts can't have their own generics.
                     assert!(item.generic_args.is_empty());
                     let name = self.translate_trait_item_name(&item.def_id)?;
-                    expressions::ConstantExprKind::TraitConst(trait_ref, name)
+                    ConstantExprKind::TraitConst(trait_ref, name)
                 }
                 None => {
                     let global_ref = self.translate_global_decl_ref(span, item)?;
-                    expressions::ConstantExprKind::Global(global_ref)
+                    ConstantExprKind::Global(global_ref)
                 }
             },
-            ConstantExprKind::Borrow(v)
-                if let ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
+            hax::ConstantExprKind::Borrow(v)
+                if let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
                     v.contents.as_ref() =>
             {
-                expressions::ConstantExprKind::Literal(Literal::Str(s.clone()))
+                ConstantExprKind::Literal(Literal::Str(s.clone()))
             }
-            ConstantExprKind::Borrow(v) => {
+            hax::ConstantExprKind::Borrow(v) => {
                 let val = self.translate_constant_expr_to_constant_expr(span, v)?;
-                expressions::ConstantExprKind::Ref(Box::new(val))
+                ConstantExprKind::Ref(Box::new(val))
             }
-            ConstantExprKind::Cast { .. } => {
+            hax::ConstantExprKind::Cast { .. } => {
                 register_error!(
                     self,
                     span,
                     "Unsupported constant: `ConstantExprKind::Cast {{..}}`",
                 );
-                expressions::ConstantExprKind::Opaque("`ConstantExprKind::Cast {{..}}`".into())
+                ConstantExprKind::Opaque("`ConstantExprKind::Cast {{..}}`".into())
             }
-            ConstantExprKind::RawBorrow { mutability, arg } => {
+            hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr_to_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(*mutability);
-                expressions::ConstantExprKind::Ptr(rk, Box::new(arg))
+                ConstantExprKind::Ptr(rk, Box::new(arg))
             }
-            ConstantExprKind::ConstRef { id } => {
+            hax::ConstantExprKind::ConstRef { id } => {
                 let var = self.lookup_const_generic_var(span, id)?;
-                expressions::ConstantExprKind::Var(var)
+                ConstantExprKind::Var(var)
             }
-            ConstantExprKind::FnPtr(item) => {
+            hax::ConstantExprKind::FnPtr(item) => {
                 let fn_ptr = self
                     .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
                     .erase();
-                expressions::ConstantExprKind::FnPtr(fn_ptr)
+                ConstantExprKind::FnPtr(fn_ptr)
             }
-            ConstantExprKind::Memory(bytes) => {
-                expressions::ConstantExprKind::RawMemory(bytes.clone())
-            }
-            ConstantExprKind::Todo(msg) => {
+            hax::ConstantExprKind::Memory(bytes) => ConstantExprKind::RawMemory(bytes.clone()),
+            hax::ConstantExprKind::Todo(msg) => {
                 register_error!(self, span, "Unsupported constant: {:?}", msg);
-                expressions::ConstantExprKind::Opaque(msg.into())
+                ConstantExprKind::Opaque(msg.into())
             }
         };
 

@@ -103,34 +103,13 @@ impl BlockData {
         }
     }
 
-    /// TODO: Write new documentation
-    pub fn transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
-        &mut self,
-        mut f: F,
-    ) {
-        // Explore the operands in the statements
-        for mut st in mem::take(&mut self.statements) {
-            st.kind
-                .dyn_visit_in_body_mut(|op: &mut Operand| f(&st.span, &mut self.statements, op));
-            // Add the statement to the vector of statements
-            self.statements.push(st)
-        }
-
-        // Explore the terminator
-        self.terminator
-            .kind
-            .dyn_visit_in_body_mut(|op: &mut Operand| {
-                f(&self.terminator.span, &mut self.statements, op)
-            });
-    }
-
     /// Apply a transformer to all the statements.
     ///
     /// The transformer should:
     /// - mutate the current statement in place
     /// - return the sequence of statements to introduce before the current statement
     pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, mut f: F) {
-        self.transform_sequences_bwd(|slice| {
+        self.transform_sequences_fwd(|slice| {
             let new_statements = f(&mut slice[0]);
             if new_statements.is_empty() {
                 vec![]

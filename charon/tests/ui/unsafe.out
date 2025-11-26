@@ -375,17 +375,14 @@ fn access_mutable_static()
     let @0: (); // return
     let @1: *mut usize; // anonymous local
     let @2: usize; // anonymous local
-    let @3: (); // anonymous local
-    let @4: *mut usize; // anonymous local
+    let @3: *mut usize; // anonymous local
 
     storage_live(@2)
     @0 := ()
     storage_live(@1)
     storage_live(@3)
-    @3 := ()
-    storage_live(@4)
-    @4 := &raw mut COUNTER
-    @1 := move (@4)
+    @3 := &raw mut COUNTER
+    @1 := move (@3)
     @2 := copy (*(@1)) panic.+ const (1 : usize)
     *(@1) := move (@2)
     storage_dead(@1)
