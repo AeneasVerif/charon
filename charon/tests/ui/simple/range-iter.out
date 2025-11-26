@@ -1,0 +1,13 @@
+error: Could not compute the value of Self::Clause0::Item (Some(TraitRef(HashConsed(TraitRefContents { kind: SelfId, trait_decl_ref: RegionBinder { regions: [], skip_binder: TraitDeclRef { id: 6, generics: <@TypeBound(1, 0)> } } })))) needed to update generics <@TypeBound(0, 0), @TraitClauseBound(0, 0)::Item, @TypeBound(0, 0)> for item core::iter::traits::collect::IntoIterator.
+       Constraints in scope:
+         - ClauseBound(0, 0)::Item = @TypeBound(0, 1)
+         - Self::IntoIter = @TypeBound(0, 0)
+         - Self::Item = @TraitClauseBound(0, 0)::Item
+ --> /rustc/library/core/src/iter/traits/collect.rs:314:1
+
+error: Could not compute the value of Self::Clause0::Item (Some(TraitRef(HashConsed(TraitRefContents { kind: TraitImpl(TraitImplRef { id: 0, generics: <@TypeBound(0, 0)>[@TraitClauseBound(0, 0)] }), trait_decl_ref: RegionBinder { regions: [], skip_binder: TraitDeclRef { id: 6, generics: <@TypeBound(1, 0)> } } })))) needed to update generics <@TypeBound(0, 0), @TraitClauseBound(0, 0)::Item, @TypeBound(0, 0)> for item core::iter::traits::collect::IntoIterator.
+       Constraints in scope:
+         - ClauseBound(0, 0)::Item = @TypeBound(0, 1)
+ --> /rustc/library/core/src/iter/traits/collect.rs:319:5
+
+ERROR Charon failed to translate this code (2 errors)
