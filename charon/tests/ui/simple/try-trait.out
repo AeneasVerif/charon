@@ -1,0 +1,31 @@
+# Final LLBC before serialization:
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::FromResidual
+pub trait FromResidual<Self, R>
+
+// Full name: test_crate::Try
+pub trait Try<Self, Self_Output, Self_Residual>
+{
+    parent_clause0 : [@TraitClause0]: FromResidual<Self, Self_Residual>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Residual
+pub trait Residual<Self, O, Self_TryType>
+{
+    parent_clause0 : [@TraitClause0]: Try<Self_TryType, O, Self>
+    vtable: test_crate::Residual::{vtable}<O, Self_TryType>
+}
+
+
+
