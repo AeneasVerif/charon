@@ -202,15 +202,20 @@ impl fmt::Display for TransformCtx {
     }
 }
 
-/// A helper trait that captures the usual operation in body transformation.
+/// A helper trait that captures common operations in body transformation.
 pub trait BodyTransformCtx: Sized {
-    fn get_ctx(&self) -> &TransformCtx;
+    fn get_crate(&self) -> &TranslatedCrate;
+    fn get_options(&self) -> &TranslateOptions;
     fn get_params(&self) -> &GenericParams;
     fn get_locals_mut(&mut self) -> &mut Locals;
 
     fn insert_storage_live_stmt(&mut self, local: LocalId);
     fn insert_storage_dead_stmt(&mut self, local: LocalId);
     fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue);
+
+    fn into_fmt(&self) -> FmtCtx<'_> {
+        self.get_crate().into_fmt()
+    }
 
     /// Create a local & return the place pointing to it
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
@@ -284,7 +289,7 @@ pub trait BodyTransformCtx: Sized {
     fn is_sized_type_var(&mut self, ty: &Ty) -> bool {
         match ty.kind() {
             TyKind::TypeVar(..) => {
-                if self.get_ctx().options.hide_marker_traits {
+                if self.get_options().hide_marker_traits {
                     // If we're hiding `Sized`, let's consider everything to be sized.
                     return true;
                 }
@@ -294,8 +299,7 @@ pub trait BodyTransformCtx: Sized {
                     // Check if it is `Sized<T>`
                     if tref.generics.types[0] == *ty
                         && self
-                            .get_ctx()
-                            .translated
+                            .get_crate()
                             .trait_decls
                             .get(tref.id)
                             .and_then(|decl| decl.item_meta.lang_item.clone())
@@ -316,7 +320,7 @@ pub trait BodyTransformCtx: Sized {
         /// No metadata. We use the `unit_metadata` global to avoid having to define unit locals
         /// everywhere.
         fn no_metadata<T: BodyTransformCtx>(ctx: &T) -> Operand {
-            let unit_meta = ctx.get_ctx().translated.unit_metadata.clone().unwrap();
+            let unit_meta = ctx.get_crate().unit_metadata.clone().unwrap();
             Operand::Copy(Place::new_global(unit_meta, Ty::mk_unit()))
         }
 
@@ -357,12 +361,9 @@ pub trait BodyTransformCtx: Sized {
         }
         trace!(
             "getting ptr metadata for place: {}",
-            place.with_ctx(&self.get_ctx().into_fmt())
+            place.with_ctx(&self.into_fmt())
         );
-        let metadata_ty = place
-            .ty()
-            .get_ptr_metadata(&self.get_ctx().translated)
-            .into_type();
+        let metadata_ty = place.ty().get_ptr_metadata(&self.get_crate()).into_type();
         if metadata_ty.is_unit()
             || matches!(metadata_ty.kind(), TyKind::PtrMetadata(ty) if self.is_sized_type_var(ty))
         {
@@ -371,7 +372,7 @@ pub trait BodyTransformCtx: Sized {
         }
         trace!(
             "computed metadata type: {}",
-            metadata_ty.with_ctx(&self.get_ctx().into_fmt())
+            metadata_ty.with_ctx(&self.into_fmt())
         );
         compute_place_metadata_inner(self, place, &metadata_ty).unwrap_or_else(|| no_metadata(self))
     }
@@ -407,8 +408,11 @@ pub struct UllbcStatementTransformCtx<'a> {
 }
 
 impl BodyTransformCtx for UllbcStatementTransformCtx<'_> {
-    fn get_ctx(&self) -> &TransformCtx {
-        self.ctx
+    fn get_crate(&self) -> &TranslatedCrate {
+        &self.ctx.translated
+    }
+    fn get_options(&self) -> &TranslateOptions {
+        &self.ctx.options
     }
     fn get_params(&self) -> &GenericParams {
         self.params
@@ -450,8 +454,11 @@ pub struct LlbcStatementTransformCtx<'a> {
 }
 
 impl BodyTransformCtx for LlbcStatementTransformCtx<'_> {
-    fn get_ctx(&self) -> &TransformCtx {
-        self.ctx
+    fn get_crate(&self) -> &TranslatedCrate {
+        &self.ctx.translated
+    }
+    fn get_options(&self) -> &TranslateOptions {
+        &self.ctx.options
     }
     fn get_params(&self) -> &GenericParams {
         self.params
