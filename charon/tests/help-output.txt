@@ -166,6 +166,7 @@ Options:
 
           Possible values:
           - old-defaults: The default translation used before May 2025. After that, many passes were made optional and disabled by default
+          - raw-mir:      Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more passes optional
           - aeneas
           - eurydice
           - soteria

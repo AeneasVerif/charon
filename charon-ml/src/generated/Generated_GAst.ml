@@ -520,6 +520,9 @@ and preset =
   | OldDefaults
       (** The default translation used before May 2025. After that, many passes
           were made optional and disabled by default. *)
+  | RawMir
+      (** Emit the MIR as unmodified as possible. This is very imperfect for
+          now, we should make more passes optional. *)
   | Aeneas
   | Eurydice
   | Soteria

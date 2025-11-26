@@ -300,6 +300,9 @@ pub enum Preset {
     /// The default translation used before May 2025. After that, many passes were made optional
     /// and disabled by default.
     OldDefaults,
+    /// Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more
+    /// passes optional.
+    RawMir,
     Aeneas,
     Eurydice,
     Soteria,
@@ -323,6 +326,11 @@ impl CliOpts {
             match preset {
                 Preset::OldDefaults => {
                     self.hide_allocator = !self.raw_boxes;
+                }
+                Preset::RawMir => {
+                    self.extract_opaque_bodies = true;
+                    self.raw_boxes = true;
+                    self.ullbc = true;
                 }
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
