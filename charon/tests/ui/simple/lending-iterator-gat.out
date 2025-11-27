@@ -126,7 +126,17 @@ pub trait LendingIterator<Self>
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}::drop_in_place
 fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
-= <opaque>
+{
+    let @0: (); // return
+    let @1: *mut (A); // arg #1
+    let @2: &'_ mut ((A)); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
+    drop[{built_in impl Destruct for A}] (*(@2)).0
+    return
+}
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}
 impl<A> Destruct for (A) {
@@ -279,7 +289,7 @@ fn {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
 fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {

@@ -431,15 +431,21 @@ type cli_options = {
           break this mutual recursion. *)
   precise_drops : bool;
       (** Whether to precisely translate drops and drop-related code. For this,
-          we add explicit [Destruct] bounds to all generic parameters, and set
-          the MIR level to at least [elaborated].
+          we add explicit [Destruct] bounds to all generic parameters, set the
+          MIR level to at least [elaborated], and attempt to retrieve drop glue
+          for all types.
+
+          This option is known to cause panics inside rustc, because their drop
+          handling is not design to work on polymorphic types. To silence the
+          warning, pass appropriate
+          [--opaque '{impl core::marker::Destruct for some::Type}'] options.
 
           Without this option, drops may be "conditional" and we may lack
           information about what code is run on drop in a given polymorphic
           function body. *)
   desugar_drops : bool;
-      (** If activated, transform [Drop(p)] to [Call drop_in_place(&raw mut p)].
-      *)
+      (** Transform precise drops to the equivalent [drop_in_place(&raw mut p)]
+          call. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to

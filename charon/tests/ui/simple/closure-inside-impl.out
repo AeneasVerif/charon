@@ -166,7 +166,7 @@ fn {impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_plac
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}
 impl<F, T> Destruct for closure<F, T>[@TraitClause0, @TraitClause1]

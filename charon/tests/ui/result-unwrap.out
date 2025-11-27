@@ -204,7 +204,7 @@ pub trait Destruct<Self>
 
 // Full name: core::marker::Destruct::drop_in_place
 fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
+= <missing>
 
 fn UNIT_METADATA()
 {

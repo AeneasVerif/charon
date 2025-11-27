@@ -158,7 +158,7 @@ fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-= <opaque>
+= <missing>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]

@@ -157,7 +157,7 @@ where
 fn {impl Destruct for closure<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut closure<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: closure_inside_inline_const::foo::{const}::closure::{impl Destruct for closure<T>[@TraitClause0]}
 impl<T> Destruct for closure<T>[@TraitClause0]

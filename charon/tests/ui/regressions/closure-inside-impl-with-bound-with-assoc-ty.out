@@ -173,7 +173,7 @@ fn {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::d
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
 impl<F, Clause1_Repr> Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]

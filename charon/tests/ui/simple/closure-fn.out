@@ -232,7 +232,7 @@ fn {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}::drop_in_place
 fn {impl Destruct for closure<'_0, '_1>}::drop_in_place<'_0, '_1>(@1: *mut closure<'_0, '_1>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}
 impl<'_0, '_1> Destruct for closure<'_0, '_1> {

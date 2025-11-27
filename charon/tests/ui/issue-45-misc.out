@@ -582,7 +582,7 @@ fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (i
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
 fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}
 impl Destruct for closure {
