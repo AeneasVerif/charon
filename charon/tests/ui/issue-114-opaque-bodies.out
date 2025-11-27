@@ -126,7 +126,7 @@ impl From<i32> for i64 {
 pub struct PhantomData<T> {}
 
 fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
+= <missing>
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
@@ -197,7 +197,7 @@ fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-= <opaque>
+= <missing>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
 impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]

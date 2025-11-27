@@ -13,10 +13,10 @@ impl ItemTransCtx<'_, '_> {
         let (hax::FullDefKind::Adt { drop_glue, .. } | hax::FullDefKind::Closure { drop_glue, .. }) =
             def.kind()
         else {
-            return Ok(Body::Opaque);
+            return Ok(Body::Missing);
         };
         let Some(body) = drop_glue else {
-            return Ok(Body::Opaque);
+            return Ok(Body::Missing);
         };
 
         Ok(self.translate_body(span, body, &def.source_text))

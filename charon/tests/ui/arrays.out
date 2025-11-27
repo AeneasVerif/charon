@@ -298,7 +298,7 @@ const UNIT_METADATA: () = @Fun0()
 fn {impl Destruct for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut Array<T, N>)
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::<array>::{impl Destruct for Array<T, N>}
 impl<T, const N : usize> Destruct for Array<T, N>

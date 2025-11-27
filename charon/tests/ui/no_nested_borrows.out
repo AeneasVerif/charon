@@ -145,7 +145,7 @@ where
 fn {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut List<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::List::{impl Destruct for List<T>[@TraitClause0]}
 impl<T> Destruct for List<T>[@TraitClause0]
@@ -260,7 +260,7 @@ where
 fn {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut IdType<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::IdType::{impl Destruct for IdType<T>[@TraitClause0]}
 impl<T> Destruct for IdType<T>[@TraitClause0]

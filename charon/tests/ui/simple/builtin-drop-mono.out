@@ -161,22 +161,22 @@ pub trait Destruct::<(String, String)>
 }
 
 fn core::marker::Destruct::drop_in_place::<Global>(@1: *mut Global)
-= <opaque>
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}]>(@1: *mut alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}])
-= <opaque>
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
-= <opaque>
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<Array<String, 4 : usize>>(@1: *mut Array<String, 4 : usize>)
-= <opaque>
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<Slice<String>>(@1: *mut Slice<String>)
-= <opaque>
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<(String, String)>(@1: *mut (String, String))
-= <opaque>
+= <missing>
 
 // Full name: alloc::boxed::Box::{impl Destruct::<alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}]>}::drop_in_place::<Slice<String>, Global>
 fn {impl Destruct::<alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}]>}::drop_in_place::<Slice<String>, Global>(@1: *mut alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}])

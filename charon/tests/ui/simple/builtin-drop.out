@@ -87,7 +87,7 @@ fn {impl Destruct for Array<T, N>}::drop_in_place<T, const N : usize>(@1: *mut A
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::<array>::{impl Destruct for Array<T, N>}
 impl<T, const N : usize> Destruct for Array<T, N>
@@ -104,7 +104,7 @@ fn {impl Destruct for Slice<T>}::drop_in_place<T>(@1: *mut Slice<T>)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::<slice>::{impl Destruct for Slice<T>}
 impl<T> Destruct for Slice<T>
@@ -122,7 +122,7 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Destruct<A>,
     [@TraitClause2]: Destruct<B>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
 impl<A, B> Destruct for (A, B)

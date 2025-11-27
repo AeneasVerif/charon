@@ -93,7 +93,7 @@ where
     [@TraitClause2]: Destruct<B>,
     B : 'a,
     B : 'a,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}
 impl<'a, B> Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]

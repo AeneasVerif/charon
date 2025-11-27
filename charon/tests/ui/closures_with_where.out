@@ -132,7 +132,7 @@ fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_plac
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, K>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}
 impl<T, const K : usize> Destruct for closure<T, K>[@TraitClause0, @TraitClause1]
