@@ -161,7 +161,10 @@ Options:
           Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC
 
       --raw-boxes
-          Do not special-case the translation of `Box<T>` into a builtin ADT.
+          Do not special-case the translation of `Box<T>` into a builtin ADT
+
+      --raw-consts
+          Do not inline or evaluate constants
 
       --preset <PRESET>
           Named builtin sets of options. Currently used only for dependent projects, eveentually should be replaced with semantically-meaningful presets

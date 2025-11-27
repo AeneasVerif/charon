@@ -466,6 +466,8 @@ type cli_options = {
   no_merge_goto_chains : bool;
   no_ops_to_function_calls : bool;
   raw_boxes : bool;
+      (** Do not special-case the translation of [Box<T>] into a builtin ADT. *)
+  raw_consts : bool;  (** Do not inline or evaluate constants. *)
   preset : preset option;
       (** Named builtin sets of options. Currently used only for dependent
           projects, eveentually should be replaced with semantically-meaningful

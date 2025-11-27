@@ -266,12 +266,14 @@ pub struct CliOpts {
     #[serde(default)]
     pub no_ops_to_function_calls: bool,
 
-    #[clap(
-        long = "raw-boxes",
-        help = "Do not special-case the translation of `Box<T>` into a builtin ADT."
-    )]
+    /// Do not special-case the translation of `Box<T>` into a builtin ADT.
+    #[clap(long)]
     #[serde(default)]
     pub raw_boxes: bool,
+    /// Do not inline or evaluate constants.
+    #[clap(long)]
+    #[serde(default)]
+    pub raw_consts: bool,
 
     /// Named builtin sets of options. Currently used only for dependent projects, eveentually
     /// should be replaced with semantically-meaningful presets.
@@ -334,6 +336,7 @@ impl CliOpts {
                 Preset::RawMir => {
                     self.extract_opaque_bodies = true;
                     self.raw_boxes = true;
+                    self.raw_consts = true;
                     self.ullbc = true;
                 }
                 Preset::Aeneas => {
@@ -487,6 +490,8 @@ pub struct TranslateOptions {
     pub print_built_llbc: bool,
     /// Don't special-case the translation of `Box<T>`
     pub raw_boxes: bool,
+    /// Don't inline or evaluate constants.
+    pub raw_consts: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
@@ -580,6 +585,7 @@ impl TranslateOptions {
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             raw_boxes: options.raw_boxes,
+            raw_consts: options.raw_consts,
             remove_associated_types,
             translate_all_methods: options.translate_all_methods,
             desugar_drops: options.desugar_drops,
