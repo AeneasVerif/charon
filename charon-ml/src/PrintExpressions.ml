@@ -135,7 +135,7 @@ and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   | CTraitConst (trait_ref, const_name) ->
       let trait_ref = trait_ref_to_string env trait_ref in
       trait_ref ^ const_name
-  | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
+  | CFnDef fn_ptr -> fn_ptr_to_string env fn_ptr
   | CRawMemory bytes ->
       "RawMemory([" ^ String.concat ", " (List.map string_of_int bytes) ^ "])"
   | COpaque reason -> "Opaque(" ^ reason ^ ")"

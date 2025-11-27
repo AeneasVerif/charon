@@ -1166,8 +1166,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 RefKind::Shared => write!(f, "&raw const {}", cv.with_ctx(ctx)),
             },
             ConstantExprKind::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
-            ConstantExprKind::FnPtr(fp) => {
+            ConstantExprKind::FnDef(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
+            }
+            ConstantExprKind::FnPtr(fp) => {
+                write!(f, "fnptr({})", fp.with_ctx(ctx))
             }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
             ConstantExprKind::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),

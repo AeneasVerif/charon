@@ -198,7 +198,7 @@ and constant_expr_kind =
           Remark: trait constants can not be used in types, they are necessarily
           values. *)
   | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
-  | CFnPtr of fn_ptr  (** Function pointer *)
+  | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
   | CRawMemory of int list
       (** Raw memory value obtained from constant evaluation. Used when a more
           structured representation isn't possible (e.g. for unions) or just
