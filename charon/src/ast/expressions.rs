@@ -517,6 +517,8 @@ pub enum ConstantExprKind {
     Adt(Option<VariantId>, Vec<ConstantExpr>),
     #[charon::opaque]
     Array(Vec<ConstantExpr>),
+    #[charon::opaque]
+    Slice(Vec<ConstantExpr>),
     /// The value is a top-level constant/static.
     ///
     /// We eliminate this case in a micro-pass.
