@@ -181,16 +181,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 into.trait_type_constraints.push(pred);
             }
             ClauseKind::ConstArgHasType(..) => {
-                // I don't really understand that one. Why don't they put
-                // the type information in the const generic parameters
-                // directly? For now we just ignore it.
+                // These are used for trait resolution to get access to the type of const generics.
+                // We don't need them.
             }
-            ClauseKind::WellFormed(_) => {
-                raise_error!(self, span, "Well-formedness clauses are unsupported")
+            ClauseKind::HostEffect(..) => {
+                // These are used for `const Trait` clauses. Part of the `const_traits` unstable
+                // features. We ignore them for now.
             }
-            kind => {
-                raise_error!(self, span, "Unsupported clause: {:?}", kind)
+            ClauseKind::WellFormed(..) | ClauseKind::ConstEvaluatable(..) => {
+                // This is e.g. a clause `[(); N+1]:` (without anything after the `:`). This is
+                // used to require that the fallible `N+1` expression succeeds, so that it can be
+                // used at the type level. Part of the `generic_const_exprs` unstable feature.
             }
+            ClauseKind::UnstableFeature(..) => {
+                // Unclear what this means, related to stability markers which we don't care about.
+            }
+            #[expect(unreachable_patterns)]
+            kind => raise_error!(self, span, "Unsupported clause: {:?}", kind),
         }
         Ok(())
     }
