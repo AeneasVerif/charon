@@ -1,0 +1,13 @@
+error: Unexpected error: could not find the type variable O
+ --> tests/ui/monomorphization/issue-917-inline-const-with-poly-type.rs:4:31
+  |
+4 |     let f: fn(O) -> O = const { |x| x };
+  |                               ^^^^^^^^^
+
+error: Unexpected error: could not find the type variable O
+ --> tests/ui/monomorphization/issue-917-inline-const-with-poly-type.rs:4:31
+  |
+4 |     let f: fn(O) -> O = const { |x| x };
+  |                               ^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
