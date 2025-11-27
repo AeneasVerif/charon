@@ -266,8 +266,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let mut tref_kind = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        let var = self.lookup_clause_var(span, *index)?;
-                        TraitRefKind::Clause(var)
+                        match self.lookup_clause_var(span, *index) {
+                            Ok(var) => TraitRefKind::Clause(var),
+                            Err(err) => TraitRefKind::Unknown(err.msg),
+                        }
                     }
                     _ => unreachable!(),
                 };

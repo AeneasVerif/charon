@@ -129,8 +129,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ConstantExprKind::Ptr(rk, Box::new(arg))
             }
             hax::ConstantExprKind::ConstRef { id } => {
-                let var = self.lookup_const_generic_var(span, id)?;
-                ConstantExprKind::Var(var)
+                match self.lookup_const_generic_var(span, id) {
+                    Ok(var) => ConstantExprKind::Var(var),
+                    Err(err) => ConstantExprKind::Opaque(err.msg),
+                }
             }
             hax::ConstantExprKind::FnPtr(item) => {
                 let fn_ptr = self

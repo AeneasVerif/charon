@@ -17,13 +17,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ReErased => Ok(Region::Erased),
             ReStatic => Ok(Region::Static),
             ReBound(hax::BoundVarIndexKind::Bound(id), br) => {
-                let var = self.lookup_bound_region(span, *id, br.var)?;
-                Ok(Region::Var(var))
+                Ok(match self.lookup_bound_region(span, *id, br.var) {
+                    Ok(var) => Region::Var(var),
+                    Err(_) => Region::Erased,
+                })
             }
-            ReEarlyParam(region) => {
-                let var = self.lookup_early_region(span, region)?;
-                Ok(Region::Var(var))
-            }
+            ReEarlyParam(region) => Ok(match self.lookup_early_region(span, region) {
+                Ok(var) => Region::Var(var),
+                Err(_) => Region::Erased,
+            }),
             ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
                 raise_error!(
@@ -182,11 +184,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Note that if we are using this function to translate a field
                 // type in a type definition, it should actually map to a type
                 // parameter.
-                trace!("Param");
-
-                // Retrieve the translation of the substituted type:
-                let var = self.lookup_type_var(span, param)?;
-                TyKind::TypeVar(var)
+                match self.lookup_type_var(span, param) {
+                    Ok(var) => TyKind::TypeVar(var),
+                    Err(err) => TyKind::Error(err.msg),
+                }
             }
 
             hax::TyKind::Foreign(item) => {
