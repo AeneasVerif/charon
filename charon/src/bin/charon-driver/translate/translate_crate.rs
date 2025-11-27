@@ -579,7 +579,7 @@ pub fn translate<'tcx, 'ctx>(
         tcx,
         hax::options::Options {
             item_ref_use_concrete_impl: true,
-            inline_anon_consts: true,
+            inline_anon_consts: !translate_options.raw_consts,
             bounds_options: hax::options::BoundsOptions {
                 resolve_destruct: translate_options.add_destruct_bounds,
                 prune_sized: cli_options.hide_marker_traits,

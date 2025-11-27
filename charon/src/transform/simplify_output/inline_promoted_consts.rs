@@ -6,6 +6,9 @@ use crate::{ids::Generator, ullbc_ast::*};
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        if ctx.options.raw_consts {
+            return;
+        }
         // Currently the only anon consts that are not already evaluated are promoted consts. If
         // that changes, we'll have to restrict this pass to the consts that can be inlined into a
         // body.

@@ -10,18 +10,16 @@ error: Item `test_crate::foo` caused errors; ignoring.
 14 | fn foo<const X: Foo>() -> Foo {
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Well-formedness clauses are unsupported
-  --> tests/ui/unsupported/advanced-const-generics.rs:20:5
+error: assertion failure: "global_ref.generics.is_empty()"
+  --> tests/ui/unsupported/advanced-const-generics.rs:22:26
    |
-20 |     [(); N + 1]:,
-   |     ^^^^^^^^^^^
+22 |     let _: [(); N + 1] = [(); N + 1];
+   |                          ^^^^^^^^^^^
 
-error: Item `test_crate::bar` caused errors; ignoring.
-  --> tests/ui/unsupported/advanced-const-generics.rs:18:1
+error: assertion failure: "global_ref.generics.is_empty()"
+  --> tests/ui/unsupported/advanced-const-generics.rs:22:26
    |
-18 | / fn bar<const N: usize>()
-19 | | where
-20 | |     [(); N + 1]:,
-   | |_________________^
+22 |     let _: [(); N + 1] = [(); N + 1];
+   |                          ^^^^^^^^^^^
 
 ERROR Charon failed to translate this code (4 errors)
