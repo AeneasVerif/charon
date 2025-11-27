@@ -700,6 +700,19 @@ impl Ty {
         .into_ty()
     }
 
+    pub fn mk_array(ty: Ty, len: ConstGeneric) -> Ty {
+        TyKind::Adt(TypeDeclRef {
+            id: TypeId::Builtin(BuiltinTy::Array),
+            generics: Box::new(GenericArgs::new(
+                vec![].into(),
+                vec![ty].into(),
+                vec![len].into(),
+                vec![].into(),
+            )),
+        })
+        .into_ty()
+    }
+
     pub fn mk_slice(ty: Ty) -> Ty {
         TyKind::Adt(TypeDeclRef {
             id: TypeId::Builtin(BuiltinTy::Slice),
@@ -729,6 +742,20 @@ impl Ty {
 
     pub fn is_signed_scalar(&self) -> bool {
         matches!(self.kind(), TyKind::Literal(LiteralTy::Int(_)))
+    }
+
+    pub fn is_str(&self) -> bool {
+        match self.kind() {
+            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Str) = ty_ref.id => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_slice(&self) -> bool {
+        match self.kind() {
+            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Slice) = ty_ref.id => true,
+            _ => false,
+        }
     }
 
     /// Return true if the type is Box

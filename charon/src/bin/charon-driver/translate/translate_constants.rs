@@ -82,7 +82,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .map(|x| self.translate_constant_expr_to_constant_expr(span, x))
                     .try_collect()?;
 
-                ConstantExprKind::Array(fields)
+                if matches!(v.ty.kind(), hax::TyKind::Slice { .. }) {
+                    ConstantExprKind::Slice(fields)
+                } else {
+                    ConstantExprKind::Array(fields)
+                }
             }
             hax::ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -171,6 +175,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             ConstantExprKind::Adt(..)
             | ConstantExprKind::Array { .. }
+            | ConstantExprKind::Slice { .. }
             | ConstantExprKind::RawMemory { .. }
             | ConstantExprKind::TraitConst { .. }
             | ConstantExprKind::Ref(_)
