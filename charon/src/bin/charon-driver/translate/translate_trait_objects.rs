@@ -43,7 +43,7 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>, for_method: bool) -> T
                         .into_ty()
                 } else {
                     self.new_self.clone().expect(
-                        "Found unexpected `Self` 
+                        "Found unexpected `Self`
                         type when constructing vtable",
                     )
                 })
@@ -614,7 +614,7 @@ impl ItemTransCtx<'_, '_> {
                 let shim_ref = self
                     .translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?
                     .erase();
-                ConstantExprKind::FnPtr(shim_ref)
+                ConstantExprKind::FnDef(shim_ref)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => ConstantExprKind::Opaque(
                 "shim for default methods \
@@ -763,7 +763,7 @@ impl ItemTransCtx<'_, '_> {
         let drop_shim =
             self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
 
-        mk_field(ConstantExprKind::FnPtr(drop_shim));
+        mk_field(ConstantExprKind::FnDef(drop_shim));
 
         for item in items {
             self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;

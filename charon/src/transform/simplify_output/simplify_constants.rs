@@ -32,7 +32,7 @@ fn transform_constant_expr(
         | ConstantExprKind::Var(_)
         | ConstantExprKind::RawMemory(..)
         | ConstantExprKind::TraitConst(..)
-        | ConstantExprKind::FnPtr(..)
+        | ConstantExprKind::FnDef(..)
         | ConstantExprKind::Opaque(_) => {
             // Nothing to do
             // TODO: for trait const: might come from a top-level impl, so we might
@@ -122,6 +122,22 @@ fn transform_constant_expr(
             );
             let ty = tref.generics.types[0].clone();
             Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
+        }
+        ConstantExprKind::FnPtr(fptr) => {
+            let TyKind::FnPtr(sig) = val.ty.kind() else {
+                unreachable!("FnPtr constant must have FnPtr type");
+            };
+            let from_ty =
+                TyKind::FnDef(sig.clone().map(|_| fptr.clone().move_under_binder())).into_ty();
+            let to_ty = TyKind::FnPtr(sig.clone()).into_ty();
+
+            Rvalue::UnaryOp(
+                UnOp::Cast(CastKind::FnPtr(from_ty.clone(), to_ty)),
+                Operand::Const(Box::new(ConstantExpr {
+                    kind: ConstantExprKind::FnDef(fptr),
+                    ty: from_ty,
+                })),
+            )
         }
     };
     Operand::Move(ctx.rval_to_place(rval, val.ty))

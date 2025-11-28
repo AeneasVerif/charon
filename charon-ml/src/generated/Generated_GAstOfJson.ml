@@ -565,9 +565,9 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Var", var) ] ->
         let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
         Ok (CVar var)
-    | `Assoc [ ("FnPtr", fn_ptr) ] ->
-        let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
-        Ok (CFnPtr fn_ptr)
+    | `Assoc [ ("FnDef", fn_def) ] ->
+        let* fn_def = fn_ptr_of_json ctx fn_def in
+        Ok (CFnDef fn_def)
     | `Assoc [ ("RawMemory", raw_memory) ] ->
         let* raw_memory = list_of_json int_of_json ctx raw_memory in
         Ok (CRawMemory raw_memory)
