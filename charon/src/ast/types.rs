@@ -1,5 +1,5 @@
+use crate::ast::*;
 use crate::ids::Vector;
-use crate::{ast::*, common::hash_consing::HashConsed};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
