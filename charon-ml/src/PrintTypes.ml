@@ -196,6 +196,11 @@ and fun_decl_id_to_string (env : 'a fmt_env) (id : FunDeclId.id) : string =
   | None -> fun_decl_id_to_pretty_string id
   | Some def -> name_to_string env def.item_meta.name
 
+and fun_decl_ref_to_string (env : 'a fmt_env) (fn : fun_decl_ref) : string =
+  let fun_id = fun_decl_id_to_string env fn.id in
+  let generics = generic_args_to_string env fn.generics in
+  fun_id ^ generics
+
 and global_decl_id_to_string env def_id =
   match GlobalDeclId.Map.find_opt def_id env.crate.global_decls with
   | None -> global_decl_id_to_pretty_string def_id
