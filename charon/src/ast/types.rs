@@ -796,7 +796,6 @@ pub struct Ty(pub HashConsed<TyKind>);
     DriveMut,
 )]
 #[charon::variants_prefix("T")]
-#[charon::rename("Ty")]
 pub enum TyKind {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
