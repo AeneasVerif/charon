@@ -53,23 +53,24 @@ mod intern_table {
     static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> = LazyLock::new(|| Default::default());
 
     pub fn intern<T: HashConsable>(inner: T) -> HashConsed<T> {
-        if INTERNED.read().unwrap().get::<T>().is_none() {
-            INTERNED.write().unwrap().insert::<T>(IndexSet::default());
-        }
-        let read_guard = INTERNED.read().unwrap();
-        let arc = if let Some(arc) = (*read_guard).get::<T>().unwrap().get(&inner) {
+        // Fast read-only check.
+        #[expect(irrefutable_let_patterns)] // https://github.com/rust-lang/rust/issues/139369
+        let arc = if let read_guard = INTERNED.read().unwrap()
+            && let Some(set) = read_guard.get::<T>()
+            && let Some(arc) = set.get(&inner)
+        {
             arc.clone()
         } else {
-            drop(read_guard);
-            let arc: Arc<T> = Arc::new(inner);
-            std::thread::sleep(std::time::Duration::from_millis(42)); // Make the TOCTOU visible
-            INTERNED
-                .write()
-                .unwrap()
-                .get_mut::<T>()
-                .unwrap()
-                .insert(arc.clone());
-            arc
+            // Concurrent access is possible right here, so we have to check everything again.
+            let mut write_guard = INTERNED.write().unwrap();
+            let set: &mut IndexSet<Arc<T>> = write_guard.or_default::<T>();
+            if let Some(arc) = set.get(&inner) {
+                arc.clone()
+            } else {
+                let arc: Arc<T> = Arc::new(inner);
+                set.insert(arc.clone());
+                arc
+            }
         };
         HashConsed(HashByAddr(arc))
     }
