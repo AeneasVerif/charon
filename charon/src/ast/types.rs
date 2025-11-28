@@ -534,9 +534,9 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
-    /// The discriminant value outputted by `std::mem::discriminant` for this variant.
-    /// This can be different than the discriminant stored in memory (called `tag`).
-    /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
+    /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
+    /// different than the value stored in memory (called `tag`). That one is described by
+    /// [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: Literal,
 }
 

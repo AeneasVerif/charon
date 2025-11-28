@@ -975,8 +975,8 @@ and variant = {
   fields : field list;
   discriminant : literal;
       (** The discriminant value outputted by [std::mem::discriminant] for this
-          variant. This can be different than the discriminant stored in memory
-          (called [tag]). That one is described by [[DiscriminantLayout]] and
+          variant. This can be different than the value stored in memory (called
+          [tag]). That one is described by [[DiscriminantLayout]] and
           [[TagEncoding]]. *)
 }
 
