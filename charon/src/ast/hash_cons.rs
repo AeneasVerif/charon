@@ -62,6 +62,7 @@ mod intern_table {
         } else {
             drop(read_guard);
             let arc: Arc<T> = Arc::new(inner);
+            std::thread::sleep(std::time::Duration::from_millis(42)); // Make the TOCTOU visible
             INTERNED
                 .write()
                 .unwrap()
@@ -292,6 +293,17 @@ fn test_hash_cons() {
     assert_eq!(x, y);
     let z = serde_json::from_value(serde_json::to_value(x.clone()).unwrap()).unwrap();
     assert_eq!(x, z);
+}
+
+#[test]
+fn test_hash_cons_concurrent() {
+    use itertools::Itertools;
+    let handles = (0..10)
+        .into_iter()
+        .map(|_| std::thread::spawn(|| std::hint::black_box(HashConsed::new(42u32))))
+        .collect_vec();
+    let values = handles.into_iter().map(|h| h.join().unwrap()).collect_vec();
+    assert!(values.iter().all_equal())
 }
 
 #[test]
