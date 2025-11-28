@@ -1148,6 +1148,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "ConstAdt {} [{}]", variant_id, values)
             }
+            ConstantExprKind::Union(field_id, value) => {
+                write!(f, "ConstUnion({}, {})", field_id, value.with_ctx(ctx))
+            }
             ConstantExprKind::Array(values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
