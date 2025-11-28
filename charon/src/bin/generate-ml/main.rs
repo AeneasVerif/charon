@@ -376,7 +376,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     };
 
     let branches = match &decl.kind {
-        _ if let Some(def) = ctx.manual_json_impls.get(&decl.def_id) => def.clone(),
+        _ if let Some(def) = ctx.manual_json_impls.get(&decl.def_id) => format!("| json -> {def}"),
         TypeDeclKind::Struct(fields) if fields.is_empty() => {
             build_branch(ctx, "`Null", fields, "()")
         }
@@ -1048,7 +1048,10 @@ fn generate_ml(
         // TODO: remove the need for this hack.
         ("RegionParam", "(region_id, string option) indexed_var"),
         ("TypeParam", "(type_var_id, string) indexed_var"),
-        ("HashConsed", "'a0"),
+        (
+            "HashConsed",
+            "'a0 (* Not actually hash-consed on the OCaml side *)",
+        ),
     ];
     let manual_json_impls = &[
         // Hand-written because we filter out `None` values.
@@ -1056,9 +1059,8 @@ fn generate_ml(
             "Vector",
             indoc!(
                 r#"
-                | js ->
-                    let* list = list_of_json (option_of_json arg1_of_json) ctx js in
-                    Ok (List.filter_map (fun x -> x) list)
+                let* list = list_of_json (option_of_json arg1_of_json) ctx json in
+                Ok (List.filter_map (fun x -> x) list)
                 "#
             ),
         ),
@@ -1067,20 +1069,23 @@ fn generate_ml(
             "FileId",
             indoc!(
                 r#"
-                | json ->
-                    let* file_id = FileId.id_of_json ctx json in
-                    let file = FileId.Map.find file_id ctx in
-                    Ok file
+                let* file_id = FileId.id_of_json ctx json in
+                let file = FileId.Map.find file_id ctx.id_to_file_map in
+                Ok file
                 "#,
             ),
         ),
         (
             "HashConsed",
-            indoc!(
-                r#"
-                | json -> arg0_of_json ctx json
-                "#,
-            ),
+            r#"Error "use `hash_consed_val_of_json` instead""#,
+        ), // Not actually used
+        (
+            "Ty",
+            "hash_consed_val_of_json ctx.ty_hashcons_map ty_kind_of_json ctx json",
+        ),
+        (
+            "TraitRef",
+            "hash_consed_val_of_json ctx.tref_hashcons_map trait_ref_contents_of_json ctx json",
         ),
     ];
     // Types for which we don't want to generate a type at all.
@@ -1088,7 +1093,6 @@ fn generate_ml(
         "ItemOpacity",
         "PredicateOrigin",
         "TraitTypeConstraintId",
-        "Ty",
         "Vector",
     ];
     // Types that we don't want visitors to go into.
@@ -1104,7 +1108,6 @@ fn generate_ml(
     let manually_implemented: HashSet<_> = [
         "ItemOpacity",
         "PredicateOrigin",
-        "Ty", // We exclude it since `TyKind` is renamed to `ty`
         "Body",
         "FunDecl",
         "TranslatedCrate",

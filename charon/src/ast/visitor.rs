@@ -12,7 +12,7 @@
 /// Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
 use std::{any::Any, collections::HashMap};
 
-use crate::{ast::*, common::hash_consing::*};
+use crate::ast::*;
 use derive_generic_visitor::*;
 use index_vec::Idx;
 use indexmap::IndexMap;
