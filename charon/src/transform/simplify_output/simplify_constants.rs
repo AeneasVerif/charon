@@ -105,6 +105,14 @@ fn transform_constant_expr(
             let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
             Rvalue::Aggregate(aggregate_kind, fields)
         }
+        ConstantExprKind::Union(field, value) => {
+            let value = transform_constant_expr(ctx, value);
+
+            // Build an `Aggregate` rvalue.
+            let tref = val.ty.kind().as_adt().unwrap();
+            let aggregate_kind = AggregateKind::Adt(tref.clone(), None, Some(field));
+            Rvalue::Aggregate(aggregate_kind, vec![value])
+        }
         ConstantExprKind::Array(fields) => {
             let fields = fields
                 .into_iter()
