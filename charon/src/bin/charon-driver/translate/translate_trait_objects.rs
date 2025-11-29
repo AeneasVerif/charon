@@ -347,6 +347,42 @@ impl ItemTransCtx<'_, '_> {
         Ok(fields)
     }
 
+    pub fn field_for_vtable_supertrait(
+        &mut self,
+        tref: &hax::ItemRef,
+        supertrait: &hax::TraitRef,
+    ) -> Result<Option<FieldId>, Error> {
+        let trait_def = self.hax_def(tref)?;
+
+        let (hax::FullDefKind::Trait {
+            implied_predicates, ..
+        }
+        | hax::FullDefKind::TraitAlias {
+            implied_predicates, ..
+        }) = trait_def.kind()
+        else {
+            unreachable!("Non-trait passed to `field_for_vtable_supertrait`")
+        };
+
+        let fields_list = self.vtable_fields(&*trait_def, implied_predicates)?;
+        for (i, field) in fields_list.into_iter().enumerate() {
+            if let VTableField::SuperTrait(clause) = field {
+                let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
+                    unreachable!()
+                };
+                // FIXME: this is very probably wrong
+                if pred.trait_ref.def_id == supertrait.def_id {
+                    return Ok(Some(FieldId::new(i)));
+                }
+            }
+        }
+
+        unreachable!(
+            "Could not find vtable field for supertrait {:?} in trait {:?}",
+            supertrait, tref
+        )
+    }
+
     /// This is a temporary check until we support `dyn Trait` with `--monomorphize`.
     pub(crate) fn check_no_monomorphize(&self, span: Span) -> Result<(), Error> {
         if self.monomorphize() {

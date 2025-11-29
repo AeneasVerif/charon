@@ -300,10 +300,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
                         }
                     }
                     UnsizingMetadata::VTableNested(tref, field) => {
-                        write!(f, ", {} at ", tref.with_ctx(ctx))?;
+                        write!(f, ", {} ", tref.with_ctx(ctx))?;
                         match field {
-                            Some(field) => write!(f, "{}", field.index())?,
-                            None => write!(f, "?")?,
+                            Some(field) => write!(f, "at {}", field.index())?,
+                            None => write!(f, "inplace")?,
                         }
                     }
                     UnsizingMetadata::Unknown => {}

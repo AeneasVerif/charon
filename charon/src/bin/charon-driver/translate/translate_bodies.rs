@@ -597,11 +597,19 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             hax::UnsizingMetadata::NestedVTable {
                                 impl_expr,
-                                from_impl_expr: _,
-                                reindexes: _,
+                                from_impl_expr,
+                                reindexes,
                             } => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                UnsizingMetadata::VTableNested(tref, None)
+                                let field = if *reindexes {
+                                    self.field_for_vtable_supertrait(
+                                        &from_impl_expr.r#trait.value,
+                                        &impl_expr.r#trait.value,
+                                    )?
+                                } else {
+                                    None
+                                };
+                                UnsizingMetadata::VTableNested(tref, field)
                             }
                             hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
