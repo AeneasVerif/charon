@@ -566,28 +566,50 @@ impl BodyTransCtx<'_, '_, '_> {
                                     self.translate_constant_expr_to_const_generic(span, len)?;
                                 UnsizingMetadata::Length(len)
                             }
-                            hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                            hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                match &impl_expr.r#impl {
+                                let vtable = match &impl_expr.r#impl {
                                     hax::ImplExprAtom::Concrete(tref) => {
                                         // Ensure the vtable type is translated.
-                                        let _: GlobalDeclId = self.register_item(
+                                        let id = self.register_item(
                                             span,
                                             tref,
                                             TransItemSourceKind::VTableInstance(
                                                 TraitImplSource::Normal,
                                             ),
                                         );
+                                        Some(GlobalDeclRef {
+                                            // FIXME: this is wrong, I believe
+                                            generics: Box::new(GenericArgs::empty()),
+                                            id,
+                                        })
                                     }
                                     // TODO(dyn): more ways of registering vtable instance?
                                     _ => {
                                         trace!(
                                             "impl_expr not triggering registering vtable: {:?}",
                                             impl_expr
-                                        )
+                                        );
+                                        None
                                     }
                                 };
-                                UnsizingMetadata::VTablePtr(tref)
+                                UnsizingMetadata::VTableDirect(tref, vtable)
+                            }
+                            hax::UnsizingMetadata::NestedVTable {
+                                impl_expr,
+                                from_impl_expr,
+                                reindexes,
+                            } => {
+                                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                                let field = if *reindexes {
+                                    self.field_for_vtable_supertrait(
+                                        &from_impl_expr.r#trait.value,
+                                        &impl_expr.r#trait.value,
+                                    )?
+                                } else {
+                                    None
+                                };
+                                UnsizingMetadata::VTableNested(tref, field)
                             }
                             hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
