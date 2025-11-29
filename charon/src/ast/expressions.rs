@@ -222,7 +222,8 @@ pub enum CastKind {
 #[charon::variants_prefix("Meta")]
 pub enum UnsizingMetadata {
     Length(ConstGeneric),
-    VTablePtr(TraitRef),
+    VTableDirect(TraitRef, Option<GlobalDeclRef>),
+    VTableNested(TraitRef, Option<FieldId>),
     Unknown,
 }
 
