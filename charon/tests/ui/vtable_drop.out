@@ -286,7 +286,7 @@ where
     @6 := &two-phase-mut *(x@2) with_metadata(copy (x@2.metadata))
     storage_live(@7)
     @7 := &*(arg@1)
-    @0 := (move (*(@6.metadata)).method_modify)(move (@6), move (@7))
+    @0 := (copy ((*(@6.metadata)).method_modify))(move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] @5

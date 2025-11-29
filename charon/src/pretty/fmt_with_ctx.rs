@@ -428,7 +428,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnOperand {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             FnOperand::Regular(func) => write!(f, "{}", func.with_ctx(ctx)),
-            FnOperand::Move(p) => write!(f, "(move {})", p.with_ctx(ctx)),
+            FnOperand::Dynamic(op) => write!(f, "({})", op.with_ctx(ctx)),
         }
     }
 }

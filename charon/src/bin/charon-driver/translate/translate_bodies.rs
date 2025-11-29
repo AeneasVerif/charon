@@ -1084,9 +1084,9 @@ impl BodyTransCtx<'_, '_, '_> {
                     FnOperand::Regular(fn_ptr)
                 }
             }
-            hax::FunOperand::DynamicMove(p) => {
+            hax::FunOperand::Dynamic(op) => {
                 // Call to a local function pointer
-                let p = self.translate_place(span, p)?;
+                let op = self.translate_operand(span, op)?;
 
                 // TODO: we may have a problem here because as we don't
                 // know which function is being called, we may not be
@@ -1094,7 +1094,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 // this is rather an issue for the statement which creates
                 // the function pointer, by refering to a top-level function
                 // for instance.
-                FnOperand::Move(p)
+                FnOperand::Dynamic(op)
             }
         };
         let args = self.translate_arguments(span, args)?;

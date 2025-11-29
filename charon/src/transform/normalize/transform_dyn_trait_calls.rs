@@ -116,7 +116,7 @@ fn transform_dyn_trait_call(
         );
 
     // Transform the original call to use the function pointer
-    call.func = FnOperand::Move(method_field_place);
+    call.func = FnOperand::Dynamic(Operand::Copy(method_field_place));
 
     Ok(())
 }

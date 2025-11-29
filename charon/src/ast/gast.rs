@@ -386,8 +386,8 @@ pub struct TraitAssocTyImpl {
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
-    /// Use of a function pointer stored in a local variable
-    Move(Place),
+    /// Use of a function pointer.
+    Dynamic(Operand),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
