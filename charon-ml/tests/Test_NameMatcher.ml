@@ -147,7 +147,7 @@ module PatternTest = struct
               (fun call ->
                 match call.func with
                 | FnOpRegular fn_ptr -> fn_ptr
-                | FnOpMove _ ->
+                | FnOpDynamic _ ->
                     failwith
                       "Indirect calls are unsupported un name matcher tests")
               calls
