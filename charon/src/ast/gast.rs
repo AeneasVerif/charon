@@ -6,10 +6,11 @@ use crate::ullbc_ast;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::EnumAsGetters;
 use macros::{EnumIsA, EnumToGetters};
-use serde::{Deserialize, Serialize};
+use serde_state::DeserializeState;
+use serde_state::SerializeState;
 
 /// A variable
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Local {
     /// Unique index identifying the variable
     pub index: LocalId,
@@ -27,7 +28,7 @@ pub type Var = Local;
 pub type VarId = LocalId;
 
 /// The local variables of a body.
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Default, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Locals {
     /// The number of local variables used for the input arguments.
     #[drive(skip)]
@@ -43,7 +44,7 @@ pub struct Locals {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
@@ -59,7 +60,15 @@ pub struct GExprBody<T> {
 
 /// The body of a function.
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumAsGetters, EnumToGetters,
+    Debug,
+    Clone,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    EnumToGetters,
 )]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
@@ -79,6 +88,7 @@ pub enum Body {
     Missing,
     /// We encountered an error while translating this body.
     #[drive(skip)]
+    #[serde_state(stateless)]
     Error(Error),
 }
 
@@ -103,7 +113,7 @@ pub enum Body {
 ///     fn test(...) { ... } // regular
 /// }
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, PartialEq, Eq)]
 #[charon::variants_suffix("Item")]
 pub enum ItemSource {
     /// This item stands on its own.
@@ -152,7 +162,7 @@ pub enum ItemSource {
 }
 
 /// A function definition
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct FunDecl {
     #[drive(skip)]
     pub def_id: FunDeclId,
@@ -173,14 +183,14 @@ pub struct FunDecl {
 }
 
 /// Reference to a function declaration.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct FunDeclRef {
     pub id: FunDeclId,
     /// Generic arguments passed to the function.
     pub generics: BoxedArgs,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub enum GlobalKind {
     /// A static.
     Static,
@@ -194,7 +204,7 @@ pub enum GlobalKind {
 }
 
 /// A global variable definition (constant or static).
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct GlobalDecl {
     #[drive(skip)]
     pub def_id: GlobalDeclId,
@@ -213,7 +223,7 @@ pub struct GlobalDecl {
 }
 
 /// Reference to a global declaration.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct GlobalDeclRef {
     pub id: GlobalDeclId,
     pub generics: BoxedArgs,
@@ -223,8 +233,8 @@ pub struct GlobalDeclRef {
     Debug,
     Clone,
     Copy,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
     PartialEq,
@@ -234,6 +244,7 @@ pub struct GlobalDeclRef {
     Ord,
 )]
 #[drive(skip)]
+#[serde_state(stateless)]
 pub struct TraitItemName(pub ustr::Ustr);
 
 /// A trait **declaration**.
@@ -269,7 +280,7 @@ pub struct TraitItemName(pub ustr::Ustr);
 /// Of course, this forbids other useful use cases such as visitors implemented
 /// by means of traits.
 #[allow(clippy::type_complexity)]
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitDecl {
     #[drive(skip)]
     pub def_id: TraitDeclId,
@@ -309,7 +320,7 @@ pub struct TraitDecl {
 }
 
 /// An associated constant in a trait.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocConst {
     pub name: TraitItemName,
     pub ty: Ty,
@@ -317,7 +328,7 @@ pub struct TraitAssocConst {
 }
 
 /// An associated type in a trait.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocTy {
     pub name: TraitItemName,
     pub default: Option<Ty>,
@@ -326,7 +337,7 @@ pub struct TraitAssocTy {
 }
 
 /// A trait method.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitMethod {
     pub name: TraitItemName,
     /// Each method declaration is represented by a function item. That function contains the
@@ -345,7 +356,7 @@ pub struct TraitMethod {
 ///   fn baz(...) { ... }
 /// }
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitImpl {
     #[drive(skip)]
     pub def_id: TraitImplId,
@@ -369,7 +380,7 @@ pub struct TraitImpl {
 }
 
 /// The value of a trait associated type.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocTyImpl {
     pub value: Ty,
     /// The `Vec` corresponds to the same `Vector` in `TraitAssocTy`. In the same way, this is
@@ -381,7 +392,7 @@ pub struct TraitAssocTyImpl {
 /// A function operand is used in function calls.
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::variants_prefix("FnOp")]
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
@@ -390,14 +401,14 @@ pub enum FnOperand {
     Dynamic(Operand),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
     pub dest: Place,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct CopyNonOverlapping {
     pub src: Operand,
     pub dst: Operand,
@@ -408,7 +419,7 @@ pub struct CopyNonOverlapping {
 /// control-flow. The two kinds of abort are:
 /// - Panic (may unwind or not depending on compilation setting);
 /// - Undefined behavior:
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub enum AbortKind {
     /// A built-in panicking function.
     Panic(Option<Name>),
@@ -421,7 +432,7 @@ pub enum AbortKind {
 /// A `Drop` statement/terminator can mean two things, depending on what MIR phase we retrieved
 /// from rustc: it could be a real drop, or it could be a "conditional drop", which is where drop
 /// may happen depending on whether the borrow-checker determines a drop is needed.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Copy, SerializeState, DeserializeState, Drive, DriveMut)]
 pub enum DropKind {
     /// A real drop. This calls `<T as Destruct>::drop_in_place(&raw mut place)` and marks the
     /// place as moved-out-of. Use `--desugar-drops` to transform all such drops to an actual
@@ -454,7 +465,7 @@ pub enum DropKind {
 /// instance) to this. We then eliminate them in [crate::transform::resugar::reconstruct_fallible_operations],
 /// because they're implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
 /// [crate::transform::resugar::reconstruct_asserts].
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::rename("Assertion")]
 pub struct Assert {
     pub cond: Operand,

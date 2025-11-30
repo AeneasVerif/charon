@@ -3,11 +3,10 @@ use crate::formatter::FmtCtx;
 use crate::pretty::FmtWithCtx;
 use derive_generic_visitor::*;
 use macros::EnumIsA;
-use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, EnumIsA, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, EnumIsA, Drive, DriveMut)]
 pub enum GenericsSource {
     /// A top-level item.
     Item(ItemId),

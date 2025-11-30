@@ -8,6 +8,7 @@ use std::{
 use derive_generic_visitor::{Drive, DriveMut};
 use index_vec::Idx;
 use serde::{Deserialize, Serialize};
+use serde_state::{DeserializeState, SerializeState};
 
 use crate::{ast::*, impl_from_enum};
 
@@ -78,14 +79,14 @@ impl DeBruijnId {
     Hash,
     PartialOrd,
     Ord,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
-    Bound(DeBruijnId, Id),
+    Bound(#[serde_state(stateless)] DeBruijnId, Id),
     /// A variable attached to the outermost binder (the one on the item). As explained above, This
     /// is not used in charon internals, only as a micro-pass before exporting the crate data.
     Free(Id),
@@ -137,7 +138,7 @@ pub struct ConstGenericParam {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,

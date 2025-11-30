@@ -10,13 +10,21 @@ pub use super::llbc_ast_utils::*;
 pub use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
-use serde::{Deserialize, Serialize};
+use serde_state::{DeserializeState, SerializeState};
 
 generate_index_type!(StatementId);
 
 /// A raw statement: a statement without meta data.
 #[derive(
-    Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    Clone,
+    EnumIsA,
+    EnumToGetters,
+    EnumAsGetters,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
@@ -71,7 +79,7 @@ pub enum StatementKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
     /// Integer uniquely identifying this statement among the statmeents in the current body. To
@@ -85,7 +93,8 @@ pub struct Statement {
     pub comments_before: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
     pub statements: Vec<Statement>,
@@ -97,8 +106,8 @@ pub struct Block {
     EnumIsA,
     EnumToGetters,
     EnumAsGetters,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
     VariantName,
