@@ -1,6 +1,5 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
-use crate::common::hash_consing::HashConsed;
 use crate::ids::Vector;
 use derive_generic_visitor::*;
 use itertools::Itertools;

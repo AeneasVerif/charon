@@ -95,6 +95,22 @@ pub mod type_map {
                 .insert(TypeId::of::<T>(), Box::new(val))
                 .and_then(|val: Box<dyn Mappable>| (val as Box<dyn Any>).downcast().ok())
         }
+
+        pub fn or_insert_with<T: Mappable>(
+            &mut self,
+            f: impl FnOnce() -> M::Value<T>,
+        ) -> &mut M::Value<T> {
+            if self.get::<T>().is_none() {
+                self.insert(f());
+            }
+            self.get_mut::<T>().unwrap()
+        }
+        pub fn or_default<T: Mappable>(&mut self) -> &mut M::Value<T>
+        where
+            M::Value<T>: Default,
+        {
+            self.or_insert_with(|| Default::default())
+        }
     }
 
     impl<M> Default for TypeMap<M> {
@@ -104,141 +120,6 @@ pub mod type_map {
                 phantom: Default::default(),
             }
         }
-    }
-}
-
-pub mod hash_consing {
-    use derive_generic_visitor::{Drive, DriveMut, Visit, VisitMut};
-
-    use super::hash_by_addr::HashByAddr;
-    use super::type_map::{Mappable, Mapper, TypeMap};
-    use serde::{Deserialize, Serialize};
-    use std::collections::HashSet;
-    use std::hash::Hash;
-    use std::ops::{ControlFlow, Deref};
-    use std::sync::{Arc, LazyLock, RwLock};
-
-    /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
-    /// value will be stored at the same address. This makes it possible to use the pointer address
-    /// as a hash value.
-    #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
-    pub struct HashConsed<T>(HashByAddr<Arc<T>>);
-
-    impl<T> HashConsed<T> {
-        pub fn inner(&self) -> &T {
-            self.0.0.as_ref()
-        }
-    }
-
-    pub trait HashConsable = Hash + PartialEq + Eq + Clone + Mappable;
-
-    impl<T> HashConsed<T>
-    where
-        T: HashConsable,
-    {
-        pub fn new(inner: T) -> Self {
-            Self::intern(inner)
-        }
-
-        /// Clones if needed to get mutable access to the inner value.
-        pub fn with_inner_mut<R>(&mut self, f: impl FnOnce(&mut T) -> R) -> R {
-            // The value is behind a shared `Arc`, we clone it in order to mutate it.
-            let mut value = self.inner().clone();
-            let ret = f(&mut value);
-            // Re-intern the new value.
-            *self = Self::intern(value);
-            ret
-        }
-
-        /// Deduplicate the values by hashing them. This deduplication is crucial for the hashing
-        /// function to be correct. This is the only function allowed to create `Self` values.
-        fn intern(inner: T) -> Self {
-            struct InternMapper;
-            impl Mapper for InternMapper {
-                type Value<T: Mappable> = HashSet<Arc<T>>;
-            }
-            // This is a static mutable `HashSet<Arc<T>>` that records for each `T` value a unique
-            // `Arc<T>` that contains the same value. Values inside the set are hashed/compared
-            // as is normal for `T`.
-            // Once we've gotten an `Arc` out of the set however, we're sure that "T-equality"
-            // implies address-equality, hence the `HashByAddr` wrapper preserves correct equality
-            // and hashing behavior.
-            static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> =
-                LazyLock::new(|| Default::default());
-
-            if INTERNED.read().unwrap().get::<T>().is_none() {
-                INTERNED.write().unwrap().insert::<T>(HashSet::default());
-            }
-            let read_guard = INTERNED.read().unwrap();
-            let arc = if let Some(arc) = (*read_guard).get::<T>().unwrap().get(&inner) {
-                arc.clone()
-            } else {
-                drop(read_guard);
-                let arc: Arc<T> = Arc::new(inner);
-                INTERNED
-                    .write()
-                    .unwrap()
-                    .get_mut::<T>()
-                    .unwrap()
-                    .insert(arc.clone());
-                arc
-            };
-            Self(HashByAddr(arc))
-        }
-    }
-
-    impl<T> Deref for HashConsed<T> {
-        type Target = T;
-        fn deref(&self) -> &Self::Target {
-            self.inner()
-        }
-    }
-
-    impl<T: std::fmt::Debug> std::fmt::Debug for HashConsed<T> {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            // Hide the `HashByAddr` wrapper.
-            f.debug_tuple("HashConsed").field(self.inner()).finish()
-        }
-    }
-
-    /// Manual impl to make sure we re-establish sharing!
-    impl<'de, T> Deserialize<'de> for HashConsed<T>
-    where
-        T: HashConsable,
-        T: Deserialize<'de>,
-    {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de>,
-        {
-            let x: T = T::deserialize(deserializer)?;
-            Ok(Self::new(x))
-        }
-    }
-
-    impl<'s, T, V: Visit<'s, T>> Drive<'s, V> for HashConsed<T> {
-        fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
-            v.visit(self.inner())
-        }
-    }
-    /// Note: this explores the inner value mutably by cloning and re-hashing afterwards.
-    impl<'s, T, V> DriveMut<'s, V> for HashConsed<T>
-    where
-        T: HashConsable,
-        V: for<'a> VisitMut<'a, T>,
-    {
-        fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
-            self.with_inner_mut(|inner| v.visit(inner))
-        }
-    }
-
-    #[test]
-    fn test_hash_cons() {
-        let x = HashConsed::new(42u32);
-        let y = HashConsed::new(42u32);
-        assert_eq!(x, y);
-        let z = serde_json::from_value(serde_json::to_value(x.clone()).unwrap()).unwrap();
-        assert_eq!(x, z);
     }
 }
 

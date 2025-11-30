@@ -3,7 +3,6 @@
 use charon_lib::llbc_ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::error::Error;
 
 mod util;
 use util::*;
@@ -637,7 +636,7 @@ fn source_text() -> anyhow::Result<()> {
 }
 
 #[test]
-fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
+fn known_trait_method_call() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
         #[derive(Default)]
@@ -675,5 +674,39 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let ItemSource::TraitImpl { .. } = &function.src else {
         panic!()
     };
+    Ok(())
+}
+
+#[test]
+fn multiple_deserialize() -> anyhow::Result<()> {
+    // Test that deserializing deduplicated values from two different invocations of Charon works
+    // correctly. This is non-obvious because `HashConsId`s will overlap between two invocations,
+    // yet the deserialization side-table is not reset between deserializations. It's however ok
+    // because the second deserialization simply overrides the `HashConsId -> HashCons<T>` mapping
+    // from the first one. This all breaks down if someone tries to deserialize a sub-value of the
+    // whole crate of course.
+    let krate1 = translate(
+        "
+        fn foo(_: bool) {}
+        fn bar(_: bool) {}
+        ",
+    )?;
+    let krate2 = translate(
+        "
+        fn foo(_: u32) {}
+        fn bar(_: u32) {}
+        ",
+    )?;
+    let ty1_1 = krate1.fun_decls[1].signature.inputs[0].clone();
+    let ty1_2 = krate1.fun_decls[2].signature.inputs[0].clone();
+    let ty2_1 = krate2.fun_decls[1].signature.inputs[0].clone();
+    let ty2_2 = krate2.fun_decls[2].signature.inputs[0].clone();
+    assert_eq!(ty1_1.kind().as_literal(), Some(&LiteralTy::Bool));
+    assert_eq!(ty1_2, ty1_1);
+    assert_eq!(
+        ty2_1.kind().as_literal(),
+        Some(&LiteralTy::UInt(UIntTy::U32))
+    );
+    assert_eq!(ty2_2, ty2_1);
     Ok(())
 }

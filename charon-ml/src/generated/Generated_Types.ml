@@ -384,7 +384,7 @@ and global_decl_ref = { id : global_decl_id; generics : generic_args }
 (** Hash-consed data structure: a reference-counted wrapper that guarantees that
     two equal value will be stored at the same address. This makes it possible
     to use the pointer address as a hash value. *)
-and 'a0 hash_consed = 'a0
+and 'a0 hash_consed = 'a0 (* Not actually hash-consed on the OCaml side *)
 
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
@@ -547,7 +547,14 @@ and trait_type_constraint = {
   ty : ty;
 }
 
-and ty =
+(** A type.
+
+    Warning: the [DriveMut] impls of [Ty] needs to clone and re-hash the
+    modified type to maintain the hash-consing invariant. This is expensive,
+    avoid visiting types mutably when not needed. *)
+and ty = ty_kind hash_consed
+
+and ty_kind =
   | TAdt of type_decl_ref
       (** An ADT. Note that here ADTs are very general. They can be:
           - user-defined ADTs
@@ -975,8 +982,8 @@ and variant = {
   fields : field list;
   discriminant : literal;
       (** The discriminant value outputted by [std::mem::discriminant] for this
-          variant. This can be different than the discriminant stored in memory
-          (called [tag]). That one is described by [[DiscriminantLayout]] and
+          variant. This can be different than the value stored in memory (called
+          [tag]). That one is described by [[DiscriminantLayout]] and
           [[TagEncoding]]. *)
 }
 

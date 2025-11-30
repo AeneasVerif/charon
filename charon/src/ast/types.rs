@@ -1,5 +1,5 @@
+use crate::ast::*;
 use crate::ids::Vector;
-use crate::{ast::*, common::hash_consing::HashConsed};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -534,9 +534,9 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
-    /// The discriminant value outputted by `std::mem::discriminant` for this variant.
-    /// This can be different than the discriminant stored in memory (called `tag`).
-    /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
+    /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
+    /// different than the value stored in memory (called `tag`). That one is described by
+    /// [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: Literal,
 }
 
@@ -796,7 +796,6 @@ pub struct Ty(pub HashConsed<TyKind>);
     DriveMut,
 )]
 #[charon::variants_prefix("T")]
-#[charon::rename("Ty")]
 pub enum TyKind {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:

@@ -459,6 +459,7 @@ type cli_options = {
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Print the errors as warnings *)
   no_serialize : bool;
+  no_dedup_serialized_ast : bool;
   print_original_ullbc : bool;
   print_ullbc : bool;
   print_built_llbc : bool;
