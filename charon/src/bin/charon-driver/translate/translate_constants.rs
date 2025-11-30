@@ -134,7 +134,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     Err(err) => ConstantExprKind::Opaque(err.msg),
                 }
             }
-            hax::ConstantExprKind::FnDef(item) | hax::ConstantExprKind::FnPtr(item) => {
+            hax::ConstantExprKind::FnDef(item) => {
+                let fn_ptr = self
+                    .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
+                    .erase();
+                ConstantExprKind::FnDef(fn_ptr)
+            }
+            hax::ConstantExprKind::FnPtr(item) => {
                 let fn_ptr = self
                     .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
                     .erase();
@@ -176,6 +182,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | ConstantExprKind::Ref(_)
             | ConstantExprKind::Ptr(..)
             | ConstantExprKind::FnPtr { .. }
+            | ConstantExprKind::FnDef { .. }
             | ConstantExprKind::Opaque(_)
             | ConstantExprKind::PtrNoProvenance(..) => {
                 raise_error!(self, span, "Unexpected constant generic: {:?}", kind)

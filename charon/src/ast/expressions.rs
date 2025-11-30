@@ -562,7 +562,12 @@ pub enum ConstantExprKind {
     Ptr(RefKind, Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericDbVar),
-    /// Function pointer
+    /// Function definition -- this is a ZST constant
+    FnDef(FnPtr),
+    /// A function pointer to a function item; this is an actual pointer to that function item.
+    ///
+    /// We eliminate this case in a micro-pass.
+    #[charon::opaque]
     FnPtr(FnPtr),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///

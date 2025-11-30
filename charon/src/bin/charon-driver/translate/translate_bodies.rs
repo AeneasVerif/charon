@@ -546,7 +546,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         operand = Operand::Const(Box::new(ConstantExpr {
-                            kind: ConstantExprKind::FnPtr(fn_ptr),
+                            kind: ConstantExprKind::FnDef(fn_ptr),
                             ty: src_ty.clone(),
                         }));
                         CastKind::FnPtr(src_ty, tgt_ty)
