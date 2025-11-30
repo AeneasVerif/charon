@@ -783,7 +783,10 @@ impl ItemTransCtx<'_, '_> {
                         // declares them.
                         let id = self.register_and_enqueue(item_span, item_src);
                         let mut generics = self.the_only_binder().params.identity_args();
-                        generics.trait_refs.push(self_trait_ref.clone());
+                        // We add an extra `Self: Trait` clause to default consts.
+                        if !self.monomorphize() {
+                            generics.trait_refs.push(self_trait_ref.clone());
+                        }
                         GlobalDeclRef {
                             id,
                             generics: Box::new(generics),
@@ -1045,7 +1048,10 @@ impl ItemTransCtx<'_, '_> {
                         Provided { .. } => self.the_only_binder().params.identity_args(),
                         _ => {
                             let mut generics = implemented_trait.generics.as_ref().clone();
-                            generics.trait_refs.push(self_predicate.clone());
+                            // For default consts, we add an extra `Self` predicate.
+                            if !self.monomorphize() {
+                                generics.trait_refs.push(self_predicate.clone());
+                            }
                             generics
                         }
                     };
