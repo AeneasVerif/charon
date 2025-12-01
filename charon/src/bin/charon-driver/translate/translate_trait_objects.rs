@@ -107,44 +107,36 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-    pub fn translate_existential_predicates(
+    pub fn translate_dyn_binder<T, U>(
         &mut self,
         span: Span,
-        self_ty: &hax::ParamTy,
-        preds: &hax::GenericPredicates,
-        region: &hax::Region,
-    ) -> Result<DynPredicate, Error> {
+        binder: &hax::DynBinder<T>,
+        f: impl FnOnce(&mut Self, Ty, &T) -> Result<U, Error>,
+    ) -> Result<Binder<U>, Error> {
         // This is a robustness check: the current version of Rustc
         // accepts at most one method-bearing predicate in a trait object.
         // But things may change in the future.
-        self.check_at_most_one_pred_has_methods(span, preds)?;
-
-        // Translate the region outside the binder.
-        let region = self.translate_region(span, region)?;
-        let region = region.move_under_binder();
+        self.check_at_most_one_pred_has_methods(span, &binder.predicates)?;
 
         // Add a binder that contains the existentially quantified type.
         self.binding_levels.push(BindingLevel::new(true));
 
         // Add the existentially quantified type.
-        let ty_id = self
-            .innermost_binder_mut()
-            .push_type_var(self_ty.index, self_ty.name.clone());
+        let ty_id = self.innermost_binder_mut().push_type_var(
+            binder.existential_ty.index,
+            binder.existential_ty.name.clone(),
+        );
         let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
+        let val = f(self, ty, &binder.val)?;
 
-        self.innermost_binder_mut()
-            .params
-            .types_outlive
-            .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
-        self.register_predicates(preds, PredicateOrigin::Dyn)?;
+        self.register_predicates(&binder.predicates, PredicateOrigin::Dyn)?;
 
         let params = self.binding_levels.pop().unwrap().params;
-        let binder = Binder {
+        Ok(Binder {
             params: params,
-            skip_binder: ty,
+            skip_binder: val,
             kind: BinderKind::Dyn,
-        };
-        Ok(DynPredicate { binder })
+        })
     }
 }
 

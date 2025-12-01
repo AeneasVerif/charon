@@ -571,7 +571,7 @@ impl BodyTransCtx<'_, '_, '_> {
                                     self.translate_constant_expr_to_const_generic(span, len)?;
                                 UnsizingMetadata::Length(len)
                             }
-                            hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                            hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
                                 match &impl_expr.r#impl {
                                     hax::ImplExprAtom::Concrete(tref) => {
@@ -594,7 +594,8 @@ impl BodyTransCtx<'_, '_, '_> {
                                 };
                                 UnsizingMetadata::VTablePtr(tref)
                             }
-                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+                            hax::UnsizingMetadata::NestedVTable(..)
+                            | hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
                         CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }
@@ -1089,16 +1090,16 @@ impl BodyTransCtx<'_, '_, '_> {
                     FnOperand::Regular(fn_ptr)
                 }
             }
-            hax::FunOperand::DynamicMove(p) => {
+            hax::FunOperand::Dynamic(op) => {
                 // Call to a local function pointer
-                let p = self.translate_place(span, p)?;
-
-                // TODO: we may have a problem here because as we don't
-                // know which function is being called, we may not be
-                // able to filter the arguments properly... But maybe
-                // this is rather an issue for the statement which creates
-                // the function pointer, by refering to a top-level function
-                // for instance.
+                let op = self.translate_operand(span, op)?;
+                let (Operand::Move(p) | Operand::Copy(p)) = op else {
+                    raise_error!(
+                        self,
+                        span,
+                        "unsupported dynamic call to constant expression"
+                    )
+                };
                 FnOperand::Move(p)
             }
         };
