@@ -1093,14 +1093,7 @@ impl BodyTransCtx<'_, '_, '_> {
             hax::FunOperand::Dynamic(op) => {
                 // Call to a local function pointer
                 let op = self.translate_operand(span, op)?;
-                let (Operand::Move(p) | Operand::Copy(p)) = op else {
-                    raise_error!(
-                        self,
-                        span,
-                        "unsupported dynamic call to constant expression"
-                    )
-                };
-                FnOperand::Move(p)
+                FnOperand::Dynamic(op)
             }
         };
         let args = self.translate_arguments(span, args)?;

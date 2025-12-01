@@ -18,7 +18,7 @@ let item_id_to_string (id : item_id) : string =
 let fn_operand_to_string (env : 'a fmt_env) (op : fn_operand) : string =
   match op with
   | FnOpRegular func -> fn_ptr_to_string env func
-  | FnOpMove p -> "move " ^ place_to_string env p
+  | FnOpDynamic op -> "(" ^ operand_to_string env op ^ ")"
 
 let call_to_string (env : 'a fmt_env) (indent : string) (call : call) : string =
   let func = fn_operand_to_string env call.func in
