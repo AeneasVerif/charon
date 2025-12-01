@@ -64,7 +64,7 @@ where
     @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
     storage_dead(@4)
     @2 := &*(@3) with_metadata(copy (@3.metadata))
-    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), Any<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + _dyn : '_)>>(move (@2))
+    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_))>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return

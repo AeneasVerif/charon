@@ -210,11 +210,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(self_ty, preds, region) => {
+            hax::TyKind::Dynamic(dyn_binder, region) => {
                 self.check_no_monomorphize(span)?;
-                let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
-                if let hax::ClauseKind::Trait(trait_predicate) =
-                    preds.predicates[0].0.kind.hax_skip_binder_ref()
+                // Translate the region outside the binder.
+                let region = self.translate_region(span, region)?;
+
+                let binder = self.translate_dyn_binder(span, dyn_binder, |ctx, ty, ()| {
+                    let region = region.move_under_binder();
+                    ctx.innermost_binder_mut()
+                        .params
+                        .types_outlive
+                        .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
+                    Ok(ty)
+                })?;
+
+                if let hax::ClauseKind::Trait(trait_predicate) = dyn_binder.predicates.predicates[0]
+                    .0
+                    .kind
+                    .hax_skip_binder_ref()
                 {
                     // TODO(dyn): for now, we consider traits with associated types to not be dyn
                     // compatible because we don't know how to handle them; for these we skip
@@ -229,7 +242,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         );
                     }
                 }
-                TyKind::DynTrait(pred)
+                TyKind::DynTrait(DynPredicate { binder })
             }
 
             hax::TyKind::Infer(_) => {
@@ -372,11 +385,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             _ if everything_is_sized || tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
-                hax::TyKind::Dynamic(_, preds, _) => {
+                hax::TyKind::Dynamic(dyn_binder, _) => {
                     let vtable = self
                         .translate_region_binder(
                             span,
-                            &preds.predicates[0].0.kind,
+                            &dyn_binder.predicates.predicates[0].0.kind,
                             |ctx, kind: &hax::ClauseKind| {
                                 let hax::ClauseKind::Trait(trait_predicate) = kind else {
                                     unreachable!()
