@@ -291,14 +291,27 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
                 let subplace = self.translate_place(span, hax_subplace)?;
+                if let TyKind::Error(msg) = subplace.ty().kind() {
+                    return Err(Error {
+                        span,
+                        msg: msg.clone(),
+                    });
+                }
                 let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
                 let place = match kind {
                     hax::ProjectionElem::Deref => subplace.project(ProjectionElem::Deref, ty),
                     hax::ProjectionElem::Field(field_kind) => {
                         use hax::ProjectionElemFieldKind::*;
+                        let TyKind::Adt(tref) = subplace.ty().kind() else {
+                            raise_error!(
+                                self,
+                                span,
+                                "found unexpected type in field projection: {}",
+                                ty.with_ctx(&self.into_fmt())
+                            )
+                        };
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let tref = subplace.ty().kind().as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
                                 let proj_kind =
                                     FieldProjKind::Tuple(tref.generics.types.elem_count());
@@ -311,7 +324,6 @@ impl BodyTransCtx<'_, '_, '_> {
                             } => {
                                 let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(translate_variant_id);
-                                let tref = subplace.ty().kind().as_adt().unwrap();
                                 let generics = &tref.generics;
                                 match tref.id {
                                     TypeId::Adt(type_id) => {
@@ -340,14 +352,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             ClosureState(index) => {
                                 let field_id = translate_field_id(*index);
-                                let type_id = *subplace
-                                    .ty
-                                    .kind()
-                                    .as_adt()
-                                    .expect("ClosureState projection should apply to an Adt type")
-                                    .id
-                                    .as_adt()
-                                    .unwrap();
+                                let type_id = *tref.id.as_adt().unwrap();
                                 ProjectionElem::Field(FieldProjKind::Adt(type_id, None), field_id)
                             }
                         };
