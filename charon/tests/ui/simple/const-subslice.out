@@ -19,8 +19,9 @@ fn main()
     let @3: *const Slice<u8>; // anonymous local
     let @4: usize; // anonymous local
     let @5: *const u8; // anonymous local
-    let @6: Slice<u8>; // anonymous local
-    let @7: &'_ (Slice<u8>); // anonymous local
+    let @6: Array<u8, 3 : usize>; // anonymous local
+    let @7: &'_ (Array<u8, 3 : usize>); // anonymous local
+    let @8: &'_ (Slice<u8>); // anonymous local
 
     @0 := ()
     storage_live(y@1)
@@ -28,7 +29,9 @@ fn main()
     @6 := [const (0 : u8), const (1 : u8), const (2 : u8)]
     storage_live(@7)
     @7 := &@6
-    y@1 := move (@7)
+    storage_live(@8)
+    @8 := @ArrayToSliceShared<'_, u8, 3 : usize>(move (@7))
+    y@1 := move (@8)
     storage_live(z@2)
     storage_live(@3)
     @3 := &raw const *(y@1) with_metadata(copy (y@1.metadata))

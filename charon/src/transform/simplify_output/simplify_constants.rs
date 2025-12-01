@@ -11,7 +11,6 @@
 //! handle the globals like function calls.
 
 use itertools::Itertools;
-use std::assert_matches::assert_matches;
 
 use crate::transform::TransformCtx;
 use crate::transform::ctx::{BodyTransformCtx, UllbcPass, UllbcStatementTransformCtx};
@@ -27,6 +26,7 @@ fn transform_constant_expr(
     ctx: &mut UllbcStatementTransformCtx<'_>,
     val: Box<ConstantExpr>,
 ) -> Operand {
+    let mut val_ty = val.ty.clone();
     let rval = match val.kind {
         ConstantExprKind::Literal(_)
         | ConstantExprKind::Var(_)
@@ -61,6 +61,32 @@ fn transform_constant_expr(
                     kind: ptr_usize,
                     ty: usize_ty,
                 })),
+            )
+        }
+        ConstantExprKind::Ref(bval) if bval.ty.is_slice() => {
+            // We need to special-case slices; we don't take a reference to the slice,
+            // but an unsizing cast
+            // We generate the following code:
+            // let array: [T; N] = [...];
+            // let array_ref: &[T; N] = &array;
+            // return unsize::<&[T; N], &[T]>(array_ref);
+            let bval = transform_constant_expr(ctx, bval);
+            let bval_ty = bval.ty().clone();
+            let adt = bval_ty.as_adt().expect("Non-adt slice sub-constant");
+            assert_eq!(adt.id, TypeId::Builtin(BuiltinTy::Array));
+            let len = adt.generics.const_generics[0].clone();
+
+            let array_place = ctx.rval_to_place(Rvalue::Use(bval), bval_ty.clone());
+
+            let (_, _, rk) = val.ty.as_ref().unwrap();
+            let array_ref = ctx.borrow_to_new_var(array_place, rk.clone().into(), None);
+            Rvalue::UnaryOp(
+                UnOp::Cast(CastKind::Unsize(
+                    array_ref.ty.clone(),
+                    val.ty.clone(),
+                    UnsizingMetadata::Length(len),
+                )),
+                Operand::Move(array_ref),
             )
         }
         ConstantExprKind::Ref(bval) => {
@@ -105,7 +131,7 @@ fn transform_constant_expr(
             let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
             Rvalue::Aggregate(aggregate_kind, fields)
         }
-        ConstantExprKind::Array(fields) => {
+        ConstantExprKind::Array(fields) | ConstantExprKind::Slice(fields) => {
             let fields = fields
                 .into_iter()
                 .map(|x| transform_constant_expr(ctx, Box::new(x)))
@@ -115,12 +141,15 @@ fn transform_constant_expr(
                 UIntTy::Usize,
                 fields.len() as u128,
             )));
-            let tref = val.ty.kind().as_adt().unwrap();
-            assert_matches!(
-                *tref.id.as_builtin().unwrap(),
-                BuiltinTy::Array | BuiltinTy::Slice
-            );
-            let ty = tref.generics.types[0].clone();
+            let mut tref = val.ty.kind().as_adt().unwrap().clone();
+            let ty = tref.generics.types.pop().unwrap();
+            match tref.id.as_builtin().unwrap() {
+                BuiltinTy::Array => {}
+                BuiltinTy::Slice => val_ty = Ty::mk_array(ty.clone(), len.clone()),
+                _ => {
+                    unreachable!("Unpexected builtin type in array/slice constant")
+                }
+            }
             Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
         }
         ConstantExprKind::FnPtr(fptr) => {
@@ -140,7 +169,7 @@ fn transform_constant_expr(
             )
         }
     };
-    Operand::Move(ctx.rval_to_place(rval, val.ty))
+    Operand::Move(ctx.rval_to_place(rval, val_ty))
 }
 
 fn transform_operand(ctx: &mut UllbcStatementTransformCtx<'_>, op: &mut Operand) {
