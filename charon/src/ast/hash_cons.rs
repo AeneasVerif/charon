@@ -12,8 +12,14 @@ use crate::common::type_map::Mappable;
 /// as a hash value.
 // Warning: a `derive` should not introduce a way to create a new `HashConsed` value without
 // going through the interning table.
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash)]
 pub struct HashConsed<T>(HashByAddr<Arc<T>>);
+
+impl<T> Clone for HashConsed<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
 impl<T> HashConsed<T> {
     pub fn inner(&self) -> &T {
@@ -151,58 +157,83 @@ where
 /// Note that the deduplication scheme is highly order-dependent: we serialize the real value
 /// the first time it comes up, and use ids only subsequent times. This relies on the fact that
 /// `derive(Serialize, Deserialize)` traverse the value in the same order.
-pub use serialize::with_dedup_serialization;
+pub use serialize::{HashConsDedupSerializer, HashConsSerializerState};
 mod serialize {
     use indexmap::IndexMap;
     use serde::{Deserialize, Serialize};
+    use serde_state::{DeserializeState, SerializeState};
     use std::any::type_name;
+    use std::cell::RefCell;
     use std::collections::HashSet;
-    use std::sync::{LazyLock, RwLock};
 
     use super::{HashConsId, HashConsable, HashConsed};
     use crate::common::type_map::{Mappable, Mapper, TypeMap};
 
-    // If `Some`, we will deduplicate the serialized values. We use the contained sets to track
-    // whether we've already serialized each value.
+    pub trait HashConsSerializerState: Sized {
+        /// Record that this type is being serialized. Return `None` if we're not deduplicating
+        /// values, otherwise return whether this item was newly recorded.
+        fn record_serialized<T: Mappable>(&self, id: HashConsId) -> Option<bool>;
+        /// Record that we deserialized this type.
+        fn record_deserialized<T: Mappable>(&self, id: HashConsId, value: HashConsed<T>);
+        /// Find the previously-deserialized type with that id.
+        fn get_deserialized_val<T: Mappable>(&self, id: HashConsId) -> Option<HashConsed<T>>;
+    }
+
+    impl HashConsSerializerState for () {
+        fn record_serialized<T: Mappable>(&self, _id: HashConsId) -> Option<bool> {
+            None
+        }
+        fn record_deserialized<T: Mappable>(&self, _id: HashConsId, _value: HashConsed<T>) {}
+        fn get_deserialized_val<T: Mappable>(&self, _id: HashConsId) -> Option<HashConsed<T>> {
+            None
+        }
+    }
+
     struct SerializeTableMapper;
     impl Mapper for SerializeTableMapper {
         type Value<T: Mappable> = HashSet<HashConsId>;
     }
-    static SERIALIZE_TO_IDS: LazyLock<RwLock<Option<TypeMap<SerializeTableMapper>>>> =
-        LazyLock::new(|| RwLock::new(None));
-
-    // During deserialization we record the already-deserialized values. If we don't find a
-    // value deserialization errors.
     struct DeserializeTableMapper;
     impl Mapper for DeserializeTableMapper {
         type Value<T: Mappable> = IndexMap<HashConsId, HashConsed<T>>;
     }
-    static DESERIALIZATION_SIDE_TABLE: LazyLock<RwLock<TypeMap<DeserializeTableMapper>>> =
-        LazyLock::new(|| RwLock::new(TypeMap::default()));
-
-    /// Enable the deduplication of `HashConsed` values in serialization output for the
-    /// duraciton of the call to the provided function.
-    pub fn with_dedup_serialization<R>(f: impl FnOnce() -> R) -> R {
-        *SERIALIZE_TO_IDS.write().unwrap() = Some(TypeMap::default());
-        let out = f();
-        *SERIALIZE_TO_IDS.write().unwrap() = None;
-        out
+    #[derive(Default)]
+    pub struct HashConsDedupSerializer {
+        // Table used for serialization.
+        ser: RefCell<TypeMap<SerializeTableMapper>>,
+        // Table used for deserialization.
+        de: RefCell<TypeMap<DeserializeTableMapper>>,
+    }
+    impl HashConsSerializerState for HashConsDedupSerializer {
+        fn record_serialized<T: Mappable>(&self, id: HashConsId) -> Option<bool> {
+            Some(self.ser.borrow_mut().or_default::<T>().insert(id))
+        }
+        fn record_deserialized<T: Mappable>(&self, id: HashConsId, val: HashConsed<T>) {
+            self.de.borrow_mut().or_default::<T>().insert(id, val);
+        }
+        fn get_deserialized_val<T: Mappable>(&self, id: HashConsId) -> Option<HashConsed<T>> {
+            self.de
+                .borrow()
+                .get::<T>()
+                .and_then(|map| map.get(&id))
+                .cloned()
+        }
     }
 
-    /// A dummy enum used when serializing/deserializing a `HashConsed<T>` in the deduplicated
-    /// case.
-    #[derive(Serialize, Deserialize)]
-    #[serde(untagged)]
+    /// A dummy enum used when serializing/deserializing a `HashConsed<T>`.
+    #[derive(Serialize, Deserialize, SerializeState, DeserializeState)]
+    #[serde_state(state_implements = HashConsSerializerState)]
     enum SerRepr<T> {
         /// A value represented normally, accompanied by its id. This is emitted the first time
         /// we serialize a given value: subsequent times will use `SerRepr::Deduplicate`
         /// instead.
-        HashConsedValue { hash_cons_id: HashConsId, value: T },
+        HashConsedValue(#[serde_state(stateless)] HashConsId, T),
         /// A value represented by its id. The actual value must have been emitted as a
         /// `SerRepr::Value` with that same id earlier.
-        Deduplicated { hash_cons_id: HashConsId },
+        #[serde_state(stateless)]
+        Deduplicated(HashConsId),
         /// A plain value without an id.
-        PlainValue(T),
+        Untagged(T),
     }
 
     impl<T> Serialize for HashConsed<T>
@@ -213,30 +244,27 @@ mod serialize {
         where
             S: serde::Serializer,
         {
-            // This `unwrap` is about lock poisoning; we ignore that.
-            let guard = SERIALIZE_TO_IDS.read().unwrap();
-            if guard.is_some() {
-                drop(guard);
-                let hash_cons_id = self.id();
-                let repr: SerRepr<T> = {
-                    // This `unwrap` is about lock poisoning; we ignore that.
-                    let mut type_map_lock = SERIALIZE_TO_IDS.write().unwrap();
-                    // This `unwrap` is ok because of `is_some` above.
-                    let type_map: &mut TypeMap<_> = type_map_lock.as_mut().unwrap();
-                    if type_map.or_default::<T>().insert(hash_cons_id) {
-                        SerRepr::HashConsedValue {
-                            hash_cons_id,
-                            value: self.inner().clone(),
-                        }
-                    } else {
-                        SerRepr::Deduplicated { hash_cons_id }
-                    }
-                };
-                // Careful to drop the locks before calling back into `serialize`.
-                repr.serialize(serializer)
-            } else {
-                self.inner().serialize(serializer)
-            }
+            SerRepr::Untagged(self.inner()).serialize(serializer)
+        }
+    }
+    /// Options for the state are `()` to serialize values normally and `HashConsDedupSerializer`
+    /// to deduplicate identical values in the serialized output.
+    impl<T, State> SerializeState<State> for HashConsed<T>
+    where
+        T: SerializeState<State> + HashConsable,
+        State: HashConsSerializerState,
+    {
+        fn serialize_state<S>(&self, state: &State, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            let hash_cons_id = self.id();
+            let repr = match state.record_serialized::<T>(hash_cons_id) {
+                Some(true) => SerRepr::HashConsedValue(hash_cons_id, self.inner()),
+                Some(false) => SerRepr::Deduplicated(hash_cons_id),
+                None => SerRepr::Untagged(self.inner()),
+            };
+            repr.serialize_state(state, serializer)
         }
     }
 
@@ -249,39 +277,49 @@ mod serialize {
             D: serde::Deserializer<'de>,
         {
             use serde::de::Error;
-            // Because of `serde(untagged)`, this can handle both a direct value and the
-            // deduplicated cases.
             let repr: SerRepr<T> = SerRepr::deserialize(deserializer)?;
+            match repr {
+                SerRepr::HashConsedValue { .. } | SerRepr::Deduplicated { .. } => {
+                    let msg = format!(
+                        "trying to deserialize a deduplicated value using serde's `{ty}::deserialize` method. \
+                        This won't work, use serde_state's \
+                        `{ty}::deserialize_state(&HashConsDedupSerializer::default(), _)` instead",
+                        ty = type_name::<T>(),
+                    );
+                    Err(D::Error::custom(msg))
+                }
+                SerRepr::Untagged(val) => Ok(HashConsed::new(val)),
+            }
+        }
+    }
+    impl<'de, T, State> DeserializeState<'de, State> for HashConsed<T>
+    where
+        T: DeserializeState<'de, State> + HashConsable,
+        State: HashConsSerializerState,
+    {
+        fn deserialize_state<D>(state: &State, deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            use serde::de::Error;
+            let repr: SerRepr<T> = SerRepr::deserialize_state(state, deserializer)?;
             Ok(match repr {
-                SerRepr::HashConsedValue {
-                    hash_cons_id,
-                    value,
-                } => {
+                SerRepr::HashConsedValue(hash_cons_id, value) => {
                     let val = HashConsed::new(value);
-                    // This `unwrap` is about lock poisoning; we ignore that.
-                    DESERIALIZATION_SIDE_TABLE
-                        .write()
-                        .unwrap()
-                        .or_default::<T>()
-                        .insert(hash_cons_id, val.clone());
+                    state.record_deserialized(hash_cons_id, val.clone());
                     val
                 }
-                SerRepr::Deduplicated { hash_cons_id } => DESERIALIZATION_SIDE_TABLE
-                    .read()
-                    .unwrap()
-                    .get::<T>()
-                    .and_then(|map| map.get(&hash_cons_id))
-                    .cloned()
-                    .ok_or_else(|| {
+                SerRepr::Deduplicated(hash_cons_id) => {
+                    state.get_deserialized_val(hash_cons_id).ok_or_else(|| {
                         let msg = format!(
-                            "can't deserialize deduplicated value of type {};\
-                                    possibly serialization and deserialization aren't \
-                                    happening in the same order",
+                            "can't deserialize deduplicated value of type {}; \
+                            were you careful with managing the deduplication state?",
                             type_name::<T>()
                         );
                         D::Error::custom(msg)
-                    })?,
-                SerRepr::PlainValue(val) => HashConsed::new(val),
+                    })?
+                }
+                SerRepr::Untagged(val) => HashConsed::new(val),
             })
         }
     }
@@ -292,6 +330,7 @@ fn test_hash_cons() {
     let x = HashConsed::new(42u32);
     let y = HashConsed::new(42u32);
     assert_eq!(x, y);
+    // Test a serialization round-trip.
     let z = serde_json::from_value(serde_json::to_value(x.clone()).unwrap()).unwrap();
     assert_eq!(x, z);
 }
@@ -309,12 +348,27 @@ fn test_hash_cons_concurrent() {
 
 #[test]
 fn test_hash_cons_dedup() {
-    let x = HashConsed::new(42u32);
-    let y = HashConsed::new(42u32);
-    let val = (x.clone(), x.clone(), y);
-    let (a, b, c): (HashConsed<u32>, HashConsed<u32>, HashConsed<u32>) =
-        serde_json::from_value(serde_json::to_value(val).unwrap()).unwrap();
-    assert_eq!(a, x);
-    assert_eq!(b, x);
-    assert_eq!(c, x);
+    use serde_state::{DeserializeState, SerializeState};
+    type Ty = HashConsed<TyKind>;
+    #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState)]
+    #[serde_state(state = HashConsDedupSerializer)]
+    enum TyKind {
+        Bool,
+        Pair(Ty, Ty),
+    }
+
+    // Build a value with some redundancy.
+    let bool1 = HashConsed::new(TyKind::Bool);
+    let bool2 = HashConsed::new(TyKind::Bool);
+    let pair = HashConsed::new(TyKind::Pair(bool1.clone(), bool2));
+    let triple = HashConsed::new(TyKind::Pair(bool1, pair));
+
+    let state = HashConsDedupSerializer::default();
+    let json_val = triple
+        .serialize_state(&state, serde_json::value::Serializer)
+        .unwrap();
+    let state = HashConsDedupSerializer::default();
+    let round_tripped = Ty::deserialize_state(&state, json_val).unwrap();
+
+    assert_eq!(triple, round_tripped);
 }

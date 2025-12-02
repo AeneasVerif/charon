@@ -176,7 +176,12 @@ and gcrate_of_json
       of_json_ctx -> json -> ('body gexpr_body option, string) result)
     (js : json) : ('body gcrate, string) result =
   match js with
-  | `Assoc [ ("charon_version", charon_version); ("translated", translated) ] ->
+  | `Assoc
+      [
+        ("charon_version", charon_version);
+        ("translated", translated);
+        ("has_errors", _);
+      ] ->
       (* Ensure the version is the one we support. *)
       let* charon_version = string_of_json () charon_version in
       if

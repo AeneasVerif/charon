@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.151"
+version = "0.1.152"
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
@@ -42,6 +42,8 @@ harness = false
 [dependencies]
 hax = { package = "hax-frontend-exporter", git = "https://github.com/AeneasVerif/hax", branch = "main", optional = true }
 # hax = { package = "hax-frontend-exporter", path = "../../hax/frontend/exporter", optional = true }
+serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main" }
+# serde_state = { path = "../../../forks/serde_state/serde_state" }
 macros = { path = "./macros" }
 
 annotate-snippets = { git = "https://github.com/rust-lang/annotate-snippets-rs", rev = "74964e91d845e39fb549c4028452beffa7c6562b", version = "0.11.5" }
@@ -70,7 +72,6 @@ petgraph = "0.8.0"
 reqwest = { version = "0.12.8", optional = true }
 rustc_version = "0.4"
 serde_json = { version = "1.0.91", features = ["unbounded_depth"] }
-serde-map-to-array = { version = "1.1.1", features = ["std"] }
 serde_stacker = "0.1.11"
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 stacker = "0.1"

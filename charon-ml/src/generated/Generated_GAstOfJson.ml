@@ -42,12 +42,13 @@ let hash_consed_val_of_json (map : 'a HashConsId.Map.t ref)
     (js : json) : ('a, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("hash_cons_id", `Int id); ("value", json) ] ->
+    | `Assoc [ ("Untagged", json) ] -> of_json ctx json
+    | `Assoc [ ("HashConsedValue", `List [ `Int id; json ]) ] ->
         let* v = of_json ctx json in
         let id = HashConsId.of_int id in
         map := HashConsId.Map.add id v !map;
         Ok v
-    | `Assoc [ ("hash_cons_id", `Int id) ] -> begin
+    | `Assoc [ ("Deduplicated", `Int id) ] -> begin
         let id = HashConsId.of_int id in
         match HashConsId.Map.find_opt id !map with
         | Some v -> Ok v
@@ -56,7 +57,7 @@ let hash_consed_val_of_json (map : 'a HashConsId.Map.t ref)
               "Hash-consing key not found; there is a serialization mismatch \
                between Rust and OCaml"
       end
-    | json -> of_json ctx json)
+    | _ -> Error "")
 
 let path_buf_of_json = string_of_json
 

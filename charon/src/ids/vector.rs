@@ -9,6 +9,7 @@
 
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
+use serde_state::{DeserializeState, SerializeState};
 use std::{
     iter::{FromIterator, IntoIterator},
     mem,
@@ -478,6 +479,15 @@ impl<I: Idx, T: Serialize> Serialize for Vector<I, T> {
     }
 }
 
+impl<I: Idx, State, T: SerializeState<State>> SerializeState<State> for Vector<I, T> {
+    fn serialize_state<S>(&self, state: &State, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.vector.as_vec().serialize_state(state, serializer)
+    }
+}
+
 impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -485,6 +495,23 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
     {
         let mut ret = Self {
             vector: Deserialize::deserialize(deserializer)?,
+            elem_count: 0,
+        };
+        ret.elem_count = ret.iter().count();
+        Ok(ret)
+    }
+}
+
+impl<'de, I: Idx, State, T: DeserializeState<'de, State>> DeserializeState<'de, State>
+    for Vector<I, T>
+{
+    fn deserialize_state<D>(state: &State, deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let vec: Vec<Option<_>> = DeserializeState::deserialize_state(state, deserializer)?;
+        let mut ret = Self {
+            vector: IndexVec::from(vec),
             elem_count: 0,
         };
         ret.elem_count = ret.iter().count();
