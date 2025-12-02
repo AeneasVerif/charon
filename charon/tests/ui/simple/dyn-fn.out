@@ -30,4 +30,20 @@ error: Item `test_crate::gives_fn::{closure#0}` caused errors; ignoring.
 8 |     takes_fn(&|counter| {
   |               ^^^^^^^^^
 
-ERROR Charon failed to translate this code (4 errors)
+error: Trying to generate a vtable drop shim for a non-trait impl
+  --> tests/ui/simple/dyn-fn.rs:8:15
+   |
+ 8 |       takes_fn(&|counter| {
+   |  _______________^
+ 9 | |         *counter += 1;
+10 | |         true
+11 | |     })
+   | |_____^
+
+error: Item `test_crate::gives_fn::{closure#0}` caused errors; ignoring.
+ --> tests/ui/simple/dyn-fn.rs:8:15
+  |
+8 |     takes_fn(&|counter| {
+  |               ^^^^^^^^^
+
+ERROR Charon failed to translate this code (6 errors)

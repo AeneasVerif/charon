@@ -22,4 +22,16 @@ error: Item `test_crate::main::{closure#0}` caused errors; ignoring.
 9 |     call_test(&|a| (x, *a, &y), &false);
   |                ^^^
 
-ERROR Charon failed to translate this code (4 errors)
+error: Trying to generate a vtable drop shim for a non-trait impl
+ --> tests/ui/dyn-closure-regions.rs:9:16
+  |
+9 |     call_test(&|a| (x, *a, &y), &false);
+  |                ^^^^^^^^^^^^^^^
+
+error: Item `test_crate::main::{closure#0}` caused errors; ignoring.
+ --> tests/ui/dyn-closure-regions.rs:9:16
+  |
+9 |     call_test(&|a| (x, *a, &y), &false);
+  |                ^^^
+
+ERROR Charon failed to translate this code (6 errors)

@@ -294,8 +294,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     | ClosureAsFnCast
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
-                    | VTableMethod(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
-                    | VTableDropShim(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableMethod(..)
+                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
