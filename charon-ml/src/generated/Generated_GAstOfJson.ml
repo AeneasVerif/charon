@@ -821,9 +821,9 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Regular", regular) ] ->
         let* regular = fn_ptr_of_json ctx regular in
         Ok (FnOpRegular regular)
-    | `Assoc [ ("Move", move) ] ->
-        let* move = place_of_json ctx move in
-        Ok (FnOpMove move)
+    | `Assoc [ ("Dynamic", dynamic) ] ->
+        let* dynamic = operand_of_json ctx dynamic in
+        Ok (FnOpDynamic dynamic)
     | _ -> Error "")
 
 and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =
