@@ -310,6 +310,19 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Str" -> Ok TStr
     | _ -> Error "")
 
+and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Uninit" -> Ok Uninit
+    | `Assoc [ ("Value", value) ] ->
+        let* value = int_of_json ctx value in
+        Ok (Value value)
+    | `Assoc [ ("Provenance", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = provenance_of_json ctx x_0 in
+        let* x_1 = int_of_json ctx x_1 in
+        Ok (Provenance (x_0, x_1))
+    | _ -> Error "")
+
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -609,7 +622,7 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* fn_def = fn_ptr_of_json ctx fn_def in
         Ok (CFnDef fn_def)
     | `Assoc [ ("RawMemory", raw_memory) ] ->
-        let* raw_memory = list_of_json int_of_json ctx raw_memory in
+        let* raw_memory = list_of_json byte_of_json ctx raw_memory in
         Ok (CRawMemory raw_memory)
     | `Assoc [ ("Opaque", opaque) ] ->
         let* opaque = string_of_json ctx opaque in
@@ -1473,6 +1486,19 @@ and projection_elem_of_json (ctx : of_json_ctx) (js : json) :
         let* to_ = box_of_json operand_of_json ctx to_ in
         let* from_end = bool_of_json ctx from_end in
         Ok (Subslice (from, to_, from_end))
+    | _ -> Error "")
+
+and provenance_of_json (ctx : of_json_ctx) (js : json) :
+    (provenance, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_ref_of_json ctx global in
+        Ok (Global global)
+    | `Assoc [ ("Function", function_) ] ->
+        let* function_ = fun_decl_ref_of_json ctx function_ in
+        Ok (Function function_)
+    | `String "Unknown" -> Ok Unknown
     | _ -> Error "")
 
 and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :

@@ -50,6 +50,7 @@ fn make_ocaml_ident(name: &str) -> String {
             | "end"
             | "include"
             | "to"
+            | "function"
     ) {
         name += "_";
     }
