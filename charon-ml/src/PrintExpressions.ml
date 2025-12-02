@@ -88,6 +88,8 @@ and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
   | AlignOf -> "align_of"
   | OffsetOf _ -> "offset_of(?)"
   | UbChecks -> "ub_checks"
+  | ContractChecks -> "contract_checks"
+  | OverflowChecks -> "overflow_checks"
 
 and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   match unop with
@@ -133,7 +135,7 @@ and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   | CTraitConst (trait_ref, const_name) ->
       let trait_ref = trait_ref_to_string env trait_ref in
       trait_ref ^ const_name
-  | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
+  | CFnDef fn_ptr -> fn_ptr_to_string env fn_ptr
   | CRawMemory bytes ->
       "RawMemory([" ^ String.concat ", " (List.map string_of_int bytes) ^ "])"
   | COpaque reason -> "Opaque(" ^ reason ^ ")"

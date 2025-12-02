@@ -29,6 +29,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// The translation context for the item.
     pub i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>,
 
+    /// What kind of drops we get in this body.
+    pub drop_kind: DropKind,
     /// The (regular) variables in the current function body.
     pub locals: Locals,
     /// The map from rust variable indices to translated variables indices.
@@ -46,9 +48,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
 }
 
 impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
-    pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>) -> Self {
+    pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>, drop_kind: DropKind) -> Self {
         BodyTransCtx {
             i_ctx,
+            drop_kind,
             locals: Default::default(),
             locals_map: Default::default(),
             blocks: Default::default(),
@@ -91,6 +94,72 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
         hax::BorrowKind::Fake(hax::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
         // This one is used only in deref patterns.
         hax::BorrowKind::Fake(hax::FakeBorrowKind::Deep) => unimplemented!(),
+    }
+}
+
+impl ItemTransCtx<'_, '_> {
+    /// Translate the MIR body of this definition if it has one. Catches any error and returns
+    /// `Body::Error` instead
+    pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef) -> Body {
+        match self.translate_def_body_inner(span, def) {
+            Ok(body) => body,
+            Err(e) => Body::Error(e),
+        }
+    }
+
+    fn translate_def_body_inner(&mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
+        // Retrieve the body
+        if let Some(body) = self.get_mir(def.this(), span)? {
+            Ok(self.translate_body(span, &body, &def.source_text))
+        } else {
+            if let hax::FullDefKind::Const { value, .. }
+            | hax::FullDefKind::AssocConst { value, .. } = def.kind()
+                && let Some(value) = value
+            {
+                // For globals we can generate a body by evaluating the global.
+                // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
+                // default value no longer has a cross-crate MIR so it's unclear how to retreive
+                // the value. See the `trait-default-const-cross-crate` test.
+                let c = self.translate_constant_expr_to_constant_expr(span, &value)?;
+                let mut bb = BodyBuilder::new(span, 0);
+                let ret = bb.new_var(None, c.ty.clone());
+                bb.push_statement(StatementKind::Assign(
+                    ret,
+                    Rvalue::Use(Operand::Const(Box::new(c))),
+                ));
+                Ok(Body::Unstructured(bb.build()))
+            } else {
+                Ok(Body::Missing)
+            }
+        }
+    }
+
+    /// Translate a function body. Catches errors and returns `Body::Error` instead.
+    /// That's the entrypoint of this module.
+    pub fn translate_body(
+        &mut self,
+        span: Span,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
+        source_text: &Option<String>,
+    ) -> Body {
+        let drop_kind = match body.phase {
+            hax::MirPhase::Built | hax::MirPhase::Analysis(..) => DropKind::Conditional,
+            hax::MirPhase::Runtime(..) => DropKind::Precise,
+        };
+        let mut ctx = BodyTransCtx::new(self, drop_kind);
+        let mut ctx = panic::AssertUnwindSafe(&mut ctx);
+        // Stopgap measure because there are still many panics in charon and hax.
+        let res = panic::catch_unwind(move || ctx.translate_body(body, source_text));
+        match res {
+            Ok(Ok(body)) => body,
+            // Translation error
+            Ok(Err(e)) => Body::Error(e),
+            // Panic
+            Err(_) => {
+                let e = register_error!(self, span, "Thread panicked when extracting body.");
+                Body::Error(e)
+            }
+        }
     }
 }
 
@@ -222,14 +291,27 @@ impl BodyTransCtx<'_, '_, '_> {
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
                 let subplace = self.translate_place(span, hax_subplace)?;
+                if let TyKind::Error(msg) = subplace.ty().kind() {
+                    return Err(Error {
+                        span,
+                        msg: msg.clone(),
+                    });
+                }
                 let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
                 let place = match kind {
                     hax::ProjectionElem::Deref => subplace.project(ProjectionElem::Deref, ty),
                     hax::ProjectionElem::Field(field_kind) => {
                         use hax::ProjectionElemFieldKind::*;
+                        let TyKind::Adt(tref) = subplace.ty().kind() else {
+                            raise_error!(
+                                self,
+                                span,
+                                "found unexpected type in field projection: {}",
+                                ty.with_ctx(&self.into_fmt())
+                            )
+                        };
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let tref = subplace.ty().kind().as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
                                 let proj_kind =
                                     FieldProjKind::Tuple(tref.generics.types.elem_count());
@@ -242,7 +324,6 @@ impl BodyTransCtx<'_, '_, '_> {
                             } => {
                                 let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(translate_variant_id);
-                                let tref = subplace.ty().kind().as_adt().unwrap();
                                 let generics = &tref.generics;
                                 match tref.id {
                                     TypeId::Adt(type_id) => {
@@ -271,14 +352,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             ClosureState(index) => {
                                 let field_id = translate_field_id(*index);
-                                let type_id = *subplace
-                                    .ty
-                                    .kind()
-                                    .as_adt()
-                                    .expect("ClosureState projection should apply to an Adt type")
-                                    .id
-                                    .as_adt()
-                                    .unwrap();
+                                let type_id = *tref.id.as_adt().unwrap();
                                 ProjectionElem::Field(FieldProjKind::Adt(type_id, None), field_id)
                             }
                         };
@@ -352,48 +426,33 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Translate an operand with its type
-    fn translate_operand_with_type(
-        &mut self,
-        span: Span,
-        operand: &hax::Operand,
-    ) -> Result<(Operand, Ty), Error> {
-        trace!();
-        match operand {
+    /// Translate an operand
+    fn translate_operand(&mut self, span: Span, operand: &hax::Operand) -> Result<Operand, Error> {
+        Ok(match operand {
             hax::Operand::Copy(place) => {
                 let p = self.translate_place(span, place)?;
-                let ty = p.ty().clone();
-                Ok((Operand::Copy(p), ty))
+                Operand::Copy(p)
             }
             hax::Operand::Move(place) => {
                 let p = self.translate_place(span, place)?;
-                let ty = p.ty().clone();
-                Ok((Operand::Move(p), ty))
+                Operand::Move(p)
             }
             hax::Operand::Constant(const_op) => match &const_op.kind {
                 hax::ConstOperandKind::Value(constant) => {
                     let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
-                    let ty = constant.ty.clone();
-                    Ok((Operand::Const(Box::new(constant)), ty))
+                    Operand::Const(Box::new(constant))
                 }
                 hax::ConstOperandKind::Promoted(item) => {
-                    let ty = self.translate_ty(span, &const_op.ty)?;
                     // A promoted constant that could not be evaluated.
                     let global_ref = self.translate_global_decl_ref(span, item)?;
                     let constant = ConstantExpr {
                         kind: ConstantExprKind::Global(global_ref),
-                        ty: ty.clone(),
+                        ty: self.translate_ty(span, &const_op.ty)?,
                     };
-                    Ok((Operand::Const(Box::new(constant)), ty))
+                    Operand::Const(Box::new(constant))
                 }
             },
-        }
-    }
-
-    /// Translate an operand
-    fn translate_operand(&mut self, span: Span, operand: &hax::Operand) -> Result<Operand, Error> {
-        trace!();
-        Ok(self.translate_operand_with_type(span, operand)?.0)
+        })
     }
 
     /// Translate an rvalue
@@ -413,9 +472,10 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             hax::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_constant_expr_to_const_generic(span, cnst)?;
-                let (operand, t) = self.translate_operand_with_type(span, operand)?;
+                let op = self.translate_operand(span, operand)?;
+                let ty = op.ty().clone();
                 // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(operand, t, c))
+                Ok(Rvalue::Repeat(op, ty, c))
             }
             hax::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -423,9 +483,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::Ref {
                     place,
                     kind: borrow_kind,
-                    // Use `()` as a placeholder now.
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::mk_const_unit(),
+                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+                        ty: Ty::mk_unit(),
+                    })),
                 })
             }
             hax::Rvalue::RawPtr(mtbl, place) => {
@@ -438,9 +500,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::RawPtr {
                     place,
                     kind: mtbl,
-                    // Use `()` as a placeholder now.
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::mk_const_unit(),
+                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+                        ty: Ty::mk_unit(),
+                    })),
                 })
             }
             hax::Rvalue::Cast(cast_kind, hax_operand, tgt_ty) => {
@@ -449,7 +513,8 @@ impl BodyTransCtx<'_, '_, '_> {
                 let tgt_ty = self.translate_ty(span, tgt_ty)?;
 
                 // Translate the operand
-                let (mut operand, src_ty) = self.translate_operand_with_type(span, hax_operand)?;
+                let mut operand = self.translate_operand(span, hax_operand)?;
+                let src_ty = operand.ty().clone();
 
                 let cast_kind = match cast_kind {
                     hax::CastKind::IntToInt
@@ -486,7 +551,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         operand = Operand::Const(Box::new(ConstantExpr {
-                            kind: ConstantExprKind::FnPtr(fn_ptr),
+                            kind: ConstantExprKind::FnDef(fn_ptr),
                             ty: src_ty.clone(),
                         }));
                         CastKind::FnPtr(src_ty, tgt_ty)
@@ -506,7 +571,7 @@ impl BodyTransCtx<'_, '_, '_> {
                                     self.translate_constant_expr_to_const_generic(span, len)?;
                                 UnsizingMetadata::Length(len)
                             }
-                            hax::UnsizingMetadata::VTablePtr(impl_expr) => {
+                            hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
                                 match &impl_expr.r#impl {
                                     hax::ImplExprAtom::Concrete(tref) => {
@@ -588,9 +653,10 @@ impl BodyTransCtx<'_, '_, '_> {
                                 };
                                 UnsizingMetadata::VTablePtr(tref)
                             }
-                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+                            hax::UnsizingMetadata::NestedVTable(..)
+                            | hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
-                        CastKind::Unsize(src_ty.clone(), tgt_ty.clone(), meta)
+                        CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }
                 };
                 let unop = UnOp::Cast(cast_kind);
@@ -601,23 +667,13 @@ impl BodyTransCtx<'_, '_, '_> {
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
-            hax::Rvalue::NullaryOp(nullop, ty) => {
-                trace!("NullOp: {:?}", nullop);
-                let ty = self.translate_ty(span, ty)?;
-                let op = match nullop {
-                    hax::NullOp::OffsetOf(fields) => NullOp::OffsetOf(
-                        fields
-                            .iter()
-                            .copied()
-                            .map(|(n, idx)| (n, translate_field_id(idx)))
-                            .collect(),
-                    ),
-                    hax::NullOp::UbChecks => NullOp::UbChecks,
-                    hax::NullOp::ContractChecks => {
-                        raise_error!(self, span, "charon does not support contracts");
-                    }
+            hax::Rvalue::NullaryOp(hax::NullOp::RuntimeChecks(check)) => {
+                let op = match check {
+                    hax::RuntimeChecks::UbChecks => NullOp::UbChecks,
+                    hax::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
+                    hax::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
                 };
-                Ok(Rvalue::NullaryOp(op, ty))
+                Ok(Rvalue::NullaryOp(op, LiteralTy::Bool.into()))
             }
             hax::Rvalue::UnaryOp(unop, operand) => {
                 let operand = self.translate_operand(span, operand)?;
@@ -880,10 +936,10 @@ impl BodyTransCtx<'_, '_, '_> {
                 ..
             } => {
                 // Translate the operand which gives the discriminant
-                let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
-
+                let discr = self.translate_operand(span, discr)?;
                 // Translate the switch targets
-                let targets = self.translate_switch_targets(span, &discr_ty, targets, otherwise)?;
+                let targets =
+                    self.translate_switch_targets(span, discr.ty(), targets, otherwise)?;
 
                 ullbc_ast::TerminatorKind::Switch { discr, targets }
             }
@@ -1093,16 +1149,16 @@ impl BodyTransCtx<'_, '_, '_> {
                     FnOperand::Regular(fn_ptr)
                 }
             }
-            hax::FunOperand::DynamicMove(p) => {
+            hax::FunOperand::Dynamic(op) => {
                 // Call to a local function pointer
-                let p = self.translate_place(span, p)?;
-
-                // TODO: we may have a problem here because as we don't
-                // know which function is being called, we may not be
-                // able to filter the arguments properly... But maybe
-                // this is rather an issue for the statement which creates
-                // the function pointer, by refering to a top-level function
-                // for instance.
+                let op = self.translate_operand(span, op)?;
+                let (Operand::Move(p) | Operand::Copy(p)) = op else {
+                    raise_error!(
+                        self,
+                        span,
+                        "unsupported dynamic call to constant expression"
+                    )
+                };
                 FnOperand::Move(p)
             }
         };
@@ -1148,6 +1204,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let on_unwind = self.translate_unwind_action(span, unwind);
 
         Ok(TerminatorKind::Drop {
+            kind: self.drop_kind,
             place,
             tref,
             target,
@@ -1235,65 +1292,7 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Translate the MIR body of this definition if it has one. Catches any error and returns
-    /// `Body::Error` instead
-    pub fn translate_def_body(self, span: Span, def: &hax::FullDef) -> Body {
-        match self.translate_def_body_inner(span, def) {
-            Ok(body) => body,
-            Err(e) => Body::Error(e),
-        }
-    }
-    /// Translate the MIR body of this definition if it has one.
-    fn translate_def_body_inner(mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
-        // Retrieve the body
-        if let Some(body) = self.get_mir(def.this(), span)? {
-            Ok(self.translate_body(span, &body, &def.source_text))
-        } else {
-            if let hax::FullDefKind::Const { value, .. }
-            | hax::FullDefKind::AssocConst { value, .. } = def.kind()
-                && let Some(value) = value
-            {
-                // For globals we can generate a body by evaluating the global.
-                // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
-                // default value no longer has a cross-crate MIR so it's unclear how to retreive
-                // the value. See the `trait-default-const-cross-crate` test.
-                let c = self.translate_constant_expr_to_constant_expr(span, &value)?;
-                let mut bb = BodyBuilder::new(span, 0);
-                let ret = bb.new_var(None, c.ty.clone());
-                bb.push_statement(StatementKind::Assign(
-                    ret,
-                    Rvalue::Use(Operand::Const(Box::new(c))),
-                ));
-                Ok(Body::Unstructured(bb.build()))
-            } else {
-                Ok(Body::Missing)
-            }
-        }
-    }
-
-    /// Translate a function body. Catches errors and returns `Body::Error` instead.
-    pub fn translate_body(
-        mut self,
-        span: Span,
-        body: &hax::MirBody<hax::mir_kinds::Unknown>,
-        source_text: &Option<String>,
-    ) -> Body {
-        // Stopgap measure because there are still many panics in charon and hax.
-        let mut this = panic::AssertUnwindSafe(&mut self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(body, source_text));
-        match res {
-            Ok(Ok(body)) => body,
-            // Translation error
-            Ok(Err(e)) => Body::Error(e),
-            // Panic
-            Err(_) => {
-                let e = register_error!(self, span, "Thread panicked when extracting body.");
-                Body::Error(e)
-            }
-        }
-    }
-
-    fn translate_body_aux(
+    fn translate_body(
         &mut self,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,

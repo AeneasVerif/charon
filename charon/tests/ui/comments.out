@@ -41,8 +41,6 @@ impl Default for u32 {
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -168,8 +166,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_dead(@11)
         @8 := move (@9) < move (@10)
         if move (@8) {
-        }
-        else {
+        } else {
             break 0
         }
         storage_dead(@10)
@@ -211,8 +208,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @20 := copy (@19) panic.+ const (100 : u32)
         @16 := move (@20)
         storage_dead(@19)
-    }
-    else {
+    } else {
         storage_dead(@18)
         // let sum untouched
         @16 := copy (sum@2)
@@ -308,7 +304,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for T}] @1
+    conditional_drop[{built_in impl Destruct for T}] @1
     return
 }
 
@@ -433,8 +429,7 @@ fn foo()
     @24 := copy (*(right_val@21))
     @22 := move (@23) == move (@24)
     if move (@22) {
-    }
-    else {
+    } else {
         storage_dead(@24)
         storage_dead(@23)
         storage_live(kind@25)

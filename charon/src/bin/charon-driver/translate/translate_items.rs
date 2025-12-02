@@ -1,4 +1,3 @@
-use super::translate_bodies::BodyTransCtx;
 use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
@@ -188,6 +187,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def, impl_kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableDropShim => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -520,7 +526,7 @@ impl ItemTransCtx<'_, '_> {
             )?
         } else {
             // Translate the MIR body for this definition.
-            BodyTransCtx::new(&mut self).translate_def_body(item_meta.span, def)
+            self.translate_def_body(item_meta.span, def)
         };
         Ok(FunDecl {
             def_id,
@@ -644,12 +650,10 @@ impl ItemTransCtx<'_, '_> {
         else {
             unreachable!()
         };
-        let self_trait_ref = TraitRef {
-            kind: TraitRefKind::SelfId,
-            trait_decl_ref: RegionBinder::empty(
-                self.translate_trait_predicate(span, self_predicate)?,
-            ),
-        };
+        let self_trait_ref = TraitRef::new(
+            TraitRefKind::SelfId,
+            RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?),
+        );
         let items: Vec<(TraitItemName, &hax::AssocItem)> = items
             .iter()
             .map(|item| -> Result<_, Error> {
@@ -779,7 +783,10 @@ impl ItemTransCtx<'_, '_> {
                         // declares them.
                         let id = self.register_and_enqueue(item_span, item_src);
                         let mut generics = self.the_only_binder().params.identity_args();
-                        generics.trait_refs.push(self_trait_ref.clone());
+                        // We add an extra `Self: Trait` clause to default consts.
+                        if !self.monomorphize() {
+                            generics.trait_refs.push(self_trait_ref.clone());
+                        }
                         GlobalDeclRef {
                             id,
                             generics: Box::new(generics),
@@ -879,13 +886,13 @@ impl ItemTransCtx<'_, '_> {
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
         // A `TraitRef` that points to this impl with the correct generics.
-        let self_predicate = TraitRef {
-            kind: TraitRefKind::TraitImpl(TraitImplRef {
+        let self_predicate = TraitRef::new(
+            TraitRefKind::TraitImpl(TraitImplRef {
                 id: def_id,
                 generics: Box::new(self.the_only_binder().params.identity_args()),
             }),
-            trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
-        };
+            RegionBinder::empty(implemented_trait.clone()),
+        );
 
         let vtable =
             self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
@@ -1041,7 +1048,10 @@ impl ItemTransCtx<'_, '_> {
                         Provided { .. } => self.the_only_binder().params.identity_args(),
                         _ => {
                             let mut generics = implemented_trait.generics.as_ref().clone();
-                            generics.trait_refs.push(self_predicate.clone());
+                            // For default consts, we add an extra `Self` predicate.
+                            if !self.monomorphize() {
+                                generics.trait_refs.push(self_predicate.clone());
+                            }
                             generics
                         }
                     };

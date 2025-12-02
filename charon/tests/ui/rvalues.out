@@ -4,6 +4,11 @@
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
+// Full name: core::intrinsics::offset_of
+#[lang_item("offset_of")]
+pub fn offset_of<T>(@1: u32, @2: u32) -> usize
+= <opaque>
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -447,7 +452,7 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}::drop_in_place
 fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}
 impl Destruct for closure {
@@ -569,9 +574,9 @@ fn boxes()
     storage_live(@2)
     @2 := @BoxNew<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](const (42 : i32))
     @1 := move (@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @2
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @2
     storage_dead(@2)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return
@@ -653,6 +658,7 @@ where
     let @12: usize; // anonymous local
     let @13: usize; // anonymous local
     let @14: usize; // anonymous local
+    let @15: usize; // anonymous local
 
     storage_live(@9)
     storage_live(@12)
@@ -661,11 +667,13 @@ where
     size@1 := size_of<T>[@TraitClause0]()
     storage_live(align@2)
     align@2 := align_of<T>[@TraitClause0]()
-    storage_live(ub@3)
+    storage_live(@15)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
+    @15 := offset_of(Struct<T>[@TraitClause0].b)<usize>
+    storage_live(ub@3)
     ub@3 := ub_checks<bool>
     storage_live(offset@4)
-    offset@4 := offset_of(?)<Struct<T>[@TraitClause0]>
+    offset@4 := move (@15)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)

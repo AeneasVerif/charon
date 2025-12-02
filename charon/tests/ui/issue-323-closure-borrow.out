@@ -136,7 +136,7 @@ fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut (closure<'
 
 // Full name: test_crate::new::closure::{impl Destruct for closure<'_0>}::drop_in_place
 fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::new::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {

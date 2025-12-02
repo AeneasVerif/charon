@@ -1,5 +1,5 @@
+use crate::ast::*;
 use crate::ids::Vector;
-use crate::{ast::*, common::hash_consing::HashConsed};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -135,12 +135,10 @@ pub enum BuiltinImplData {
     Sized,
     MetaSized,
     Tuple,
-    Send,
-    Sync,
     Pointee,
     DiscriminantKind,
-    Unpin,
-    Freeze,
+    // Auto traits (defined with `auto trait ...`).
+    Auto,
 
     // Traits with methods.
     /// An impl of `Destruct` for a type with no drop glue.
@@ -155,9 +153,14 @@ pub enum BuiltinImplData {
     Clone,
 }
 
-/// A reference to a trait
+/// A reference to a trait.
+///
+/// This type is hash-consed, `TraitRefContents` contains the actual data.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
-pub struct TraitRef {
+pub struct TraitRef(pub HashConsed<TraitRefContents>);
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct TraitRefContents {
     pub kind: TraitRefKind,
     /// Not necessary, but useful
     pub trait_decl_ref: PolyTraitDeclRef,
@@ -531,9 +534,9 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
-    /// The discriminant value outputted by `std::mem::discriminant` for this variant.
-    /// This can be different than the discriminant stored in memory (called `tag`).
-    /// That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
+    /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
+    /// different than the value stored in memory (called `tag`). That one is described by
+    /// [`DiscriminantLayout`] and [`TagEncoding`].
     pub discriminant: Literal,
 }
 
@@ -773,37 +776,8 @@ pub enum ConstGeneric {
 ///
 /// Warning: the `DriveMut` impls of `Ty` needs to clone and re-hash the modified type to maintain
 /// the hash-consing invariant. This is expensive, avoid visiting types mutably when not needed.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Ty(HashConsed<TyKind>);
-
-impl Ty {
-    pub fn new(kind: TyKind) -> Self {
-        Ty(HashConsed::new(kind))
-    }
-
-    pub fn kind(&self) -> &TyKind {
-        self.0.inner()
-    }
-
-    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
-        self.0.with_inner_mut(f)
-    }
-}
-
-impl<'s, V: Visit<'s, TyKind>> Drive<'s, V> for Ty {
-    fn drive_inner(&'s self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
-        self.0.drive_inner(v)
-    }
-}
-/// This explores the type mutably by cloning and re-hashing afterwards.
-impl<'s, V> DriveMut<'s, V> for Ty
-where
-    for<'a> V: VisitMut<'a, TyKind>,
-{
-    fn drive_inner_mut(&'s mut self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
-        self.0.drive_inner_mut(v)
-    }
-}
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Ty(pub HashConsed<TyKind>);
 
 #[derive(
     Debug,
@@ -822,7 +796,6 @@ where
     DriveMut,
 )]
 #[charon::variants_prefix("T")]
-#[charon::rename("Ty")]
 pub enum TyKind {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:

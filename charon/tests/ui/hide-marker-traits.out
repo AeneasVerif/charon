@@ -16,7 +16,7 @@ trait Idx<Self>
 // Full name: test_crate::IndexVec
 pub struct IndexVec<I>
 where
-    [@TraitClause1]: Idx<I>,
+    [@TraitClause0]: Idx<I>,
 {
   i: I,
 }
@@ -24,9 +24,9 @@ where
 // Full name: test_crate::Vector
 pub struct Vector<I>
 where
-    [@TraitClause1]: Idx<I>,
+    [@TraitClause0]: Idx<I>,
 {
-  vector: IndexVec<I>[@TraitClause1],
+  vector: IndexVec<I>[@TraitClause0],
 }
 
 // Full name: test_crate::foo
@@ -37,7 +37,7 @@ fn foo<T>(@1: T)
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for T}] _x@1
+    conditional_drop[{built_in impl Destruct for T}] _x@1
     return
 }
 

@@ -254,11 +254,11 @@ where
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (@3))
     storage_dead(@3)
-    drop[{built_in impl Destruct for @TraitClause1::parent_clause2::Type}] @2
+    conditional_drop[{built_in impl Destruct for @TraitClause1::parent_clause2::Type}] @2
     storage_dead(@4)
     storage_dead(@2)
     @0 := ()
-    drop[{built_in impl Destruct for @TraitClause1::}] foo@1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::}] foo@1
     storage_dead(foo@1)
     return
 }
@@ -327,7 +327,7 @@ where
 fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
 where
     [@TraitClause0]: Sized<U>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}
 impl<U> Destruct for closure<U>[@TraitClause0]
@@ -377,7 +377,7 @@ pub fn use_wrap()
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
-    drop[{impl Destruct for closure<U>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] f@1
+    conditional_drop[{impl Destruct for closure<U>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] f@1
     storage_dead(f@1)
     return
 }

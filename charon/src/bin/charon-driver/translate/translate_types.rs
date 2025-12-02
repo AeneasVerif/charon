@@ -1,9 +1,8 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
-use hax::{HasParamEnv, Visibility};
+use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -18,13 +17,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ReErased => Ok(Region::Erased),
             ReStatic => Ok(Region::Static),
             ReBound(hax::BoundVarIndexKind::Bound(id), br) => {
-                let var = self.lookup_bound_region(span, *id, br.var)?;
-                Ok(Region::Var(var))
+                Ok(match self.lookup_bound_region(span, *id, br.var) {
+                    Ok(var) => Region::Var(var),
+                    Err(_) => Region::Erased,
+                })
             }
-            ReEarlyParam(region) => {
-                let var = self.lookup_early_region(span, region)?;
-                Ok(Region::Var(var))
-            }
+            ReEarlyParam(region) => Ok(match self.lookup_early_region(span, region) {
+                Ok(var) => Region::Var(var),
+                Err(_) => Region::Erased,
+            }),
             ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
                 raise_error!(
@@ -71,23 +72,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
-    pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
-        let cache_key = HashByAddr(ty.inner().clone());
+    pub(crate) fn translate_ty(&mut self, span: Span, hax_ty: &hax::Ty) -> Result<Ty, Error> {
         if let Some(ty) = self
             .innermost_binder()
             .type_trans_cache
-            .get(&cache_key)
+            .get(&hax_ty)
             .cloned()
         {
-            return Ok(ty.clone());
+            return Ok(ty);
         }
         // Catch the error to avoid a single error stopping the translation of a whole item.
         let ty = self
-            .translate_ty_inner(span, ty)
+            .translate_ty_inner(span, hax_ty)
             .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
         self.innermost_binder_mut()
             .type_trans_cache
-            .insert(cache_key, ty.clone());
+            .insert(hax_ty.clone(), ty.clone());
         Ok(ty)
     }
 
@@ -184,11 +184,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Note that if we are using this function to translate a field
                 // type in a type definition, it should actually map to a type
                 // parameter.
-                trace!("Param");
-
-                // Retrieve the translation of the substituted type:
-                let var = self.lookup_type_var(span, param)?;
-                TyKind::TypeVar(var)
+                match self.lookup_type_var(span, param) {
+                    Ok(var) => TyKind::TypeVar(var),
+                    Err(err) => TyKind::Error(err.msg),
+                }
             }
 
             hax::TyKind::Foreign(item) => {
@@ -211,11 +210,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(self_ty, preds, region) => {
+            hax::TyKind::Dynamic(dyn_binder, region) => {
                 self.check_no_monomorphize(span)?;
-                let pred = self.translate_existential_predicates(span, self_ty, preds, region)?;
-                if let hax::ClauseKind::Trait(trait_predicate) =
-                    preds.predicates[0].0.kind.hax_skip_binder_ref()
+                // Translate the region outside the binder.
+                let region = self.translate_region(span, region)?;
+
+                let binder = self.translate_dyn_binder(span, dyn_binder, |ctx, ty, ()| {
+                    let region = region.move_under_binder();
+                    ctx.innermost_binder_mut()
+                        .params
+                        .types_outlive
+                        .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
+                    Ok(ty)
+                })?;
+
+                if let hax::ClauseKind::Trait(trait_predicate) = dyn_binder.predicates.predicates[0]
+                    .0
+                    .kind
+                    .hax_skip_binder_ref()
                 {
                     // TODO(dyn): for now, we consider traits with associated types to not be dyn
                     // compatible because we don't know how to handle them; for these we skip
@@ -230,7 +242,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         );
                     }
                 }
-                TyKind::DynTrait(pred)
+                TyKind::DynTrait(DynPredicate { binder })
             }
 
             hax::TyKind::Infer(_) => {
@@ -373,11 +385,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             _ if everything_is_sized || tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
-                hax::TyKind::Dynamic(_, preds, _) => {
+                hax::TyKind::Dynamic(dyn_binder, _) => {
                     let vtable = self
                         .translate_region_binder(
                             span,
-                            &preds.predicates[0].0.kind,
+                            &dyn_binder.predicates.predicates[0].0.kind,
                             |ctx, kind: &hax::ClauseKind| {
                                 let hax::ClauseKind::Trait(trait_predicate) = kind else {
                                     unreachable!()
@@ -453,6 +465,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let tcx = self.t_ctx.tcx;
         let rdefid = item.def_id.as_rust_def_id().unwrap();
         let hax_state = self.hax_state_with_id();
+        assert_eq!(hax_state.owner_id(), rdefid);
         let ty_env = hax_state.typing_env();
         let ty = tcx
             .type_of(rdefid)

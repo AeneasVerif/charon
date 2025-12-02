@@ -22,6 +22,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
     /// If we cannot desugar this drop, we just leave it unchanged.
     fn transform_drop_to_call(&mut self, term: &mut Terminator) {
         if let TerminatorKind::Drop {
+            kind: DropKind::Precise,
             place,
             tref,
             target,
@@ -36,18 +37,9 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 return;
             }
 
-            let ref_drop_arg = TyKind::RawPtr(place.ty().clone(), RefKind::Mut).into_ty();
-            let drop_arg = self.fresh_var(Some("drop_arg".into()), ref_drop_arg);
-            let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
-
-            let ptr_metadata = self.compute_place_metadata(&place);
-            let rval = Rvalue::RawPtr {
-                place: place.clone(),
-                kind: RefKind::Mut,
-                ptr_metadata: ptr_metadata,
-            };
-            // assign &raw mut place to drop_arg
-            self.insert_assn_stmt(drop_arg.clone(), rval);
+            // assign `&raw mut place` to a new variable
+            let drop_arg =
+                self.raw_borrow_to_new_var(place.clone(), RefKind::Mut, Some("drop_arg".into()));
 
             // Get the declaration id of drop_in_place from tref
             let trait_id = tref.trait_decl_ref.skip_binder.id;
@@ -61,6 +53,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             };
             let method_decl_id = bound_method.skip_binder.item.id;
 
+            let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
             let fn_ptr = FnPtr::new(
                 FnPtrKind::Trait(tref.clone(), method_name, method_decl_id),
                 GenericArgs::empty(),

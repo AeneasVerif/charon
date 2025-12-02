@@ -410,12 +410,12 @@ where
     Self::parent_clause3::Output = O,
     Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<O>
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
+    non-dyn-compatible
 }
 
 // Full name: core::slice::iter::Chunks
@@ -510,13 +510,11 @@ fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
             storage_dead(@7)
             @9 := copy (sampled@2) panic.+ const (100 : usize)
             sampled@2 := move (@9)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@7)
         }
-    }
-    else {
+    } else {
         storage_dead(@5)
         storage_dead(@4)
     }
@@ -633,11 +631,11 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@13)
                 storage_live(@14)
                 @14 := const (0 : usize)
-                storage_live(@53)
-                @53 := &*(bytes@11) with_metadata(copy (bytes@11.metadata))
-                storage_live(@54)
-                @54 := @SliceIndexShared<'_, u8>(move (@53), copy (@14))
-                @13 := copy (*(@54))
+                storage_live(@49)
+                @49 := &*(bytes@11) with_metadata(copy (bytes@11.metadata))
+                storage_live(@50)
+                @50 := @SliceIndexShared<'_, u8>(move (@49), copy (@14))
+                @13 := copy (*(@50))
                 b1@12 := cast<u8, i16>(move (@13))
                 storage_dead(@13)
                 storage_dead(@14)
@@ -657,11 +655,11 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                 storage_live(@19)
                 storage_live(@20)
                 @20 := const (2 : usize)
-                storage_live(@49)
-                @49 := &*(bytes@11) with_metadata(copy (bytes@11.metadata))
-                storage_live(@50)
-                @50 := @SliceIndexShared<'_, u8>(move (@49), copy (@20))
-                @19 := copy (*(@50))
+                storage_live(@53)
+                @53 := &*(bytes@11) with_metadata(copy (bytes@11.metadata))
+                storage_live(@54)
+                @54 := @SliceIndexShared<'_, u8>(move (@53), copy (@20))
+                @19 := copy (*(@54))
                 b3@18 := cast<u8, i16>(move (@19))
                 storage_dead(@19)
                 storage_dead(@20)
@@ -718,12 +716,10 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         storage_dead(@36)
                         @37 := copy (sampled@3) panic.+ const (1 : usize)
                         sampled@3 := move (@37)
-                    }
-                    else {
+                    } else {
                         storage_dead(@34)
                     }
-                }
-                else {
+                } else {
                     storage_dead(@32)
                 }
                 storage_dead(@33)
@@ -753,12 +749,10 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
                         storage_dead(@43)
                         @44 := copy (sampled@3) panic.+ const (1 : usize)
                         sampled@3 := move (@44)
-                    }
-                    else {
+                    } else {
                         storage_dead(@41)
                     }
-                }
-                else {
+                } else {
                     storage_dead(@39)
                 }
                 storage_dead(@40)

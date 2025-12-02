@@ -54,16 +54,6 @@ fn test_crate::MyIterator::method<'_0>(@1: &'_0 (A))
     return
 }
 
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 (B))
-{
-    let @0: (); // return
-    let self@1: &'_ (B); // arg #1
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 fn test_crate::MyIterator::method::<A><'_0>(@1: &'_0 (A))
 {
     let @0: (); // return

@@ -191,8 +191,6 @@ where
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
 pub trait TrustedRandomAccessNoCoerce<Self>
@@ -534,12 +532,12 @@ where
     Self::parent_clause3::Output = O,
     Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<O>
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
+    non-dyn-compatible
 }
 
 // Full name: core::panicking::AssertKind
@@ -584,7 +582,7 @@ fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (i
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
 fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}
 impl Destruct for closure {
@@ -780,8 +778,7 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         @15 := copy (*(right_val@12))
         @13 := move (@14) == move (@15)
         if move (@13) {
-        }
-        else {
+        } else {
             storage_dead(@15)
             storage_dead(@14)
             storage_live(kind@16)
@@ -808,8 +805,7 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_dead(@9)
         storage_dead(@6)
         storage_dead(@4)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     @0 := ()

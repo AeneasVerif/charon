@@ -40,8 +40,6 @@
 
 use std::mem;
 
-use crate::translate::translate_bodies::BodyTransCtx;
-
 use super::translate_crate::TransItemSourceKind;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
@@ -342,7 +340,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(match (target_kind, closure_kind) {
             (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
                 // Translate the function's body normally
-                let mut body = BodyTransCtx::new(&mut self).translate_def_body(span, def);
+                let mut body = self.translate_def_body(span, def);
                 // The body is translated as if the locals are: ret value, state, arg-1,
                 // ..., arg-N, rest...
                 // However, there is only one argument with the tupled closure arguments;
@@ -351,11 +349,14 @@ impl ItemTransCtx<'_, '_> {
                 // arg-N, rest...
                 // We then add N statements of the form `locals[N+3] := move locals[2].N`,
                 // to destructure the arguments.
-                let GExprBody {
+                let Body::Unstructured(GExprBody {
                     locals,
                     body: blocks,
                     ..
-                } = body.as_unstructured_mut().unwrap();
+                }) = &mut body
+                else {
+                    return Ok(body);
+                };
 
                 blocks.dyn_visit_mut(|local: &mut LocalId| {
                     if local.index() >= 2 {
@@ -415,7 +416,7 @@ impl ItemTransCtx<'_, '_> {
                 else {
                     panic!("missing shim for closure")
                 };
-                BodyTransCtx::new(&mut self).translate_body(span, body, &def.source_text)
+                self.translate_body(span, body, &def.source_text)
             }
             // Target translation:
             //
@@ -452,10 +453,10 @@ impl ItemTransCtx<'_, '_> {
 
                 builder.push_statement(StatementKind::Assign(
                     reborrow.clone(),
-                    // the state must be Sized, hence `()` as ptr-metadata
                     Rvalue::Ref {
                         place: deref_state,
                         kind: BorrowKind::Shared,
+                        // The state must be Sized, hence `()` as ptr-metadata
                         ptr_metadata: Operand::mk_const_unit(),
                     },
                 ));

@@ -1,4 +1,5 @@
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
+use hax::TraitPredicate;
 use itertools::Itertools;
 use std::{mem, vec};
 
@@ -42,7 +43,7 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>, for_method: bool) -> T
                         .into_ty()
                 } else {
                     self.new_self.clone().expect(
-                        "Found unexpected `Self` 
+                        "Found unexpected `Self`
                         type when constructing vtable",
                     )
                 })
@@ -106,44 +107,36 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-    pub fn translate_existential_predicates(
+    pub fn translate_dyn_binder<T, U>(
         &mut self,
         span: Span,
-        self_ty: &hax::ParamTy,
-        preds: &hax::GenericPredicates,
-        region: &hax::Region,
-    ) -> Result<DynPredicate, Error> {
+        binder: &hax::DynBinder<T>,
+        f: impl FnOnce(&mut Self, Ty, &T) -> Result<U, Error>,
+    ) -> Result<Binder<U>, Error> {
         // This is a robustness check: the current version of Rustc
         // accepts at most one method-bearing predicate in a trait object.
         // But things may change in the future.
-        self.check_at_most_one_pred_has_methods(span, preds)?;
-
-        // Translate the region outside the binder.
-        let region = self.translate_region(span, region)?;
-        let region = region.move_under_binder();
+        self.check_at_most_one_pred_has_methods(span, &binder.predicates)?;
 
         // Add a binder that contains the existentially quantified type.
         self.binding_levels.push(BindingLevel::new(true));
 
         // Add the existentially quantified type.
-        let ty_id = self
-            .innermost_binder_mut()
-            .push_type_var(self_ty.index, self_ty.name.clone());
+        let ty_id = self.innermost_binder_mut().push_type_var(
+            binder.existential_ty.index,
+            binder.existential_ty.name.clone(),
+        );
         let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
+        let val = f(self, ty, &binder.val)?;
 
-        self.innermost_binder_mut()
-            .params
-            .types_outlive
-            .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
-        self.register_predicates(preds, PredicateOrigin::Dyn)?;
+        self.register_predicates(&binder.predicates, PredicateOrigin::Dyn)?;
 
         let params = self.binding_levels.pop().unwrap().params;
-        let binder = Binder {
+        Ok(Binder {
             params: params,
-            skip_binder: ty,
+            skip_binder: val,
             kind: BinderKind::Dyn,
-        };
-        Ok(DynPredicate { binder })
+        })
     }
 }
 
@@ -358,8 +351,7 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(
                 self,
                 span,
-                "`dyn Trait` is not yet supported with `--monomorphize`; \
-                use `--monomorphize-conservative` instead"
+                "`dyn Trait` is not yet supported with `--monomorphize`"
             )
         }
         Ok(())
@@ -662,7 +654,7 @@ impl ItemTransCtx<'_, '_> {
                         TransItemSourceKind::VTableMethod(TraitImplSource::Normal),
                     )?
                     .erase();
-                ConstantExprKind::FnPtr(shim_ref)
+                ConstantExprKind::FnDef(shim_ref)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => ConstantExprKind::Opaque(
                 "shim for default methods \
@@ -941,42 +933,10 @@ impl ItemTransCtx<'_, '_> {
             aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
         };
 
-        // Build a reference to `std::ptr::drop_in_place<T>`.
-        // let drop_in_place: hax::ItemRef = {
-        //     // TODO: use the method instead
-        //     let s = self.hax_state_with_id();
-        //     let drop_in_place = self.tcx.lang_items().drop_in_place_fn().unwrap();
-        //     let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
-        //     let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-        //     hax::ItemRef::translate(s, drop_in_place, generics)
-        // };
-        // let fn_ptr = self
-        //     .translate_fn_ptr(span, &drop_in_place, TransItemSourceKind::Fun)?
-        //     .erase();
-        let fn_ptr = {
-            // Build a reference to `impl Destruct for T`.
-            let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
-            let impl_expr: hax::ImplExpr = {
-                let s = self.hax_state_with_id();
-                let rustc_trait_args = trait_ref.rustc_args(s);
-                let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-                let tref =
-                    rustc_middle::ty::TraitRef::new_from_args(self.tcx, destruct_trait, generics);
-                hax::solve_trait(s, rustc_middle::ty::Binder::dummy(tref))
-            };
-            let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
-            let method_id = self.register_item(
-                span,
-                impl_expr.r#trait.hax_skip_binder_ref(),
-                TransItemSourceKind::DropInPlaceMethod(None),
-            );
-            let item_name = TraitItemName("drop_in_place".into());
-            FnPtr::new(
-                FnPtrKind::Trait(tref, item_name, method_id),
-                GenericArgs::empty(),
-            )
-        };
-        mk_field(ConstantExprKind::FnPtr(fn_ptr));
+        let drop_shim =
+            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+
+        mk_field(ConstantExprKind::FnDef(drop_shim));
 
         // Add methods
         if let hax::FullDefKind::TraitImpl { items, .. } = impl_def.kind() {
@@ -1131,6 +1091,118 @@ impl ItemTransCtx<'_, '_> {
         });
 
         Ok(Body::Unstructured(builder.build()))
+    }
+
+    /// The target vtable drop_shim body looks like:
+    /// ```ignore
+    /// local ret@0 : ();
+    /// // the shim receiver of this drop_shim function
+    /// local shim_self@1 : ShimReceiverTy;
+    /// // the target receiver of the drop_shim
+    /// local target_self@2 : TargetReceiverTy;
+    /// // perform some conversion to cast / re-box the drop_shim receiver to the target receiver
+    /// target_self@2 := concretize_cast<ShimReceiverTy, TargetReceiverTy>(shim_self@1);
+    /// Drop(*target_self@2);
+    /// ```
+    fn translate_vtable_drop_shim_body(
+        &mut self,
+        span: Span,
+        shim_receiver: &Ty,
+        target_receiver: &Ty,
+        trait_pred: &TraitPredicate,
+    ) -> Result<Body, Error> {
+        let mut builder = BodyBuilder::new(span, 1);
+
+        builder.new_var(Some("ret".into()), Ty::mk_unit());
+        let dyn_self = builder.new_var(Some("dyn_self".into()), shim_receiver.clone());
+        let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
+
+        // Perform the core concretization cast.
+        let rval = Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::Concretize(
+                dyn_self.ty().clone(),
+                target_self.ty().clone(),
+            )),
+            Operand::Move(dyn_self.clone()),
+        );
+        builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
+
+        // Build a reference to `impl Destruct for T`. Given the
+        // target_receiver type `T`, use Hax to solve `T: Destruct`
+        // and translate the resolved result to `TraitRef` of the
+        // `drop_in_place`
+        let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
+        let impl_expr: hax::ImplExpr = {
+            let s = self.hax_state_with_id();
+            let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
+            let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
+            let tref =
+                rustc_middle::ty::TraitRef::new_from_args(self.tcx, destruct_trait, generics);
+            hax::solve_trait(s, rustc_middle::ty::Binder::dummy(tref))
+        };
+        let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
+
+        // Drop(*target_self)
+        let drop_arg = target_self.clone().deref();
+        builder.insert_drop(drop_arg, tref);
+
+        Ok(Body::Unstructured(builder.build()))
+    }
+
+    pub(crate) fn translate_vtable_drop_shim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_def: &hax::FullDef,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        self.translate_def_generics(span, impl_def)?;
+
+        let hax::FullDefKind::TraitImpl {
+            dyn_self: Some(dyn_self),
+            trait_pred,
+            ..
+        } = impl_def.kind()
+        else {
+            raise_error!(
+                self,
+                span,
+                "Trying to generate a vtable drop shim for a non-trait impl"
+            );
+        };
+
+        // `*mut dyn Trait`
+        let ref_dyn_self =
+            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
+        // `*mut T` for `impl Trait for T`
+        let ref_target_self = {
+            let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
+            TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
+        };
+
+        // `*mut dyn Trait -> ()`
+        let signature = FunSig {
+            is_unsafe: false,
+            generics: self.the_only_binder().params.clone(),
+            inputs: vec![ref_dyn_self.clone()],
+            output: Ty::mk_unit(),
+        };
+
+        let body: Body = self.translate_vtable_drop_shim_body(
+            span,
+            &ref_dyn_self,
+            &ref_target_self,
+            trait_pred,
+        )?;
+
+        Ok(FunDecl {
+            def_id: fun_id,
+            item_meta,
+            signature,
+            src: ItemSource::VTableMethodShim,
+            is_global_initializer: None,
+            body,
+        })
     }
 
     pub(crate) fn translate_vtable_shim(

@@ -339,12 +339,12 @@ where
     Self::parent_clause3::Output = O,
     Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<O>
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
+    non-dyn-compatible
 }
 
 // Full name: core::default::Default
@@ -1651,8 +1651,6 @@ where
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
 
 // Full name: core::ops::arith::AddAssign
 #[lang_item("add_assign")]
@@ -5274,9 +5272,9 @@ fn main()
     }
     storage_dead(@9)
     storage_dead(@7)
-    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
+    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
     storage_dead(iter@6)
-    drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
+    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
     storage_dead(@3)
     storage_live(@13)
     storage_live(@14)
@@ -5423,8 +5421,7 @@ fn main()
     @51 := copy (*(right_val@48))
     @49 := move (@50) == move (@51)
     if move (@49) {
-    }
-    else {
+    } else {
         storage_dead(@51)
         storage_dead(@50)
         storage_live(kind@52)

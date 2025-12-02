@@ -60,7 +60,7 @@ where
 fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(@1: *mut HashMap<S>[@TraitClause0])
 where
     [@TraitClause0]: Sized<S>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[@TraitClause0]}
 impl<S> Destruct for HashMap<S>[@TraitClause0]
@@ -84,8 +84,8 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for Q}] _k@2
-    drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
+    conditional_drop[{built_in impl Destruct for Q}] _k@2
+    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     return
 }
 
@@ -102,8 +102,8 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for Q}] _k@2
-    drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
+    conditional_drop[{built_in impl Destruct for Q}] _k@2
+    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     return
 }
 

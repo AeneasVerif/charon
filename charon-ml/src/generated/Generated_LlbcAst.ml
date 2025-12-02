@@ -43,17 +43,13 @@ and statement_kind =
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
   | Deinit of place
-  | Drop of place * trait_ref
+  | Drop of place * trait_ref * drop_kind
       (** Drop the value at the given place.
 
-          For MIR built and promoted, this is a conditional drop: the value will
-          only be dropped if it has not already been moved out. For MIR
-          elaborated and optimized, this is a real drop.
-
-          This then calls [<T as Destruct>::drop_in_place(&raw mut place)] and
-          marks the place as moved-out-of. The [drop_in_place] method is added
-          by Charon, it contains the same code as the
-          [core::ptr::drop_in_place<T>] builtin). *)
+          Depending on [DropKind], this may be a real call to [drop_in_place],
+          or a conditional call that should only happen if the place has not
+          been moved out of. See the docs of [DropKind] for more details; to get
+          precise drops use [--precise-drops]. *)
   | Assert of assertion
   | Call of call
   | Abort of abort_kind

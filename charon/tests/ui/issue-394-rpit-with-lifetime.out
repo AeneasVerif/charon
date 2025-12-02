@@ -116,7 +116,7 @@ fn {impl FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'_>}::drop_in_place
 fn {impl Destruct for closure<'_>}::drop_in_place<'a>(@1: *mut closure<'_>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'_>}
 impl<'a> Destruct for closure<'_> {

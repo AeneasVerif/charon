@@ -78,6 +78,8 @@ pub enum TransItemSourceKind {
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
     /// implementation.
     VTableMethod(TraitImplSource),
+    /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
+    VTableDropShim,
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -174,7 +176,7 @@ impl TransItemSource {
     fn sort_key(&self) -> impl Ord + '_ {
         let item_id = match &self.item {
             RustcItem::Poly(_) => None,
-            RustcItem::Mono(item) => Some(item.id()),
+            RustcItem::Mono(item) => Some(&item.generic_args),
         };
         (self.def_id().index, &self.kind, item_id)
     }
@@ -293,6 +295,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableDropShim(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -565,17 +568,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
 #[tracing::instrument(skip(tcx))]
 pub fn translate<'tcx, 'ctx>(
-    options: &CliOpts,
+    cli_options: &CliOpts,
     tcx: TyCtxt<'tcx>,
     sysroot: PathBuf,
 ) -> TransformCtx {
+    let mut error_ctx = ErrorCtx::new(!cli_options.abort_on_error, cli_options.error_on_warnings);
+    let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
+
     let mut hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
-            inline_anon_consts: true,
+            item_ref_use_concrete_impl: true,
+            inline_anon_consts: !translate_options.raw_consts,
             bounds_options: hax::options::BoundsOptions {
-                resolve_destruct: options.add_drop_bounds,
-                prune_sized: false,
+                resolve_destruct: translate_options.add_destruct_bounds,
+                prune_sized: cli_options.hide_marker_traits,
             },
         },
     );
@@ -589,8 +596,6 @@ pub fn translate<'tcx, 'ctx>(
     let crate_name = crate_def_id.krate.clone();
     trace!("# Crate: {}", crate_name);
 
-    let mut error_ctx = ErrorCtx::new(!options.abort_on_error, options.error_on_warnings);
-    let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,
         sysroot,
@@ -599,7 +604,7 @@ pub fn translate<'tcx, 'ctx>(
         errors: RefCell::new(error_ctx),
         translated: TranslatedCrate {
             crate_name,
-            options: options.clone(),
+            options: cli_options.clone(),
             ..TranslatedCrate::default()
         },
         method_status: Default::default(),
@@ -614,12 +619,12 @@ pub fn translate<'tcx, 'ctx>(
     };
     ctx.register_target_info();
 
-    if options.start_from.is_empty() {
+    if cli_options.start_from.is_empty() {
         // Recursively register all the items in the crate, starting from the crate root.
         ctx.enqueue_module_item(&crate_def_id);
     } else {
         // Start translating from the selected items.
-        for path in options.start_from.iter() {
+        for path in cli_options.start_from.iter() {
             let path = path.split("::").collect_vec();
             let resolved = super::resolve_path::def_path_def_ids(&ctx.hax_state, &path);
             match resolved {

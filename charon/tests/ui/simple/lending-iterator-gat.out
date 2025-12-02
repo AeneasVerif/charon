@@ -3,8 +3,6 @@
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-where
-    'a : 'a,
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -128,7 +126,17 @@ pub trait LendingIterator<Self>
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}::drop_in_place
 fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
-= <opaque>
+{
+    let @0: (); // return
+    let @1: *mut (A); // arg #1
+    let @2: &'_ mut ((A)); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
+    drop[{built_in impl Destruct for A}] (*(@2)).0
+    return
+}
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}
 impl<A> Destruct for (A) {
@@ -233,21 +241,21 @@ where
         @9 := move (item@6)
         @8 := (move (@9))
         @3 := @TraitClause3::call_mut<'_>(move (@7), move (@8))
-        drop[{built_in impl Destruct for @TraitClause2::Item}] @9
+        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] @9
         storage_dead(@9)
         storage_dead(@8)
         storage_dead(@7)
-        drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
+        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] item@6
         storage_dead(item@6)
-        drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+        conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
         storage_dead(@4)
         continue 0
     }
     @0 := ()
-    drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] @4
     storage_dead(@4)
-    drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
-    drop[{built_in impl Destruct for I}] iter@1
+    conditional_drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f@2
+    conditional_drop[{built_in impl Destruct for I}] iter@1
     return
 }
 
@@ -281,7 +289,7 @@ fn {impl FnMut<(&'_ (i32))> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
 fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {
@@ -413,8 +421,7 @@ pub fn main()
     @16 := copy (*(right_val@13))
     @14 := move (@15) == move (@16)
     if move (@14) {
-    }
-    else {
+    } else {
         storage_dead(@16)
         storage_dead(@15)
         storage_live(kind@17)

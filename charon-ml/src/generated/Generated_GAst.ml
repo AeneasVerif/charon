@@ -22,6 +22,17 @@ type fun_id = Types.fun_id [@@deriving show, ord]
 type fn_ptr_kind = Types.fn_ptr_kind [@@deriving show, ord]
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
+(** (U)LLBC is a language with side-effects: a statement may abort in a way that
+    isn't tracked by control-flow. The two kinds of abort are:
+    - Panic (may unwind or not depending on compilation setting);
+    - Undefined behavior: *)
+type abort_kind =
+  | Panic of name option  (** A built-in panicking function. *)
+  | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
+  | UnwindTerminate
+      (** Unwind had to stop for Abi reasons or because cleanup code panicked
+          again. *)
+
 (** Check the value of an operand and abort if the value is not expected. This
     is introduced to avoid a lot of small branches.
 
@@ -31,7 +42,7 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
     they're implicit in the semantics of our array accesses etc. Finally we
     introduce new asserts in [crate::transform::resugar::reconstruct_asserts].
 *)
-type assertion = {
+and assertion = {
   cond : operand;
   expected : bool;
       (** The value that the operand should evaluate to for the assert to
@@ -41,6 +52,37 @@ type assertion = {
 
 and call = { func : fn_operand; args : operand list; dest : place }
 and copy_non_overlapping = { src : operand; dst : operand; count : operand }
+
+(** A [Drop] statement/terminator can mean two things, depending on what MIR
+    phase we retrieved from rustc: it could be a real drop, or it could be a
+    "conditional drop", which is where drop may happen depending on whether the
+    borrow-checker determines a drop is needed. *)
+and drop_kind =
+  | Precise
+      (** A real drop. This calls
+          [<T as Destruct>::drop_in_place(&raw mut place)] and marks the place
+          as moved-out-of. Use [--desugar-drops] to transform all such drops to
+          an actual function call.
+
+          The [drop_in_place] method is added by Charon to the [Destruct] trait
+          to make it possible to track drop code in polymorphic code. It
+          contains the same code as the [core::ptr::drop_in_place<T>] builtin
+          would.
+
+          Drop are precise in MIR [elaborated] and [optimized]. *)
+  | Conditional
+      (** A conditional drop, which may or may not end up running drop code
+          depending on the code path that led to it. A conditional drop may also
+          become a partial drop (dropping only the subplaces that haven't been
+          moved out of), may be conditional on the code path that led to it, or
+          become an async drop. The exact semantics are left intentionally
+          unspecified by rustc developers. To elaborate such drops into precise
+          drops, pass [--precise-drops] to Charon.
+
+          A conditional drop may also be passed an unaligned place when dropping
+          fields of packed structs. Such a thing is UB for a precise drop.
+
+          Drop are conditional in MIR [built] and [promoted]. *)
 
 (** Common error used during the translation. *)
 and error = { span : span; msg : string }
@@ -387,9 +429,23 @@ type cli_options = {
           trait definitions to be mutually recursive with their method
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion. *)
-  add_drop_bounds : bool;
-      (** Whether to add [Destruct] bounds everywhere to enable proper tracking
-          of what code runs on a given [drop] call. *)
+  precise_drops : bool;
+      (** Whether to precisely translate drops and drop-related code. For this,
+          we add explicit [Destruct] bounds to all generic parameters, set the
+          MIR level to at least [elaborated], and attempt to retrieve drop glue
+          for all types.
+
+          This option is known to cause panics inside rustc, because their drop
+          handling is not design to work on polymorphic types. To silence the
+          warning, pass appropriate
+          [--opaque '{impl core::marker::Destruct for some::Type}'] options.
+
+          Without this option, drops may be "conditional" and we may lack
+          information about what code is run on drop in a given polymorphic
+          function body. *)
+  desugar_drops : bool;
+      (** Transform precise drops to the equivalent [drop_in_place(&raw mut p)]
+          call. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to
@@ -403,6 +459,7 @@ type cli_options = {
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Print the errors as warnings *)
   no_serialize : bool;
+  no_dedup_serialized_ast : bool;
   print_original_ullbc : bool;
   print_ullbc : bool;
   print_built_llbc : bool;
@@ -410,11 +467,12 @@ type cli_options = {
   no_merge_goto_chains : bool;
   no_ops_to_function_calls : bool;
   raw_boxes : bool;
+      (** Do not special-case the translation of [Box<T>] into a builtin ADT. *)
+  raw_consts : bool;  (** Do not inline or evaluate constants. *)
   preset : preset option;
       (** Named builtin sets of options. Currently used only for dependent
           projects, eveentually should be replaced with semantically-meaningful
           presets. *)
-  desugar_drops : bool;
 }
 
 (** A (group of) top-level declaration(s), properly reordered. *)
@@ -471,6 +529,9 @@ and preset =
   | OldDefaults
       (** The default translation used before May 2025. After that, many passes
           were made optional and disabled by default. *)
+  | RawMir
+      (** Emit the MIR as unmodified as possible. This is very imperfect for
+          now, we should make more passes optional. *)
   | Aeneas
   | Eurydice
   | Soteria

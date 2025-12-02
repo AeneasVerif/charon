@@ -133,7 +133,7 @@ fn foo()
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}::drop_in_place
 fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {

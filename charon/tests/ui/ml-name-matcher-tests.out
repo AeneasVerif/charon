@@ -385,8 +385,7 @@ fn funs_with_disambiguator(@1: bool) -> u32
     @2 := copy (b@1)
     if move (@2) {
         @0 := test_crate::funs_with_disambiguator::f()
-    }
-    else {
+    } else {
         @0 := test_crate::funs_with_disambiguator::f#1()
     }
     storage_dead(@2)
@@ -413,9 +412,9 @@ where
     storage_live(@2)
     @2 := move (item@1)
     @0 := MonoContainer { item: move (@2) }
-    drop[{built_in impl Destruct for T}] @2
+    conditional_drop[{built_in impl Destruct for T}] @2
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] item@1
+    conditional_drop[{built_in impl Destruct for T}] item@1
     return
 }
 

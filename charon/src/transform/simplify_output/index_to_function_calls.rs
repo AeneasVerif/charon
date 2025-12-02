@@ -2,7 +2,7 @@
 
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::transform::ctx::BodyTransformCtx;
+use crate::transform::ctx::{BodyTransformCtx, LlbcStatementTransformCtx};
 use derive_generic_visitor::*;
 
 use crate::transform::ctx::LlbcPass;
@@ -14,45 +14,12 @@ use crate::transform::ctx::LlbcPass;
 /// statements before the one that was just explored.
 #[derive(Visitor)]
 struct IndexVisitor<'a, 'b> {
-    locals: &'a mut Locals,
-    /// Statements to prepend to the statement currently being explored.
-    statements: Vec<Statement>,
+    ctx: &'b mut LlbcStatementTransformCtx<'a>,
     // When we visit a place, we need to know if it is being accessed mutably or not. Whenever we
     // visit something that contains a place we push the relevant mutability on this stack.
     // Unfortunately this requires us to be very careful to catch all the cases where we see
     // places.
     place_mutability_stack: Vec<bool>,
-    // Span of the statement.
-    span: Span,
-    ctx: &'b TransformCtx,
-    params: &'a GenericParams,
-}
-
-impl BodyTransformCtx for IndexVisitor<'_, '_> {
-    fn get_ctx(&self) -> &TransformCtx {
-        self.ctx
-    }
-    fn get_params(&self) -> &GenericParams {
-        self.params
-    }
-    fn get_locals_mut(&mut self) -> &mut Locals {
-        self.locals
-    }
-
-    fn insert_storage_live_stmt(&mut self, local: LocalId) {
-        let statement = StatementKind::StorageLive(local);
-        self.statements.push(Statement::new(self.span, statement));
-    }
-
-    fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
-        let statement = StatementKind::Assign(place, rvalue);
-        self.statements.push(Statement::new(self.span, statement));
-    }
-
-    fn insert_storage_dead_stmt(&mut self, local: LocalId) {
-        let statement = StatementKind::StorageDead(local);
-        self.statements.push(Statement::new(self.span, statement));
-    }
 }
 
 impl<'a, 'b> IndexVisitor<'a, 'b> {
@@ -80,13 +47,6 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             FnOperand::Regular(FnPtr::new(FnPtrKind::mk_builtin(builtin_fun), generics))
         };
 
-        let input_ty = TyKind::Ref(
-            Region::Erased,
-            subplace.ty().clone(),
-            RefKind::mutable(mut_access),
-        )
-        .into_ty();
-
         let elem_ty = tref.generics.types[0].clone();
         let output_inner_ty = if matches!(pe, Index { .. }) {
             elem_ty
@@ -106,25 +66,12 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             .into_ty()
         };
 
-        // do something similar to the `input_var` below, but for the metadata.
-        let ptr_metadata = self.compute_place_metadata(subplace);
-
         // Push the statements:
         // `storage_live(tmp0)`
         // `tmp0 = &{mut}p`
-        let input_var = {
-            let input_var = self.fresh_var(None, input_ty);
-            let kind = StatementKind::Assign(
-                input_var.clone(),
-                Rvalue::Ref {
-                    place: subplace.clone(),
-                    kind: BorrowKind::mutable(mut_access),
-                    ptr_metadata,
-                },
-            );
-            self.statements.push(Statement::new(self.span, kind));
-            input_var
-        };
+        let input_var =
+            self.ctx
+                .borrow_to_new_var(subplace.clone(), BorrowKind::mutable(mut_access), None);
 
         // Construct the arguments to pass to the indexing function.
         let mut args = vec![Operand::Move(input_var)];
@@ -142,21 +89,25 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             } => (x.as_ref().clone(), *from_end),
             _ => unreachable!(),
         };
-        let to_idx = self.compute_subslice_end_idx(subplace, last_arg, from_end);
+        let to_idx = self
+            .ctx
+            .compute_subslice_end_idx(subplace, last_arg, from_end);
         args.push(to_idx);
 
         // Call the indexing function:
         // `storage_live(tmp1)`
         // `tmp1 = {Array,Slice}{Mut,Shared}{Index,SubSlice}(move tmp0, <other args>)`
         let output_var = {
-            let output_var = self.fresh_var(None, output_ty);
+            let output_var = self.ctx.fresh_var(None, output_ty);
             let index_call = Call {
                 func: indexing_function,
                 args,
                 dest: output_var.clone(),
             };
             let kind = StatementKind::Call(index_call);
-            self.statements.push(Statement::new(self.span, kind));
+            self.ctx
+                .statements
+                .push(Statement::new(self.ctx.span, kind));
             output_var
         };
 
@@ -242,47 +193,6 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
     }
 }
 
-pub struct Transform;
-
-impl Transform {
-    fn transform_body_with_param(
-        &self,
-        ctx: &mut TransformCtx,
-        b: &mut ExprBody,
-        params: &GenericParams,
-    ) {
-        b.body.transform(|st: &mut Statement| {
-            let mut visitor = IndexVisitor {
-                locals: &mut b.locals,
-                statements: Vec::new(),
-                place_mutability_stack: Vec::new(),
-                span: st.span,
-                ctx: &ctx,
-                params,
-            };
-            use StatementKind::*;
-            match &mut st.kind {
-                Assign(..)
-                | SetDiscriminant(..)
-                | CopyNonOverlapping(_)
-                | Drop(..)
-                | Deinit(..)
-                | Call(..) => {
-                    let _ = visitor.visit_inner_with_mutability(st, true);
-                }
-                Switch(..) => {
-                    let _ = visitor.visit_inner_with_mutability(st, false);
-                }
-                Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
-                | Return | Break(..) | Continue(..) | Loop(..) => {
-                    let _ = st.drive_body_mut(&mut visitor);
-                }
-            }
-            visitor.statements
-        });
-    }
-}
-
 /// We do the following.
 ///
 /// If `p` is a projection (for instance: `var`, `*var`, `var.f`, etc.), we
@@ -341,10 +251,32 @@ impl Transform {
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
+pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        if let Some(body) = decl.body.as_structured_mut() {
-            self.transform_body_with_param(ctx, body, &decl.signature.generics)
-        }
+        decl.transform_llbc_statements(ctx, |ctx, st: &mut Statement| {
+            let mut visitor = IndexVisitor {
+                ctx,
+                place_mutability_stack: Vec::new(),
+            };
+            use StatementKind::*;
+            match &mut st.kind {
+                Assign(..)
+                | SetDiscriminant(..)
+                | CopyNonOverlapping(_)
+                | Drop(..)
+                | Deinit(..)
+                | Call(..) => {
+                    let _ = visitor.visit_inner_with_mutability(st, true);
+                }
+                Switch(..) => {
+                    let _ = visitor.visit_inner_with_mutability(st, false);
+                }
+                Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
+                | Return | Break(..) | Continue(..) | Loop(..) => {
+                    let _ = st.drive_body_mut(&mut visitor);
+                }
+            }
+        })
     }
 }

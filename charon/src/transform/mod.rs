@@ -35,6 +35,7 @@ pub mod resugar {
     pub mod reconstruct_asserts;
     pub mod reconstruct_boxes;
     pub mod reconstruct_fallible_operations;
+    pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
 }
 
@@ -133,6 +134,9 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
     // it must happen before passes that insert statements like [simplify_constants].
     UnstructuredBody(&resugar::reconstruct_fallible_operations::Transform),
+    // Recognize calls to the `offset_of` intrinsics and replace them with the corresponding
+    // `NullOp`.
+    UnstructuredBody(&resugar::reconstruct_intrinsics::Transform),
     // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
     // macro.
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,

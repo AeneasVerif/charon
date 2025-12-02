@@ -1093,10 +1093,7 @@ impl UpdateItemBody<'_> {
     fn process_trait_decl_ref(&mut self, tref: &mut TraitDeclRef, self_path: TraitRefKind) {
         trace!("{tref:?}");
         let target = GenericsSource::item(tref.id);
-        let self_tref = TraitRef {
-            kind: self_path,
-            trait_decl_ref: RegionBinder::empty(tref.clone()),
-        };
+        let self_tref = TraitRef::new(self_path, RegionBinder::empty(tref.clone()));
         self.update_generics(&mut tref.generics, target, Some(self_tref));
     }
 
@@ -1172,7 +1169,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
     }
 
     // Process trait refs
-    fn enter_trait_ref(&mut self, tref: &mut TraitRef) {
+    fn enter_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
         self.process_poly_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
         match &mut tref.kind {
             TraitRefKind::BuiltinOrAuto { types, .. } => {
@@ -1191,13 +1188,13 @@ impl VisitAstMut for UpdateItemBody<'_> {
         self.process_trait_decl_ref(&mut timpl.impl_trait, TraitRefKind::SelfId);
     }
     fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
-        let self_tref = TraitRef {
-            kind: TraitRefKind::SelfId,
-            trait_decl_ref: RegionBinder::empty(TraitDeclRef {
+        let self_tref = TraitRef::new(
+            TraitRefKind::SelfId,
+            RegionBinder::empty(TraitDeclRef {
                 id: tdecl.def_id,
                 generics: Box::new(tdecl.generics.identity_args()),
             }),
-        };
+        );
         for (clause_id, clause) in tdecl.implied_clauses.iter_mut_indexed() {
             let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
@@ -1329,13 +1326,13 @@ impl TransformPass for Transform {
                 // If we're self-referential, instead of adding new type parameters to pass to our
                 // parent clauses, we add new associated types. That way the parameter list of the
                 // trait stays unchanged.
-                let self_tref = TraitRef {
-                    kind: TraitRefKind::SelfId,
-                    trait_decl_ref: RegionBinder::empty(TraitDeclRef {
+                let self_tref = TraitRef::new(
+                    TraitRefKind::SelfId,
+                    RegionBinder::empty(TraitDeclRef {
                         id: tr.def_id,
                         generics: Box::new(tr.generics.identity_args()),
                     }),
-                };
+                );
                 modifications.compute_replacements(|path| {
                     let new_type_name = TraitItemName(path.to_name().into());
                     tr.types.push(Binder::empty(

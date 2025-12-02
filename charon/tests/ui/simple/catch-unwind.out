@@ -1,0 +1,181 @@
+# Final LLBC before serialization:
+
+opaque type core::any::Any::{vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::any::TypeId
+#[lang_item("type_id")]
+pub opaque type TypeId
+
+// Full name: core::any::Any
+#[lang_item("Any")]
+pub trait Any<Self>
+where
+    Self : 'static,
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn type_id<'_0_1> = type_id<'_0_1, Self>[Self]
+    vtable: core::any::Any::{vtable}
+}
+
+// Full name: core::any::Any::type_id
+pub fn type_id<'_0, Self>(@1: &'_0 (Self)) -> TypeId
+where
+    [@TraitClause0]: Any<Self>,
+= <opaque>
+
+// Full name: core::marker::Send
+#[lang_item("Send")]
+pub trait Send<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
+
+// Full name: core::panic::unwind_safe::UnwindSafe
+#[lang_item("unwind_safe_trait")]
+pub trait UnwindSafe<Self>
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place
+fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(@1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+= <opaque>
+
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}
+impl<T, E> Destruct for Result<T, E>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+    fn drop_in_place = {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: std::panic::catch_unwind
+pub fn catch_unwind<F, R>(@1: F) -> Result<R, alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + [@TraitClause1_1]: Send<_dyn> + _dyn : 'static)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]>[@TraitClause1, {built_in impl Sized for alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_3]: Any<_dyn> + [@TraitClause1_3]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]}]
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Sized<R>,
+    [@TraitClause2]: FnOnce<F, ()>,
+    [@TraitClause3]: UnwindSafe<F>,
+    @TraitClause2::Output = R,
+= <opaque>
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::main::closure
+struct closure {}
+
+// Full name: test_crate::main::{impl FnOnce<()> for closure}::call_once
+fn {impl FnOnce<()> for closure}::call_once(@1: closure, @2: ())
+{
+    let @0: (); // return
+    let @1: closure; // arg #1
+    let tupled_args@2: (); // arg #2
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::main::{impl FnOnce<()> for closure}
+impl FnOnce<()> for closure {
+    parent_clause0 = {built_in impl MetaSized for closure}
+    parent_clause1 = {built_in impl Sized for ()}
+    parent_clause2 = {built_in impl Tuple for ()}
+    parent_clause3 = {built_in impl Sized for ()}
+    type Output = ()
+    fn call_once = {impl FnOnce<()> for closure}::call_once
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let @1: Result<(), alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + [@TraitClause1_1]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_3]: Any<_dyn> + [@TraitClause1_3]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]}]; // anonymous local
+    let @2: closure; // anonymous local
+
+    @0 := ()
+    storage_live(@1)
+    storage_live(@2)
+    @2 := closure {  }
+    @1 := catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move (@2))
+    storage_dead(@2)
+    conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + [@TraitClause1_1]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_2]: Any<_dyn> + [@TraitClause1_2]: Send<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_3]: Any<_dyn> + [@TraitClause1_3]: Send<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]}]] @1
+    storage_dead(@1)
+    @0 := ()
+    return
+}
+
+
+

@@ -11,12 +11,10 @@
 //! handle the globals like function calls.
 
 use itertools::Itertools;
-use std::assert_matches::assert_matches;
 
 use crate::transform::TransformCtx;
+use crate::transform::ctx::{BodyTransformCtx, UllbcPass, UllbcStatementTransformCtx};
 use crate::ullbc_ast::*;
-
-use crate::transform::ctx::UllbcPass;
 
 /// If the constant value is a constant ADT, push `Assign::Aggregate` statements
 /// to the vector of statements, that bind new variables to the ADT parts and
@@ -25,22 +23,22 @@ use crate::transform::ctx::UllbcPass;
 /// Goes fom e.g. `f(T::A(x, y))` to `let a = T::A(x, y); f(a)`.
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
 fn transform_constant_expr(
-    span: &Span,
+    ctx: &mut UllbcStatementTransformCtx<'_>,
     val: Box<ConstantExpr>,
-    new_var: &mut impl FnMut(Rvalue, Ty) -> Place,
 ) -> Operand {
-    match val.kind {
+    let mut val_ty = val.ty.clone();
+    let rval = match val.kind {
         ConstantExprKind::Literal(_)
         | ConstantExprKind::Var(_)
         | ConstantExprKind::RawMemory(..)
         | ConstantExprKind::TraitConst(..)
-        | ConstantExprKind::FnPtr(..)
+        | ConstantExprKind::FnDef(..)
         | ConstantExprKind::Opaque(_) => {
             // Nothing to do
             // TODO: for trait const: might come from a top-level impl, so we might
             // want to introduce an intermediate statement to be able to evaluate
             // it as a function call, like for globals.
-            Operand::Const(val)
+            return Operand::Const(val);
         }
         // Here we use a copy, rather than a move -- moving a global would leave it uninitialized,
         // which would e.g. make the following code fail:
@@ -48,7 +46,7 @@ fn transform_constant_expr(
         //     let x = GLOBAL;
         //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
         ConstantExprKind::Global(global_ref) => {
-            Operand::Copy(Place::new_global(global_ref, val.ty))
+            return Operand::Copy(Place::new_global(global_ref, val.ty));
         }
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
@@ -57,157 +55,128 @@ fn transform_constant_expr(
                 ptr,
             )));
             let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty.clone()));
-            let uvar = new_var(
-                Rvalue::UnaryOp(
-                    cast,
-                    Operand::Const(Box::new(ConstantExpr {
-                        kind: ptr_usize,
-                        ty: usize_ty,
-                    })),
-                ),
-                val.ty,
-            );
-            Operand::Move(uvar)
+            Rvalue::UnaryOp(
+                cast,
+                Operand::Const(Box::new(ConstantExpr {
+                    kind: ptr_usize,
+                    ty: usize_ty,
+                })),
+            )
+        }
+        ConstantExprKind::Ref(bval) if bval.ty.is_slice() => {
+            // We need to special-case slices; we don't take a reference to the slice,
+            // but an unsizing cast
+            // We generate the following code:
+            // let array: [T; N] = [...];
+            // let array_ref: &[T; N] = &array;
+            // return unsize::<&[T; N], &[T]>(array_ref);
+            let bval = transform_constant_expr(ctx, bval);
+            let bval_ty = bval.ty().clone();
+            let adt = bval_ty.as_adt().expect("Non-adt slice sub-constant");
+            assert_eq!(adt.id, TypeId::Builtin(BuiltinTy::Array));
+            let len = adt.generics.const_generics[0].clone();
+
+            let array_place = ctx.rval_to_place(Rvalue::Use(bval), bval_ty.clone());
+
+            let (_, _, rk) = val.ty.as_ref().unwrap();
+            let array_ref = ctx.borrow_to_new_var(array_place, rk.clone().into(), None);
+            Rvalue::UnaryOp(
+                UnOp::Cast(CastKind::Unsize(
+                    array_ref.ty.clone(),
+                    val.ty.clone(),
+                    UnsizingMetadata::Length(len),
+                )),
+                Operand::Move(array_ref),
+            )
         }
         ConstantExprKind::Ref(bval) => {
-            match bval.kind {
-                ConstantExprKind::Global(global_ref) => {
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-                    Operand::Move(new_var(
-                        // This is a reference to a global constant, which must be Sized, so no metadata
-                        Rvalue::Ref {
-                            place: Place::new_global(global_ref, bval.ty),
-                            kind: BorrowKind::Shared,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    ))
-                }
+            let place = match bval.kind {
+                ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
                 _ => {
                     // Recurse on the borrowed value
-                    let bval_ty = bval.ty.clone();
-                    let bval = transform_constant_expr(span, bval, new_var);
+                    let bval = transform_constant_expr(ctx, bval);
 
                     // Evaluate the referenced value
-                    let bvar = new_var(Rvalue::Use(bval), bval_ty);
-
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-
-                    // Borrow the value
-                    // As the value is originally an argument, it must be Sized
-                    let ref_var = new_var(
-                        Rvalue::Ref {
-                            place: bvar,
-                            kind: BorrowKind::Shared,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    );
-
-                    Operand::Move(ref_var)
+                    let bval_ty = bval.ty().clone();
+                    ctx.rval_to_place(Rvalue::Use(bval), bval_ty)
                 }
-            }
+            };
+            // Borrow the place.
+            ctx.borrow(place, BorrowKind::Shared)
         }
         ConstantExprKind::Ptr(rk, bval) => {
-            match bval.kind {
-                ConstantExprKind::Global(global_ref) => {
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-                    Operand::Move(new_var(
-                        // This is a raw pointer to a global constant, which must be Sized, so no metadata
-                        Rvalue::RawPtr {
-                            place: Place::new_global(global_ref, bval.ty),
-                            kind: rk,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    ))
-                }
+            // As the value is originally an argument, it must be Sized, hence no metadata
+            let place = match bval.kind {
+                ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
                 _ => {
                     // Recurse on the borrowed value
-                    let bval_ty = bval.ty.clone();
-                    let bval = transform_constant_expr(span, bval, new_var);
+                    let bval = transform_constant_expr(ctx, bval);
 
                     // Evaluate the referenced value
-                    let bvar = new_var(Rvalue::Use(bval), bval_ty);
-
-                    let unit_metadata = new_var(Rvalue::unit_value(), Ty::mk_unit());
-
-                    // Borrow the value
-                    // As the value is originally an argument, it must be Sized, hence no metadata
-                    let ref_var = new_var(
-                        Rvalue::RawPtr {
-                            place: bvar,
-                            kind: rk,
-                            ptr_metadata: Operand::Move(unit_metadata),
-                        },
-                        val.ty,
-                    );
-
-                    Operand::Move(ref_var)
+                    let bval_ty = bval.ty().clone();
+                    ctx.rval_to_place(Rvalue::Use(bval), bval_ty)
                 }
-            }
+            };
+            // Borrow the value
+            ctx.raw_borrow(place, rk)
         }
         ConstantExprKind::Adt(variant, fields) => {
             let fields = fields
                 .into_iter()
-                .map(|x| transform_constant_expr(span, Box::new(x), new_var))
+                .map(|x| transform_constant_expr(ctx, Box::new(x)))
                 .collect();
 
             // Build an `Aggregate` rvalue.
-            let rval = {
-                let tref = val.ty.kind().as_adt().unwrap();
-                let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
-                Rvalue::Aggregate(aggregate_kind, fields)
-            };
-            let var = new_var(rval, val.ty);
-
-            Operand::Move(var)
+            let tref = val.ty.kind().as_adt().unwrap();
+            let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
+            Rvalue::Aggregate(aggregate_kind, fields)
         }
-        ConstantExprKind::Array(fields) => {
+        ConstantExprKind::Array(fields) | ConstantExprKind::Slice(fields) => {
             let fields = fields
                 .into_iter()
-                .map(|x| transform_constant_expr(span, Box::new(x), new_var))
+                .map(|x| transform_constant_expr(ctx, Box::new(x)))
                 .collect_vec();
 
             let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Unsigned(
                 UIntTy::Usize,
                 fields.len() as u128,
             )));
-            let tref = val.ty.kind().as_adt().unwrap();
-            assert_matches!(
-                *tref.id.as_builtin().unwrap(),
-                BuiltinTy::Array | BuiltinTy::Slice
-            );
-            let ty = tref.generics.types[0].clone();
-            let rval = Rvalue::Aggregate(AggregateKind::Array(ty, len), fields);
-            let var = new_var(rval, val.ty);
-
-            Operand::Move(var)
+            let mut tref = val.ty.kind().as_adt().unwrap().clone();
+            let ty = tref.generics.types.pop().unwrap();
+            match tref.id.as_builtin().unwrap() {
+                BuiltinTy::Array => {}
+                BuiltinTy::Slice => val_ty = Ty::mk_array(ty.clone(), len.clone()),
+                _ => {
+                    unreachable!("Unpexected builtin type in array/slice constant")
+                }
+            }
+            Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
         }
-    }
+        ConstantExprKind::FnPtr(fptr) => {
+            let TyKind::FnPtr(sig) = val.ty.kind() else {
+                unreachable!("FnPtr constant must have FnPtr type");
+            };
+            let from_ty =
+                TyKind::FnDef(sig.clone().map(|_| fptr.clone().move_under_binder())).into_ty();
+            let to_ty = TyKind::FnPtr(sig.clone()).into_ty();
+
+            Rvalue::UnaryOp(
+                UnOp::Cast(CastKind::FnPtr(from_ty.clone(), to_ty)),
+                Operand::Const(Box::new(ConstantExpr {
+                    kind: ConstantExprKind::FnDef(fptr),
+                    ty: from_ty,
+                })),
+            )
+        }
+    };
+    Operand::Move(ctx.rval_to_place(rval, val_ty))
 }
 
-fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>, op: &mut Operand) {
+fn transform_operand(ctx: &mut UllbcStatementTransformCtx<'_>, op: &mut Operand) {
     // Transform the constant operands (otherwise do nothing)
     take_mut::take(op, |op| {
         if let Operand::Const(val) = op {
-            let mut new_var = |rvalue, ty| {
-                if let Rvalue::Use(Operand::Move(place)) = rvalue {
-                    place
-                } else {
-                    let var = locals.new_var(None, ty);
-                    nst.push(Statement::new(
-                        *span,
-                        StatementKind::StorageLive(var.as_local().unwrap()),
-                    ));
-                    nst.push(Statement::new(
-                        *span,
-                        StatementKind::Assign(var.clone(), rvalue),
-                    ));
-                    var
-                }
-            };
-            transform_constant_expr(span, val, &mut new_var)
+            transform_constant_expr(ctx, val)
         } else {
             op
         }
@@ -216,26 +185,27 @@ fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>,
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
-        for block in body.body.iter_mut() {
-            // Deconstruct some constants into series of MIR assignments.
-            block.transform_operands(|span, nst, op| {
-                transform_operand(span, &mut body.locals, nst, op)
-            });
-
-            // Simplify array with repeated constants into array repeats.
-            block.dyn_visit_in_body_mut(|rvalue: &mut Rvalue| {
-                take_mut::take(rvalue, |rvalue| match rvalue {
-                    Rvalue::Aggregate(AggregateKind::Array(ty, len), ref fields)
-                        if fields.len() >= 2
-                            && fields.iter().all(|x| x.is_const())
-                            && let Ok(op) = fields.iter().dedup().exactly_one() =>
-                    {
-                        Rvalue::Repeat(op.clone(), ty.clone(), len)
-                    }
-                    _ => rvalue,
+    fn transform_function(&self, ctx: &mut TransformCtx, fun_decl: &mut FunDecl) {
+        if ctx.options.raw_consts {
+            return;
+        }
+        fun_decl.transform_ullbc_operands(ctx, transform_operand);
+        if let Some(body) = fun_decl.body.as_unstructured_mut() {
+            for block in body.body.iter_mut() {
+                // Simplify array with repeated constants into array repeats.
+                block.dyn_visit_in_body_mut(|rvalue: &mut Rvalue| {
+                    take_mut::take(rvalue, |rvalue| match rvalue {
+                        Rvalue::Aggregate(AggregateKind::Array(ty, len), ref fields)
+                            if fields.len() >= 2
+                                && fields.iter().all(|x| x.is_const())
+                                && let Ok(op) = fields.iter().dedup().exactly_one() =>
+                        {
+                            Rvalue::Repeat(op.clone(), ty.clone(), len)
+                        }
+                        _ => rvalue,
+                    });
                 });
-            });
+            }
         }
     }
 }

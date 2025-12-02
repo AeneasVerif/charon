@@ -179,11 +179,23 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
-    /// Whether to add `Destruct` bounds everywhere to enable proper tracking of what code runs on
-    /// a given `drop` call.
+    /// Whether to precisely translate drops and drop-related code. For this, we add explicit
+    /// `Destruct` bounds to all generic parameters, set the MIR level to at least `elaborated`,
+    /// and attempt to retrieve drop glue for all types.
+    ///
+    /// This option is known to cause panics inside rustc, because their drop handling is not
+    /// design to work on polymorphic types. To silence the warning, pass appropriate `--opaque
+    /// '{impl core::marker::Destruct for some::Type}'` options.
+    ///
+    /// Without this option, drops may be "conditional" and we may lack information about what code
+    /// is run on drop in a given polymorphic function body.
     #[clap(long)]
     #[serde(default)]
-    pub add_drop_bounds: bool,
+    pub precise_drops: bool,
+    /// Transform precise drops to the equivalent `drop_in_place(&raw mut p)` call.
+    #[clap(long)]
+    #[serde(default)]
+    pub desugar_drops: bool,
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
     /// from the path `crate` (which translates the whole crate).
@@ -216,6 +228,12 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub no_serialize: bool,
+    #[clap(
+        long,
+        help = "Don't deduplicate values in the .(u)llbc file. This makes the file easier to inspect."
+    )]
+    #[serde(default)]
+    pub no_dedup_serialized_ast: bool,
     #[clap(
         long = "print-original-ullbc",
         help = "Print the ULLBC immediately after extraction from MIR."
@@ -254,25 +272,20 @@ pub struct CliOpts {
     #[serde(default)]
     pub no_ops_to_function_calls: bool,
 
-    #[clap(
-        long = "raw-boxes",
-        help = "Do not special-case the translation of `Box<T>` into a builtin ADT."
-    )]
+    /// Do not special-case the translation of `Box<T>` into a builtin ADT.
+    #[clap(long)]
     #[serde(default)]
     pub raw_boxes: bool,
+    /// Do not inline or evaluate constants.
+    #[clap(long)]
+    #[serde(default)]
+    pub raw_consts: bool,
 
     /// Named builtin sets of options. Currently used only for dependent projects, eveentually
     /// should be replaced with semantically-meaningful presets.
     #[clap(long = "preset")]
     #[arg(value_enum)]
     pub preset: Option<Preset>,
-
-    #[clap(
-        long = "desugar-drops",
-        help = "If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`"
-    )]
-    #[serde(default)]
-    pub desugar_drops: bool,
 }
 
 /// The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
@@ -299,6 +312,9 @@ pub enum Preset {
     /// The default translation used before May 2025. After that, many passes were made optional
     /// and disabled by default.
     OldDefaults,
+    /// Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more
+    /// passes optional.
+    RawMir,
     Aeneas,
     Eurydice,
     Soteria,
@@ -322,6 +338,12 @@ impl CliOpts {
             match preset {
                 Preset::OldDefaults => {
                     self.hide_allocator = !self.raw_boxes;
+                }
+                Preset::RawMir => {
+                    self.extract_opaque_bodies = true;
+                    self.raw_boxes = true;
+                    self.raw_consts = true;
+                    self.ullbc = true;
                 }
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
@@ -348,6 +370,7 @@ impl CliOpts {
                     self.ullbc = true;
                 }
                 Preset::Tests => {
+                    self.no_dedup_serialized_ast = true; // Helps debug
                     self.hide_allocator = !self.raw_boxes;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
@@ -474,6 +497,8 @@ pub struct TranslateOptions {
     pub print_built_llbc: bool,
     /// Don't special-case the translation of `Box<T>`
     pub raw_boxes: bool,
+    /// Don't inline or evaluate constants.
+    pub raw_consts: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
@@ -481,6 +506,10 @@ pub struct TranslateOptions {
     pub remove_associated_types: Vec<NamePattern>,
     /// Transform Drop to Call drop_in_place
     pub desugar_drops: bool,
+    /// Add `Destruct` bounds to all generic params.
+    pub add_destruct_bounds: bool,
+    /// Translate drop glue for poly types, knowing that this may cause ICEs.
+    pub translate_poly_drop_glue: bool,
 }
 
 impl TranslateOptions {
@@ -497,11 +526,14 @@ impl TranslateOptions {
             }
         };
 
-        let mir_level = if options.mir_optimized {
+        let mut mir_level = if options.mir_optimized {
             MirLevel::Optimized
         } else {
             options.mir.unwrap_or(MirLevel::Promoted)
         };
+        if options.precise_drops {
+            mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
+        }
 
         let item_opacities = {
             use ItemOpacity::*;
@@ -560,9 +592,12 @@ impl TranslateOptions {
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             raw_boxes: options.raw_boxes,
+            raw_consts: options.raw_consts,
             remove_associated_types,
             translate_all_methods: options.translate_all_methods,
             desugar_drops: options.desugar_drops,
+            add_destruct_bounds: options.precise_drops,
+            translate_poly_drop_glue: options.precise_drops,
         }
     }
 

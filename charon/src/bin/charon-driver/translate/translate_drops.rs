@@ -1,7 +1,7 @@
-use crate::translate::{translate_bodies::BodyTransCtx, translate_crate::TransItemSourceKind};
+use crate::translate::translate_crate::TransItemSourceKind;
 
 use super::translate_ctx::*;
-use charon_lib::ast::*;
+use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
 use hax::FullDefKind;
 
 impl ItemTransCtx<'_, '_> {
@@ -9,17 +9,49 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         def: &hax::FullDef,
+        self_ty: &Ty,
     ) -> Result<Body, Error> {
         let (hax::FullDefKind::Adt { drop_glue, .. } | hax::FullDefKind::Closure { drop_glue, .. }) =
             def.kind()
         else {
-            return Ok(Body::Opaque);
-        };
-        let Some(body) = drop_glue else {
-            return Ok(Body::Opaque);
+            return Ok(Body::Missing);
         };
 
-        Ok(BodyTransCtx::new(self).translate_body(span, body, &def.source_text))
+        let tmp_body;
+        let body = match drop_glue {
+            Some(body) => body,
+            None if self.options.translate_poly_drop_glue => {
+                let ctx = std::panic::AssertUnwindSafe(&mut *self);
+                // This is likely to panic, see the docs of `--precise-drops`.
+                let Ok(body) =
+                    std::panic::catch_unwind(move || def.this().drop_glue_shim(ctx.hax_state()))
+                else {
+                    let self_ty_name = if let TyKind::Adt(TypeDeclRef {
+                        id: TypeId::Adt(type_id),
+                        ..
+                    }) = self_ty.kind()
+                        && let Some(name) = self.translated.item_name(*type_id)
+                    {
+                        name.to_string_with_ctx(&self.into_fmt())
+                    } else {
+                        "crate::the::Type".to_string()
+                    };
+                    raise_error!(
+                        self,
+                        span,
+                        "rustc panicked while retrieving drop glue. \
+                        This is known to happen with `--precise-drops`; to silence this warning, \
+                        pass `--opaque '{{impl core::marker::Destruct for {}}}'` to charon",
+                        self_ty_name
+                    )
+                };
+                tmp_body = body;
+                &tmp_body
+            }
+            None => return Ok(Body::Missing),
+        };
+
+        Ok(self.translate_body(span, body, &def.source_text))
     }
 
     /// Translate the body of the fake `Destruct::drop_in_place` method we're adding to the
@@ -82,7 +114,7 @@ impl ItemTransCtx<'_, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            self.translate_drop_in_place_method_body(span, def)?
+            self.translate_drop_in_place_method_body(span, def, &self_ty)?
         };
 
         let input = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();

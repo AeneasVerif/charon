@@ -35,8 +35,7 @@ fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     @4 := const (1 : usize)
     @5 := move (@2) >= move (@4)
     if move (@5) {
-    }
-    else {
+    } else {
         @0 := ()
         return
     }

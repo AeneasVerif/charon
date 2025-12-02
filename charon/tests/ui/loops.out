@@ -665,12 +665,12 @@ where
     Self::parent_clause3::Output = O,
     Self::parent_clause3::Residual = Self,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<O>
     parent_clause2 : [@TraitClause2]: Sized<Self::TryType>
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
-    vtable: core::ops::try_trait::Residual::{vtable}<O, Self::TryType>
+    non-dyn-compatible
 }
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -906,8 +906,7 @@ pub fn test_loop1(@1: u32) -> u32
             i@2 := move (@9)
             storage_dead(@4)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -959,8 +958,7 @@ pub fn test_loop2(@1: u32) -> u32
             @8 := copy (i@2)
             @7 := move (@8) == const (17 : u32)
             if move (@7) {
-            }
-            else {
+            } else {
                 storage_dead(@8)
                 storage_dead(@7)
                 storage_live(@9)
@@ -976,8 +974,7 @@ pub fn test_loop2(@1: u32) -> u32
             storage_dead(@8)
             storage_dead(@7)
             break 0
-        }
-        else {
+        } else {
             storage_dead(@6)
             storage_dead(@5)
             break 0
@@ -1059,8 +1056,7 @@ pub fn test_loop3(@1: u32) -> u32
                     storage_dead(@13)
                     @11 := move (@12) == const (17 : u32)
                     if move (@11) {
-                    }
-                    else {
+                    } else {
                         storage_dead(@12)
                         storage_dead(@11)
                         storage_live(@16)
@@ -1078,8 +1074,7 @@ pub fn test_loop3(@1: u32) -> u32
                     storage_dead(@11)
                     storage_dead(@8)
                     continue 0
-                }
-                else {
+                } else {
                     break 0
                 }
             }
@@ -1096,8 +1091,7 @@ pub fn test_loop3(@1: u32) -> u32
             i@2 := move (@21)
             storage_dead(@5)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -1184,8 +1178,7 @@ pub fn test_loop4(@1: u32) -> u32
                         storage_dead(@11)
                         storage_dead(@8)
                         continue 0
-                    }
-                    else {
+                    } else {
                         storage_dead(@12)
                         storage_dead(@11)
                         storage_live(@16)
@@ -1198,8 +1191,7 @@ pub fn test_loop4(@1: u32) -> u32
                         storage_dead(@8)
                         break 1
                     }
-                }
-                else {
+                } else {
                     break 0
                 }
             }
@@ -1216,8 +1208,7 @@ pub fn test_loop4(@1: u32) -> u32
             i@2 := move (@21)
             storage_dead(@5)
             continue 0
-        }
-        else {
+        } else {
             storage_dead(@7)
             storage_dead(@6)
             break 0
@@ -1291,8 +1282,7 @@ pub fn test_loop5(@1: u32) -> u32
                     j@3 := move (@13)
                     storage_dead(@8)
                     continue 0
-                }
-                else {
+                } else {
                     break 0
                 }
             }
@@ -1308,8 +1298,7 @@ pub fn test_loop5(@1: u32) -> u32
             i@2 := move (@16)
             storage_dead(@5)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -1362,8 +1351,7 @@ pub fn test_loop6(@1: u32) -> u32
             @8 := copy (i@2)
             @7 := move (@8) > const (3 : u32)
             if move (@7) {
-            }
-            else {
+            } else {
                 storage_dead(@8)
                 storage_dead(@7)
                 storage_live(@9)
@@ -1379,8 +1367,7 @@ pub fn test_loop6(@1: u32) -> u32
             storage_dead(@8)
             storage_dead(@7)
             break 0
-        }
-        else {
+        } else {
             storage_dead(@6)
             storage_dead(@5)
             break 0
@@ -1447,8 +1434,7 @@ pub fn test_loop7(@1: u32) -> u32
                 @11 := copy (i@2)
                 @10 := move (@11) > const (3 : u32)
                 if move (@10) {
-                }
-                else {
+                } else {
                     storage_dead(@11)
                     storage_dead(@10)
                     storage_live(@12)
@@ -1464,16 +1450,14 @@ pub fn test_loop7(@1: u32) -> u32
                 storage_dead(@11)
                 storage_dead(@10)
                 break 0
-            }
-            else {
+            } else {
                 storage_dead(@9)
                 storage_dead(@8)
                 break 0
             }
         }
         storage_dead(@7)
-    }
-    else {
+    } else {
         storage_dead(@6)
         storage_dead(@5)
         s@3 := const (2 : u32)
@@ -1518,8 +1502,7 @@ pub fn test_loops()
     @3 := copy (x@1)
     @2 := move (@3) == const (2 : u32)
     if move (@2) {
-    }
-    else {
+    } else {
         storage_dead(@3)
         panic(core::panicking::panic)
     }
@@ -1532,8 +1515,7 @@ pub fn test_loops()
     @6 := copy (x@4)
     @5 := move (@6) == const (1 : u32)
     if move (@5) {
-    }
-    else {
+    } else {
         storage_dead(@6)
         panic(core::panicking::panic)
     }
@@ -1546,8 +1528,7 @@ pub fn test_loops()
     @9 := copy (x@7)
     @8 := move (@9) == const (3 : u32)
     if move (@8) {
-    }
-    else {
+    } else {
         storage_dead(@9)
         panic(core::panicking::panic)
     }
@@ -1560,8 +1541,7 @@ pub fn test_loops()
     @12 := copy (x@10)
     @11 := move (@12) == const (1 : u32)
     if move (@11) {
-    }
-    else {
+    } else {
         storage_dead(@12)
         panic(core::panicking::panic)
     }
@@ -1574,8 +1554,7 @@ pub fn test_loops()
     @15 := copy (x@13)
     @14 := move (@15) == const (2 : u32)
     if move (@14) {
-    }
-    else {
+    } else {
         storage_dead(@15)
         panic(core::panicking::panic)
     }
@@ -1588,8 +1567,7 @@ pub fn test_loops()
     @18 := copy (x@16)
     @17 := move (@18) == const (2 : u32)
     if move (@17) {
-    }
-    else {
+    } else {
         storage_dead(@18)
         panic(core::panicking::panic)
     }
@@ -1812,8 +1790,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
         storage_dead(@5)
         @0 := copy (s@4)
         storage_dead(s@4)
-    }
-    else {
+    } else {
         @0 := const (0 : u32)
     }
     storage_dead(@3)
@@ -1860,8 +1837,7 @@ pub fn test_crate::sum(@1: u32) -> u32
             i@2 := move (@9)
             storage_dead(@4)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -1921,8 +1897,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, N>) -> u32
             i@2 := move (@9)
             storage_dead(@4)
             continue 0
-        }
-        else {
+        } else {
             break 0
         }
     }
@@ -1964,8 +1939,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_i
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
-        }
-        else {
+        } else {
             break 0
         }
         storage_dead(@5)
@@ -2029,8 +2003,7 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut (List<usize>[{built_in impl Sized for usiz
                 @7 := copy (x@2)
                 @5 := move (@6) == move (@7)
                 if move (@5) {
-                }
-                else {
+                } else {
                     storage_dead(@7)
                     storage_dead(@6)
                     storage_live(@8)
@@ -2085,8 +2058,7 @@ where
                 @6 := copy (i@2)
                 @5 := move (@6) == const (0 : u32)
                 if move (@5) {
-                }
-                else {
+                } else {
                     storage_dead(@6)
                     storage_live(@7)
                     @7 := &mut *(*(tl@4))

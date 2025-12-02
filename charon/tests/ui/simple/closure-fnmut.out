@@ -95,7 +95,7 @@ where
     @0 := @TraitClause1::call_mut<'_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{built_in impl Destruct for impl FnMut(u8) -> u8}] f@1
+    conditional_drop[{built_in impl Destruct for impl FnMut(u8) -> u8}] f@1
     return
 }
 
@@ -135,7 +135,7 @@ fn {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut (closure
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
 fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
-= <opaque>
+= <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
 impl<'_0> Destruct for closure<'_0> {

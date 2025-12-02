@@ -27,6 +27,15 @@ where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
+// Full name: core::clone::TrivialClone
+#[lang_item("trivial_clone")]
+pub trait TrivialClone<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
+}
+
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
@@ -83,6 +92,13 @@ impl Clone for Foo {
 
 // Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
+    parent_clause0 = {built_in impl MetaSized for Foo}
+    parent_clause1 = {impl Clone for Foo}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl TrivialClone for Foo}
+impl TrivialClone for Foo {
     parent_clause0 = {built_in impl MetaSized for Foo}
     parent_clause1 = {impl Clone for Foo}
     non-dyn-compatible

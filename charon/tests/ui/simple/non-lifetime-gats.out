@@ -124,7 +124,7 @@ where
     @2 := move (value@1)
     @0 := @BoxNew<T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] value@1
+    conditional_drop[{built_in impl Destruct for T}] value@1
     return
 }
 
@@ -151,7 +151,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause2::new<T>[@TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -164,7 +164,7 @@ pub fn main()
     @0 := ()
     storage_live(@1)
     @1 := make_pointer<BoxFamily, i32>[{built_in impl Sized for BoxFamily}, {built_in impl Sized for i32}, {impl PointerFamily for BoxFamily}](const (42 : i32))
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] @1
     storage_dead(@1)
     @0 := ()
     return

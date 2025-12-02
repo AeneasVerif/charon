@@ -95,10 +95,12 @@ pub enum TerminatorKind {
     },
     /// Drop the value at the given place.
     ///
-    /// This calls `<T as Destruct>::drop_in_place(&raw mut place)` and marks the place as
-    /// moved-out-of. The `drop_in_place` method is added by Charon, it contains the same code as
-    /// the `core::ptr::drop_in_place<T>` builtin).
+    /// Depending on `DropKind`, this may be a real call to `drop_in_place`, or a conditional call
+    /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
+    /// for more details; to get precise drops use `--precise-drops`.
     Drop {
+        #[drive(skip)]
+        kind: DropKind,
         place: Place,
         tref: TraitRef,
         target: BlockId,

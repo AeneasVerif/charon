@@ -146,7 +146,18 @@ pub trait BoolTrait<Self>
 fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
 where
     [@TraitClause0]: Sized<A>,
-= <opaque>
+{
+    let @0: (); // return
+    let @1: *mut (A, B); // arg #1
+    let @2: &'_ mut ((A, B)); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
+    drop[{built_in impl Destruct for A}] (*(@2)).0
+    drop[{built_in impl Destruct for B}] (*(@2)).1
+    return
+}
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
 impl<A, B> Destruct for (A, B)
@@ -220,8 +231,7 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
         @4 := &x@1
         @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
-    }
-    else {
+    } else {
         storage_dead(@3)
         @0 := const (false)
     }
@@ -293,13 +303,12 @@ where
         @4 := &x@1
         @0 := {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
         storage_dead(@4)
-    }
-    else {
+    } else {
         storage_dead(@3)
         @0 := const (false)
     }
     storage_dead(@2)
-    drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -317,7 +326,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T}] x@1
+    conditional_drop[{built_in impl Destruct for T}] x@1
     return
 }
 
@@ -380,7 +389,7 @@ where
     @0 := move (@6)
     storage_dead(@4)
     storage_dead(@2)
-    drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self@1
+    conditional_drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self@1
     return
 }
 
@@ -408,7 +417,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -426,7 +435,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
     return
 }
 
@@ -456,7 +465,7 @@ where
 fn {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Wrapper<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[@TraitClause0]}
 impl<T> Destruct for Wrapper<T>[@TraitClause0]
@@ -481,7 +490,7 @@ where
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
+    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
     return
 }
 
@@ -524,7 +533,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -596,7 +605,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T2}] y@1
+    conditional_drop[{built_in impl Destruct for T2}] y@1
     return
 }
 
@@ -633,7 +642,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for T2}] y@1
+    conditional_drop[{built_in impl Destruct for T2}] y@1
     return
 }
 
@@ -701,15 +710,14 @@ where
         @8 := &y@5
         @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
         storage_dead(@8)
-    }
-    else {
+    } else {
         storage_dead(@7)
         @0 := const (false)
     }
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop[{built_in impl Destruct for T}] x@2
+    conditional_drop[{built_in impl Destruct for T}] x@2
     return
 }
 
@@ -865,7 +873,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for @TraitClause1::W}] @1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] @1
     return
 }
 
@@ -883,7 +891,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
     storage_dead(@2)
-    drop[{built_in impl Destruct for @TraitClause1::W}] x@1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] x@1
     return
 }
 
@@ -1292,7 +1300,7 @@ where
 {
     let @0: usize; // return
 
-    @0 := const ({impl Trait for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]::LEN)
+    @0 := copy ({impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1])
     return
 }
 
@@ -1392,7 +1400,7 @@ where
 
     @0 := ()
     @0 := ()
-    drop[{built_in impl Destruct for F}] @1
+    conditional_drop[{built_in impl Destruct for F}] @1
     return
 }
 

@@ -45,8 +45,7 @@ where
         @7 := &mut *(x@2)
         @5 := &mut *(@7)
         storage_dead(@7)
-    }
-    else {
+    } else {
         @5 := &mut *(y@3)
     }
     @4 := &mut *(@5)
@@ -105,8 +104,7 @@ pub fn choose_test()
     @10 := copy (*(z@3))
     @9 := move (@10) == const (1 : i32)
     if move (@9) {
-    }
-    else {
+    } else {
         storage_dead(@10)
         panic(core::panicking::panic)
     }
@@ -118,8 +116,7 @@ pub fn choose_test()
     @12 := copy (x@1)
     @11 := move (@12) == const (1 : i32)
     if move (@11) {
-    }
-    else {
+    } else {
         storage_dead(@12)
         panic(core::panicking::panic)
     }
@@ -130,8 +127,7 @@ pub fn choose_test()
     @14 := copy (y@2)
     @13 := move (@14) == const (0 : i32)
     if move (@13) {
-    }
-    else {
+    } else {
         storage_dead(@14)
         panic(core::panicking::panic)
     }
@@ -142,8 +138,7 @@ pub fn choose_test()
     @16 := copy (*(z@3))
     @15 := move (@16) == const (1 : i32)
     if move (@15) {
-    }
-    else {
+    } else {
         storage_dead(@16)
         panic(core::panicking::panic)
     }

@@ -129,6 +129,24 @@ impl BorrowKind {
     }
 }
 
+impl From<BorrowKind> for RefKind {
+    fn from(value: BorrowKind) -> Self {
+        match value {
+            BorrowKind::Shared | BorrowKind::Shallow => RefKind::Shared,
+            BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable => RefKind::Mut,
+        }
+    }
+}
+
+impl From<RefKind> for BorrowKind {
+    fn from(value: RefKind) -> Self {
+        match value {
+            RefKind::Shared => BorrowKind::Shared,
+            RefKind::Mut => BorrowKind::Mut,
+        }
+    }
+}
+
 impl ProjectionElem {
     /// Compute the type obtained when applying the current projection to a place of type `ty`.
     pub fn project_type(&self, krate: &TranslatedCrate, ty: &Ty) -> Result<Ty, ()> {
@@ -250,6 +268,21 @@ impl FnPtr {
         Self {
             kind: Box::new(kind),
             generics: generics.into(),
+        }
+    }
+
+    /// Get the generics for the pre-monomorphization item.
+    pub fn pre_mono_generics<'a>(&'a self, krate: &'a TranslatedCrate) -> &'a GenericArgs {
+        match *self.kind {
+            FnPtrKind::Fun(FunId::Regular(fun_id)) => krate
+                .item_name(fun_id)
+                .unwrap()
+                .mono_args()
+                .unwrap_or(&self.generics),
+            //  We don't mono builtins.
+            FnPtrKind::Fun(FunId::Builtin(..)) => &self.generics,
+            // Can't happen in mono mode.
+            FnPtrKind::Trait(..) => &self.generics,
         }
     }
 }

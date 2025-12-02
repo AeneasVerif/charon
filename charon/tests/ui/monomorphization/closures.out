@@ -113,10 +113,10 @@ fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *m
 fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<Thing>(@1: *mut Thing)
+fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
+fn core::marker::Destruct::drop_in_place::<Thing>(@1: *mut Thing)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(u8)>
@@ -199,13 +199,10 @@ pub trait FnMut::<test_crate::main::closure#1<'_>, (u8)>
 pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut (test_crate::main::closure#1<'_>), @2: (u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut (test_crate::main::closure<'_>), @2: (u8)) -> u8
+pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 mut (test_crate::main::closure<'_>), @2: (u8)) -> u8
 = <opaque>
 
 pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8)><'_0>(@1: &'_0 mut (test_crate::main::closure#1<'_>), @2: (u8)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 mut (test_crate::main::closure<'_>), @2: (u8)) -> u8
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure#2, (u8)>
@@ -222,13 +219,13 @@ pub trait FnOnce::<test_crate::main::closure#2, (u8)>
 pub fn core::ops::function::FnOnce::call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>(@1: test_crate::main::closure#2, @2: (u8)) -> u8
-= <opaque>
-
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>(@1: test_crate::main::closure<'_>, @2: (u8)) -> u8
 = <opaque>
 
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>(@1: test_crate::main::closure#1<'_>, @2: (u8)) -> u8
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>(@1: test_crate::main::closure#2, @2: (u8)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()
@@ -319,7 +316,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
     @0 := {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_, '_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_>] f@1
+    conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_>] f@1
     return
 }
 
@@ -386,7 +383,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
     @0 := {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_, '_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_>] f@1
+    conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_>] f@1
     return
 }
 
@@ -453,7 +450,7 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate::main::closu
     @0 := {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop[{impl Destruct::<test_crate::main::closure#2>}] f@1
+    conditional_drop[{impl Destruct::<test_crate::main::closure#2>}] f@1
     return
 }
 

@@ -70,7 +70,7 @@ where
 fn {impl Destruct for Foo<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Foo<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
+= <missing>
 
 // Full name: test_crate::Foo::{impl Destruct for Foo<T>[@TraitClause0]}
 impl<T> Destruct for Foo<T>[@TraitClause0]
@@ -112,7 +112,7 @@ fn drop_foo(@1: Foo<u32>[{built_in impl Sized for u32}])
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
+    conditional_drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
     return
 }
 

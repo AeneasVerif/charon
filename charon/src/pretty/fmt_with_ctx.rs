@@ -972,12 +972,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Name {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let op = match self {
             NullOp::SizeOf => "size_of",
             NullOp::AlignOf => "align_of",
-            NullOp::OffsetOf(_) => "offset_of(?)",
+            &NullOp::OffsetOf(ref ty, variant, field) => {
+                let tid = *ty.id.as_adt().expect("found offset_of of a non-adt type");
+                write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
+                if let Some(variant) = variant {
+                    ctx.format_enum_variant_name(f, tid, variant)?;
+                    write!(f, ".")?;
+                }
+                ctx.format_field_name(f, tid, variant, field)?;
+                write!(f, ")")?;
+                return Ok(());
+            }
             NullOp::UbChecks => "ub_checks",
+            NullOp::OverflowChecks => "overflow_checks",
+            NullOp::ContractChecks => "contract_checks",
         };
         write!(f, "{op}")
     }
@@ -1140,6 +1152,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
             }
+            ConstantExprKind::Slice(values) => {
+                let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
+                write!(f, "[{}]", values)
+            }
             ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
@@ -1154,8 +1170,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 RefKind::Shared => write!(f, "&raw const {}", cv.with_ctx(ctx)),
             },
             ConstantExprKind::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
-            ConstantExprKind::FnPtr(fp) => {
+            ConstantExprKind::FnDef(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
+            }
+            ConstantExprKind::FnPtr(fp) => {
+                write!(f, "fnptr({})", fp.with_ctx(ctx))
             }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
             ConstantExprKind::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
@@ -1453,8 +1472,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::Deinit(place) => {
                 write!(f, "deinit({})", place.with_ctx(ctx))
             }
-            StatementKind::Drop(place, tref) => {
-                write!(f, "drop[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
+            StatementKind::Drop(place, tref, kind) => {
+                let kind = match kind {
+                    DropKind::Precise => "drop",
+                    DropKind::Conditional => "conditional_drop",
+                };
+                write!(f, "{kind}[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
             }
             StatementKind::Assert(assert) => {
                 write!(f, "{}", assert.with_ctx(ctx),)
@@ -1474,7 +1497,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     let ctx = &ctx.increase_indent();
                     write!(
                         f,
-                        "if {} {{\n{}{tab}}}\n{tab}else {{\n{}{tab}}}",
+                        "if {} {{\n{}{tab}}} else {{\n{}{tab}}}",
                         discr.with_ctx(ctx),
                         true_st.with_ctx(ctx),
                         false_st.with_ctx(ctx),
@@ -1579,14 +1602,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
             }
             TerminatorKind::Drop {
+                kind,
                 place,
                 tref,
                 target,
                 on_unwind,
             } => {
+                let kind = match kind {
+                    DropKind::Precise => "drop",
+                    DropKind::Conditional => "conditional_drop",
+                };
                 write!(
                     f,
-                    "drop[{}] {} -> bb{target} (unwind: bb{on_unwind})",
+                    "{kind}[{}] {} -> bb{target} (unwind: bb{on_unwind})",
                     tref.with_ctx(ctx),
                     place.with_ctx(ctx),
                 )

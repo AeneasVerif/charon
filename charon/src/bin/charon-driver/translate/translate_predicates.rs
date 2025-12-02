@@ -2,42 +2,45 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::Vector;
 
-pub fn recognize_builtin_impl(
-    trait_data: &hax::BuiltinTraitData,
-    trait_def: &hax::FullDef,
-) -> Option<BuiltinImplData> {
-    Some(match trait_data {
-        hax::BuiltinTraitData::Destruct(x) => {
-            match x {
-                hax::DestructData::Noop => BuiltinImplData::NoopDestruct,
-                hax::DestructData::Implicit => BuiltinImplData::UntrackedDestruct,
-                // This is unconditionally replaced by a `TraitImpl`.
-                hax::DestructData::Glue { .. } => return None,
+impl<'tcx> TranslateCtx<'tcx> {
+    pub fn recognize_builtin_impl(
+        &self,
+        trait_data: &hax::BuiltinTraitData,
+        trait_def: &hax::FullDef,
+    ) -> Option<BuiltinImplData> {
+        Some(match trait_data {
+            hax::BuiltinTraitData::Destruct(x) => {
+                match x {
+                    hax::DestructData::Noop => BuiltinImplData::NoopDestruct,
+                    hax::DestructData::Implicit => BuiltinImplData::UntrackedDestruct,
+                    // This is unconditionally replaced by a `TraitImpl`.
+                    hax::DestructData::Glue { .. } => return None,
+                }
             }
-        }
-        hax::BuiltinTraitData::Other => match &trait_def.lang_item {
-            None => match trait_def.diagnostic_item.as_deref() {
-                Some("Send") => BuiltinImplData::Send,
-                _ => return None,
+            hax::BuiltinTraitData::Other => match &trait_def.lang_item {
+                _ if self
+                    .tcx
+                    .trait_is_auto(trait_def.def_id().underlying_rust_def_id()) =>
+                {
+                    BuiltinImplData::Auto
+                }
+                None => return None,
+                Some(litem) => match litem.as_str() {
+                    "sized" => BuiltinImplData::Sized,
+                    "meta_sized" => BuiltinImplData::MetaSized,
+                    "tuple_trait" => BuiltinImplData::Tuple,
+                    "r#fn" => BuiltinImplData::Fn,
+                    "fn_mut" => BuiltinImplData::FnMut,
+                    "fn_once" => BuiltinImplData::FnOnce,
+                    "pointee_trait" => BuiltinImplData::Pointee,
+                    "clone" => BuiltinImplData::Clone,
+                    "copy" => BuiltinImplData::Copy,
+                    "discriminant_kind" => BuiltinImplData::DiscriminantKind,
+                    _ => return None,
+                },
             },
-            Some(litem) => match litem.as_str() {
-                "sized" => BuiltinImplData::Sized,
-                "meta_sized" => BuiltinImplData::MetaSized,
-                "tuple_trait" => BuiltinImplData::Tuple,
-                "unpin" => BuiltinImplData::Unpin,
-                "freeze" => BuiltinImplData::Freeze,
-                "sync" => BuiltinImplData::Sync,
-                "r#fn" => BuiltinImplData::Fn,
-                "fn_mut" => BuiltinImplData::FnMut,
-                "fn_once" => BuiltinImplData::FnOnce,
-                "pointee_trait" => BuiltinImplData::Pointee,
-                "clone" => BuiltinImplData::Clone,
-                "copy" => BuiltinImplData::Copy,
-                "discriminant_kind" => BuiltinImplData::DiscriminantKind,
-                _ => return None,
-            },
-        },
-    })
+        })
+    }
 }
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
@@ -178,16 +181,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 into.trait_type_constraints.push(pred);
             }
             ClauseKind::ConstArgHasType(..) => {
-                // I don't really understand that one. Why don't they put
-                // the type information in the const generic parameters
-                // directly? For now we just ignore it.
+                // These are used for trait resolution to get access to the type of const generics.
+                // We don't need them.
             }
-            ClauseKind::WellFormed(_) => {
-                raise_error!(self, span, "Well-formedness clauses are unsupported")
+            ClauseKind::HostEffect(..) => {
+                // These are used for `const Trait` clauses. Part of the `const_traits` unstable
+                // features. We ignore them for now.
             }
-            kind => {
-                raise_error!(self, span, "Unsupported clause: {:?}", kind)
+            ClauseKind::WellFormed(..) | ClauseKind::ConstEvaluatable(..) => {
+                // This is e.g. a clause `[(); N+1]:` (without anything after the `:`). This is
+                // used to require that the fallible `N+1` expression succeeds, so that it can be
+                // used at the type level. Part of the `generic_const_exprs` unstable feature.
             }
+            ClauseKind::UnstableFeature(..) => {
+                // Unclear what this means, related to stability markers which we don't care about.
+            }
+            #[expect(unreachable_patterns)]
+            kind => raise_error!(self, span, "Unsupported clause: {:?}", kind),
         }
         Ok(())
     }
@@ -215,10 +225,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             Ok(res) => Ok(res),
             Err(err) => {
                 register_error!(self, span, "Error during trait resolution: {}", &err.msg);
-                Ok(TraitRef {
-                    kind: TraitRefKind::Unknown(err.msg),
+                Ok(TraitRef::new(
+                    TraitRefKind::Unknown(err.msg),
                     trait_decl_ref,
-                })
+                ))
             }
         }
     }
@@ -237,10 +247,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ImplExprAtom::Concrete(item) => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
-                TraitRef {
-                    kind: TraitRefKind::TraitImpl(impl_ref),
-                    trait_decl_ref,
-                }
+                TraitRef::new(TraitRefKind::TraitImpl(impl_ref), trait_decl_ref)
             }
             ImplExprAtom::SelfImpl {
                 r#trait: trait_ref,
@@ -259,8 +266,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let mut tref_kind = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        let var = self.lookup_clause_var(span, *index)?;
-                        TraitRefKind::Clause(var)
+                        match self.lookup_clause_var(span, *index) {
+                            Ok(var) => TraitRefKind::Clause(var),
+                            Err(err) => TraitRefKind::Unknown(err.msg),
+                        }
                     }
                     _ => unreachable!(),
                 };
@@ -270,10 +279,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Apply the path
                 for path_elem in path {
                     use hax::ImplExprPathChunk::*;
-                    let trait_ref = Box::new(TraitRef {
-                        kind: tref_kind,
-                        trait_decl_ref: current_pred,
-                    });
+                    let trait_ref = Box::new(TraitRef::new(tref_kind, current_pred));
                     match path_elem {
                         AssocItem {
                             item,
@@ -299,15 +305,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     }
                 }
 
-                TraitRef {
-                    kind: tref_kind,
-                    trait_decl_ref,
-                }
+                TraitRef::new(tref_kind, trait_decl_ref)
             }
-            ImplExprAtom::Dyn => TraitRef {
-                kind: TraitRefKind::Dyn,
-                trait_decl_ref,
-            },
+            ImplExprAtom::Dyn => TraitRef::new(TraitRefKind::Dyn, trait_decl_ref),
             ImplExprAtom::Builtin {
                 trait_data,
                 impl_exprs,
@@ -363,7 +363,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ),
                     }
                 } else {
-                    let Some(builtin_data) = recognize_builtin_impl(trait_data, &trait_def) else {
+                    let Some(builtin_data) = self.recognize_builtin_impl(trait_data, &trait_def)
+                    else {
                         raise_error!(
                             self,
                             span,
@@ -394,18 +395,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } else {
                         let parent_trait_refs =
                             self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                        let types = types
-                            .iter()
-                            .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
-                                let name = self.t_ctx.translate_trait_item_name(def_id)?;
-                                let assoc_ty = TraitAssocTyImpl {
-                                    value: self.translate_ty(span, ty)?,
-                                    implied_trait_refs: self
-                                        .translate_trait_impl_exprs(span, impl_exprs)?,
-                                };
-                                Ok((name, assoc_ty))
-                            })
-                            .try_collect()?;
+                        let types = if self.monomorphize() {
+                            vec![]
+                        } else {
+                            types
+                                .iter()
+                                .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
+                                    let name = self.t_ctx.translate_trait_item_name(def_id)?;
+                                    let assoc_ty = TraitAssocTyImpl {
+                                        value: self.translate_ty(span, ty)?,
+                                        implied_trait_refs: self
+                                            .translate_trait_impl_exprs(span, impl_exprs)?,
+                                    };
+                                    Ok((name, assoc_ty))
+                                })
+                                .try_collect()?
+                        };
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,
                             parent_trait_refs,
@@ -413,16 +418,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         }
                     }
                 };
-                TraitRef {
-                    kind,
-                    trait_decl_ref,
-                }
+                TraitRef::new(kind, trait_decl_ref)
             }
             ImplExprAtom::Error(msg) => {
-                let trait_ref = TraitRef {
-                    kind: TraitRefKind::Unknown(msg.clone()),
-                    trait_decl_ref,
-                };
+                let trait_ref = TraitRef::new(TraitRefKind::Unknown(msg.clone()), trait_decl_ref);
                 if self.error_on_impl_expr_error {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }

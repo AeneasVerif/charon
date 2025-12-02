@@ -3,6 +3,12 @@
 // Full name: core::fmt::Error
 pub struct Error {}
 
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T,
+}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -13,39 +19,6 @@ pub trait Sized<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
-}
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
-}
-
-// Full name: core::fmt::rt::Count
-#[lang_item("format_count")]
-pub enum Count {
-  Is(u16),
-  Param(usize),
-  Implied,
-}
-
-// Full name: core::fmt::rt::Placeholder
-#[lang_item("format_placeholder")]
-pub struct Placeholder {
-  position: usize,
-  flags: u32,
-  precision: Count,
-  width: Count,
-}
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub struct NonNull<T> {
-  pointer: *const T,
 }
 
 // Full name: core::result::Result
@@ -77,13 +50,9 @@ pub struct Argument<'a> {
 
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
-pub struct Arguments<'a>
-where
-    'a : 'a,
-{
-  pieces: &'a (Slice<&'static (Str)>),
-  fmt: Option<&'a (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}],
-  args: &'a (Slice<Argument<'a>>),
+pub struct Arguments<'a> {
+  template: NonNull<u8>,
+  args: NonNull<Argument<'a>>,
 }
 
 fn core::slice::index::slice_index_fail::do_panic::runtime(@1: usize, @2: usize) -> !
@@ -170,6 +139,16 @@ where
 
     @0 := RangeInclusive { start: copy (start@1), end: copy (end@2), exhausted: const (false) }
     return
+}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
 }
 
 fn core::slice::index::slice_index_fail::do_panic(@1: usize, @2: usize) -> !
@@ -324,8 +303,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
     @6 := copy (len@3)
     @4 := move (@5) > move (@6)
     if move (@4) {
-    }
-    else {
+    } else {
         storage_dead(@6)
         storage_dead(@5)
         storage_dead(@4)
@@ -336,8 +314,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
         @12 := copy (len@3)
         @10 := move (@11) > move (@12)
         if move (@10) {
-        }
-        else {
+        } else {
             storage_dead(@12)
             storage_dead(@11)
             storage_dead(@10)
@@ -348,8 +325,7 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
             @18 := copy (end@2)
             @16 := move (@17) > move (@18)
             if move (@16) {
-            }
-            else {
+            } else {
                 storage_dead(@18)
                 storage_dead(@17)
                 storage_dead(@16)
@@ -462,8 +438,7 @@ where
         storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
-    }
-    else {
+    } else {
         storage_live(@13)
         @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
@@ -491,8 +466,7 @@ where
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@3)
             storage_live(@16)
@@ -542,8 +516,7 @@ where
         storage_live(@16)
         @16 := Option::None {  }
         @0 := move (@16)
-    }
-    else {
+    } else {
         storage_live(@13)
         @13 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@13) }
@@ -571,8 +544,7 @@ where
             @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
-        }
-        else {
+        } else {
             storage_dead(@8)
             storage_dead(@3)
             storage_live(@16)
@@ -584,16 +556,6 @@ where
     return
 }
 
-fn UNIT_METADATA()
-{
-    let @0: (); // return
-
-    @0 := ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
 fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
 {
@@ -603,18 +565,20 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     let len@3: usize; // arg #3
     let @4: bool; // anonymous local
     let @5: bool; // anonymous local
-    let @6: !; // anonymous local
-    let @7: Arguments<'_>; // anonymous local
-    let pieces@8: &'_ (Array<&'_ (Str), 1 : usize>); // local
-    let @9: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @10: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @11: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @12: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @13: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @14: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
+    let msg@6: &'_ (Str); // local
+    let @7: !; // anonymous local
+    let @8: Arguments<'_>; // anonymous local
+    let @9: NonNull<u8>; // anonymous local
+    let @10: *const u8; // anonymous local
+    let @11: NonNull<Argument<'_>>; // anonymous local
+    let @12: usize; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: usize; // anonymous local
+    let @15: *const Str; // anonymous local
+    let @16: &'_ (Slice<u8>); // anonymous local
 
-    storage_live(@6)
-    storage_live(pieces@8)
+    storage_live(msg@6)
+    storage_live(@7)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -625,30 +589,38 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
             storage_dead(@5)
             storage_dead(@4)
             return
+        } else {
         }
-        else {
-        }
+    } else {
     }
-    else {
-    }
+    msg@6 := const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@15)
+    @15 := &raw const *(msg@6) with_metadata(copy (msg@6.metadata))
+    @10 := cast<*const Str, *const u8>(copy (@15))
+    storage_dead(@15)
+    @9 := transmute<*const u8, NonNull<u8>>(copy (@10))
+    storage_dead(@10)
+    storage_live(@11)
     storage_live(@12)
     storage_live(@13)
-    @13 := []
-    @12 := &@13
-    storage_live(@7)
-    storage_live(@9)
-    @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@8 := &@9
-    storage_live(@10)
-    @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
-    storage_live(@11)
-    @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
     storage_live(@14)
-    @14 := Option::None {  }
-    @7 := Arguments { pieces: copy (@10), fmt: move (@14), args: copy (@11) }
+    storage_live(@16)
+    @16 := transmute<&'_ (Str), &'_ (Slice<u8>)>(const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @14 := copy (@16.metadata)
+    storage_dead(@16)
+    @13 := move (@14) wrap.<< const (1 : i32)
+    storage_dead(@14)
+    @12 := move (@13) | const (1 : usize)
+    storage_dead(@13)
+    @11 := transmute<usize, NonNull<Argument<'_>>>(move (@12))
+    storage_dead(@12)
+    @8 := Arguments { template: move (@9), args: move (@11) }
     storage_dead(@11)
-    storage_dead(@10)
-    @6 := panic_nounwind_fmt<'_>(move (@7), const (false))
+    storage_dead(@9)
+    @7 := panic_nounwind_fmt<'_>(move (@8), const (false))
 }
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
@@ -686,8 +658,7 @@ where
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     storage_live(@9)
@@ -714,18 +685,20 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     let len@3: usize; // arg #3
     let @4: bool; // anonymous local
     let @5: bool; // anonymous local
-    let @6: !; // anonymous local
-    let @7: Arguments<'_>; // anonymous local
-    let pieces@8: &'_ (Array<&'_ (Str), 1 : usize>); // local
-    let @9: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @10: &'_ (Slice<&'_ (Str)>); // anonymous local
-    let @11: &'_ (Slice<Argument<'_>>); // anonymous local
-    let @12: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @13: Array<Argument<'_>, 0 : usize>; // anonymous local
-    let @14: Option<&'_ (Slice<Placeholder>)>[{built_in impl Sized for &'_ (Slice<Placeholder>)}]; // anonymous local
+    let msg@6: &'_ (Str); // local
+    let @7: !; // anonymous local
+    let @8: Arguments<'_>; // anonymous local
+    let @9: NonNull<u8>; // anonymous local
+    let @10: *const u8; // anonymous local
+    let @11: NonNull<Argument<'_>>; // anonymous local
+    let @12: usize; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: usize; // anonymous local
+    let @15: *const Str; // anonymous local
+    let @16: &'_ (Slice<u8>); // anonymous local
 
-    storage_live(@6)
-    storage_live(pieces@8)
+    storage_live(msg@6)
+    storage_live(@7)
     @0 := ()
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
@@ -736,30 +709,38 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
             storage_dead(@5)
             storage_dead(@4)
             return
+        } else {
         }
-        else {
-        }
+    } else {
     }
-    else {
-    }
+    msg@6 := const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@15)
+    @15 := &raw const *(msg@6) with_metadata(copy (msg@6.metadata))
+    @10 := cast<*const Str, *const u8>(copy (@15))
+    storage_dead(@15)
+    @9 := transmute<*const u8, NonNull<u8>>(copy (@10))
+    storage_dead(@10)
+    storage_live(@11)
     storage_live(@12)
     storage_live(@13)
-    @13 := []
-    @12 := &@13
-    storage_live(@7)
-    storage_live(@9)
-    @9 := [const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")]
-    pieces@8 := &@9
-    storage_live(@10)
-    @10 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(copy (pieces@8))
-    storage_live(@11)
-    @11 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@12))
     storage_live(@14)
-    @14 := Option::None {  }
-    @7 := Arguments { pieces: copy (@10), fmt: move (@14), args: copy (@11) }
+    storage_live(@16)
+    @16 := transmute<&'_ (Str), &'_ (Slice<u8>)>(const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @14 := copy (@16.metadata)
+    storage_dead(@16)
+    @13 := move (@14) wrap.<< const (1 : i32)
+    storage_dead(@14)
+    @12 := move (@13) | const (1 : usize)
+    storage_dead(@13)
+    @11 := transmute<usize, NonNull<Argument<'_>>>(move (@12))
+    storage_dead(@12)
+    @8 := Arguments { template: move (@9), args: move (@11) }
     storage_dead(@11)
-    storage_dead(@10)
-    @6 := panic_nounwind_fmt<'_>(move (@7), const (false))
+    storage_dead(@9)
+    @7 := panic_nounwind_fmt<'_>(move (@8), const (false))
 }
 
 // Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
@@ -797,8 +778,7 @@ where
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     storage_dead(@3)
     storage_live(@9)
@@ -850,8 +830,7 @@ where
     @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
         storage_dead(@13)
-    }
-    else {
+    } else {
         storage_live(@14)
         @14 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@14) }
@@ -880,8 +859,7 @@ where
             storage_dead(@3)
             storage_dead(@7)
             return
-        }
-        else {
+        } else {
             storage_dead(@8)
         }
     }
@@ -925,8 +903,7 @@ where
     @13 := copy (self@4) < copy (rhs@5)
     if move (@13) {
         storage_dead(@13)
-    }
-    else {
+    } else {
         storage_live(@14)
         @14 := copy (self@4) ub.- copy (rhs@5)
         @3 := Option::Some { 0: move (@14) }
@@ -955,8 +932,7 @@ where
             storage_dead(@3)
             storage_dead(@7)
             return
-        }
-        else {
+        } else {
             storage_dead(@8)
         }
     }
@@ -1022,15 +998,13 @@ where
         storage_live(@17)
         @17 := Option::None {  }
         @0 := move (@17)
-    }
-    else {
+    } else {
         self@15 := move ((self@1).start)
         self@16 := move ((self@1).exhausted)
         exclusive_end@5 := copy (self@4) wrap.+ const (1 : usize)
         if copy (self@16) {
             self@15 := copy (exclusive_end@5)
-        }
-        else {
+        } else {
         }
         storage_live(@8)
         storage_live(@11)
@@ -1042,8 +1016,7 @@ where
             @0 := move (@18)
             storage_dead(@6)
             storage_dead(@8)
-        }
-        else {
+        } else {
             new_len@12 := copy (exclusive_end@5) ub.- copy (self@15)
             storage_dead(@11)
             storage_live(@6)
@@ -1066,8 +1039,7 @@ where
                 @8 := &*(@9) with_metadata(copy (@9.metadata))
                 @0 := Option::Some { 0: copy (@8) }
                 storage_dead(@9)
-            }
-            else {
+            } else {
                 storage_dead(@7)
                 storage_live(@18)
                 @18 := Option::None {  }
@@ -1118,15 +1090,13 @@ where
         storage_live(@17)
         @17 := Option::None {  }
         @0 := move (@17)
-    }
-    else {
+    } else {
         self@15 := move ((self@1).start)
         self@16 := move ((self@1).exhausted)
         exclusive_end@5 := copy (self@4) wrap.+ const (1 : usize)
         if copy (self@16) {
             self@15 := copy (exclusive_end@5)
-        }
-        else {
+        } else {
         }
         storage_live(@8)
         storage_live(@11)
@@ -1138,8 +1108,7 @@ where
             @0 := move (@18)
             storage_dead(@6)
             storage_dead(@8)
-        }
-        else {
+        } else {
             new_len@12 := copy (exclusive_end@5) ub.- copy (self@15)
             storage_dead(@11)
             storage_live(@6)
@@ -1162,8 +1131,7 @@ where
                 @8 := &mut *(@9) with_metadata(copy (@9.metadata))
                 @0 := Option::Some { 0: copy (@8) }
                 storage_dead(@9)
-            }
-            else {
+            } else {
                 storage_dead(@7)
                 storage_live(@18)
                 @18 := Option::None {  }
@@ -1207,8 +1175,7 @@ where
     exclusive_end@3 := copy (self@11) wrap.+ const (1 : usize)
     if copy (self@12) {
         self@10 := copy (exclusive_end@3)
-    }
-    else {
+    } else {
     }
     storage_live(new_len@7)
     storage_live(@4)
@@ -1218,8 +1185,7 @@ where
         @6 := copy (slice@2.metadata)
         @5 := {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy (self@10), copy (exclusive_end@3), move (@6))
         storage_dead(@6)
-    }
-    else {
+    } else {
     }
     storage_dead(@4)
     new_len@7 := copy (exclusive_end@3) ub.- copy (self@10)
@@ -1264,8 +1230,7 @@ where
     exclusive_end@3 := copy (self@11) wrap.+ const (1 : usize)
     if copy (self@12) {
         self@10 := copy (exclusive_end@3)
-    }
-    else {
+    } else {
     }
     storage_live(new_len@7)
     storage_live(@4)
@@ -1275,8 +1240,7 @@ where
         @6 := copy (slice@2.metadata)
         @5 := {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy (self@10), copy (exclusive_end@3), move (@6))
         storage_dead(@6)
-    }
-    else {
+    } else {
     }
     storage_dead(@4)
     new_len@7 := copy (exclusive_end@3) ub.- copy (self@10)
@@ -1340,8 +1304,7 @@ where
         storage_dead(@9)
         if copy (exhausted@5) {
             start@3 := copy (end@4)
-        }
-        else {
+        } else {
         }
         storage_live(@10)
         storage_live(self@11)
@@ -1355,8 +1318,7 @@ where
             storage_dead(rhs@12)
             storage_dead(self@11)
             storage_dead(@10)
-        }
-        else {
+        } else {
             storage_live(@18)
             @18 := copy (self@11) ub.- copy (rhs@12)
             @10 := Option::Some { 0: move (@18) }
@@ -1382,8 +1344,7 @@ where
             storage_dead(@7)
             return
         }
-    }
-    else {
+    } else {
         storage_dead(@8)
     }
     storage_dead(@7)
@@ -1439,8 +1400,7 @@ where
         storage_dead(@9)
         if copy (exhausted@5) {
             start@3 := copy (end@4)
-        }
-        else {
+        } else {
         }
         storage_live(@10)
         storage_live(self@11)
@@ -1454,8 +1414,7 @@ where
             storage_dead(rhs@12)
             storage_dead(self@11)
             storage_dead(@10)
-        }
-        else {
+        } else {
             storage_live(@18)
             @18 := copy (self@11) ub.- copy (rhs@12)
             @10 := Option::Some { 0: move (@18) }
@@ -1481,8 +1440,7 @@ where
             storage_dead(@7)
             return
         }
-    }
-    else {
+    } else {
         storage_dead(@8)
     }
     storage_dead(@7)
@@ -1507,6 +1465,16 @@ where
     fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[@TraitClause0]
     vtable: {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[@TraitClause0]
 }
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::slice_index_range
 pub fn slice_index_range<'_0>(@1: &'_0 (Slice<u8>)) -> &'_0 (Slice<u8>)

@@ -4,6 +4,10 @@
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
+// Full name: core::alloc::layout::{Layout}::from_size_align_unchecked
+pub unsafe fn from_size_align_unchecked(@1: usize, @2: usize) -> Layout
+= <opaque>
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -15,12 +19,6 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
-
-// Full name: core::alloc::layout::{Layout}::new
-pub fn new<T>() -> Layout
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
 
 // Full name: core::intrinsics::size_of
 pub fn size_of<T>() -> usize
@@ -116,7 +114,7 @@ where
 {
     let @0: Layout; // return
 
-    @0 := new<Self>[@TraitClause0::parent_clause0]()
+    @0 := from_size_align_unchecked(const (@TraitClause0::SIZE), const (@TraitClause0::ALIGN))
     return
 }
 
@@ -235,8 +233,7 @@ where
         @4 := precondition_check(move (@5), move (@6), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN), copy (count@3))
         storage_dead(@6)
         storage_dead(@5)
-    }
-    else {
+    } else {
     }
     copy_nonoverlapping(copy (src@1), copy (dst@2), copy (count@3))
     return

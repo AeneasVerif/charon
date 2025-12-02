@@ -176,9 +176,10 @@ pub enum UnOp {
 pub enum NullOp {
     SizeOf,
     AlignOf,
-    #[drive(skip)]
-    OffsetOf(Vec<(usize, FieldId)>),
+    OffsetOf(TypeDeclRef, Option<VariantId>, FieldId),
     UbChecks,
+    OverflowChecks,
+    ContractChecks,
 }
 
 /// For all the variants: the first type gives the source type, the second one gives
@@ -516,6 +517,8 @@ pub enum ConstantExprKind {
     Adt(Option<VariantId>, Vec<ConstantExpr>),
     #[charon::opaque]
     Array(Vec<ConstantExpr>),
+    #[charon::opaque]
+    Slice(Vec<ConstantExpr>),
     /// The value is a top-level constant/static.
     ///
     /// We eliminate this case in a micro-pass.
@@ -561,7 +564,12 @@ pub enum ConstantExprKind {
     Ptr(RefKind, Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericDbVar),
-    /// Function pointer
+    /// Function definition -- this is a ZST constant
+    FnDef(FnPtr),
+    /// A function pointer to a function item; this is an actual pointer to that function item.
+    ///
+    /// We eliminate this case in a micro-pass.
+    #[charon::opaque]
     FnPtr(FnPtr),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
@@ -617,9 +625,9 @@ pub enum Rvalue {
     /// Nullary operation (e.g. `size_of`)
     NullaryOp(NullOp, Ty),
     /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
-    /// an enum.
-    ///
-    /// This case is filtered in [crate::transform::resugar::reconstruct_matches]
+    /// an enum. The discriminant in question is the one in the `discriminant` field of the
+    /// corresponding `Variant`. This can be different than the value stored in memory (called
+    /// `tag`). That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
     Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text

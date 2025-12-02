@@ -111,8 +111,15 @@ Options:
       --remove-unused-self-clauses
           Trait method declarations take a `Self: Trait` clause as parameter, so that they can be reused by multiple trait impls. This however causes trait definitions to be mutually recursive with their method declarations. This flag removes `Self` clauses that aren't used to break this mutual recursion
 
-      --add-drop-bounds
-          Whether to add `Destruct` bounds everywhere to enable proper tracking of what code runs on a given `drop` call
+      --precise-drops
+          Whether to precisely translate drops and drop-related code. For this, we add explicit `Destruct` bounds to all generic parameters, set the MIR level to at least `elaborated`, and attempt to retrieve drop glue for all types.
+          
+          This option is known to cause panics inside rustc, because their drop handling is not design to work on polymorphic types. To silence the warning, pass appropriate `--opaque '{impl core::marker::Destruct for some::Type}'` options.
+          
+          Without this option, drops may be "conditional" and we may lack information about what code is run on drop in a given polymorphic function body.
+
+      --desugar-drops
+          Transform precise drops to the equivalent `drop_in_place(&raw mut p)` call
 
       --start-from <START_FROM>
           A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)
@@ -135,6 +142,9 @@ Options:
       --no-serialize
           Don't serialize the final (U)LLBC to a file.
 
+      --no-dedup-serialized-ast
+          Don't deduplicate values in the .(u)llbc file. This makes the file easier to inspect.
+
       --print-original-ullbc
           Print the ULLBC immediately after extraction from MIR.
 
@@ -154,20 +164,21 @@ Options:
           Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC
 
       --raw-boxes
-          Do not special-case the translation of `Box<T>` into a builtin ADT.
+          Do not special-case the translation of `Box<T>` into a builtin ADT
+
+      --raw-consts
+          Do not inline or evaluate constants
 
       --preset <PRESET>
           Named builtin sets of options. Currently used only for dependent projects, eveentually should be replaced with semantically-meaningful presets
 
           Possible values:
           - old-defaults: The default translation used before May 2025. After that, many passes were made optional and disabled by default
+          - raw-mir:      Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more passes optional
           - aeneas
           - eurydice
           - soteria
           - tests
-
-      --desugar-drops
-          If activated, transform `Drop(p)` to `Call drop_in_place(&raw mut p)`
 
   -h, --help
           Print help (see a summary with '-h')

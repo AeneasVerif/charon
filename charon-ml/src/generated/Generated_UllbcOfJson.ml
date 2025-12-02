@@ -134,17 +134,19 @@ and terminator_kind_of_json (ctx : of_json_ctx) (js : json) :
           ( "Drop",
             `Assoc
               [
+                ("kind", kind);
                 ("place", place);
                 ("tref", tref);
                 ("target", target);
                 ("on_unwind", on_unwind);
               ] );
         ] ->
+        let* kind = drop_kind_of_json ctx kind in
         let* place = place_of_json ctx place in
         let* tref = trait_ref_of_json ctx tref in
         let* target = block_id_of_json ctx target in
         let* on_unwind = block_id_of_json ctx on_unwind in
-        Ok (Drop (place, tref, target, on_unwind))
+        Ok (Drop (kind, place, tref, target, on_unwind))
     | `Assoc [ ("Abort", abort) ] ->
         let* abort = abort_kind_of_json ctx abort in
         Ok (Abort abort)

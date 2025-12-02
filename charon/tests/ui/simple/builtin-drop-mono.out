@@ -114,8 +114,7 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
         @6 := copy (@4) == copy (@3)
         if move (@6) {
             break 0
-        }
-        else {
+        } else {
             storage_live(@7)
             @7 := &mut *(@2) with_metadata(copy (@2.metadata))
             storage_live(@8)
@@ -161,23 +160,23 @@ pub trait Destruct::<(String, String)>
     vtable: core::marker::Destruct::{vtable}::<(String, String)>
 }
 
-fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
-= <opaque>
-
-fn core::marker::Destruct::drop_in_place::<Slice<String>>(@1: *mut Slice<String>)
-= <opaque>
-
 fn core::marker::Destruct::drop_in_place::<Global>(@1: *mut Global)
-= <opaque>
-
-fn core::marker::Destruct::drop_in_place::<Array<String, 4 : usize>>(@1: *mut Array<String, 4 : usize>)
-= <opaque>
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}]>(@1: *mut alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}])
-= <opaque>
+= <missing>
+
+fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
+= <missing>
+
+fn core::marker::Destruct::drop_in_place::<Array<String, 4 : usize>>(@1: *mut Array<String, 4 : usize>)
+= <missing>
+
+fn core::marker::Destruct::drop_in_place::<Slice<String>>(@1: *mut Slice<String>)
+= <missing>
 
 fn core::marker::Destruct::drop_in_place::<(String, String)>(@1: *mut (String, String))
-= <opaque>
+= <missing>
 
 // Full name: alloc::boxed::Box::{impl Destruct::<alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}]>}::drop_in_place::<Slice<String>, Global>
 fn {impl Destruct::<alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}]>}::drop_in_place::<Slice<String>, Global>(@1: *mut alloc::boxed::Box<Slice<String>>[{built_in impl MetaSized::<Slice<String>>}, {built_in impl Sized::<Global>}, {impl Destruct::<Slice<String>>}::<String>, {impl Destruct::<Global>}])
@@ -221,8 +220,7 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
         @8 := copy (@6) == copy (@5)
         if move (@8) {
             break 0
-        }
-        else {
+        } else {
             storage_live(@9)
             @9 := &mut *(@4) with_metadata(copy (@4.metadata))
             storage_live(@10)
