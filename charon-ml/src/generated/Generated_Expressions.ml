@@ -120,6 +120,17 @@ and borrow_kind =
           <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
       *)
 
+(** A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8
+    value, or part of a pointer with provenance (e.g. to a global or a function)
+*)
+and byte =
+  | Uninit  (** An uninitialized byte *)
+  | Value of int  (** A concrete byte value *)
+  | Provenance of provenance * int
+      (** A byte that is part of a pointer with provenance. The u8 is the offset
+          within the pointer. Note that we do not have an actual value for this
+          pointer byte, unlike MiniRust, as that is non-deterministic. *)
+
 (** For all the variants: the first type gives the source type, the second one
     gives the destination type. *)
 and cast_kind =
@@ -199,7 +210,7 @@ and constant_expr_kind =
           values. *)
   | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
   | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
-  | CRawMemory of int list
+  | CRawMemory of byte list
       (** Raw memory value obtained from constant evaluation. Used when a more
           structured representation isn't possible (e.g. for unions) or just
           isn't implemented yet. *)
@@ -291,6 +302,11 @@ and projection_elem =
           - [from]
           - [to]
           - [from_end] *)
+
+and provenance =
+  | Global of global_decl_ref
+  | Function of fun_decl_ref
+  | Unknown
 
 (** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
     We can also factor out the unops, binops with the function calls. TODO: move
