@@ -504,15 +504,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_inline(&self, def: &hax::FullDef) -> Option<InlineAttr> {
         match def.kind() {
-            hax::FullDefKind::Fn { inline, .. } | hax::FullDefKind::AssocFn { inline, .. } => {
-                match inline {
-                    hax::InlineAttr::None => None,
-                    hax::InlineAttr::Hint => Some(InlineAttr::Hint),
-                    hax::InlineAttr::Never => Some(InlineAttr::Never),
-                    hax::InlineAttr::Always => Some(InlineAttr::Always),
-                    hax::InlineAttr::Force { .. } => Some(InlineAttr::Always),
-                }
-            }
+            hax::FullDefKind::Fn { inline, .. }
+            | hax::FullDefKind::AssocFn { inline, .. }
+            | hax::FullDefKind::Closure { inline, .. } => match inline {
+                hax::InlineAttr::None => None,
+                hax::InlineAttr::Hint => Some(InlineAttr::Hint),
+                hax::InlineAttr::Never => Some(InlineAttr::Never),
+                hax::InlineAttr::Always => Some(InlineAttr::Always),
+                hax::InlineAttr::Force { .. } => Some(InlineAttr::Always),
+            },
             _ => None,
         }
     }
@@ -575,15 +575,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
         let is_local = def.def_id().is_local;
-        let (attr_info, lang_item) = if item_src.is_derived_item() {
-            (AttrInfo::default(), None)
-        } else {
+        let (attr_info, lang_item) = if !item_src.is_derived_item()
+            || matches!(item_src.kind, TransItemSourceKind::ClosureMethod(..))
+        {
             let attr_info = self.translate_attr_info(def);
             let lang_item = def
                 .lang_item
                 .clone()
                 .or_else(|| def.diagnostic_item.clone());
             (attr_info, lang_item)
+        } else {
+            (AttrInfo::default(), None)
         };
 
         let opacity = if self.is_extern_item(def)
