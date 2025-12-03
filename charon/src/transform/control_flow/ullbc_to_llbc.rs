@@ -272,18 +272,16 @@ fn filter_loop_parents(
     block_id: src::BlockId,
 ) -> Option<FilteredLoopParents> {
     let mut eliminate: usize = 0;
-    for (loop_id, _ldist) in parent_loops.iter().rev() {
-        if !loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
-            eliminate += 1;
-        } else {
+    for (i, (loop_id, _)) in parent_loops.iter().enumerate().rev() {
+        if loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
+            eliminate = i + 1;
             break;
         }
     }
 
-    if eliminate > 0 {
-        // Split the vector of parents
-        let (remaining_parents, removed_parents) =
-            parent_loops.split_at(parent_loops.len() - eliminate);
+    // Split the vector of parents
+    let (remaining_parents, removed_parents) = parent_loops.split_at(eliminate);
+    if !removed_parents.is_empty() {
         let (mut remaining_parents, removed_parents) =
             (remaining_parents.to_vec(), removed_parents.to_vec());
 
@@ -411,23 +409,13 @@ fn compute_loop_exit_candidates(
     };
 
     // Retrieve the children - note that we ignore the back edges
-    let children = cfg.cfg_no_be.neighbors(block_id);
-    for child in children {
+    for child in cfg.cfg_no_be.neighbors(block_id) {
         // If the parent loop entry is not reachable from the child without going
         // through a backward edge which goes directly to the loop entry, consider
         // this node a potential exit.
         ensure_sufficient_stack(|| {
-            match filter_loop_parents(cfg, &parent_loops, child) {
-                None => {
-                    compute_loop_exit_candidates(
-                        cfg,
-                        explored,
-                        ordered_loops,
-                        loop_exits,
-                        parent_loops.clone(),
-                        child,
-                    );
-                }
+            let new_parent_loops = match filter_loop_parents(cfg, &parent_loops, child) {
+                None => parent_loops.clone(),
                 Some(fparent_loops) => {
                     // We filtered some parent loops: it means this child and its
                     // children are loop exit candidates for all those loops: we must
@@ -455,18 +443,18 @@ fn compute_loop_exit_candidates(
                         &fparent_loops.removed_parents,
                         child,
                     );
-
-                    // Explore, with the filtered parents
-                    compute_loop_exit_candidates(
-                        cfg,
-                        explored,
-                        ordered_loops,
-                        loop_exits,
-                        fparent_loops.remaining_parents,
-                        child,
-                    );
+                    fparent_loops.remaining_parents
                 }
-            }
+            };
+            // Explore, with the filtered parents
+            compute_loop_exit_candidates(
+                cfg,
+                explored,
+                ordered_loops,
+                loop_exits,
+                new_parent_loops,
+                child,
+            );
         })
     }
 }
@@ -766,18 +754,10 @@ fn compute_loop_exits(
             }
         } else {
             // Register the exit, if there is one
-            match best_exit {
-                None => {
-                    // No exit was found
-                    trace!("Loop {loop_id}: could not find an exit candidate");
-                    chosen_loop_exits.insert(loop_id, None);
-                }
-                Some(exit_id) => {
-                    exits.insert(exit_id);
-                    trace!("Loop {loop_id}: selected the unique exit candidate {exit_id}");
-                    chosen_loop_exits.insert(loop_id, Some(exit_id));
-                }
+            if let Some(exit_id) = best_exit {
+                exits.insert(exit_id);
             }
+            chosen_loop_exits.insert(loop_id, best_exit);
         }
     }
 
@@ -886,14 +866,16 @@ fn compute_switch_exits_explore(
         let factor = BigRational::new(BigInt::from(1), BigInt::from(children.len()));
 
         // Small helper
-        let mut add_to_flow = |(id, f0): (src::BlockId, (BigRational, isize))| match flow.get(&id) {
-            None => flow.insert(id, f0),
-            Some(f1) => {
-                let f = f0.0 + f1.0.clone();
-                assert!(f0.1 == f1.1);
-                flow.insert(id, (f, f0.1))
-            }
-        };
+        let mut add_to_flow =
+            |(id, f0): (src::BlockId, (BigRational, isize))| match flow.get_mut(&id) {
+                None => {
+                    flow.insert(id, f0);
+                }
+                Some(f1) => {
+                    assert!(f0.1 == f1.1);
+                    f1.0 += f0.0;
+                }
+            };
 
         // For each child, multiply the flows of its own children by the ratio,
         // and add.
@@ -1044,20 +1026,16 @@ fn compute_switch_exits(
         trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
         let info = succs_info_map.get(&bid).unwrap();
-        let succs = &info.flow;
+        let sorted_exit_candidates = &info.flow;
         // Find the best successor: this is the last one (with the highest flow,
         // and the highest reverse topological rank).
-        if succs.is_empty() {
-            trace!("{bid:?} has no successors");
-            exits.insert(bid, None);
-        } else {
+        let exit = if let Some(exit) = sorted_exit_candidates.last() {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
-            let exit = succs.last().unwrap();
             trace!("{bid:?} has an exit candidate: {exit:?}");
             if exits_set.contains(&exit.id) {
                 trace!("Ignoring the exit candidate because already taken by an external switch");
-                exits.insert(bid, None);
+                None
             } else {
                 // It was not taken by an external switch.
                 //
@@ -1103,15 +1081,20 @@ fn compute_switch_exits(
                     // No intersection: ok
                     exits_set.insert(exit.id);
                     ord_exits_set.insert(make_ord_block_id(exit.id, tsort_map));
-                    exits.insert(bid, Some(exit.id));
+                    Some(exit.id)
                 } else {
                     trace!(
                         "Ignoring the exit candidate because of an intersection with external switches"
                     );
-                    exits.insert(bid, None);
+                    None
                 }
             }
-        }
+        } else {
+            trace!("{bid:?} has no successors");
+            None
+        };
+
+        exits.insert(bid, exit);
     }
 
     exits
@@ -1303,45 +1286,22 @@ fn compute_loop_switch_exits(
             // the inner/outer loops)
             let exit_id = loop_exits.get(&bid).unwrap();
             exit_info.loop_exits.insert(bid, *exit_id);
-
             // Check if we "own" the exit
-            match exit_id {
-                None => {
-                    // No exit
-                    exit_info.owned_loop_exits.insert(bid, None);
-                }
-                Some(exit_id) => {
-                    if all_exits.contains(exit_id) {
-                        // We don't own it
-                        exit_info.owned_loop_exits.insert(bid, None);
-                    } else {
-                        // We own it
-                        exit_info.owned_loop_exits.insert(bid, Some(*exit_id));
-                        all_exits.insert(*exit_id);
-                    }
-                }
+            let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
+            if let Some(exit_id) = exit_id {
+                all_exits.insert(exit_id);
             }
+            exit_info.owned_loop_exits.insert(bid, exit_id);
         } else {
             // For switches: check that the exit was not already given to a
             // loop
             let exit_id = switch_exits.get(&bid).unwrap();
-
-            match exit_id {
-                None => {
-                    // No exit
-                    exit_info.owned_switch_exits.insert(bid, None);
-                }
-                Some(exit_id) => {
-                    if all_exits.contains(exit_id) {
-                        // We don't own it
-                        exit_info.owned_switch_exits.insert(bid, None);
-                    } else {
-                        // We own it
-                        exit_info.owned_switch_exits.insert(bid, Some(*exit_id));
-                        all_exits.insert(*exit_id);
-                    }
-                }
+            // Check if we "own" the exit
+            let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
+            if let Some(exit_id) = exit_id {
+                all_exits.insert(exit_id);
             }
+            exit_info.owned_switch_exits.insert(bid, exit_id);
         }
     }
 
