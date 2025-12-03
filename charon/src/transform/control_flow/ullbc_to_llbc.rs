@@ -1787,7 +1787,7 @@ impl TransformPass for Transform {
         }
 
         if ctx.options.print_built_llbc {
-            info!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
+            eprintln!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
         }
     }
 }
