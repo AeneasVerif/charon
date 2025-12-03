@@ -393,8 +393,19 @@ and unop =
       (** Casts are rvalues in MIR, but we treat them as unops. *)
 
 and unsizing_metadata =
-  | MetaLength of const_generic
-  | MetaVTablePtr of trait_ref
+  | MetaLength of const_generic  (** Cast from [[T; N]] to [[T]]. *)
+  | MetaVTable of trait_ref * global_decl_ref option
+      (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] gives
+          the trait for which we're getting a vtable (this is the _principal_
+          trait of the [dyn Trait] target). The second field is the vtable
+          instance, if we could resolve it. *)
+  | MetaVTableUpcast of field_id list
+      (** Cast from [dyn Trait] to [dyn OtherTrait]. The fields indicate how to
+          retreive the vtable: it's always either the same we already had, or
+          the vtable for a (possibly nested) supertrait.
+
+          Note that we cheat in one case: when upcasting to a marker trait (e.g.
+          [dyn Trait -> dyn Sized]), we keep the current vtable. *)
   | MetaUnknown
 [@@deriving
   show,

@@ -2234,9 +2234,15 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Length", length) ] ->
         let* length = const_generic_of_json ctx length in
         Ok (MetaLength length)
-    | `Assoc [ ("VTablePtr", v_table_ptr) ] ->
-        let* v_table_ptr = trait_ref_of_json ctx v_table_ptr in
-        Ok (MetaVTablePtr v_table_ptr)
+    | `Assoc [ ("VTable", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = trait_ref_of_json ctx x_0 in
+        let* x_1 = option_of_json global_decl_ref_of_json ctx x_1 in
+        Ok (MetaVTable (x_0, x_1))
+    | `Assoc [ ("VTableUpcast", v_table_upcast) ] ->
+        let* v_table_upcast =
+          list_of_json field_id_of_json ctx v_table_upcast
+        in
+        Ok (MetaVTableUpcast v_table_upcast)
     | `String "Unknown" -> Ok MetaUnknown
     | _ -> Error "")
 

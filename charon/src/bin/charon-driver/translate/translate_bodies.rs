@@ -539,11 +539,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     ) => {
                         // We model casts of closures to function pointers by generating a new
                         // function item without the closure's state, that calls the actual closure.
-                        let op_ty = match hax_operand {
-                            hax::Operand::Move(p) | hax::Operand::Copy(p) => p.ty.kind(),
-                            hax::Operand::Constant(c) => c.ty.kind(),
-                        };
-                        let hax::TyKind::Closure(closure) = op_ty else {
+                        let hax::TyKind::Closure(closure) = hax_operand.ty().kind() else {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
                         let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
@@ -573,29 +569,74 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                match &impl_expr.r#impl {
+                                let vtable = match &impl_expr.r#impl {
                                     hax::ImplExprAtom::Concrete(tref) => {
                                         // Ensure the vtable type is translated.
-                                        let _: GlobalDeclId = self.register_item(
+                                        Some(self.translate_item(
                                             span,
                                             tref,
                                             TransItemSourceKind::VTableInstance(
                                                 TraitImplSource::Normal,
                                             ),
-                                        );
+                                        )?)
                                     }
                                     // TODO(dyn): more ways of registering vtable instance?
                                     _ => {
                                         trace!(
                                             "impl_expr not triggering registering vtable: {:?}",
                                             impl_expr
-                                        )
+                                        );
+                                        None
                                     }
                                 };
-                                UnsizingMetadata::VTablePtr(tref)
+                                UnsizingMetadata::VTable(tref, vtable)
                             }
-                            hax::UnsizingMetadata::NestedVTable(..)
-                            | hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+                            hax::UnsizingMetadata::NestedVTable(dyn_impl_expr) => {
+                                // This binds a fake `T: SrcTrait` variable.
+                                let binder = self.translate_dyn_binder(
+                                    span,
+                                    dyn_impl_expr,
+                                    |ctx, _, impl_expr| {
+                                        ctx.translate_trait_impl_expr(span, impl_expr)
+                                    },
+                                )?;
+
+                                // Compute the supertrait path from the source tref to the target
+                                // tref.
+                                let mut target_tref = &binder.skip_binder;
+                                let mut clause_path: Vec<(TraitDeclId, TraitClauseId)> = vec![];
+                                while let TraitRefKind::ParentClause(tref, id) = &target_tref.kind {
+                                    clause_path.push((tref.trait_decl_ref.skip_binder.id, *id));
+                                    target_tref = tref;
+                                }
+
+                                let mut field_path = vec![];
+                                for &(trait_id, clause_id) in &clause_path {
+                                    if let Ok(ItemRef::TraitDecl(tdecl)) =
+                                        self.get_or_translate(trait_id.into())
+                                        && let &vtable_decl_id =
+                                            tdecl.vtable.as_ref().unwrap().id.as_adt().unwrap()
+                                        && let Ok(ItemRef::Type(vtable_decl)) =
+                                            self.get_or_translate(vtable_decl_id.into())
+                                    {
+                                        let ItemSource::VTableTy { supertrait_map, .. } =
+                                            &vtable_decl.src
+                                        else {
+                                            unreachable!()
+                                        };
+                                        field_path.push(supertrait_map[clause_id].unwrap());
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                if field_path.len() == clause_path.len() {
+                                    UnsizingMetadata::VTableUpcast(field_path)
+                                } else {
+                                    UnsizingMetadata::Unknown
+                                }
+                            }
+                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
                         CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }

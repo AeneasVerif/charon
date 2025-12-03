@@ -260,8 +260,18 @@ pub enum CastKind {
 )]
 #[charon::variants_prefix("Meta")]
 pub enum UnsizingMetadata {
+    /// Cast from `[T; N]` to `[T]`.
     Length(ConstGeneric),
-    VTablePtr(TraitRef),
+    /// Cast from a sized value to a `dyn Trait` value. The `TraitRef` gives the trait for which
+    /// we're getting a vtable (this is the _principal_ trait of the `dyn Trait` target). The second
+    /// field is the vtable instance, if we could resolve it.
+    VTable(TraitRef, Option<GlobalDeclRef>),
+    /// Cast from `dyn Trait` to `dyn OtherTrait`. The fields indicate how to retreive the vtable:
+    /// it's always either the same we already had, or the vtable for a (possibly nested) supertrait.
+    ///
+    /// Note that we cheat in one case: when upcasting to a marker trait (e.g. `dyn Trait -> dyn
+    /// Sized`), we keep the current vtable.
+    VTableUpcast(Vec<FieldId>),
     Unknown,
 }
 
