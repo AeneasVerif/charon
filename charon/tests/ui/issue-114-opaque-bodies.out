@@ -229,7 +229,12 @@ pub fn inline_sometimes() -> u32
 
 // Full name: issue_114_opaque_bodies_aux::inline_never
 pub fn inline_never() -> u32
-= <missing>
+{
+    let @0: u32; // return
+
+    @0 := const (42 : u32)
+    return
+}
 
 // Full name: issue_114_opaque_bodies_aux::inline_generic
 pub fn inline_generic<T>() -> u32

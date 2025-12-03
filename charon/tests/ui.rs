@@ -178,6 +178,7 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     for (crate_name, rs_path, rlib_path) in deps.iter() {
         Command::new("rustc")
             .arg("--crate-type=rlib")
+            .arg("-Zalways-encode-mir")
             .arg(format!("--crate-name={crate_name}"))
             .arg("-o")
             .arg(rlib_path)

@@ -251,6 +251,8 @@ fn attributes() -> anyhow::Result<()> {
     };
     let crate_data = translate(
         r#"
+        #![feature(stmt_expr_attributes)]
+
         #[clippy::foo]
         #[clippy::foo(arg)]
         #[clippy::foo = "arg"]
@@ -273,7 +275,10 @@ fn attributes() -> anyhow::Result<()> {
 
         #[inline(never)]
         /// This is a doc comment.
-        fn main() {}
+        fn main() {
+            // Attribute on a closure.
+            let _f = #[inline(always)] || 42;
+        }
         "#,
     )?;
     assert_eq!(
@@ -311,6 +316,12 @@ fn attributes() -> anyhow::Result<()> {
             .unwrap(),
         &Attribute::DocComment(" This is a doc comment.".to_owned())
     );
+    // Check that the `inline` attribute on closures gets picked up.
+    let any_inline_always = crate_data
+        .fun_decls
+        .iter()
+        .any(|decl| matches!(decl.item_meta.attr_info.inline, Some(InlineAttr::Always)));
+    assert!(any_inline_always);
     Ok(())
 }
 

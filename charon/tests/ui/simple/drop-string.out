@@ -124,14 +124,20 @@ fn use_string(@1: String)
 fn main()
 {
     let @0: (); // return
-    let _s@1: String; // local
+    let s@1: String; // local
+    let @2: String; // anonymous local
 
     @0 := ()
-    storage_live(_s@1)
-    _s@1 := new()
+    storage_live(s@1)
+    s@1 := new()
+    storage_live(@2)
+    @2 := new()
+    drop[{impl Destruct for String}] s@1
+    s@1 := move (@2)
+    storage_dead(@2)
     @0 := ()
-    drop[{impl Destruct for String}] _s@1
-    storage_dead(_s@1)
+    drop[{impl Destruct for String}] s@1
+    storage_dead(s@1)
     return
 }
 
