@@ -292,7 +292,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
                 )?;
                 match meta {
                     UnsizingMetadata::Length(len) => write!(f, ", {}", len.with_ctx(ctx))?,
-                    UnsizingMetadata::VTablePtr(tref) => write!(f, ", {}", tref.with_ctx(ctx))?,
+                    UnsizingMetadata::VTableDirect(tref, vt) => {
+                        write!(f, ", {} with ", tref.with_ctx(ctx))?;
+                        match vt {
+                            Some(vt) => write!(f, "{}", vt.with_ctx(ctx))?,
+                            None => write!(f, "?")?,
+                        }
+                    }
+                    UnsizingMetadata::VTableNested(tref, fields) => {
+                        write!(f, ", ")?;
+                        tref.fmt_split_with(ctx, |ctx, tref| format!("{}", tref.with_ctx(ctx)));
+                        let fields = fields.iter().map(|x| format!("{}", x.index())).format(", ");
+                        write!(f, " at [{}]", fields)?
+                    }
                     UnsizingMetadata::Unknown => {}
                 }
                 write!(f, ">")

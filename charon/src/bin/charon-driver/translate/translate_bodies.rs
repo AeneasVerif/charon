@@ -10,6 +10,8 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::panic;
 
+use crate::translate::translate_generics::BindingLevel;
+
 use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast::StatementKind;
@@ -573,29 +575,78 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                match &impl_expr.r#impl {
+                                let vtable = match &impl_expr.r#impl {
                                     hax::ImplExprAtom::Concrete(tref) => {
                                         // Ensure the vtable type is translated.
-                                        let _: GlobalDeclId = self.register_item(
+                                        Some(self.translate_item(
                                             span,
                                             tref,
                                             TransItemSourceKind::VTableInstance(
                                                 TraitImplSource::Normal,
                                             ),
-                                        );
+                                        )?)
                                     }
                                     // TODO(dyn): more ways of registering vtable instance?
                                     _ => {
                                         trace!(
                                             "impl_expr not triggering registering vtable: {:?}",
                                             impl_expr
-                                        )
+                                        );
+                                        None
                                     }
                                 };
-                                UnsizingMetadata::VTablePtr(tref)
+                                UnsizingMetadata::VTableDirect(tref, vtable)
                             }
-                            hax::UnsizingMetadata::NestedVTable(..)
-                            | hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+                            hax::UnsizingMetadata::NestedVTable(impl_expr) => {
+                                let binder = self.translate_dyn_binder(
+                                    span,
+                                    impl_expr,
+                                    |ctx, _, impl_expr| {
+                                        ctx.translate_trait_impl_expr(span, impl_expr)
+                                    },
+                                )?;
+
+                                let hax::ImplExprAtom::LocalBound { index, path, .. } =
+                                    &impl_expr.val.r#impl
+                                else {
+                                    raise_error!(self, span, "Unexpected ImplExpr in NestedVTable",);
+                                };
+
+                                let fields = if *index != 0 {
+                                    let mut fields = Vec::new();
+                                    for segment in path {
+                                        let hax::ImplExprPathChunk::Parent {
+                                            predicate, index, ..
+                                        } = segment
+                                        else {
+                                            raise_error!(
+                                                self,
+                                                span,
+                                                "Unexpected path segment in NestedVTable unsizing metadata"
+                                            );
+                                        };
+                                        let vtable =
+                                            self.vtable_for_itemref(&predicate.value.trait_ref)?;
+                                        let index = TraitClauseId::new(*index);
+                                        let Some(Some(field)) = vtable.clauses.get(index) else {
+                                            raise_error!(
+                                                self,
+                                                span,
+                                                "VTable missing field {} for predicate {:?}",
+                                                index,
+                                                predicate.value.trait_ref
+                                            );
+                                        };
+                                        fields.push(*field);
+                                    }
+                                    fields
+                                } else {
+                                    vec![]
+                                };
+
+                                UnsizingMetadata::VTableNested(binder, fields)
+                            }
+                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
                         };
                         CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }

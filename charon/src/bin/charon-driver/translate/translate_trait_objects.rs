@@ -140,12 +140,17 @@ impl ItemTransCtx<'_, '_> {
     }
 }
 
-enum VTableField {
+pub enum VTableField {
     Size,
     Align,
     Drop,
     Method(hax::DefId, hax::Binder<hax::TyFnSig>),
     SuperTrait(hax::Clause),
+}
+
+pub struct VTableData {
+    pub fields: Vec<VTableField>,
+    pub clauses: Vector<TraitClauseId, Option<FieldId>>,
 }
 
 //// Generate the vtable struct.
@@ -231,11 +236,11 @@ impl ItemTransCtx<'_, '_> {
         Ok(Some(vtable_ref))
     }
 
-    fn vtable_fields(
+    fn vtable_data(
         &mut self,
         trait_def: &hax::FullDef,
         implied_predicates: &hax::GenericPredicates,
-    ) -> Result<Vec<VTableField>, Error> {
+    ) -> Result<VTableData, Error> {
         let mut fields = vec![];
         // Basic fields.
         fields.push(VTableField::Size);
@@ -263,17 +268,19 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // Supertrait fields.
-        for (clause, _span) in &implied_predicates.predicates {
-            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() {
-                // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-                if !self.pred_is_for_self(&pred.trait_ref) {
-                    continue;
-                }
+        let mut clauses = Vector::new();
+        for (clause, _span) in implied_predicates.predicates.iter() {
+            let trait_clause_id = clauses.push(None);
+            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
+                && self.pred_is_for_self(&pred.trait_ref)
+            {
+                clauses[trait_clause_id] = Some(FieldId::new(fields.len()));
                 fields.push(VTableField::SuperTrait(clause.clone()));
             }
         }
 
-        Ok(fields)
+        Ok(VTableData { fields, clauses })
     }
 
     fn gen_vtable_struct_fields(
@@ -285,9 +292,9 @@ impl ItemTransCtx<'_, '_> {
         let mut fields = Vector::new();
         let mut supertrait_counter = (0..).into_iter();
 
-        let fields_list = self.vtable_fields(trait_def, implied_predicates)?;
+        let vtable = self.vtable_data(trait_def, implied_predicates)?;
 
-        for field in fields_list.into_iter() {
+        for field in vtable.fields.into_iter() {
             let (name, ty) = match field {
                 VTableField::Size => ("size".into(), usize_ty()),
                 VTableField::Align => ("align".into(), usize_ty()),
@@ -337,6 +344,21 @@ impl ItemTransCtx<'_, '_> {
         }
 
         Ok(fields)
+    }
+
+    pub fn vtable_for_itemref(&mut self, tref: &hax::ItemRef) -> Result<VTableData, Error> {
+        let trait_def = self.hax_def(tref)?;
+
+        let (hax::FullDefKind::Trait {
+            implied_predicates, ..
+        }
+        | hax::FullDefKind::TraitAlias {
+            implied_predicates, ..
+        }) = trait_def.kind()
+        else {
+            unreachable!("Non-trait passed to `field_for_vtable_supertrait`")
+        };
+        self.vtable_data(&*trait_def, implied_predicates)
     }
 
     /// This is a temporary check until we support `dyn Trait` with `--monomorphize`.

@@ -198,7 +198,7 @@ where
     @5 := const (199 : i32)
     @4 := &mut @5
     @3 := &mut *(@4)
-    x@2 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1]>(move (@3))
+    x@2 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1] with {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
     storage_live(@6)

@@ -1,0 +1,324 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+struct test_crate::Feline::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Feline<_dyn> + _dyn : '_)),
+  method_hunt: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Feline<_dyn> + _dyn : '_))),
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
+// Full name: test_crate::Feline
+trait Feline<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn hunt<'_0_1> = test_crate::Feline::hunt<'_0_1, Self>[Self]
+    vtable: test_crate::Feline::{vtable}
+}
+
+fn test_crate::Feline::hunt<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Feline<Self>,
+= <method_without_default_body>
+
+struct test_crate::Pettable::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Pettable<_dyn> + _dyn : '_)),
+  method_pet: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Pettable<_dyn> + _dyn : '_))),
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+}
+
+// Full name: test_crate::Pettable
+trait Pettable<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn pet<'_0_1> = test_crate::Pettable::pet<'_0_1, Self>[Self]
+    vtable: test_crate::Pettable::{vtable}
+}
+
+fn test_crate::Pettable::pet<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Pettable<Self>,
+= <method_without_default_body>
+
+struct test_crate::Cat::{vtable} {
+  size: usize,
+  align: usize,
+  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Cat<_dyn> + _dyn : '_)),
+  method_meow: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Cat<_dyn> + _dyn : '_))),
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (test_crate::Feline::{vtable}),
+  super_trait_2: &'static (test_crate::Pettable::{vtable}),
+}
+
+// Full name: test_crate::Cat
+trait Cat<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Feline<Self>
+    parent_clause2 : [@TraitClause2]: Pettable<Self>
+    fn meow<'_0_1> = test_crate::Cat::meow<'_0_1, Self>[Self]
+    vtable: test_crate::Cat::{vtable}
+}
+
+fn test_crate::Cat::meow<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Cat<Self>,
+= <method_without_default_body>
+
+// Full name: test_crate::HouseCat
+struct HouseCat {}
+
+// Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_in_place
+fn {impl Destruct for HouseCat}::drop_in_place(@1: *mut HouseCat)
+{
+    let @0: (); // return
+    let @1: *mut HouseCat; // arg #1
+    let @2: &'_ mut (HouseCat); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    return
+}
+
+// Full name: test_crate::HouseCat::{impl Destruct for HouseCat}
+impl Destruct for HouseCat {
+    fn drop_in_place = {impl Destruct for HouseCat}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Feline for HouseCat}::hunt
+fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 (HouseCat))
+{
+    let @0: (); // return
+    let self@1: &'_ (HouseCat); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Feline for HouseCat}::{vtable_drop_shim}
+fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Feline<_dyn> + _dyn : '_))
+{
+    let ret@0: (); // return
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Feline<_dyn> + _dyn : '_); // arg #1
+    let target_self@2: *mut HouseCat; // local
+
+    ret@0 := ()
+    storage_live(target_self@2)
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Feline<_dyn> + _dyn : '_), *mut HouseCat>(move (dyn_self@1))
+    drop[{impl Destruct for HouseCat}] *(target_self@2)
+    return
+}
+
+// Full name: test_crate::{impl Feline for HouseCat}::hunt::{vtable_method}
+fn {impl Feline for HouseCat}::hunt::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Feline<_dyn> + _dyn : '_)))
+{
+    let @0: (); // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Feline<_dyn> + _dyn : '_)); // arg #1
+    let @2: &'_0 (HouseCat); // anonymous local
+
+    @0 := ()
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Feline<_dyn> + _dyn : '_)), &'_0 (HouseCat)>(move (@1))
+    @0 := {impl Feline for HouseCat}::hunt<'_0>(move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Feline for HouseCat}::{vtable}
+fn {impl Feline for HouseCat}::{vtable}() -> test_crate::Feline::{vtable}
+{
+    let ret@0: test_crate::Feline::{vtable}; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
+
+    storage_live(size@1)
+    size@1 := size_of<HouseCat>
+    storage_live(align@2)
+    align@2 := align_of<HouseCat>
+    ret@0 := test_crate::Feline::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Feline for HouseCat}::{vtable_drop_shim}), method_hunt: const ({impl Feline for HouseCat}::hunt::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl Feline for HouseCat}::{vtable}
+static {impl Feline for HouseCat}::{vtable}: test_crate::Feline::{vtable} = {impl Feline for HouseCat}::{vtable}()
+
+// Full name: test_crate::{impl Feline for HouseCat}
+impl Feline for HouseCat {
+    parent_clause0 = {built_in impl MetaSized for HouseCat}
+    fn hunt<'_0_1> = {impl Feline for HouseCat}::hunt<'_0_1>
+    vtable: {impl Feline for HouseCat}::{vtable}
+}
+
+// Full name: test_crate::{impl Pettable for HouseCat}::pet
+fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 (HouseCat))
+{
+    let @0: (); // return
+    let self@1: &'_ (HouseCat); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Pettable for HouseCat}::{vtable_drop_shim}
+fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Pettable<_dyn> + _dyn : '_))
+{
+    let ret@0: (); // return
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Pettable<_dyn> + _dyn : '_); // arg #1
+    let target_self@2: *mut HouseCat; // local
+
+    ret@0 := ()
+    storage_live(target_self@2)
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Pettable<_dyn> + _dyn : '_), *mut HouseCat>(move (dyn_self@1))
+    drop[{impl Destruct for HouseCat}] *(target_self@2)
+    return
+}
+
+// Full name: test_crate::{impl Pettable for HouseCat}::pet::{vtable_method}
+fn {impl Pettable for HouseCat}::pet::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Pettable<_dyn> + _dyn : '_)))
+{
+    let @0: (); // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Pettable<_dyn> + _dyn : '_)); // arg #1
+    let @2: &'_0 (HouseCat); // anonymous local
+
+    @0 := ()
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Pettable<_dyn> + _dyn : '_)), &'_0 (HouseCat)>(move (@1))
+    @0 := {impl Pettable for HouseCat}::pet<'_0>(move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Pettable for HouseCat}::{vtable}
+fn {impl Pettable for HouseCat}::{vtable}() -> test_crate::Pettable::{vtable}
+{
+    let ret@0: test_crate::Pettable::{vtable}; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
+
+    storage_live(size@1)
+    size@1 := size_of<HouseCat>
+    storage_live(align@2)
+    align@2 := align_of<HouseCat>
+    ret@0 := test_crate::Pettable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Pettable for HouseCat}::{vtable_drop_shim}), method_pet: const ({impl Pettable for HouseCat}::pet::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    return
+}
+
+// Full name: test_crate::{impl Pettable for HouseCat}::{vtable}
+static {impl Pettable for HouseCat}::{vtable}: test_crate::Pettable::{vtable} = {impl Pettable for HouseCat}::{vtable}()
+
+// Full name: test_crate::{impl Pettable for HouseCat}
+impl Pettable for HouseCat {
+    parent_clause0 = {built_in impl MetaSized for HouseCat}
+    fn pet<'_0_1> = {impl Pettable for HouseCat}::pet<'_0_1>
+    vtable: {impl Pettable for HouseCat}::{vtable}
+}
+
+// Full name: test_crate::{impl Cat for HouseCat}::meow
+fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 (HouseCat))
+{
+    let @0: (); // return
+    let self@1: &'_ (HouseCat); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Cat for HouseCat}::{vtable_drop_shim}
+fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Cat<_dyn> + _dyn : '_))
+{
+    let ret@0: (); // return
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Cat<_dyn> + _dyn : '_); // arg #1
+    let target_self@2: *mut HouseCat; // local
+
+    ret@0 := ()
+    storage_live(target_self@2)
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Cat<_dyn> + _dyn : '_), *mut HouseCat>(move (dyn_self@1))
+    drop[{impl Destruct for HouseCat}] *(target_self@2)
+    return
+}
+
+// Full name: test_crate::{impl Cat for HouseCat}::meow::{vtable_method}
+fn {impl Cat for HouseCat}::meow::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Cat<_dyn> + _dyn : '_)))
+{
+    let @0: (); // return
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Cat<_dyn> + _dyn : '_)); // arg #1
+    let @2: &'_0 (HouseCat); // anonymous local
+
+    @0 := ()
+    storage_live(@2)
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Cat<_dyn> + _dyn : '_)), &'_0 (HouseCat)>(move (@1))
+    @0 := {impl Cat for HouseCat}::meow<'_0>(move (@2))
+    return
+}
+
+// Full name: test_crate::{impl Cat for HouseCat}::{vtable}
+fn {impl Cat for HouseCat}::{vtable}() -> test_crate::Cat::{vtable}
+{
+    let ret@0: test_crate::Cat::{vtable}; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
+    let @3: &'static (test_crate::Feline::{vtable}); // anonymous local
+    let @4: &'static (test_crate::Pettable::{vtable}); // anonymous local
+
+    storage_live(size@1)
+    size@1 := size_of<HouseCat>
+    storage_live(align@2)
+    align@2 := align_of<HouseCat>
+    storage_live(@3)
+    @3 := &{impl Feline for HouseCat}::{vtable}
+    storage_live(@4)
+    @4 := &{impl Pettable for HouseCat}::{vtable}
+    ret@0 := test_crate::Cat::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Cat for HouseCat}::{vtable_drop_shim}), method_meow: const ({impl Cat for HouseCat}::meow::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@3), super_trait_2: move (@4) }
+    return
+}
+
+// Full name: test_crate::{impl Cat for HouseCat}::{vtable}
+static {impl Cat for HouseCat}::{vtable}: test_crate::Cat::{vtable} = {impl Cat for HouseCat}::{vtable}()
+
+// Full name: test_crate::{impl Cat for HouseCat}
+impl Cat for HouseCat {
+    parent_clause0 = {built_in impl MetaSized for HouseCat}
+    parent_clause1 = {impl Feline for HouseCat}
+    parent_clause2 = {impl Pettable for HouseCat}
+    fn meow<'_0_1> = {impl Cat for HouseCat}::meow<'_0_1>
+    vtable: {impl Cat for HouseCat}::{vtable}
+}
+
+// Full name: test_crate::main
+fn main()
+= error("VTable missing field 1 for predicate ItemRef { contents: HashConsed(ItemRefContents { def_id: test_crate::Feline, generic_args: [Type(Ty { kind: HashConsed(Param(ParamTy { index: 1, name: "_dyn" })) })], impl_exprs: [], in_trait: None, has_param: true, has_non_lt_param: true }) }")
+
+
+
