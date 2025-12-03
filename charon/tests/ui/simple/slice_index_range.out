@@ -1039,14 +1039,16 @@ where
                 @8 := &*(@9) with_metadata(copy (@9.metadata))
                 @0 := Option::Some { 0: copy (@8) }
                 storage_dead(@9)
+                storage_dead(@6)
+                storage_dead(@8)
             } else {
                 storage_dead(@7)
                 storage_live(@18)
                 @18 := Option::None {  }
                 @0 := move (@18)
+                storage_dead(@6)
+                storage_dead(@8)
             }
-            storage_dead(@6)
-            storage_dead(@8)
         }
     }
     storage_dead(@3)
@@ -1131,14 +1133,16 @@ where
                 @8 := &mut *(@9) with_metadata(copy (@9.metadata))
                 @0 := Option::Some { 0: copy (@8) }
                 storage_dead(@9)
+                storage_dead(@6)
+                storage_dead(@8)
             } else {
                 storage_dead(@7)
                 storage_live(@18)
                 @18 := Option::None {  }
                 @0 := move (@18)
+                storage_dead(@6)
+                storage_dead(@8)
             }
-            storage_dead(@6)
-            storage_dead(@8)
         }
     }
     storage_dead(@3)

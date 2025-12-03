@@ -60,22 +60,22 @@ fn absorb_full()
         // bb3
         @3 := condition(const (2 : u32))
         if move (@3) {
-            // bb7
-            @1 := foo()
-            // bb8
-            storage_dead(@3)
         } else {
+            // bb7
+            // bb8
             storage_dead(@3)
             // bb10
             storage_dead(@2)
             storage_dead(@1)
+            // bb6
+            // bb12
+            // unconditional break, the `loop` is only for fwd jumping
+            // bb13
+            @0 := bar()
+            return
         }
-        // bb6
-        // bb12
-        // unconditional break, the `loop` is only for fwd jumping
-        // bb13
-        @0 := bar()
-        return
+        @1 := foo()
+        storage_dead(@3)
     } else {
         @1 := ()
     }
@@ -84,14 +84,14 @@ fn absorb_full()
     storage_live(@4)
     @4 := condition(const (3 : u32))
     if move (@4) {
-        @0 := ()
-        storage_dead(@4)
-        return
     } else {
         storage_dead(@4)
         @0 := bar()
         return
     }
+    @0 := ()
+    storage_dead(@4)
+    return
 }
 
 

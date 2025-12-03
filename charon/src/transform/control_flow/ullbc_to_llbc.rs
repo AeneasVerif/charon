@@ -24,7 +24,7 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use petgraph::algo::dominators::simple_fast;
+use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{DfsPostOrder, Walker};
@@ -69,6 +69,8 @@ struct CfgInfo {
     pub switch_blocks: HashSet<src::BlockId>,
     /// The set of nodes from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: HashSet<src::BlockId>,
+    /// Tree of which nodes dominates which other nodes.
+    pub dominator_tree: Dominators<BlockId>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -156,6 +158,7 @@ fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
         backward_edges,
         switch_blocks,
         only_reach_error,
+        dominator_tree,
     })
 }
 
@@ -1026,10 +1029,18 @@ fn compute_switch_exits(
         trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
         let info = succs_info_map.get(&bid).unwrap();
-        let sorted_exit_candidates = &info.flow;
+        let switch_exit = info
+            .flow
+            .iter()
+            .filter(|flowblock| {
+                cfg.dominator_tree
+                    .dominators(flowblock.id)
+                    .is_some_and(|mut iter| iter.contains(&bid))
+            })
+            .max();
         // Find the best successor: this is the last one (with the highest flow,
         // and the highest reverse topological rank).
-        let exit = if let Some(exit) = sorted_exit_candidates.last() {
+        let exit = if let Some(exit) = switch_exit {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
             trace!("{bid:?} has an exit candidate: {exit:?}");
