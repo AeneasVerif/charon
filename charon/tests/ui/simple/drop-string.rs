@@ -3,5 +3,6 @@
 fn use_string(_: String) {}
 
 fn main() {
-    let _s = String::new();
+    let mut s = String::new();
+    s = String::new();
 }
