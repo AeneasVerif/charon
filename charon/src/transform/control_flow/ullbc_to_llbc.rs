@@ -1246,334 +1246,334 @@ struct BlockInfo<'a> {
     explored: &'a mut HashSet<src::BlockId>,
 }
 
-/// `parent_span`: we need some span data for the new statement.
-/// We use the one for the parent terminator.
-fn translate_child_block(
-    info: &mut BlockInfo<'_>,
-    parent_loops: &Vec<src::BlockId>,
-    switch_exit_blocks: &HashSet<src::BlockId>,
-    parent_span: Span,
-    child_id: src::BlockId,
-) -> Option<tgt::Block> {
-    // Check if this is a backward call
-    match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
-        GotoKind::Break(index) => {
-            let st = tgt::StatementKind::Break(index);
-            Some(tgt::Statement::new(parent_span, st).into_block())
+    /// `parent_span`: we need some span data for the new statement.
+    /// We use the one for the parent terminator.
+    fn translate_child_block(
+        info: &mut BlockInfo<'_>,
+        parent_loops: &Vec<src::BlockId>,
+        switch_exit_blocks: &HashSet<src::BlockId>,
+        parent_span: Span,
+        child_id: src::BlockId,
+    ) -> Option<tgt::Block> {
+        // Check if this is a backward call
+        match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
+            GotoKind::Break(index) => {
+                let st = tgt::StatementKind::Break(index);
+                Some(tgt::Statement::new(parent_span, st).into_block())
+            }
+            GotoKind::Continue(index) => {
+                let st = tgt::StatementKind::Continue(index);
+                Some(tgt::Statement::new(parent_span, st).into_block())
+            }
+            // If we are going to an exit block we simply ignore the goto
+            GotoKind::ExitBlock => None,
+            GotoKind::Goto => {
+                // "Standard" goto: just recursively translate
+                ensure_sufficient_stack(|| {
+                    Some(translate_block(
+                        info,
+                        parent_loops,
+                        switch_exit_blocks,
+                        child_id,
+                    ))
+                })
+            }
         }
-        GotoKind::Continue(index) => {
-            let st = tgt::StatementKind::Continue(index);
-            Some(tgt::Statement::new(parent_span, st).into_block())
-        }
-        // If we are going to an exit block we simply ignore the goto
-        GotoKind::ExitBlock => None,
-        GotoKind::Goto => {
-            // "Standard" goto: just recursively translate
-            ensure_sufficient_stack(|| {
-                Some(translate_block(
+    }
+
+    fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
+        opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::StatementKind::Nop).into_block())
+    }
+
+    fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
+        let src_span = st.span;
+        let st = match st.kind.clone() {
+            src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
+            src::StatementKind::SetDiscriminant(place, variant_id) => {
+                tgt::StatementKind::SetDiscriminant(place, variant_id)
+            }
+            src::StatementKind::CopyNonOverlapping(copy) => {
+                tgt::StatementKind::CopyNonOverlapping(copy)
+            }
+            src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
+            src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
+            src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
+            src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
+            src::StatementKind::Nop => tgt::StatementKind::Nop,
+            src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
+        };
+        Some(tgt::Statement::new(src_span, st))
+    }
+
+    fn translate_terminator(
+        info: &mut BlockInfo<'_>,
+        parent_loops: &Vec<src::BlockId>,
+        switch_exit_blocks: &HashSet<src::BlockId>,
+        terminator: &src::Terminator,
+    ) -> tgt::Block {
+        let src_span = terminator.span;
+
+        match &terminator.kind {
+            src::TerminatorKind::Abort(kind) => {
+                tgt::Statement::new(src_span, tgt::StatementKind::Abort(kind.clone())).into_block()
+            }
+            src::TerminatorKind::Return => {
+                tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()
+            }
+            src::TerminatorKind::UnwindResume => {
+                tgt::Statement::new(src_span, tgt::StatementKind::Abort(AbortKind::Panic(None)))
+                    .into_block()
+            }
+            src::TerminatorKind::Call {
+                call,
+                target,
+                on_unwind: _,
+            } => {
+                // TODO: Have unwinds in the LLBC
+                let target_block = translate_child_block(
                     info,
                     parent_loops,
                     switch_exit_blocks,
-                    child_id,
-                ))
-            })
-        }
-    }
-}
+                    terminator.span,
+                    *target,
+                );
+                let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
+                let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
+                block.statements.insert(0, st);
+                block
+            }
+            src::TerminatorKind::Drop {
+                kind,
+                place,
+                tref,
+                target,
+                on_unwind: _,
+            } => {
+                // TODO: Have unwinds in the LLBC
+                let target_block = translate_child_block(
+                    info,
+                    parent_loops,
+                    switch_exit_blocks,
+                    terminator.span,
+                    *target,
+                );
+                let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
+                let st = tgt::Statement::new(
+                    src_span,
+                    tgt::StatementKind::Drop(place.clone(), tref.clone(), kind.clone()),
+                );
+                block.statements.insert(0, st);
+                block
+            }
+            src::TerminatorKind::Goto { target } => {
+                let block = translate_child_block(
+                    info,
+                    parent_loops,
+                    switch_exit_blocks,
+                    terminator.span,
+                    *target,
+                );
+                let block = opt_block_unwrap_or_nop(terminator.span, block);
+                block
+            }
+            src::TerminatorKind::Switch { discr, targets } => {
+                // Translate the target expressions
+                let switch = match &targets {
+                    src::SwitchTargets::If(then_tgt, else_tgt) => {
+                        // Translate the children expressions
+                        let then_block = translate_child_block(
+                            info,
+                            parent_loops,
+                            switch_exit_blocks,
+                            terminator.span,
+                            *then_tgt,
+                        );
+                        // We use the terminator span information in case then
+                        // then statement is `None`
+                        let then_block = opt_block_unwrap_or_nop(terminator.span, then_block);
+                        let else_block = translate_child_block(
+                            info,
+                            parent_loops,
+                            switch_exit_blocks,
+                            terminator.span,
+                            *else_tgt,
+                        );
+                        let else_block = opt_block_unwrap_or_nop(terminator.span, else_block);
 
-fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
-    opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::StatementKind::Nop).into_block())
-}
-
-fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
-    let src_span = st.span;
-    let st = match st.kind.clone() {
-        src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
-        src::StatementKind::SetDiscriminant(place, variant_id) => {
-            tgt::StatementKind::SetDiscriminant(place, variant_id)
-        }
-        src::StatementKind::CopyNonOverlapping(copy) => {
-            tgt::StatementKind::CopyNonOverlapping(copy)
-        }
-        src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
-        src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
-        src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
-        src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
-        src::StatementKind::Nop => tgt::StatementKind::Nop,
-        src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
-    };
-    Some(tgt::Statement::new(src_span, st))
-}
-
-fn translate_terminator(
-    info: &mut BlockInfo<'_>,
-    parent_loops: &Vec<src::BlockId>,
-    switch_exit_blocks: &HashSet<src::BlockId>,
-    terminator: &src::Terminator,
-) -> tgt::Block {
-    let src_span = terminator.span;
-
-    match &terminator.kind {
-        src::TerminatorKind::Abort(kind) => {
-            tgt::Statement::new(src_span, tgt::StatementKind::Abort(kind.clone())).into_block()
-        }
-        src::TerminatorKind::Return => {
-            tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()
-        }
-        src::TerminatorKind::UnwindResume => {
-            tgt::Statement::new(src_span, tgt::StatementKind::Abort(AbortKind::Panic(None)))
-                .into_block()
-        }
-        src::TerminatorKind::Call {
-            call,
-            target,
-            on_unwind: _,
-        } => {
-            // TODO: Have unwinds in the LLBC
-            let target_block = translate_child_block(
-                info,
-                parent_loops,
-                switch_exit_blocks,
-                terminator.span,
-                *target,
-            );
-            let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
-            let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
-            block.statements.insert(0, st);
-            block
-        }
-        src::TerminatorKind::Drop {
-            kind,
-            place,
-            tref,
-            target,
-            on_unwind: _,
-        } => {
-            // TODO: Have unwinds in the LLBC
-            let target_block = translate_child_block(
-                info,
-                parent_loops,
-                switch_exit_blocks,
-                terminator.span,
-                *target,
-            );
-            let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
-            let st = tgt::Statement::new(
-                src_span,
-                tgt::StatementKind::Drop(place.clone(), tref.clone(), kind.clone()),
-            );
-            block.statements.insert(0, st);
-            block
-        }
-        src::TerminatorKind::Goto { target } => {
-            let block = translate_child_block(
-                info,
-                parent_loops,
-                switch_exit_blocks,
-                terminator.span,
-                *target,
-            );
-            let block = opt_block_unwrap_or_nop(terminator.span, block);
-            block
-        }
-        src::TerminatorKind::Switch { discr, targets } => {
-            // Translate the target expressions
-            let switch = match &targets {
-                src::SwitchTargets::If(then_tgt, else_tgt) => {
-                    // Translate the children expressions
-                    let then_block = translate_child_block(
-                        info,
-                        parent_loops,
-                        switch_exit_blocks,
-                        terminator.span,
-                        *then_tgt,
-                    );
-                    // We use the terminator span information in case then
-                    // then statement is `None`
-                    let then_block = opt_block_unwrap_or_nop(terminator.span, then_block);
-                    let else_block = translate_child_block(
-                        info,
-                        parent_loops,
-                        switch_exit_blocks,
-                        terminator.span,
-                        *else_tgt,
-                    );
-                    let else_block = opt_block_unwrap_or_nop(terminator.span, else_block);
-
-                    // Translate
-                    tgt::Switch::If(discr.clone(), then_block, else_block)
-                }
-                src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                    // Note that some branches can be grouped together, like
-                    // here:
-                    // ```
-                    // match e {
-                    //   E::V1 | E::V2 => ..., // Grouped
-                    //   E::V3 => ...
-                    // }
-                    // ```
-                    // We detect this by checking if a block has already been
-                    // translated as one of the branches of the switch.
-                    //
-                    // Rk.: note there may be intermediate gotos depending
-                    // on the MIR we use. Typically, we manage to detect the
-                    // grouped branches with Optimized MIR, but not with Promoted
-                    // MIR. See the comment in "tests/src/matches.rs".
-
-                    // We link block ids to:
-                    // - vector of matched integer values
-                    // - translated blocks
-                    let mut branches: IndexMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
-                        IndexMap::new();
-
-                    // Translate the children expressions
-                    for (v, bid) in targets.iter() {
-                        // Check if the block has already been translated:
-                        // if yes, it means we need to group branches
-                        if branches.contains_key(bid) {
-                            // Already translated: add the matched value to
-                            // the list of values
-                            let branch = branches.get_mut(bid).unwrap();
-                            branch.0.push(v.clone());
-                        } else {
-                            // Not translated: translate it
-                            let block = translate_child_block(
-                                info,
-                                parent_loops,
-                                switch_exit_blocks,
-                                terminator.span,
-                                *bid,
-                            );
-                            // We use the terminator span information in case then
-                            // then statement is `None`
-                            let block = opt_block_unwrap_or_nop(terminator.span, block);
-                            branches.insert(*bid, (vec![v.clone()], block));
-                        }
+                        // Translate
+                        tgt::Switch::If(discr.clone(), then_block, else_block)
                     }
-                    let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> =
-                        branches.into_iter().map(|(_, x)| x).collect();
+                    src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+                        // Note that some branches can be grouped together, like
+                        // here:
+                        // ```
+                        // match e {
+                        //   E::V1 | E::V2 => ..., // Grouped
+                        //   E::V3 => ...
+                        // }
+                        // ```
+                        // We detect this by checking if a block has already been
+                        // translated as one of the branches of the switch.
+                        //
+                        // Rk.: note there may be intermediate gotos depending
+                        // on the MIR we use. Typically, we manage to detect the
+                        // grouped branches with Optimized MIR, but not with Promoted
+                        // MIR. See the comment in "tests/src/matches.rs".
 
-                    let otherwise_block = translate_child_block(
-                        info,
-                        parent_loops,
-                        switch_exit_blocks,
-                        terminator.span,
-                        *otherwise,
-                    );
-                    // We use the terminator span information in case then
-                    // then statement is `None`
-                    let otherwise_block = opt_block_unwrap_or_nop(terminator.span, otherwise_block);
+                        // We link block ids to:
+                        // - vector of matched integer values
+                        // - translated blocks
+                        let mut branches: IndexMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
+                            IndexMap::new();
 
-                    // Translate
-                    tgt::Switch::SwitchInt(discr.clone(), *int_ty, targets_blocks, otherwise_block)
-                }
-            };
+                        // Translate the children expressions
+                        for (v, bid) in targets.iter() {
+                            // Check if the block has already been translated:
+                            // if yes, it means we need to group branches
+                            if branches.contains_key(bid) {
+                                // Already translated: add the matched value to
+                                // the list of values
+                                let branch = branches.get_mut(bid).unwrap();
+                                branch.0.push(v.clone());
+                            } else {
+                                // Not translated: translate it
+                                let block = translate_child_block(
+                                    info,
+                                    parent_loops,
+                                    switch_exit_blocks,
+                                    terminator.span,
+                                    *bid,
+                                );
+                                // We use the terminator span information in case then
+                                // then statement is `None`
+                                let block = opt_block_unwrap_or_nop(terminator.span, block);
+                                branches.insert(*bid, (vec![v.clone()], block));
+                            }
+                        }
+                        let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> =
+                            branches.into_iter().map(|(_, x)| x).collect();
 
-            // Return
-            let span = tgt::combine_switch_targets_span(&switch);
-            let span = combine_span(&src_span, &span);
-            let st = tgt::StatementKind::Switch(switch);
-            tgt::Statement::new(span, st).into_block()
-        }
-    }
-}
+                        let otherwise_block = translate_child_block(
+                            info,
+                            parent_loops,
+                            switch_exit_blocks,
+                            terminator.span,
+                            *otherwise,
+                        );
+                        // We use the terminator span information in case then
+                        // then statement is `None`
+                        let otherwise_block = opt_block_unwrap_or_nop(terminator.span, otherwise_block);
 
-/// Remark: some values are boxed (here, the returned statement) so that they
-/// are allocated on the heap. This reduces stack usage (we had problems with
-/// stack overflows in the past). A more efficient solution would be to use loops
-/// to make this code constant space, but that would require a serious rewriting.
-fn translate_block(
-    info: &mut BlockInfo<'_>,
-    parent_loops: &Vec<src::BlockId>,
-    switch_exit_blocks: &HashSet<src::BlockId>,
-    block_id: src::BlockId,
-) -> tgt::Block {
-    // If the user activated this check: check that we didn't already translate
-    // this block, and insert the block id in the set of already translated blocks.
-    trace!(
-        "Parent loops: {:?}, Parent switch exits: {:?}, Block id: {}",
-        parent_loops, switch_exit_blocks, block_id
-    );
-    info.explored.insert(block_id);
+                        // Translate
+                        tgt::Switch::SwitchInt(discr.clone(), *int_ty, targets_blocks, otherwise_block)
+                    }
+                };
 
-    let block = &info.body.body[block_id];
-
-    // Check if we enter a loop: if so, update parent_loops and the current_exit_block
-    let is_loop = info.cfg.loop_entries.contains(&block_id);
-    let mut nparent_loops: Vec<src::BlockId>;
-    let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
-        nparent_loops = parent_loops.clone();
-        nparent_loops.push(block_id);
-        &nparent_loops
-    } else {
-        parent_loops
-    };
-
-    // If we enter a switch or a loop, we need to check if we own the exit
-    // block, in which case we need to append it to the loop/switch body
-    // in a sequence
-    let is_switch = block.terminator.kind.is_switch();
-    let next_block = if is_loop {
-        *info.exits_info.owned_loop_exits.get(&block_id).unwrap()
-    } else if is_switch {
-        *info.exits_info.owned_switch_exits.get(&block_id).unwrap()
-    } else {
-        None
-    };
-
-    // If we enter a switch, add the exit block to the set
-    // of outer exit blocks
-    let nswitch_exit_blocks = if is_switch {
-        let mut nexit_blocks = switch_exit_blocks.clone();
-        match next_block {
-            None => nexit_blocks,
-            Some(bid) => {
-                nexit_blocks.insert(bid);
-                nexit_blocks
+                // Return
+                let span = tgt::combine_switch_targets_span(&switch);
+                let span = combine_span(&src_span, &span);
+                let st = tgt::StatementKind::Switch(switch);
+                tgt::Statement::new(span, st).into_block()
             }
         }
-    } else {
-        switch_exit_blocks.clone()
-    };
-
-    // Translate the terminator and the subsequent blocks.
-    // Note that this terminator is an option: we might ignore it
-    // (if it is an exit).
-
-    let terminator =
-        translate_terminator(info, nparent_loops, &nswitch_exit_blocks, &block.terminator);
-
-    // Translate the statements inside the block
-    let statements = block
-        .statements
-        .iter()
-        .filter_map(|st| translate_statement(st))
-        .collect_vec();
-
-    // Prepend the statements to the terminator.
-    let mut block = if let Some(st) = tgt::Block::from_seq(statements) {
-        st.merge(terminator)
-    } else {
-        terminator
-    };
-
-    if is_loop {
-        // Put the loop body inside a `Loop`.
-        block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block)).into_block()
-    } else if !is_switch {
-        assert!(next_block.is_none());
     }
 
-    // Concatenate the exit expression, if needs be
-    if let Some(exit_block_id) = next_block {
-        let next_block = ensure_sufficient_stack(|| {
-            translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
-        });
-        block = block.merge(next_block);
-    }
+    /// Remark: some values are boxed (here, the returned statement) so that they
+    /// are allocated on the heap. This reduces stack usage (we had problems with
+    /// stack overflows in the past). A more efficient solution would be to use loops
+    /// to make this code constant space, but that would require a serious rewriting.
+    fn translate_block(
+        info: &mut BlockInfo<'_>,
+        parent_loops: &Vec<src::BlockId>,
+        switch_exit_blocks: &HashSet<src::BlockId>,
+        block_id: src::BlockId,
+    ) -> tgt::Block {
+        // If the user activated this check: check that we didn't already translate
+        // this block, and insert the block id in the set of already translated blocks.
+        trace!(
+            "Parent loops: {:?}, Parent switch exits: {:?}, Block id: {}",
+            parent_loops, switch_exit_blocks, block_id
+        );
+        info.explored.insert(block_id);
 
-    block
-}
+        let block = &info.body.body[block_id];
+
+        // Check if we enter a loop: if so, update parent_loops and the current_exit_block
+        let is_loop = info.cfg.loop_entries.contains(&block_id);
+        let mut nparent_loops: Vec<src::BlockId>;
+        let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
+            nparent_loops = parent_loops.clone();
+            nparent_loops.push(block_id);
+            &nparent_loops
+        } else {
+            parent_loops
+        };
+
+        // If we enter a switch or a loop, we need to check if we own the exit
+        // block, in which case we need to append it to the loop/switch body
+        // in a sequence
+        let is_switch = block.terminator.kind.is_switch();
+        let next_block = if is_loop {
+            *info.exits_info.owned_loop_exits.get(&block_id).unwrap()
+        } else if is_switch {
+            *info.exits_info.owned_switch_exits.get(&block_id).unwrap()
+        } else {
+            None
+        };
+
+        // If we enter a switch, add the exit block to the set
+        // of outer exit blocks
+        let nswitch_exit_blocks = if is_switch {
+            let mut nexit_blocks = switch_exit_blocks.clone();
+            match next_block {
+                None => nexit_blocks,
+                Some(bid) => {
+                    nexit_blocks.insert(bid);
+                    nexit_blocks
+                }
+            }
+        } else {
+            switch_exit_blocks.clone()
+        };
+
+        // Translate the terminator and the subsequent blocks.
+        // Note that this terminator is an option: we might ignore it
+        // (if it is an exit).
+
+        let terminator =
+            translate_terminator(info, nparent_loops, &nswitch_exit_blocks, &block.terminator);
+
+        // Translate the statements inside the block
+        let statements = block
+            .statements
+            .iter()
+            .filter_map(|st| translate_statement(st))
+            .collect_vec();
+
+        // Prepend the statements to the terminator.
+        let mut block = if let Some(st) = tgt::Block::from_seq(statements) {
+            st.merge(terminator)
+        } else {
+            terminator
+        };
+
+        if is_loop {
+            // Put the loop body inside a `Loop`.
+            block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block)).into_block()
+        } else if !is_switch {
+            assert!(next_block.is_none());
+        }
+
+        // Concatenate the exit expression, if needs be
+        if let Some(exit_block_id) = next_block {
+            let next_block = ensure_sufficient_stack(|| {
+                translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
+            });
+            block = block.merge(next_block);
+        }
+
+        block
+    }
 
 fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
