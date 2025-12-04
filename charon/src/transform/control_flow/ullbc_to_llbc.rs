@@ -1462,16 +1462,6 @@ impl<'a> ReconstructCtx<'a> {
 
         // Check if we enter a loop: if so, update parent_loops and the current_exit_block
         let is_loop = self.cfg.loop_entries.contains(&block_id);
-        let mut nparent_loops: Vec<src::BlockId>;
-        let nparent_loops = if self.cfg.loop_entries.contains(&block_id) {
-            nparent_loops = self.parent_loops.clone();
-            nparent_loops.push(block_id);
-            nparent_loops
-        } else {
-            self.parent_loops.clone()
-        };
-        let old_parent_loops = mem::replace(&mut self.parent_loops, nparent_loops);
-
         // If we enter a switch or a loop, we need to check if we own the exit
         // block, in which case we need to append it to the loop/switch body
         // in a sequence
@@ -1484,31 +1474,30 @@ impl<'a> ReconstructCtx<'a> {
             None
         };
 
-        // If we enter a switch, add the exit block to the set
-        // of outer exit blocks
-        let nswitch_exit_blocks = if is_switch {
-            let mut nexit_blocks = self.switch_exit_blocks.clone();
-            match next_block {
-                None => nexit_blocks,
-                Some(bid) => {
-                    nexit_blocks.insert(bid);
-                    nexit_blocks
-                }
+        let terminator = {
+            if is_loop {
+                self.parent_loops.push(block_id);
             }
-        } else {
-            self.switch_exit_blocks.clone()
+            // If we enter a switch, add the exit block to the set of outer exit blocks.
+            if is_switch && let Some(bid) = next_block {
+                assert!(!self.switch_exit_blocks.contains(&bid));
+                self.switch_exit_blocks.insert(bid);
+            }
+
+            // Translate the terminator and the subsequent blocks.
+            // Note that this terminator is an option: we might ignore it
+            // (if it is an exit).
+            let terminator = self.translate_terminator(&block.terminator);
+
+            // Reset the state to what it was previously.
+            if is_loop {
+                self.parent_loops.pop();
+            }
+            if is_switch && let Some(bid) = next_block {
+                self.switch_exit_blocks.remove(&bid);
+            }
+            terminator
         };
-        let old_switch_exit_blocks =
-            mem::replace(&mut self.switch_exit_blocks, nswitch_exit_blocks);
-
-        // Translate the terminator and the subsequent blocks.
-        // Note that this terminator is an option: we might ignore it
-        // (if it is an exit).
-
-        let terminator = self.translate_terminator(&block.terminator);
-
-        self.parent_loops = old_parent_loops;
-        self.switch_exit_blocks = old_switch_exit_blocks;
 
         // Translate the statements inside the block
         let statements = block
