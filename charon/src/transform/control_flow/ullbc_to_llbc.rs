@@ -72,14 +72,14 @@ struct CfgInfo {
 
 #[derive(Debug)]
 struct BlockData {
+    pub id: BlockId,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
     /// Node from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: bool,
-    /// List of reachable nodes, with the length of shortest path to them.
+    /// List of reachable nodes, with the length of shortest path to them. Includes the current
+    /// node.
     pub shortest_paths: hashbrown::HashMap<BlockId, usize>,
-    /// Some of the nodes reachable from this block. Not entirely sure what exactly this includes.
-    pub succs: HashSet<BlockId>,
     /// Let's say we put a quantity of water equal to 1 on the block, and the water flows downards.
     /// Whenever there is a branching, the quantity of water gets equally divided between the
     /// branches. When the control flows join, we put the water back together. The set below
@@ -111,12 +111,12 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
     }
 
     let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-    let mut block_data: Vector<BlockId, BlockData> = body.map_ref(|_| BlockData {
+    let mut block_data: Vector<BlockId, BlockData> = body.map_ref_indexed(|id, _| BlockData {
+        id,
         // Default values will stay for unreachable nodes, which are irrelevant.
         reverse_postorder: None,
         only_reach_error: false,
         shortest_paths: Default::default(),
-        succs: Default::default(),
         flow: empty_flow.clone(),
     });
 
@@ -191,7 +191,7 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
 
                 // Then add its successors
                 let child = &block_data[child_id];
-                for &grandchild in &child.succs {
+                for grandchild in child.reachable_excluding_self() {
                     // Flow from `child` to `grandchild`
                     let child_flow = child.flow[grandchild].clone();
                     flow[grandchild] += factor.clone() * child_flow;
@@ -202,17 +202,6 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
 
         // Compute shortest paths to all reachable nodes in the forward graph.
         block_data[block_id].shortest_paths = dijkstra(&fwd_cfg, block_id, None, |_| 1usize);
-
-        // Compute the "successors". This is somehow different from the reachable nodes we compute
-        // in `shortest_paths`.
-        let all_succs = fwd_targets.iter().fold(HashSet::new(), |acc, &bid| {
-            // Add the successors to the accumulator
-            let mut acc: HashSet<_> = acc.union(&block_data[bid].succs).copied().collect();
-            // Add the child itself
-            acc.insert(bid);
-            acc
-        });
-        block_data[block_id].succs = all_succs;
     }
 
     Ok(CfgInfo {
@@ -244,9 +233,9 @@ type BigRational = fraction::Ratio<BigUint>;
 type FlowBlockId = BlockWithRank<(BigRational, isize)>;
 
 impl CfgInfo {
-    // fn reachable_from(&self, block_id: BlockId) -> impl Iterator<Item = BlockId> {
-    //     self.block_data[block_id].shortest_paths.keys().copied()
-    // }
+    fn block_data(&self, block_id: BlockId) -> &BlockData {
+        &self.block_data[block_id]
+    }
     // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
     //     self.block_data[src].shortest_paths.contains_key(&tgt)
     // }
@@ -264,6 +253,23 @@ impl CfgInfo {
     fn is_backward_edge(&self, src: BlockId, tgt: BlockId) -> bool {
         self.block_data[src].reverse_postorder >= self.block_data[tgt].reverse_postorder
             && self.cfg.contains_edge(src, tgt)
+    }
+}
+
+impl BlockData {
+    fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
+    }
+    fn shortest_paths_excluding_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths_including_self()
+            .filter(move |&(bid, _)| bid != self.id)
+    }
+    #[expect(unused)]
+    fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_including_self().map(|(bid, _)| bid)
+    }
+    fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_excluding_self().map(|(bid, _)| bid)
     }
 }
 
@@ -381,12 +387,12 @@ fn register_children_as_loop_exit_candidates(
         let candidates = loop_exits.get_mut(loop_id).unwrap();
 
         // Update them
-        for (bid, dist) in &cfg.block_data[block_id].shortest_paths {
-            let distance = base_dist + *dist;
-            match candidates.get_mut(bid) {
+        for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
+            let distance = base_dist + dist;
+            match candidates.get_mut(&bid) {
                 None => {
                     candidates.insert(
-                        *bid,
+                        bid,
                         LoopExitCandidateInfo {
                             occurrences: vec![distance],
                         },
@@ -886,13 +892,7 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
         trace!("Successors info:\n{}\n", {
             let mut out = vec![];
             for (bid, info) in cfg.block_data.iter_indexed() {
-                out.push(
-                    format!(
-                        "{} -> {{succs: {:?}, flow: {:?}}}",
-                        bid, &info.succs, &info.flow
-                    )
-                    .to_string(),
-                );
+                out.push(format!("{} -> {{flow: {:?}}}", bid, &info.flow).to_string());
             }
             out.join("\n")
         });
@@ -936,9 +936,7 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
         // ```
         // The "best" node (with the highest (flow, rank) in the graph above is F.
         let switch_exit: Option<FlowBlockId> = block_data
-            .succs
-            .iter()
-            .copied()
+            .reachable_excluding_self()
             .map(|id| {
                 let flow = block_data.flow[id].clone();
                 let rank = -isize::try_from(cfg.topo_rank(id)).unwrap();
@@ -993,9 +991,10 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
                 // intersect the set of exits for outer blocks?). If yes, we do
                 // a more precise analysis: we check if we can reach the exit
                 // *without going through* the exit candidate.
-                if block_data.succs.intersection(&exits_set).next().is_none()
-                    || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id)
-                {
+                let can_reach_exit = block_data
+                    .reachable_excluding_self()
+                    .any(|bid| exits_set.contains(&bid));
+                if !can_reach_exit || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id) {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit.id);
