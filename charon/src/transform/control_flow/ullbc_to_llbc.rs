@@ -27,7 +27,7 @@ use num_rational::BigRational;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
-use petgraph::visit::{DfsPostOrder, Walker};
+use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use std::u32;
 
@@ -933,44 +933,55 @@ fn compute_switch_exits_explore(
 
 /// Auxiliary helper
 ///
-/// Check if it is possible to reach the exit of an outer switch from `start_bid`
-/// without going through the `exit_candidate`. We use the graph without
-/// backward edges.
+/// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
+/// through the `exit_candidate`. We use the forward graph.
 fn can_reach_outer_exit(
     cfg: &CfgInfo,
     outer_exits: &HashSet<src::BlockId>,
     start_bid: src::BlockId,
     exit_candidate: src::BlockId,
 ) -> bool {
-    // The stack of blocks
-    let mut stack: Vec<src::BlockId> = vec![start_bid];
-    let mut explored: HashSet<src::BlockId> = HashSet::new();
-
-    while let Some(bid) = stack.pop() {
-        // Check if already explored
-        if explored.contains(&bid) {
-            break;
+    /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
+    struct GraphWithoutEdgesFrom<'a> {
+        graph: &'a Cfg,
+        special_node: BlockId,
+    }
+    impl GraphBase for GraphWithoutEdgesFrom<'_> {
+        type EdgeId = <Cfg as GraphBase>::EdgeId;
+        type NodeId = <Cfg as GraphBase>::NodeId;
+    }
+    impl IntoNeighbors for &GraphWithoutEdgesFrom<'_> {
+        type Neighbors = impl Iterator<Item = Self::NodeId>;
+        fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
+            if a == self.special_node {
+                None
+            } else {
+                Some(self.graph.neighbors(a))
+            }
+            .into_iter()
+            .flatten()
         }
-        explored.insert(bid);
-
-        // Check if this is the exit candidate
-        if bid == exit_candidate {
-            // Stop exploring
-            break;
+    }
+    impl Visitable for GraphWithoutEdgesFrom<'_> {
+        type Map = <Cfg as Visitable>::Map;
+        fn visit_map(self: &Self) -> Self::Map {
+            self.graph.visit_map()
         }
-
-        // Check if this is an outer exit
-        if outer_exits.contains(&bid) {
-            return true;
-        }
-
-        // Add the children to the stack
-        for child in cfg.cfg_no_be.neighbors(bid) {
-            stack.push(child);
+        fn reset_map(self: &Self, map: &mut Self::Map) {
+            self.graph.reset_map(map);
         }
     }
 
-    false
+    // Do a DFS over the forward graph where we pretend that the exit candidate has no outgoing
+    // edges. If we reach an outer exit candidate in that graph then the exit candidate does not
+    // dominate the outer exit candidates in the forward graph starting from `start_bid`.
+    let graph = GraphWithoutEdgesFrom {
+        graph: &cfg.cfg_no_be,
+        special_node: exit_candidate,
+    };
+    Dfs::new(&graph, start_bid)
+        .iter(&graph)
+        .any(|bid| outer_exits.contains(&bid))
 }
 
 /// See [`compute_loop_switch_exits`] for
