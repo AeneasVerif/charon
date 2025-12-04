@@ -24,7 +24,7 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use petgraph::algo::dominators::simple_fast;
+use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{DfsPostOrder, Walker};
@@ -58,7 +58,7 @@ struct BlockInfo<'a> {
 struct CfgInfo {
     /// The CFG
     pub cfg: Cfg,
-    /// The CFG where all the backward edges have been removed
+    /// The CFG where all the backward edges have been removed. Aka "forward CFG".
     pub cfg_no_be: Cfg,
     /// We consider the destination of the backward edges to be loop entries and
     /// store them here.
@@ -69,6 +69,11 @@ struct CfgInfo {
     pub switch_blocks: HashSet<src::BlockId>,
     /// The set of nodes from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: HashSet<src::BlockId>,
+    /// Tree of which nodes dominates which other nodes.
+    #[expect(unused)]
+    pub dominator_tree: Dominators<BlockId>,
+    /// Rank of each block in a topological order of the forward CFG.
+    pub topo_rank: Vector<BlockId, usize>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -77,12 +82,12 @@ struct Irreducible(BlockId);
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
+fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
     let start_block = BlockId::ZERO;
 
     // Build the node graph (we ignore unwind paths for now).
     let mut cfg = Cfg::new();
-    for (block_id, block) in body.body.iter_indexed() {
+    for (block_id, block) in body.iter_indexed() {
         cfg.add_node(block_id);
         for tgt in block.targets_ignoring_unwind() {
             cfg.add_edge(block_id, tgt, ());
@@ -93,7 +98,7 @@ fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
     let dominator_tree = simple_fast(&cfg, start_block);
 
     // Compute reverse postorder numbering.
-    let mut reverse_postorder = body.body.map_ref_opt(|_| None);
+    let mut reverse_postorder = body.map_ref_opt(|_| None);
     for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
         let rev_post_id = reverse_postorder.slot_count() - i;
         assert!(rev_post_id <= u32::MAX as usize);
@@ -111,7 +116,7 @@ fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
             continue;
         }
         cfg_no_be.add_node(src);
-        if body.body[src].terminator.kind.is_switch() {
+        if body[src].terminator.kind.is_switch() {
             switch_blocks.insert(src);
         }
         for tgt in cfg.neighbors(src) {
@@ -134,7 +139,7 @@ fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
     // Compute the nodes that can only reach error nodes.
     let mut only_reach_error = HashSet::new();
     for block_id in DfsPostOrder::new(&cfg_no_be, start_block).iter(&cfg_no_be) {
-        let block = &body.body[block_id];
+        let block = &body[block_id];
         // The node can only reach error nodes if:
         // - it is an error node;
         // - or it has neighbors and they all lead to errors.
@@ -149,6 +154,14 @@ fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
         }
     }
 
+    // Topologically sort the forward CFG to give a rank to each node.
+    // Note that `toposort` returns `Err` if and only if it finds cycles (which can't happen).
+    // `toposort` returns a list of all the nodes so none of the `usize::MAX` will stay.
+    let mut topo_rank: Vector<BlockId, usize> = body.map_ref(|_| usize::MAX);
+    for (i, bid) in toposort(&cfg_no_be, None).unwrap().into_iter().enumerate() {
+        topo_rank[bid] = i;
+    }
+
     Ok(CfgInfo {
         cfg,
         cfg_no_be,
@@ -156,6 +169,8 @@ fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
         backward_edges,
         switch_blocks,
         only_reach_error,
+        dominator_tree,
+        topo_rank,
     })
 }
 
@@ -174,6 +189,20 @@ type OrdBlockId = BlockWithRank<usize>;
 /// - a "flow" quantity (see [BlocksInfo])
 /// - the *inverse* rank in the topological sort (i.e., `- topo_rank`)
 type FlowBlockId = BlockWithRank<(BigRational, isize)>;
+
+impl CfgInfo {
+    fn topo_rank(&self, block_id: BlockId) -> usize {
+        self.topo_rank[block_id]
+    }
+    /// Create an [OrdBlockId] from a block id and a rank given by a map giving
+    /// a sort (topological in our use cases) over the graph.
+    fn make_ord_block_id(&self, block_id: BlockId) -> OrdBlockId {
+        OrdBlockId {
+            id: block_id,
+            rank: self.topo_rank(block_id),
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 struct LoopExitCandidateInfo {
@@ -812,21 +841,10 @@ struct BlocksInfo {
     flow: BTreeSet<FlowBlockId>,
 }
 
-/// Create an [OrdBlockId] from a block id and a rank given by a map giving
-/// a sort (topological in our use cases) over the graph.
-fn make_ord_block_id(
-    block_id: src::BlockId,
-    sort_map: &HashMap<src::BlockId, usize>,
-) -> OrdBlockId {
-    let rank = *sort_map.get(&block_id).unwrap();
-    OrdBlockId { id: block_id, rank }
-}
-
 /// Compute [BlocksInfo] for every block in the graph.
 /// This information is then used to compute the switch exits.
 fn compute_switch_exits_explore(
     cfg: &CfgInfo,
-    tsort_map: &HashMap<src::BlockId, usize>,
     memoized: &mut HashMap<src::BlockId, BlocksInfo>,
     block_id: src::BlockId,
 ) {
@@ -839,7 +857,7 @@ fn compute_switch_exits_explore(
     let children_ids: Vec<src::BlockId> = cfg.cfg_no_be.neighbors(block_id).collect_vec();
     children_ids
         .iter()
-        .for_each(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid));
+        .for_each(|bid| compute_switch_exits_explore(cfg, memoized, *bid));
 
     // Retrieve the information
     let children: Vec<&BlocksInfo> = children_ids
@@ -853,7 +871,7 @@ fn compute_switch_exits_explore(
         // Add the successors to the accumulator
         let mut acc: BTreeSet<_> = acc.union(&s.succs).copied().collect();
         // Add the child itself
-        acc.insert(make_ord_block_id(s.id, tsort_map));
+        acc.insert(cfg.make_ord_block_id(s.id));
         acc
     });
 
@@ -881,7 +899,7 @@ fn compute_switch_exits_explore(
         // and add.
         for child in children {
             // First, add the child itself
-            let rank = isize::try_from(*tsort_map.get(&child.id).unwrap()).unwrap();
+            let rank = isize::try_from(cfg.topo_rank(child.id)).unwrap();
             add_to_flow((child.id, (factor.clone(), -rank)));
 
             // Then add its successors
@@ -977,23 +995,20 @@ fn can_reach_outer_exit(
 /// Note that with nested switches, the branches of the inner switches might
 /// goto the exits of the outer switches: for this reason, we give precedence
 /// to the outer switches.
-fn compute_switch_exits(
-    cfg: &CfgInfo,
-    tsort_map: &HashMap<src::BlockId, usize>,
-) -> HashMap<src::BlockId, Option<src::BlockId>> {
+fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
     // Compute the successors info map, starting at the root node
     let mut succs_info_map = HashMap::new();
     trace!(
         "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
         cfg.cfg, cfg.cfg_no_be, cfg.switch_blocks
     );
-    let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
+    let _ = compute_switch_exits_explore(cfg, &mut succs_info_map, src::BlockId::ZERO);
 
     // We need to give precedence to the outer switches: we thus iterate
     // over the switch blocks in topological order.
     let mut sorted_switch_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
     for bid in cfg.switch_blocks.iter() {
-        sorted_switch_blocks.insert(make_ord_block_id(*bid, tsort_map));
+        sorted_switch_blocks.insert(cfg.make_ord_block_id(*bid));
     }
     trace!("sorted_switch_blocks: {:?}", sorted_switch_blocks);
 
@@ -1080,7 +1095,7 @@ fn compute_switch_exits(
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit.id);
-                    ord_exits_set.insert(make_ord_block_id(exit.id, tsort_map));
+                    ord_exits_set.insert(cfg.make_ord_block_id(exit.id));
                     Some(exit.id)
                 } else {
                     trace!(
@@ -1231,25 +1246,12 @@ fn compute_loop_switch_exits(
     body: &src::ExprBody,
     cfg_info: &CfgInfo,
 ) -> ExitInfo {
-    // Use the CFG without backward edges to topologically sort the nodes.
-    // Note that `toposort` returns `Err` if and only if it finds cycles (which
-    // can't happen).
-    let tsorted: Vec<src::BlockId> = toposort(&cfg_info.cfg_no_be, None).unwrap();
-
-    // Build the map: block id -> topological sort rank
-    let tsort_map: HashMap<src::BlockId, usize> = tsorted
-        .into_iter()
-        .enumerate()
-        .map(|(i, block_id)| (block_id, i))
-        .collect();
-    trace!("tsort_map:\n{:?}", tsort_map);
-
     // Compute the loop exits
     let loop_exits = compute_loop_exits(ctx, body, cfg_info);
     trace!("loop_exits:\n{:?}", loop_exits);
 
     // Compute the switch exits
-    let switch_exits = compute_switch_exits(cfg_info, &tsort_map);
+    let switch_exits = compute_switch_exits(cfg_info);
     trace!("switch_exits:\n{:?}", switch_exits);
 
     // Compute the exit info
@@ -1267,7 +1269,7 @@ fn compute_loop_switch_exits(
         .iter()
         .chain(cfg_info.switch_blocks.iter())
     {
-        sorted_blocks.insert(make_ord_block_id(*bid, &tsort_map));
+        sorted_blocks.insert(cfg_info.make_ord_block_id(*bid));
     }
 
     // Keep track of the exits which were already attributed
@@ -1677,7 +1679,7 @@ fn translate_block(
 fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = match build_cfg_info(src_body) {
+    let cfg_info = match build_cfg_info(&src_body.body) {
         Ok(cfg_info) => cfg_info,
         Err(Irreducible(bid)) => {
             let span = src_body.body[bid].terminator.span;
