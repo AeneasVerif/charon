@@ -156,7 +156,7 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
 
     // Topologically sort the forward CFG to give a rank to each node.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which can't happen).
-    // `toposort` returns a list of all the nodes so none of the `usize::MAX` will stay.
+    // The default value will stay for unreachable nodes, which are irrelevant.
     let mut topo_rank: Vector<BlockId, usize> = body.map_ref(|_| usize::MAX);
     for (i, bid) in toposort(&cfg_no_be, None).unwrap().into_iter().enumerate() {
         topo_rank[bid] = i;
@@ -877,48 +877,44 @@ fn compute_switch_exits_explore(
 
     // Compute the "flows" (if there are children)
     // TODO: this is computationally expensive...
-    let mut flow: HashMap<src::BlockId, (BigRational, isize)> = HashMap::new();
+    let flow: BTreeSet<FlowBlockId> = if children.len() > 0 {
+        let mut flow: Vector<src::BlockId, BigRational> = cfg
+            .topo_rank
+            .map_ref(|_| BigRational::new(BigInt::ZERO, BigInt::from(1)));
 
-    if children.len() > 0 {
         // We need to divide the initial flow equally between the children
         let factor = BigRational::new(BigInt::from(1), BigInt::from(children.len()));
-
-        // Small helper
-        let mut add_to_flow =
-            |(id, f0): (src::BlockId, (BigRational, isize))| match flow.get_mut(&id) {
-                None => {
-                    flow.insert(id, f0);
-                }
-                Some(f1) => {
-                    assert!(f0.1 == f1.1);
-                    f1.0 += f0.0;
-                }
-            };
 
         // For each child, multiply the flows of its own children by the ratio,
         // and add.
         for child in children {
             // First, add the child itself
-            let rank = isize::try_from(cfg.topo_rank(child.id)).unwrap();
-            add_to_flow((child.id, (factor.clone(), -rank)));
+            flow[child.id] += factor.clone();
 
             // Then add its successors
-            for child1 in &child.flow {
-                add_to_flow((
-                    child1.id,
-                    (factor.clone() * child1.rank.0.clone(), child1.rank.1),
-                ));
+            for grandchild in &child.flow {
+                flow[grandchild.id] += factor.clone() * grandchild.rank.0.clone();
             }
         }
-    }
 
-    // Put everything in an ordered set: the first block id will be the one with
-    // the highest flow, and in case of equality it will be the one with the
-    // smallest block id.
-    let flow: BTreeSet<FlowBlockId> = flow
-        .into_iter()
-        .map(|(id, rank)| BlockWithRank { rank, id })
-        .collect();
+        // Put the reachable nodes in an ordered set: the last block id will be the one with the
+        // highest flow, and in case of equality it will be the one with the smallest topological
+        // order.
+        all_succs
+            .iter()
+            .map(|ord_block| ord_block.id)
+            .map(|id| {
+                let flow = flow[id].clone();
+                let rank = isize::try_from(cfg.topo_rank(id)).unwrap();
+                BlockWithRank {
+                    rank: (flow, -rank),
+                    id,
+                }
+            })
+            .collect()
+    } else {
+        Default::default()
+    };
 
     trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
 
