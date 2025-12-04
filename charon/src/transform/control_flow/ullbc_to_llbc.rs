@@ -22,8 +22,8 @@
 
 use indexmap::IndexMap;
 use itertools::Itertools;
+use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
-use petgraph::algo::{dijkstra, toposort};
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -72,8 +72,6 @@ struct CfgInfo {
 
 #[derive(Debug)]
 struct BlockData {
-    /// Rank in a topological order of the forward CFG. `None` if the block is unreachable.
-    pub topo_rank: Option<usize>,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
     /// Node from where we can only reach error nodes (panic, etc.)
@@ -115,7 +113,6 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
     let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
     let mut block_data: Vector<BlockId, BlockData> = body.map_ref(|_| BlockData {
         // Default values will stay for unreachable nodes, which are irrelevant.
-        topo_rank: None,
         reverse_postorder: None,
         only_reach_error: false,
         shortest_paths: Default::default(),
@@ -218,12 +215,6 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
         block_data[block_id].succs = all_succs;
     }
 
-    // Topologically sort the forward CFG to give a rank to each node. Note that `toposort` returns
-    // `Err` if and only if it finds cycles, which can't happen in the forward graph.
-    for (i, bid) in toposort(&fwd_cfg, None).unwrap().into_iter().enumerate() {
-        block_data[bid].topo_rank = Some(i);
-    }
-
     Ok(CfgInfo {
         cfg,
         fwd_cfg,
@@ -243,7 +234,7 @@ struct BlockWithRank<T> {
     id: src::BlockId,
 }
 
-type OrdBlockId = BlockWithRank<usize>;
+type OrdBlockId = BlockWithRank<u32>;
 
 /// For the rank we use:
 /// - a "flow" quantity (see [BlocksInfo])
@@ -259,8 +250,8 @@ impl CfgInfo {
     // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
     //     self.block_data[src].shortest_paths.contains_key(&tgt)
     // }
-    fn topo_rank(&self, block_id: BlockId) -> usize {
-        self.block_data[block_id].topo_rank.unwrap()
+    fn topo_rank(&self, block_id: BlockId) -> u32 {
+        self.block_data[block_id].reverse_postorder.unwrap()
     }
     /// Create an [OrdBlockId] from a block id and a rank given by a map giving
     /// a sort (topological in our use cases) over the graph.
