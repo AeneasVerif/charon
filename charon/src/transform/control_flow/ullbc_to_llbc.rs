@@ -814,31 +814,7 @@ struct BlocksInfo {
     /// This is exactly this problems:
     /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
-    ///
-    /// Remark: in order to rank the nodes, we also use the negation of the
-    /// rank given by the topological order. The last elements of the set
-    /// have the highest flow, that is they are the nodes to which the maximum
-    /// number of paths converge. If several nodes have the same flow, we want
-    /// to take the highest one in the hierarchy: hence the use of the inverse
-    /// of the topological rank.
-    ///
-    /// Ex.:
-    /// ```text
-    /// A  -- we start here
-    /// |
-    /// |---------------------------------------
-    /// |            |            |            |
-    /// B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
-    /// |            |            |
-    /// |--------------------------
-    /// |
-    /// F:(0.75,-5)
-    /// |
-    /// |
-    /// G:(0.75,-6)
-    /// ```
-    /// The "best" node (with the highest (flow, rank) in the graph above is F.
-    flow: BTreeSet<FlowBlockId>,
+    flow: Vector<src::BlockId, BigRational>,
 }
 
 /// Compute [BlocksInfo] for every block in the graph.
@@ -875,13 +851,13 @@ fn compute_switch_exits_explore(
         acc
     });
 
-    // Compute the "flows" (if there are children)
+    // Compute the "flows".
     // TODO: this is computationally expensive...
-    let flow: BTreeSet<FlowBlockId> = if children.len() > 0 {
-        let mut flow: Vector<src::BlockId, BigRational> = cfg
-            .topo_rank
-            .map_ref(|_| BigRational::new(BigInt::ZERO, BigInt::from(1)));
+    let mut flow: Vector<src::BlockId, BigRational> = cfg
+        .topo_rank
+        .map_ref(|_| BigRational::new(BigInt::ZERO, BigInt::from(1)));
 
+    if !children.is_empty() {
         // We need to divide the initial flow equally between the children
         let factor = BigRational::new(BigInt::from(1), BigInt::from(children.len()));
 
@@ -892,29 +868,13 @@ fn compute_switch_exits_explore(
             flow[child.id] += factor.clone();
 
             // Then add its successors
-            for grandchild in &child.flow {
-                flow[grandchild.id] += factor.clone() * grandchild.rank.0.clone();
+            for grandchild in &child.succs {
+                // Flow from `child` to `grandchild`
+                let child_flow = child.flow[grandchild.id].clone();
+                flow[grandchild.id] += factor.clone() * child_flow;
             }
         }
-
-        // Put the reachable nodes in an ordered set: the last block id will be the one with the
-        // highest flow, and in case of equality it will be the one with the smallest topological
-        // order.
-        all_succs
-            .iter()
-            .map(|ord_block| ord_block.id)
-            .map(|id| {
-                let flow = flow[id].clone();
-                let rank = isize::try_from(cfg.topo_rank(id)).unwrap();
-                BlockWithRank {
-                    rank: (flow, -rank),
-                    id,
-                }
-            })
-            .collect()
-    } else {
-        Default::default()
-    };
+    }
 
     trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
 
@@ -1048,10 +1008,46 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
         trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
         let info = succs_info_map.get(&bid).unwrap();
-        let sorted_exit_candidates = &info.flow;
-        // Find the best successor: this is the last one (with the highest flow,
-        // and the highest reverse topological rank).
-        let exit = if let Some(exit) = sorted_exit_candidates.last() {
+        // Find the best successor: this is the node with the highest flow, and the
+        // highest reverse topological rank.
+        //
+        // Remark: in order to rank the nodes, we also use the negation of the
+        // rank given by the topological order. The last elements of the set
+        // have the highest flow, that is they are the nodes to which the maximum
+        // number of paths converge. If several nodes have the same flow, we want
+        // to take the highest one in the hierarchy: hence the use of the inverse
+        // of the topological rank.
+        //
+        // Ex.:
+        // ```text
+        // A  -- we start here
+        // |
+        // |---------------------------------------
+        // |            |            |            |
+        // B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
+        // |            |            |
+        // |--------------------------
+        // |
+        // F:(0.75,-5)
+        // |
+        // |
+        // G:(0.75,-6)
+        // ```
+        // The "best" node (with the highest (flow, rank) in the graph above is F.
+        let switch_exit: Option<FlowBlockId> = info
+            .succs
+            .iter()
+            .map(|ord_block| ord_block.id)
+            .map(|id| {
+                let flow = info.flow[id].clone();
+                let rank = -isize::try_from(cfg.topo_rank(id)).unwrap();
+                BlockWithRank {
+                    rank: (flow, rank),
+                    id,
+                }
+            })
+            .max();
+        let exit = if let Some(exit) = switch_exit {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
             trace!("{bid:?} has an exit candidate: {exit:?}");
