@@ -58,6 +58,7 @@ derive_generic_visitor = "0.2.0"
 either = "1.15.0"
 env_logger = { version = "0.11", features = ["color"] }
 flate2 = { version = "1.0.34", optional = true }
+fraction = "0.15.3"
 indexmap = { version = "2.7.1", features = ["serde"] }
 index_vec = { version = "0.1.3", features = ["serde"] }
 indoc = "2"
@@ -67,7 +68,6 @@ log = "0.4.17"
 nom = "7.1.3"
 nom-supreme = "0.8.0"
 num-bigint = "0.4.6"
-num-rational = "0.4"
 petgraph = "0.8.0"
 reqwest = { version = "0.12.8", optional = true }
 rustc_version = "0.4"

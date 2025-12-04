@@ -22,8 +22,6 @@
 
 use indexmap::IndexMap;
 use itertools::Itertools;
-use num_bigint::BigInt;
-use num_rational::BigRational;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
@@ -188,6 +186,8 @@ type OrdBlockId = BlockWithRank<usize>;
 /// For the rank we use:
 /// - a "flow" quantity (see [BlocksInfo])
 /// - the *inverse* rank in the topological sort (i.e., `- topo_rank`)
+type BigUint = fraction::DynaInt<u64, fraction::BigUint>;
+type BigRational = fraction::Ratio<BigUint>;
 type FlowBlockId = BlockWithRank<(BigRational, isize)>;
 
 impl CfgInfo {
@@ -855,11 +855,11 @@ fn compute_switch_exits_explore(
     // TODO: this is computationally expensive...
     let mut flow: Vector<src::BlockId, BigRational> = cfg
         .topo_rank
-        .map_ref(|_| BigRational::new(BigInt::ZERO, BigInt::from(1)));
+        .map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
 
     if !children.is_empty() {
         // We need to divide the initial flow equally between the children
-        let factor = BigRational::new(BigInt::from(1), BigInt::from(children.len()));
+        let factor = BigRational::new(1u64.into(), children.len().into());
 
         // For each child, multiply the flows of its own children by the ratio,
         // and add.
