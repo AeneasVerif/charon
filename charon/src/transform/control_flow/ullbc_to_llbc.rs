@@ -22,14 +22,12 @@
 
 use indexmap::IndexMap;
 use itertools::Itertools;
-use num_bigint::BigInt;
-use num_rational::BigRational;
-use petgraph::algo::dominators::simple_fast;
-use petgraph::algo::toposort;
+use petgraph::algo::dijkstra;
+use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::graphmap::DiGraphMap;
-use petgraph::visit::{DfsPostOrder, Walker};
-use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
-use std::u32;
+use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
+use std::collections::{BTreeSet, HashMap, HashSet};
+use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
@@ -58,17 +56,40 @@ struct BlockInfo<'a> {
 struct CfgInfo {
     /// The CFG
     pub cfg: Cfg,
-    /// The CFG where all the backward edges have been removed
-    pub cfg_no_be: Cfg,
+    /// The CFG where all the backward edges have been removed. Aka "forward CFG".
+    pub fwd_cfg: Cfg,
     /// We consider the destination of the backward edges to be loop entries and
     /// store them here.
     pub loop_entries: HashSet<src::BlockId>,
-    /// The backward edges
-    pub backward_edges: HashSet<(src::BlockId, src::BlockId)>,
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId>,
-    /// The set of nodes from where we can only reach error nodes (panic, etc.)
-    pub only_reach_error: HashSet<src::BlockId>,
+    /// Tree of which nodes dominates which other nodes.
+    #[expect(unused)]
+    pub dominator_tree: Dominators<BlockId>,
+    /// Computed data about each block.
+    pub block_data: Vector<BlockId, BlockData>,
+}
+
+#[derive(Debug)]
+struct BlockData {
+    pub id: BlockId,
+    /// Order in a reverse postorder numbering. `None` if the block is unreachable.
+    pub reverse_postorder: Option<u32>,
+    /// Node from where we can only reach error nodes (panic, etc.)
+    pub only_reach_error: bool,
+    /// List of reachable nodes, with the length of shortest path to them. Includes the current
+    /// node.
+    pub shortest_paths: hashbrown::HashMap<BlockId, usize>,
+    /// Let's say we put a quantity of water equal to 1 on the block, and the water flows downards.
+    /// Whenever there is a branching, the quantity of water gets equally divided between the
+    /// branches. When the control flows join, we put the water back together. The set below
+    /// computes the amount of water received by each descendant of the node.
+    ///
+    /// TODO: there must be a known algorithm which computes this, right?...
+    /// This is exactly this problems:
+    /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
+    /// TODO: the way I compute this is not efficient.
+    pub flow: Vector<src::BlockId, BigRational>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -77,85 +98,119 @@ struct Irreducible(BlockId);
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_info(body: &src::ExprBody) -> Result<CfgInfo, Irreducible> {
+fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
     let start_block = BlockId::ZERO;
 
     // Build the node graph (we ignore unwind paths for now).
     let mut cfg = Cfg::new();
-    for (block_id, block) in body.body.iter_indexed() {
+    for (block_id, block) in body.iter_indexed() {
         cfg.add_node(block_id);
         for tgt in block.targets_ignoring_unwind() {
             cfg.add_edge(block_id, tgt, ());
         }
     }
 
+    let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
+    let mut block_data: Vector<BlockId, BlockData> = body.map_ref_indexed(|id, _| BlockData {
+        id,
+        // Default values will stay for unreachable nodes, which are irrelevant.
+        reverse_postorder: None,
+        only_reach_error: false,
+        shortest_paths: Default::default(),
+        flow: empty_flow.clone(),
+    });
+
     // Compute the dominator tree.
     let dominator_tree = simple_fast(&cfg, start_block);
 
     // Compute reverse postorder numbering.
-    let mut reverse_postorder = body.body.map_ref_opt(|_| None);
     for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
-        let rev_post_id = reverse_postorder.slot_count() - i;
+        let rev_post_id = body.slot_count() - i;
         assert!(rev_post_id <= u32::MAX as usize);
-        reverse_postorder.set_slot(block_id, rev_post_id as u32);
+        block_data[block_id].reverse_postorder = Some(rev_post_id as u32);
     }
 
     // Compute the forward graph (without backward edges).
-    let mut cfg_no_be = Cfg::new();
+    let mut fwd_cfg = Cfg::new();
     let mut loop_entries = HashSet::new();
-    let mut backward_edges = HashSet::new();
     let mut switch_blocks = HashSet::new();
     for src in cfg.nodes() {
-        if reverse_postorder.get(src).is_none() {
+        if block_data[src].reverse_postorder.is_none() {
             // Unreachable block
             continue;
         }
-        cfg_no_be.add_node(src);
-        if body.body[src].terminator.kind.is_switch() {
+        fwd_cfg.add_node(src);
+        if body[src].terminator.kind.is_switch() {
             switch_blocks.insert(src);
         }
         for tgt in cfg.neighbors(src) {
             // Check if the edge is a backward edge.
-            if reverse_postorder[src] >= reverse_postorder[tgt] {
+            if block_data[src].reverse_postorder >= block_data[tgt].reverse_postorder {
                 // This is a backward edge
                 loop_entries.insert(tgt);
-                backward_edges.insert((src, tgt));
                 // A cfg is reducible iff the target of every back edge dominates the
                 // edge's source.
                 if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
                     return Err(Irreducible(src));
                 }
             } else {
-                cfg_no_be.add_edge(src, tgt, ());
+                fwd_cfg.add_edge(src, tgt, ());
             }
         }
     }
 
-    // Compute the nodes that can only reach error nodes.
-    let mut only_reach_error = HashSet::new();
-    for block_id in DfsPostOrder::new(&cfg_no_be, start_block).iter(&cfg_no_be) {
-        let block = &body.body[block_id];
+    for block_id in DfsPostOrder::new(&fwd_cfg, start_block).iter(&fwd_cfg) {
+        let block = &body[block_id];
+        let targets = cfg.neighbors(block_id).collect_vec();
+        let fwd_targets = fwd_cfg.neighbors(block_id).collect_vec();
+
+        // Compute the nodes that can only reach error nodes.
         // The node can only reach error nodes if:
         // - it is an error node;
         // - or it has neighbors and they all lead to errors.
         // Note that if there is a backward edge, `only_reach_error` cannot contain this
         // node yet. In other words, this does not consider infinite loops as reaching an
         // error node.
-        let targets = cfg.neighbors(block_id).collect_vec();
         if block.terminator.is_error()
-            || (!targets.is_empty() && targets.iter().all(|tgt| only_reach_error.contains(tgt)))
+            || (!targets.is_empty() && targets.iter().all(|&tgt| block_data[tgt].only_reach_error))
         {
-            only_reach_error.insert(block_id);
+            block_data[block_id].only_reach_error = true;
         }
+
+        // Compute the flows between each pair of nodes.
+        let mut flow: Vector<src::BlockId, BigRational> = mem::take(&mut block_data[block_id].flow);
+        if !fwd_targets.is_empty() {
+            // We need to divide the initial flow equally between the children
+            let factor = BigRational::new(1u64.into(), fwd_targets.len().into());
+
+            // For each child, multiply the flows of its own children by the ratio,
+            // and add.
+            for &child_id in &fwd_targets {
+                // First, add the child itself
+                flow[child_id] += factor.clone();
+
+                // Then add its successors
+                let child = &block_data[child_id];
+                for grandchild in child.reachable_excluding_self() {
+                    // Flow from `child` to `grandchild`
+                    let child_flow = child.flow[grandchild].clone();
+                    flow[grandchild] += factor.clone() * child_flow;
+                }
+            }
+        }
+        block_data[block_id].flow = flow;
+
+        // Compute shortest paths to all reachable nodes in the forward graph.
+        block_data[block_id].shortest_paths = dijkstra(&fwd_cfg, block_id, None, |_| 1usize);
     }
 
     Ok(CfgInfo {
         cfg,
-        cfg_no_be,
+        fwd_cfg,
         loop_entries,
-        backward_edges,
         switch_blocks,
-        only_reach_error,
+        dominator_tree,
+        block_data,
     })
 }
 
@@ -168,12 +223,55 @@ struct BlockWithRank<T> {
     id: src::BlockId,
 }
 
-type OrdBlockId = BlockWithRank<usize>;
+type OrdBlockId = BlockWithRank<u32>;
 
 /// For the rank we use:
 /// - a "flow" quantity (see [BlocksInfo])
 /// - the *inverse* rank in the topological sort (i.e., `- topo_rank`)
+type BigUint = fraction::DynaInt<u64, fraction::BigUint>;
+type BigRational = fraction::Ratio<BigUint>;
 type FlowBlockId = BlockWithRank<(BigRational, isize)>;
+
+impl CfgInfo {
+    fn block_data(&self, block_id: BlockId) -> &BlockData {
+        &self.block_data[block_id]
+    }
+    // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
+    //     self.block_data[src].shortest_paths.contains_key(&tgt)
+    // }
+    fn topo_rank(&self, block_id: BlockId) -> u32 {
+        self.block_data[block_id].reverse_postorder.unwrap()
+    }
+    /// Create an [OrdBlockId] from a block id and a rank given by a map giving
+    /// a sort (topological in our use cases) over the graph.
+    fn make_ord_block_id(&self, block_id: BlockId) -> OrdBlockId {
+        OrdBlockId {
+            id: block_id,
+            rank: self.topo_rank(block_id),
+        }
+    }
+    fn is_backward_edge(&self, src: BlockId, tgt: BlockId) -> bool {
+        self.block_data[src].reverse_postorder >= self.block_data[tgt].reverse_postorder
+            && self.cfg.contains_edge(src, tgt)
+    }
+}
+
+impl BlockData {
+    fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
+    }
+    fn shortest_paths_excluding_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths_including_self()
+            .filter(move |&(bid, _)| bid != self.id)
+    }
+    #[expect(unused)]
+    fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_including_self().map(|(bid, _)| bid)
+    }
+    fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_excluding_self().map(|(bid, _)| bid)
+    }
+}
 
 #[derive(Debug, Clone)]
 struct LoopExitCandidateInfo {
@@ -225,40 +323,9 @@ fn loop_entry_is_reachable_from_inner(
     // ignore backward edges to outer loops of course, but also backward edges
     // to inner loops because we shouldn't need to follow those (there should be
     // more direct paths).
-
-    // Explore the graph starting at block_id
-    let mut explored: HashSet<src::BlockId> = HashSet::new();
-    let mut stack: VecDeque<src::BlockId> = VecDeque::new();
-    stack.push_back(block_id);
-    while !stack.is_empty() {
-        let bid = stack.pop_front().unwrap();
-        if explored.contains(&bid) {
-            continue;
-        }
-        explored.insert(bid);
-
-        for next_id in cfg.cfg.neighbors(bid) {
-            // Check if this is a backward edge
-            if cfg.backward_edges.contains(&(bid, next_id)) {
-                // Backward edge: only allow those going directly to the current
-                // loop's entry
-                if next_id == loop_entry {
-                    // The loop entry is reachable
-                    return true;
-                } else {
-                    // Forbidden edge: ignore
-                    continue;
-                }
-            } else {
-                // Nothing special: add the node to the stack for further
-                // exploration
-                stack.push_back(next_id);
-            }
-        }
-    }
-
-    // The loop entry is not reachable
-    false
+    Dfs::new(&cfg.fwd_cfg, block_id)
+        .iter(&cfg.fwd_cfg)
+        .any(|bid| cfg.is_backward_edge(bid, loop_entry))
 }
 
 struct FilteredLoopParents {
@@ -272,18 +339,16 @@ fn filter_loop_parents(
     block_id: src::BlockId,
 ) -> Option<FilteredLoopParents> {
     let mut eliminate: usize = 0;
-    for (loop_id, _ldist) in parent_loops.iter().rev() {
-        if !loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
-            eliminate += 1;
-        } else {
+    for (i, (loop_id, _)) in parent_loops.iter().enumerate().rev() {
+        if loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
+            eliminate = i + 1;
             break;
         }
     }
 
-    if eliminate > 0 {
-        // Split the vector of parents
-        let (remaining_parents, removed_parents) =
-            parent_loops.split_at(parent_loops.len() - eliminate);
+    // Split the vector of parents
+    let (remaining_parents, removed_parents) = parent_loops.split_at(eliminate);
+    if !removed_parents.is_empty() {
         let (mut remaining_parents, removed_parents) =
             (remaining_parents.to_vec(), removed_parents.to_vec());
 
@@ -303,39 +368,6 @@ fn filter_loop_parents(
     }
 }
 
-/// List the nodes reachable from a starting point.
-/// We list the nodes and the depth (in the AST) at which they were found.
-fn list_reachable(cfg: &Cfg, start: src::BlockId) -> HashMap<src::BlockId, usize> {
-    let mut reachable: HashMap<src::BlockId, usize> = HashMap::new();
-    let mut stack: VecDeque<(src::BlockId, usize)> = VecDeque::new();
-    stack.push_back((start, 0));
-
-    while !stack.is_empty() {
-        let (bid, dist) = stack.pop_front().unwrap();
-
-        // Ignore this node if we already registered it with a better distance
-        match reachable.get(&bid) {
-            None => (),
-            Some(original_dist) => {
-                if *original_dist < dist {
-                    continue;
-                }
-            }
-        }
-
-        // Inset the node with its distance
-        reachable.insert(bid, dist);
-
-        // Add the children to the stack
-        for child in cfg.neighbors(bid) {
-            stack.push_back((child, dist + 1));
-        }
-    }
-
-    // Return
-    reachable
-}
-
 /// Register a node and its children as exit candidates for a list of
 /// parent loops.
 fn register_children_as_loop_exit_candidates(
@@ -344,9 +376,6 @@ fn register_children_as_loop_exit_candidates(
     removed_parent_loops: &Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) {
-    // List the reachable nodes
-    let reachable = list_reachable(&cfg.cfg_no_be, block_id);
-
     let mut base_dist = 0;
     // For every parent loop, in reverse order (we go from last to first in
     // order to correctly compute the distances)
@@ -358,12 +387,12 @@ fn register_children_as_loop_exit_candidates(
         let candidates = loop_exits.get_mut(loop_id).unwrap();
 
         // Update them
-        for (bid, dist) in reachable.iter() {
-            let distance = base_dist + *dist;
-            match candidates.get_mut(bid) {
+        for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
+            let distance = base_dist + dist;
+            match candidates.get_mut(&bid) {
                 None => {
                     candidates.insert(
-                        *bid,
+                        bid,
                         LoopExitCandidateInfo {
                             occurrences: vec![distance],
                         },
@@ -411,23 +440,13 @@ fn compute_loop_exit_candidates(
     };
 
     // Retrieve the children - note that we ignore the back edges
-    let children = cfg.cfg_no_be.neighbors(block_id);
-    for child in children {
+    for child in cfg.fwd_cfg.neighbors(block_id) {
         // If the parent loop entry is not reachable from the child without going
         // through a backward edge which goes directly to the loop entry, consider
         // this node a potential exit.
         ensure_sufficient_stack(|| {
-            match filter_loop_parents(cfg, &parent_loops, child) {
-                None => {
-                    compute_loop_exit_candidates(
-                        cfg,
-                        explored,
-                        ordered_loops,
-                        loop_exits,
-                        parent_loops.clone(),
-                        child,
-                    );
-                }
+            let new_parent_loops = match filter_loop_parents(cfg, &parent_loops, child) {
+                None => parent_loops.clone(),
                 Some(fparent_loops) => {
                     // We filtered some parent loops: it means this child and its
                     // children are loop exit candidates for all those loops: we must
@@ -455,18 +474,18 @@ fn compute_loop_exit_candidates(
                         &fparent_loops.removed_parents,
                         child,
                     );
-
-                    // Explore, with the filtered parents
-                    compute_loop_exit_candidates(
-                        cfg,
-                        explored,
-                        ordered_loops,
-                        loop_exits,
-                        fparent_loops.remaining_parents,
-                        child,
-                    );
+                    fparent_loops.remaining_parents
                 }
-            }
+            };
+            // Explore, with the filtered parents
+            compute_loop_exit_candidates(
+                cfg,
+                explored,
+                ordered_loops,
+                loop_exits,
+                new_parent_loops,
+                child,
+            );
         })
     }
 }
@@ -717,7 +736,7 @@ fn compute_loop_exits(
             // Remove the candidates which only lead to errors (panic or unreachable).
             let candidates: Vec<_> = possible_candidates
                 .iter()
-                .filter(|bid| !cfg.only_reach_error.contains(bid))
+                .filter(|&&bid| !cfg.block_data[bid].only_reach_error)
                 .collect();
             // If there is exactly one candidate we select it
             if candidates.len() == 1 {
@@ -766,18 +785,10 @@ fn compute_loop_exits(
             }
         } else {
             // Register the exit, if there is one
-            match best_exit {
-                None => {
-                    // No exit was found
-                    trace!("Loop {loop_id}: could not find an exit candidate");
-                    chosen_loop_exits.insert(loop_id, None);
-                }
-                Some(exit_id) => {
-                    exits.insert(exit_id);
-                    trace!("Loop {loop_id}: selected the unique exit candidate {exit_id}");
-                    chosen_loop_exits.insert(loop_id, Some(exit_id));
-                }
+            if let Some(exit_id) = best_exit {
+                exits.insert(exit_id);
             }
+            chosen_loop_exits.insert(loop_id, best_exit);
         }
     }
 
@@ -786,191 +797,57 @@ fn compute_loop_exits(
     chosen_loop_exits
 }
 
-/// Information used to compute the switch exits.
-/// We compute this information for every block in the graph.
-/// Note that we make sure to use immutable sets because we rely a lot
-/// on cloning.
-#[derive(Debug, Clone)]
-struct BlocksInfo {
-    id: src::BlockId,
-    /// All the successors of the block
-    succs: BTreeSet<OrdBlockId>,
-    /// Let's say we put a quantity of water equal to 1 on the block, and the
-    /// water flows downards. Whenever there is a branching, the quantity of
-    /// water gets equally divided between the branches. When the control flows
-    /// join, we put the water back together. The set below computes the amount
-    /// of water received by each descendant of the node.
-    ///
-    /// TODO: there must be a known algorithm which computes this, right?...
-    /// This is exactly this problems:
-    /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
-    /// TODO: the way I compute this is not efficient.
-    ///
-    /// Remark: in order to rank the nodes, we also use the negation of the
-    /// rank given by the topological order. The last elements of the set
-    /// have the highest flow, that is they are the nodes to which the maximum
-    /// number of paths converge. If several nodes have the same flow, we want
-    /// to take the highest one in the hierarchy: hence the use of the inverse
-    /// of the topological rank.
-    ///
-    /// Ex.:
-    /// ```text
-    /// A  -- we start here
-    /// |
-    /// |---------------------------------------
-    /// |            |            |            |
-    /// B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
-    /// |            |            |
-    /// |--------------------------
-    /// |
-    /// F:(0.75,-5)
-    /// |
-    /// |
-    /// G:(0.75,-6)
-    /// ```
-    /// The "best" node (with the highest (flow, rank) in the graph above is F.
-    flow: BTreeSet<FlowBlockId>,
-}
-
-/// Create an [OrdBlockId] from a block id and a rank given by a map giving
-/// a sort (topological in our use cases) over the graph.
-fn make_ord_block_id(
-    block_id: src::BlockId,
-    sort_map: &HashMap<src::BlockId, usize>,
-) -> OrdBlockId {
-    let rank = *sort_map.get(&block_id).unwrap();
-    OrdBlockId { id: block_id, rank }
-}
-
-/// Compute [BlocksInfo] for every block in the graph.
-/// This information is then used to compute the switch exits.
-fn compute_switch_exits_explore(
-    cfg: &CfgInfo,
-    tsort_map: &HashMap<src::BlockId, usize>,
-    memoized: &mut HashMap<src::BlockId, BlocksInfo>,
-    block_id: src::BlockId,
-) {
-    // Check if we already computer the info
-    if memoized.get(&block_id).is_some() {
-        return;
-    }
-
-    // Compute the block information for the children
-    let children_ids: Vec<src::BlockId> = cfg.cfg_no_be.neighbors(block_id).collect_vec();
-    children_ids
-        .iter()
-        .for_each(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid));
-
-    // Retrieve the information
-    let children: Vec<&BlocksInfo> = children_ids
-        .iter()
-        .map(|bid| memoized.get(bid).unwrap())
-        .collect();
-
-    // Compute the successors
-    // Add the children themselves in their sets of successors
-    let all_succs: BTreeSet<OrdBlockId> = children.iter().fold(BTreeSet::new(), |acc, s| {
-        // Add the successors to the accumulator
-        let mut acc: BTreeSet<_> = acc.union(&s.succs).copied().collect();
-        // Add the child itself
-        acc.insert(make_ord_block_id(s.id, tsort_map));
-        acc
-    });
-
-    // Compute the "flows" (if there are children)
-    // TODO: this is computationally expensive...
-    let mut flow: HashMap<src::BlockId, (BigRational, isize)> = HashMap::new();
-
-    if children.len() > 0 {
-        // We need to divide the initial flow equally between the children
-        let factor = BigRational::new(BigInt::from(1), BigInt::from(children.len()));
-
-        // Small helper
-        let mut add_to_flow = |(id, f0): (src::BlockId, (BigRational, isize))| match flow.get(&id) {
-            None => flow.insert(id, f0),
-            Some(f1) => {
-                let f = f0.0 + f1.0.clone();
-                assert!(f0.1 == f1.1);
-                flow.insert(id, (f, f0.1))
-            }
-        };
-
-        // For each child, multiply the flows of its own children by the ratio,
-        // and add.
-        for child in children {
-            // First, add the child itself
-            let rank = isize::try_from(*tsort_map.get(&child.id).unwrap()).unwrap();
-            add_to_flow((child.id, (factor.clone(), -rank)));
-
-            // Then add its successors
-            for child1 in &child.flow {
-                add_to_flow((
-                    child1.id,
-                    (factor.clone() * child1.rank.0.clone(), child1.rank.1),
-                ));
-            }
-        }
-    }
-
-    // Put everything in an ordered set: the first block id will be the one with
-    // the highest flow, and in case of equality it will be the one with the
-    // smallest block id.
-    let flow: BTreeSet<FlowBlockId> = flow
-        .into_iter()
-        .map(|(id, rank)| BlockWithRank { rank, id })
-        .collect();
-
-    trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
-
-    // Memoize
-    let info = BlocksInfo {
-        id: block_id,
-        succs: all_succs,
-        flow,
-    };
-    memoized.insert(block_id, info.clone());
-}
-
 /// Auxiliary helper
 ///
-/// Check if it is possible to reach the exit of an outer switch from `start_bid`
-/// without going through the `exit_candidate`. We use the graph without
-/// backward edges.
+/// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
+/// through the `exit_candidate`. We use the forward graph.
 fn can_reach_outer_exit(
     cfg: &CfgInfo,
     outer_exits: &HashSet<src::BlockId>,
     start_bid: src::BlockId,
     exit_candidate: src::BlockId,
 ) -> bool {
-    // The stack of blocks
-    let mut stack: Vec<src::BlockId> = vec![start_bid];
-    let mut explored: HashSet<src::BlockId> = HashSet::new();
-
-    while let Some(bid) = stack.pop() {
-        // Check if already explored
-        if explored.contains(&bid) {
-            break;
+    /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
+    struct GraphWithoutEdgesFrom<'a> {
+        graph: &'a Cfg,
+        special_node: BlockId,
+    }
+    impl GraphBase for GraphWithoutEdgesFrom<'_> {
+        type EdgeId = <Cfg as GraphBase>::EdgeId;
+        type NodeId = <Cfg as GraphBase>::NodeId;
+    }
+    impl IntoNeighbors for &GraphWithoutEdgesFrom<'_> {
+        type Neighbors = impl Iterator<Item = Self::NodeId>;
+        fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
+            if a == self.special_node {
+                None
+            } else {
+                Some(self.graph.neighbors(a))
+            }
+            .into_iter()
+            .flatten()
         }
-        explored.insert(bid);
-
-        // Check if this is the exit candidate
-        if bid == exit_candidate {
-            // Stop exploring
-            break;
+    }
+    impl Visitable for GraphWithoutEdgesFrom<'_> {
+        type Map = <Cfg as Visitable>::Map;
+        fn visit_map(self: &Self) -> Self::Map {
+            self.graph.visit_map()
         }
-
-        // Check if this is an outer exit
-        if outer_exits.contains(&bid) {
-            return true;
-        }
-
-        // Add the children to the stack
-        for child in cfg.cfg_no_be.neighbors(bid) {
-            stack.push(child);
+        fn reset_map(self: &Self, map: &mut Self::Map) {
+            self.graph.reset_map(map);
         }
     }
 
-    false
+    // Do a DFS over the forward graph where we pretend that the exit candidate has no outgoing
+    // edges. If we reach an outer exit candidate in that graph then the exit candidate does not
+    // dominate the outer exit candidates in the forward graph starting from `start_bid`.
+    let graph = GraphWithoutEdgesFrom {
+        graph: &cfg.fwd_cfg,
+        special_node: exit_candidate,
+    };
+    Dfs::new(&graph, start_bid)
+        .iter(&graph)
+        .any(|bid| outer_exits.contains(&bid))
 }
 
 /// See [`compute_loop_switch_exits`] for
@@ -995,23 +872,18 @@ fn can_reach_outer_exit(
 /// Note that with nested switches, the branches of the inner switches might
 /// goto the exits of the outer switches: for this reason, we give precedence
 /// to the outer switches.
-fn compute_switch_exits(
-    cfg: &CfgInfo,
-    tsort_map: &HashMap<src::BlockId, usize>,
-) -> HashMap<src::BlockId, Option<src::BlockId>> {
+fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
     // Compute the successors info map, starting at the root node
-    let mut succs_info_map = HashMap::new();
     trace!(
         "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
-        cfg.cfg, cfg.cfg_no_be, cfg.switch_blocks
+        cfg.cfg, cfg.fwd_cfg, cfg.switch_blocks
     );
-    let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
 
     // We need to give precedence to the outer switches: we thus iterate
     // over the switch blocks in topological order.
     let mut sorted_switch_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
     for bid in cfg.switch_blocks.iter() {
-        sorted_switch_blocks.insert(make_ord_block_id(*bid, tsort_map));
+        sorted_switch_blocks.insert(cfg.make_ord_block_id(*bid));
     }
     trace!("sorted_switch_blocks: {:?}", sorted_switch_blocks);
 
@@ -1019,14 +891,8 @@ fn compute_switch_exits(
     {
         trace!("Successors info:\n{}\n", {
             let mut out = vec![];
-            for (bid, info) in &succs_info_map {
-                out.push(
-                    format!(
-                        "{} -> {{succs: {:?}, flow: {:?}}}",
-                        bid, &info.succs, &info.flow
-                    )
-                    .to_string(),
-                );
+            for (bid, info) in cfg.block_data.iter_indexed() {
+                out.push(format!("{} -> {{flow: {:?}}}", bid, &info.flow).to_string());
             }
             out.join("\n")
         });
@@ -1038,26 +904,55 @@ fn compute_switch_exits(
     // Also, we need to explore the nodes in topological order, to give
     // precedence to the outer switches.
     let mut exits_set = HashSet::new();
-    let mut ord_exits_set = BTreeSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
         trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
-        let info = succs_info_map.get(&bid).unwrap();
-        let succs = &info.flow;
-        // Find the best successor: this is the last one (with the highest flow,
-        // and the highest reverse topological rank).
-        if succs.is_empty() {
-            trace!("{bid:?} has no successors");
-            exits.insert(bid, None);
-        } else {
+        let block_data = &cfg.block_data[bid];
+        // Find the best successor: this is the node with the highest flow, and the
+        // highest reverse topological rank.
+        //
+        // Remark: in order to rank the nodes, we also use the negation of the
+        // rank given by the topological order. The last elements of the set
+        // have the highest flow, that is they are the nodes to which the maximum
+        // number of paths converge. If several nodes have the same flow, we want
+        // to take the highest one in the hierarchy: hence the use of the inverse
+        // of the topological rank.
+        //
+        // Ex.:
+        // ```text
+        // A  -- we start here
+        // |
+        // |---------------------------------------
+        // |            |            |            |
+        // B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
+        // |            |            |
+        // |--------------------------
+        // |
+        // F:(0.75,-5)
+        // |
+        // |
+        // G:(0.75,-6)
+        // ```
+        // The "best" node (with the highest (flow, rank) in the graph above is F.
+        let switch_exit: Option<FlowBlockId> = block_data
+            .reachable_excluding_self()
+            .map(|id| {
+                let flow = block_data.flow[id].clone();
+                let rank = -isize::try_from(cfg.topo_rank(id)).unwrap();
+                BlockWithRank {
+                    rank: (flow, rank),
+                    id,
+                }
+            })
+            .max();
+        let exit = if let Some(exit) = switch_exit {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
-            let exit = succs.last().unwrap();
             trace!("{bid:?} has an exit candidate: {exit:?}");
             if exits_set.contains(&exit.id) {
                 trace!("Ignoring the exit candidate because already taken by an external switch");
-                exits.insert(bid, None);
+                None
             } else {
                 // It was not taken by an external switch.
                 //
@@ -1096,22 +991,27 @@ fn compute_switch_exits(
                 // intersect the set of exits for outer blocks?). If yes, we do
                 // a more precise analysis: we check if we can reach the exit
                 // *without going through* the exit candidate.
-                if info.succs.intersection(&ord_exits_set).next().is_none()
-                    || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id)
-                {
+                let can_reach_exit = block_data
+                    .reachable_excluding_self()
+                    .any(|bid| exits_set.contains(&bid));
+                if !can_reach_exit || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id) {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit.id);
-                    ord_exits_set.insert(make_ord_block_id(exit.id, tsort_map));
-                    exits.insert(bid, Some(exit.id));
+                    Some(exit.id)
                 } else {
                     trace!(
                         "Ignoring the exit candidate because of an intersection with external switches"
                     );
-                    exits.insert(bid, None);
+                    None
                 }
             }
-        }
+        } else {
+            trace!("{bid:?} has no successors");
+            None
+        };
+
+        exits.insert(bid, exit);
     }
 
     exits
@@ -1248,25 +1148,12 @@ fn compute_loop_switch_exits(
     body: &src::ExprBody,
     cfg_info: &CfgInfo,
 ) -> ExitInfo {
-    // Use the CFG without backward edges to topologically sort the nodes.
-    // Note that `toposort` returns `Err` if and only if it finds cycles (which
-    // can't happen).
-    let tsorted: Vec<src::BlockId> = toposort(&cfg_info.cfg_no_be, None).unwrap();
-
-    // Build the map: block id -> topological sort rank
-    let tsort_map: HashMap<src::BlockId, usize> = tsorted
-        .into_iter()
-        .enumerate()
-        .map(|(i, block_id)| (block_id, i))
-        .collect();
-    trace!("tsort_map:\n{:?}", tsort_map);
-
     // Compute the loop exits
     let loop_exits = compute_loop_exits(ctx, body, cfg_info);
     trace!("loop_exits:\n{:?}", loop_exits);
 
     // Compute the switch exits
-    let switch_exits = compute_switch_exits(cfg_info, &tsort_map);
+    let switch_exits = compute_switch_exits(cfg_info);
     trace!("switch_exits:\n{:?}", switch_exits);
 
     // Compute the exit info
@@ -1284,7 +1171,7 @@ fn compute_loop_switch_exits(
         .iter()
         .chain(cfg_info.switch_blocks.iter())
     {
-        sorted_blocks.insert(make_ord_block_id(*bid, &tsort_map));
+        sorted_blocks.insert(cfg_info.make_ord_block_id(*bid));
     }
 
     // Keep track of the exits which were already attributed
@@ -1303,45 +1190,22 @@ fn compute_loop_switch_exits(
             // the inner/outer loops)
             let exit_id = loop_exits.get(&bid).unwrap();
             exit_info.loop_exits.insert(bid, *exit_id);
-
             // Check if we "own" the exit
-            match exit_id {
-                None => {
-                    // No exit
-                    exit_info.owned_loop_exits.insert(bid, None);
-                }
-                Some(exit_id) => {
-                    if all_exits.contains(exit_id) {
-                        // We don't own it
-                        exit_info.owned_loop_exits.insert(bid, None);
-                    } else {
-                        // We own it
-                        exit_info.owned_loop_exits.insert(bid, Some(*exit_id));
-                        all_exits.insert(*exit_id);
-                    }
-                }
+            let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
+            if let Some(exit_id) = exit_id {
+                all_exits.insert(exit_id);
             }
+            exit_info.owned_loop_exits.insert(bid, exit_id);
         } else {
             // For switches: check that the exit was not already given to a
             // loop
             let exit_id = switch_exits.get(&bid).unwrap();
-
-            match exit_id {
-                None => {
-                    // No exit
-                    exit_info.owned_switch_exits.insert(bid, None);
-                }
-                Some(exit_id) => {
-                    if all_exits.contains(exit_id) {
-                        // We don't own it
-                        exit_info.owned_switch_exits.insert(bid, None);
-                    } else {
-                        // We own it
-                        exit_info.owned_switch_exits.insert(bid, Some(*exit_id));
-                        all_exits.insert(*exit_id);
-                    }
-                }
+            // Check if we "own" the exit
+            let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
+            if let Some(exit_id) = exit_id {
+                all_exits.insert(exit_id);
             }
+            exit_info.owned_switch_exits.insert(bid, exit_id);
         }
     }
 
@@ -1717,7 +1581,7 @@ fn translate_block(
 fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = match build_cfg_info(src_body) {
+    let cfg_info = match build_cfg_info(&src_body.body) {
         Ok(cfg_info) => cfg_info,
         Err(Irreducible(bid)) => {
             let span = src_body.body[bid].terminator.span;
