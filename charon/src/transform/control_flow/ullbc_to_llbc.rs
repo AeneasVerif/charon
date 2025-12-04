@@ -23,10 +23,10 @@
 use indexmap::IndexMap;
 use itertools::Itertools;
 use petgraph::algo::dominators::{Dominators, simple_fast};
-use petgraph::algo::toposort;
+use petgraph::algo::{dijkstra, toposort};
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
-use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::u32;
 
 use crate::common::ensure_sufficient_stack;
@@ -254,40 +254,9 @@ fn loop_entry_is_reachable_from_inner(
     // ignore backward edges to outer loops of course, but also backward edges
     // to inner loops because we shouldn't need to follow those (there should be
     // more direct paths).
-
-    // Explore the graph starting at block_id
-    let mut explored: HashSet<src::BlockId> = HashSet::new();
-    let mut stack: VecDeque<src::BlockId> = VecDeque::new();
-    stack.push_back(block_id);
-    while !stack.is_empty() {
-        let bid = stack.pop_front().unwrap();
-        if explored.contains(&bid) {
-            continue;
-        }
-        explored.insert(bid);
-
-        for next_id in cfg.cfg.neighbors(bid) {
-            // Check if this is a backward edge
-            if cfg.backward_edges.contains(&(bid, next_id)) {
-                // Backward edge: only allow those going directly to the current
-                // loop's entry
-                if next_id == loop_entry {
-                    // The loop entry is reachable
-                    return true;
-                } else {
-                    // Forbidden edge: ignore
-                    continue;
-                }
-            } else {
-                // Nothing special: add the node to the stack for further
-                // exploration
-                stack.push_back(next_id);
-            }
-        }
-    }
-
-    // The loop entry is not reachable
-    false
+    Dfs::new(&cfg.cfg_no_be, block_id)
+        .iter(&cfg.cfg_no_be)
+        .any(|bid| cfg.backward_edges.contains(&(bid, loop_entry)))
 }
 
 struct FilteredLoopParents {
@@ -330,39 +299,6 @@ fn filter_loop_parents(
     }
 }
 
-/// List the nodes reachable from a starting point.
-/// We list the nodes and the depth (in the AST) at which they were found.
-fn list_reachable(cfg: &Cfg, start: src::BlockId) -> HashMap<src::BlockId, usize> {
-    let mut reachable: HashMap<src::BlockId, usize> = HashMap::new();
-    let mut stack: VecDeque<(src::BlockId, usize)> = VecDeque::new();
-    stack.push_back((start, 0));
-
-    while !stack.is_empty() {
-        let (bid, dist) = stack.pop_front().unwrap();
-
-        // Ignore this node if we already registered it with a better distance
-        match reachable.get(&bid) {
-            None => (),
-            Some(original_dist) => {
-                if *original_dist < dist {
-                    continue;
-                }
-            }
-        }
-
-        // Inset the node with its distance
-        reachable.insert(bid, dist);
-
-        // Add the children to the stack
-        for child in cfg.neighbors(bid) {
-            stack.push_back((child, dist + 1));
-        }
-    }
-
-    // Return
-    reachable
-}
-
 /// Register a node and its children as exit candidates for a list of
 /// parent loops.
 fn register_children_as_loop_exit_candidates(
@@ -371,8 +307,8 @@ fn register_children_as_loop_exit_candidates(
     removed_parent_loops: &Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) {
-    // List the reachable nodes
-    let reachable = list_reachable(&cfg.cfg_no_be, block_id);
+    // List the reachable nodes along with the shortest path to them
+    let reachable = dijkstra(&cfg.cfg_no_be, block_id, None, |_| 1usize);
 
     let mut base_dist = 0;
     // For every parent loop, in reverse order (we go from last to first in
@@ -819,72 +755,60 @@ struct BlocksInfo {
 
 /// Compute [BlocksInfo] for every block in the graph.
 /// This information is then used to compute the switch exits.
-fn compute_switch_exits_explore(
-    cfg: &CfgInfo,
-    memoized: &mut HashMap<src::BlockId, BlocksInfo>,
-    block_id: src::BlockId,
-) {
-    // Check if we already computer the info
-    if memoized.get(&block_id).is_some() {
-        return;
-    }
+fn compute_switch_exits_explore(cfg: &CfgInfo, map: &mut HashMap<src::BlockId, BlocksInfo>) {
+    for block_id in DfsPostOrder::new(&cfg.cfg_no_be, src::BlockId::ZERO).iter(&cfg.cfg_no_be) {
+        // Retrieve the information
+        let children: Vec<&BlocksInfo> = cfg
+            .cfg_no_be
+            .neighbors(block_id)
+            .map(|bid| map.get(&bid).unwrap())
+            .collect();
 
-    // Compute the block information for the children
-    let children_ids: Vec<src::BlockId> = cfg.cfg_no_be.neighbors(block_id).collect_vec();
-    children_ids
-        .iter()
-        .for_each(|bid| compute_switch_exits_explore(cfg, memoized, *bid));
+        // Compute the successors
+        // Add the children themselves in their sets of successors
+        let all_succs: BTreeSet<OrdBlockId> = children.iter().fold(BTreeSet::new(), |acc, s| {
+            // Add the successors to the accumulator
+            let mut acc: BTreeSet<_> = acc.union(&s.succs).copied().collect();
+            // Add the child itself
+            acc.insert(cfg.make_ord_block_id(s.id));
+            acc
+        });
 
-    // Retrieve the information
-    let children: Vec<&BlocksInfo> = children_ids
-        .iter()
-        .map(|bid| memoized.get(bid).unwrap())
-        .collect();
+        // Compute the "flows".
+        // TODO: this is computationally expensive...
+        let mut flow: Vector<src::BlockId, BigRational> = cfg
+            .topo_rank
+            .map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
 
-    // Compute the successors
-    // Add the children themselves in their sets of successors
-    let all_succs: BTreeSet<OrdBlockId> = children.iter().fold(BTreeSet::new(), |acc, s| {
-        // Add the successors to the accumulator
-        let mut acc: BTreeSet<_> = acc.union(&s.succs).copied().collect();
-        // Add the child itself
-        acc.insert(cfg.make_ord_block_id(s.id));
-        acc
-    });
+        if !children.is_empty() {
+            // We need to divide the initial flow equally between the children
+            let factor = BigRational::new(1u64.into(), children.len().into());
 
-    // Compute the "flows".
-    // TODO: this is computationally expensive...
-    let mut flow: Vector<src::BlockId, BigRational> = cfg
-        .topo_rank
-        .map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
+            // For each child, multiply the flows of its own children by the ratio,
+            // and add.
+            for child in children {
+                // First, add the child itself
+                flow[child.id] += factor.clone();
 
-    if !children.is_empty() {
-        // We need to divide the initial flow equally between the children
-        let factor = BigRational::new(1u64.into(), children.len().into());
-
-        // For each child, multiply the flows of its own children by the ratio,
-        // and add.
-        for child in children {
-            // First, add the child itself
-            flow[child.id] += factor.clone();
-
-            // Then add its successors
-            for grandchild in &child.succs {
-                // Flow from `child` to `grandchild`
-                let child_flow = child.flow[grandchild.id].clone();
-                flow[grandchild.id] += factor.clone() * child_flow;
+                // Then add its successors
+                for grandchild in &child.succs {
+                    // Flow from `child` to `grandchild`
+                    let child_flow = child.flow[grandchild.id].clone();
+                    flow[grandchild.id] += factor.clone() * child_flow;
+                }
             }
         }
+
+        trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
+
+        // Memoize
+        let info = BlocksInfo {
+            id: block_id,
+            succs: all_succs,
+            flow,
+        };
+        map.insert(block_id, info.clone());
     }
-
-    trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
-
-    // Memoize
-    let info = BlocksInfo {
-        id: block_id,
-        succs: all_succs,
-        flow,
-    };
-    memoized.insert(block_id, info.clone());
 }
 
 /// Auxiliary helper
@@ -969,7 +893,7 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
         "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
         cfg.cfg, cfg.cfg_no_be, cfg.switch_blocks
     );
-    let _ = compute_switch_exits_explore(cfg, &mut succs_info_map, src::BlockId::ZERO);
+    let _ = compute_switch_exits_explore(cfg, &mut succs_info_map);
 
     // We need to give precedence to the outer switches: we thus iterate
     // over the switch blocks in topological order.
