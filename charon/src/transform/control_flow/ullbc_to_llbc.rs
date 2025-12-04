@@ -1202,36 +1202,6 @@ fn compute_loop_switch_exits(
     exit_info
 }
 
-fn get_goto_kind(
-    exits_info: &ExitInfo,
-    parent_loops: &Vec<src::BlockId>,
-    switch_exit_blocks: &HashSet<src::BlockId>,
-    next_block_id: src::BlockId,
-) -> GotoKind {
-    // First explore the parent loops in revert order
-    for (i, loop_id) in parent_loops.iter().rev().enumerate() {
-        // If we goto a loop entry node: this is a 'continue'
-        if next_block_id == *loop_id {
-            return GotoKind::Continue(i);
-        } else {
-            // If we goto a loop exit node: this is a 'break'
-            if let Some(exit_id) = exits_info.loop_exits.get(loop_id).unwrap() {
-                if next_block_id == *exit_id {
-                    return GotoKind::Break(i);
-                }
-            }
-        }
-    }
-
-    // Check if the goto exits the current block
-    if switch_exit_blocks.contains(&next_block_id) {
-        return GotoKind::ExitBlock;
-    }
-
-    // Default
-    GotoKind::Goto
-}
-
 enum GotoKind {
     Break(usize),
     Continue(usize),
@@ -1239,24 +1209,76 @@ enum GotoKind {
     Goto,
 }
 
-struct BlockInfo<'a> {
-    cfg: &'a CfgInfo,
+struct ReconstructCtx<'a> {
+    cfg: CfgInfo,
     body: &'a src::ExprBody,
-    exits_info: &'a ExitInfo,
-    explored: &'a mut HashSet<src::BlockId>,
+    exits_info: ExitInfo,
+    explored: HashSet<src::BlockId>,
+    parent_loops: Vec<src::BlockId>,
+    switch_exit_blocks: HashSet<src::BlockId>,
 }
+
+fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
+    opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::StatementKind::Nop).into_block())
+}
+
+impl<'a> ReconstructCtx<'a> {
+    fn build(ctx: &mut TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
+        // Explore the function body to create the control-flow graph without backward
+        // edges, and identify the loop entries (which are destinations of backward edges).
+        let cfg_info = CfgInfo::build(&src_body.body)?;
+
+        // Find the exit block for all the loops and switches, if such an exit point
+        // exists.
+        let exits_info = compute_loop_switch_exits(ctx, src_body, &cfg_info);
+
+        // Translate the body by reconstructing the loops and the
+        // conditional branchings.
+        // Note that we shouldn't get `None`.
+        Ok(ReconstructCtx {
+            cfg: cfg_info,
+            body: src_body,
+            exits_info: exits_info,
+            explored: HashSet::new(),
+            parent_loops: Vec::new(),
+            switch_exit_blocks: HashSet::new(),
+        })
+    }
+
+    fn get_goto_kind(&self, next_block_id: src::BlockId) -> GotoKind {
+        // First explore the parent loops in revert order
+        for (i, loop_id) in self.parent_loops.iter().rev().enumerate() {
+            // If we goto a loop entry node: this is a 'continue'
+            if next_block_id == *loop_id {
+                return GotoKind::Continue(i);
+            } else {
+                // If we goto a loop exit node: this is a 'break'
+                if let Some(exit_id) = self.exits_info.loop_exits.get(loop_id).unwrap() {
+                    if next_block_id == *exit_id {
+                        return GotoKind::Break(i);
+                    }
+                }
+            }
+        }
+
+        // Check if the goto exits the current block
+        if self.switch_exit_blocks.contains(&next_block_id) {
+            return GotoKind::ExitBlock;
+        }
+
+        // Default
+        GotoKind::Goto
+    }
 
     /// `parent_span`: we need some span data for the new statement.
     /// We use the one for the parent terminator.
     fn translate_child_block(
-        info: &mut BlockInfo<'_>,
-        parent_loops: &Vec<src::BlockId>,
-        switch_exit_blocks: &HashSet<src::BlockId>,
+        &mut self,
         parent_span: Span,
         child_id: src::BlockId,
     ) -> Option<tgt::Block> {
         // Check if this is a backward call
-        match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
+        match self.get_goto_kind(child_id) {
             GotoKind::Break(index) => {
                 let st = tgt::StatementKind::Break(index);
                 Some(tgt::Statement::new(parent_span, st).into_block())
@@ -1269,23 +1291,12 @@ struct BlockInfo<'a> {
             GotoKind::ExitBlock => None,
             GotoKind::Goto => {
                 // "Standard" goto: just recursively translate
-                ensure_sufficient_stack(|| {
-                    Some(translate_block(
-                        info,
-                        parent_loops,
-                        switch_exit_blocks,
-                        child_id,
-                    ))
-                })
+                ensure_sufficient_stack(|| Some(self.translate_block(child_id)))
             }
         }
     }
 
-    fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
-        opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::StatementKind::Nop).into_block())
-    }
-
-    fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
+    fn translate_statement(&self, st: &src::Statement) -> Option<tgt::Statement> {
         let src_span = st.span;
         let st = match st.kind.clone() {
             src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
@@ -1305,12 +1316,7 @@ struct BlockInfo<'a> {
         Some(tgt::Statement::new(src_span, st))
     }
 
-    fn translate_terminator(
-        info: &mut BlockInfo<'_>,
-        parent_loops: &Vec<src::BlockId>,
-        switch_exit_blocks: &HashSet<src::BlockId>,
-        terminator: &src::Terminator,
-    ) -> tgt::Block {
+    fn translate_terminator(&mut self, terminator: &src::Terminator) -> tgt::Block {
         let src_span = terminator.span;
 
         match &terminator.kind {
@@ -1330,13 +1336,7 @@ struct BlockInfo<'a> {
                 on_unwind: _,
             } => {
                 // TODO: Have unwinds in the LLBC
-                let target_block = translate_child_block(
-                    info,
-                    parent_loops,
-                    switch_exit_blocks,
-                    terminator.span,
-                    *target,
-                );
+                let target_block = self.translate_child_block(terminator.span, *target);
                 let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
                 let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
                 block.statements.insert(0, st);
@@ -1350,13 +1350,7 @@ struct BlockInfo<'a> {
                 on_unwind: _,
             } => {
                 // TODO: Have unwinds in the LLBC
-                let target_block = translate_child_block(
-                    info,
-                    parent_loops,
-                    switch_exit_blocks,
-                    terminator.span,
-                    *target,
-                );
+                let target_block = self.translate_child_block(terminator.span, *target);
                 let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
                 let st = tgt::Statement::new(
                     src_span,
@@ -1366,13 +1360,7 @@ struct BlockInfo<'a> {
                 block
             }
             src::TerminatorKind::Goto { target } => {
-                let block = translate_child_block(
-                    info,
-                    parent_loops,
-                    switch_exit_blocks,
-                    terminator.span,
-                    *target,
-                );
+                let block = self.translate_child_block(terminator.span, *target);
                 let block = opt_block_unwrap_or_nop(terminator.span, block);
                 block
             }
@@ -1381,23 +1369,11 @@ struct BlockInfo<'a> {
                 let switch = match &targets {
                     src::SwitchTargets::If(then_tgt, else_tgt) => {
                         // Translate the children expressions
-                        let then_block = translate_child_block(
-                            info,
-                            parent_loops,
-                            switch_exit_blocks,
-                            terminator.span,
-                            *then_tgt,
-                        );
+                        let then_block = self.translate_child_block(terminator.span, *then_tgt);
                         // We use the terminator span information in case then
                         // then statement is `None`
                         let then_block = opt_block_unwrap_or_nop(terminator.span, then_block);
-                        let else_block = translate_child_block(
-                            info,
-                            parent_loops,
-                            switch_exit_blocks,
-                            terminator.span,
-                            *else_tgt,
-                        );
+                        let else_block = self.translate_child_block(terminator.span, *else_tgt);
                         let else_block = opt_block_unwrap_or_nop(terminator.span, else_block);
 
                         // Translate
@@ -1437,13 +1413,7 @@ struct BlockInfo<'a> {
                                 branch.0.push(v.clone());
                             } else {
                                 // Not translated: translate it
-                                let block = translate_child_block(
-                                    info,
-                                    parent_loops,
-                                    switch_exit_blocks,
-                                    terminator.span,
-                                    *bid,
-                                );
+                                let block = self.translate_child_block(terminator.span, *bid);
                                 // We use the terminator span information in case then
                                 // then statement is `None`
                                 let block = opt_block_unwrap_or_nop(terminator.span, block);
@@ -1453,19 +1423,20 @@ struct BlockInfo<'a> {
                         let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> =
                             branches.into_iter().map(|(_, x)| x).collect();
 
-                        let otherwise_block = translate_child_block(
-                            info,
-                            parent_loops,
-                            switch_exit_blocks,
-                            terminator.span,
-                            *otherwise,
-                        );
+                        let otherwise_block =
+                            self.translate_child_block(terminator.span, *otherwise);
                         // We use the terminator span information in case then
                         // then statement is `None`
-                        let otherwise_block = opt_block_unwrap_or_nop(terminator.span, otherwise_block);
+                        let otherwise_block =
+                            opt_block_unwrap_or_nop(terminator.span, otherwise_block);
 
                         // Translate
-                        tgt::Switch::SwitchInt(discr.clone(), *int_ty, targets_blocks, otherwise_block)
+                        tgt::Switch::SwitchInt(
+                            discr.clone(),
+                            *int_ty,
+                            targets_blocks,
+                            otherwise_block,
+                        )
                     }
                 };
 
@@ -1482,41 +1453,33 @@ struct BlockInfo<'a> {
     /// are allocated on the heap. This reduces stack usage (we had problems with
     /// stack overflows in the past). A more efficient solution would be to use loops
     /// to make this code constant space, but that would require a serious rewriting.
-    fn translate_block(
-        info: &mut BlockInfo<'_>,
-        parent_loops: &Vec<src::BlockId>,
-        switch_exit_blocks: &HashSet<src::BlockId>,
-        block_id: src::BlockId,
-    ) -> tgt::Block {
+    fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
         // If the user activated this check: check that we didn't already translate
         // this block, and insert the block id in the set of already translated blocks.
-        trace!(
-            "Parent loops: {:?}, Parent switch exits: {:?}, Block id: {}",
-            parent_loops, switch_exit_blocks, block_id
-        );
-        info.explored.insert(block_id);
+        self.explored.insert(block_id);
 
-        let block = &info.body.body[block_id];
+        let block = &self.body.body[block_id];
 
         // Check if we enter a loop: if so, update parent_loops and the current_exit_block
-        let is_loop = info.cfg.loop_entries.contains(&block_id);
+        let is_loop = self.cfg.loop_entries.contains(&block_id);
         let mut nparent_loops: Vec<src::BlockId>;
-        let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
-            nparent_loops = parent_loops.clone();
+        let nparent_loops = if self.cfg.loop_entries.contains(&block_id) {
+            nparent_loops = self.parent_loops.clone();
             nparent_loops.push(block_id);
-            &nparent_loops
+            nparent_loops
         } else {
-            parent_loops
+            self.parent_loops.clone()
         };
+        let old_parent_loops = mem::replace(&mut self.parent_loops, nparent_loops);
 
         // If we enter a switch or a loop, we need to check if we own the exit
         // block, in which case we need to append it to the loop/switch body
         // in a sequence
         let is_switch = block.terminator.kind.is_switch();
         let next_block = if is_loop {
-            *info.exits_info.owned_loop_exits.get(&block_id).unwrap()
+            *self.exits_info.owned_loop_exits.get(&block_id).unwrap()
         } else if is_switch {
-            *info.exits_info.owned_switch_exits.get(&block_id).unwrap()
+            *self.exits_info.owned_switch_exits.get(&block_id).unwrap()
         } else {
             None
         };
@@ -1524,7 +1487,7 @@ struct BlockInfo<'a> {
         // If we enter a switch, add the exit block to the set
         // of outer exit blocks
         let nswitch_exit_blocks = if is_switch {
-            let mut nexit_blocks = switch_exit_blocks.clone();
+            let mut nexit_blocks = self.switch_exit_blocks.clone();
             match next_block {
                 None => nexit_blocks,
                 Some(bid) => {
@@ -1533,21 +1496,25 @@ struct BlockInfo<'a> {
                 }
             }
         } else {
-            switch_exit_blocks.clone()
+            self.switch_exit_blocks.clone()
         };
+        let old_switch_exit_blocks =
+            mem::replace(&mut self.switch_exit_blocks, nswitch_exit_blocks);
 
         // Translate the terminator and the subsequent blocks.
         // Note that this terminator is an option: we might ignore it
         // (if it is an exit).
 
-        let terminator =
-            translate_terminator(info, nparent_loops, &nswitch_exit_blocks, &block.terminator);
+        let terminator = self.translate_terminator(&block.terminator);
+
+        self.parent_loops = old_parent_loops;
+        self.switch_exit_blocks = old_switch_exit_blocks;
 
         // Translate the statements inside the block
         let statements = block
             .statements
             .iter()
-            .filter_map(|st| translate_statement(st))
+            .filter_map(|st| self.translate_statement(st))
             .collect_vec();
 
         // Prepend the statements to the terminator.
@@ -1566,20 +1533,23 @@ struct BlockInfo<'a> {
 
         // Concatenate the exit expression, if needs be
         if let Some(exit_block_id) = next_block {
-            let next_block = ensure_sufficient_stack(|| {
-                translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
-            });
+            let next_block = ensure_sufficient_stack(|| self.translate_block(exit_block_id));
             block = block.merge(next_block);
         }
-
         block
     }
+}
 
-fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
-    // Explore the function body to create the control-flow graph without backward
-    // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = match CfgInfo::build(&src_body.body) {
-        Ok(cfg_info) => cfg_info,
+fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
+    use gast::Body::{Structured, Unstructured};
+    let Unstructured(src_body) = body else {
+        panic!("Called `ullbc_to_llbc` on an already restructured body")
+    };
+    trace!("About to translate to ullbc: {:?}", src_body.span);
+
+    // Calculate info about the graph and heuristically determine loop and switch exit blocks.
+    let mut ctx = match ReconstructCtx::build(ctx, src_body) {
+        Ok(ctx) => ctx,
         Err(Irreducible(bid)) => {
             let span = src_body.body[bid].terminator.span;
             register_error!(
@@ -1590,42 +1560,15 @@ fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::
             panic!("can't reconstruct irreducible control-flow")
         }
     };
-    trace!("cfg_info: {:?}", cfg_info);
+    // Translate the blocks using the computed data.
+    let tgt_body = ctx.translate_block(src::BlockId::ZERO);
 
-    // Find the exit block for all the loops and switches, if such an exit point
-    // exists.
-    let exits_info = compute_loop_switch_exits(ctx, src_body, &cfg_info);
-
-    // Debugging
-    trace!("exits_info:\n{:?}", exits_info);
-
-    // Translate the body by reconstructing the loops and the
-    // conditional branchings.
-    // Note that we shouldn't get `None`.
-    let mut explored = HashSet::new();
-    let mut info = BlockInfo {
-        cfg: &cfg_info,
-        body: src_body,
-        exits_info: &exits_info,
-        explored: &mut explored,
-    };
-    let tgt_body = translate_block(&mut info, &Vec::new(), &HashSet::new(), src::BlockId::ZERO);
-
-    tgt::ExprBody {
+    let tgt_body = tgt::ExprBody {
         span: src_body.span,
         locals: src_body.locals.clone(),
         comments: src_body.comments.clone(),
         body: tgt_body,
-    }
-}
-
-fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
-    use gast::Body::{Structured, Unstructured};
-    let Unstructured(src_body) = body else {
-        panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
-    trace!("About to translate to ullbc: {:?}", src_body.span);
-    let tgt_body = translate_body_aux(ctx, src_body);
     *body = Structured(tgt_body);
 }
 
