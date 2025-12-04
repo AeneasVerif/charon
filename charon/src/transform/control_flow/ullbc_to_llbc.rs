@@ -1218,10 +1218,6 @@ struct ReconstructCtx<'a> {
     switch_exit_blocks: HashSet<src::BlockId>,
 }
 
-fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
-    opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::StatementKind::Nop).into_block())
-}
-
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &mut TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Explore the function body to create the control-flow graph without backward
@@ -1272,26 +1268,25 @@ impl<'a> ReconstructCtx<'a> {
 
     /// `parent_span`: we need some span data for the new statement.
     /// We use the one for the parent terminator.
-    fn translate_child_block(
-        &mut self,
-        parent_span: Span,
-        child_id: src::BlockId,
-    ) -> Option<tgt::Block> {
+    fn translate_child_block(&mut self, parent_span: Span, child_id: src::BlockId) -> tgt::Block {
         // Check if this is a backward call
         match self.get_goto_kind(child_id) {
             GotoKind::Break(index) => {
                 let st = tgt::StatementKind::Break(index);
-                Some(tgt::Statement::new(parent_span, st).into_block())
+                tgt::Statement::new(parent_span, st).into_block()
             }
             GotoKind::Continue(index) => {
                 let st = tgt::StatementKind::Continue(index);
-                Some(tgt::Statement::new(parent_span, st).into_block())
+                tgt::Statement::new(parent_span, st).into_block()
             }
             // If we are going to an exit block we simply ignore the goto
-            GotoKind::ExitBlock => None,
+            GotoKind::ExitBlock => {
+                let st = tgt::StatementKind::Nop;
+                tgt::Statement::new(parent_span, st).into_block()
+            }
             GotoKind::Goto => {
                 // "Standard" goto: just recursively translate
-                ensure_sufficient_stack(|| Some(self.translate_block(child_id)))
+                ensure_sufficient_stack(|| self.translate_block(child_id))
             }
         }
     }
@@ -1336,9 +1331,8 @@ impl<'a> ReconstructCtx<'a> {
                 on_unwind: _,
             } => {
                 // TODO: Have unwinds in the LLBC
-                let target_block = self.translate_child_block(terminator.span, *target);
-                let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
                 let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
+                let mut block = self.translate_child_block(terminator.span, *target);
                 block.statements.insert(0, st);
                 block
             }
@@ -1350,33 +1344,23 @@ impl<'a> ReconstructCtx<'a> {
                 on_unwind: _,
             } => {
                 // TODO: Have unwinds in the LLBC
-                let target_block = self.translate_child_block(terminator.span, *target);
-                let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
                 let st = tgt::Statement::new(
                     src_span,
                     tgt::StatementKind::Drop(place.clone(), tref.clone(), kind.clone()),
                 );
+                let mut block = self.translate_child_block(terminator.span, *target);
                 block.statements.insert(0, st);
                 block
             }
             src::TerminatorKind::Goto { target } => {
-                let block = self.translate_child_block(terminator.span, *target);
-                let block = opt_block_unwrap_or_nop(terminator.span, block);
-                block
+                self.translate_child_block(terminator.span, *target)
             }
             src::TerminatorKind::Switch { discr, targets } => {
                 // Translate the target expressions
                 let switch = match &targets {
                     src::SwitchTargets::If(then_tgt, else_tgt) => {
-                        // Translate the children expressions
                         let then_block = self.translate_child_block(terminator.span, *then_tgt);
-                        // We use the terminator span information in case then
-                        // then statement is `None`
-                        let then_block = opt_block_unwrap_or_nop(terminator.span, then_block);
                         let else_block = self.translate_child_block(terminator.span, *else_tgt);
-                        let else_block = opt_block_unwrap_or_nop(terminator.span, else_block);
-
-                        // Translate
                         tgt::Switch::If(discr.clone(), then_block, else_block)
                     }
                     src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
@@ -1416,7 +1400,6 @@ impl<'a> ReconstructCtx<'a> {
                                 let block = self.translate_child_block(terminator.span, *bid);
                                 // We use the terminator span information in case then
                                 // then statement is `None`
-                                let block = opt_block_unwrap_or_nop(terminator.span, block);
                                 branches.insert(*bid, (vec![v.clone()], block));
                             }
                         }
@@ -1425,10 +1408,6 @@ impl<'a> ReconstructCtx<'a> {
 
                         let otherwise_block =
                             self.translate_child_block(terminator.span, *otherwise);
-                        // We use the terminator span information in case then
-                        // then statement is `None`
-                        let otherwise_block =
-                            opt_block_unwrap_or_nop(terminator.span, otherwise_block);
 
                         // Translate
                         tgt::Switch::SwitchInt(
