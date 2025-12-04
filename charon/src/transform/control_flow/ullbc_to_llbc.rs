@@ -27,7 +27,7 @@ use petgraph::algo::{dijkstra, toposort};
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
 use std::collections::{BTreeSet, HashMap, HashSet};
-use std::u32;
+use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
@@ -57,21 +57,41 @@ struct CfgInfo {
     /// The CFG
     pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed. Aka "forward CFG".
-    pub cfg_no_be: Cfg,
+    pub fwd_cfg: Cfg,
     /// We consider the destination of the backward edges to be loop entries and
     /// store them here.
     pub loop_entries: HashSet<src::BlockId>,
-    /// The backward edges
-    pub backward_edges: HashSet<(src::BlockId, src::BlockId)>,
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId>,
-    /// The set of nodes from where we can only reach error nodes (panic, etc.)
-    pub only_reach_error: HashSet<src::BlockId>,
     /// Tree of which nodes dominates which other nodes.
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
-    /// Rank of each block in a topological order of the forward CFG.
-    pub topo_rank: Vector<BlockId, usize>,
+    /// Computed data about each block.
+    pub block_data: Vector<BlockId, BlockData>,
+}
+
+#[derive(Debug)]
+struct BlockData {
+    /// Rank in a topological order of the forward CFG. `None` if the block is unreachable.
+    pub topo_rank: Option<usize>,
+    /// Order in a reverse postorder numbering. `None` if the block is unreachable.
+    pub reverse_postorder: Option<u32>,
+    /// Node from where we can only reach error nodes (panic, etc.)
+    pub only_reach_error: bool,
+    /// List of reachable nodes, with the length of shortest path to them.
+    pub shortest_paths: hashbrown::HashMap<BlockId, usize>,
+    /// Some of the nodes reachable from this block. Not entirely sure what exactly this includes.
+    pub succs: HashSet<BlockId>,
+    /// Let's say we put a quantity of water equal to 1 on the block, and the water flows downards.
+    /// Whenever there is a branching, the quantity of water gets equally divided between the
+    /// branches. When the control flows join, we put the water back together. The set below
+    /// computes the amount of water received by each descendant of the node.
+    ///
+    /// TODO: there must be a known algorithm which computes this, right?...
+    /// This is exactly this problems:
+    /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
+    /// TODO: the way I compute this is not efficient.
+    pub flow: Vector<src::BlockId, BigRational>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -92,83 +112,125 @@ fn build_cfg_info(body: &src::BodyContents) -> Result<CfgInfo, Irreducible> {
         }
     }
 
+    let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
+    let mut block_data: Vector<BlockId, BlockData> = body.map_ref(|_| BlockData {
+        // Default values will stay for unreachable nodes, which are irrelevant.
+        topo_rank: None,
+        reverse_postorder: None,
+        only_reach_error: false,
+        shortest_paths: Default::default(),
+        succs: Default::default(),
+        flow: empty_flow.clone(),
+    });
+
     // Compute the dominator tree.
     let dominator_tree = simple_fast(&cfg, start_block);
 
     // Compute reverse postorder numbering.
-    let mut reverse_postorder = body.map_ref_opt(|_| None);
     for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
-        let rev_post_id = reverse_postorder.slot_count() - i;
+        let rev_post_id = body.slot_count() - i;
         assert!(rev_post_id <= u32::MAX as usize);
-        reverse_postorder.set_slot(block_id, rev_post_id as u32);
+        block_data[block_id].reverse_postorder = Some(rev_post_id as u32);
     }
 
     // Compute the forward graph (without backward edges).
-    let mut cfg_no_be = Cfg::new();
+    let mut fwd_cfg = Cfg::new();
     let mut loop_entries = HashSet::new();
-    let mut backward_edges = HashSet::new();
     let mut switch_blocks = HashSet::new();
     for src in cfg.nodes() {
-        if reverse_postorder.get(src).is_none() {
+        if block_data[src].reverse_postorder.is_none() {
             // Unreachable block
             continue;
         }
-        cfg_no_be.add_node(src);
+        fwd_cfg.add_node(src);
         if body[src].terminator.kind.is_switch() {
             switch_blocks.insert(src);
         }
         for tgt in cfg.neighbors(src) {
             // Check if the edge is a backward edge.
-            if reverse_postorder[src] >= reverse_postorder[tgt] {
+            if block_data[src].reverse_postorder >= block_data[tgt].reverse_postorder {
                 // This is a backward edge
                 loop_entries.insert(tgt);
-                backward_edges.insert((src, tgt));
                 // A cfg is reducible iff the target of every back edge dominates the
                 // edge's source.
                 if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
                     return Err(Irreducible(src));
                 }
             } else {
-                cfg_no_be.add_edge(src, tgt, ());
+                fwd_cfg.add_edge(src, tgt, ());
             }
         }
     }
 
-    // Compute the nodes that can only reach error nodes.
-    let mut only_reach_error = HashSet::new();
-    for block_id in DfsPostOrder::new(&cfg_no_be, start_block).iter(&cfg_no_be) {
+    for block_id in DfsPostOrder::new(&fwd_cfg, start_block).iter(&fwd_cfg) {
         let block = &body[block_id];
+        let targets = cfg.neighbors(block_id).collect_vec();
+        let fwd_targets = fwd_cfg.neighbors(block_id).collect_vec();
+
+        // Compute the nodes that can only reach error nodes.
         // The node can only reach error nodes if:
         // - it is an error node;
         // - or it has neighbors and they all lead to errors.
         // Note that if there is a backward edge, `only_reach_error` cannot contain this
         // node yet. In other words, this does not consider infinite loops as reaching an
         // error node.
-        let targets = cfg.neighbors(block_id).collect_vec();
         if block.terminator.is_error()
-            || (!targets.is_empty() && targets.iter().all(|tgt| only_reach_error.contains(tgt)))
+            || (!targets.is_empty() && targets.iter().all(|&tgt| block_data[tgt].only_reach_error))
         {
-            only_reach_error.insert(block_id);
+            block_data[block_id].only_reach_error = true;
         }
+
+        // Compute the flows between each pair of nodes.
+        let mut flow: Vector<src::BlockId, BigRational> = mem::take(&mut block_data[block_id].flow);
+        if !fwd_targets.is_empty() {
+            // We need to divide the initial flow equally between the children
+            let factor = BigRational::new(1u64.into(), fwd_targets.len().into());
+
+            // For each child, multiply the flows of its own children by the ratio,
+            // and add.
+            for &child_id in &fwd_targets {
+                // First, add the child itself
+                flow[child_id] += factor.clone();
+
+                // Then add its successors
+                let child = &block_data[child_id];
+                for &grandchild in &child.succs {
+                    // Flow from `child` to `grandchild`
+                    let child_flow = child.flow[grandchild].clone();
+                    flow[grandchild] += factor.clone() * child_flow;
+                }
+            }
+        }
+        block_data[block_id].flow = flow;
+
+        // Compute shortest paths to all reachable nodes in the forward graph.
+        block_data[block_id].shortest_paths = dijkstra(&fwd_cfg, block_id, None, |_| 1usize);
+
+        // Compute the "successors". This is somehow different from the reachable nodes we compute
+        // in `shortest_paths`.
+        let all_succs = fwd_targets.iter().fold(HashSet::new(), |acc, &bid| {
+            // Add the successors to the accumulator
+            let mut acc: HashSet<_> = acc.union(&block_data[bid].succs).copied().collect();
+            // Add the child itself
+            acc.insert(bid);
+            acc
+        });
+        block_data[block_id].succs = all_succs;
     }
 
-    // Topologically sort the forward CFG to give a rank to each node.
-    // Note that `toposort` returns `Err` if and only if it finds cycles (which can't happen).
-    // The default value will stay for unreachable nodes, which are irrelevant.
-    let mut topo_rank: Vector<BlockId, usize> = body.map_ref(|_| usize::MAX);
-    for (i, bid) in toposort(&cfg_no_be, None).unwrap().into_iter().enumerate() {
-        topo_rank[bid] = i;
+    // Topologically sort the forward CFG to give a rank to each node. Note that `toposort` returns
+    // `Err` if and only if it finds cycles, which can't happen in the forward graph.
+    for (i, bid) in toposort(&fwd_cfg, None).unwrap().into_iter().enumerate() {
+        block_data[bid].topo_rank = Some(i);
     }
 
     Ok(CfgInfo {
         cfg,
-        cfg_no_be,
+        fwd_cfg,
         loop_entries,
-        backward_edges,
         switch_blocks,
-        only_reach_error,
         dominator_tree,
-        topo_rank,
+        block_data,
     })
 }
 
@@ -191,8 +253,14 @@ type BigRational = fraction::Ratio<BigUint>;
 type FlowBlockId = BlockWithRank<(BigRational, isize)>;
 
 impl CfgInfo {
+    // fn reachable_from(&self, block_id: BlockId) -> impl Iterator<Item = BlockId> {
+    //     self.block_data[block_id].shortest_paths.keys().copied()
+    // }
+    // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
+    //     self.block_data[src].shortest_paths.contains_key(&tgt)
+    // }
     fn topo_rank(&self, block_id: BlockId) -> usize {
-        self.topo_rank[block_id]
+        self.block_data[block_id].topo_rank.unwrap()
     }
     /// Create an [OrdBlockId] from a block id and a rank given by a map giving
     /// a sort (topological in our use cases) over the graph.
@@ -201,6 +269,10 @@ impl CfgInfo {
             id: block_id,
             rank: self.topo_rank(block_id),
         }
+    }
+    fn is_backward_edge(&self, src: BlockId, tgt: BlockId) -> bool {
+        self.block_data[src].reverse_postorder >= self.block_data[tgt].reverse_postorder
+            && self.cfg.contains_edge(src, tgt)
     }
 }
 
@@ -254,9 +326,9 @@ fn loop_entry_is_reachable_from_inner(
     // ignore backward edges to outer loops of course, but also backward edges
     // to inner loops because we shouldn't need to follow those (there should be
     // more direct paths).
-    Dfs::new(&cfg.cfg_no_be, block_id)
-        .iter(&cfg.cfg_no_be)
-        .any(|bid| cfg.backward_edges.contains(&(bid, loop_entry)))
+    Dfs::new(&cfg.fwd_cfg, block_id)
+        .iter(&cfg.fwd_cfg)
+        .any(|bid| cfg.is_backward_edge(bid, loop_entry))
 }
 
 struct FilteredLoopParents {
@@ -307,9 +379,6 @@ fn register_children_as_loop_exit_candidates(
     removed_parent_loops: &Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) {
-    // List the reachable nodes along with the shortest path to them
-    let reachable = dijkstra(&cfg.cfg_no_be, block_id, None, |_| 1usize);
-
     let mut base_dist = 0;
     // For every parent loop, in reverse order (we go from last to first in
     // order to correctly compute the distances)
@@ -321,7 +390,7 @@ fn register_children_as_loop_exit_candidates(
         let candidates = loop_exits.get_mut(loop_id).unwrap();
 
         // Update them
-        for (bid, dist) in reachable.iter() {
+        for (bid, dist) in &cfg.block_data[block_id].shortest_paths {
             let distance = base_dist + *dist;
             match candidates.get_mut(bid) {
                 None => {
@@ -374,7 +443,7 @@ fn compute_loop_exit_candidates(
     };
 
     // Retrieve the children - note that we ignore the back edges
-    for child in cfg.cfg_no_be.neighbors(block_id) {
+    for child in cfg.fwd_cfg.neighbors(block_id) {
         // If the parent loop entry is not reachable from the child without going
         // through a backward edge which goes directly to the loop entry, consider
         // this node a potential exit.
@@ -670,7 +739,7 @@ fn compute_loop_exits(
             // Remove the candidates which only lead to errors (panic or unreachable).
             let candidates: Vec<_> = possible_candidates
                 .iter()
-                .filter(|bid| !cfg.only_reach_error.contains(bid))
+                .filter(|&&bid| !cfg.block_data[bid].only_reach_error)
                 .collect();
             // If there is exactly one candidate we select it
             if candidates.len() == 1 {
@@ -731,86 +800,6 @@ fn compute_loop_exits(
     chosen_loop_exits
 }
 
-/// Information used to compute the switch exits.
-/// We compute this information for every block in the graph.
-/// Note that we make sure to use immutable sets because we rely a lot
-/// on cloning.
-#[derive(Debug, Clone)]
-struct BlocksInfo {
-    id: src::BlockId,
-    /// All the successors of the block
-    succs: BTreeSet<OrdBlockId>,
-    /// Let's say we put a quantity of water equal to 1 on the block, and the
-    /// water flows downards. Whenever there is a branching, the quantity of
-    /// water gets equally divided between the branches. When the control flows
-    /// join, we put the water back together. The set below computes the amount
-    /// of water received by each descendant of the node.
-    ///
-    /// TODO: there must be a known algorithm which computes this, right?...
-    /// This is exactly this problems:
-    /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
-    /// TODO: the way I compute this is not efficient.
-    flow: Vector<src::BlockId, BigRational>,
-}
-
-/// Compute [BlocksInfo] for every block in the graph.
-/// This information is then used to compute the switch exits.
-fn compute_switch_exits_explore(cfg: &CfgInfo, map: &mut HashMap<src::BlockId, BlocksInfo>) {
-    for block_id in DfsPostOrder::new(&cfg.cfg_no_be, src::BlockId::ZERO).iter(&cfg.cfg_no_be) {
-        // Retrieve the information
-        let children: Vec<&BlocksInfo> = cfg
-            .cfg_no_be
-            .neighbors(block_id)
-            .map(|bid| map.get(&bid).unwrap())
-            .collect();
-
-        // Compute the successors
-        // Add the children themselves in their sets of successors
-        let all_succs: BTreeSet<OrdBlockId> = children.iter().fold(BTreeSet::new(), |acc, s| {
-            // Add the successors to the accumulator
-            let mut acc: BTreeSet<_> = acc.union(&s.succs).copied().collect();
-            // Add the child itself
-            acc.insert(cfg.make_ord_block_id(s.id));
-            acc
-        });
-
-        // Compute the "flows".
-        // TODO: this is computationally expensive...
-        let mut flow: Vector<src::BlockId, BigRational> = cfg
-            .topo_rank
-            .map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-
-        if !children.is_empty() {
-            // We need to divide the initial flow equally between the children
-            let factor = BigRational::new(1u64.into(), children.len().into());
-
-            // For each child, multiply the flows of its own children by the ratio,
-            // and add.
-            for child in children {
-                // First, add the child itself
-                flow[child.id] += factor.clone();
-
-                // Then add its successors
-                for grandchild in &child.succs {
-                    // Flow from `child` to `grandchild`
-                    let child_flow = child.flow[grandchild.id].clone();
-                    flow[grandchild.id] += factor.clone() * child_flow;
-                }
-            }
-        }
-
-        trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
-
-        // Memoize
-        let info = BlocksInfo {
-            id: block_id,
-            succs: all_succs,
-            flow,
-        };
-        map.insert(block_id, info.clone());
-    }
-}
-
 /// Auxiliary helper
 ///
 /// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
@@ -856,7 +845,7 @@ fn can_reach_outer_exit(
     // edges. If we reach an outer exit candidate in that graph then the exit candidate does not
     // dominate the outer exit candidates in the forward graph starting from `start_bid`.
     let graph = GraphWithoutEdgesFrom {
-        graph: &cfg.cfg_no_be,
+        graph: &cfg.fwd_cfg,
         special_node: exit_candidate,
     };
     Dfs::new(&graph, start_bid)
@@ -888,12 +877,10 @@ fn can_reach_outer_exit(
 /// to the outer switches.
 fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
     // Compute the successors info map, starting at the root node
-    let mut succs_info_map = HashMap::new();
     trace!(
         "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
-        cfg.cfg, cfg.cfg_no_be, cfg.switch_blocks
+        cfg.cfg, cfg.fwd_cfg, cfg.switch_blocks
     );
-    let _ = compute_switch_exits_explore(cfg, &mut succs_info_map);
 
     // We need to give precedence to the outer switches: we thus iterate
     // over the switch blocks in topological order.
@@ -907,7 +894,7 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
     {
         trace!("Successors info:\n{}\n", {
             let mut out = vec![];
-            for (bid, info) in &succs_info_map {
+            for (bid, info) in cfg.block_data.iter_indexed() {
                 out.push(
                     format!(
                         "{} -> {{succs: {:?}, flow: {:?}}}",
@@ -926,12 +913,11 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
     // Also, we need to explore the nodes in topological order, to give
     // precedence to the outer switches.
     let mut exits_set = HashSet::new();
-    let mut ord_exits_set = BTreeSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
         trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
-        let info = succs_info_map.get(&bid).unwrap();
+        let block_data = &cfg.block_data[bid];
         // Find the best successor: this is the node with the highest flow, and the
         // highest reverse topological rank.
         //
@@ -958,12 +944,12 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
         // G:(0.75,-6)
         // ```
         // The "best" node (with the highest (flow, rank) in the graph above is F.
-        let switch_exit: Option<FlowBlockId> = info
+        let switch_exit: Option<FlowBlockId> = block_data
             .succs
             .iter()
-            .map(|ord_block| ord_block.id)
+            .copied()
             .map(|id| {
-                let flow = info.flow[id].clone();
+                let flow = block_data.flow[id].clone();
                 let rank = -isize::try_from(cfg.topo_rank(id)).unwrap();
                 BlockWithRank {
                     rank: (flow, rank),
@@ -1016,13 +1002,12 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
                 // intersect the set of exits for outer blocks?). If yes, we do
                 // a more precise analysis: we check if we can reach the exit
                 // *without going through* the exit candidate.
-                if info.succs.intersection(&ord_exits_set).next().is_none()
+                if block_data.succs.intersection(&exits_set).next().is_none()
                     || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id)
                 {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit.id);
-                    ord_exits_set.insert(cfg.make_ord_block_id(exit.id));
                     Some(exit.id)
                 } else {
                     trace!(
