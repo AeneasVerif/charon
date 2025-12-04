@@ -1007,11 +1007,12 @@ fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::Bloc
     exits
 }
 
-/// The exits of a graph
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 struct ExitInfo {
-    /// The loop exits
-    loop_exits: HashMap<src::BlockId, Option<src::BlockId>>,
+    is_loop_entry: bool,
+    is_switch_entry: bool,
+    /// The loop exit
+    loop_exit: Option<src::BlockId>,
     /// Some loop exits actually belong to outer switches. We still need
     /// to track them in the loop exits, in order to know when we should
     /// insert a break. However, we need to make sure we don't add the
@@ -1036,10 +1037,16 @@ struct ExitInfo {
     /// };
     /// exit_blocks // the exit blocks are here
     /// ```
-    owned_loop_exits: HashMap<src::BlockId, Option<src::BlockId>>,
-    /// The switch exits.
+    owned_loop_exit: Option<src::BlockId>,
+    /// The switch exit.
     /// Note that the switch exits are always owned.
-    owned_switch_exits: HashMap<src::BlockId, Option<src::BlockId>>,
+    owned_switch_exit: Option<src::BlockId>,
+}
+
+/// The exits of a graph
+#[derive(Debug, Clone)]
+struct ExitsInfo {
+    exits: Vector<BlockId, ExitInfo>,
 }
 
 /// Compute the exits for the loops and the switches (switch on integer and
@@ -1137,7 +1144,7 @@ fn compute_loop_switch_exits(
     ctx: &mut TransformCtx,
     body: &src::ExprBody,
     cfg_info: &CfgInfo,
-) -> ExitInfo {
+) -> ExitsInfo {
     // Compute the loop exits
     let loop_exits = compute_loop_exits(ctx, body, cfg_info);
     trace!("loop_exits:\n{:?}", loop_exits);
@@ -1147,10 +1154,8 @@ fn compute_loop_switch_exits(
     trace!("switch_exits:\n{:?}", switch_exits);
 
     // Compute the exit info
-    let mut exit_info = ExitInfo {
-        loop_exits: HashMap::new(),
-        owned_loop_exits: HashMap::new(),
-        owned_switch_exits: HashMap::new(),
+    let mut exits_info = ExitsInfo {
+        exits: body.body.map_ref(|_| Default::default()),
     };
 
     // We need to give precedence to the outer switches and loops: we thus iterate
@@ -1171,7 +1176,9 @@ fn compute_loop_switch_exits(
     for bid in sorted_blocks {
         let bid = bid.id;
         // Check if loop or switch block
+        let exit_info = &mut exits_info.exits[bid];
         if cfg_info.loop_entries.contains(&bid) {
+            exit_info.is_loop_entry = true;
             // This is a loop.
             //
             // For loops, we always register the exit (if there is one).
@@ -1179,14 +1186,15 @@ fn compute_loop_switch_exits(
             // that we already took care of spreading the exits between
             // the inner/outer loops)
             let exit_id = loop_exits.get(&bid).unwrap();
-            exit_info.loop_exits.insert(bid, *exit_id);
+            exit_info.loop_exit = *exit_id;
             // Check if we "own" the exit
             let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
             if let Some(exit_id) = exit_id {
                 all_exits.insert(exit_id);
             }
-            exit_info.owned_loop_exits.insert(bid, exit_id);
+            exit_info.owned_loop_exit = exit_id;
         } else {
+            exit_info.is_switch_entry = true;
             // For switches: check that the exit was not already given to a
             // loop
             let exit_id = switch_exits.get(&bid).unwrap();
@@ -1195,11 +1203,11 @@ fn compute_loop_switch_exits(
             if let Some(exit_id) = exit_id {
                 all_exits.insert(exit_id);
             }
-            exit_info.owned_switch_exits.insert(bid, exit_id);
+            exit_info.owned_switch_exit = exit_id;
         }
     }
 
-    exit_info
+    exits_info
 }
 
 enum GotoKind {
@@ -1210,9 +1218,8 @@ enum GotoKind {
 }
 
 struct ReconstructCtx<'a> {
-    cfg: CfgInfo,
     body: &'a src::ExprBody,
-    exits_info: ExitInfo,
+    exits_info: ExitsInfo,
     explored: HashSet<src::BlockId>,
     parent_loops: Vec<src::BlockId>,
     switch_exit_blocks: HashSet<src::BlockId>,
@@ -1232,7 +1239,6 @@ impl<'a> ReconstructCtx<'a> {
         // conditional branchings.
         // Note that we shouldn't get `None`.
         Ok(ReconstructCtx {
-            cfg: cfg_info,
             body: src_body,
             exits_info: exits_info,
             explored: HashSet::new(),
@@ -1243,14 +1249,14 @@ impl<'a> ReconstructCtx<'a> {
 
     fn get_goto_kind(&self, next_block_id: src::BlockId) -> GotoKind {
         // First explore the parent loops in revert order
-        for (i, loop_id) in self.parent_loops.iter().rev().enumerate() {
+        for (i, &loop_id) in self.parent_loops.iter().rev().enumerate() {
             // If we goto a loop entry node: this is a 'continue'
-            if next_block_id == *loop_id {
+            if next_block_id == loop_id {
                 return GotoKind::Continue(i);
             } else {
                 // If we goto a loop exit node: this is a 'break'
-                if let Some(exit_id) = self.exits_info.loop_exits.get(loop_id).unwrap() {
-                    if next_block_id == *exit_id {
+                if let Some(exit_id) = self.exits_info.exits[loop_id].loop_exit {
+                    if next_block_id == exit_id {
                         return GotoKind::Break(i);
                     }
                 }
@@ -1439,16 +1445,17 @@ impl<'a> ReconstructCtx<'a> {
 
         let block = &self.body.body[block_id];
 
+        let exit_info = &self.exits_info.exits[block_id];
         // Check if we enter a loop: if so, update parent_loops and the current_exit_block
-        let is_loop = self.cfg.loop_entries.contains(&block_id);
+        let is_loop = exit_info.is_loop_entry;
         // If we enter a switch or a loop, we need to check if we own the exit
         // block, in which case we need to append it to the loop/switch body
         // in a sequence
-        let is_switch = block.terminator.kind.is_switch();
+        let is_switch = exit_info.is_switch_entry;
         let next_block = if is_loop {
-            *self.exits_info.owned_loop_exits.get(&block_id).unwrap()
+            exit_info.owned_loop_exit
         } else if is_switch {
-            *self.exits_info.owned_switch_exits.get(&block_id).unwrap()
+            exit_info.owned_switch_exit
         } else {
             None
         };
