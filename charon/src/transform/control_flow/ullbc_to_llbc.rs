@@ -292,719 +292,9 @@ struct LoopExitCandidateInfo {
     pub occurrences: Vec<usize>,
 }
 
-/// Check if a loop entry is reachable from a node, in a graph where we remove
-/// the backward edges going directly to the loop entry.
-///
-/// If the loop entry is not reachable, it means that:
-/// - the loop entry is not reachable at all
-/// - or it is only reachable through an outer loop
-///
-/// The starting node should be a (transitive) child of the loop entry.
-/// We use this to find candidates for loop exits.
-fn loop_entry_is_reachable_from_inner(
-    cfg: &CfgInfo,
-    loop_entry: src::BlockId,
-    block_id: src::BlockId,
-) -> bool {
-    // It is reachable in the complete graph. Check if it is reachable by not
-    // going through backward edges which go to outer loops. In practice, we
-    // just need to forbid the use of any backward edges at the exception of
-    // those which go directly to the current loop's entry. This means that we
-    // ignore backward edges to outer loops of course, but also backward edges
-    // to inner loops because we shouldn't need to follow those (there should be
-    // more direct paths).
-    Dfs::new(&cfg.fwd_cfg, block_id)
-        .iter(&cfg.fwd_cfg)
-        .any(|bid| cfg.is_backward_edge(bid, loop_entry))
-}
-
 struct FilteredLoopParents {
     remaining_parents: Vec<(src::BlockId, usize)>,
     removed_parents: Vec<(src::BlockId, usize)>,
-}
-
-fn filter_loop_parents(
-    cfg: &CfgInfo,
-    parent_loops: &Vec<(src::BlockId, usize)>,
-    block_id: src::BlockId,
-) -> Option<FilteredLoopParents> {
-    let mut eliminate: usize = 0;
-    for (i, (loop_id, _)) in parent_loops.iter().enumerate().rev() {
-        if loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
-            eliminate = i + 1;
-            break;
-        }
-    }
-
-    // Split the vector of parents
-    let (remaining_parents, removed_parents) = parent_loops.split_at(eliminate);
-    if !removed_parents.is_empty() {
-        let (mut remaining_parents, removed_parents) =
-            (remaining_parents.to_vec(), removed_parents.to_vec());
-
-        // Update the distance to the last loop - we just increment the distance
-        // by 1, because from the point of view of the parent loop, we just exited
-        // a block and go to the next sequence of instructions.
-        if !remaining_parents.is_empty() {
-            remaining_parents.last_mut().unwrap().1 += 1;
-        }
-
-        Some(FilteredLoopParents {
-            remaining_parents,
-            removed_parents,
-        })
-    } else {
-        None
-    }
-}
-
-/// Register a node and its children as exit candidates for a list of
-/// parent loops.
-fn register_children_as_loop_exit_candidates(
-    cfg: &CfgInfo,
-    loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
-    removed_parent_loops: &Vec<(src::BlockId, usize)>,
-    block_id: src::BlockId,
-) {
-    let mut base_dist = 0;
-    // For every parent loop, in reverse order (we go from last to first in
-    // order to correctly compute the distances)
-    for (loop_id, loop_dist) in removed_parent_loops.iter().rev() {
-        // Update the distance to the loop entry
-        base_dist += *loop_dist;
-
-        // Retrieve the candidates
-        let candidates = loop_exits.get_mut(loop_id).unwrap();
-
-        // Update them
-        for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
-            let distance = base_dist + dist;
-            match candidates.get_mut(&bid) {
-                None => {
-                    candidates.insert(
-                        bid,
-                        LoopExitCandidateInfo {
-                            occurrences: vec![distance],
-                        },
-                    );
-                }
-                Some(c) => {
-                    c.occurrences.push(distance);
-                }
-            }
-        }
-    }
-}
-
-/// Compute the loop exit candidates.
-///
-/// There may be several candidates with the same "optimality" (same number of
-/// occurrences, etc.), in which case we choose the first one which was registered
-/// (the order in which we explore the graph is deterministic): this is why we
-/// store the candidates in a linked hash map.
-fn compute_loop_exit_candidates(
-    cfg: &CfgInfo,
-    explored: &mut HashSet<src::BlockId>,
-    ordered_loops: &mut Vec<src::BlockId>,
-    loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
-    // List of parent loops, with the distance to the entry of the loop (the distance
-    // is the distance between the current node and the loop entry for the last parent,
-    // and the distance between the parents for the others).
-    mut parent_loops: Vec<(src::BlockId, usize)>,
-    block_id: src::BlockId,
-) {
-    if explored.contains(&block_id) {
-        return;
-    }
-    explored.insert(block_id);
-
-    // Check if we enter a loop - add the corresponding node if necessary
-    if cfg.loop_entries.contains(&block_id) {
-        parent_loops.push((block_id, 1));
-        ordered_loops.push(block_id);
-    } else {
-        // Increase the distance with the parent loop
-        if !parent_loops.is_empty() {
-            parent_loops.last_mut().unwrap().1 += 1;
-        }
-    };
-
-    // Retrieve the children - note that we ignore the back edges
-    for child in cfg.fwd_cfg.neighbors(block_id) {
-        // If the parent loop entry is not reachable from the child without going
-        // through a backward edge which goes directly to the loop entry, consider
-        // this node a potential exit.
-        ensure_sufficient_stack(|| {
-            let new_parent_loops = match filter_loop_parents(cfg, &parent_loops, child) {
-                None => parent_loops.clone(),
-                Some(fparent_loops) => {
-                    // We filtered some parent loops: it means this child and its
-                    // children are loop exit candidates for all those loops: we must
-                    // thus register them.
-                    // Note that we register the child *and* its children: the reason
-                    // is that we might do something *then* actually jump to the exit.
-                    // For instance, the following block of code:
-                    // ```
-                    // if cond { break; } else { ... }
-                    // ```
-                    //
-                    // Gets translated in MIR to something like this:
-                    // ```
-                    // bb1: {
-                    //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
-                    // }
-                    //
-                    // bb2: {
-                    //   goto bb4; // bb4 is the real exit
-                    // }
-                    // ```
-                    register_children_as_loop_exit_candidates(
-                        cfg,
-                        loop_exits,
-                        &fparent_loops.removed_parents,
-                        child,
-                    );
-                    fparent_loops.remaining_parents
-                }
-            };
-            // Explore, with the filtered parents
-            compute_loop_exit_candidates(
-                cfg,
-                explored,
-                ordered_loops,
-                loop_exits,
-                new_parent_loops,
-                child,
-            );
-        })
-    }
-}
-
-/// See [`compute_loop_switch_exits`] for
-/// explanations about what "exits" are.
-///
-/// The following function computes the loop exits. It acts as follows.
-///
-/// We keep track of a stack of the loops in which we entered.
-/// It is very easy to check when we enter a loop: loop entries are destinations
-/// of backward edges, which can be spotted with a simple graph exploration (see
-/// [`build_cfg_partial_info_edges`].
-/// The criteria to consider whether we exit a loop is the following:
-/// - we exit a loop if we go to a block from which we can't reach the loop
-///   entry at all
-/// - or if we can reach the loop entry, but must use a backward edge which goes
-///   to an outer loop
-///
-/// It is better explained on the following example:
-/// ```text
-/// 'outer while i < max {
-///     'inner while j < max {
-///        j += 1;
-///     }
-///     // (i)
-///     i += 1;
-/// }
-/// ```
-/// If we enter the inner loop then go to (i) from the inner loop, we consider
-/// that we exited the outer loop because:
-/// - we can reach the entry of the inner loop from (i) (by finishing then
-///   starting again an iteration of the outer loop)
-/// - but doing this requires taking a backward edge which goes to the outer loop
-///
-/// Whenever we exit a loop, we save the block we went to as an exit candidate
-/// for this loop. Note that there may by many exit candidates. For instance,
-/// in the below example:
-/// ```text
-/// while ... {
-///    ...
-///    if ... {
-///        // We can't reach the loop entry from here: this is an exit
-///        // candidate
-///        return;
-///    }
-/// }
-/// // This is another exit candidate - and this is the one we want to use
-/// // as the "real" exit...
-/// ...
-/// ```
-///
-/// Also note that it may happen that we go several times to the same exit (if
-/// we use breaks for instance): we record the number of times an exit candidate
-/// is used.
-///
-/// Once we listed all the exit candidates, we find the "best" one for every
-/// loop, starting with the outer loops. We start with outer loops because
-/// inner loops might use breaks to exit to the exit of outer loops: if we
-/// start with the inner loops, the exit which is "natural" for the outer loop
-/// might end up being used for one of the inner loops...
-///
-/// The best exit is the following one:
-/// - it is the one which is used the most times (note that there can be
-///   several candidates which are referenced strictly more than once: see the
-///   comment below)
-/// - if several exits have the same number of occurrences, we choose the one
-///   for which we goto the "earliest" (earliest meaning that the goto is close to
-///   the loop entry node in the AST). The reason is that all the loops should
-///   have an outer if ... then ... else ... which executes the loop body or goes
-///   to the exit (note that this is not necessarily the first
-///   if ... then ... else ... we find: loop conditions can be arbitrary
-///   expressions, containing branchings).
-///
-/// # Several candidates for a loop exit:
-/// =====================================
-/// There used to be a sanity check to ensure there are no two different
-/// candidates with exactly the same number of occurrences and distance from
-/// the entry of the loop, if the number of occurrences is > 1.
-///
-/// We removed it because it does happen, for instance here (the match
-/// introduces an `unreachable` node, and it has the same number of
-/// occurrences and the same distance to the loop entry as the `panic`
-/// node):
-///
-/// ```text
-/// pub fn list_nth_mut_loop_pair<'a, T>(
-///     mut ls: &'a mut List<T>,
-///     mut i: u32,
-/// ) -> &'a mut T {
-///     loop {
-///         match ls {
-///             List::Nil => {
-///                 panic!() // <-- best candidate
-///             }
-///             List::Cons(x, tl) => {
-///                 if i == 0 {
-///                     return x;
-///                 } else {
-///                     ls = tl;
-///                     i -= 1;
-///                 }
-///             }
-///             _ => {
-///               // Note that Rustc always introduces an unreachable branch after
-///               // desugaring matches.
-///               unreachable!(), // <-- best candidate
-///             }
-///         }
-///     }
-/// }
-/// ```
-///
-/// When this happens we choose an exit candidate whose edges don't necessarily
-/// lead to an error (above there are none, so we don't choose any exits). Note
-/// that this last condition is important to prevent loops from being unnecessarily
-/// nested:
-///
-/// ```text
-/// pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
-///     let mut s = 0;
-///
-///     for _ in 0..128 { // We don't want this loop to be nested with the loops below
-///         s += 1;
-///     }
-///
-///     for _ in 0..(step_out) {
-///         for _ in 0..(step_in) {
-///             s += 1;
-///         }
-///     }
-///
-///     s
-/// }
-/// ```
-fn compute_loop_exits(
-    ctx: &mut TransformCtx,
-    body: &src::ExprBody,
-    cfg: &CfgInfo,
-) -> HashMap<src::BlockId, Option<src::BlockId>> {
-    let mut explored = HashSet::new();
-    let mut ordered_loops = Vec::new();
-    let mut loop_exits = HashMap::new();
-
-    // Initialize the loop exits candidates
-    for loop_id in &cfg.loop_entries {
-        loop_exits.insert(*loop_id, IndexMap::new());
-    }
-
-    // Compute the candidates
-    compute_loop_exit_candidates(
-        cfg,
-        &mut explored,
-        &mut ordered_loops,
-        &mut loop_exits,
-        Vec::new(),
-        src::BlockId::ZERO,
-    );
-
-    {
-        // Debugging
-        let candidates: Vec<String> = loop_exits
-            .iter()
-            .map(|(loop_id, candidates)| format!("{loop_id} -> {candidates:?}"))
-            .collect();
-        trace!("Loop exit candidates:\n{}", candidates.join("\n"));
-    }
-
-    // Choose one candidate among the potential candidates.
-    let mut exits: HashSet<src::BlockId> = HashSet::new();
-    let mut chosen_loop_exits: HashMap<src::BlockId, Option<src::BlockId>> = HashMap::new();
-    // For every loop
-    for loop_id in ordered_loops {
-        // Check the candidates.
-        // Ignore the candidates which have already been chosen as exits for other
-        // loops (which should be outer loops).
-        // We choose the exit with:
-        // - the most occurrences
-        // - the least total distance (if there are several possibilities)
-        // - doesn't necessarily lead to an error (panic, unreachable)
-
-        // First:
-        // - filter the candidates
-        // - compute the number of occurrences
-        // - compute the sum of distances
-        // TODO: we could simply order by using a lexicographic order
-        let loop_exits = loop_exits
-            .get(&loop_id)
-            .unwrap()
-            .iter()
-            // If candidate already selected for another loop: ignore
-            .filter(|(candidate_id, _)| !exits.contains(candidate_id))
-            .map(|(candidate_id, candidate_info)| {
-                let num_occurrences = candidate_info.occurrences.len();
-                let dist_sum = candidate_info.occurrences.iter().sum();
-                (*candidate_id, num_occurrences, dist_sum)
-            })
-            .collect_vec();
-
-        trace!(
-            "Loop {}: possible exits:\n{}",
-            loop_id,
-            loop_exits
-                .iter()
-                .map(|(bid, occs, dsum)| format!(
-                    "{bid} -> {{ occurrences: {occs}, dist_sum: {dsum} }}",
-                ))
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
-
-        // Second: actually select the proper candidate.
-
-        // We find the one with the highest occurrence and the smallest distance
-        // from the entry of the loop (note that we take care of listing the exit
-        // candidates in a deterministic order).
-        let mut best_exit: Option<src::BlockId> = None;
-        let mut best_occurrences = 0;
-        let mut best_dist_sum = std::usize::MAX;
-        for (candidate_id, occurrences, dist_sum) in &loop_exits {
-            if (*occurrences > best_occurrences)
-                || (*occurrences == best_occurrences && *dist_sum < best_dist_sum)
-            {
-                best_exit = Some(*candidate_id);
-                best_occurrences = *occurrences;
-                best_dist_sum = *dist_sum;
-            }
-        }
-
-        let possible_candidates: Vec<_> = loop_exits
-            .iter()
-            .filter_map(|(bid, occs, dsum)| {
-                if *occs == best_occurrences && *dsum == best_dist_sum {
-                    Some(*bid)
-                } else {
-                    None
-                }
-            })
-            .collect();
-        let num_possible_candidates = loop_exits.len();
-
-        // If there is exactly one one best candidate, it is easy.
-        // Otherwise we need to split further.
-        if num_possible_candidates > 1 {
-            trace!("Best candidates: {:?}", possible_candidates);
-            // TODO: if we use a lexicographic order we can merge this with the code
-            // above.
-            // Remove the candidates which only lead to errors (panic or unreachable).
-            let candidates: Vec<_> = possible_candidates
-                .iter()
-                .filter(|&&bid| !cfg.block_data[bid].only_reach_error)
-                .collect();
-            // If there is exactly one candidate we select it
-            if candidates.len() == 1 {
-                let exit_id = *candidates[0];
-                exits.insert(exit_id);
-                trace!("Loop {loop_id}: selected the best exit candidate {exit_id}");
-                chosen_loop_exits.insert(loop_id, Some(exit_id));
-            } else {
-                // Otherwise we do not select any exit.
-                // We don't want to select any exit if we are in the below situation
-                // (all paths lead to errors). We added a sanity check below to
-                // catch the situations where there are several exits which don't
-                // lead to errors.
-                //
-                // Example:
-                // ========
-                // ```
-                // loop {
-                //     match ls {
-                //         List::Nil => {
-                //             panic!() // <-- best candidate
-                //         }
-                //         List::Cons(x, tl) => {
-                //             if i == 0 {
-                //                 return x;
-                //             } else {
-                //                 ls = tl;
-                //                 i -= 1;
-                //             }
-                //         }
-                //         _ => {
-                //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
-                //         }
-                //     }
-                // }
-                // ```
-                //
-                // Adding this sanity check so that we can see when there are
-                // several candidates.
-                let span = body.body[loop_id].terminator.span; // Taking *a* span from the block
-                sanity_check!(ctx, span, candidates.is_empty());
-                trace!(
-                    "Loop {loop_id}: did not select an exit candidate because they all lead to panics"
-                );
-                chosen_loop_exits.insert(loop_id, None);
-            }
-        } else {
-            // Register the exit, if there is one
-            if let Some(exit_id) = best_exit {
-                exits.insert(exit_id);
-            }
-            chosen_loop_exits.insert(loop_id, best_exit);
-        }
-    }
-
-    // Return the chosen exits
-    trace!("Chosen loop exits: {:?}", chosen_loop_exits);
-    chosen_loop_exits
-}
-
-/// Auxiliary helper
-///
-/// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
-/// through the `exit_candidate`. We use the forward graph.
-fn can_reach_outer_exit(
-    cfg: &CfgInfo,
-    outer_exits: &HashSet<src::BlockId>,
-    start_bid: src::BlockId,
-    exit_candidate: src::BlockId,
-) -> bool {
-    /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
-    struct GraphWithoutEdgesFrom<'a> {
-        graph: &'a Cfg,
-        special_node: BlockId,
-    }
-    impl GraphBase for GraphWithoutEdgesFrom<'_> {
-        type EdgeId = <Cfg as GraphBase>::EdgeId;
-        type NodeId = <Cfg as GraphBase>::NodeId;
-    }
-    impl IntoNeighbors for &GraphWithoutEdgesFrom<'_> {
-        type Neighbors = impl Iterator<Item = Self::NodeId>;
-        fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
-            if a == self.special_node {
-                None
-            } else {
-                Some(self.graph.neighbors(a))
-            }
-            .into_iter()
-            .flatten()
-        }
-    }
-    impl Visitable for GraphWithoutEdgesFrom<'_> {
-        type Map = <Cfg as Visitable>::Map;
-        fn visit_map(self: &Self) -> Self::Map {
-            self.graph.visit_map()
-        }
-        fn reset_map(self: &Self, map: &mut Self::Map) {
-            self.graph.reset_map(map);
-        }
-    }
-
-    // Do a DFS over the forward graph where we pretend that the exit candidate has no outgoing
-    // edges. If we reach an outer exit candidate in that graph then the exit candidate does not
-    // dominate the outer exit candidates in the forward graph starting from `start_bid`.
-    let graph = GraphWithoutEdgesFrom {
-        graph: &cfg.fwd_cfg,
-        special_node: exit_candidate,
-    };
-    Dfs::new(&graph, start_bid)
-        .iter(&graph)
-        .any(|bid| outer_exits.contains(&bid))
-}
-
-/// See [`compute_loop_switch_exits`] for
-/// explanations about what "exits" are.
-///
-/// In order to compute the switch exits, we simply recursively compute a
-/// topologically ordered set of "filtered successors" as follows (note
-/// that we work in the CFG *without* back edges):
-/// - for a block which doesn't branch (only one successor), the filtered
-///   successors is the set of reachable nodes.
-/// - for a block which branches, we compute the nodes reachable from all
-///   the children, and find the "best" intersection between those.
-///   Note that we find the "best" intersection (a pair of branches which
-///   maximize the intersection of filtered successors) because some branches
-///   might never join the control-flow of the other branches, if they contain
-///   a `break`, `return`, `panic`, etc., like here:
-///   ```text
-///   if b { x = 3; } { return; }
-///   y += x;
-///   ...
-///   ```
-/// Note that with nested switches, the branches of the inner switches might
-/// goto the exits of the outer switches: for this reason, we give precedence
-/// to the outer switches.
-fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
-    // Compute the successors info map, starting at the root node
-    trace!(
-        "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
-        cfg.cfg, cfg.fwd_cfg, cfg.switch_blocks
-    );
-
-    // We need to give precedence to the outer switches: we thus iterate
-    // over the switch blocks in topological order.
-    let mut sorted_switch_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
-    for bid in cfg.switch_blocks.iter() {
-        sorted_switch_blocks.insert(cfg.make_ord_block_id(*bid));
-    }
-    trace!("sorted_switch_blocks: {:?}", sorted_switch_blocks);
-
-    // Debugging: print all the successors
-    {
-        trace!("Successors info:\n{}\n", {
-            let mut out = vec![];
-            for (bid, info) in cfg.block_data.iter_indexed() {
-                out.push(format!("{} -> {{flow: {:?}}}", bid, &info.flow).to_string());
-            }
-            out.join("\n")
-        });
-    }
-
-    // For every node which is a switch, retrieve the exit.
-    // As the set of intersection of successors is topologically sorted, the
-    // exit should be the first node in the set (if the set is non empty).
-    // Also, we need to explore the nodes in topological order, to give
-    // precedence to the outer switches.
-    let mut exits_set = HashSet::new();
-    let mut exits = HashMap::new();
-    for bid in sorted_switch_blocks {
-        trace!("Finding exit candidate for: {bid:?}");
-        let bid = bid.id;
-        let block_data = &cfg.block_data[bid];
-        // Find the best successor: this is the node with the highest flow, and the
-        // highest reverse topological rank.
-        //
-        // Remark: in order to rank the nodes, we also use the negation of the
-        // rank given by the topological order. The last elements of the set
-        // have the highest flow, that is they are the nodes to which the maximum
-        // number of paths converge. If several nodes have the same flow, we want
-        // to take the highest one in the hierarchy: hence the use of the inverse
-        // of the topological rank.
-        //
-        // Ex.:
-        // ```text
-        // A  -- we start here
-        // |
-        // |---------------------------------------
-        // |            |            |            |
-        // B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
-        // |            |            |
-        // |--------------------------
-        // |
-        // F:(0.75,-5)
-        // |
-        // |
-        // G:(0.75,-6)
-        // ```
-        // The "best" node (with the highest (flow, rank) in the graph above is F.
-        let switch_exit: Option<BlockWithRank<(BigRational, isize)>> = block_data
-            .reachable_excluding_self()
-            .map(|id| {
-                let flow = block_data.flow[id].clone();
-                let rank = -isize::try_from(cfg.topo_rank(id)).unwrap();
-                BlockWithRank {
-                    rank: (flow, rank),
-                    id,
-                }
-            })
-            .max();
-        let exit = if let Some(exit) = switch_exit {
-            // We have an exit candidate: check that it was not already
-            // taken by an external switch
-            trace!("{bid:?} has an exit candidate: {exit:?}");
-            if exits_set.contains(&exit.id) {
-                trace!("Ignoring the exit candidate because already taken by an external switch");
-                None
-            } else {
-                // It was not taken by an external switch.
-                //
-                // We must check that we can't reach the exit of an external
-                // switch from one of the branches, without going through the
-                // exit candidate.
-                // We do this by simply checking that we can't reach any exits
-                // (and use the fact that we explore the switch by using a
-                // topological order to not discard valid exit candidates).
-                //
-                // The reason is that it can lead to code like the following:
-                // ```
-                // if ... { // if #1
-                //   if ... { // if #2
-                //     ...
-                //     // here, we have a `goto b1`, where b1 is the exit
-                //     // of if #2: we thus stop translating the blocks.
-                //   }
-                //   else {
-                //     ...
-                //     // here, we have a `goto b2`, where b2 is the exit
-                //     // of if #1: we thus stop translating the blocks.
-                //   }
-                //   // We insert code for the block b1 here (which is the exit of
-                //   // the exit of if #2). However, this block should only
-                //   // be executed in the branch "then" of the if #2, not in
-                //   // the branch "else".
-                //   ...
-                // }
-                // else {
-                //   ...
-                // }
-                // ```
-
-                // First: we do a quick check (does the set of all successors
-                // intersect the set of exits for outer blocks?). If yes, we do
-                // a more precise analysis: we check if we can reach the exit
-                // *without going through* the exit candidate.
-                let can_reach_exit = block_data
-                    .reachable_excluding_self()
-                    .any(|bid| exits_set.contains(&bid));
-                if !can_reach_exit || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id) {
-                    trace!("Keeping the exit candidate");
-                    // No intersection: ok
-                    exits_set.insert(exit.id);
-                    Some(exit.id)
-                } else {
-                    trace!(
-                        "Ignoring the exit candidate because of an intersection with external switches"
-                    );
-                    None
-                }
-            }
-        } else {
-            trace!("{bid:?} has no successors");
-            None
-        };
-
-        exits.insert(bid, exit);
-    }
-
-    exits
 }
 
 #[derive(Debug, Default, Clone)]
@@ -1049,165 +339,875 @@ struct ExitsInfo {
     exits: Vector<BlockId, ExitInfo>,
 }
 
-/// Compute the exits for the loops and the switches (switch on integer and
-/// if ... then ... else ...). We need to do this because control-flow in MIR
-/// is destructured: we have gotos everywhere.
-///
-/// Let's consider the following piece of code:
-/// ```text
-/// if cond1 { ... } else { ... };
-/// if cond2 { ... } else { ... };
-/// ```
-/// Once converted to MIR, the control-flow is destructured, which means we
-/// have gotos everywhere. When reconstructing the control-flow, we have
-/// to be careful about the point where we should join the two branches of
-/// the first if.
-/// For instance, if we don't notice they should be joined at some point (i.e,
-/// whatever the branch we take, there is a moment when we go to the exact
-/// same place, just before the second if), we might generate code like
-/// this, with some duplicata:
-/// ```text
-/// if cond1 { ...; if cond2 { ... } else { ...} }
-/// else { ...; if cond2 { ... } else { ...} }
-/// ```
-///
-/// Such a reconstructed program is valid, but it is definitely non-optimal:
-/// it is very different from the original program (making it less clean and
-/// clear), more bloated, and might involve duplicating the proof effort.
-///
-/// For this reason, we need to find the "exit" of the first loop, which is
-/// the point where the two branches join. Note that this can be a bit tricky,
-/// because there may be more than two branches (if we do `switch(x) { ... }`),
-/// and some of them might not join (if they contain a `break`, `panic`,
-/// `return`, etc.).
-///
-/// Finally, some similar issues arise for loops. For instance, let's consider
-/// the following piece of code:
-/// ```text
-/// while cond1 {
-///   e1;
-///   if cond2 {
-///     break;
-///   }
-///   e2;
-/// }
-/// e3;
-/// return;
-/// ```
-///
-/// Note that in MIR, the loop gets desugared to an if ... then ... else ....
-/// From the MIR, We want to generate something like this:
-/// ```text
-/// loop {
-///   if cond1 {
-///     e1;
-///     if cond2 {
-///       break;
-///     }
-///     e2;
-///     continue;
-///   }
-///   else {
-///     break;
-///   }
-/// };
-/// e3;
-/// return;
-/// ```
-///
-/// But if we don't pay attention, we might end up with that, once again with
-/// duplications:
-/// ```text
-/// loop {
-///   if cond1 {
-///     e1;
-///     if cond2 {
-///       e3;
-///       return;
-///     }
-///     e2;
-///     continue;
-///   }
-///   else {
-///     e3;
-///     return;
-///   }
-/// }
-/// ```
-/// We thus have to notice that if the loop condition is false, we goto the same
-/// block as when following the goto introduced by the break inside the loop, and
-/// this block is dubbed the "loop exit".
-///
-/// The following function thus computes the "exits" for loops and switches, which
-/// are basically the points where control-flow joins.
-fn compute_loop_switch_exits(
-    ctx: &mut TransformCtx,
-    body: &src::ExprBody,
-    cfg_info: &CfgInfo,
-) -> ExitsInfo {
-    // Compute the loop exits
-    let loop_exits = compute_loop_exits(ctx, body, cfg_info);
-    trace!("loop_exits:\n{:?}", loop_exits);
-
-    // Compute the switch exits
-    let switch_exits = compute_switch_exits(cfg_info);
-    trace!("switch_exits:\n{:?}", switch_exits);
-
-    // Compute the exit info
-    let mut exits_info = ExitsInfo {
-        exits: body.body.map_ref(|_| Default::default()),
-    };
-
-    // We need to give precedence to the outer switches and loops: we thus iterate
-    // over the blocks in topological order.
-    let mut sorted_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
-    for bid in cfg_info
-        .loop_entries
-        .iter()
-        .chain(cfg_info.switch_blocks.iter())
-    {
-        sorted_blocks.insert(cfg_info.make_ord_block_id(*bid));
+impl ExitsInfo {
+    /// Check if a loop entry is reachable from a node, in a graph where we remove
+    /// the backward edges going directly to the loop entry.
+    ///
+    /// If the loop entry is not reachable, it means that:
+    /// - the loop entry is not reachable at all
+    /// - or it is only reachable through an outer loop
+    ///
+    /// The starting node should be a (transitive) child of the loop entry.
+    /// We use this to find candidates for loop exits.
+    fn loop_entry_is_reachable_from_inner(
+        cfg: &CfgInfo,
+        loop_entry: src::BlockId,
+        block_id: src::BlockId,
+    ) -> bool {
+        // It is reachable in the complete graph. Check if it is reachable by not
+        // going through backward edges which go to outer loops. In practice, we
+        // just need to forbid the use of any backward edges at the exception of
+        // those which go directly to the current loop's entry. This means that we
+        // ignore backward edges to outer loops of course, but also backward edges
+        // to inner loops because we shouldn't need to follow those (there should be
+        // more direct paths).
+        Dfs::new(&cfg.fwd_cfg, block_id)
+            .iter(&cfg.fwd_cfg)
+            .any(|bid| cfg.is_backward_edge(bid, loop_entry))
     }
 
-    // Keep track of the exits which were already attributed
-    let mut all_exits = HashSet::new();
+    fn filter_loop_parents(
+        cfg: &CfgInfo,
+        parent_loops: &Vec<(src::BlockId, usize)>,
+        block_id: src::BlockId,
+    ) -> Option<FilteredLoopParents> {
+        let mut eliminate: usize = 0;
+        for (i, (loop_id, _)) in parent_loops.iter().enumerate().rev() {
+            if Self::loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
+                eliminate = i + 1;
+                break;
+            }
+        }
 
-    // Put all this together
-    for bid in sorted_blocks {
-        let bid = bid.id;
-        // Check if loop or switch block
-        let exit_info = &mut exits_info.exits[bid];
-        if cfg_info.loop_entries.contains(&bid) {
-            exit_info.is_loop_entry = true;
-            // This is a loop.
-            //
-            // For loops, we always register the exit (if there is one).
-            // However, the exit may be owned by an outer switch (note
-            // that we already took care of spreading the exits between
-            // the inner/outer loops)
-            let exit_id = loop_exits.get(&bid).unwrap();
-            exit_info.loop_exit = *exit_id;
-            // Check if we "own" the exit
-            let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
-            if let Some(exit_id) = exit_id {
-                all_exits.insert(exit_id);
+        // Split the vector of parents
+        let (remaining_parents, removed_parents) = parent_loops.split_at(eliminate);
+        if !removed_parents.is_empty() {
+            let (mut remaining_parents, removed_parents) =
+                (remaining_parents.to_vec(), removed_parents.to_vec());
+
+            // Update the distance to the last loop - we just increment the distance
+            // by 1, because from the point of view of the parent loop, we just exited
+            // a block and go to the next sequence of instructions.
+            if !remaining_parents.is_empty() {
+                remaining_parents.last_mut().unwrap().1 += 1;
             }
-            exit_info.owned_loop_exit = exit_id;
+
+            Some(FilteredLoopParents {
+                remaining_parents,
+                removed_parents,
+            })
         } else {
-            exit_info.is_switch_entry = true;
-            // For switches: check that the exit was not already given to a
-            // loop
-            let exit_id = switch_exits.get(&bid).unwrap();
-            // Check if we "own" the exit
-            let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
-            if let Some(exit_id) = exit_id {
-                all_exits.insert(exit_id);
-            }
-            exit_info.owned_switch_exit = exit_id;
+            None
         }
     }
 
-    exits_info
+    /// Auxiliary helper
+    ///
+    /// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
+    /// through the `exit_candidate`. We use the forward graph.
+    fn can_reach_outer_exit(
+        cfg: &CfgInfo,
+        outer_exits: &HashSet<src::BlockId>,
+        start_bid: src::BlockId,
+        exit_candidate: src::BlockId,
+    ) -> bool {
+        /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
+        struct GraphWithoutEdgesFrom<'a> {
+            graph: &'a Cfg,
+            special_node: BlockId,
+        }
+        impl GraphBase for GraphWithoutEdgesFrom<'_> {
+            type EdgeId = <Cfg as GraphBase>::EdgeId;
+            type NodeId = <Cfg as GraphBase>::NodeId;
+        }
+        impl IntoNeighbors for &GraphWithoutEdgesFrom<'_> {
+            type Neighbors = impl Iterator<Item = Self::NodeId>;
+            fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
+                if a == self.special_node {
+                    None
+                } else {
+                    Some(self.graph.neighbors(a))
+                }
+                .into_iter()
+                .flatten()
+            }
+        }
+        impl Visitable for GraphWithoutEdgesFrom<'_> {
+            type Map = <Cfg as Visitable>::Map;
+            fn visit_map(self: &Self) -> Self::Map {
+                self.graph.visit_map()
+            }
+            fn reset_map(self: &Self, map: &mut Self::Map) {
+                self.graph.reset_map(map);
+            }
+        }
+
+        // Do a DFS over the forward graph where we pretend that the exit candidate has no outgoing
+        // edges. If we reach an outer exit candidate in that graph then the exit candidate does not
+        // dominate the outer exit candidates in the forward graph starting from `start_bid`.
+        let graph = GraphWithoutEdgesFrom {
+            graph: &cfg.fwd_cfg,
+            special_node: exit_candidate,
+        };
+        Dfs::new(&graph, start_bid)
+            .iter(&graph)
+            .any(|bid| outer_exits.contains(&bid))
+    }
+    /// Register a node and its children as exit candidates for a list of
+    /// parent loops.
+    fn register_children_as_loop_exit_candidates(
+        cfg: &CfgInfo,
+        loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
+        removed_parent_loops: &Vec<(src::BlockId, usize)>,
+        block_id: src::BlockId,
+    ) {
+        let mut base_dist = 0;
+        // For every parent loop, in reverse order (we go from last to first in
+        // order to correctly compute the distances)
+        for (loop_id, loop_dist) in removed_parent_loops.iter().rev() {
+            // Update the distance to the loop entry
+            base_dist += *loop_dist;
+
+            // Retrieve the candidates
+            let candidates = loop_exits.get_mut(loop_id).unwrap();
+
+            // Update them
+            for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
+                let distance = base_dist + dist;
+                match candidates.get_mut(&bid) {
+                    None => {
+                        candidates.insert(
+                            bid,
+                            LoopExitCandidateInfo {
+                                occurrences: vec![distance],
+                            },
+                        );
+                    }
+                    Some(c) => {
+                        c.occurrences.push(distance);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Compute the loop exit candidates.
+    ///
+    /// There may be several candidates with the same "optimality" (same number of
+    /// occurrences, etc.), in which case we choose the first one which was registered
+    /// (the order in which we explore the graph is deterministic): this is why we
+    /// store the candidates in a linked hash map.
+    fn compute_loop_exit_candidates(
+        cfg: &CfgInfo,
+        explored: &mut HashSet<src::BlockId>,
+        ordered_loops: &mut Vec<src::BlockId>,
+        loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
+        // List of parent loops, with the distance to the entry of the loop (the distance
+        // is the distance between the current node and the loop entry for the last parent,
+        // and the distance between the parents for the others).
+        mut parent_loops: Vec<(src::BlockId, usize)>,
+        block_id: src::BlockId,
+    ) {
+        if explored.contains(&block_id) {
+            return;
+        }
+        explored.insert(block_id);
+
+        // Check if we enter a loop - add the corresponding node if necessary
+        if cfg.loop_entries.contains(&block_id) {
+            parent_loops.push((block_id, 1));
+            ordered_loops.push(block_id);
+        } else {
+            // Increase the distance with the parent loop
+            if !parent_loops.is_empty() {
+                parent_loops.last_mut().unwrap().1 += 1;
+            }
+        };
+
+        // Retrieve the children - note that we ignore the back edges
+        for child in cfg.fwd_cfg.neighbors(block_id) {
+            // If the parent loop entry is not reachable from the child without going
+            // through a backward edge which goes directly to the loop entry, consider
+            // this node a potential exit.
+            ensure_sufficient_stack(|| {
+                let new_parent_loops = match Self::filter_loop_parents(cfg, &parent_loops, child) {
+                    None => parent_loops.clone(),
+                    Some(fparent_loops) => {
+                        // We filtered some parent loops: it means this child and its
+                        // children are loop exit candidates for all those loops: we must
+                        // thus register them.
+                        // Note that we register the child *and* its children: the reason
+                        // is that we might do something *then* actually jump to the exit.
+                        // For instance, the following block of code:
+                        // ```
+                        // if cond { break; } else { ... }
+                        // ```
+                        //
+                        // Gets translated in MIR to something like this:
+                        // ```
+                        // bb1: {
+                        //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
+                        // }
+                        //
+                        // bb2: {
+                        //   goto bb4; // bb4 is the real exit
+                        // }
+                        // ```
+                        Self::register_children_as_loop_exit_candidates(
+                            cfg,
+                            loop_exits,
+                            &fparent_loops.removed_parents,
+                            child,
+                        );
+                        fparent_loops.remaining_parents
+                    }
+                };
+                // Explore, with the filtered parents
+                Self::compute_loop_exit_candidates(
+                    cfg,
+                    explored,
+                    ordered_loops,
+                    loop_exits,
+                    new_parent_loops,
+                    child,
+                );
+            })
+        }
+    }
+
+    /// See [`compute_loop_switch_exits`] for
+    /// explanations about what "exits" are.
+    ///
+    /// The following function computes the loop exits. It acts as follows.
+    ///
+    /// We keep track of a stack of the loops in which we entered.
+    /// It is very easy to check when we enter a loop: loop entries are destinations
+    /// of backward edges, which can be spotted with a simple graph exploration (see
+    /// [`build_cfg_partial_info_edges`].
+    /// The criteria to consider whether we exit a loop is the following:
+    /// - we exit a loop if we go to a block from which we can't reach the loop
+    ///   entry at all
+    /// - or if we can reach the loop entry, but must use a backward edge which goes
+    ///   to an outer loop
+    ///
+    /// It is better explained on the following example:
+    /// ```text
+    /// 'outer while i < max {
+    ///     'inner while j < max {
+    ///        j += 1;
+    ///     }
+    ///     // (i)
+    ///     i += 1;
+    /// }
+    /// ```
+    /// If we enter the inner loop then go to (i) from the inner loop, we consider
+    /// that we exited the outer loop because:
+    /// - we can reach the entry of the inner loop from (i) (by finishing then
+    ///   starting again an iteration of the outer loop)
+    /// - but doing this requires taking a backward edge which goes to the outer loop
+    ///
+    /// Whenever we exit a loop, we save the block we went to as an exit candidate
+    /// for this loop. Note that there may by many exit candidates. For instance,
+    /// in the below example:
+    /// ```text
+    /// while ... {
+    ///    ...
+    ///    if ... {
+    ///        // We can't reach the loop entry from here: this is an exit
+    ///        // candidate
+    ///        return;
+    ///    }
+    /// }
+    /// // This is another exit candidate - and this is the one we want to use
+    /// // as the "real" exit...
+    /// ...
+    /// ```
+    ///
+    /// Also note that it may happen that we go several times to the same exit (if
+    /// we use breaks for instance): we record the number of times an exit candidate
+    /// is used.
+    ///
+    /// Once we listed all the exit candidates, we find the "best" one for every
+    /// loop, starting with the outer loops. We start with outer loops because
+    /// inner loops might use breaks to exit to the exit of outer loops: if we
+    /// start with the inner loops, the exit which is "natural" for the outer loop
+    /// might end up being used for one of the inner loops...
+    ///
+    /// The best exit is the following one:
+    /// - it is the one which is used the most times (note that there can be
+    ///   several candidates which are referenced strictly more than once: see the
+    ///   comment below)
+    /// - if several exits have the same number of occurrences, we choose the one
+    ///   for which we goto the "earliest" (earliest meaning that the goto is close to
+    ///   the loop entry node in the AST). The reason is that all the loops should
+    ///   have an outer if ... then ... else ... which executes the loop body or goes
+    ///   to the exit (note that this is not necessarily the first
+    ///   if ... then ... else ... we find: loop conditions can be arbitrary
+    ///   expressions, containing branchings).
+    ///
+    /// # Several candidates for a loop exit:
+    /// =====================================
+    /// There used to be a sanity check to ensure there are no two different
+    /// candidates with exactly the same number of occurrences and distance from
+    /// the entry of the loop, if the number of occurrences is > 1.
+    ///
+    /// We removed it because it does happen, for instance here (the match
+    /// introduces an `unreachable` node, and it has the same number of
+    /// occurrences and the same distance to the loop entry as the `panic`
+    /// node):
+    ///
+    /// ```text
+    /// pub fn list_nth_mut_loop_pair<'a, T>(
+    ///     mut ls: &'a mut List<T>,
+    ///     mut i: u32,
+    /// ) -> &'a mut T {
+    ///     loop {
+    ///         match ls {
+    ///             List::Nil => {
+    ///                 panic!() // <-- best candidate
+    ///             }
+    ///             List::Cons(x, tl) => {
+    ///                 if i == 0 {
+    ///                     return x;
+    ///                 } else {
+    ///                     ls = tl;
+    ///                     i -= 1;
+    ///                 }
+    ///             }
+    ///             _ => {
+    ///               // Note that Rustc always introduces an unreachable branch after
+    ///               // desugaring matches.
+    ///               unreachable!(), // <-- best candidate
+    ///             }
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// When this happens we choose an exit candidate whose edges don't necessarily
+    /// lead to an error (above there are none, so we don't choose any exits). Note
+    /// that this last condition is important to prevent loops from being unnecessarily
+    /// nested:
+    ///
+    /// ```text
+    /// pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
+    ///     let mut s = 0;
+    ///
+    ///     for _ in 0..128 { // We don't want this loop to be nested with the loops below
+    ///         s += 1;
+    ///     }
+    ///
+    ///     for _ in 0..(step_out) {
+    ///         for _ in 0..(step_in) {
+    ///             s += 1;
+    ///         }
+    ///     }
+    ///
+    ///     s
+    /// }
+    /// ```
+    fn compute_loop_exits(
+        ctx: &mut TransformCtx,
+        body: &src::ExprBody,
+        cfg: &CfgInfo,
+    ) -> HashMap<src::BlockId, Option<src::BlockId>> {
+        let mut explored = HashSet::new();
+        let mut ordered_loops = Vec::new();
+        let mut loop_exits = HashMap::new();
+
+        // Initialize the loop exits candidates
+        for loop_id in &cfg.loop_entries {
+            loop_exits.insert(*loop_id, IndexMap::new());
+        }
+
+        // Compute the candidates
+        Self::compute_loop_exit_candidates(
+            cfg,
+            &mut explored,
+            &mut ordered_loops,
+            &mut loop_exits,
+            Vec::new(),
+            src::BlockId::ZERO,
+        );
+
+        {
+            // Debugging
+            let candidates: Vec<String> = loop_exits
+                .iter()
+                .map(|(loop_id, candidates)| format!("{loop_id} -> {candidates:?}"))
+                .collect();
+            trace!("Loop exit candidates:\n{}", candidates.join("\n"));
+        }
+
+        // Choose one candidate among the potential candidates.
+        let mut exits: HashSet<src::BlockId> = HashSet::new();
+        let mut chosen_loop_exits: HashMap<src::BlockId, Option<src::BlockId>> = HashMap::new();
+        // For every loop
+        for loop_id in ordered_loops {
+            // Check the candidates.
+            // Ignore the candidates which have already been chosen as exits for other
+            // loops (which should be outer loops).
+            // We choose the exit with:
+            // - the most occurrences
+            // - the least total distance (if there are several possibilities)
+            // - doesn't necessarily lead to an error (panic, unreachable)
+
+            // First:
+            // - filter the candidates
+            // - compute the number of occurrences
+            // - compute the sum of distances
+            // TODO: we could simply order by using a lexicographic order
+            let loop_exits = loop_exits
+                .get(&loop_id)
+                .unwrap()
+                .iter()
+                // If candidate already selected for another loop: ignore
+                .filter(|(candidate_id, _)| !exits.contains(candidate_id))
+                .map(|(candidate_id, candidate_info)| {
+                    let num_occurrences = candidate_info.occurrences.len();
+                    let dist_sum = candidate_info.occurrences.iter().sum();
+                    (*candidate_id, num_occurrences, dist_sum)
+                })
+                .collect_vec();
+
+            trace!(
+                "Loop {}: possible exits:\n{}",
+                loop_id,
+                loop_exits
+                    .iter()
+                    .map(|(bid, occs, dsum)| format!(
+                        "{bid} -> {{ occurrences: {occs}, dist_sum: {dsum} }}",
+                    ))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
+
+            // Second: actually select the proper candidate.
+
+            // We find the one with the highest occurrence and the smallest distance
+            // from the entry of the loop (note that we take care of listing the exit
+            // candidates in a deterministic order).
+            let mut best_exit: Option<src::BlockId> = None;
+            let mut best_occurrences = 0;
+            let mut best_dist_sum = std::usize::MAX;
+            for (candidate_id, occurrences, dist_sum) in &loop_exits {
+                if (*occurrences > best_occurrences)
+                    || (*occurrences == best_occurrences && *dist_sum < best_dist_sum)
+                {
+                    best_exit = Some(*candidate_id);
+                    best_occurrences = *occurrences;
+                    best_dist_sum = *dist_sum;
+                }
+            }
+
+            let possible_candidates: Vec<_> = loop_exits
+                .iter()
+                .filter_map(|(bid, occs, dsum)| {
+                    if *occs == best_occurrences && *dsum == best_dist_sum {
+                        Some(*bid)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            let num_possible_candidates = loop_exits.len();
+
+            // If there is exactly one one best candidate, it is easy.
+            // Otherwise we need to split further.
+            if num_possible_candidates > 1 {
+                trace!("Best candidates: {:?}", possible_candidates);
+                // TODO: if we use a lexicographic order we can merge this with the code
+                // above.
+                // Remove the candidates which only lead to errors (panic or unreachable).
+                let candidates: Vec<_> = possible_candidates
+                    .iter()
+                    .filter(|&&bid| !cfg.block_data[bid].only_reach_error)
+                    .collect();
+                // If there is exactly one candidate we select it
+                if candidates.len() == 1 {
+                    let exit_id = *candidates[0];
+                    exits.insert(exit_id);
+                    trace!("Loop {loop_id}: selected the best exit candidate {exit_id}");
+                    chosen_loop_exits.insert(loop_id, Some(exit_id));
+                } else {
+                    // Otherwise we do not select any exit.
+                    // We don't want to select any exit if we are in the below situation
+                    // (all paths lead to errors). We added a sanity check below to
+                    // catch the situations where there are several exits which don't
+                    // lead to errors.
+                    //
+                    // Example:
+                    // ========
+                    // ```
+                    // loop {
+                    //     match ls {
+                    //         List::Nil => {
+                    //             panic!() // <-- best candidate
+                    //         }
+                    //         List::Cons(x, tl) => {
+                    //             if i == 0 {
+                    //                 return x;
+                    //             } else {
+                    //                 ls = tl;
+                    //                 i -= 1;
+                    //             }
+                    //         }
+                    //         _ => {
+                    //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
+                    //         }
+                    //     }
+                    // }
+                    // ```
+                    //
+                    // Adding this sanity check so that we can see when there are
+                    // several candidates.
+                    let span = body.body[loop_id].terminator.span; // Taking *a* span from the block
+                    sanity_check!(ctx, span, candidates.is_empty());
+                    trace!(
+                        "Loop {loop_id}: did not select an exit candidate because they all lead to panics"
+                    );
+                    chosen_loop_exits.insert(loop_id, None);
+                }
+            } else {
+                // Register the exit, if there is one
+                if let Some(exit_id) = best_exit {
+                    exits.insert(exit_id);
+                }
+                chosen_loop_exits.insert(loop_id, best_exit);
+            }
+        }
+
+        // Return the chosen exits
+        trace!("Chosen loop exits: {:?}", chosen_loop_exits);
+        chosen_loop_exits
+    }
+
+    /// See [`compute_loop_switch_exits`] for
+    /// explanations about what "exits" are.
+    ///
+    /// In order to compute the switch exits, we simply recursively compute a
+    /// topologically ordered set of "filtered successors" as follows (note
+    /// that we work in the CFG *without* back edges):
+    /// - for a block which doesn't branch (only one successor), the filtered
+    ///   successors is the set of reachable nodes.
+    /// - for a block which branches, we compute the nodes reachable from all
+    ///   the children, and find the "best" intersection between those.
+    ///   Note that we find the "best" intersection (a pair of branches which
+    ///   maximize the intersection of filtered successors) because some branches
+    ///   might never join the control-flow of the other branches, if they contain
+    ///   a `break`, `return`, `panic`, etc., like here:
+    ///   ```text
+    ///   if b { x = 3; } { return; }
+    ///   y += x;
+    ///   ...
+    ///   ```
+    /// Note that with nested switches, the branches of the inner switches might
+    /// goto the exits of the outer switches: for this reason, we give precedence
+    /// to the outer switches.
+    fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
+        // Compute the successors info map, starting at the root node
+        trace!(
+            "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
+            cfg.cfg, cfg.fwd_cfg, cfg.switch_blocks
+        );
+
+        // We need to give precedence to the outer switches: we thus iterate
+        // over the switch blocks in topological order.
+        let mut sorted_switch_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
+        for bid in cfg.switch_blocks.iter() {
+            sorted_switch_blocks.insert(cfg.make_ord_block_id(*bid));
+        }
+        trace!("sorted_switch_blocks: {:?}", sorted_switch_blocks);
+
+        // Debugging: print all the successors
+        {
+            trace!("Successors info:\n{}\n", {
+                let mut out = vec![];
+                for (bid, info) in cfg.block_data.iter_indexed() {
+                    out.push(format!("{} -> {{flow: {:?}}}", bid, &info.flow).to_string());
+                }
+                out.join("\n")
+            });
+        }
+
+        // For every node which is a switch, retrieve the exit.
+        // As the set of intersection of successors is topologically sorted, the
+        // exit should be the first node in the set (if the set is non empty).
+        // Also, we need to explore the nodes in topological order, to give
+        // precedence to the outer switches.
+        let mut exits_set = HashSet::new();
+        let mut exits = HashMap::new();
+        for bid in sorted_switch_blocks {
+            trace!("Finding exit candidate for: {bid:?}");
+            let bid = bid.id;
+            let block_data = &cfg.block_data[bid];
+            // Find the best successor: this is the node with the highest flow, and the
+            // highest reverse topological rank.
+            //
+            // Remark: in order to rank the nodes, we also use the negation of the
+            // rank given by the topological order. The last elements of the set
+            // have the highest flow, that is they are the nodes to which the maximum
+            // number of paths converge. If several nodes have the same flow, we want
+            // to take the highest one in the hierarchy: hence the use of the inverse
+            // of the topological rank.
+            //
+            // Ex.:
+            // ```text
+            // A  -- we start here
+            // |
+            // |---------------------------------------
+            // |            |            |            |
+            // B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
+            // |            |            |
+            // |--------------------------
+            // |
+            // F:(0.75,-5)
+            // |
+            // |
+            // G:(0.75,-6)
+            // ```
+            // The "best" node (with the highest (flow, rank) in the graph above is F.
+            let switch_exit: Option<BlockWithRank<(BigRational, isize)>> = block_data
+                .reachable_excluding_self()
+                .map(|id| {
+                    let flow = block_data.flow[id].clone();
+                    let rank = -isize::try_from(cfg.topo_rank(id)).unwrap();
+                    BlockWithRank {
+                        rank: (flow, rank),
+                        id,
+                    }
+                })
+                .max();
+            let exit = if let Some(exit) = switch_exit {
+                // We have an exit candidate: check that it was not already
+                // taken by an external switch
+                trace!("{bid:?} has an exit candidate: {exit:?}");
+                if exits_set.contains(&exit.id) {
+                    trace!(
+                        "Ignoring the exit candidate because already taken by an external switch"
+                    );
+                    None
+                } else {
+                    // It was not taken by an external switch.
+                    //
+                    // We must check that we can't reach the exit of an external
+                    // switch from one of the branches, without going through the
+                    // exit candidate.
+                    // We do this by simply checking that we can't reach any exits
+                    // (and use the fact that we explore the switch by using a
+                    // topological order to not discard valid exit candidates).
+                    //
+                    // The reason is that it can lead to code like the following:
+                    // ```
+                    // if ... { // if #1
+                    //   if ... { // if #2
+                    //     ...
+                    //     // here, we have a `goto b1`, where b1 is the exit
+                    //     // of if #2: we thus stop translating the blocks.
+                    //   }
+                    //   else {
+                    //     ...
+                    //     // here, we have a `goto b2`, where b2 is the exit
+                    //     // of if #1: we thus stop translating the blocks.
+                    //   }
+                    //   // We insert code for the block b1 here (which is the exit of
+                    //   // the exit of if #2). However, this block should only
+                    //   // be executed in the branch "then" of the if #2, not in
+                    //   // the branch "else".
+                    //   ...
+                    // }
+                    // else {
+                    //   ...
+                    // }
+                    // ```
+
+                    // First: we do a quick check (does the set of all successors
+                    // intersect the set of exits for outer blocks?). If yes, we do
+                    // a more precise analysis: we check if we can reach the exit
+                    // *without going through* the exit candidate.
+                    let can_reach_exit = block_data
+                        .reachable_excluding_self()
+                        .any(|bid| exits_set.contains(&bid));
+                    if !can_reach_exit || !Self::can_reach_outer_exit(cfg, &exits_set, bid, exit.id)
+                    {
+                        trace!("Keeping the exit candidate");
+                        // No intersection: ok
+                        exits_set.insert(exit.id);
+                        Some(exit.id)
+                    } else {
+                        trace!(
+                            "Ignoring the exit candidate because of an intersection with external switches"
+                        );
+                        None
+                    }
+                }
+            } else {
+                trace!("{bid:?} has no successors");
+                None
+            };
+
+            exits.insert(bid, exit);
+        }
+
+        exits
+    }
+
+    /// Compute the exits for the loops and the switches (switch on integer and
+    /// if ... then ... else ...). We need to do this because control-flow in MIR
+    /// is destructured: we have gotos everywhere.
+    ///
+    /// Let's consider the following piece of code:
+    /// ```text
+    /// if cond1 { ... } else { ... };
+    /// if cond2 { ... } else { ... };
+    /// ```
+    /// Once converted to MIR, the control-flow is destructured, which means we
+    /// have gotos everywhere. When reconstructing the control-flow, we have
+    /// to be careful about the point where we should join the two branches of
+    /// the first if.
+    /// For instance, if we don't notice they should be joined at some point (i.e,
+    /// whatever the branch we take, there is a moment when we go to the exact
+    /// same place, just before the second if), we might generate code like
+    /// this, with some duplicata:
+    /// ```text
+    /// if cond1 { ...; if cond2 { ... } else { ...} }
+    /// else { ...; if cond2 { ... } else { ...} }
+    /// ```
+    ///
+    /// Such a reconstructed program is valid, but it is definitely non-optimal:
+    /// it is very different from the original program (making it less clean and
+    /// clear), more bloated, and might involve duplicating the proof effort.
+    ///
+    /// For this reason, we need to find the "exit" of the first loop, which is
+    /// the point where the two branches join. Note that this can be a bit tricky,
+    /// because there may be more than two branches (if we do `switch(x) { ... }`),
+    /// and some of them might not join (if they contain a `break`, `panic`,
+    /// `return`, etc.).
+    ///
+    /// Finally, some similar issues arise for loops. For instance, let's consider
+    /// the following piece of code:
+    /// ```text
+    /// while cond1 {
+    ///   e1;
+    ///   if cond2 {
+    ///     break;
+    ///   }
+    ///   e2;
+    /// }
+    /// e3;
+    /// return;
+    /// ```
+    ///
+    /// Note that in MIR, the loop gets desugared to an if ... then ... else ....
+    /// From the MIR, We want to generate something like this:
+    /// ```text
+    /// loop {
+    ///   if cond1 {
+    ///     e1;
+    ///     if cond2 {
+    ///       break;
+    ///     }
+    ///     e2;
+    ///     continue;
+    ///   }
+    ///   else {
+    ///     break;
+    ///   }
+    /// };
+    /// e3;
+    /// return;
+    /// ```
+    ///
+    /// But if we don't pay attention, we might end up with that, once again with
+    /// duplications:
+    /// ```text
+    /// loop {
+    ///   if cond1 {
+    ///     e1;
+    ///     if cond2 {
+    ///       e3;
+    ///       return;
+    ///     }
+    ///     e2;
+    ///     continue;
+    ///   }
+    ///   else {
+    ///     e3;
+    ///     return;
+    ///   }
+    /// }
+    /// ```
+    /// We thus have to notice that if the loop condition is false, we goto the same
+    /// block as when following the goto introduced by the break inside the loop, and
+    /// this block is dubbed the "loop exit".
+    ///
+    /// The following function thus computes the "exits" for loops and switches, which
+    /// are basically the points where control-flow joins.
+    fn compute(ctx: &mut TransformCtx, body: &src::ExprBody, cfg_info: &CfgInfo) -> Self {
+        // Compute the loop exits
+        let loop_exits = Self::compute_loop_exits(ctx, body, cfg_info);
+        trace!("loop_exits:\n{:?}", loop_exits);
+
+        // Compute the switch exits
+        let switch_exits = Self::compute_switch_exits(cfg_info);
+        trace!("switch_exits:\n{:?}", switch_exits);
+
+        // Compute the exit info
+        let mut exits_info = ExitsInfo {
+            exits: body.body.map_ref(|_| Default::default()),
+        };
+
+        // We need to give precedence to the outer switches and loops: we thus iterate
+        // over the blocks in topological order.
+        let mut sorted_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
+        for bid in cfg_info
+            .loop_entries
+            .iter()
+            .chain(cfg_info.switch_blocks.iter())
+        {
+            sorted_blocks.insert(cfg_info.make_ord_block_id(*bid));
+        }
+
+        // Keep track of the exits which were already attributed
+        let mut all_exits = HashSet::new();
+
+        // Put all this together
+        for bid in sorted_blocks {
+            let bid = bid.id;
+            // Check if loop or switch block
+            let exit_info = &mut exits_info.exits[bid];
+            if cfg_info.loop_entries.contains(&bid) {
+                exit_info.is_loop_entry = true;
+                // This is a loop.
+                //
+                // For loops, we always register the exit (if there is one).
+                // However, the exit may be owned by an outer switch (note
+                // that we already took care of spreading the exits between
+                // the inner/outer loops)
+                let exit_id = loop_exits.get(&bid).unwrap();
+                exit_info.loop_exit = *exit_id;
+                // Check if we "own" the exit
+                let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
+                if let Some(exit_id) = exit_id {
+                    all_exits.insert(exit_id);
+                }
+                exit_info.owned_loop_exit = exit_id;
+            } else {
+                exit_info.is_switch_entry = true;
+                // For switches: check that the exit was not already given to a
+                // loop
+                let exit_id = switch_exits.get(&bid).unwrap();
+                // Check if we "own" the exit
+                let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
+                if let Some(exit_id) = exit_id {
+                    all_exits.insert(exit_id);
+                }
+                exit_info.owned_switch_exit = exit_id;
+            }
+        }
+
+        exits_info
+    }
 }
 
 enum GotoKind {
@@ -1231,9 +1231,8 @@ impl<'a> ReconstructCtx<'a> {
         // edges, and identify the loop entries (which are destinations of backward edges).
         let cfg_info = CfgInfo::build(&src_body.body)?;
 
-        // Find the exit block for all the loops and switches, if such an exit point
-        // exists.
-        let exits_info = compute_loop_switch_exits(ctx, src_body, &cfg_info);
+        // Find the exit block for all the loops and switches, if such an exit point exists.
+        let exits_info = ExitsInfo::compute(ctx, src_body, &cfg_info);
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
