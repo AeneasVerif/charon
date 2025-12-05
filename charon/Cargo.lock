@@ -219,7 +219,7 @@ checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
 
 [[package]]
 name = "charon"
-version = "0.1.150"
+version = "0.1.153"
 dependencies = [
  "annotate-snippets",
  "anstream",
@@ -233,6 +233,8 @@ dependencies = [
  "either",
  "env_logger",
  "flate2",
+ "fraction",
+ "hashbrown",
  "hax-frontend-exporter",
  "ignore",
  "index_vec",
@@ -246,15 +248,14 @@ dependencies = [
  "nom",
  "nom-supreme",
  "num-bigint",
- "num-rational",
  "petgraph",
  "regex",
  "reqwest",
  "rustc_version",
  "serde",
- "serde-map-to-array",
  "serde_json",
  "serde_stacker",
+ "serde_state",
  "snapbox",
  "stacker",
  "strip-ansi-escapes",
@@ -675,6 +676,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fraction"
+version = "0.15.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f158e3ff0a1b334408dc9fb811cd99b446986f4d8b741bb08f9df1604085ae7"
+dependencies = [
+ "lazy_static",
+ "num",
+]
+
+[[package]]
 name = "futures"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -836,7 +847,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.3.5"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#67e65e6752aff8ec5f28dfb514d611d65ee1cd36"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#20444f5511d666bc1b4e9a2fb5b56fa9d73b90ca"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -847,7 +858,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.3.5"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#67e65e6752aff8ec5f28dfb514d611d65ee1cd36"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#20444f5511d666bc1b4e9a2fb5b56fa9d73b90ca"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -864,7 +875,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.3.5"
-source = "git+https://github.com/AeneasVerif/hax?branch=main#67e65e6752aff8ec5f28dfb514d611d65ee1cd36"
+source = "git+https://github.com/AeneasVerif/hax?branch=main#20444f5511d666bc1b4e9a2fb5b56fa9d73b90ca"
 dependencies = [
  "hax-adt-into",
  "schemars",
@@ -1438,12 +1449,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "num"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35bd024e8b2ff75562e5f34e7f4905839deb4b22955ef5e73d2fea1b9813cb23"
+dependencies = [
+ "num-bigint",
+ "num-complex",
+ "num-integer",
+ "num-iter",
+ "num-rational",
+ "num-traits",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
 dependencies = [
  "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
+dependencies = [
  "num-traits",
 ]
 
@@ -1459,6 +1493,17 @@ version = "0.1.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
 dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-iter"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1429034a0490724d0075ebb2bc9e875d6503c3cf69e235a8941aa757d83ef5bf"
+dependencies = [
+ "autocfg",
+ "num-integer",
  "num-traits",
 ]
 
@@ -1978,27 +2023,28 @@ checksum = "56e6fa9c48d24d85fb3de5ad847117517440f6beceb7798af16b4a87d616b8d0"
 
 [[package]]
 name = "serde"
-version = "1.0.219"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f0e2c6ed6606019b4e29e69dbaba95b11854410e5347d525002456dbbb786b6"
+checksum = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e"
+dependencies = [
+ "serde_core",
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_core"
+version = "1.0.228"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
-name = "serde-map-to-array"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c14b52efc56c711e0dbae3f26e0cc233f5dac336c1bf0b07e1b7dc2dca3b2cc7"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "serde_derive"
-version = "1.0.219"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b0276cf7f2c73365f7157c8123c21cd9a50fbbd844757af28ca1f5925fc2a00"
+checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2055,6 +2101,25 @@ checksum = "69c8defe6c780725cce4ec6ad3bd91e321baf6fa4e255df1f31e345d507ef01a"
 dependencies = [
  "serde",
  "stacker",
+]
+
+[[package]]
+name = "serde_state"
+version = "1.0.0"
+source = "git+https://github.com/Nadrieril/serde_state?branch=main#5a7882d9e88af931705d03b3205e22b0bc3e5bf5"
+dependencies = [
+ "serde",
+ "serde_state_derive",
+]
+
+[[package]]
+name = "serde_state_derive"
+version = "1.0.0"
+source = "git+https://github.com/Nadrieril/serde_state?branch=main#5a7882d9e88af931705d03b3205e22b0bc3e5bf5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
 ]
 
 [[package]]

@@ -21,8 +21,10 @@
   "test_crate::GenericInLastField": "None",
   "test_crate::GenericWithUnsize": {
     "InheritFrom": {
-      "TypeVar": {
-        "Free": 0
+      "Untagged": {
+        "TypeVar": {
+          "Free": 0
+        }
       }
     }
   },

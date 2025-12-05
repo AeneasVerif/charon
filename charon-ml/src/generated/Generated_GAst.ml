@@ -93,8 +93,7 @@ and error = { span : span; msg : string }
 and fn_operand =
   | FnOpRegular of fn_ptr
       (** Regular case: call to a top-level function, trait method, etc. *)
-  | FnOpMove of place
-      (** Use of a function pointer stored in a local variable *)
+  | FnOpDynamic of operand  (** Use of a function pointer. *)
 
 (** A function signature. *)
 and fun_sig = {

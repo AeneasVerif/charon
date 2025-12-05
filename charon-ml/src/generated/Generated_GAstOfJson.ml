@@ -42,12 +42,13 @@ let hash_consed_val_of_json (map : 'a HashConsId.Map.t ref)
     (js : json) : ('a, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("hash_cons_id", `Int id); ("value", json) ] ->
+    | `Assoc [ ("Untagged", json) ] -> of_json ctx json
+    | `Assoc [ ("HashConsedValue", `List [ `Int id; json ]) ] ->
         let* v = of_json ctx json in
         let id = HashConsId.of_int id in
         map := HashConsId.Map.add id v !map;
         Ok v
-    | `Assoc [ ("hash_cons_id", `Int id) ] -> begin
+    | `Assoc [ ("Deduplicated", `Int id) ] -> begin
         let id = HashConsId.of_int id in
         match HashConsId.Map.find_opt id !map with
         | Some v -> Ok v
@@ -56,7 +57,7 @@ let hash_consed_val_of_json (map : 'a HashConsId.Map.t ref)
               "Hash-consing key not found; there is a serialization mismatch \
                between Rust and OCaml"
       end
-    | json -> of_json ctx json)
+    | _ -> Error "")
 
 let path_buf_of_json = string_of_json
 
@@ -307,6 +308,19 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Array" -> Ok TArray
     | `String "Slice" -> Ok TSlice
     | `String "Str" -> Ok TStr
+    | _ -> Error "")
+
+and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Uninit" -> Ok Uninit
+    | `Assoc [ ("Value", value) ] ->
+        let* value = int_of_json ctx value in
+        Ok (Value value)
+    | `Assoc [ ("Provenance", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = provenance_of_json ctx x_0 in
+        let* x_1 = int_of_json ctx x_1 in
+        Ok (Provenance (x_0, x_1))
     | _ -> Error "")
 
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
@@ -608,7 +622,7 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* fn_def = fn_ptr_of_json ctx fn_def in
         Ok (CFnDef fn_def)
     | `Assoc [ ("RawMemory", raw_memory) ] ->
-        let* raw_memory = list_of_json int_of_json ctx raw_memory in
+        let* raw_memory = list_of_json byte_of_json ctx raw_memory in
         Ok (CRawMemory raw_memory)
     | `Assoc [ ("Opaque", opaque) ] ->
         let* opaque = string_of_json ctx opaque in
@@ -821,9 +835,9 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Regular", regular) ] ->
         let* regular = fn_ptr_of_json ctx regular in
         Ok (FnOpRegular regular)
-    | `Assoc [ ("Move", move) ] ->
-        let* move = place_of_json ctx move in
-        Ok (FnOpMove move)
+    | `Assoc [ ("Dynamic", dynamic) ] ->
+        let* dynamic = operand_of_json ctx dynamic in
+        Ok (FnOpDynamic dynamic)
     | _ -> Error "")
 
 and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =
@@ -1472,6 +1486,19 @@ and projection_elem_of_json (ctx : of_json_ctx) (js : json) :
         let* to_ = box_of_json operand_of_json ctx to_ in
         let* from_end = bool_of_json ctx from_end in
         Ok (Subslice (from, to_, from_end))
+    | _ -> Error "")
+
+and provenance_of_json (ctx : of_json_ctx) (js : json) :
+    (provenance, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_ref_of_json ctx global in
+        Ok (Global global)
+    | `Assoc [ ("Function", function_) ] ->
+        let* function_ = fun_decl_ref_of_json ctx function_ in
+        Ok (Function function_)
+    | `String "Unknown" -> Ok Unknown
     | _ -> Error "")
 
 and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :

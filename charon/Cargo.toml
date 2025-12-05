@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.150"
+version = "0.1.153"
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
@@ -42,6 +42,8 @@ harness = false
 [dependencies]
 hax = { package = "hax-frontend-exporter", git = "https://github.com/AeneasVerif/hax", branch = "main", optional = true }
 # hax = { package = "hax-frontend-exporter", path = "../../hax/frontend/exporter", optional = true }
+serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main" }
+# serde_state = { path = "../../../forks/serde_state/serde_state" }
 macros = { path = "./macros" }
 
 annotate-snippets = { git = "https://github.com/rust-lang/annotate-snippets-rs", rev = "74964e91d845e39fb549c4028452beffa7c6562b", version = "0.11.5" }
@@ -56,6 +58,8 @@ derive_generic_visitor = "0.2.0"
 either = "1.15.0"
 env_logger = { version = "0.11", features = ["color"] }
 flate2 = { version = "1.0.34", optional = true }
+fraction = "0.15.3"
+hashbrown = { version = "0.15.0", default-features = false }
 indexmap = { version = "2.7.1", features = ["serde"] }
 index_vec = { version = "0.1.3", features = ["serde"] }
 indoc = "2"
@@ -65,12 +69,10 @@ log = "0.4.17"
 nom = "7.1.3"
 nom-supreme = "0.8.0"
 num-bigint = "0.4.6"
-num-rational = "0.4"
 petgraph = "0.8.0"
 reqwest = { version = "0.12.8", optional = true }
 rustc_version = "0.4"
 serde_json = { version = "1.0.91", features = ["unbounded_depth"] }
-serde-map-to-array = { version = "1.1.1", features = ["std"] }
 serde_stacker = "0.1.11"
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 stacker = "0.1"

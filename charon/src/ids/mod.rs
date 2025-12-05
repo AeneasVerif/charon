@@ -43,5 +43,25 @@ macro_rules! generate_index_type {
                 f.write_str(self.index().to_string().as_str())
             }
         }
+
+        impl<State: ?Sized> serde_state::SerializeState<State> for $name {
+            fn serialize_state<S: serde::ser::Serializer>(
+                &self,
+                _state: &State,
+                serializer: S,
+            ) -> Result<S::Ok, S::Error> {
+                use serde::Serialize;
+                self.index().serialize(serializer)
+            }
+        }
+        impl<'de, State: ?Sized> serde_state::DeserializeState<'de, State> for $name {
+            fn deserialize_state<D: serde::de::Deserializer<'de>>(
+                _state: &State,
+                deserializer: D,
+            ) -> Result<Self, D::Error> {
+                use serde::Deserialize;
+                usize::deserialize(deserializer).map(Self::from_usize)
+            }
+        }
     };
 }

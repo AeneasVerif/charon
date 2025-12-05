@@ -4,9 +4,11 @@ use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
+use serde_state::{DeserializeState, SerializeState};
 use std::vec::Vec;
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Place {
     pub kind: PlaceKind,
     pub ty: Ty,
@@ -20,8 +22,8 @@ pub struct Place {
     EnumIsA,
     EnumAsGetters,
     EnumToGetters,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
@@ -53,8 +55,8 @@ pub enum PlaceKind {
     EnumAsGetters,
     EnumToGetters,
     VariantName,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
@@ -101,8 +103,8 @@ pub enum ProjectionElem {
     Clone,
     EnumIsA,
     EnumAsGetters,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
@@ -156,13 +158,23 @@ pub enum BorrowKind {
 
 /// Unary operation
 #[derive(
-    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    VariantName,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 #[charon::rename("Unop")]
 pub enum UnOp {
     Not,
     /// This can overflow, for `-i::MIN`.
     #[drive(skip)]
+    #[serde_state(stateless)]
     Neg(OverflowMode),
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
@@ -170,7 +182,16 @@ pub enum UnOp {
 
 /// Nullary operation
 #[derive(
-    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    VariantName,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 #[charon::rename("Nullop")]
 pub enum NullOp {
@@ -185,7 +206,16 @@ pub enum NullOp {
 /// For all the variants: the first type gives the source type, the second one gives
 /// the destination type.
 #[derive(
-    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    VariantName,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 #[charon::variants_prefix("Cast")]
 pub enum CastKind {
@@ -217,7 +247,16 @@ pub enum CastKind {
 }
 
 #[derive(
-    Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    VariantName,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 #[charon::variants_prefix("Meta")]
 pub enum UnsizingMetadata {
@@ -241,9 +280,20 @@ pub enum OverflowMode {
 
 /// Binary operations.
 #[derive(
-    Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    VariantName,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 #[charon::rename("Binop")]
+#[serde_state(stateless)]
 pub enum BinOp {
     BitXor,
     BitAnd,
@@ -293,11 +343,12 @@ pub enum BinOp {
     EnumToGetters,
     EnumAsGetters,
     VariantName,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
+#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum Operand {
     Copy(Place),
     Move(Place),
@@ -316,12 +367,13 @@ pub enum Operand {
     EnumIsA,
     EnumAsGetters,
     VariantName,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
 #[charon::variants_prefix("F")]
+#[serde_state(stateless)]
 pub enum FunId {
     /// A "regular" function (function local to the crate, external function
     /// not treated as a primitive one).
@@ -408,7 +460,7 @@ pub struct BuiltinIndexOp {
 }
 
 /// Reference to a function declaration or builtin function.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct MaybeBuiltinFunDeclRef {
     pub id: FunId,
     pub generics: BoxedArgs,
@@ -416,7 +468,7 @@ pub struct MaybeBuiltinFunDeclRef {
 }
 
 /// Reference to a trait method.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitMethodRef {
     pub trait_ref: TraitRef,
     pub name: TraitItemName,
@@ -427,7 +479,16 @@ pub struct TraitMethodRef {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut, Hash,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumAsGetters,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    Hash,
 )]
 pub enum FnPtrKind {
     #[charon::rename("FunId")]
@@ -450,7 +511,7 @@ impl From<FunDeclId> for FnPtrKind {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
 pub struct FnPtr {
     pub kind: Box<FnPtrKind>,
     pub generics: BoxedArgs,
@@ -460,6 +521,27 @@ impl From<FunDeclRef> for FnPtr {
     fn from(fn_ref: FunDeclRef) -> Self {
         FnPtr::new(fn_ref.id.into(), fn_ref.generics)
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
+pub enum Provenance {
+    Global(GlobalDeclRef),
+    Function(FunDeclRef),
+    Unknown,
+}
+
+/// A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8 value,
+/// or part of a pointer with provenance (e.g. to a global or a function)
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
+pub enum Byte {
+    /// An uninitialized byte
+    Uninit,
+    /// A concrete byte value
+    Value(u8),
+    /// A byte that is part of a pointer with provenance. The u8 is the offset within the
+    /// pointer. Note that we do not have an actual value for this pointer byte, unlike
+    /// MiniRust, as that is non-deterministic.
+    Provenance(Provenance, u8),
 }
 
 /// A constant expression.
@@ -498,13 +580,14 @@ impl From<FunDeclRef> for FnPtr {
     VariantName,
     EnumIsA,
     EnumAsGetters,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
 #[charon::variants_prefix("C")]
 pub enum ConstantExprKind {
+    #[serde_state(stateless)]
     Literal(Literal),
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with
@@ -580,13 +663,14 @@ pub enum ConstantExprKind {
     /// Raw memory value obtained from constant evaluation. Used when a more structured
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
     #[drive(skip)]
-    RawMemory(Vec<u8>),
+    RawMemory(Vec<Byte>),
     /// A constant expression that Charon still doesn't handle, along with the reason why.
     #[drive(skip)]
     Opaque(String),
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct ConstantExpr {
     pub kind: ConstantExprKind,
     pub ty: Ty,
@@ -597,7 +681,15 @@ pub struct ConstantExpr {
 /// TODO: move the aggregate kind to operands
 /// TODO: we should prefix the type variants with "R" or "Rv", this would avoid collisions
 #[derive(
-    Debug, Clone, EnumToGetters, EnumAsGetters, EnumIsA, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    Clone,
+    EnumToGetters,
+    EnumAsGetters,
+    EnumIsA,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 pub enum Rvalue {
     /// Lifts an operand as an rvalue.
@@ -607,6 +699,7 @@ pub enum Rvalue {
     #[charon::rename("RvRef")]
     Ref {
         place: Place,
+        #[serde_state(stateless)]
         kind: BorrowKind,
         ptr_metadata: Operand,
     },
@@ -689,7 +782,7 @@ pub enum Rvalue {
 /// initialization, `ls` is initialized to `⊥`, then this `⊥` is expanded to
 /// `Cons (⊥, ⊥)` upon the first assignment, at which point we can initialize
 /// the field 0, etc.).
-#[derive(Debug, Clone, VariantIndexArity, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, VariantIndexArity, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::variants_prefix("Aggregated")]
 pub enum AggregateKind {
     /// A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum

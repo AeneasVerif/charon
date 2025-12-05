@@ -205,7 +205,7 @@ where
     @6 := &two-phase-mut *(x@2) with_metadata(copy (x@2.metadata))
     storage_live(@7)
     @7 := &*(arg@1)
-    @0 := (move (*(@6.metadata)).method_modify)(move (@6), move (@7))
+    @0 := (copy ((*(@6.metadata)).method_modify))(move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(@5)

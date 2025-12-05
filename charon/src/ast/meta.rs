@@ -5,6 +5,7 @@ use crate::names::Name;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
+use serde_state::{DeserializeState, SerializeState};
 use std::path::PathBuf;
 
 generate_index_type!(FileId);
@@ -53,10 +54,13 @@ pub struct SpanData {
     Hash,
     Serialize,
     Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
 #[drive(skip)]
+#[serde_state(stateless)]
 pub struct Span {
     /// The source code span.
     ///
@@ -203,8 +207,10 @@ pub enum ItemOpacity {
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[serde_state(stateless)]
 pub struct ItemMeta {
+    #[serde_state(stateful)]
     pub name: Name,
     pub span: Span,
     /// The source code that corresponds to this item.

@@ -1,15 +1,18 @@
+use std::cmp::{Ord, PartialOrd};
+use std::fmt;
+
+use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
+use index_vec::Idx;
+use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
+use serde_state::{DeserializeState, SerializeState};
+
 use crate::ast::*;
+use crate::common::serialize_map_to_array::IndexMapToArray;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
 use crate::pretty::FmtWithCtx;
-use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
-use index_vec::Idx;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
-use serde::{Deserialize, Serialize};
-use serde_map_to_array::HashMapToArray;
-use std::cmp::{Ord, PartialOrd};
-use std::collections::HashMap;
-use std::fmt;
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
@@ -33,10 +36,13 @@ generate_index_type!(TraitImplId, "TraitImpl");
     VariantIndexArity,
     Serialize,
     Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
 )]
 #[charon::variants_prefix("Id")]
+#[serde_state(stateless)]
 pub enum ItemId {
     Type(TypeDeclId),
     Fun(FunDeclId),
@@ -160,7 +166,8 @@ pub struct TargetInfo {
 }
 
 /// The data of a translated crate.
-#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
+#[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     #[drive(skip)]
@@ -170,24 +177,27 @@ pub struct TranslatedCrate {
     /// which consumed the serialized code, to check that Charon was called with
     /// the proper options.
     #[drive(skip)]
+    #[serde_state(stateless)]
     pub options: crate::options::CliOpts,
 
     /// Information about the target platform for which rustc is called on for the crate.
     #[drive(skip)]
+    #[serde_state(stateless)]
     pub target_information: TargetInfo,
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
     /// Invariant: after translation, any existing `ItemId` must have an associated name, even
     /// if the corresponding item wasn't translated.
-    #[serde(with = "HashMapToArray::<ItemId, Name>")]
-    pub item_names: HashMap<ItemId, Name>,
+    #[serde(with = "IndexMapToArray::<ItemId, Name>")]
+    pub item_names: IndexMap<ItemId, Name>,
     /// Short names, for items whose last PathElem is unique.
-    #[serde(with = "HashMapToArray::<ItemId, Name>")]
-    pub short_names: HashMap<ItemId, Name>,
+    #[serde(with = "IndexMapToArray::<ItemId, Name>")]
+    pub short_names: IndexMap<ItemId, Name>,
 
     /// The translated files.
     #[drive(skip)]
+    #[serde_state(stateless)]
     pub files: Vector<FileId, File>,
     /// The translated type definitions
     pub type_decls: Vector<TypeDeclId, TypeDecl>,
@@ -204,6 +214,7 @@ pub struct TranslatedCrate {
     pub unit_metadata: Option<GlobalDeclRef>,
     /// The re-ordered groups of declarations, initialized as empty.
     #[drive(skip)]
+    #[serde_state(stateless)]
     pub ordered_decls: Option<DeclarationsGroups>,
 }
 
