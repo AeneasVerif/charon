@@ -45,7 +45,7 @@ where
     [@TraitClause0]: BoolTrait<Self>,
 {
     let @0: (); // return
-    let self@1: &'_ (Self); // arg #1
+    let self@1: &'0 (Self); // arg #1
 
     @0 := ()
     @0 := ()
@@ -58,7 +58,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'_ (Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 (Option<T>[@TraitClause0]); // arg #1
 
     @0 := ()
     @0 := ()

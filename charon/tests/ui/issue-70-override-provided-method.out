@@ -130,10 +130,10 @@ fn main()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @3: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @4: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @5: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @2: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @3: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @4: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @5: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
     let @6: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
     let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let @8: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
@@ -180,8 +180,8 @@ impl StructuralPartialEq for Foo {
 pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 (Foo), @2: &'_1 (Foo)) -> bool
 {
     let @0: bool; // return
-    let self@1: &'_ (Foo); // arg #1
-    let other@2: &'_ (Foo); // arg #2
+    let self@1: &'0 (Foo); // arg #1
+    let other@2: &'0 (Foo); // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
@@ -205,12 +205,12 @@ impl PartialEq<Foo> for Foo {
 pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 (Foo), @2: &'_1 (Foo)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let @0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
-    let self@1: &'_ (Foo); // arg #1
-    let other@2: &'_ (Foo); // arg #2
-    let @3: &'_ (u32); // anonymous local
-    let @4: &'_ (u32); // anonymous local
-    let @5: &'_ (u32); // anonymous local
-    let @6: &'_ (u32); // anonymous local
+    let self@1: &'0 (Foo); // arg #1
+    let other@2: &'0 (Foo); // arg #2
+    let @3: &'1 (u32); // anonymous local
+    let @4: &'1 (u32); // anonymous local
+    let @5: &'1 (u32); // anonymous local
+    let @6: &'1 (u32); // anonymous local
 
     storage_live(@3)
     storage_live(@4)

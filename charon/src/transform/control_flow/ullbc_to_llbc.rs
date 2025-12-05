@@ -1540,8 +1540,9 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
     let tgt_body = tgt::ExprBody {
         span: src_body.span,
         locals: src_body.locals.clone(),
-        comments: src_body.comments.clone(),
+        bound_body_regions: src_body.bound_body_regions,
         body: tgt_body,
+        comments: src_body.comments.clone(),
     };
     *body = Structured(tgt_body);
 }

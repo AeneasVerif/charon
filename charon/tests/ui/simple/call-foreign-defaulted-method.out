@@ -18,7 +18,7 @@ const UNIT_METADATA: () = @Fun0()
 pub fn {impl Trait for ()}::defaulted<'_0>(@1: &'_0 (()))
 {
     let @0: (); // return
-    let self@1: &'_ (()); // arg #1
+    let self@1: &'0 (()); // arg #1
 
     @0 := ()
     @0 := ()
@@ -30,8 +30,8 @@ fn main()
 {
     let @0: (); // return
     let @1: (); // anonymous local
-    let @2: &'_ (()); // anonymous local
-    let @3: &'_ (()); // anonymous local
+    let @2: &'0 (()); // anonymous local
+    let @3: &'0 (()); // anonymous local
     let @4: &'_ (()); // anonymous local
     let @5: (); // anonymous local
 
@@ -65,7 +65,7 @@ where
     [@TraitClause0]: Trait<Self>,
 {
     let @0: (); // return
-    let self@1: &'_ (Self); // arg #1
+    let self@1: &'0 (Self); // arg #1
 
     @0 := ()
     @0 := ()

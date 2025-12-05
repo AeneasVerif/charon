@@ -1188,6 +1188,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
         match self {
             Region::Static => write!(f, "'static"),
             Region::Var(var) => write!(f, "{}", var.with_ctx(ctx)),
+            Region::Body(id) => write!(f, "'{}", id),
             Region::Erased => write!(f, "'_"),
         }
     }

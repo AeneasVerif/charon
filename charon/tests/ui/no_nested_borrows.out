@@ -202,7 +202,7 @@ where
 pub fn use_tuple_struct<'_0>(@1: &'_0 mut (Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]))
 {
     let @0: (); // return
-    let x@1: &'_ mut (Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]); // arg #1
+    let x@1: &'0 mut (Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]); // arg #1
 
     @0 := ()
     (*(x@1)).0 := const (1 : u32)
@@ -463,10 +463,10 @@ pub fn test_box1()
 {
     let @0: (); // return
     let b@1: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // local
-    let x@2: &'_ mut (i32); // local
-    let @3: &'_ mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]); // anonymous local
-    let x@4: &'_ (i32); // local
-    let @5: &'_ (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]); // anonymous local
+    let x@2: &'0 mut (i32); // local
+    let @3: &'1 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]); // anonymous local
+    let x@4: &'2 (i32); // local
+    let @5: &'3 (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]); // anonymous local
     let @6: bool; // anonymous local
     let @7: i32; // anonymous local
 
@@ -535,7 +535,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: bool; // return
-    let l@1: &'_ (List<T>[@TraitClause0]); // arg #1
+    let l@1: &'0 (List<T>[@TraitClause0]); // arg #1
 
     match *(l@1) {
         List::Cons => {
@@ -790,7 +790,7 @@ pub fn new_pair1() -> StructWithPair<u32, u32>[{built_in impl Sized for u32}, {b
 pub fn incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
-    let x@1: &'_ mut (u32); // arg #1
+    let x@1: &'0 mut (u32); // arg #1
     let @2: u32; // anonymous local
 
     storage_live(@2)
@@ -805,7 +805,7 @@ pub fn incr<'_0>(@1: &'_0 mut (u32))
 pub fn read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
 {
     let @0: u32; // return
-    let x@1: &'_ mut (u32); // arg #1
+    let x@1: &'0 mut (u32); // arg #1
     let r@2: u32; // local
     let @3: u32; // anonymous local
 

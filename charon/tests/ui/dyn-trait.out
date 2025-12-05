@@ -197,12 +197,12 @@ where
 fn destruct<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_0))) -> String
 {
     let @0: String; // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)); // anonymous local
+    let x@1: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '1)); // arg #1
+    let @2: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '1)); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1) with_metadata(copy (x@1.metadata))
-    @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, Display<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>](move (@2))
+    @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '1)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '2)}, Display<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '3)>](move (@2))
     storage_dead(@2)
     return
 }
@@ -217,8 +217,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a (T))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = T)); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: PartialEq<_dyn, Option<T>[@TraitClause0]> + _dyn : '_)); // arg #2
+    let @1: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a (T))> + _dyn : '1 + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = T)); // arg #1
+    let @2: &'4 ((dyn exists<_dyn> [@TraitClause0_1]: PartialEq<_dyn, Option<T>[@TraitClause0]> + _dyn : '5)); // arg #2
 
     @0 := ()
     @0 := ()
@@ -229,7 +229,7 @@ where
 fn bar<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'_0_2> Fn<_dyn, (&'_0_2 ((dyn exists<_dyn> [@TraitClause0_3]: Display<_dyn> + _dyn : '_0_2)))> + _dyn : '_0 + for<'_0_2> @TraitClause0_1::parent_clause1::parent_clause1::Output = ())))
 {
     let @0: (); // return
-    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'_0_2> Fn<_dyn, (&'_0_2 ((dyn exists<_dyn> [@TraitClause0_3]: Display<_dyn> + _dyn : '_0_2)))> + _dyn : '_ + for<'_0_2> @TraitClause0_1::parent_clause1::parent_clause1::Output = ())); // arg #1
+    let @1: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'_0_2> Fn<_dyn, (&'_0_2 ((dyn exists<_dyn> [@TraitClause0_3]: Display<_dyn> + _dyn : '_0_2)))> + _dyn : '1 + for<'_0_2> @TraitClause0_1::parent_clause1::parent_clause1::Output = ())); // arg #1
 
     @0 := ()
     @0 := ()

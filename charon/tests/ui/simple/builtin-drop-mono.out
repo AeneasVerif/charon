@@ -93,7 +93,7 @@ fn {impl Destruct::<Slice<String>>}::drop_in_place::<String>(@1: *mut Slice<Stri
 {
     let @0: (); // return
     let @1: *mut Slice<String>; // arg #1
-    let @2: &'_ mut (Slice<String>); // anonymous local
+    let @2: &'0 mut (Slice<String>); // anonymous local
     let @3: usize; // anonymous local
     let @4: usize; // anonymous local
     let @5: *mut String; // anonymous local
@@ -193,7 +193,7 @@ fn {impl Destruct::<Array<String, 4 : usize>>}::drop_in_place::<String, 4 : usiz
 {
     let @0: (); // return
     let @1: *mut Array<String, 4 : usize>; // arg #1
-    let @2: &'_ mut (Array<String, 4 : usize>); // anonymous local
+    let @2: &'0 mut (Array<String, 4 : usize>); // anonymous local
     let @3: *mut Array<String, 4 : usize>; // anonymous local
     let @4: *mut Slice<String>; // anonymous local
     let @5: usize; // anonymous local
@@ -245,7 +245,7 @@ fn {impl Destruct::<(String, String)>}::drop_in_place::<String, String>(@1: *mut
 {
     let @0: (); // return
     let @1: *mut (String, String); // arg #1
-    let @2: &'_ mut ((String, String)); // anonymous local
+    let @2: &'0 mut ((String, String)); // anonymous local
 
     storage_live(@2)
     @0 := ()

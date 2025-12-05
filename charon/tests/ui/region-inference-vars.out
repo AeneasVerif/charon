@@ -54,7 +54,7 @@ where
 pub fn {impl MyTryFrom<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
     let @0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
-    let v@1: &'_ (bool); // arg #1
+    let v@1: &'0 (bool); // arg #1
     let @2: bool; // anonymous local
 
     storage_live(@2)

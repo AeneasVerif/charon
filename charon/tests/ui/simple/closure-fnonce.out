@@ -98,7 +98,7 @@ fn {impl Destruct for NotCopy}::drop_in_place(@1: *mut NotCopy)
 {
     let @0: (); // return
     let @1: *mut NotCopy; // arg #1
-    let @2: &'_ mut (NotCopy); // anonymous local
+    let @2: &'0 mut (NotCopy); // anonymous local
 
     storage_live(@2)
     @0 := ()

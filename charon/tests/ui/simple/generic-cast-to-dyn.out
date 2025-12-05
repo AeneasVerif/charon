@@ -51,20 +51,20 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,
 {
-    let @0: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // return
-    let x@1: &'_ (T); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // anonymous local
-    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // anonymous local
-    let @4: &'_ (T); // anonymous local
+    let @0: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '1)); // return
+    let x@1: &'2 (T); // arg #1
+    let @2: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '1)); // anonymous local
+    let @3: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '1)); // anonymous local
+    let @4: &'2 (T); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(x@1)
-    @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
+    @3 := unsize_cast<&'2 (T), &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '1)), @TraitClause1>(move (@4))
     storage_dead(@4)
     @2 := &*(@3) with_metadata(copy (@3.metadata))
-    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_))>(move (@2))
+    @0 := unsize_cast<&'0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '1)), &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '1))>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return
