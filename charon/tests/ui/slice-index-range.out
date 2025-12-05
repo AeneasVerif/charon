@@ -173,8 +173,8 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: SliceIndex<I, Slice<T>>,
 {
-    let @0: &'_ (@TraitClause2::Output); // return
-    let self@1: &'_ (Slice<T>); // arg #1
+    let @0: &'0 (@TraitClause2::Output); // return
+    let self@1: &'1 (Slice<T>); // arg #1
     let index@2: I; // arg #2
 
     @0 := @TraitClause2::index<'_>(move (index@2), move (self@1))
@@ -327,23 +327,23 @@ pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usiz
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'_ (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]; // return
+    let @0: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice@2: &'_ (Slice<T>); // arg #2
+    let slice@2: &'0 (Slice<T>); // arg #2
     let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let self@4: usize; // local
     let rhs@5: usize; // local
     let new_len@6: usize; // local
     let @7: bool; // anonymous local
     let @8: usize; // anonymous local
-    let @9: &'_ (Slice<T>); // anonymous local
+    let @9: &'0 (Slice<T>); // anonymous local
     let @10: *const Slice<T>; // anonymous local
     let @11: *const Slice<T>; // anonymous local
     let @12: bool; // anonymous local
     let @13: usize; // anonymous local
     let @14: *const T; // anonymous local
     let @15: *const T; // anonymous local
-    let @16: Option<&'_ (Slice<T>)>[{built_in impl Sized for &'_ (Slice<T>)}]; // anonymous local
+    let @16: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -405,23 +405,23 @@ pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usiz
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'_ mut (Slice<T>)>[{built_in impl Sized for &'_ mut (Slice<T>)}]; // return
+    let @0: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice@2: &'_ mut (Slice<T>); // arg #2
+    let slice@2: &'0 mut (Slice<T>); // arg #2
     let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let self@4: usize; // local
     let rhs@5: usize; // local
     let new_len@6: usize; // local
     let @7: bool; // anonymous local
     let @8: usize; // anonymous local
-    let @9: &'_ mut (Slice<T>); // anonymous local
+    let @9: &'0 mut (Slice<T>); // anonymous local
     let @10: *mut Slice<T>; // anonymous local
     let ptr@11: *mut Slice<T>; // local
     let @12: bool; // anonymous local
     let @13: usize; // anonymous local
     let @14: *mut T; // anonymous local
     let @15: *mut T; // anonymous local
-    let @16: Option<&'_ mut (Slice<T>)>[{built_in impl Sized for &'_ mut (Slice<T>)}]; // anonymous local
+    let @16: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -487,17 +487,17 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     let len@3: usize; // arg #3
     let @4: bool; // anonymous local
     let @5: bool; // anonymous local
-    let msg@6: &'_ (Str); // local
+    let msg@6: &'0 (Str); // local
     let @7: !; // anonymous local
-    let @8: Arguments<'_>; // anonymous local
+    let @8: Arguments<'1>; // anonymous local
     let @9: NonNull<u8>; // anonymous local
     let @10: *const u8; // anonymous local
-    let @11: NonNull<Argument<'_>>; // anonymous local
+    let @11: NonNull<Argument<'2>>; // anonymous local
     let @12: usize; // anonymous local
     let @13: usize; // anonymous local
     let @14: usize; // anonymous local
     let @15: *const Str; // anonymous local
-    let @16: &'_ (Slice<u8>); // anonymous local
+    let @16: &'3 (Slice<u8>); // anonymous local
 
     storage_live(msg@6)
     storage_live(@7)
@@ -530,14 +530,14 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     storage_live(@13)
     storage_live(@14)
     storage_live(@16)
-    @16 := transmute<&'_ (Str), &'_ (Slice<u8>)>(const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @16 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
     @14 := copy (@16.metadata)
     storage_dead(@16)
     @13 := move (@14) wrap.<< const (1 : i32)
     storage_dead(@14)
     @12 := move (@13) | const (1 : usize)
     storage_dead(@13)
-    @11 := transmute<usize, NonNull<Argument<'_>>>(move (@12))
+    @11 := transmute<usize, NonNull<Argument<'2>>>(move (@12))
     storage_dead(@12)
     @8 := Arguments { 0: move (@9), 1: move (@11) }
     storage_dead(@11)
@@ -607,17 +607,17 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     let len@3: usize; // arg #3
     let @4: bool; // anonymous local
     let @5: bool; // anonymous local
-    let msg@6: &'_ (Str); // local
+    let msg@6: &'0 (Str); // local
     let @7: !; // anonymous local
-    let @8: Arguments<'_>; // anonymous local
+    let @8: Arguments<'1>; // anonymous local
     let @9: NonNull<u8>; // anonymous local
     let @10: *const u8; // anonymous local
-    let @11: NonNull<Argument<'_>>; // anonymous local
+    let @11: NonNull<Argument<'2>>; // anonymous local
     let @12: usize; // anonymous local
     let @13: usize; // anonymous local
     let @14: usize; // anonymous local
     let @15: *const Str; // anonymous local
-    let @16: &'_ (Slice<u8>); // anonymous local
+    let @16: &'3 (Slice<u8>); // anonymous local
 
     storage_live(msg@6)
     storage_live(@7)
@@ -650,14 +650,14 @@ fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usize}]}
     storage_live(@13)
     storage_live(@14)
     storage_live(@16)
-    @16 := transmute<&'_ (Str), &'_ (Slice<u8>)>(const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @16 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
     @14 := copy (@16.metadata)
     storage_dead(@16)
     @13 := move (@14) wrap.<< const (1 : i32)
     storage_dead(@14)
     @12 := move (@13) | const (1 : usize)
     storage_dead(@13)
-    @11 := transmute<usize, NonNull<Argument<'_>>>(move (@12))
+    @11 := transmute<usize, NonNull<Argument<'2>>>(move (@12))
     storage_dead(@12)
     @8 := Arguments { 0: move (@9), 1: move (@11) }
     storage_dead(@11)
@@ -723,9 +723,9 @@ pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usiz
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'_ (Slice<T>); // return
+    let @0: &'0 (Slice<T>); // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice@2: &'_ (Slice<T>); // arg #2
+    let slice@2: &'0 (Slice<T>); // arg #2
     let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let self@4: usize; // local
     let rhs@5: usize; // local
@@ -796,9 +796,9 @@ pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usiz
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'_ mut (Slice<T>); // return
+    let @0: &'0 mut (Slice<T>); // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice@2: &'_ mut (Slice<T>); // arg #2
+    let slice@2: &'0 mut (Slice<T>); // arg #2
     let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let self@4: usize; // local
     let rhs@5: usize; // local
@@ -898,9 +898,9 @@ fn main()
 {
     let @0: (); // return
     let array@1: Array<i32, 6 : usize>; // local
-    let slice@2: &'_ (Slice<i32>); // local
-    let @3: &'_ (Slice<i32>); // anonymous local
-    let @4: &'_ (Array<i32, 6 : usize>); // anonymous local
+    let slice@2: &'0 (Slice<i32>); // local
+    let @3: &'0 (Slice<i32>); // anonymous local
+    let @4: &'1 (Array<i32, 6 : usize>); // anonymous local
     let @5: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @6: bool; // anonymous local
     let @7: i32; // anonymous local

@@ -22,11 +22,11 @@ const UNIT_METADATA: () = @Fun0()
 fn main()
 {
     let @0: (); // return
-    let @1: Arguments<'_>; // anonymous local
+    let @1: Arguments<'0>; // anonymous local
 
     @0 := ()
     storage_live(@1)
-    @1 := from_str<'_>(const ("O no"))
+    @1 := from_str<'1>(const ("O no"))
     panic(core::panicking::panic_fmt)
 }
 

@@ -99,13 +99,13 @@ const UNIT_METADATA: () = @Fun0()
 fn takes_fn<'_0>(@1: &'_0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '_0)))
 {
     let @0: (); // return
-    let f@1: &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)); // arg #1
+    let f@1: &'0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '1)); // arg #1
     let counter@2: u32; // local
     let @3: bool; // anonymous local
-    let @4: &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)); // anonymous local
-    let @5: (&'_ mut (u32)); // anonymous local
-    let @6: &'_ mut (u32); // anonymous local
-    let @7: &'_ mut (u32); // anonymous local
+    let @4: &'0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '1)); // anonymous local
+    let @5: (&'4 mut (u32)); // anonymous local
+    let @6: &'4 mut (u32); // anonymous local
+    let @7: &'4 mut (u32); // anonymous local
 
     @0 := ()
     storage_live(counter@2)
@@ -119,7 +119,7 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::pare
     @7 := &mut counter@2
     @6 := &two-phase-mut *(@7)
     @5 := (move (@6))
-    @3 := Fn<(dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>), (&'_ mut (u32))>::call<'_>(move (@4), move (@5))
+    @3 := Fn<(dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '5), (&'8 mut (u32))>::call<'_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@7)
         storage_dead(@6)
@@ -145,7 +145,7 @@ struct closure {}
 fn {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '_1>(@1: &'_1 (closure), @2: (&'_0 mut (u32))) -> bool
 {
     let @0: bool; // return
-    let @1: &'_ (closure); // arg #1
+    let @1: &'0 (closure); // arg #1
     let tupled_args@2: (&'_0 mut (u32)); // arg #2
     let counter@3: &'_ mut (u32); // local
     let @4: u32; // anonymous local
@@ -165,11 +165,11 @@ fn {impl FnMut<(&'_ mut (u32))> for closure}::call_mut<'_0, '_1>(@1: &'_1 mut (c
     let @0: bool; // return
     let state@1: &'_1 mut (closure); // arg #1
     let args@2: (&'_0 mut (u32)); // arg #2
-    let @3: &'_ (closure); // anonymous local
+    let @3: &'0 (closure); // anonymous local
 
     storage_live(@3)
     @3 := &*(state@1)
-    @0 := {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '_>(move (@3), move (args@2))
+    @0 := {impl Fn<(&'_ mut (u32))> for closure}::call<'_0, '2>(move (@3), move (args@2))
     return
 }
 
@@ -189,7 +189,7 @@ fn {impl FnOnce<(&'_ mut (u32))> for closure}::call_once<'_0>(@1: closure, @2: (
     let @0: bool; // return
     let @1: closure; // arg #1
     let @2: (&'_ mut (u32)); // arg #2
-    let @3: &'_ mut (closure); // anonymous local
+    let @3: &'0 mut (closure); // anonymous local
 
     storage_live(@3)
     @3 := &mut @1
@@ -233,10 +233,10 @@ impl<'_0> Fn<(&'_ mut (u32))> for closure {
 fn gives_fn()
 {
     let @0: (); // return
-    let @1: &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)); // anonymous local
-    let @2: &'_ (closure); // anonymous local
-    let @3: &'_ (closure); // anonymous local
-    let @4: &'_ (closure); // anonymous local
+    let @1: &'0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '1)); // anonymous local
+    let @2: &'4 (closure); // anonymous local
+    let @3: &'4 (closure); // anonymous local
+    let @4: &'4 (closure); // anonymous local
     let @5: &'_ (closure); // anonymous local
     let @6: closure; // anonymous local
 
@@ -252,7 +252,7 @@ fn gives_fn()
     @4 := move (@5)
     @3 := &*(@4)
     @2 := &*(@3)
-    @1 := unsize_cast<&'_ (closure), &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)), {impl Fn<(&'_ mut (u32))> for closure}<'_> with ?>(move (@2))
+    @1 := unsize_cast<&'4 (closure), &'0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '1)), {impl Fn<(&'_ mut (u32))> for closure}<'_> with ?>(move (@2))
     storage_dead(@2)
     @0 := takes_fn<'_>(move (@1))
     storage_dead(@1)

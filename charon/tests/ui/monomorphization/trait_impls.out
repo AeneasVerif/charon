@@ -49,7 +49,7 @@ pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 (bool))
 pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
 {
     let @0: (); // return
-    let self@1: &'_ (bool); // arg #1
+    let self@1: &'0 (bool); // arg #1
 
     @0 := ()
     @0 := ()
@@ -68,7 +68,7 @@ fn do_test::<bool>(@1: bool)
 {
     let @0: (); // return
     let x@1: bool; // arg #1
-    let @2: &'_ (bool); // anonymous local
+    let @2: &'0 (bool); // anonymous local
 
     @0 := ()
     storage_live(@2)

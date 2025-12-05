@@ -197,12 +197,12 @@ where
 fn destruct<'_0>(@1: &'_0 ((dyn Display + '_0))) -> String
 {
     let @0: String; // return
-    let x@1: &'_ ((dyn Display)); // arg #1
-    let @2: &'_ ((dyn Display)); // anonymous local
+    let x@1: &'0 ((dyn Display + '1)); // arg #1
+    let @2: &'0 ((dyn Display + '1)); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1) with_metadata(copy (x@1.metadata))
-    @0 := {impl ToString for T}::to_string<'_, (dyn Display)>[{built_in impl MetaSized for (dyn Display)}, Display<(dyn Display)>](move (@2))
+    @0 := {impl ToString for T}::to_string<'_, (dyn Display + '1)>[{built_in impl MetaSized for (dyn Display + '2)}, Display<(dyn Display + '3)>](move (@2))
     storage_dead(@2)
     return
 }
@@ -217,8 +217,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let @1: &'_ ((dyn for<'a> Fn<(&'a (T)), parent_clause1::parent_clause1::Output = T>)); // arg #1
-    let @2: &'_ ((dyn PartialEq<Option<T>[@TraitClause0]>)); // arg #2
+    let @1: &'0 ((dyn for<'a> Fn<(&'a (T)), parent_clause1::parent_clause1::Output = T> + '1)); // arg #1
+    let @2: &'4 ((dyn PartialEq<Option<T>[@TraitClause0]> + '5)); // arg #2
 
     @0 := ()
     @0 := ()
@@ -229,7 +229,7 @@ where
 fn bar<'_0>(@1: &'_0 ((dyn for<'_0_2> Fn<(&'_0_2 ((dyn Display + '_0_2))), parent_clause1::parent_clause1::Output = ()> + '_0)))
 {
     let @0: (); // return
-    let @1: &'_ ((dyn for<'_0_2> Fn<(&'_0_2 ((dyn Display + '_0_2))), parent_clause1::parent_clause1::Output = ()>)); // arg #1
+    let @1: &'0 ((dyn for<'_0_2> Fn<(&'_0_2 ((dyn Display + '_0_2))), parent_clause1::parent_clause1::Output = ()> + '1)); // arg #1
 
     @0 := ()
     @0 := ()

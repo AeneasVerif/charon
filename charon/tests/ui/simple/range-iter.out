@@ -439,8 +439,8 @@ fn iter(@1: usize)
     let @4: usize; // anonymous local
     let iter@5: Range<usize>; // local
     let @6: Option<usize>; // anonymous local
-    let @7: &'_ mut (Range<usize>); // anonymous local
-    let @8: &'_ mut (Range<usize>); // anonymous local
+    let @7: &'0 mut (Range<usize>); // anonymous local
+    let @8: &'0 mut (Range<usize>); // anonymous local
     let i@9: usize; // local
 
     @0 := ()
