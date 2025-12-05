@@ -48,14 +48,19 @@ pub struct Locals {
 #[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
+    /// The number of regions existentially bound in this body. We introduce fresh such regions
+    /// during translation instead of the erased regions that rustc gives us.
+    #[drive(skip)]
+    pub bound_body_regions: usize,
     /// The local variables.
     pub locals: Locals,
+    /// The statements and blocks that compose this body.
+    pub body: T,
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[charon::opaque]
     #[drive(skip)]
     pub comments: Vec<(usize, Vec<String>)>,
-    pub body: T,
 }
 
 /// The body of a function.

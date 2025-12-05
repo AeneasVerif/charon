@@ -33,8 +33,8 @@ const UNIT_METADATA: () = @Fun0()
 fn foo<'_0>(@1: &'_0 (u32)) -> Option::<&'_ (u32)>
 {
     let @0: Option::<&'_ (u32)>; // return
-    let x@1: &'_ (u32); // arg #1
-    let @2: &'_ (u32); // anonymous local
+    let x@1: &'0 (u32); // arg #1
+    let @2: &'0 (u32); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
@@ -48,9 +48,9 @@ fn main()
 {
     let @0: (); // return
     let @1: Option::<&'_ (u32)>; // anonymous local
-    let @2: &'_ (u32); // anonymous local
-    let @3: &'_ (u32); // anonymous local
-    let @4: &'_ (u32); // anonymous local
+    let @2: &'0 (u32); // anonymous local
+    let @3: &'0 (u32); // anonymous local
+    let @4: &'0 (u32); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: u32; // anonymous local
 

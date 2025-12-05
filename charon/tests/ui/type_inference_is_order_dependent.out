@@ -162,19 +162,19 @@ where
 {
     let @0: (); // return
     let @1: (); // anonymous local
-    let @2: Arguments<'_>; // anonymous local
-    let args@3: (&'_ (U)); // local
-    let @4: &'_ (U); // anonymous local
+    let @2: Arguments<'0>; // anonymous local
+    let args@3: (&'1 (U)); // local
+    let @4: &'1 (U); // anonymous local
     let @5: U; // anonymous local
-    let args@6: Array<Argument<'_>, 1 : usize>; // local
-    let @7: Argument<'_>; // anonymous local
-    let @8: &'_ (U); // anonymous local
-    let @9: &'_ (Array<u8, 4 : usize>); // anonymous local
-    let @10: &'_ (Array<u8, 4 : usize>); // anonymous local
-    let @11: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
-    let @12: &'_ (Array<Argument<'_>, 1 : usize>); // anonymous local
+    let args@6: Array<Argument<'2>, 1 : usize>; // local
+    let @7: Argument<'2>; // anonymous local
+    let @8: &'1 (U); // anonymous local
+    let @9: &'3 (Array<u8, 4 : usize>); // anonymous local
+    let @10: &'3 (Array<u8, 4 : usize>); // anonymous local
+    let @11: &'4 (Array<Argument<'2>, 1 : usize>); // anonymous local
+    let @12: &'4 (Array<Argument<'2>, 1 : usize>); // anonymous local
     let @13: Array<u8, 4 : usize>; // anonymous local
-    let @14: &'_ (Array<u8, 4 : usize>); // anonymous local
+    let @14: &'3 (Array<u8, 4 : usize>); // anonymous local
 
     @0 := ()
     storage_live(@1)
@@ -190,7 +190,7 @@ where
     storage_live(@7)
     storage_live(@8)
     @8 := &*((args@3).0)
-    @7 := new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@8))
+    @7 := new_debug<'5, '_, U>[@TraitClause1, @TraitClause5](move (@8))
     storage_dead(@8)
     args@6 := [move (@7)]
     storage_dead(@7)
@@ -206,7 +206,7 @@ where
     storage_live(@12)
     @12 := &args@6
     @11 := &*(@12)
-    @2 := new<'_, 4 : usize, 1 : usize>(move (@9), move (@11))
+    @2 := new<'6, 4 : usize, 1 : usize>(move (@9), move (@11))
     storage_dead(@12)
     storage_dead(@11)
     storage_dead(@10)

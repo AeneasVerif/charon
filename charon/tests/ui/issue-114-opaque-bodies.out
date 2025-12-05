@@ -76,8 +76,8 @@ where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 {
     let @0: bool; // return
-    let self@1: &'_ (Self); // arg #1
-    let other@2: &'_ (Rhs); // arg #2
+    let self@1: &'0 (Self); // arg #1
+    let other@2: &'1 (Rhs); // arg #2
     let @3: bool; // anonymous local
 
     storage_live(@3)

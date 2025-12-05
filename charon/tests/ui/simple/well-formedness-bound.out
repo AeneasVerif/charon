@@ -35,9 +35,9 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::get
 pub fn get<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[{built_in impl Sized for &'_ (u32)}]
 {
-    let @0: Option<&'_ (u32)>[{built_in impl Sized for &'_ (u32)}]; // return
-    let x@1: &'_ (u32); // arg #1
-    let @2: &'_ (u32); // anonymous local
+    let @0: Option<&'0 (u32)>[{built_in impl Sized for &'1 (u32)}]; // return
+    let x@1: &'0 (u32); // arg #1
+    let @2: &'0 (u32); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)

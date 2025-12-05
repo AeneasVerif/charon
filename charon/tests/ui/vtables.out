@@ -231,7 +231,7 @@ where
 fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
 {
     let @0: i32; // return
-    let self@1: &'_ (i32); // arg #1
+    let self@1: &'0 (i32); // arg #1
     let arg@2: i32; // arg #2
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
@@ -253,12 +253,12 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
 fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '_))
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '0); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '1), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -266,12 +266,12 @@ fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@Tr
 fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '_)), @2: i32) -> i32
 {
     let @0: i32; // return
-    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '_)); // arg #1
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '0)); // arg #1
     let @2: i32; // arg #2
     let @3: &'_0 (i32); // anonymous local
 
     storage_live(@3)
-    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Super<_dyn, i32> + _dyn : '1)), &'_0 (i32)>(move (@1))
     @0 := {impl Super<i32> for i32}::super_method<'_0>(move (@3), move (@2))
     return
 }
@@ -287,7 +287,7 @@ fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Super<i32> for i32}::{vtable_drop_shim}), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Super::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Super<i32> for i32}::{vtable_drop_shim}), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -306,9 +306,9 @@ impl Super<i32> for i32 {
 fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 (i32)) -> bool
 {
     let @0: bool; // return
-    let self@1: &'_ (i32); // arg #1
+    let self@1: &'0 (i32); // arg #1
     let @2: i32; // anonymous local
-    let @3: &'_ (i32); // anonymous local
+    let @3: &'0 (i32); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -324,12 +324,12 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 (i32)) -> bool
 fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_))
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '0); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '1), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -337,11 +337,11 @@ fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> 
 fn {impl Checkable<i32> for i32}::check::{vtable_method}<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_))) -> bool
 {
     let @0: bool; // return
-    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_)); // arg #1
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '0)); // arg #1
     let @2: &'_0 (i32); // anonymous local
 
     storage_live(@2)
-    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @2 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '1)), &'_0 (i32)>(move (@1))
     @0 := {impl Checkable<i32> for i32}::check<'_0>(move (@2))
     return
 }
@@ -360,7 +360,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     align@2 := align_of<i32>
     storage_live(@3)
     @3 := &{impl Super<i32> for i32}::{vtable}
-    ret@0 := test_crate::Checkable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Checkable<i32> for i32}::{vtable_drop_shim}), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'_>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@3) }
+    ret@0 := test_crate::Checkable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Checkable<i32> for i32}::{vtable_drop_shim}), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@3) }
     return
 }
 
@@ -401,7 +401,7 @@ where
 fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 (i32))
 {
     let @0: (); // return
-    let self@1: &'_ (i32); // arg #1
+    let self@1: &'0 (i32); // arg #1
     let @2: bool; // anonymous local
     let @3: i32; // anonymous local
 
@@ -434,20 +434,20 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: NoParam<T>,
 {
-    let @0: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // return
-    let arg@1: &'_ (T); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
-    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
-    let @4: &'_ (T); // anonymous local
+    let @0: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '1)); // return
+    let arg@1: &'2 (T); // arg #1
+    let @2: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '1)); // anonymous local
+    let @3: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '1)); // anonymous local
+    let @4: &'2 (T); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(arg@1)
-    @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
+    @3 := unsize_cast<&'2 (T), &'0 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '1)), @TraitClause1>(move (@4))
     storage_dead(@4)
     @2 := &*(@3) with_metadata(copy (@3.metadata))
-    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_))>(move (@2))
+    @0 := unsize_cast<&'0 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '1)), &'0 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '1))>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -482,10 +482,10 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
-    let self@1: &'_ mut (i32); // arg #1
-    let arg@2: &'_ (T); // arg #2
+    let self@1: &'0 mut (i32); // arg #1
+    let arg@2: &'1 (T); // arg #2
     let @3: i32; // anonymous local
-    let @4: &'_ (T); // anonymous local
+    let @4: &'1 (T); // anonymous local
 
     storage_live(@3)
     @3 := copy (*(self@1)) panic.+ const (1 : i32)
@@ -504,12 +504,12 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '0); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '1), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -520,12 +520,12 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
-    let @1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)); // arg #1
+    let @1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '0)); // arg #1
     let @2: &'_1 (T); // arg #2
     let @3: &'_0 mut (i32); // anonymous local
 
     storage_live(@3)
-    @3 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), &'_0 mut (i32)>(move (@1))
+    @3 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '1)), &'_0 mut (i32)>(move (@1))
     @0 := {impl Modifiable<T> for i32}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
     return
 }
@@ -544,7 +544,7 @@ where
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Modifiable<T> for i32}::{vtable_drop_shim}<T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Modifiable<T> for i32}::{vtable_drop_shim}<T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -574,13 +574,13 @@ where
     [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
-    let arg@1: &'_ (T); // arg #1
-    let x@2: &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)); // local
-    let @3: &'_ mut (i32); // anonymous local
-    let @4: &'_ mut (i32); // anonymous local
+    let arg@1: &'0 (T); // arg #1
+    let x@2: &'1 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '2)); // local
+    let @3: &'3 mut (i32); // anonymous local
+    let @4: &'3 mut (i32); // anonymous local
     let @5: i32; // anonymous local
-    let @6: &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)); // anonymous local
-    let @7: &'_ (T); // anonymous local
+    let @6: &'1 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '2)); // anonymous local
+    let @7: &'0 (T); // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
@@ -589,7 +589,7 @@ where
     @5 := const (199 : i32)
     @4 := &mut @5
     @3 := &mut *(@4)
-    x@2 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1]>(move (@3))
+    x@2 := unsize_cast<&'3 mut (i32), &'1 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '2)), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1]>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
     storage_live(@6)
@@ -651,15 +651,15 @@ where
     [@TraitClause0]: Both32And64<Self>,
 {
     let @0: (); // return
-    let self@1: &'_ (Self); // arg #1
-    let t32@2: &'_ (i32); // arg #2
-    let t64@3: &'_ (i64); // arg #3
+    let self@1: &'0 (Self); // arg #1
+    let t32@2: &'1 (i32); // arg #2
+    let t64@3: &'2 (i64); // arg #3
     let @4: (); // anonymous local
-    let @5: &'_ (Self); // anonymous local
-    let @6: &'_ (i32); // anonymous local
+    let @5: &'0 (Self); // anonymous local
+    let @6: &'1 (i32); // anonymous local
     let @7: (); // anonymous local
-    let @8: &'_ (Self); // anonymous local
-    let @9: &'_ (i64); // anonymous local
+    let @8: &'0 (Self); // anonymous local
+    let @9: &'2 (i64); // anonymous local
 
     @0 := ()
     storage_live(@4)
@@ -688,8 +688,8 @@ where
 fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32))
 {
     let @0: (); // return
-    let self@1: &'_ (i32); // arg #1
-    let t@2: &'_ (i32); // arg #2
+    let self@1: &'0 (i32); // arg #1
+    let t@2: &'0 (i32); // arg #2
     let @3: bool; // anonymous local
     let @4: i32; // anonymous local
     let @5: i32; // anonymous local
@@ -718,12 +718,12 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i3
 fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '_))
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '0); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '1), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -731,13 +731,13 @@ fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@T
 fn {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_0, '_1>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '_)), @2: &'_1 (i32))
 {
     let @0: (); // return
-    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '_)); // arg #1
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '0)); // arg #1
     let @2: &'_1 (i32); // arg #2
     let @3: &'_0 (i32); // anonymous local
 
     @0 := ()
     storage_live(@3)
-    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i32> + _dyn : '1)), &'_0 (i32)>(move (@1))
     @0 := {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(move (@3), move (@2))
     return
 }
@@ -753,7 +753,7 @@ fn {impl BaseOn<i32> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl BaseOn<i32> for i32}::{vtable_drop_shim}), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl BaseOn<i32> for i32}::{vtable_drop_shim}), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'1, '2>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -772,8 +772,8 @@ impl BaseOn<i32> for i32 {
 fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i64))
 {
     let @0: (); // return
-    let self@1: &'_ (i32); // arg #1
-    let t@2: &'_ (i64); // arg #2
+    let self@1: &'0 (i32); // arg #1
+    let t@2: &'1 (i64); // arg #2
     let @3: bool; // anonymous local
     let @4: i64; // anonymous local
     let @5: i32; // anonymous local
@@ -806,12 +806,12 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i6
 fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '_))
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '0); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '1), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -819,13 +819,13 @@ fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@T
 fn {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_0, '_1>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '_)), @2: &'_1 (i64))
 {
     let @0: (); // return
-    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '_)); // arg #1
+    let @1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '0)); // arg #1
     let @2: &'_1 (i64); // arg #2
     let @3: &'_0 (i32); // anonymous local
 
     @0 := ()
     storage_live(@3)
-    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '_)), &'_0 (i32)>(move (@1))
+    @3 := concretize<&'_0 ((dyn exists<_dyn> [@TraitClause0_1]: BaseOn<_dyn, i64> + _dyn : '1)), &'_0 (i32)>(move (@1))
     @0 := {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(move (@3), move (@2))
     return
 }
@@ -841,7 +841,7 @@ fn {impl BaseOn<i64> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl BaseOn<i64> for i32}::{vtable_drop_shim}), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::BaseOn::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl BaseOn<i64> for i32}::{vtable_drop_shim}), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'1, '2>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -860,15 +860,15 @@ impl BaseOn<i64> for i32 {
 fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 (i32), @3: &'_2 (i64))
 {
     let @0: (); // return
-    let self@1: &'_ (i32); // arg #1
-    let t32@2: &'_ (i32); // arg #2
-    let t64@3: &'_ (i64); // arg #3
+    let self@1: &'0 (i32); // arg #1
+    let t32@2: &'1 (i32); // arg #2
+    let t64@3: &'2 (i64); // arg #3
     let @4: (); // anonymous local
-    let @5: &'_ (i32); // anonymous local
-    let @6: &'_ (i32); // anonymous local
+    let @5: &'0 (i32); // anonymous local
+    let @6: &'1 (i32); // anonymous local
     let @7: (); // anonymous local
-    let @8: &'_ (i32); // anonymous local
-    let @9: &'_ (i64); // anonymous local
+    let @8: &'0 (i32); // anonymous local
+    let @9: &'2 (i64); // anonymous local
 
     @0 := ()
     storage_live(@4)
@@ -897,12 +897,12 @@ fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &
 fn {impl Both32And64 for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_))
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '0); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '1), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -973,9 +973,9 @@ where
 // Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method
 fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'a (i32)) -> &'a (i32)
 {
-    let @0: &'_ (i32); // return
-    let self@1: &'_ (i32); // arg #1
-    let arg@2: &'_ (i32); // arg #2
+    let @0: &'0 (i32); // return
+    let self@1: &'0 (i32); // arg #1
+    let arg@2: &'0 (i32); // arg #2
     let @3: bool; // anonymous local
     let @4: i32; // anonymous local
     let @5: i32; // anonymous local
@@ -1003,12 +1003,12 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'
 fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32))
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '0 + @TraitClause0_1::Ty = i32); // arg #1
     let target_self@2: *mut i32; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32), *mut i32>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '1 + @TraitClause0_1::Ty = i32), *mut i32>(move (dyn_self@1))
     return
 }
 
@@ -1016,12 +1016,12 @@ fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn exists<_dyn> [
 fn {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'a, '_1>(@1: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)), @2: &'a (i32)) -> &'a (i32)
 {
     let @0: &'a (i32); // return
-    let @1: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)); // arg #1
+    let @1: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '0 + @TraitClause0_1::Ty = i32)); // arg #1
     let @2: &'a (i32); // arg #2
     let @3: &'_1 (i32); // anonymous local
 
     storage_live(@3)
-    @3 := concretize<&'_1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)), &'_1 (i32)>(move (@1))
+    @3 := concretize<&'_1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '1 + @TraitClause0_1::Ty = i32)), &'_1 (i32)>(move (@1))
     @0 := {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(move (@3), move (@2))
     return
 }
@@ -1037,7 +1037,7 @@ fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtabl
     size@1 := size_of<i32>
     storage_live(align@2)
     align@2 := align_of<i32>
-    ret@0 := test_crate::LifetimeTrait::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl LifetimeTrait for i32}::{vtable_drop_shim}), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'_, '_>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::LifetimeTrait::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl LifetimeTrait for i32}::{vtable_drop_shim}), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'1, '2>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -1056,12 +1056,12 @@ impl LifetimeTrait for i32 {
 // Full name: test_crate::use_lifetime_trait
 fn use_lifetime_trait<'a, '_1>(@1: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_1 + @TraitClause0_1::Ty = i32)), @2: &'a (i32)) -> &'a (i32)
 {
-    let @0: &'_ (i32); // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)); // arg #1
-    let y@2: &'_ (i32); // arg #2
-    let @3: &'_ (i32); // anonymous local
-    let @4: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)); // anonymous local
-    let @5: &'_ (i32); // anonymous local
+    let @0: &'0 (i32); // return
+    let x@1: &'1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '2 + @TraitClause0_1::Ty = i32)); // arg #1
+    let y@2: &'0 (i32); // arg #2
+    let @3: &'0 (i32); // anonymous local
+    let @4: &'1 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '2 + @TraitClause0_1::Ty = i32)); // anonymous local
+    let @5: &'0 (i32); // anonymous local
 
     storage_live(@3)
     storage_live(@4)
@@ -1080,15 +1080,15 @@ fn use_lifetime_trait<'a, '_1>(@1: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: Li
 fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_0)))
 {
     let @0: (); // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_)); // arg #1
+    let x@1: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '1)); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_)); // anonymous local
-    let @4: &'_ (i32); // anonymous local
-    let @5: &'_ (i32); // anonymous local
-    let @6: &'_ (i64); // anonymous local
-    let @7: &'_ (i64); // anonymous local
-    let @8: &'_ (i64); // anonymous local
-    let @9: &'_ (i32); // anonymous local
+    let @3: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '1)); // anonymous local
+    let @4: &'2 (i32); // anonymous local
+    let @5: &'2 (i32); // anonymous local
+    let @6: &'3 (i64); // anonymous local
+    let @7: &'3 (i64); // anonymous local
+    let @8: &'3 (i64); // anonymous local
+    let @9: &'2 (i32); // anonymous local
     let @10: &'_ (i32); // anonymous local
     let @11: i32; // anonymous local
     let @12: &'_ (i64); // anonymous local
@@ -1133,91 +1133,91 @@ fn use_alias<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dy
 fn main()
 {
     let @0: (); // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_)); // local
-    let @2: &'_ (i32); // anonymous local
-    let @3: &'_ (i32); // anonymous local
+    let x@1: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '1)); // local
+    let @2: &'2 (i32); // anonymous local
+    let @3: &'2 (i32); // anonymous local
     let @4: bool; // anonymous local
-    let @5: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_)); // anonymous local
-    let y@6: &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '_)); // local
-    let @7: &'_ mut (i32); // anonymous local
-    let @8: &'_ mut (i32); // anonymous local
+    let @5: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '1)); // anonymous local
+    let y@6: &'3 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '4)); // local
+    let @7: &'5 mut (i32); // anonymous local
+    let @8: &'5 mut (i32); // anonymous local
     let @9: i32; // anonymous local
     let @10: bool; // anonymous local
-    let @11: &'_ (String); // anonymous local
+    let @11: &'6 (String); // anonymous local
     let @12: String; // anonymous local
-    let @13: &'_ (String); // anonymous local
-    let @14: &'_ (String); // anonymous local
+    let @13: &'6 (String); // anonymous local
+    let @14: &'6 (String); // anonymous local
     let @15: String; // anonymous local
-    let @16: &'_ (Str); // anonymous local
-    let @17: &'_ (Str); // anonymous local
-    let @18: (&'_ (i32), &'_ (i32)); // anonymous local
-    let @19: &'_ (i32); // anonymous local
+    let @16: &'7 (Str); // anonymous local
+    let @17: &'7 (Str); // anonymous local
+    let @18: (&'2 (i32), &'2 (i32)); // anonymous local
+    let @19: &'2 (i32); // anonymous local
     let @20: i32; // anonymous local
-    let @21: &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '_)); // anonymous local
-    let @22: &'_ (i32); // anonymous local
-    let @23: &'_ mut (i32); // anonymous local
+    let @21: &'3 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '4)); // anonymous local
+    let @22: &'2 (i32); // anonymous local
+    let @23: &'5 mut (i32); // anonymous local
     let @24: i32; // anonymous local
-    let @25: &'_ (i32); // anonymous local
-    let left_val@26: &'_ (i32); // local
-    let right_val@27: &'_ (i32); // local
+    let @25: &'2 (i32); // anonymous local
+    let left_val@26: &'2 (i32); // local
+    let right_val@27: &'2 (i32); // local
     let @28: bool; // anonymous local
     let @29: i32; // anonymous local
     let @30: i32; // anonymous local
     let kind@31: AssertKind; // local
     let @32: AssertKind; // anonymous local
-    let @33: &'_ (i32); // anonymous local
-    let @34: &'_ (i32); // anonymous local
-    let @35: &'_ (i32); // anonymous local
-    let @36: &'_ (i32); // anonymous local
-    let @37: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
-    let z@38: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // local
-    let @39: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
-    let @40: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
-    let @41: &'_ (i32); // anonymous local
-    let @42: &'_ (i32); // anonymous local
+    let @33: &'2 (i32); // anonymous local
+    let @34: &'2 (i32); // anonymous local
+    let @35: &'2 (i32); // anonymous local
+    let @36: &'2 (i32); // anonymous local
+    let @37: Option<Arguments<'8>>[{built_in impl Sized for Arguments<'9>}]; // anonymous local
+    let z@38: &'11 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '12)); // local
+    let @39: &'11 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '12)); // anonymous local
+    let @40: &'11 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '12)); // anonymous local
+    let @41: &'2 (i32); // anonymous local
+    let @42: &'2 (i32); // anonymous local
     let @43: (); // anonymous local
-    let @44: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)); // anonymous local
-    let a@45: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_)); // local
-    let @46: &'_ (i32); // anonymous local
-    let @47: &'_ (i32); // anonymous local
+    let @44: &'11 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '12)); // anonymous local
+    let a@45: &'13 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '14)); // local
+    let @46: &'2 (i32); // anonymous local
+    let @47: &'2 (i32); // anonymous local
     let @48: (); // anonymous local
-    let @49: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_)); // anonymous local
-    let @50: &'_ (i32); // anonymous local
-    let @51: &'_ (i32); // anonymous local
-    let @52: &'_ (i64); // anonymous local
-    let @53: &'_ (i64); // anonymous local
-    let b@54: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)); // local
-    let @55: &'_ (i32); // anonymous local
-    let @56: &'_ (i32); // anonymous local
-    let @57: (&'_ (i32), &'_ (i32)); // anonymous local
-    let @58: &'_ (i32); // anonymous local
-    let @59: &'_ (i32); // anonymous local
-    let @60: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)); // anonymous local
-    let @61: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)); // anonymous local
-    let @62: &'_ (i32); // anonymous local
-    let @63: &'_ (i32); // anonymous local
-    let @64: &'_ (i32); // anonymous local
-    let left_val@65: &'_ (i32); // local
-    let right_val@66: &'_ (i32); // local
+    let @49: &'13 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '14)); // anonymous local
+    let @50: &'2 (i32); // anonymous local
+    let @51: &'2 (i32); // anonymous local
+    let @52: &'15 (i64); // anonymous local
+    let @53: &'15 (i64); // anonymous local
+    let b@54: &'16 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '17 + @TraitClause0_1::Ty = i32)); // local
+    let @55: &'2 (i32); // anonymous local
+    let @56: &'2 (i32); // anonymous local
+    let @57: (&'2 (i32), &'2 (i32)); // anonymous local
+    let @58: &'2 (i32); // anonymous local
+    let @59: &'2 (i32); // anonymous local
+    let @60: &'16 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '17 + @TraitClause0_1::Ty = i32)); // anonymous local
+    let @61: &'16 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '17 + @TraitClause0_1::Ty = i32)); // anonymous local
+    let @62: &'2 (i32); // anonymous local
+    let @63: &'2 (i32); // anonymous local
+    let @64: &'2 (i32); // anonymous local
+    let left_val@65: &'2 (i32); // local
+    let right_val@66: &'2 (i32); // local
     let @67: bool; // anonymous local
     let @68: i32; // anonymous local
     let @69: i32; // anonymous local
     let kind@70: AssertKind; // local
     let @71: AssertKind; // anonymous local
-    let @72: &'_ (i32); // anonymous local
-    let @73: &'_ (i32); // anonymous local
-    let @74: &'_ (i32); // anonymous local
-    let @75: &'_ (i32); // anonymous local
-    let @76: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
-    let @77: &'_ (i32); // anonymous local
-    let @78: &'_ (i32); // anonymous local
-    let @79: &'_ (i32); // anonymous local
-    let @80: &'_ (i64); // anonymous local
-    let @81: &'_ (i32); // anonymous local
-    let @82: &'_ (i32); // anonymous local
-    let @83: &'_ (i32); // anonymous local
-    let @84: &'_ (i32); // anonymous local
-    let @85: &'_ (i32); // anonymous local
+    let @72: &'2 (i32); // anonymous local
+    let @73: &'2 (i32); // anonymous local
+    let @74: &'2 (i32); // anonymous local
+    let @75: &'2 (i32); // anonymous local
+    let @76: Option<Arguments<'8>>[{built_in impl Sized for Arguments<'9>}]; // anonymous local
+    let @77: &'2 (i32); // anonymous local
+    let @78: &'2 (i32); // anonymous local
+    let @79: &'2 (i32); // anonymous local
+    let @80: &'15 (i64); // anonymous local
+    let @81: &'2 (i32); // anonymous local
+    let @82: &'2 (i32); // anonymous local
+    let @83: &'2 (i32); // anonymous local
+    let @84: &'2 (i32); // anonymous local
+    let @85: &'2 (i32); // anonymous local
     let @86: &'_ (i32); // anonymous local
     let @87: i32; // anonymous local
     let @88: &'_ (i32); // anonymous local
@@ -1257,7 +1257,7 @@ fn main()
     @85 := move (@86)
     @3 := &*(@85)
     @2 := &*(@3)
-    x@1 := unsize_cast<&'_ (i32), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '_)), {impl Checkable<i32> for i32}>(move (@2))
+    x@1 := unsize_cast<&'2 (i32), &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Checkable<_dyn, i32> + _dyn : '1)), {impl Checkable<i32> for i32}>(move (@2))
     storage_dead(@2)
     storage_dead(@3)
     storage_live(@4)
@@ -1278,7 +1278,7 @@ fn main()
     @9 := const (99 : i32)
     @8 := &mut @9
     @7 := &mut *(@8)
-    y@6 := unsize_cast<&'_ mut (i32), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '_)), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move (@7))
+    y@6 := unsize_cast<&'5 mut (i32), &'3 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, i32> + _dyn : '4)), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move (@7))
     storage_dead(@7)
     storage_dead(@8)
     storage_live(@10)
@@ -1387,7 +1387,7 @@ fn main()
         @41 := &*(@42)
         @40 := to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move (@41))
         @39 := &*(@40) with_metadata(copy (@40.metadata))
-        z@38 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '_))>(move (@39))
+        z@38 := unsize_cast<&'11 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '12)), &'11 ((dyn exists<_dyn> [@TraitClause0_1]: NoParam<_dyn> + _dyn : '12))>(move (@39))
         storage_dead(@41)
         storage_dead(@39)
         storage_dead(@42)
@@ -1416,7 +1416,7 @@ fn main()
         @82 := move (@92)
         @47 := &*(@82)
         @46 := &*(@47)
-        a@45 := unsize_cast<&'_ (i32), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '_)), {impl Both32And64 for i32}>(move (@46))
+        a@45 := unsize_cast<&'2 (i32), &'13 ((dyn exists<_dyn> [@TraitClause0_1]: Both32And64<_dyn> + _dyn : '14)), {impl Both32And64 for i32}>(move (@46))
         storage_dead(@46)
         storage_dead(@47)
         storage_live(@48)
@@ -1453,7 +1453,7 @@ fn main()
         @79 := move (@98)
         @56 := &*(@79)
         @55 := &*(@56)
-        b@54 := unsize_cast<&'_ (i32), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)), {impl LifetimeTrait for i32}>(move (@55))
+        b@54 := unsize_cast<&'2 (i32), &'16 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '17 + @TraitClause0_1::Ty = i32)), {impl LifetimeTrait for i32}>(move (@55))
         storage_dead(@55)
         storage_dead(@56)
         storage_live(@57)
@@ -1462,7 +1462,7 @@ fn main()
         storage_live(@60)
         storage_live(@61)
         @61 := &*(b@54) with_metadata(copy (b@54.metadata))
-        @60 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '_ + @TraitClause0_1::Ty = i32))>(move (@61))
+        @60 := unsize_cast<&'16 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '17 + @TraitClause0_1::Ty = i32)), &'16 ((dyn exists<_dyn> [@TraitClause0_1]: LifetimeTrait<_dyn> + _dyn : '17 + @TraitClause0_1::Ty = i32))>(move (@61))
         storage_dead(@61)
         storage_live(@62)
         storage_live(@63)

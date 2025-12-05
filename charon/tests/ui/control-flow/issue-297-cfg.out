@@ -463,7 +463,7 @@ const UNIT_METADATA: () = @Fun0()
 fn f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
 {
     let @0: usize; // return
-    let a@1: &'_ (Slice<u8>); // arg #1
+    let a@1: &'0 (Slice<u8>); // arg #1
     let sampled@2: usize; // local
     let @3: bool; // anonymous local
     let @4: u8; // anonymous local
@@ -543,17 +543,17 @@ const FIELD_MODULUS: i16 = FIELD_MODULUS()
 fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
 {
     let @0: usize; // return
-    let a@1: &'_ (Slice<u8>); // arg #1
-    let result@2: &'_ mut (Slice<i16>); // arg #2
+    let a@1: &'0 (Slice<u8>); // arg #1
+    let result@2: &'1 mut (Slice<i16>); // arg #2
     let sampled@3: usize; // local
-    let @4: Chunks<'_, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @5: Chunks<'_, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @6: &'_ (Slice<u8>); // anonymous local
-    let iter@7: Chunks<'_, u8>[{built_in impl Sized for u8}]; // local
-    let @8: Option<&'_ (Slice<u8>)>[{built_in impl Sized for &'_ (Slice<u8>)}]; // anonymous local
-    let @9: &'_ mut (Chunks<'_, u8>[{built_in impl Sized for u8}]); // anonymous local
-    let @10: &'_ mut (Chunks<'_, u8>[{built_in impl Sized for u8}]); // anonymous local
-    let bytes@11: &'_ (Slice<u8>); // local
+    let @4: Chunks<'2, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let @5: Chunks<'2, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let @6: &'0 (Slice<u8>); // anonymous local
+    let iter@7: Chunks<'2, u8>[{built_in impl Sized for u8}]; // local
+    let @8: Option<&'0 (Slice<u8>)>[{built_in impl Sized for &'3 (Slice<u8>)}]; // anonymous local
+    let @9: &'5 mut (Chunks<'2, u8>[{built_in impl Sized for u8}]); // anonymous local
+    let @10: &'5 mut (Chunks<'2, u8>[{built_in impl Sized for u8}]); // anonymous local
+    let bytes@11: &'0 (Slice<u8>); // local
     let b1@12: i16; // local
     let @13: u8; // anonymous local
     let @14: usize; // anonymous local
@@ -608,7 +608,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
     @6 := &*(a@1) with_metadata(copy (a@1.metadata))
     @5 := chunks<'_, u8>[{built_in impl Sized for u8}](move (@6), const (3 : usize))
     storage_dead(@6)
-    @4 := {impl IntoIterator for I}::into_iter<Chunks<'_, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'_, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'_, u8>[{built_in impl Sized for u8}]](move (@5))
+    @4 := {impl IntoIterator for I}::into_iter<Chunks<'2, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'6, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'9, u8>[{built_in impl Sized for u8}]](move (@5))
     storage_dead(@5)
     storage_live(iter@7)
     iter@7 := move (@4)
@@ -618,7 +618,7 @@ fn f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> usize
         storage_live(@10)
         @10 := &mut iter@7
         @9 := &two-phase-mut *(@10)
-        @8 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'_, '_, u8>[{built_in impl Sized for u8}](move (@9))
+        @8 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'10, '_, u8>[{built_in impl Sized for u8}](move (@9))
         storage_dead(@9)
         match @8 {
             Option::None => {

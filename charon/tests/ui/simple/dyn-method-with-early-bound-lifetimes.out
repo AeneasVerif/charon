@@ -41,7 +41,7 @@ where
 fn test_crate::foo<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_0)))
 {
     let @0: (); // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_)); // arg #1
+    let x@1: &'0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '1)); // arg #1
 
     @0 := ()
     @0 := ()

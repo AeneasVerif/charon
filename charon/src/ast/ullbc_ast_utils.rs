@@ -239,8 +239,9 @@ impl BodyBuilder {
         let mut body: ExprBody = GExprBody {
             span,
             locals: Locals::new(arg_count),
-            comments: vec![],
+            bound_body_regions: 0,
             body: Vector::new(),
+            comments: vec![],
         };
         let current_block = body.body.push(BlockData {
             statements: Default::default(),
@@ -255,7 +256,16 @@ impl BodyBuilder {
     }
 
     /// Finalize the builder by returning the built body.
-    pub fn build(self) -> ExprBody {
+    pub fn build(mut self) -> ExprBody {
+        // Replace erased regions with fresh ones.
+        let mut freshener: Vector<RegionId, ()> = Vector::new();
+        self.body.dyn_visit_mut(|r: &mut Region| {
+            if r.is_erased() {
+                *r = Region::Body(freshener.push(()));
+            }
+        });
+        self.body.bound_body_regions = freshener.slot_count();
+        // Return the built body.
         self.body
     }
 

@@ -87,7 +87,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (Foo<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 mut (Foo<T>[@TraitClause0]); // arg #1
 
     @0 := ()
     @0 := ()

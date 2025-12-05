@@ -207,17 +207,17 @@ const UNIT_METADATA: () = @Fun0()
 fn trait_error<'_0>(@1: &'_0 (Slice<u8>))
 {
     let @0: (); // return
-    let s@1: &'_ (Slice<u8>); // arg #1
+    let s@1: &'0 (Slice<u8>); // arg #1
     let _array@2: Array<u8, 4 : usize>; // local
     let @3: Result<Array<u8, 4 : usize>, TryFromSliceError>[{built_in impl Sized for Array<u8, 4 : usize>}, {built_in impl Sized for TryFromSliceError}]; // anonymous local
-    let @4: &'_ (Slice<u8>); // anonymous local
+    let @4: &'0 (Slice<u8>); // anonymous local
 
     @0 := ()
     storage_live(_array@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(s@1) with_metadata(copy (s@1.metadata))
-    @3 := {impl TryInto<U> for T}::try_into<&'_ (Slice<u8>), Array<u8, 4 : usize>>[{built_in impl Sized for &'_ (Slice<u8>)}, {built_in impl Sized for Array<u8, 4 : usize>}, {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}<'_, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move (@4))
+    @3 := {impl TryInto<U> for T}::try_into<&'0 (Slice<u8>), Array<u8, 4 : usize>>[{built_in impl Sized for &'1 (Slice<u8>)}, {built_in impl Sized for Array<u8, 4 : usize>}, {impl TryFrom<&'_0 (Slice<T>)> for Array<T, N>}<'4, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move (@4))
     storage_dead(@4)
     _array@2 := unwrap<Array<u8, 4 : usize>, TryFromSliceError>[{built_in impl Sized for Array<u8, 4 : usize>}, {built_in impl Sized for TryFromSliceError}, {impl Debug for TryFromSliceError}](move (@3))
     storage_dead(@3)

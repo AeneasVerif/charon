@@ -41,7 +41,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'_ (T); // arg #1
+    let self@1: &'0 (T); // arg #1
 
     @0 := ()
     @0 := ()

@@ -39,6 +39,8 @@ use indexmap::IndexMap;
     // Defines the `Visit[Mut]` traits and the `drive[_mut]` method that drives them.
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
+    // Types that we ignore.
+    skip(()),
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
@@ -148,7 +150,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal,
+        TraitRef, LiteralTy, Literal, RegionId, ()
     ),
     // Types that we unconditionally explore.
     drive(

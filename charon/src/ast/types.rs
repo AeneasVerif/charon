@@ -30,6 +30,8 @@ pub enum Region {
     Var(RegionDbVar),
     /// Static region
     Static,
+    /// Body-local region, considered existentially-bound at the level of a body.
+    Body(RegionId),
     /// Erased region
     Erased,
 }
@@ -227,7 +229,6 @@ pub type BoxedArgs = Box<GenericArgs>;
 
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
-/// TODO: merge with `binder`
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]

@@ -41,7 +41,7 @@ where
     [@TraitClause0]: BoolTrait<Self>,
 {
     let @0: bool; // return
-    let self@1: &'_ (Self); // arg #1
+    let self@1: &'0 (Self); // arg #1
 
     @0 := const (true)
     return
@@ -51,7 +51,7 @@ where
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
-    let self@1: &'_ (bool); // arg #1
+    let self@1: &'0 (bool); // arg #1
 
     @0 := copy (*(self@1))
     return
@@ -61,7 +61,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
-    let self@1: &'_ (bool); // arg #1
+    let self@1: &'0 (bool); // arg #1
 
     @0 := const (true)
     return
@@ -83,8 +83,8 @@ where
     let @0: bool; // return
     let x@1: bool; // arg #1
     let @2: bool; // anonymous local
-    let @3: &'_ (bool); // anonymous local
-    let @4: &'_ (bool); // anonymous local
+    let @3: &'0 (bool); // anonymous local
+    let @4: &'0 (bool); // anonymous local
 
     storage_live(@2)
     storage_live(@3)

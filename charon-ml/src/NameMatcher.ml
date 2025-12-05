@@ -318,7 +318,7 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   (* When it comes to matching, we treat erased regions like variables. *)
   let is_var =
     match v with
-    | RVar _ | RErased -> true
+    | RVar _ | RBody _ | RErased -> true
     | RStatic -> false
   in
   if c.map_vars_to_vars && not is_var then false
@@ -843,9 +843,8 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
            (fun varid map -> T.RegionId.Map.find_opt varid map.rmap)
            var)
   | RStatic -> RStatic
-  | RErased ->
-      (* We do get there when converting function pointers (when we try to
-         detect specific function calls) to patterns. *)
+  | RBody _ | RErased ->
+      (* These regions cannot be named. *)
       RVar None
 
 let type_var_to_pattern (m : constraints) (var : T.type_db_var) : var option =
