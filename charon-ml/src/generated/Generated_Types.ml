@@ -398,11 +398,13 @@ and region =
   | RVar of region_id de_bruijn_var
       (** Region variable. See [DeBruijnVar] for details. *)
   | RStatic  (** Static region *)
+  | RBody of region_id
+      (** Body-local region, considered existentially-bound at the level of a
+          body. *)
   | RErased  (** Erased region *)
 
 (** A value of type [T] bound by regions. We should use [binder] instead but
-    this causes name clash issues in the derived ocaml visitors. TODO: merge
-    with [binder] *)
+    this causes name clash issues in the derived ocaml visitors. *)
 and 'a0 region_binder = {
   binder_regions : region_param list;
   binder_value : 'a0;

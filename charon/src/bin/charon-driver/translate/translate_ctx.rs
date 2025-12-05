@@ -106,6 +106,8 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// entry in this stack, with the entry as index `0` being the innermost binder. These
     /// parameters are referenced using [`DeBruijnVar`]; see there for details.
     pub binding_levels: BindingStack<BindingLevel>,
+    /// When `Some`, translate any erased lifetime to a fresh `Region::Body` lifetime.
+    pub lifetime_freshener: Option<Vector<RegionId, ()>>,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -212,6 +214,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax_state_with_id,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
+            lifetime_freshener: None,
         }
     }
 

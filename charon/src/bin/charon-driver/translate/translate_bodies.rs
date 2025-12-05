@@ -5,7 +5,6 @@
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use std::mem;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::panic;
@@ -49,6 +48,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
 
 impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
     pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>, drop_kind: DropKind) -> Self {
+        i_ctx.lifetime_freshener = Some(Vector::new());
         BodyTransCtx {
             i_ctx,
             drop_kind,
@@ -146,10 +146,12 @@ impl ItemTransCtx<'_, '_> {
             hax::MirPhase::Built | hax::MirPhase::Analysis(..) => DropKind::Conditional,
             hax::MirPhase::Runtime(..) => DropKind::Precise,
         };
-        let mut ctx = BodyTransCtx::new(self, drop_kind);
-        let mut ctx = panic::AssertUnwindSafe(&mut ctx);
+        let mut ctx = panic::AssertUnwindSafe(&mut *self);
         // Stopgap measure because there are still many panics in charon and hax.
-        let res = panic::catch_unwind(move || ctx.translate_body(body, source_text));
+        let res = panic::catch_unwind(move || {
+            let ctx = BodyTransCtx::new(&mut *ctx, drop_kind);
+            ctx.translate_body(body, source_text)
+        });
         match res {
             Ok(Ok(body)) => body,
             // Translation error
@@ -1227,7 +1229,7 @@ impl BodyTransCtx<'_, '_, '_> {
     }
 
     fn translate_body(
-        &mut self,
+        mut self,
         body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
     ) -> Result<Body, Error> {
@@ -1255,11 +1257,13 @@ impl BodyTransCtx<'_, '_, '_> {
         }
 
         // Create the body
+        let comments = self.translate_body_comments(source_text, span);
         Ok(Body::Unstructured(ExprBody {
             span,
-            locals: mem::take(&mut self.locals),
-            body: mem::take(&mut self.blocks),
-            comments: self.translate_body_comments(source_text, span),
+            locals: self.locals,
+            bound_body_regions: self.i_ctx.lifetime_freshener.take().unwrap().slot_count(),
+            body: self.blocks,
+            comments,
         }))
     }
 }

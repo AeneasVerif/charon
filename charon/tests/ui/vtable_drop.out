@@ -144,10 +144,10 @@ where
     [@TraitClause2]: Destruct<T>,
 {
     let @0: T; // return
-    let self@1: &'_ mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // arg #1
-    let arg@2: &'_ (T); // arg #2
+    let self@1: &'0 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // arg #1
+    let arg@2: &'1 (T); // arg #2
     let @3: (i32, bool); // anonymous local
-    let @4: &'_ (T); // anonymous local
+    let @4: &'1 (T); // anonymous local
     let @5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
     let @6: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
     let @7: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
@@ -186,12 +186,12 @@ where
     [@TraitClause2]: Destruct<T>,
 {
     let ret@0: (); // return
-    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_); // arg #1
+    let dyn_self@1: *mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '0); // arg #1
     let target_self@2: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
 
     ret@0 := ()
     storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_), *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>(move (dyn_self@1))
+    target_self@2 := concretize<*mut (dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '1), *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>(move (dyn_self@1))
     drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] *(target_self@2)
     return
 }
@@ -204,12 +204,12 @@ where
     [@TraitClause2]: Destruct<T>,
 {
     let @0: T; // return
-    let @1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)); // arg #1
+    let @1: &'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '0)); // arg #1
     let @2: &'_1 (T); // arg #2
     let @3: &'_0 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // anonymous local
 
     storage_live(@3)
-    @3 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), &'_0 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}])>(move (@1))
+    @3 := concretize<&'_0 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '1)), &'_0 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}])>(move (@1))
     @0 := {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1, @TraitClause2](move (@3), move (@2))
     return
 }
@@ -229,7 +229,7 @@ where
     size@1 := size_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
     storage_live(align@2)
     align@2 := align_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
-    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({vtable_drop_shim}<T>[@TraitClause0, @TraitClause1, @TraitClause2]), method_modify: const ({vtable_method}<'_, '_, T>[@TraitClause0, @TraitClause1, @TraitClause2]), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Modifiable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({vtable_drop_shim}<T>[@TraitClause0, @TraitClause1, @TraitClause2]), method_modify: const ({vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1, @TraitClause2]), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -264,13 +264,13 @@ where
     [@TraitClause2]: Destruct<T>,
 {
     let @0: T; // return
-    let arg@1: &'_ (T); // arg #1
-    let x@2: &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)); // local
-    let @3: &'_ mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // anonymous local
-    let @4: &'_ mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // anonymous local
+    let arg@1: &'0 (T); // arg #1
+    let x@2: &'1 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '2)); // local
+    let @3: &'3 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // anonymous local
+    let @4: &'3 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]); // anonymous local
     let @5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let @6: &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)); // anonymous local
-    let @7: &'_ (T); // anonymous local
+    let @6: &'1 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '2)); // anonymous local
+    let @7: &'0 (T); // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
@@ -279,7 +279,7 @@ where
     @5 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (199 : i32))
     @4 := &mut @5
     @3 := &mut *(@4)
-    x@2 := unsize_cast<&'_ mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]), &'_ mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '_)), {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}<T>[@TraitClause0, @TraitClause1, @TraitClause2]>(move (@3))
+    x@2 := unsize_cast<&'3 mut (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]), &'1 mut ((dyn exists<_dyn> [@TraitClause0_1]: Modifiable<_dyn, T> + _dyn : '2)), {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}<T>[@TraitClause0, @TraitClause1, @TraitClause2]>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
     storage_live(@6)
@@ -300,9 +300,9 @@ fn main()
 {
     let @0: (); // return
     let @1: i32; // anonymous local
-    let @2: &'_ (i32); // anonymous local
-    let @3: &'_ (i32); // anonymous local
-    let @4: &'_ (i32); // anonymous local
+    let @2: &'0 (i32); // anonymous local
+    let @3: &'0 (i32); // anonymous local
+    let @4: &'0 (i32); // anonymous local
     let @5: &'_ (i32); // anonymous local
     let @6: i32; // anonymous local
 

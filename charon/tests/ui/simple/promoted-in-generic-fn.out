@@ -35,8 +35,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let @1: &'_ (usize); // anonymous local
-    let @2: &'_ (usize); // anonymous local
+    let @1: &'0 (usize); // anonymous local
+    let @2: &'0 (usize); // anonymous local
     let @3: &'_ (usize); // anonymous local
     let @4: usize; // anonymous local
 

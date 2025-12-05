@@ -919,12 +919,18 @@ and gexpr_body_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("span", span); ("locals", locals); ("comments", _); ("body", body) ]
-      ->
+        [
+          ("span", span);
+          ("bound_body_regions", bound_body_regions);
+          ("locals", locals);
+          ("body", body);
+          ("comments", _);
+        ] ->
         let* span = span_of_json ctx span in
+        let* bound_body_regions = int_of_json ctx bound_body_regions in
         let* locals = locals_of_json ctx locals in
         let* body = arg0_of_json ctx body in
-        Ok ({ span; locals; body } : _ gexpr_body)
+        Ok ({ span; bound_body_regions; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
 and generic_args_of_json (ctx : of_json_ctx) (js : json) :
@@ -1524,6 +1530,9 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
         let* var = de_bruijn_var_of_json region_id_of_json ctx var in
         Ok (RVar var)
     | `String "Static" -> Ok RStatic
+    | `Assoc [ ("Body", body) ] ->
+        let* body = region_id_of_json ctx body in
+        Ok (RBody body)
     | `String "Erased" -> Ok RErased
     | _ -> Error "")
 

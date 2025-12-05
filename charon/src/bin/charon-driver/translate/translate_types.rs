@@ -14,6 +14,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<Region, Error> {
         use hax::RegionKind::*;
         match &region.kind {
+            ReErased if let Some(v) = &mut self.lifetime_freshener => Ok(Region::Body(v.push(()))),
             ReErased => Ok(Region::Erased),
             ReStatic => Ok(Region::Static),
             ReBound(hax::BoundVarIndexKind::Bound(id), br) => {

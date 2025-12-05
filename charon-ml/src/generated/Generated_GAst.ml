@@ -502,8 +502,12 @@ and 'a0 g_declaration_group =
     then, the print is obfuscated and Aeneas may need some refactoring. *)
 and 'a0 gexpr_body = {
   span : span;
+  bound_body_regions : int;
+      (** The number of regions existentially bound in this body. We introduce
+          fresh such regions during translation instead of the erased regions
+          that rustc gives us. *)
   locals : locals;  (** The local variables. *)
-  body : 'a0;
+  body : 'a0;  (** The statements and blocks that compose this body. *)
 }
 
 (** The MIR stage to use. This is only relevant for the current crate: for

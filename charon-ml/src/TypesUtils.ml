@@ -273,7 +273,7 @@ let mk_box_ty (ty : ty) : ty =
 
 (* TODO: move region set manipulation to aeneas *)
 
-(** Check if a region is in a set of regions.
+(** Check if a free region is in a set of regions.
 
     This function should be used on non-erased and non-bound regions. For
     sanity, we raise exceptions if this is not the case. *)
@@ -281,9 +281,11 @@ let region_in_set ?(allow_erased = false) (r : region) (rset : RegionId.Set.t) :
     bool =
   match r with
   | RStatic -> false
-  | RErased ->
+  | RErased | RBody _ ->
       if allow_erased then false
-      else raise (Failure "region_in_set shouldn't be called on erased regions")
+      else
+        raise
+          (Failure "region_in_set shouldn't be called on erased or body regions")
   | RVar (Bound _) ->
       raise (Failure "region_in_set shouldn't be called on bound regions")
   | RVar (Free id) -> RegionId.Set.mem id rset
@@ -307,8 +309,9 @@ let ty_regions (ty : ty) : RegionId.Set.t =
   let add_region (r : region) =
     match r with
     | RStatic -> () (* TODO: static? *)
-    | RErased ->
-        raise (Failure "ty_regions shouldn't be called on erased regions")
+    | RErased | RBody _ ->
+        raise
+          (Failure "ty_regions shouldn't be called on erased or body regions")
     | RVar (Bound _) ->
         raise (Failure "region_in_set shouldn't be called on bound regions")
     | RVar (Free id) -> s := RegionId.Set.add id !s

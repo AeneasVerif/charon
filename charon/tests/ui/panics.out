@@ -35,11 +35,11 @@ fn panic1()
 fn panic2()
 {
     let @0: (); // return
-    let @1: Arguments<'_>; // anonymous local
+    let @1: Arguments<'0>; // anonymous local
 
     @0 := ()
     storage_live(@1)
-    @1 := from_str<'_>(const ("O no!"))
+    @1 := from_str<'1>(const ("O no!"))
     panic(core::panicking::panic_fmt)
 }
 
@@ -47,11 +47,11 @@ fn panic2()
 fn panic3()
 {
     let @0: (); // return
-    let @1: Arguments<'_>; // anonymous local
+    let @1: Arguments<'0>; // anonymous local
 
     @0 := ()
     storage_live(@1)
-    @1 := from_str_nonconst<'_>(const ("O no!"))
+    @1 := from_str_nonconst<'1>(const ("O no!"))
     panic(core::panicking::panic_fmt)
 }
 
@@ -75,7 +75,7 @@ fn panic5()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: Arguments<'_>; // anonymous local
+    let @2: Arguments<'0>; // anonymous local
 
     @0 := ()
     storage_live(@1)
@@ -83,7 +83,7 @@ fn panic5()
     if move (@1) {
     } else {
         storage_live(@2)
-        @2 := from_str<'_>(const ("assert failed"))
+        @2 := from_str<'1>(const ("assert failed"))
         panic(core::panicking::panic_fmt)
     }
     storage_dead(@1)
@@ -104,11 +104,11 @@ fn panic6()
 fn panic7()
 {
     let @0: (); // return
-    let @1: Arguments<'_>; // anonymous local
+    let @1: Arguments<'0>; // anonymous local
 
     @0 := ()
     storage_live(@1)
-    @1 := from_str_nonconst<'_>(const ("internal error: entered unreachable code: can't reach this"))
+    @1 := from_str_nonconst<'1>(const ("internal error: entered unreachable code: can't reach this"))
     panic(core::panicking::panic_fmt)
 }
 

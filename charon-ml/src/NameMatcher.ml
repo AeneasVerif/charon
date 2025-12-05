@@ -315,10 +315,16 @@ let update_map (find_opt : 'a -> 'm -> 'b option) (add : 'a -> 'b -> 'm -> 'm)
       v = v'
 
 let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
+  (* Treat body variables like erased ones *)
+  let v =
+    match v with
+    | RBody _ -> T.RErased
+    | _ -> v
+  in
   (* When it comes to matching, we treat erased regions like variables. *)
   let is_var =
     match v with
-    | RVar _ | RErased -> true
+    | RVar _ | RBody _ | RErased -> true
     | RStatic -> false
   in
   if c.map_vars_to_vars && not is_var then false
@@ -416,10 +422,11 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
     bool =
   match (id, v) with
   | RStatic, RStatic -> true
-  | RVar id, (RVar _ | RErased) ->
+  | RVar id, (RVar _ | RErased | RBody _) ->
       (* When it comes to matching, we treat erased regions like variables *)
       opt_update_rmap c m id v
-  | RVar id, _ -> if c.map_vars_to_vars then false else opt_update_rmap c m id v
+  | RVar id, RStatic ->
+      if c.map_vars_to_vars then false else opt_update_rmap c m id v
   | _ -> false
 
 let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
@@ -843,9 +850,8 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
            (fun varid map -> T.RegionId.Map.find_opt varid map.rmap)
            var)
   | RStatic -> RStatic
-  | RErased ->
-      (* We do get there when converting function pointers (when we try to
-         detect specific function calls) to patterns. *)
+  | RBody _ | RErased ->
+      (* These regions cannot be named. *)
       RVar None
 
 let type_var_to_pattern (m : constraints) (var : T.type_db_var) : var option =
