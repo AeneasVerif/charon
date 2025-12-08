@@ -358,20 +358,9 @@ type cli_options = {
   ullbc : bool;
       (** Extract the unstructured LLBC (i.e., don't reconstruct the
           control-flow) *)
-  lib : bool;  (** Compile the package's library *)
-  bin : string option;  (** Compile the specified binary *)
-  mir_promoted : bool;  (** Deprecated: use [--mir promoted] instead. *)
-  mir_optimized : bool;  (** Deprecated: use [--mir optimized] instead. *)
   mir : mir_level option;
       (** The MIR stage to extract. This is only relevant for the current crate;
           for dpendencies only MIR optimized is available. *)
-  input_file : path_buf option;
-      (** The input file (the entry point of the crate to extract). This is
-          needed if you want to define a custom entry point (to only extract
-          part of a crate for instance). *)
-  read_llbc : path_buf option;
-      (** Read an llbc file and pretty-print it. This is a terrible API, we
-          should use subcommands. *)
   dest_dir : path_buf option;
       (** The destination directory. Files will be generated as
           [<dest_dir>/<crate_name>.{u}llbc], unless [dest_file] is set.
@@ -379,9 +368,6 @@ type cli_options = {
   dest_file : path_buf option;
       (** The destination file. By default [<dest_dir>/<crate_name>.llbc]. If
           this is set we ignore [dest_dir]. *)
-  use_polonius : bool;
-      (** If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
-          Otherwise, use the standard borrow checker. *)
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
   monomorphize : bool;
@@ -450,10 +436,7 @@ type cli_options = {
           will translate these items and any items they refer to, according to
           the opacity rules. When absent, we start from the path [crate] (which
           translates the whole crate). *)
-  no_cargo : bool;  (** Do not run cargo; instead, run the driver directly. *)
   rustc_args : string list;  (** Extra flags to pass to rustc. *)
-  cargo_args : string list;
-      (** Extra flags to pass to cargo. Incompatible with [--no-cargo]. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Print the errors as warnings *)

@@ -65,7 +65,7 @@ fn charon_version() -> Result<()> {
 
 #[test]
 fn charon_help_output() -> Result<()> {
-    charon(&["help"], ".", |stdout, _| {
+    charon(&["help", "rustc"], ".", |stdout, _| {
         compare_or_overwrite(stdout, &PathBuf::from("./tests/help-output.txt"))?;
         Ok(())
     })
@@ -231,30 +231,6 @@ fn handle_multi_trailing_rs_args() {
     let err = charon(args, "tests/ui", |_, _| Ok(())).unwrap_err();
     let err = format!("{err:?}");
     assert!(err.contains("invalid character '.' in crate name"), "{err}");
-}
-
-#[test]
-fn rustc_input_duplicated() {
-    let input = "arrays.rs";
-    let args = &["rustc", "--print-llbc", "--input", input, "--", input];
-    let err = charon(args, "tests/ui", |_, _| Ok(())).unwrap_err();
-    let pat = "error: multiple input filenames provided (first two filenames are `arrays.rs` and `arrays.rs`)";
-    let err = format!("{err:?}");
-    assert!(err.contains(pat), "{err}");
-}
-
-#[test]
-fn charon_input() -> Result<()> {
-    let input = "arrays.rs";
-    let args = &[
-        "rustc",
-        "--print-llbc",
-        "--input",
-        input,
-        "--",
-        "--crate-type=lib",
-    ];
-    charon(args, "tests/ui", |_, _| Ok(()))
 }
 
 #[test]

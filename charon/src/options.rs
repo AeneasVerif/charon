@@ -32,36 +32,10 @@ pub struct CliOpts {
     #[clap(long = "ullbc")]
     #[serde(default)]
     pub ullbc: bool,
-    /// Compile the package's library
-    #[clap(long = "lib")]
-    #[serde(default)]
-    pub lib: bool,
-    /// Compile the specified binary
-    #[clap(long = "bin")]
-    #[serde(default)]
-    pub bin: Option<String>,
-    /// Deprecated: use `--mir promoted` instead.
-    #[clap(long = "mir_promoted")]
-    #[serde(default)]
-    pub mir_promoted: bool,
-    /// Deprecated: use `--mir optimized` instead.
-    #[clap(long = "mir_optimized")]
-    #[serde(default)]
-    pub mir_optimized: bool,
     /// The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
     /// MIR optimized is available.
     #[arg(long)]
     pub mir: Option<MirLevel>,
-    /// The input file (the entry point of the crate to extract).
-    /// This is needed if you want to define a custom entry point (to only
-    /// extract part of a crate for instance).
-    #[clap(long = "input", value_parser)]
-    #[serde(default)]
-    pub input_file: Option<PathBuf>,
-    /// Read an llbc file and pretty-print it. This is a terrible API, we should use subcommands.
-    #[clap(long = "read-llbc", value_parser)]
-    #[serde(default)]
-    pub read_llbc: Option<PathBuf>,
     /// The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
     /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
     #[clap(long = "dest", value_parser)]
@@ -72,11 +46,6 @@ pub struct CliOpts {
     #[clap(long = "dest-file", value_parser)]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,
-    /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
-    /// Otherwise, use the standard borrow checker.
-    #[clap(long = "polonius")]
-    #[serde(default)]
-    pub use_polonius: bool,
     /// If activated, this skips borrow-checking of the crate.
     #[clap(long = "skip-borrowck")]
     #[serde(default)]
@@ -202,18 +171,10 @@ pub struct CliOpts {
     #[clap(long = "start-from", value_delimiter = ',')]
     #[serde(default)]
     pub start_from: Vec<String>,
-    /// Do not run cargo; instead, run the driver directly.
-    #[clap(long = "no-cargo")]
-    #[serde(default)]
-    pub no_cargo: bool,
     /// Extra flags to pass to rustc.
     #[clap(long = "rustc-flag", alias = "rustc-arg")]
     #[serde(default)]
     pub rustc_args: Vec<String>,
-    /// Extra flags to pass to cargo. Incompatible with `--no-cargo`.
-    #[clap(long = "cargo-arg")]
-    #[serde(default)]
-    pub cargo_args: Vec<String>,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long = "abort-on-error")]
     #[serde(default)]
@@ -385,64 +346,6 @@ impl CliOpts {
 
     /// Check that the options are meaningful
     pub fn validate(&self) -> anyhow::Result<()> {
-        assert!(
-            !self.lib || self.bin.is_none(),
-            "Can't use --lib and --bin at the same time"
-        );
-
-        assert!(
-            !self.mir_promoted || !self.mir_optimized,
-            "Can't use --mir_promoted and --mir_optimized at the same time"
-        );
-
-        if self.input_file.is_some() {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--input` is deprecated, use `charon rustc [charon options] -- [rustc options] <input file>` instead",
-            )
-        }
-        if self.no_cargo {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--no-cargo` is deprecated, use `charon rustc [charon options] -- [rustc options] <input file>` instead",
-            )
-        }
-        if self.read_llbc.is_some() {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--read_llbc` is deprecated, use `charon pretty-print <input file>` instead",
-            )
-        }
-        if self.use_polonius {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--polonius` is deprecated, use `--rustc-arg=-Zpolonius` instead",
-            )
-        }
-        if self.mir_optimized {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--mir_optimized` is deprecated, use `--mir optimized` instead",
-            )
-        }
-        if self.mir_promoted {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--mir_promoted` is deprecated, use `--mir promoted` instead",
-            )
-        }
-        if self.lib {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--lib` is deprecated, use `charon cargo -- --lib` instead",
-            )
-        }
-        if self.bin.is_some() {
-            display_unspanned_error(
-                Level::WARNING,
-                "`--bin` is deprecated, use `charon cargo -- --bin <name>` instead",
-            )
-        }
         if self.dest_dir.is_some() {
             display_unspanned_error(
                 Level::WARNING,
@@ -526,11 +429,7 @@ impl TranslateOptions {
             }
         };
 
-        let mut mir_level = if options.mir_optimized {
-            MirLevel::Optimized
-        } else {
-            options.mir.unwrap_or(MirLevel::Promoted)
-        };
+        let mut mir_level = options.mir.unwrap_or(MirLevel::Promoted);
         if options.precise_drops {
             mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
         }

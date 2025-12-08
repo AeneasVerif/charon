@@ -371,16 +371,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("ullbc", ullbc);
-          ("lib", lib);
-          ("bin", bin);
-          ("mir_promoted", mir_promoted);
-          ("mir_optimized", mir_optimized);
           ("mir", mir);
-          ("input_file", input_file);
-          ("read_llbc", read_llbc);
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
-          ("use_polonius", use_polonius);
           ("skip_borrowck", skip_borrowck);
           ("monomorphize", monomorphize);
           ("monomorphize_mut", monomorphize_mut);
@@ -397,9 +390,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("precise_drops", precise_drops);
           ("desugar_drops", desugar_drops);
           ("start_from", start_from);
-          ("no_cargo", no_cargo);
           ("rustc_args", rustc_args);
-          ("cargo_args", cargo_args);
           ("abort_on_error", abort_on_error);
           ("error_on_warnings", error_on_warnings);
           ("no_serialize", no_serialize);
@@ -415,16 +406,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("preset", preset);
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
-        let* lib = bool_of_json ctx lib in
-        let* bin = option_of_json string_of_json ctx bin in
-        let* mir_promoted = bool_of_json ctx mir_promoted in
-        let* mir_optimized = bool_of_json ctx mir_optimized in
         let* mir = option_of_json mir_level_of_json ctx mir in
-        let* input_file = option_of_json path_buf_of_json ctx input_file in
-        let* read_llbc = option_of_json path_buf_of_json ctx read_llbc in
         let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
         let* dest_file = option_of_json path_buf_of_json ctx dest_file in
-        let* use_polonius = bool_of_json ctx use_polonius in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* monomorphize = bool_of_json ctx monomorphize in
         let* monomorphize_mut =
@@ -447,9 +431,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* precise_drops = bool_of_json ctx precise_drops in
         let* desugar_drops = bool_of_json ctx desugar_drops in
         let* start_from = list_of_json string_of_json ctx start_from in
-        let* no_cargo = bool_of_json ctx no_cargo in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
-        let* cargo_args = list_of_json string_of_json ctx cargo_args in
         let* abort_on_error = bool_of_json ctx abort_on_error in
         let* error_on_warnings = bool_of_json ctx error_on_warnings in
         let* no_serialize = bool_of_json ctx no_serialize in
@@ -470,16 +452,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         Ok
           ({
              ullbc;
-             lib;
-             bin;
-             mir_promoted;
-             mir_optimized;
              mir;
-             input_file;
-             read_llbc;
              dest_dir;
              dest_file;
-             use_polonius;
              skip_borrowck;
              monomorphize;
              monomorphize_mut;
@@ -496,9 +471,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              precise_drops;
              desugar_drops;
              start_from;
-             no_cargo;
              rustc_args;
-             cargo_args;
              abort_on_error;
              error_on_warnings;
              no_serialize;
