@@ -1012,6 +1012,7 @@ fn main() -> Result<()> {
         cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--hide-allocator");
+        cmd.arg("--treat-box-as-builtin");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");

@@ -135,12 +135,13 @@ impl ItemTransCtx<'_, '_> {
         item: &hax::ItemRef,
     ) -> Result<Option<BuiltinFunId>, Error> {
         let def = self.hax_def(item)?;
-        let fun_id =
-            if def.diagnostic_item.as_deref() == Some("box_new") && !self.t_ctx.options.raw_boxes {
-                Some(BuiltinFunId::BoxNew)
-            } else {
-                None
-            };
+        let fun_id = if def.diagnostic_item.as_deref() == Some("box_new")
+            && self.t_ctx.options.treat_box_as_builtin
+        {
+            Some(BuiltinFunId::BoxNew)
+        } else {
+            None
+        };
         Ok(fun_id)
     }
 }

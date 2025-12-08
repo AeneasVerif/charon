@@ -1,5 +1,6 @@
 //@ no-default-options
 //@ charon-args=--hide-allocator
+//@ charon-args=--treat-box-as-builtin
 #![feature(register_tool)]
 #![register_tool(pattern)]
 mod foo {

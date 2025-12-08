@@ -344,7 +344,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
     ) -> Result<Option<BuiltinTy>, Error> {
         let def = self.hax_def(item)?;
-        let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
+        let ty = if def.lang_item.as_deref() == Some("owned_box")
+            && self.t_ctx.options.treat_box_as_builtin
+        {
             Some(BuiltinTy::Box)
         } else {
             None

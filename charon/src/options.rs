@@ -167,10 +167,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_ops_to_function_calls: bool,
-    /// Do not special-case the translation of `Box<T>` into a builtin ADT.
+    /// Treat `Box<T>` as if it was a built-in type.
     #[clap(long)]
     #[serde(default)]
-    pub raw_boxes: bool,
+    pub treat_box_as_builtin: bool,
     /// Do not inline or evaluate constants.
     #[clap(long)]
     #[serde(default)]
@@ -271,16 +271,17 @@ impl CliOpts {
         if let Some(preset) = self.preset {
             match preset {
                 Preset::OldDefaults => {
-                    self.hide_allocator = !self.raw_boxes;
+                    self.treat_box_as_builtin = true;
+                    self.hide_allocator = true;
                 }
                 Preset::RawMir => {
                     self.extract_opaque_bodies = true;
-                    self.raw_boxes = true;
                     self.raw_consts = true;
                     self.ullbc = true;
                 }
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
+                    self.treat_box_as_builtin = true;
                     self.hide_marker_traits = true;
                     self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
@@ -292,6 +293,7 @@ impl CliOpts {
                 }
                 Preset::Eurydice => {
                     self.hide_allocator = true;
+                    self.treat_box_as_builtin = true;
                     self.remove_associated_types.push("*".to_owned());
                     // Eurydice doesn't support opaque vtables it seems?
                     self.include.push("core::marker::MetaSized".to_owned());
@@ -299,13 +301,13 @@ impl CliOpts {
                 Preset::Soteria => {
                     self.extract_opaque_bodies = true;
                     self.monomorphize = true;
-                    self.raw_boxes = true;
                     self.mir = Some(MirLevel::Elaborated);
                     self.ullbc = true;
                 }
                 Preset::Tests => {
                     self.no_dedup_serialized_ast = true; // Helps debug
-                    self.hide_allocator = !self.raw_boxes;
+                    self.treat_box_as_builtin = true;
+                    self.hide_allocator = true;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
@@ -369,8 +371,8 @@ pub struct TranslateOptions {
     pub no_ops_to_function_calls: bool,
     /// Print the llbc just after control-flow reconstruction.
     pub print_built_llbc: bool,
-    /// Don't special-case the translation of `Box<T>`
-    pub raw_boxes: bool,
+    /// Treat `Box<T>` as if it was a built-in type.
+    pub treat_box_as_builtin: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
@@ -460,7 +462,7 @@ impl TranslateOptions {
             no_ops_to_function_calls: options.no_ops_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,
-            raw_boxes: options.raw_boxes,
+            treat_box_as_builtin: options.treat_box_as_builtin,
             raw_consts: options.raw_consts,
             remove_associated_types,
             translate_all_methods: options.translate_all_methods,

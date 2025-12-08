@@ -104,8 +104,8 @@ Options:
       --no-ops-to-function-calls
           Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC
 
-      --raw-boxes
-          Do not special-case the translation of `Box<T>` into a builtin ADT
+      --treat-box-as-builtin
+          Treat `Box<T>` as if it was a built-in type
 
       --raw-consts
           Do not inline or evaluate constants

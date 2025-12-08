@@ -391,7 +391,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("desugar_drops", desugar_drops);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("no_ops_to_function_calls", no_ops_to_function_calls);
-          ("raw_boxes", raw_boxes);
+          ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
@@ -435,7 +435,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* no_ops_to_function_calls =
           bool_of_json ctx no_ops_to_function_calls
         in
-        let* raw_boxes = bool_of_json ctx raw_boxes in
+        let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
         let* print_ullbc = bool_of_json ctx print_ullbc in
@@ -470,7 +470,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              desugar_drops;
              no_dedup_serialized_ast;
              no_ops_to_function_calls;
-             raw_boxes;
+             treat_box_as_builtin;
              raw_consts;
              print_original_ullbc;
              print_ullbc;

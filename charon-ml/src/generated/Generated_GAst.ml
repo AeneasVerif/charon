@@ -438,8 +438,8 @@ type cli_options = {
   no_ops_to_function_calls : bool;
       (** Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to
           builtin function calls for ULLBC. *)
-  raw_boxes : bool;
-      (** Do not special-case the translation of [Box<T>] into a builtin ADT. *)
+  treat_box_as_builtin : bool;
+      (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
   print_original_ullbc : bool;
       (** Pretty-print the ULLBC immediately after extraction from MIR. *)
