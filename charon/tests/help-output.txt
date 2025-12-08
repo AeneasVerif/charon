@@ -101,6 +101,9 @@ Options:
       --ops-to-function-calls
           Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into builtin functions in ULLBC
 
+      --index-to-function-calls
+          Transform array/slice indexing into builtin functions in ULLBC
+
       --treat-box-as-builtin
           Treat `Box<T>` as if it was a built-in type
 
@@ -112,6 +115,9 @@ Options:
 
       --reconstruct-asserts
           Replace "if x { panic() }" with "assert(x)"
+
+      --unbind-item-vars
+          
 
       --print-original-ullbc
           Pretty-print the ULLBC immediately after extraction from MIR

@@ -95,10 +95,11 @@ fn transform_st(s: &mut Statement) {
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        if !ctx.options.ops_to_function_calls {
-            return;
-        }
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.ops_to_function_calls
+    }
+
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body.visit_statements(&mut transform_st);
     }
 }

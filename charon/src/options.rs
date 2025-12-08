@@ -164,6 +164,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub ops_to_function_calls: bool,
+    /// Transform array/slice indexing into builtin functions in ULLBC.
+    #[clap(long)]
+    #[serde(default)]
+    pub index_to_function_calls: bool,
     /// Treat `Box<T>` as if it was a built-in type.
     #[clap(long)]
     #[serde(default)]
@@ -182,6 +186,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
+    // Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of
+    // `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects
+    // that don't intend to manipulate them too much.
+    #[clap(long)]
+    #[serde(default)]
+    pub unbind_item_vars: bool,
 
     /// Pretty-print the ULLBC immediately after extraction from MIR.
     #[clap(long)]
@@ -285,8 +295,10 @@ impl CliOpts {
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
                     self.ops_to_function_calls = true;
+                    self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
+                    self.unbind_item_vars = true;
                 }
                 Preset::RawMir => {
                     self.extract_opaque_bodies = true;
@@ -297,11 +309,13 @@ impl CliOpts {
                     self.remove_associated_types.push("*".to_owned());
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
+                    self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.hide_marker_traits = true;
                     self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
+                    self.unbind_item_vars = true;
                     // Hide drop impls because they often involve nested borrows. which aeneas
                     // doesn't handle yet.
                     self.exclude.push("core::ops::drop::Drop".to_owned());
@@ -312,9 +326,11 @@ impl CliOpts {
                     self.hide_allocator = true;
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
+                    self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.remove_associated_types.push("*".to_owned());
+                    self.unbind_item_vars = true;
                     // Eurydice doesn't support opaque vtables it seems?
                     self.include.push("core::marker::MetaSized".to_owned());
                 }
@@ -331,6 +347,7 @@ impl CliOpts {
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.ops_to_function_calls = true;
+                    self.index_to_function_calls = true;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
@@ -393,6 +410,8 @@ pub struct TranslateOptions {
     /// Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into
     /// builtin functions in ULLBC.
     pub ops_to_function_calls: bool,
+    /// Transform array/slice indexing into builtin functions in ULLBC.
+    pub index_to_function_calls: bool,
     /// Print the llbc just after control-flow reconstruction.
     pub print_built_llbc: bool,
     /// Treat `Box<T>` as if it was a built-in type.
@@ -404,6 +423,8 @@ pub struct TranslateOptions {
     pub reconstruct_fallible_operations: bool,
     /// Replace "if x { panic() }" with "assert(x)".
     pub reconstruct_asserts: bool,
+    // Use `DeBruijnVar::Free` for the variables bound in item signatures.
+    pub unbind_item_vars: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
@@ -489,6 +510,7 @@ impl TranslateOptions {
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize_with_hax: options.monomorphize,
             ops_to_function_calls: options.ops_to_function_calls,
+            index_to_function_calls: options.index_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
@@ -496,6 +518,7 @@ impl TranslateOptions {
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
             remove_associated_types,
+            unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,

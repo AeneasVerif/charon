@@ -435,6 +435,8 @@ type cli_options = {
   ops_to_function_calls : bool;
       (** Transform array-to-slice unsizing, repeat expressions, and raw pointer
           construction into builtin functions in ULLBC. *)
+  index_to_function_calls : bool;
+      (** Transform array/slice indexing into builtin functions in ULLBC. *)
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;
@@ -447,6 +449,7 @@ type cli_options = {
           information. *)
   reconstruct_asserts : bool;
       (** Replace "if x { panic() }" with "assert(x)". *)
+  unbind_item_vars : bool;
   print_original_ullbc : bool;
       (** Pretty-print the ULLBC immediately after extraction from MIR. *)
   print_ullbc : bool;

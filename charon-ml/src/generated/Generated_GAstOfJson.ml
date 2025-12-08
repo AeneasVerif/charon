@@ -390,10 +390,12 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("remove_unused_self_clauses", remove_unused_self_clauses);
           ("desugar_drops", desugar_drops);
           ("ops_to_function_calls", ops_to_function_calls);
+          ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_asserts", reconstruct_asserts);
+          ("unbind_item_vars", unbind_item_vars);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
           ("print_built_llbc", print_built_llbc);
@@ -432,12 +434,16 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* desugar_drops = bool_of_json ctx desugar_drops in
         let* ops_to_function_calls = bool_of_json ctx ops_to_function_calls in
+        let* index_to_function_calls =
+          bool_of_json ctx index_to_function_calls
+        in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
         in
         let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
+        let* unbind_item_vars = bool_of_json ctx unbind_item_vars in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
         let* print_ullbc = bool_of_json ctx print_ullbc in
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
@@ -473,10 +479,12 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              remove_unused_self_clauses;
              desugar_drops;
              ops_to_function_calls;
+             index_to_function_calls;
              treat_box_as_builtin;
              raw_consts;
              reconstruct_fallible_operations;
              reconstruct_asserts;
+             unbind_item_vars;
              print_original_ullbc;
              print_ullbc;
              print_built_llbc;

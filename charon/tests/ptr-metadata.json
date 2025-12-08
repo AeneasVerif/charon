@@ -23,7 +23,10 @@
     "InheritFrom": {
       "Untagged": {
         "TypeVar": {
-          "Free": 0
+          "Bound": [
+            0,
+            0
+          ]
         }
       }
     }
