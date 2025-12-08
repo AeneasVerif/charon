@@ -219,12 +219,6 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub print_llbc: bool,
-    #[clap(
-        long = "no-merge-goto-chains",
-        help = "Do not merge the chains of gotos in the ULLBC control-flow graph."
-    )]
-    #[serde(default)]
-    pub no_merge_goto_chains: bool,
 
     #[clap(
         long = "no-ops-to-function-calls",
@@ -394,8 +388,6 @@ pub struct TranslateOptions {
     pub monomorphize_with_hax: bool,
     /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
     pub no_ops_to_function_calls: bool,
-    /// Do not merge the chains of gotos.
-    pub no_merge_goto_chains: bool,
     /// Print the llbc just after control-flow reconstruction.
     pub print_built_llbc: bool,
     /// Don't special-case the translation of `Box<T>`
@@ -486,7 +478,6 @@ impl TranslateOptions {
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize_with_hax: options.monomorphize,
-            no_merge_goto_chains: options.no_merge_goto_chains,
             no_ops_to_function_calls: options.no_ops_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,

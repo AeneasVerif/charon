@@ -128,9 +128,6 @@ Options:
       --print-llbc
           Print the final LLBC (after all the cleaning micro-passes).
 
-      --no-merge-goto-chains
-          Do not merge the chains of gotos in the ULLBC control-flow graph.
-
       --no-ops-to-function-calls
           Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC
 

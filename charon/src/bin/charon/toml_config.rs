@@ -24,8 +24,6 @@ pub struct CharonTomlConfig {
     pub opaque: Vec<String>,
     #[serde(default)]
     pub exclude: Vec<String>,
-    #[serde(default)]
-    pub no_merge_goto_chains: bool,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -43,7 +41,6 @@ impl TomlConfig {
         config.opaque.extend(self.charon.opaque);
         config.exclude.extend(self.charon.exclude);
         config.rustc_args.extend(self.rustc.flags);
-        config.no_merge_goto_chains |= self.charon.no_merge_goto_chains;
         config
     }
 }

@@ -446,7 +446,6 @@ type cli_options = {
   print_ullbc : bool;
   print_built_llbc : bool;
   print_llbc : bool;
-  no_merge_goto_chains : bool;
   no_ops_to_function_calls : bool;
   raw_boxes : bool;
       (** Do not special-case the translation of [Box<T>] into a builtin ADT. *)

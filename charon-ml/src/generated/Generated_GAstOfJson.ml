@@ -399,7 +399,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("print_ullbc", print_ullbc);
           ("print_built_llbc", print_built_llbc);
           ("print_llbc", print_llbc);
-          ("no_merge_goto_chains", no_merge_goto_chains);
           ("no_ops_to_function_calls", no_ops_to_function_calls);
           ("raw_boxes", raw_boxes);
           ("raw_consts", raw_consts);
@@ -442,7 +441,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* print_ullbc = bool_of_json ctx print_ullbc in
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
         let* print_llbc = bool_of_json ctx print_llbc in
-        let* no_merge_goto_chains = bool_of_json ctx no_merge_goto_chains in
         let* no_ops_to_function_calls =
           bool_of_json ctx no_ops_to_function_calls
         in
@@ -480,7 +478,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              print_ullbc;
              print_built_llbc;
              print_llbc;
-             no_merge_goto_chains;
              no_ops_to_function_calls;
              raw_boxes;
              raw_consts;
