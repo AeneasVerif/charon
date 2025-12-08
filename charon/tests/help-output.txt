@@ -68,13 +68,13 @@ Options:
           
 
       --opaque <OPAQUE>
-          Blacklist of items to keep opaque. Works just like `--include`, see the doc there.
+          Blacklist of items to keep opaque. Works just like `--include`, see the doc there
 
       --exclude <EXCLUDE>
-          Blacklist of items to not translate at all. Works just like `--include`, see the doc there.
+          Blacklist of items to not translate at all. Works just like `--include`, see the doc there
 
       --remove-associated-types <REMOVE_ASSOCIATED_TYPES>
-          List of traits for which we transform associated types to type parameters. The syntax is like `--include`, see the doc there.
+          List of traits for which we transform associated types to type parameters. The syntax is like `--include`, see the doc there
 
       --hide-marker-traits
           Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct` anywhere they show up
@@ -108,25 +108,25 @@ Options:
           Panic on the first error. This is useful for debugging
 
       --error-on-warnings
-          Consider any warnings as errors
+          Consider any warnings to be errors
 
       --no-serialize
-          Don't serialize the final (U)LLBC to a file.
+          Don't serialize the final (U)LLBC to a file
 
       --no-dedup-serialized-ast
-          Don't deduplicate values in the .(u)llbc file. This makes the file easier to inspect.
+          Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect
 
       --print-original-ullbc
-          Print the ULLBC immediately after extraction from MIR.
+          Print the ULLBC immediately after extraction from MIR
 
       --print-ullbc
-          Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction).
+          Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction)
 
       --print-built-llbc
-          Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
+          Print the LLBC just after we built it (i.e., immediately after loop reconstruction)
 
       --print-llbc
-          Print the final LLBC (after all the cleaning micro-passes).
+          Print the final LLBC (after all the cleaning micro-passes)
 
       --no-ops-to-function-calls
           Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC

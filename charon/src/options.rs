@@ -29,7 +29,7 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 #[charon::rename("cli_options")]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
-    #[clap(long = "ullbc")]
+    #[clap(long)]
     #[serde(default)]
     pub ullbc: bool,
     /// The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
@@ -43,11 +43,11 @@ pub struct CliOpts {
     pub dest_dir: Option<PathBuf>,
     /// The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
     /// `dest_dir`.
-    #[clap(long = "dest-file", value_parser)]
+    #[clap(long, value_parser)]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,
     /// If activated, this skips borrow-checking of the crate.
-    #[clap(long = "skip-borrowck")]
+    #[clap(long)]
     #[serde(default)]
     pub skip_borrowck: bool,
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
@@ -70,17 +70,17 @@ pub struct CliOpts {
     pub monomorphize_mut: Option<MonomorphizeMut>,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
-    #[clap(long = "extract-opaque-bodies")]
+    #[clap(long)]
     #[serde(default)]
     pub extract_opaque_bodies: bool,
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
-    #[clap(long = "translate-all-methods")]
+    #[clap(long)]
     #[serde(default)]
     pub translate_all_methods: bool,
     /// Whitelist of items to translate. These use the name-matcher syntax.
     #[clap(
-        long = "include",
+        long,
         help = indoc!("
             Whitelist of items to translate. These use the name-matcher syntax (note: this differs
             a bit from the ocaml NameMatcher).
@@ -104,31 +104,22 @@ pub struct CliOpts {
     #[serde(default)]
     #[charon::rename("included")]
     pub include: Vec<String>,
-    /// Blacklist of items to keep opaque. These use the name-matcher syntax.
-    #[clap(
-        long = "opaque",
-        help = "Blacklist of items to keep opaque. Works just like `--include`, see the doc there."
-    )]
+    /// Blacklist of items to keep opaque. Works just like `--include`, see the doc there.
+    #[clap(long)]
     #[serde(default)]
     pub opaque: Vec<String>,
-    /// Blacklist of items to not translate at all. These use the name-matcher syntax.
-    #[clap(
-        long = "exclude",
-        help = "Blacklist of items to not translate at all. Works just like `--include`, see the doc there."
-    )]
+    /// Blacklist of items to not translate at all. Works just like `--include`, see the doc there.
+    #[clap(long)]
     #[serde(default)]
     pub exclude: Vec<String>,
-    /// List of traits for which we transform associated types to type parameters.
-    #[clap(
-        long = "remove-associated-types",
-        help = "List of traits for which we transform associated types to type parameters. \
-        The syntax is like `--include`, see the doc there."
-    )]
+    /// List of traits for which we transform associated types to type parameters. The syntax is
+    /// like `--include`, see the doc there.
+    #[clap(long)]
     #[serde(default)]
     pub remove_associated_types: Vec<String>,
     /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
     /// anywhere they show up.
-    #[clap(long = "hide-marker-traits")]
+    #[clap(long)]
     #[serde(default)]
     pub hide_marker_traits: bool,
     /// Remove trait clauses from type declarations. Must be combined with
@@ -168,7 +159,7 @@ pub struct CliOpts {
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
     /// from the path `crate` (which translates the whole crate).
-    #[clap(long = "start-from", value_delimiter = ',')]
+    #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub start_from: Vec<String>,
     /// Extra flags to pass to rustc.
@@ -176,54 +167,41 @@ pub struct CliOpts {
     #[serde(default)]
     pub rustc_args: Vec<String>,
     /// Panic on the first error. This is useful for debugging.
-    #[clap(long = "abort-on-error")]
+    #[clap(long)]
     #[serde(default)]
     pub abort_on_error: bool,
-    /// Print the errors as warnings
-    #[clap(long = "error-on-warnings", help = "Consider any warnings as errors")]
+    /// Consider any warnings to be errors.
+    #[clap(long)]
     #[serde(default)]
     pub error_on_warnings: bool,
-    #[clap(
-        long = "no-serialize",
-        help = "Don't serialize the final (U)LLBC to a file."
-    )]
+    /// Don't serialize the final (U)LLBC to a file.
+    #[clap(long)]
     #[serde(default)]
     pub no_serialize: bool,
-    #[clap(
-        long,
-        help = "Don't deduplicate values in the .(u)llbc file. This makes the file easier to inspect."
-    )]
+    /// Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect.
+    #[clap(long)]
     #[serde(default)]
     pub no_dedup_serialized_ast: bool,
-    #[clap(
-        long = "print-original-ullbc",
-        help = "Print the ULLBC immediately after extraction from MIR."
-    )]
+
+    /// Print the ULLBC immediately after extraction from MIR.
+    #[clap(long)]
     #[serde(default)]
     pub print_original_ullbc: bool,
-    #[clap(
-        long = "print-ullbc",
-        help = "Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction)."
-    )]
+    /// Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction).
+    #[clap(long)]
     #[serde(default)]
     pub print_ullbc: bool,
-    #[clap(
-        long = "print-built-llbc",
-        help = "Print the LLBC just after we built it (i.e., immediately after loop reconstruction)."
-    )]
+    /// Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
+    #[clap(long)]
     #[serde(default)]
     pub print_built_llbc: bool,
-    #[clap(
-        long = "print-llbc",
-        help = "Print the final LLBC (after all the cleaning micro-passes)."
-    )]
+    /// Print the final LLBC (after all the cleaning micro-passes).
+    #[clap(long)]
     #[serde(default)]
     pub print_llbc: bool,
 
-    #[clap(
-        long = "no-ops-to-function-calls",
-        help = "Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC"
-    )]
+    /// Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC.
+    #[clap(long)]
     #[serde(default)]
     pub no_ops_to_function_calls: bool,
 
@@ -238,7 +216,7 @@ pub struct CliOpts {
 
     /// Named builtin sets of options. Currently used only for dependent projects, eveentually
     /// should be replaced with semantically-meaningful presets.
-    #[clap(long = "preset")]
+    #[clap(long)]
     #[arg(value_enum)]
     pub preset: Option<Preset>,
 }
