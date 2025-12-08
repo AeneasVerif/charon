@@ -8,7 +8,7 @@ use rustc_interface::Config;
 use rustc_interface::interface::Compiler;
 use rustc_middle::ty::TyCtxt;
 use rustc_middle::util::Providers;
-use rustc_session::config::{OutputType, OutputTypes, Polonius};
+use rustc_session::config::{OutputType, OutputTypes};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
@@ -80,9 +80,6 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
         });
 
         set_no_codegen(config);
-        if options.use_polonius {
-            config.opts.unstable_opts.polonius = Polonius::Legacy;
-        }
     }
     set_mir_options(config);
 }

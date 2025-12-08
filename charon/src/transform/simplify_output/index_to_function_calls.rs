@@ -253,6 +253,10 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
 /// ```
 pub struct Transform;
 impl LlbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.index_to_function_calls
+    }
+
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_llbc_statements(ctx, |ctx, st: &mut Statement| {
             let mut visitor = IndexVisitor {

@@ -37,6 +37,10 @@ impl VisitAstMut for UnbindVarVisitor {
 
 pub struct Check;
 impl TransformPass for Check {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.unbind_item_vars
+    }
+
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let mut visitor = UnbindVarVisitor::default();
         for mut item in ctx.translated.all_items_mut() {

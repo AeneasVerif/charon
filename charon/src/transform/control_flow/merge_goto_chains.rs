@@ -29,12 +29,7 @@ impl Antecedents {
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx, body: &mut ExprBody) {
-        // Check the option which instructs to ignore this pass
-        if ctx.options.no_merge_goto_chains {
-            return;
-        }
-
+    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Compute for each block the set of blocks that points to it.
         let mut antecedents: Vector<BlockId, Antecedents> =
             body.body.map_ref(|_| Antecedents::Zero);

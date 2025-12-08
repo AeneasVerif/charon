@@ -830,9 +830,16 @@ pub fn core::num::{isize}::MAX() -> isize
 {
     let @0: isize; // return
     let @1: usize; // anonymous local
+    let @2: u32; // anonymous local
+    let @3: bool; // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     storage_live(@1)
-    @1 := copy (core::num::{usize}::MAX) panic.>> const (1 : i32)
+    @2 := cast<i32, u32>(const (1 : i32))
+    @3 := move (@2) < const (64 : u32)
+    assert(move (@3) == true)
+    @1 := copy (core::num::{usize}::MAX) wrap.>> const (1 : i32)
     @0 := cast<usize, isize>(move (@1))
     storage_dead(@1)
     return
@@ -850,7 +857,9 @@ where
     let n@2: usize; // local
     let @3: usize; // anonymous local
     let @4: usize; // anonymous local
+    let @5: bool; // anonymous local
 
+    storage_live(@5)
     storage_live(@1)
     @1 := const (@TraitClause0::SIZE)
     switch copy (@1) {
@@ -864,7 +873,9 @@ where
             @3 := cast<isize, usize>(copy (core::num::{isize}::MAX))
             storage_live(@4)
             @4 := copy (n@2)
-            @0 := move (@3) panic./ move (@4)
+            @5 := copy (@4) == const (0 : usize)
+            assert(move (@5) == false)
+            @0 := move (@3) ub./ move (@4)
             storage_dead(@4)
             storage_dead(@3)
             storage_dead(n@2)
@@ -2056,7 +2067,7 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
                     storage_live(ptr@36)
                     storage_live(data@37)
                     data@37 := transmute<NonNull<u8>, *mut u8>(copy (ptr@11))
-                    ptr@36 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@37), copy (size@4))
+                    ptr@36 := *mut  (copy (data@37), copy (size@4))
                     storage_dead(data@37)
                     storage_live(@40)
                     storage_live(@41)
@@ -2115,7 +2126,7 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     storage_live(ptr@16)
     storage_live(data@17)
     data@17 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *mut u8>(copy (@13))
-    ptr@16 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@17), const (0 : usize))
+    ptr@16 := *mut  (copy (data@17), const (0 : usize))
     storage_dead(data@17)
     storage_live(@20)
     storage_live(@21)
@@ -2384,7 +2395,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                         storage_live(ptr@47)
                         storage_live(data@48)
                         data@48 := transmute<NonNull<u8>, *mut u8>(copy (ptr@20))
-                        ptr@47 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@48), copy (new_size@10))
+                        ptr@47 := *mut  (copy (data@48), copy (new_size@10))
                         storage_dead(data@48)
                         storage_live(@51)
                         if copy (@36) {
@@ -2526,7 +2537,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
             storage_live(ptr@47)
             storage_live(data@48)
             data@48 := transmute<NonNull<u8>, *mut u8>(copy (ptr@20))
-            ptr@47 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@48), copy (new_size@10))
+            ptr@47 := *mut  (copy (data@48), copy (new_size@10))
             storage_dead(data@48)
             storage_live(@51)
             if copy (@36) {
@@ -2862,7 +2873,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 storage_live(ptr@55)
                                 storage_live(data@56)
                                 data@56 := transmute<NonNull<u8>, *mut u8>(copy (ptr@22))
-                                ptr@55 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@56), copy (new_size@5))
+                                ptr@55 := *mut  (copy (data@56), copy (new_size@5))
                                 storage_dead(data@56)
                                 storage_live(@59)
                                 if copy (@47) {
@@ -2911,7 +2922,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 storage_live(ptr@55)
                                 storage_live(data@56)
                                 data@56 := transmute<NonNull<u8>, *mut u8>(copy (ptr@22))
-                                ptr@55 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@56), copy (new_size@5))
+                                ptr@55 := *mut  (copy (data@56), copy (new_size@5))
                                 storage_dead(data@56)
                                 storage_live(@59)
                                 if copy (@47) {
@@ -3103,7 +3114,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     storage_live(ptr@39)
     storage_live(data@40)
     data@40 := transmute<NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}], *mut u8>(copy (@36))
-    ptr@39 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@40), const (0 : usize))
+    ptr@39 := *mut  (copy (data@40), const (0 : usize))
     storage_dead(data@40)
     storage_live(@43)
     storage_live(@44)

@@ -21,7 +21,7 @@ pub struct Transform;
 /// We reconstruct this into a call to `Box::new(x)`.
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        if ctx.options.raw_boxes {
+        if !ctx.options.treat_box_as_builtin {
             return;
         }
 

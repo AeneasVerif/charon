@@ -12,6 +12,10 @@ use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.reconstruct_asserts
+    }
+
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Start by computing the set of blocks which are actually panics.
         // Remark: doing this in two steps because reading the blocks at random

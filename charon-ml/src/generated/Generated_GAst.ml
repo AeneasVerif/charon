@@ -358,76 +358,6 @@ type cli_options = {
   ullbc : bool;
       (** Extract the unstructured LLBC (i.e., don't reconstruct the
           control-flow) *)
-  lib : bool;  (** Compile the package's library *)
-  bin : string option;  (** Compile the specified binary *)
-  mir_promoted : bool;  (** Deprecated: use [--mir promoted] instead. *)
-  mir_optimized : bool;  (** Deprecated: use [--mir optimized] instead. *)
-  mir : mir_level option;
-      (** The MIR stage to extract. This is only relevant for the current crate;
-          for dpendencies only MIR optimized is available. *)
-  input_file : path_buf option;
-      (** The input file (the entry point of the crate to extract). This is
-          needed if you want to define a custom entry point (to only extract
-          part of a crate for instance). *)
-  read_llbc : path_buf option;
-      (** Read an llbc file and pretty-print it. This is a terrible API, we
-          should use subcommands. *)
-  dest_dir : path_buf option;
-      (** The destination directory. Files will be generated as
-          [<dest_dir>/<crate_name>.{u}llbc], unless [dest_file] is set.
-          [dest_dir] defaults to the current directory. *)
-  dest_file : path_buf option;
-      (** The destination file. By default [<dest_dir>/<crate_name>.llbc]. If
-          this is set we ignore [dest_dir]. *)
-  use_polonius : bool;
-      (** If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
-          Otherwise, use the standard borrow checker. *)
-  skip_borrowck : bool;
-      (** If activated, this skips borrow-checking of the crate. *)
-  monomorphize : bool;
-      (** Monomorphize the items encountered when possible. Generic items found
-          in the crate are skipped. To only translate a particular call graph,
-          use [--start-from]. Note: this doesn't currently support [dyn Trait].
-      *)
-  monomorphize_mut : monomorphize_mut option;
-      (** Partially monomorphize items to make it so that no item is ever
-          monomorphized with a mutable reference (or type containing one); said
-          differently, so that the presence of mutable references in a type is
-          independent of its generics. This is used by Aeneas. *)
-  extract_opaque_bodies : bool;
-      (** Usually we skip the bodies of foreign methods and structs with private
-          fields. When this flag is on, we don't. *)
-  translate_all_methods : bool;
-      (** Usually we skip the provided methods that aren't used. When this flag
-          is on, we translate them all. *)
-  included : string list;
-      (** Whitelist of items to translate. These use the name-matcher syntax. *)
-  opaque : string list;
-      (** Blacklist of items to keep opaque. These use the name-matcher syntax.
-      *)
-  exclude : string list;
-      (** Blacklist of items to not translate at all. These use the name-matcher
-          syntax. *)
-  remove_associated_types : string list;
-      (** List of traits for which we transform associated types to type
-          parameters. *)
-  hide_marker_traits : bool;
-      (** Whether to hide various marker traits such as [Sized], [Sync], [Send]
-          and [Destruct] anywhere they show up. *)
-  remove_adt_clauses : bool;
-      (** Remove trait clauses from type declarations. Must be combined with
-          [--remove-associated-types] for type declarations that use trait
-          associated types in their fields, otherwise this will result in
-          errors. *)
-  hide_allocator : bool;
-      (** Hide the [A] type parameter on standard library containers ([Box],
-          [Vec], etc). *)
-  remove_unused_self_clauses : bool;
-      (** Trait method declarations take a [Self: Trait] clause as parameter, so
-          that they can be reused by multiple trait impls. This however causes
-          trait definitions to be mutually recursive with their method
-          declarations. This flag removes [Self] clauses that aren't used to
-          break this mutual recursion. *)
   precise_drops : bool;
       (** Whether to precisely translate drops and drop-related code. For this,
           we add explicit [Destruct] bounds to all generic parameters, set the
@@ -442,36 +372,111 @@ type cli_options = {
           Without this option, drops may be "conditional" and we may lack
           information about what code is run on drop in a given polymorphic
           function body. *)
-  desugar_drops : bool;
-      (** Transform precise drops to the equivalent [drop_in_place(&raw mut p)]
-          call. *)
+  skip_borrowck : bool;
+      (** If activated, this skips borrow-checking of the crate. *)
+  mir : mir_level option;
+      (** The MIR stage to extract. This is only relevant for the current crate;
+          for dpendencies only MIR optimized is available. *)
+  rustc_args : string list;  (** Extra flags to pass to rustc. *)
+  monomorphize : bool;
+      (** Monomorphize the items encountered when possible. Generic items found
+          in the crate are skipped. To only translate a particular call graph,
+          use [--start-from]. Note: this doesn't currently support [dyn Trait].
+      *)
+  monomorphize_mut : monomorphize_mut option;
+      (** Partially monomorphize items to make it so that no item is ever
+          monomorphized with a mutable reference (or type containing one); said
+          differently, so that the presence of mutable references in a type is
+          independent of its generics. This is used by Aeneas. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to
           the opacity rules. When absent, we start from the path [crate] (which
           translates the whole crate). *)
-  no_cargo : bool;  (** Do not run cargo; instead, run the driver directly. *)
-  rustc_args : string list;  (** Extra flags to pass to rustc. *)
-  cargo_args : string list;
-      (** Extra flags to pass to cargo. Incompatible with [--no-cargo]. *)
+  included : string list;
+      (** Whitelist of items to translate. These use the name-matcher syntax. *)
+  opaque : string list;
+      (** Blacklist of items to keep opaque. Works just like [--include], see
+          the doc there. *)
+  exclude : string list;
+      (** Blacklist of items to not translate at all. Works just like
+          [--include], see the doc there. *)
+  extract_opaque_bodies : bool;
+      (** Usually we skip the bodies of foreign methods and structs with private
+          fields. When this flag is on, we don't. *)
+  translate_all_methods : bool;
+      (** Usually we skip the provided methods that aren't used. When this flag
+          is on, we translate them all. *)
+  remove_associated_types : string list;
+      (** Transforma the associate types of traits to be type parameters
+          instead. This takes a list of name patterns of the traits to
+          transform, using the same syntax as [--include]. *)
+  hide_marker_traits : bool;
+      (** Whether to hide various marker traits such as [Sized], [Sync], [Send]
+          and [Destruct] anywhere they show up. This can considerably speed up
+          translation. *)
+  remove_adt_clauses : bool;
+      (** Remove trait clauses from type declarations. Must be combined with
+          [--remove-associated-types] for type declarations that use trait
+          associated types in their fields, otherwise this will result in
+          errors. *)
+  hide_allocator : bool;
+      (** Hide the [A] type parameter on standard library containers ([Box],
+          [Vec], etc). *)
+  remove_unused_self_clauses : bool;
+      (** Trait method declarations take a [Self: Trait] clause as parameter, so
+          that they can be reused by multiple trait impls. This however causes
+          trait definitions to be mutually recursive with their method
+          declarations. This flag removes [Self] clauses that aren't used to
+          break this mutual recursion when possible. *)
+  desugar_drops : bool;
+      (** Transform precise drops to the equivalent [drop_in_place(&raw mut p)]
+          call. *)
+  ops_to_function_calls : bool;
+      (** Transform array-to-slice unsizing, repeat expressions, and raw pointer
+          construction into builtin functions in ULLBC. *)
+  index_to_function_calls : bool;
+      (** Transform array/slice indexing into builtin functions in ULLBC. Note
+          that this may introduce UB since it creates references that were not
+          normally created, including when indexing behind a raw pointer. *)
+  treat_box_as_builtin : bool;
+      (** Treat [Box<T>] as if it was a built-in type. *)
+  raw_consts : bool;
+      (** Do not inline or evaluate constants. Note: this emits constants that
+          the OCaml bindings can't parse; if you need this ping me so I can fix
+          that. *)
+  reconstruct_fallible_operations : bool;
+      (** Replace "bound checks followed by UB-on-overflow operation" with the
+          corresponding panic-on-overflow operation. This loses unwinding
+          information. *)
+  reconstruct_asserts : bool;
+      (** Replace "if x { panic() }" with "assert(x)". *)
+  unbind_item_vars : bool;
+  print_original_ullbc : bool;
+      (** Pretty-print the ULLBC immediately after extraction from MIR. *)
+  print_ullbc : bool;
+      (** Pretty-print the ULLBC after applying the micro-passes (before
+          serialization/control-flow reconstruction). *)
+  print_built_llbc : bool;
+      (** Pretty-print the LLBC just after we built it (i.e., immediately after
+          loop reconstruction). *)
+  print_llbc : bool;
+      (** Pretty-print the final LLBC (after all the cleaning micro-passes). *)
+  dest_dir : path_buf option;
+      (** The destination directory. Files will be generated as
+          [<dest_dir>/<crate_name>.{u}llbc], unless [dest_file] is set.
+          [dest_dir] defaults to the current directory. *)
+  dest_file : path_buf option;
+      (** The destination file. By default [<dest_dir>/<crate_name>.llbc]. If
+          this is set we ignore [dest_dir]. *)
+  no_dedup_serialized_ast : bool;
+      (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
+          This makes the file easier to inspect. *)
+  no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
-  error_on_warnings : bool;  (** Print the errors as warnings *)
-  no_serialize : bool;
-  no_dedup_serialized_ast : bool;
-  print_original_ullbc : bool;
-  print_ullbc : bool;
-  print_built_llbc : bool;
-  print_llbc : bool;
-  no_merge_goto_chains : bool;
-  no_ops_to_function_calls : bool;
-  raw_boxes : bool;
-      (** Do not special-case the translation of [Box<T>] into a builtin ADT. *)
-  raw_consts : bool;  (** Do not inline or evaluate constants. *)
-  preset : preset option;
-      (** Named builtin sets of options. Currently used only for dependent
-          projects, eveentually should be replaced with semantically-meaningful
-          presets. *)
+  error_on_warnings : bool;  (** Consider any warnings to be errors. *)
+  preset : preset option;  (** Named builtin sets of options. *)
 }
 
 (** A (group of) top-level declaration(s), properly reordered. *)

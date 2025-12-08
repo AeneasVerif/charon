@@ -1012,10 +1012,12 @@ fn main() -> Result<()> {
         cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--hide-allocator");
+        cmd.arg("--treat-box-as-builtin");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
         cmd.arg("--exclude=charon_lib::common::hash_by_addr::HashByAddr");
+        cmd.arg("--unbind-item-vars");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
         cmd.arg("--");

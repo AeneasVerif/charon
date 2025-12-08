@@ -55,10 +55,9 @@ impl DeBruijnId {
 ///                                  Bound(0, c)                 Bound(1, c)
 /// ```
 ///
-/// To make consumption easier for projects that don't do heavy substitution, a micro-pass at the
-/// end changes the variables bound at the top-level (i.e. in the `GenericParams` of items) to be
-/// `Free`. This is an optional pass, we may add a flag to deactivate it. The example above
-/// becomes:
+/// To make consumption easier for projects that don't do heavy substitution, `--unbind-item-vars`
+/// changes the variables bound at the top-level (i.e. in the `GenericParams` of items) to be
+/// `Free`. The example above becomes:
 /// ```text
 /// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
 ///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
@@ -68,8 +67,6 @@ impl DeBruijnId {
 ///                                      |                            |
 ///                                  Bound(0, c)                 Bound(1, c)
 /// ```
-///
-/// At the moment only region variables can be bound in a non-top-level binder.
 #[derive(
     Debug,
     PartialEq,
@@ -87,8 +84,8 @@ impl DeBruijnId {
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
     Bound(#[serde_state(stateless)] DeBruijnId, Id),
-    /// A variable attached to the outermost binder (the one on the item). As explained above, This
-    /// is not used in charon internals, only as a micro-pass before exporting the crate data.
+    /// A variable attached to the outermost binder (the one on the item). This is not used within
+    /// Charon itself, instead ewe insert it at the end if `--unbind-item-vars` is set.
     Free(Id),
 }
 

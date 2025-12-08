@@ -244,13 +244,14 @@ and operand =
 and overflow_mode =
   | OPanic
       (** If this operation overflows, it panics. Only exists in debug mode, for
-          instance in [a + b], and is introduced by the [remove_dynamic_checks]
-          pass. *)
+          instance in [a + b], and only if [--reconstruct-fallible-operations]
+          is passed to Charon. Otherwise the bound check will be explicit. *)
   | OUB
-      (** If this operation overflows, it UBs, for instance in
-          [core::num::unchecked_add]. *)
+      (** If this operation overflows, it is UB; for instance in
+          [core::num::unchecked_add]. This can exists in safe code, but will
+          always be preceded by a bounds check. *)
   | OWrap
-      (** If this operation overflows, it wraps around, for instance in
+      (** If this operation overflows, it wraps around for instance in
           [core::num::wrapping_add], or [a + b] in release mode. *)
 
 and place = { kind : place_kind; ty : ty }

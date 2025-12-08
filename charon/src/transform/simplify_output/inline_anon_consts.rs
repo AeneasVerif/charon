@@ -5,14 +5,11 @@ use crate::{ids::Generator, ullbc_ast::*};
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        if ctx.options.raw_consts {
-            return;
-        }
-        // Currently the only anon consts that are not already evaluated are promoted consts. If
-        // that changes, we'll have to restrict this pass to the consts that can be inlined into a
-        // body.
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !options.raw_consts
+    }
 
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Map each anon const id to its initializer, and remove both from `translated`.
         let anon_consts: HashMap<GlobalDeclId, ExprBody> = ctx
             .translated

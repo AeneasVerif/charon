@@ -76,10 +76,9 @@ and de_bruijn_id = int
                                        Bound(0, c)                 Bound(1, c)
     ]}
 
-    To make consumption easier for projects that don't do heavy substitution, a
-    micro-pass at the end changes the variables bound at the top-level (i.e. in
-    the [GenericParams] of items) to be [Free]. This is an optional pass, we may
-    add a flag to deactivate it. The example above becomes:
+    To make consumption easier for projects that don't do heavy substitution,
+    [--unbind-item-vars] changes the variables bound at the top-level (i.e. in
+    the [GenericParams] of items) to be [Free]. The example above becomes:
     {@rust[
       fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
            ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
@@ -88,17 +87,14 @@ and de_bruijn_id = int
                                 Free(b)    |                Free(b)     |     Bound(0, d)
                                            |                            |
                                        Bound(0, c)                 Bound(1, c)
-    ]}
-
-    At the moment only region variables can be bound in a non-top-level binder.
-*)
+    ]} *)
 and 'a0 de_bruijn_var =
   | Bound of de_bruijn_id * 'a0
       (** A variable attached to the nth binder, counting from the innermost. *)
   | Free of 'a0
-      (** A variable attached to the outermost binder (the one on the item). As
-          explained above, This is not used in charon internals, only as a
-          micro-pass before exporting the crate data. *)
+      (** A variable attached to the outermost binder (the one on the item).
+          This is not used within Charon itself, instead ewe insert it at the
+          end if [--unbind-item-vars] is set. *)
 
 and fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
@@ -230,23 +226,29 @@ and binder_kind =
 (** An built-in function identifier, identifying a function coming from a
     standard library. *)
 and builtin_fun_id =
-  | BoxNew  (** [alloc::boxed::Box::new] *)
+  | BoxNew
+      (** Used instead of [alloc::boxed::Box::new] when [--treat-box-as-builtin]
+          is set. *)
   | ArrayToSliceShared
-      (** Cast an array as a slice.
+      (** Cast [&[T; N]] to [&[T]].
 
-          Converted from [UnOp::ArrayToSlice] *)
+          This is used instead of unsizing coercions when
+          [--ops-to-function-calls] is set. *)
   | ArrayToSliceMut
-      (** Cast an array as a slice.
+      (** Cast [&mut [T; N]] to [&mut [T]].
 
-          Converted from [UnOp::ArrayToSlice] *)
+          This is used instead of unsizing coercions when
+          [--ops-to-function-calls] is set. *)
   | ArrayRepeat
       (** [repeat(n, x)] returns an array where [x] has been replicated [n]
           times.
 
-          We introduce this when desugaring the [ArrayRepeat] rvalue. *)
+          This is used instead of [Rvalue::ArrayRepeat] when
+          [--ops-to-function-calls] is set. *)
   | Index of builtin_index_op
-      (** Converted from indexing [ProjectionElem]s. The signature depends on
-          the parameters. It could look like:
+      (** A built-in funciton introduced instead of array/slice place indexing
+          when [--index-to-function-calls] is set. The signature depends on the
+          parameters. It could look like:
           - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
           - [fn SliceIndexShared<T>(&[T], usize) -> &T]
           - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
@@ -256,7 +258,8 @@ and builtin_fun_id =
       (** Build a raw pointer, from a data pointer and metadata. The metadata
           can be unit, if building a thin pointer.
 
-          Converted from [AggregateKind::RawPtr] *)
+          This is used instead of [AggregateKind::RawPtr] when
+          [--ops-to-function-calls] is set. *)
 
 (** Describes a built-in impl. Mostly lists the implemented trait, sometimes
     with more details about the contents of the implementation. *)

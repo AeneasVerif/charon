@@ -269,11 +269,13 @@ pub enum UnsizingMetadata {
 #[charon::variants_prefix("O")]
 pub enum OverflowMode {
     /// If this operation overflows, it panics. Only exists in debug mode, for instance in
-    /// `a + b`, and is introduced by the `remove_dynamic_checks` pass.
+    /// `a + b`, and only if `--reconstruct-fallible-operations` is passed to Charon. Otherwise the
+    /// bound check will be explicit.
     Panic,
-    /// If this operation overflows, it UBs, for instance in `core::num::unchecked_add`.
+    /// If this operation overflows, it is UB; for instance in `core::num::unchecked_add`. This can
+    /// exists in safe code, but will always be preceded by a bounds check.
     UB,
-    /// If this operation overflows, it wraps around, for instance in `core::num::wrapping_add`,
+    /// If this operation overflows, it wraps around for instance in `core::num::wrapping_add`,
     /// or `a + b` in release mode.
     Wrap,
 }
@@ -414,22 +416,23 @@ impl From<BuiltinFunId> for FunId {
     DriveMut,
 )]
 pub enum BuiltinFunId {
-    /// `alloc::boxed::Box::new`
+    /// Used instead of `alloc::boxed::Box::new` when `--treat-box-as-builtin` is set.
     BoxNew,
-    /// Cast an array as a slice.
+    /// Cast `&[T; N]` to `&[T]`.
     ///
-    /// Converted from `UnOp::ArrayToSlice`
+    /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
     ArrayToSliceShared,
-    /// Cast an array as a slice.
+    /// Cast `&mut [T; N]` to `&mut [T]`.
     ///
-    /// Converted from `UnOp::ArrayToSlice`
+    /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
     ArrayToSliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
-    /// We introduce this when desugaring the `ArrayRepeat` rvalue.
+    /// This is used instead of `Rvalue::ArrayRepeat` when `--ops-to-function-calls` is set.
     ArrayRepeat,
-    /// Converted from indexing `ProjectionElem`s. The signature depends on the parameters. It
-    /// could look like:
+    /// A built-in funciton introduced instead of array/slice place indexing when
+    /// `--index-to-function-calls` is set. The signature depends on the parameters. It could look
+    /// like:
     /// - `fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T`
     /// - `fn SliceIndexShared<T>(&[T], usize) -> &T`
     /// - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
@@ -439,7 +442,7 @@ pub enum BuiltinFunId {
     /// Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
     /// building a thin pointer.
     ///
-    /// Converted from [AggregateKind::RawPtr]
+    /// This is used instead of `AggregateKind::RawPtr` when `--ops-to-function-calls` is set.
     PtrFromParts(RefKind),
 }
 
