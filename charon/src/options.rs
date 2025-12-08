@@ -168,7 +168,8 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub treat_box_as_builtin: bool,
-    /// Do not inline or evaluate constants.
+    /// Do not inline or evaluate constants. Note: this emits constants that the OCaml bindings
+    /// can't parse; if you need this ping me so I can fix that.
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,

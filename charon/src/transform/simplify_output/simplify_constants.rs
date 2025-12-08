@@ -185,10 +185,11 @@ fn transform_operand(ctx: &mut UllbcStatementTransformCtx<'_>, op: &mut Operand)
 
 pub struct Transform;
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !options.raw_consts
+    }
+
     fn transform_function(&self, ctx: &mut TransformCtx, fun_decl: &mut FunDecl) {
-        if ctx.options.raw_consts {
-            return;
-        }
         fun_decl.transform_ullbc_operands(ctx, transform_operand);
         if let Some(body) = fun_decl.body.as_unstructured_mut() {
             for block in body.body.iter_mut() {
