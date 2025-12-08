@@ -223,9 +223,21 @@ pub enum Pass {
 impl Pass {
     pub fn run(self, ctx: &mut TransformCtx) {
         match self {
-            NonBody(pass) => pass.transform_ctx(ctx),
-            UnstructuredBody(pass) => pass.transform_ctx(ctx),
-            StructuredBody(pass) => pass.transform_ctx(ctx),
+            NonBody(pass) => {
+                if pass.should_run(&ctx.options) {
+                    pass.transform_ctx(ctx)
+                }
+            }
+            UnstructuredBody(pass) => {
+                if pass.should_run(&ctx.options) {
+                    pass.transform_ctx(ctx)
+                }
+            }
+            StructuredBody(pass) => {
+                if pass.should_run(&ctx.options) {
+                    pass.transform_ctx(ctx)
+                }
+            }
         }
     }
 

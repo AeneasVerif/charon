@@ -89,15 +89,16 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     let tupled_args@2: (u32); // arg #2
     let y@3: u32; // local
     let @4: u32; // anonymous local
-    let @5: u32; // anonymous local
+    let @5: (u32, bool); // anonymous local
 
     storage_live(y@3)
     storage_live(@5)
     y@3 := move ((tupled_args@2).0)
     storage_live(@4)
     @4 := copy (y@3)
-    @5 := copy (@4) panic.+ const (1 : u32)
-    @0 := move (@5)
+    @5 := copy (@4) checked.+ const (1 : u32)
+    assert(move ((@5).1) == false)
+    @0 := move ((@5).0)
     storage_dead(@4)
     return
 }

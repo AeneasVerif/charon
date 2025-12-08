@@ -438,6 +438,12 @@ type cli_options = {
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
+  reconstruct_fallible_operations : bool;
+      (** Replace "bound checks followed by UB-on-overflow operation" with the
+          corresponding panic-on-overflow operation. This loses unwinding
+          information. *)
+  reconstruct_asserts : bool;
+      (** Replace "if x { panic() }" with "assert(x)". *)
   print_original_ullbc : bool;
       (** Pretty-print the ULLBC immediately after extraction from MIR. *)
   print_ullbc : bool;

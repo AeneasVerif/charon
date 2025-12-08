@@ -830,9 +830,16 @@ pub fn core::num::{isize}::MAX() -> isize
 {
     let @0: isize; // return
     let @1: usize; // anonymous local
+    let @2: u32; // anonymous local
+    let @3: bool; // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     storage_live(@1)
-    @1 := copy (core::num::{usize}::MAX) panic.>> const (1 : i32)
+    @2 := cast<i32, u32>(const (1 : i32))
+    @3 := move (@2) < const (64 : u32)
+    assert(move (@3) == true)
+    @1 := copy (core::num::{usize}::MAX) wrap.>> const (1 : i32)
     @0 := cast<usize, isize>(move (@1))
     storage_dead(@1)
     return
@@ -850,7 +857,9 @@ where
     let n@2: usize; // local
     let @3: usize; // anonymous local
     let @4: usize; // anonymous local
+    let @5: bool; // anonymous local
 
+    storage_live(@5)
     storage_live(@1)
     @1 := const (@TraitClause0::SIZE)
     switch copy (@1) {
@@ -864,7 +873,9 @@ where
             @3 := cast<isize, usize>(copy (core::num::{isize}::MAX))
             storage_live(@4)
             @4 := copy (n@2)
-            @0 := move (@3) panic./ move (@4)
+            @5 := copy (@4) == const (0 : usize)
+            assert(move (@5) == false)
+            @0 := move (@3) ub./ move (@4)
             storage_dead(@4)
             storage_dead(@3)
             storage_dead(n@2)

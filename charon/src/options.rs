@@ -172,6 +172,15 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
+    /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
+    /// panic-on-overflow operation. This loses unwinding information.
+    #[clap(long)]
+    #[serde(default)]
+    pub reconstruct_fallible_operations: bool,
+    /// Replace "if x { panic() }" with "assert(x)".
+    #[clap(long)]
+    #[serde(default)]
+    pub reconstruct_asserts: bool,
 
     /// Pretty-print the ULLBC immediately after extraction from MIR.
     #[clap(long)]
@@ -275,6 +284,8 @@ impl CliOpts {
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
                     self.ops_to_function_calls = true;
+                    self.reconstruct_fallible_operations = true;
+                    self.reconstruct_asserts = true;
                 }
                 Preset::RawMir => {
                     self.extract_opaque_bodies = true;
@@ -285,6 +296,8 @@ impl CliOpts {
                     self.remove_associated_types.push("*".to_owned());
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
+                    self.reconstruct_fallible_operations = true;
+                    self.reconstruct_asserts = true;
                     self.hide_marker_traits = true;
                     self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
@@ -298,6 +311,8 @@ impl CliOpts {
                     self.hide_allocator = true;
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
+                    self.reconstruct_fallible_operations = true;
+                    self.reconstruct_asserts = true;
                     self.remove_associated_types.push("*".to_owned());
                     // Eurydice doesn't support opaque vtables it seems?
                     self.include.push("core::marker::MetaSized".to_owned());
@@ -312,6 +327,8 @@ impl CliOpts {
                     self.no_dedup_serialized_ast = true; // Helps debug
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
+                    self.reconstruct_fallible_operations = true;
+                    self.reconstruct_asserts = true;
                     self.ops_to_function_calls = true;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
@@ -381,6 +398,11 @@ pub struct TranslateOptions {
     pub treat_box_as_builtin: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
+    /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
+    /// panic-on-overflow operation. This loses unwinding information.
+    pub reconstruct_fallible_operations: bool,
+    /// Replace "if x { panic() }" with "assert(x)".
+    pub reconstruct_asserts: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
@@ -470,6 +492,8 @@ impl TranslateOptions {
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
             raw_consts: options.raw_consts,
+            reconstruct_fallible_operations: options.reconstruct_fallible_operations,
+            reconstruct_asserts: options.reconstruct_asserts,
             remove_associated_types,
             translate_all_methods: options.translate_all_methods,
             desugar_drops: options.desugar_drops,

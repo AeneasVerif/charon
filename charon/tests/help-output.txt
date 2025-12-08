@@ -107,6 +107,12 @@ Options:
       --raw-consts
           Do not inline or evaluate constants
 
+      --reconstruct-fallible-operations
+          Replace "bound checks followed by UB-on-overflow operation" with the corresponding panic-on-overflow operation. This loses unwinding information
+
+      --reconstruct-asserts
+          Replace "if x { panic() }" with "assert(x)"
+
       --print-original-ullbc
           Pretty-print the ULLBC immediately after extraction from MIR
 

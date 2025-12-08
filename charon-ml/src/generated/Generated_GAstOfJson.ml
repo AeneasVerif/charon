@@ -392,6 +392,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("ops_to_function_calls", ops_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
+          ("reconstruct_fallible_operations", reconstruct_fallible_operations);
+          ("reconstruct_asserts", reconstruct_asserts);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
           ("print_built_llbc", print_built_llbc);
@@ -432,6 +434,10 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* ops_to_function_calls = bool_of_json ctx ops_to_function_calls in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
+        let* reconstruct_fallible_operations =
+          bool_of_json ctx reconstruct_fallible_operations
+        in
+        let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
         let* print_ullbc = bool_of_json ctx print_ullbc in
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
@@ -469,6 +475,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              ops_to_function_calls;
              treat_box_as_builtin;
              raw_consts;
+             reconstruct_fallible_operations;
+             reconstruct_asserts;
              print_original_ullbc;
              print_ullbc;
              print_built_llbc;
