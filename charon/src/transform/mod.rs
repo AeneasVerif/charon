@@ -46,7 +46,7 @@ pub mod simplify_output {
     pub mod hide_marker_traits;
     pub mod index_intermediate_assigns;
     pub mod index_to_function_calls;
-    pub mod inline_promoted_consts;
+    pub mod inline_anon_consts;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
     pub mod remove_adt_clauses;
@@ -118,8 +118,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
 
 /// Body cleanup passes on the ullbc.
 pub static ULLBC_PASSES: &[Pass] = &[
-    // Inline promoted consts into their parent bodies.
-    UnstructuredBody(&simplify_output::inline_promoted_consts::Transform),
+    // Inline promoted and inline consts into their parent bodies.
+    UnstructuredBody(&simplify_output::inline_anon_consts::Transform),
     // Remove drop statements that are noops.
     UnstructuredBody(&simplify_output::filter_trivial_drops::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
