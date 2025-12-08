@@ -98,11 +98,8 @@ Options:
       --desugar-drops
           Transform precise drops to the equivalent `drop_in_place(&raw mut p)` call
 
-      --no-dedup-serialized-ast
-          Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect
-
-      --no-ops-to-function-calls
-          Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC
+      --ops-to-function-calls
+          Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into builtin functions in ULLBC
 
       --treat-box-as-builtin
           Treat `Box<T>` as if it was a built-in type
@@ -127,6 +124,9 @@ Options:
 
       --dest-file <DEST_FILE>
           The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore `dest_dir`
+
+      --no-dedup-serialized-ast
+          Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect
 
       --no-serialize
           Don't serialize the final (U)LLBC to a file

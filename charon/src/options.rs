@@ -159,14 +159,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub desugar_drops: bool,
-    /// Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect.
+    /// Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into
+    /// builtin functions in ULLBC.
     #[clap(long)]
     #[serde(default)]
-    pub no_dedup_serialized_ast: bool,
-    /// Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC.
-    #[clap(long)]
-    #[serde(default)]
-    pub no_ops_to_function_calls: bool,
+    pub ops_to_function_calls: bool,
     /// Treat `Box<T>` as if it was a built-in type.
     #[clap(long)]
     #[serde(default)]
@@ -203,6 +200,10 @@ pub struct CliOpts {
     #[clap(long, value_parser)]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,
+    /// Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_dedup_serialized_ast: bool,
     /// Don't serialize the final (U)LLBC to a file.
     #[clap(long)]
     #[serde(default)]
@@ -273,6 +274,7 @@ impl CliOpts {
                 Preset::OldDefaults => {
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
+                    self.ops_to_function_calls = true;
                 }
                 Preset::RawMir => {
                     self.extract_opaque_bodies = true;
@@ -282,6 +284,7 @@ impl CliOpts {
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
                     self.treat_box_as_builtin = true;
+                    self.ops_to_function_calls = true;
                     self.hide_marker_traits = true;
                     self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
@@ -294,6 +297,7 @@ impl CliOpts {
                 Preset::Eurydice => {
                     self.hide_allocator = true;
                     self.treat_box_as_builtin = true;
+                    self.ops_to_function_calls = true;
                     self.remove_associated_types.push("*".to_owned());
                     // Eurydice doesn't support opaque vtables it seems?
                     self.include.push("core::marker::MetaSized".to_owned());
@@ -308,6 +312,7 @@ impl CliOpts {
                     self.no_dedup_serialized_ast = true; // Helps debug
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
+                    self.ops_to_function_calls = true;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
@@ -367,8 +372,9 @@ pub struct TranslateOptions {
     pub remove_unused_self_clauses: bool,
     /// Monomorphize code using hax's instantiation mechanism.
     pub monomorphize_with_hax: bool,
-    /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
-    pub no_ops_to_function_calls: bool,
+    /// Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into
+    /// builtin functions in ULLBC.
+    pub ops_to_function_calls: bool,
     /// Print the llbc just after control-flow reconstruction.
     pub print_built_llbc: bool,
     /// Treat `Box<T>` as if it was a built-in type.
@@ -459,7 +465,7 @@ impl TranslateOptions {
             hide_allocator: options.hide_allocator,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize_with_hax: options.monomorphize,
-            no_ops_to_function_calls: options.no_ops_to_function_calls,
+            ops_to_function_calls: options.ops_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,

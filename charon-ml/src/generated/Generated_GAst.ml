@@ -432,12 +432,9 @@ type cli_options = {
   desugar_drops : bool;
       (** Transform precise drops to the equivalent [drop_in_place(&raw mut p)]
           call. *)
-  no_dedup_serialized_ast : bool;
-      (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
-          This makes the file easier to inspect. *)
-  no_ops_to_function_calls : bool;
-      (** Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to
-          builtin function calls for ULLBC. *)
+  ops_to_function_calls : bool;
+      (** Transform array-to-slice unsizing, repeat expressions, and raw pointer
+          construction into builtin functions in ULLBC. *)
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
@@ -458,6 +455,9 @@ type cli_options = {
   dest_file : path_buf option;
       (** The destination file. By default [<dest_dir>/<crate_name>.llbc]. If
           this is set we ignore [dest_dir]. *)
+  no_dedup_serialized_ast : bool;
+      (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
+          This makes the file easier to inspect. *)
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)

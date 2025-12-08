@@ -389,8 +389,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("hide_allocator", hide_allocator);
           ("remove_unused_self_clauses", remove_unused_self_clauses);
           ("desugar_drops", desugar_drops);
-          ("no_dedup_serialized_ast", no_dedup_serialized_ast);
-          ("no_ops_to_function_calls", no_ops_to_function_calls);
+          ("ops_to_function_calls", ops_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
           ("print_original_ullbc", print_original_ullbc);
@@ -399,6 +398,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("print_llbc", print_llbc);
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
+          ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("no_serialize", no_serialize);
           ("abort_on_error", abort_on_error);
           ("error_on_warnings", error_on_warnings);
@@ -429,12 +429,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           bool_of_json ctx remove_unused_self_clauses
         in
         let* desugar_drops = bool_of_json ctx desugar_drops in
-        let* no_dedup_serialized_ast =
-          bool_of_json ctx no_dedup_serialized_ast
-        in
-        let* no_ops_to_function_calls =
-          bool_of_json ctx no_ops_to_function_calls
-        in
+        let* ops_to_function_calls = bool_of_json ctx ops_to_function_calls in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
@@ -443,6 +438,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* print_llbc = bool_of_json ctx print_llbc in
         let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
         let* dest_file = option_of_json path_buf_of_json ctx dest_file in
+        let* no_dedup_serialized_ast =
+          bool_of_json ctx no_dedup_serialized_ast
+        in
         let* no_serialize = bool_of_json ctx no_serialize in
         let* abort_on_error = bool_of_json ctx abort_on_error in
         let* error_on_warnings = bool_of_json ctx error_on_warnings in
@@ -468,8 +466,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              hide_allocator;
              remove_unused_self_clauses;
              desugar_drops;
-             no_dedup_serialized_ast;
-             no_ops_to_function_calls;
+             ops_to_function_calls;
              treat_box_as_builtin;
              raw_consts;
              print_original_ullbc;
@@ -478,6 +475,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              print_llbc;
              dest_dir;
              dest_file;
+             no_dedup_serialized_ast;
              no_serialize;
              abort_on_error;
              error_on_warnings;
