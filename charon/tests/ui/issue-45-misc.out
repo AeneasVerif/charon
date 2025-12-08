@@ -743,7 +743,7 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @19: &'1 (usize); // anonymous local
     let @20: &'1 (usize); // anonymous local
     let @21: &'1 (usize); // anonymous local
-    let @22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'3>}]; // anonymous local
+    let @22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
 
     @0 := ()
     storage_live(@3)

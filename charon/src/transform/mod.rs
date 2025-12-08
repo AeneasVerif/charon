@@ -1,5 +1,5 @@
-pub mod check_generics;
 pub mod ctx;
+pub mod typecheck_and_unify;
 pub mod utils;
 
 /// Passes that finish translation, i.e. required for the output to be a valid output.
@@ -75,8 +75,8 @@ use ctx::{LlbcPass, TransformPass, UllbcPass};
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Compute short names. We do it early to make pretty-printed output more legible in traces.
     NonBody(&add_missing_info::compute_short_names::Transform),
-    // Check that translation emitted consistent generics.
-    NonBody(&check_generics::Check("after translation")),
+    // Check that translation emitted consistent types, and unify body lifetimes (best-effort).
+    NonBody(&typecheck_and_unify::Check::PostTranslation),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&finish_translation::filter_invisible_trait_impls::Transform),
@@ -206,9 +206,8 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
 /// Final passes to run at the end, after pretty-printing the llbc if applicable. These are only
 /// split from the above list to get test outputs even when generics fail to match.
 pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
-    // Check that all supplied generic types match the corresponding generic parameters.
-    // Check that generics are still consistent after the transformation passes.
-    NonBody(&check_generics::Check("after transformations")),
+    // Check that types are still consistent after the transformation passes.
+    NonBody(&typecheck_and_unify::Check::PostTransformation),
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     NonBody(&simplify_output::unbind_item_vars::Check),
 ];

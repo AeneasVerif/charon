@@ -538,7 +538,7 @@ where
     let @2: Iter<'1, T>[@TraitClause0]; // anonymous local
     let @3: &'0 (Slice<T>); // anonymous local
     let iter@4: Iter<'1, T>[@TraitClause0]; // local
-    let @5: Option<&'2 (T)>[{built_in impl Sized for &'3 (T)}]; // anonymous local
+    let @5: Option<&'2 (T)>[{built_in impl Sized for &'2 (T)}]; // anonymous local
     let @6: &'5 mut (Iter<'1, T>[@TraitClause0]); // anonymous local
     let @7: &'5 mut (Iter<'1, T>[@TraitClause0]); // anonymous local
     let x@8: &'2 (T); // local
@@ -590,7 +590,7 @@ where
                 storage_live(@14)
                 storage_live(@15)
                 @15 := &*((args@11).0)
-                @14 := new_debug<'13, '_, &'2 (T)>[{built_in impl Sized for &'14 (T)}, {impl Debug for &'_0 (T)}<'17, T>[@TraitClause1]](move (@15))
+                @14 := new_debug<'13, '_, &'2 (T)>[{built_in impl Sized for &'2 (T)}, {impl Debug for &'_0 (T)}<'2, T>[@TraitClause1]](move (@15))
                 storage_dead(@15)
                 args@13 := [move (@14)]
                 storage_dead(@14)

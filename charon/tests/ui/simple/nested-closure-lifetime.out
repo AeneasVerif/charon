@@ -1,4 +1,4 @@
-error: Found inconsistent generics after translation:
+error: Type error after translation:
        Mismatched regions:
        target: test_crate::foo::closure::closure
        expected: ['_0]
@@ -20,7 +20,7 @@ error: Found inconsistent generics after translation:
 5 | | }
   | |_^
 
-error: Found inconsistent generics after transformations:
+error: Type error after transformations:
        Mismatched regions:
        target: test_crate::foo::closure::closure
        expected: ['_0]

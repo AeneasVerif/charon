@@ -342,7 +342,7 @@ fn foo()
     let @28: &'0 (u32); // anonymous local
     let @29: &'0 (u32); // anonymous local
     let @30: &'0 (u32); // anonymous local
-    let @31: Option<Arguments<'1>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
+    let @31: Option<Arguments<'1>>[{built_in impl Sized for Arguments<'1>}]; // anonymous local
     let @32: &'0 (u32); // anonymous local
     let @33: &'_ (u32); // anonymous local
     let @34: u32; // anonymous local

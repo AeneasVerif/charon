@@ -1330,6 +1330,44 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 }
 
+/// A value of type `T` applied to some `GenericArgs`, except we havent applied them yet to avoid a
+/// deep clone.
+#[derive(Debug, Clone, Copy)]
+pub struct Substituted<'a, T> {
+    pub val: &'a T,
+    pub generics: &'a GenericArgs,
+}
+
+impl<'a, T> Substituted<'a, T> {
+    pub fn new(val: &'a T, generics: &'a GenericArgs) -> Self {
+        Self { val, generics }
+    }
+
+    pub fn rebind<U>(&self, val: &'a U) -> Substituted<'a, U> {
+        Substituted::new(val, self.generics)
+    }
+
+    pub fn substitute(&self) -> T
+    where
+        T: TyVisitable + Clone,
+    {
+        self.val.clone().substitute(self.generics)
+    }
+    pub fn try_substitute(&self) -> Result<T, GenericsMismatch>
+    where
+        T: TyVisitable + Clone,
+    {
+        self.val.clone().try_substitute(self.generics)
+    }
+
+    pub fn iter<Item: 'a>(&self) -> impl Iterator<Item = Substituted<'a, Item>>
+    where
+        &'a T: IntoIterator<Item = &'a Item>,
+    {
+        self.val.into_iter().map(move |x| self.rebind(x))
+    }
+}
+
 impl TypeDecl {
     /// Looks up the variant corresponding to the tag (i.e. the in-memory bytes that represent the discriminant).
     /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).

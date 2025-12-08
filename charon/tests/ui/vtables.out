@@ -1169,7 +1169,7 @@ fn main()
     let @34: &'2 (i32); // anonymous local
     let @35: &'2 (i32); // anonymous local
     let @36: &'2 (i32); // anonymous local
-    let @37: Option<Arguments<'8>>[{built_in impl Sized for Arguments<'9>}]; // anonymous local
+    let @37: Option<Arguments<'8>>[{built_in impl Sized for Arguments<'8>}]; // anonymous local
     let z@38: &'11 ((dyn NoParam + '12)); // local
     let @39: &'11 ((dyn NoParam + '12)); // anonymous local
     let @40: &'11 ((dyn NoParam + '12)); // anonymous local
@@ -1208,7 +1208,7 @@ fn main()
     let @73: &'2 (i32); // anonymous local
     let @74: &'2 (i32); // anonymous local
     let @75: &'2 (i32); // anonymous local
-    let @76: Option<Arguments<'8>>[{built_in impl Sized for Arguments<'9>}]; // anonymous local
+    let @76: Option<Arguments<'8>>[{built_in impl Sized for Arguments<'8>}]; // anonymous local
     let @77: &'2 (i32); // anonymous local
     let @78: &'2 (i32); // anonymous local
     let @79: &'2 (i32); // anonymous local

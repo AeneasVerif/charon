@@ -294,7 +294,7 @@ fn {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1:
 where
     [@TraitClause0]: Sized<U>,
 {
-    let @0: WrapClone<&'_ (U)>[{built_in impl Sized for &'0 (U)}, {impl Clone for &'_0 (T)}<'3, U>]; // return
+    let @0: WrapClone<&'_ (U)>[{built_in impl Sized for &'0 (U)}, {impl Clone for &'_0 (T)}<'2, U>]; // return
     let @1: closure<U>[@TraitClause0]; // arg #1
     let tupled_args@2: (&'_0 (U)); // arg #2
     let x@3: &'_ (U); // local
@@ -343,7 +343,7 @@ pub fn use_wrap()
 {
     let @0: (); // return
     let f@1: closure<u32>[{built_in impl Sized for u32}]; // local
-    let @2: WrapClone<&'0 (u32)>[{built_in impl Sized for &'1 (u32)}, {impl Clone for &'_0 (T)}<'4, u32>]; // anonymous local
+    let @2: WrapClone<&'0 (u32)>[{built_in impl Sized for &'0 (u32)}, {impl Clone for &'_0 (T)}<'0, u32>]; // anonymous local
     let @3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
     let @4: (&'0 (u32)); // anonymous local
     let @5: &'0 (u32); // anonymous local

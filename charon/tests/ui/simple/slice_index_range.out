@@ -405,7 +405,7 @@ pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usiz
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // return
+    let @0: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'0 (Slice<T>)}]; // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice@2: &'0 (Slice<T>); // arg #2
     let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
@@ -421,7 +421,7 @@ where
     let @13: usize; // anonymous local
     let @14: *const T; // anonymous local
     let @15: *const T; // anonymous local
-    let @16: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // anonymous local
+    let @16: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'0 (Slice<T>)}]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -483,7 +483,7 @@ pub fn {impl SliceIndex<Slice<T>> for Range<usize>[{built_in impl Sized for usiz
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // return
+    let @0: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'0 mut (Slice<T>)}]; // return
     let self@1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice@2: &'0 mut (Slice<T>); // arg #2
     let @3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
@@ -499,7 +499,7 @@ where
     let @13: usize; // anonymous local
     let @14: *mut T; // anonymous local
     let @15: *mut T; // anonymous local
-    let @16: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // anonymous local
+    let @16: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'0 mut (Slice<T>)}]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -966,7 +966,7 @@ pub fn {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[{built_in impl Sized
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // return
+    let @0: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'0 (Slice<T>)}]; // return
     let self@1: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice@2: &'0 (Slice<T>); // arg #2
     let @3: bool; // anonymous local
@@ -983,8 +983,8 @@ where
     let @14: *const T; // anonymous local
     let self@15: usize; // local
     let self@16: bool; // local
-    let @17: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // anonymous local
-    let @18: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'1 (Slice<T>)}]; // anonymous local
+    let @17: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'0 (Slice<T>)}]; // anonymous local
+    let @18: Option<&'0 (Slice<T>)>[{built_in impl Sized for &'0 (Slice<T>)}]; // anonymous local
 
     storage_live(self@4)
     storage_live(exclusive_end@5)
@@ -1058,7 +1058,7 @@ pub fn {impl SliceIndex<Slice<T>> for RangeInclusive<usize>[{built_in impl Sized
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // return
+    let @0: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'0 mut (Slice<T>)}]; // return
     let self@1: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice@2: &'0 mut (Slice<T>); // arg #2
     let @3: bool; // anonymous local
@@ -1075,8 +1075,8 @@ where
     let @14: *mut T; // anonymous local
     let self@15: usize; // local
     let self@16: bool; // local
-    let @17: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // anonymous local
-    let @18: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'1 mut (Slice<T>)}]; // anonymous local
+    let @17: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'0 mut (Slice<T>)}]; // anonymous local
+    let @18: Option<&'0 mut (Slice<T>)>[{built_in impl Sized for &'0 mut (Slice<T>)}]; // anonymous local
 
     storage_live(self@4)
     storage_live(exclusive_end@5)

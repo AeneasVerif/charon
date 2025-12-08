@@ -451,7 +451,7 @@ where
 // Full name: test_crate::f
 pub fn f<'a>(@1: &'a (())) -> Option<(&'a (u8))>[{built_in impl Sized for (&'a (u8))}]
 {
-    let @0: Option<(&'0 (u8))>[{built_in impl Sized for (&'1 (u8))}]; // return
+    let @0: Option<(&'0 (u8))>[{built_in impl Sized for (&'0 (u8))}]; // return
     let @1: &'3 (()); // arg #1
 
     @0 := Option::None {  }

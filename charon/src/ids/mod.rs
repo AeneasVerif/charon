@@ -18,7 +18,7 @@ macro_rules! generate_index_type {
     };
     ($name:ident, $pretty_name:expr) => {
         index_vec::define_index_type! {
-            #[derive(derive_generic_visitor::Drive, derive_generic_visitor::DriveMut)]
+            #[derive(Default, derive_generic_visitor::Drive, derive_generic_visitor::DriveMut)]
             #[drive(skip)]
             pub struct $name = usize;
             // Must fit in an u32 for serialization.

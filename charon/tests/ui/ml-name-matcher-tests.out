@@ -423,13 +423,13 @@ fn mono_usage()
 {
     let @0: (); // return
     let _container1@1: MonoContainer<i32>[{built_in impl Sized for i32}]; // local
-    let _container2@2: MonoContainer<&'0 (Str)>[{built_in impl Sized for &'1 (Str)}]; // local
+    let _container2@2: MonoContainer<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}]; // local
 
     @0 := ()
     storage_live(_container1@1)
     _container1@1 := create<i32>[{built_in impl Sized for i32}](const (42 : i32))
     storage_live(_container2@2)
-    _container2@2 := create<&'0 (Str)>[{built_in impl Sized for &'3 (Str)}](const ("test"))
+    _container2@2 := create<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}](const ("test"))
     @0 := ()
     storage_dead(_container2@2)
     storage_dead(_container1@1)

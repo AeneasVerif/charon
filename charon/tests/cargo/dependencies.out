@@ -159,7 +159,7 @@ fn main()
     let @16: &'1 (u32); // anonymous local
     let @17: &'1 (u32); // anonymous local
     let @18: &'1 (u32); // anonymous local
-    let @19: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'3>}]; // anonymous local
+    let @19: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
     let @20: &'1 (u32); // anonymous local
     let @21: &'_ (u32); // anonymous local
     let @22: u32; // anonymous local
