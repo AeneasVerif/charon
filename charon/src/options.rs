@@ -32,24 +32,31 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub ullbc: bool,
-    /// The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
-    /// MIR optimized is available.
-    #[arg(long)]
-    pub mir: Option<MirLevel>,
-    /// The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
-    /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
-    #[clap(long = "dest", value_parser)]
+    /// Whether to precisely translate drops and drop-related code. For this, we add explicit
+    /// `Destruct` bounds to all generic parameters, set the MIR level to at least `elaborated`,
+    /// and attempt to retrieve drop glue for all types.
+    ///
+    /// This option is known to cause panics inside rustc, because their drop handling is not
+    /// design to work on polymorphic types. To silence the warning, pass appropriate `--opaque
+    /// '{impl core::marker::Destruct for some::Type}'` options.
+    ///
+    /// Without this option, drops may be "conditional" and we may lack information about what code
+    /// is run on drop in a given polymorphic function body.
+    #[clap(long)]
     #[serde(default)]
-    pub dest_dir: Option<PathBuf>,
-    /// The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
-    /// `dest_dir`.
-    #[clap(long, value_parser)]
-    #[serde(default)]
-    pub dest_file: Option<PathBuf>,
+    pub precise_drops: bool,
     /// If activated, this skips borrow-checking of the crate.
     #[clap(long)]
     #[serde(default)]
     pub skip_borrowck: bool,
+    /// The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
+    /// MIR optimized is available.
+    #[arg(long)]
+    pub mir: Option<MirLevel>,
+    /// Extra flags to pass to rustc.
+    #[clap(long = "rustc-arg")]
+    #[serde(default)]
+    pub rustc_args: Vec<String>,
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
     /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't
     /// currently support `dyn Trait`.
@@ -68,16 +75,13 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub monomorphize_mut: Option<MonomorphizeMut>,
-    /// Usually we skip the bodies of foreign methods and structs with private fields. When this
-    /// flag is on, we don't.
-    #[clap(long)]
+
+    /// A list of item paths to use as starting points for the translation. We will translate these
+    /// items and any items they refer to, according to the opacity rules. When absent, we start
+    /// from the path `crate` (which translates the whole crate).
+    #[clap(long, value_delimiter = ',')]
     #[serde(default)]
-    pub extract_opaque_bodies: bool,
-    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
-    /// them all.
-    #[clap(long)]
-    #[serde(default)]
-    pub translate_all_methods: bool,
+    pub start_from: Vec<String>,
     /// Whitelist of items to translate. These use the name-matcher syntax.
     #[clap(
         long,
@@ -112,13 +116,24 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub exclude: Vec<String>,
-    /// List of traits for which we transform associated types to type parameters. The syntax is
-    /// like `--include`, see the doc there.
+    /// Usually we skip the bodies of foreign methods and structs with private fields. When this
+    /// flag is on, we don't.
+    #[clap(long)]
+    #[serde(default)]
+    pub extract_opaque_bodies: bool,
+    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
+    /// them all.
+    #[clap(long)]
+    #[serde(default)]
+    pub translate_all_methods: bool,
+
+    /// Transforma the associate types of traits to be type parameters instead. This takes a list
+    /// of name patterns of the traits to transform, using the same syntax as `--include`.
     #[clap(long)]
     #[serde(default)]
     pub remove_associated_types: Vec<String>,
     /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
-    /// anywhere they show up.
+    /// anywhere they show up. This can considerably speed up translation.
     #[clap(long)]
     #[serde(default)]
     pub hide_marker_traits: bool,
@@ -135,76 +150,23 @@ pub struct CliOpts {
     /// Trait method declarations take a `Self: Trait` clause as parameter, so that they can be
     /// reused by multiple trait impls. This however causes trait definitions to be mutually
     /// recursive with their method declarations. This flag removes `Self` clauses that aren't used
-    /// to break this mutual recursion.
+    /// to break this mutual recursion when possible.
     #[clap(long)]
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
-    /// Whether to precisely translate drops and drop-related code. For this, we add explicit
-    /// `Destruct` bounds to all generic parameters, set the MIR level to at least `elaborated`,
-    /// and attempt to retrieve drop glue for all types.
-    ///
-    /// This option is known to cause panics inside rustc, because their drop handling is not
-    /// design to work on polymorphic types. To silence the warning, pass appropriate `--opaque
-    /// '{impl core::marker::Destruct for some::Type}'` options.
-    ///
-    /// Without this option, drops may be "conditional" and we may lack information about what code
-    /// is run on drop in a given polymorphic function body.
-    #[clap(long)]
-    #[serde(default)]
-    pub precise_drops: bool,
+
     /// Transform precise drops to the equivalent `drop_in_place(&raw mut p)` call.
     #[clap(long)]
     #[serde(default)]
     pub desugar_drops: bool,
-    /// A list of item paths to use as starting points for the translation. We will translate these
-    /// items and any items they refer to, according to the opacity rules. When absent, we start
-    /// from the path `crate` (which translates the whole crate).
-    #[clap(long, value_delimiter = ',')]
-    #[serde(default)]
-    pub start_from: Vec<String>,
-    /// Extra flags to pass to rustc.
-    #[clap(long = "rustc-arg")]
-    #[serde(default)]
-    pub rustc_args: Vec<String>,
-    /// Panic on the first error. This is useful for debugging.
-    #[clap(long)]
-    #[serde(default)]
-    pub abort_on_error: bool,
-    /// Consider any warnings to be errors.
-    #[clap(long)]
-    #[serde(default)]
-    pub error_on_warnings: bool,
-    /// Don't serialize the final (U)LLBC to a file.
-    #[clap(long)]
-    #[serde(default)]
-    pub no_serialize: bool,
     /// Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect.
     #[clap(long)]
     #[serde(default)]
     pub no_dedup_serialized_ast: bool,
-
-    /// Print the ULLBC immediately after extraction from MIR.
-    #[clap(long)]
-    #[serde(default)]
-    pub print_original_ullbc: bool,
-    /// Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction).
-    #[clap(long)]
-    #[serde(default)]
-    pub print_ullbc: bool,
-    /// Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
-    #[clap(long)]
-    #[serde(default)]
-    pub print_built_llbc: bool,
-    /// Print the final LLBC (after all the cleaning micro-passes).
-    #[clap(long)]
-    #[serde(default)]
-    pub print_llbc: bool,
-
     /// Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC.
     #[clap(long)]
     #[serde(default)]
     pub no_ops_to_function_calls: bool,
-
     /// Do not special-case the translation of `Box<T>` into a builtin ADT.
     #[clap(long)]
     #[serde(default)]
@@ -214,8 +176,47 @@ pub struct CliOpts {
     #[serde(default)]
     pub raw_consts: bool,
 
-    /// Named builtin sets of options. Currently used only for dependent projects, eveentually
-    /// should be replaced with semantically-meaningful presets.
+    /// Pretty-print the ULLBC immediately after extraction from MIR.
+    #[clap(long)]
+    #[serde(default)]
+    pub print_original_ullbc: bool,
+    /// Pretty-print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction).
+    #[clap(long)]
+    #[serde(default)]
+    pub print_ullbc: bool,
+    /// Pretty-print the LLBC just after we built it (i.e., immediately after loop reconstruction).
+    #[clap(long)]
+    #[serde(default)]
+    pub print_built_llbc: bool,
+    /// Pretty-print the final LLBC (after all the cleaning micro-passes).
+    #[clap(long)]
+    #[serde(default)]
+    pub print_llbc: bool,
+
+    /// The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
+    /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
+    #[clap(long = "dest", value_parser)]
+    #[serde(default)]
+    pub dest_dir: Option<PathBuf>,
+    /// The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
+    /// `dest_dir`.
+    #[clap(long, value_parser)]
+    #[serde(default)]
+    pub dest_file: Option<PathBuf>,
+    /// Don't serialize the final (U)LLBC to a file.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_serialize: bool,
+    /// Panic on the first error. This is useful for debugging.
+    #[clap(long)]
+    #[serde(default)]
+    pub abort_on_error: bool,
+    /// Consider any warnings to be errors.
+    #[clap(long)]
+    #[serde(default)]
+    pub error_on_warnings: bool,
+
+    /// Named builtin sets of options.
     #[clap(long)]
     #[arg(value_enum)]
     pub preset: Option<Preset>,

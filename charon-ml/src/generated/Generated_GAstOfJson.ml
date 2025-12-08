@@ -371,53 +371,54 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("ullbc", ullbc);
-          ("mir", mir);
-          ("dest_dir", dest_dir);
-          ("dest_file", dest_file);
+          ("precise_drops", precise_drops);
           ("skip_borrowck", skip_borrowck);
+          ("mir", mir);
+          ("rustc_args", rustc_args);
           ("monomorphize", monomorphize);
           ("monomorphize_mut", monomorphize_mut);
-          ("extract_opaque_bodies", extract_opaque_bodies);
-          ("translate_all_methods", translate_all_methods);
+          ("start_from", start_from);
           ("include", include_);
           ("opaque", opaque);
           ("exclude", exclude);
+          ("extract_opaque_bodies", extract_opaque_bodies);
+          ("translate_all_methods", translate_all_methods);
           ("remove_associated_types", remove_associated_types);
           ("hide_marker_traits", hide_marker_traits);
           ("remove_adt_clauses", remove_adt_clauses);
           ("hide_allocator", hide_allocator);
           ("remove_unused_self_clauses", remove_unused_self_clauses);
-          ("precise_drops", precise_drops);
           ("desugar_drops", desugar_drops);
-          ("start_from", start_from);
-          ("rustc_args", rustc_args);
-          ("abort_on_error", abort_on_error);
-          ("error_on_warnings", error_on_warnings);
-          ("no_serialize", no_serialize);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
+          ("no_ops_to_function_calls", no_ops_to_function_calls);
+          ("raw_boxes", raw_boxes);
+          ("raw_consts", raw_consts);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
           ("print_built_llbc", print_built_llbc);
           ("print_llbc", print_llbc);
-          ("no_ops_to_function_calls", no_ops_to_function_calls);
-          ("raw_boxes", raw_boxes);
-          ("raw_consts", raw_consts);
+          ("dest_dir", dest_dir);
+          ("dest_file", dest_file);
+          ("no_serialize", no_serialize);
+          ("abort_on_error", abort_on_error);
+          ("error_on_warnings", error_on_warnings);
           ("preset", preset);
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
-        let* mir = option_of_json mir_level_of_json ctx mir in
-        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
-        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
+        let* precise_drops = bool_of_json ctx precise_drops in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
+        let* mir = option_of_json mir_level_of_json ctx mir in
+        let* rustc_args = list_of_json string_of_json ctx rustc_args in
         let* monomorphize = bool_of_json ctx monomorphize in
         let* monomorphize_mut =
           option_of_json monomorphize_mut_of_json ctx monomorphize_mut
         in
-        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
-        let* translate_all_methods = bool_of_json ctx translate_all_methods in
+        let* start_from = list_of_json string_of_json ctx start_from in
         let* included = list_of_json string_of_json ctx include_ in
         let* opaque = list_of_json string_of_json ctx opaque in
         let* exclude = list_of_json string_of_json ctx exclude in
+        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
+        let* translate_all_methods = bool_of_json ctx translate_all_methods in
         let* remove_associated_types =
           list_of_json string_of_json ctx remove_associated_types
         in
@@ -427,60 +428,59 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* remove_unused_self_clauses =
           bool_of_json ctx remove_unused_self_clauses
         in
-        let* precise_drops = bool_of_json ctx precise_drops in
         let* desugar_drops = bool_of_json ctx desugar_drops in
-        let* start_from = list_of_json string_of_json ctx start_from in
-        let* rustc_args = list_of_json string_of_json ctx rustc_args in
-        let* abort_on_error = bool_of_json ctx abort_on_error in
-        let* error_on_warnings = bool_of_json ctx error_on_warnings in
-        let* no_serialize = bool_of_json ctx no_serialize in
         let* no_dedup_serialized_ast =
           bool_of_json ctx no_dedup_serialized_ast
         in
-        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
-        let* print_ullbc = bool_of_json ctx print_ullbc in
-        let* print_built_llbc = bool_of_json ctx print_built_llbc in
-        let* print_llbc = bool_of_json ctx print_llbc in
         let* no_ops_to_function_calls =
           bool_of_json ctx no_ops_to_function_calls
         in
         let* raw_boxes = bool_of_json ctx raw_boxes in
         let* raw_consts = bool_of_json ctx raw_consts in
+        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
+        let* print_ullbc = bool_of_json ctx print_ullbc in
+        let* print_built_llbc = bool_of_json ctx print_built_llbc in
+        let* print_llbc = bool_of_json ctx print_llbc in
+        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
+        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
+        let* no_serialize = bool_of_json ctx no_serialize in
+        let* abort_on_error = bool_of_json ctx abort_on_error in
+        let* error_on_warnings = bool_of_json ctx error_on_warnings in
         let* preset = option_of_json preset_of_json ctx preset in
         Ok
           ({
              ullbc;
-             mir;
-             dest_dir;
-             dest_file;
+             precise_drops;
              skip_borrowck;
+             mir;
+             rustc_args;
              monomorphize;
              monomorphize_mut;
-             extract_opaque_bodies;
-             translate_all_methods;
+             start_from;
              included;
              opaque;
              exclude;
+             extract_opaque_bodies;
+             translate_all_methods;
              remove_associated_types;
              hide_marker_traits;
              remove_adt_clauses;
              hide_allocator;
              remove_unused_self_clauses;
-             precise_drops;
              desugar_drops;
-             start_from;
-             rustc_args;
-             abort_on_error;
-             error_on_warnings;
-             no_serialize;
              no_dedup_serialized_ast;
+             no_ops_to_function_calls;
+             raw_boxes;
+             raw_consts;
              print_original_ullbc;
              print_ullbc;
              print_built_llbc;
              print_llbc;
-             no_ops_to_function_calls;
-             raw_boxes;
-             raw_consts;
+             dest_dir;
+             dest_file;
+             no_serialize;
+             abort_on_error;
+             error_on_warnings;
              preset;
            }
             : cli_options)
