@@ -101,7 +101,7 @@ Options:
       --start-from <START_FROM>
           A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)
 
-      --rustc-flag <RUSTC_ARGS>
+      --rustc-arg <RUSTC_ARGS>
           Extra flags to pass to rustc
 
       --abort-on-error

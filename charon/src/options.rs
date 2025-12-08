@@ -172,7 +172,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub start_from: Vec<String>,
     /// Extra flags to pass to rustc.
-    #[clap(long = "rustc-flag", alias = "rustc-arg")]
+    #[clap(long = "rustc-arg")]
     #[serde(default)]
     pub rustc_args: Vec<String>,
     /// Panic on the first error. This is useful for debugging.
