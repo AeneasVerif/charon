@@ -164,7 +164,9 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub ops_to_function_calls: bool,
-    /// Transform array/slice indexing into builtin functions in ULLBC.
+    /// Transform array/slice indexing into builtin functions in ULLBC. Note that this may
+    /// introduce UB since it creates references that were not normally created, including when
+    /// indexing behind a raw pointer.
     #[clap(long)]
     #[serde(default)]
     pub index_to_function_calls: bool,

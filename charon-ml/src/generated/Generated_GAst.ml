@@ -436,7 +436,9 @@ type cli_options = {
       (** Transform array-to-slice unsizing, repeat expressions, and raw pointer
           construction into builtin functions in ULLBC. *)
   index_to_function_calls : bool;
-      (** Transform array/slice indexing into builtin functions in ULLBC. *)
+      (** Transform array/slice indexing into builtin functions in ULLBC. Note
+          that this may introduce UB since it creates references that were not
+          normally created, including when indexing behind a raw pointer. *)
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;
