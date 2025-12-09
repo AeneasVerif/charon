@@ -161,6 +161,30 @@ fn charon_cargo_target() -> Result<()> {
 }
 
 #[test]
+fn charon_cargo_target_dir() -> Result<()> {
+    // Regression test for #938.
+    charon(
+        &[
+            "cargo",
+            "--print-llbc",
+            "--",
+            "-p",
+            "crate2",
+            "--target-dir=target/foo",
+        ],
+        "tests/cargo/workspace",
+        |stdout, cmd| {
+            let search = "pub fn extra_random_number";
+            ensure!(
+                stdout.contains(search),
+                "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {search:?}."
+            );
+            Ok(())
+        },
+    )
+}
+
+#[test]
 fn charon_rustc() -> Result<()> {
     let path = "tests/cargo/workspace/crate1/src/lib.rs";
     let args = &["rustc", "--print-llbc", "--", "--crate-type=lib", path];

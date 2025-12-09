@@ -31,6 +31,7 @@
 //! callbacks.
 use anyhow::Result;
 use charon_lib::{
+    common::arg_value,
     logger,
     options::{CHARON_ARGS, CliOpts},
 };
@@ -93,17 +94,14 @@ fn translate_with_cargo(
     cmd.env_remove("CARGO_PRIMARY_PACKAGE");
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
     cmd.arg("build");
-    let is_specified = |arg| {
-        let mut iter = cargo_args.iter();
-        iter.any(|input| input.starts_with(arg))
-    };
-    if !is_specified("--target") {
+    if arg_value(&cargo_args, "--target").is_none() {
         // Make sure the build target is explicitly set. This is needed to detect which crates are
         // proc-macro/build-script in `charon-driver`.
         cmd.arg("--target");
         cmd.arg(&get_rustc_version()?.host);
     }
     cmd.args(cargo_args);
+    trace!("running {cmd:?}");
     Ok(cmd
         .spawn()
         .expect("could not run cargo")
