@@ -58,14 +58,14 @@ const UNIT_METADATA: () = @Fun0()
 fn six() -> u32
 {
     let @0: u32; // return
-    let x@1: &'_ (u32); // local
+    let x@1: &'0 (u32); // local
     let @2: u32; // anonymous local
-    let y@3: &'_ (u32); // local
+    let y@3: &'0 (u32); // local
     let @4: u32; // anonymous local
-    let @5: &'_ (u32); // anonymous local
-    let @6: &'_ (u32); // anonymous local
-    let @7: &'_ (u32); // anonymous local
-    let @8: &'_ (u32); // anonymous local
+    let @5: &'0 (u32); // anonymous local
+    let @6: &'0 (u32); // anonymous local
+    let @7: &'0 (u32); // anonymous local
+    let @8: &'0 (u32); // anonymous local
     let @9: &'_ (u32); // anonymous local
     let @10: u32; // anonymous local
     let @11: u32; // anonymous local
@@ -101,7 +101,7 @@ fn six() -> u32
     @5 := copy (x@1)
     storage_live(@6)
     @6 := copy (y@3)
-    @0 := {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_, '_>(move (@5), move (@6))
+    @0 := {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'1, '2>(move (@5), move (@6))
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(y@3)

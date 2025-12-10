@@ -95,14 +95,14 @@ class ['self] map_crate_with_span =
 
     method visit_expr_body (decl_span_info : (item_id * span) option)
         (body : expr_body) : expr_body =
-      let { span; locals; body } = body in
+      let { span; locals; bound_body_regions; body } = body in
       let decl_span_info =
         Option.map (fun (decl_id, _) -> (decl_id, body.span)) decl_span_info
       in
       let span = self#visit_span decl_span_info span in
       let locals = self#visit_locals decl_span_info locals in
       let body = self#visit_block decl_span_info body in
-      { span; locals; body }
+      { span; locals; bound_body_regions; body }
 
     method visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) :
         fun_decl =
@@ -283,7 +283,7 @@ class ['self] iter_crate_with_span =
 
     method visit_expr_body (decl_span_info : (item_id * span) option)
         (body : expr_body) : unit =
-      let { span; locals; body } = body in
+      let { span; locals; bound_body_regions = _; body } = body in
       let decl_span_info =
         Option.map (fun (decl_id, _) -> (decl_id, body.span)) decl_span_info
       in

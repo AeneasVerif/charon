@@ -42,8 +42,8 @@ where
     [@TraitClause1]: Destruct<Self>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (Self); // arg #1
-    let source@2: &'_ (Self); // arg #2
+    let self@1: &'0 mut (Self); // arg #1
+    let source@2: &'1 (Self); // arg #2
     let @3: Self; // anonymous local
 
     @0 := ()
@@ -59,7 +59,7 @@ where
 pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
 {
     let @0: u8; // return
-    let self@1: &'_ (u8); // arg #1
+    let self@1: &'0 (u8); // arg #1
 
     @0 := copy (*(self@1))
     return
@@ -71,8 +71,8 @@ where
     [@TraitClause0]: Destruct<u8>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (u8); // arg #1
-    let source@2: &'_ (u8); // arg #2
+    let self@1: &'0 mut (u8); // arg #1
+    let source@2: &'1 (u8); // arg #2
     let @3: u8; // anonymous local
 
     @0 := ()

@@ -34,11 +34,11 @@ where
     [@TraitClause0]: Trait<Self>,
 {
     let @0: (); // return
-    let self@1: &'_ (Self); // arg #1
+    let self@1: &'0 (Self); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Self); // anonymous local
+    let @3: &'0 (Self); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (Self); // anonymous local
+    let @5: &'0 (Self); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -62,11 +62,11 @@ where
     [@TraitClause0]: Trait<Self>,
 {
     let @0: (); // return
-    let self@1: &'_ (Self); // arg #1
+    let self@1: &'0 (Self); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Self); // anonymous local
+    let @3: &'0 (Self); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (Self); // anonymous local
+    let @5: &'0 (Self); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -92,9 +92,9 @@ struct Foo {}
 fn {impl Trait for Foo}::required<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (Foo); // arg #1
+    let self@1: &'0 (Foo); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Foo); // anonymous local
+    let @3: &'0 (Foo); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -111,11 +111,11 @@ fn {impl Trait for Foo}::required<'_0>(@1: &'_0 (Foo))
 fn {impl Trait for Foo}::provided1<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (Foo); // arg #1
+    let self@1: &'0 (Foo); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Foo); // anonymous local
+    let @3: &'0 (Foo); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (Foo); // anonymous local
+    let @5: &'0 (Foo); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -138,11 +138,11 @@ fn {impl Trait for Foo}::provided1<'_0>(@1: &'_0 (Foo))
 fn {impl Trait for Foo}::provided2<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (Foo); // arg #1
+    let self@1: &'0 (Foo); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Foo); // anonymous local
+    let @3: &'0 (Foo); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (Foo); // anonymous local
+    let @5: &'0 (Foo); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -177,9 +177,9 @@ struct Bar {}
 fn {impl Trait for Bar}::required<'_0>(@1: &'_0 (Bar))
 {
     let @0: (); // return
-    let self@1: &'_ (Bar); // arg #1
+    let self@1: &'0 (Bar); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Bar); // anonymous local
+    let @3: &'0 (Bar); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -196,9 +196,9 @@ fn {impl Trait for Bar}::required<'_0>(@1: &'_0 (Bar))
 fn {impl Trait for Bar}::provided1<'_0>(@1: &'_0 (Bar))
 {
     let @0: (); // return
-    let self@1: &'_ (Bar); // arg #1
+    let self@1: &'0 (Bar); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Bar); // anonymous local
+    let @3: &'0 (Bar); // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -215,11 +215,11 @@ fn {impl Trait for Bar}::provided1<'_0>(@1: &'_0 (Bar))
 fn {impl Trait for Bar}::provided2<'_0>(@1: &'_0 (Bar))
 {
     let @0: (); // return
-    let self@1: &'_ (Bar); // arg #1
+    let self@1: &'0 (Bar); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (Bar); // anonymous local
+    let @3: &'0 (Bar); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (Bar); // anonymous local
+    let @5: &'0 (Bar); // anonymous local
 
     @0 := ()
     storage_live(@2)

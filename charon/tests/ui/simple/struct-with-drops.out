@@ -99,7 +99,7 @@ struct A {
 pub fn {impl Drop for B}::drop<'_0>(@1: &'_0 mut (B))
 {
     let @0: (); // return
-    let self@1: &'_ mut (B); // arg #1
+    let self@1: &'0 mut (B); // arg #1
 
     @0 := ()
     @0 := ()
@@ -111,8 +111,8 @@ fn {impl Destruct for B}::drop_in_place(@1: *mut B)
 {
     let @0: (); // return
     let @1: *mut B; // arg #1
-    let @2: &'_ mut (B); // anonymous local
-    let @3: &'_ mut (B); // anonymous local
+    let @2: &'0 mut (B); // anonymous local
+    let @3: &'0 mut (B); // anonymous local
     let @4: (); // anonymous local
 
     storage_live(@2)
@@ -138,7 +138,7 @@ fn {impl Destruct for A}::drop_in_place(@1: *mut A)
 {
     let @0: (); // return
     let @1: *mut A; // arg #1
-    let @2: &'_ mut (A); // anonymous local
+    let @2: &'0 mut (A); // anonymous local
 
     storage_live(@2)
     @0 := ()

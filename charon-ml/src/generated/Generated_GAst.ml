@@ -452,6 +452,13 @@ type cli_options = {
   reconstruct_asserts : bool;
       (** Replace "if x { panic() }" with "assert(x)". *)
   unbind_item_vars : bool;
+      (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
+          instead of [DeBruijnVar::Bound] everywhere. This simplifies the
+          management of generics for projects that don't intend to manipulate
+          them too much. *)
+  no_erase_body_regions : bool;
+      (** Disable the aeneas-only erasure of [Body] regions. Temporary flag to
+          help migration. *)
   print_original_ullbc : bool;
       (** Pretty-print the ULLBC immediately after extraction from MIR. *)
   print_ullbc : bool;
@@ -502,8 +509,12 @@ and 'a0 g_declaration_group =
     then, the print is obfuscated and Aeneas may need some refactoring. *)
 and 'a0 gexpr_body = {
   span : span;
+  bound_body_regions : int;
+      (** The number of regions existentially bound in this body. We introduce
+          fresh such regions during translation instead of the erased regions
+          that rustc gives us. *)
   locals : locals;  (** The local variables. *)
-  body : 'a0;
+  body : 'a0;  (** The statements and blocks that compose this body. *)
 }
 
 (** The MIR stage to use. This is only relevant for the current crate: for

@@ -188,12 +188,16 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
-    // Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of
-    // `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects
-    // that don't intend to manipulate them too much.
+    /// Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of
+    /// `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects
+    /// that don't intend to manipulate them too much.
     #[clap(long)]
     #[serde(default)]
     pub unbind_item_vars: bool,
+    ///  Disable the aeneas-only erasure of `Body` regions. Temporary flag to help migration.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_erase_body_regions: bool,
 
     /// Pretty-print the ULLBC immediately after extraction from MIR.
     #[clap(long)]
@@ -438,6 +442,8 @@ pub struct TranslateOptions {
     pub add_destruct_bounds: bool,
     /// Translate drop glue for poly types, knowing that this may cause ICEs.
     pub translate_poly_drop_glue: bool,
+    /// Whether to erase all `Body` lifetimes at the end of translation.
+    pub erase_body_lifetimes: bool,
 }
 
 impl TranslateOptions {
@@ -525,6 +531,8 @@ impl TranslateOptions {
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
             translate_poly_drop_glue: options.precise_drops,
+            erase_body_lifetimes: matches!(options.preset, Some(Preset::Aeneas))
+                && !options.no_erase_body_regions,
         }
     }
 

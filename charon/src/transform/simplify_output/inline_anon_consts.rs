@@ -27,7 +27,7 @@ impl UllbcPass for Transform {
                 for block_id in outer_body.body.all_indices() {
                     // Subtle: This generator must be managed to correctly track the indices that will
                     // be generated when pushing onto `outer_body.body`.
-                    let mut bid_generator =
+                    let mut bid_generator: Generator<BlockId> =
                         Generator::new_with_init_value(outer_body.body.next_id());
                     let start_new_bodies = bid_generator.next_id();
                     let Some(block) = outer_body.body.get_mut(block_id) else {
@@ -44,6 +44,14 @@ impl UllbcPass for Transform {
                             // local becomes a normal local that we can read from. We redirect some
                             // gotos so that the inner body is executed before the current block.
                             let mut inner_body = inner_body.clone().substitute(&gref.generics);
+
+                            // Shift all the body regions in the inner body.
+                            outer_body.bound_body_regions += inner_body.bound_body_regions;
+                            inner_body.dyn_visit_mut(|r: &mut Region| {
+                                if let Region::Body(v) = r {
+                                    *v += outer_body.bound_body_regions;
+                                }
+                            });
 
                             // The init function of a global assumes the return place is live;
                             // this is not the case once we inline it

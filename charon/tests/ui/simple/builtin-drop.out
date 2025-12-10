@@ -90,7 +90,7 @@ where
 {
     let @0: (); // return
     let @1: *mut Array<T, N>; // arg #1
-    let @2: &'_ mut (Array<T, N>); // anonymous local
+    let @2: &'0 mut (Array<T, N>); // anonymous local
     let @3: *mut Array<T, N>; // anonymous local
     let @4: *mut Slice<T>; // anonymous local
     let @5: usize; // anonymous local
@@ -149,7 +149,7 @@ where
 {
     let @0: (); // return
     let @1: *mut Slice<T>; // arg #1
-    let @2: &'_ mut (Slice<T>); // anonymous local
+    let @2: &'0 mut (Slice<T>); // anonymous local
     let @3: usize; // anonymous local
     let @4: usize; // anonymous local
     let @5: *mut T; // anonymous local
@@ -203,7 +203,7 @@ where
 {
     let @0: (); // return
     let @1: *mut (A, B); // arg #1
-    let @2: &'_ mut ((A, B)); // anonymous local
+    let @2: &'0 mut ((A, B)); // anonymous local
 
     storage_live(@2)
     @0 := ()

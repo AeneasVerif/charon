@@ -396,6 +396,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_asserts", reconstruct_asserts);
           ("unbind_item_vars", unbind_item_vars);
+          ("no_erase_body_regions", no_erase_body_regions);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
           ("print_built_llbc", print_built_llbc);
@@ -444,6 +445,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
         let* unbind_item_vars = bool_of_json ctx unbind_item_vars in
+        let* no_erase_body_regions = bool_of_json ctx no_erase_body_regions in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
         let* print_ullbc = bool_of_json ctx print_ullbc in
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
@@ -485,6 +487,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              reconstruct_fallible_operations;
              reconstruct_asserts;
              unbind_item_vars;
+             no_erase_body_regions;
              print_original_ullbc;
              print_ullbc;
              print_built_llbc;
@@ -919,12 +922,18 @@ and gexpr_body_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("span", span); ("locals", locals); ("comments", _); ("body", body) ]
-      ->
+        [
+          ("span", span);
+          ("bound_body_regions", bound_body_regions);
+          ("locals", locals);
+          ("body", body);
+          ("comments", _);
+        ] ->
         let* span = span_of_json ctx span in
+        let* bound_body_regions = int_of_json ctx bound_body_regions in
         let* locals = locals_of_json ctx locals in
         let* body = arg0_of_json ctx body in
-        Ok ({ span; locals; body } : _ gexpr_body)
+        Ok ({ span; bound_body_regions; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
 and generic_args_of_json (ctx : of_json_ctx) (js : json) :
@@ -1541,6 +1550,9 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
         let* var = de_bruijn_var_of_json region_id_of_json ctx var in
         Ok (RVar var)
     | `String "Static" -> Ok RStatic
+    | `Assoc [ ("Body", body) ] ->
+        let* body = region_id_of_json ctx body in
+        Ok (RBody body)
     | `String "Erased" -> Ok RErased
     | _ -> Error "")
 

@@ -142,8 +142,8 @@ pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (
 pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
     let @0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
-    let self@1: &'_ (u32); // arg #1
-    let f@2: &'_ mut (Formatter<'_>); // arg #2
+    let self@1: &'0 (u32); // arg #1
+    let f@2: &'1 mut (Formatter<'2>); // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
@@ -230,8 +230,8 @@ where
     let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e@2: E; // local
     let @3: !; // anonymous local
-    let @4: &'_ ((dyn Debug)); // anonymous local
-    let @5: &'_ (E); // anonymous local
+    let @4: &'0 ((dyn Debug + '1)); // anonymous local
+    let @5: &'2 (E); // anonymous local
 
     storage_live(@3)
     storage_live(@5)
@@ -243,7 +243,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ ((dyn Debug)), @TraitClause2 with ?>(copy (@5))
+            @4 := unsize_cast<&'2 (E), &'0 ((dyn Debug + '1)), @TraitClause2 with ?>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }
