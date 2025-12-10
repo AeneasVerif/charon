@@ -452,6 +452,13 @@ type cli_options = {
   reconstruct_asserts : bool;
       (** Replace "if x { panic() }" with "assert(x)". *)
   unbind_item_vars : bool;
+      (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
+          instead of [DeBruijnVar::Bound] everywhere. This simplifies the
+          management of generics for projects that don't intend to manipulate
+          them too much. *)
+  no_erase_body_regions : bool;
+      (** Disable the aeneas-only erasure of [Body] regions. Temporary flag to
+          help migration. *)
   print_original_ullbc : bool;
       (** Pretty-print the ULLBC immediately after extraction from MIR. *)
   print_ullbc : bool;
