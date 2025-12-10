@@ -1202,9 +1202,26 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
         let* item_name = trait_item_name_of_json ctx item_name in
         let* reuses_default = bool_of_json ctx reuses_default in
         Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
-    | `Assoc [ ("VTableTy", `Assoc [ ("dyn_predicate", dyn_predicate) ]) ] ->
+    | `Assoc
+        [
+          ( "VTableTy",
+            `Assoc
+              [
+                ("dyn_predicate", dyn_predicate);
+                ("field_map", field_map);
+                ("supertrait_map", supertrait_map);
+              ] );
+        ] ->
         let* dyn_predicate = dyn_predicate_of_json ctx dyn_predicate in
-        Ok (VTableTyItem dyn_predicate)
+        let* field_map =
+          vector_of_json field_id_of_json v_table_field_of_json ctx field_map
+        in
+        let* supertrait_map =
+          vector_of_json trait_clause_id_of_json
+            (option_of_json field_id_of_json)
+            ctx supertrait_map
+        in
+        Ok (VTableTyItem (dyn_predicate, field_map, supertrait_map))
     | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
         let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
         Ok (VTableInstanceItem impl_ref)
@@ -2221,6 +2238,21 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         let* v_table_ptr = trait_ref_of_json ctx v_table_ptr in
         Ok (MetaVTablePtr v_table_ptr)
     | `String "Unknown" -> Ok MetaUnknown
+    | _ -> Error "")
+
+and v_table_field_of_json (ctx : of_json_ctx) (js : json) :
+    (v_table_field, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Size" -> Ok VTableSize
+    | `String "Align" -> Ok VTableAlign
+    | `String "Drop" -> Ok VTableDrop
+    | `Assoc [ ("Method", method_) ] ->
+        let* method_ = trait_item_name_of_json ctx method_ in
+        Ok (VTableMethod method_)
+    | `Assoc [ ("SuperTrait", super_trait) ] ->
+        let* super_trait = trait_clause_id_of_json ctx super_trait in
+        Ok (VTableSuperTrait super_trait)
     | _ -> Error "")
 
 and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =

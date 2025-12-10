@@ -793,12 +793,15 @@ and item_source =
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
-  | VTableTyItem of dyn_predicate
+  | VTableTyItem of dyn_predicate * v_table_field list * field_id option list
       (** This is a vtable struct for a trait.
 
           Fields:
           - [dyn_predicate]: The [dyn Trait] predicate implemented by this
-            vtable. *)
+            vtable.
+          - [field_map]: Record what each vtable field means.
+          - [supertrait_map]: For each implied clause that is also a supertrait
+            clause, reords which field id corresponds to it. *)
   | VTableInstanceItem of trait_impl_ref
       (** This is a vtable value for an impl.
 
@@ -977,6 +980,13 @@ and type_decl_kind =
   | TDeclError of string
       (** Used if an error happened during the extraction, and we don't panic on
           error. *)
+
+and v_table_field =
+  | VTableSize
+  | VTableAlign
+  | VTableDrop
+  | VTableMethod of trait_item_name
+  | VTableSuperTrait of trait_clause_id
 
 and variant = {
   span : span;

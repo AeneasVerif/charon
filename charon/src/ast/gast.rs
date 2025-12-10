@@ -152,6 +152,11 @@ pub enum ItemSource {
     VTableTy {
         /// The `dyn Trait` predicate implemented by this vtable.
         dyn_predicate: DynPredicate,
+        /// Record what each vtable field means.
+        field_map: Vector<FieldId, VTableField>,
+        /// For each implied clause that is also a supertrait clause, reords which field id
+        /// corresponds to it.
+        supertrait_map: Vector<TraitClauseId, Option<FieldId>>,
     },
     /// This is a vtable value for an impl.
     VTableInstance { impl_ref: TraitImplRef },
@@ -159,6 +164,16 @@ pub enum ItemSource {
     /// Trait` as its `Self` type. This shim casts the receiver to the known concrete type and
     /// calls the real method.
     VTableMethodShim,
+}
+
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, PartialEq, Eq)]
+#[charon::variants_prefix("VTable")]
+pub enum VTableField {
+    Size,
+    Align,
+    Drop,
+    Method(TraitItemName),
+    SuperTrait(TraitClauseId),
 }
 
 /// A function definition

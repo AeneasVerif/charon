@@ -36,21 +36,22 @@ fn make_ocaml_ident(name: &str) -> String {
     let mut name = name.to_case(Case::Snake);
     if matches!(
         &*name,
-        "virtual"
+        "assert"
             | "bool"
             | "char"
-            | "struct"
-            | "type"
-            | "let"
+            | "end"
+            | "float"
             | "fun"
+            | "function"
+            | "include"
+            | "let"
+            | "method"
             | "open"
             | "rec"
-            | "assert"
-            | "float"
-            | "end"
-            | "include"
+            | "struct"
             | "to"
-            | "function"
+            | "type"
+            | "virtual"
     ) {
         name += "_";
     }
