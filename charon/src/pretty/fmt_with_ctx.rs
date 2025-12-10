@@ -373,10 +373,83 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
 
 impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let ctx = &ctx.push_binder(Cow::Borrowed(&self.binder.params));
-        let ty = self.binder.skip_binder.with_ctx(ctx);
-        let clauses = self.binder.params.formatted_clauses(ctx).format(" + ");
-        write!(f, "exists<{ty}> {clauses}")
+        let params = &self.binder.params;
+        let ctx = &ctx.push_binder(Cow::Borrowed(params));
+        let GenericParams {
+            regions,
+            types,
+            const_generics,
+            trait_clauses,
+            regions_outlive,
+            types_outlive,
+            trait_type_constraints,
+        } = params;
+        assert!(regions.is_empty());
+        assert!(const_generics.is_empty());
+        assert!(regions_outlive.is_empty());
+        assert_eq!(types.elem_count(), 1);
+
+        // Format the clauses with their assoc types, e.g. `Iterator<Item = ...>`.
+        let mut cstrs_per_clause: Vector<TraitClauseId, Vec<String>> =
+            trait_clauses.map_ref(|_| vec![]);
+        for cstr in trait_type_constraints {
+            let mut tgt_clause = None;
+            let (_, cstr) = cstr.fmt_split_with(ctx, |ctx, cstr| {
+                let mut path = vec![];
+                let mut tref = &cstr.trait_ref;
+                loop {
+                    match &tref.kind {
+                        TraitRefKind::ParentClause(parent_trait_ref, clause_id) => {
+                            path.push(format!("parent_clause{clause_id}"));
+                            tref = &parent_trait_ref;
+                        }
+                        &TraitRefKind::Clause(DeBruijnVar::Bound(_, clause_id)) => {
+                            tgt_clause = Some(clause_id);
+                            break;
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+                let ty = cstr.ty.to_string_with_ctx(ctx);
+                let path = path
+                    .into_iter()
+                    .map(Either::Left)
+                    .chain([Either::Right(cstr.type_name)])
+                    .format("::");
+                format!("{path} = {ty}")
+            });
+            cstrs_per_clause[tgt_clause.unwrap()].push(cstr);
+        }
+        let trait_clauses = trait_clauses.iter().map(|clause| {
+            let cstrs = &cstrs_per_clause[clause.clause_id];
+            clause.trait_.fmt_as_for_with(ctx, |ctx, pred| {
+                let (_, pred) = pred.split_self();
+                let trait_id = pred.id.with_ctx(ctx);
+                let generics = if pred.generics.has_explicits() || !cstrs.is_empty() {
+                    let xs = pred
+                        .generics
+                        .fmt_explicits(ctx)
+                        .map(Either::Left)
+                        .chain(cstrs.into_iter().map(Either::Right))
+                        .format(", ");
+                    format!("<{}>", xs)
+                } else {
+                    String::new()
+                };
+                format!("{trait_id}{generics}")
+            })
+        });
+
+        let types_outlive = types_outlive
+            .iter()
+            .filter(|x| !x.skip_binder.1.is_erased())
+            .map(|x| {
+                x.fmt_as_for_with(ctx, |ctx, types_outlive| {
+                    types_outlive.1.to_string_with_ctx(ctx)
+                })
+            });
+        let clauses = trait_clauses.chain(types_outlive).format(" + ");
+        write!(f, "{clauses}")
     }
 }
 
@@ -1200,6 +1273,17 @@ impl<T> RegionBinder<T> {
         C: AstFormatter,
         T: FmtWithCtx<C::Reborrow<'a>>,
     {
+        self.fmt_split_with(ctx, |ctx, x| x.to_string_with_ctx(ctx))
+    }
+    /// Format the parameters and contents of this binder and returns the resulting strings.
+    fn fmt_split_with<'a, C>(
+        &'a self,
+        ctx: &'a C,
+        fmt_inner: impl FnOnce(&C::Reborrow<'a>, &T) -> String,
+    ) -> (String, String)
+    where
+        C: AstFormatter,
+    {
         let ctx = &ctx.push_bound_regions(&self.regions);
         (
             self.regions
@@ -1207,7 +1291,7 @@ impl<T> RegionBinder<T> {
                 .map(|r| r.with_ctx(ctx))
                 .format(", ")
                 .to_string(),
-            self.skip_binder.to_string_with_ctx(ctx),
+            fmt_inner(ctx, &self.skip_binder),
         )
     }
 
@@ -1217,7 +1301,19 @@ impl<T> RegionBinder<T> {
         C: AstFormatter,
         T: FmtWithCtx<C::Reborrow<'a>>,
     {
-        let (regions, value) = self.fmt_split(ctx);
+        self.fmt_as_for_with(ctx, |ctx, x| x.to_string_with_ctx(ctx))
+    }
+    /// Formats the binder as `for<params> value`.
+    fn fmt_as_for_with<'a, C>(
+        &'a self,
+        ctx: &'a C,
+        fmt_inner: impl FnOnce(&C::Reborrow<'a>, &T) -> String,
+    ) -> String
+    where
+        C: AstFormatter,
+        T: FmtWithCtx<C::Reborrow<'a>>,
+    {
+        let (regions, value) = self.fmt_split_with(ctx, fmt_inner);
         let regions = if regions.is_empty() {
             "".to_string()
         } else {
@@ -1721,9 +1817,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
 }
 
 impl TraitDeclRef {
-    fn format_as_impl<C: AstFormatter>(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    /// Split off the `Self` type. The returned `TraitDeclRef` has incorrect generics. The returned
+    /// `Self` is `None` for monomorphized traits.
+    fn split_self(&self) -> (Option<Ty>, Self) {
         let mut pred = self.clone();
         let self_ty = pred.generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+        (self_ty, pred)
+    }
+
+    fn format_as_impl<C: AstFormatter>(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (self_ty, pred) = self.split_self();
         let pred = pred.with_ctx(ctx);
         match self_ty {
             Some(self_ty) => {

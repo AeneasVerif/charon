@@ -46,25 +46,25 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : 'static))
+fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn Any + 'static))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,
 {
-    let @0: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // return
+    let @0: &'_ ((dyn Any)); // return
     let x@1: &'_ (T); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // anonymous local
-    let @3: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)); // anonymous local
+    let @2: &'_ ((dyn Any)); // anonymous local
+    let @3: &'_ ((dyn Any)); // anonymous local
     let @4: &'_ (T); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(x@1)
-    @3 := unsize_cast<&'_ (T), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), @TraitClause1>(move (@4))
+    @3 := unsize_cast<&'_ (T), &'_ ((dyn Any)), @TraitClause1>(move (@4))
     storage_dead(@4)
     @2 := &*(@3) with_metadata(copy (@3.metadata))
-    @0 := unsize_cast<&'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_)), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Any<_dyn> + _dyn : '_))>(move (@2))
+    @0 := unsize_cast<&'_ ((dyn Any)), &'_ ((dyn Any))>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return

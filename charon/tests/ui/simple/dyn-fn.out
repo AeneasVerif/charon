@@ -96,13 +96,13 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::takes_fn
-fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_0 + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)))
+fn takes_fn<'_0>(@1: &'_0 ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool> + '_0)))
 {
     let @0: (); // return
-    let f@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)); // arg #1
+    let f@1: &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)); // arg #1
     let counter@2: u32; // local
     let @3: bool; // anonymous local
-    let @4: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)); // anonymous local
+    let @4: &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)); // anonymous local
     let @5: (&'_ mut (u32)); // anonymous local
     let @6: &'_ mut (u32); // anonymous local
     let @7: &'_ mut (u32); // anonymous local
@@ -119,7 +119,7 @@ fn takes_fn<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn,
     @7 := &mut counter@2
     @6 := &two-phase-mut *(@7)
     @5 := (move (@6))
-    @3 := Fn<(dyn exists<_dyn> [@TraitClause0_2]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_2::parent_clause1::parent_clause1::Output = bool), (&'_ mut (u32))>::call<'_>(move (@4), move (@5))
+    @3 := Fn<(dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>), (&'_ mut (u32))>::call<'_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@7)
         storage_dead(@6)
@@ -233,7 +233,7 @@ impl<'_0> Fn<(&'_ mut (u32))> for closure {
 fn gives_fn()
 {
     let @0: (); // return
-    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)); // anonymous local
+    let @1: &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)); // anonymous local
     let @2: &'_ (closure); // anonymous local
     let @3: &'_ (closure); // anonymous local
     let @4: &'_ (closure); // anonymous local
@@ -252,7 +252,7 @@ fn gives_fn()
     @4 := move (@5)
     @3 := &*(@4)
     @2 := &*(@3)
-    @1 := unsize_cast<&'_ (closure), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)), {impl Fn<(&'_ mut (u32))> for closure}<'_>>(move (@2))
+    @1 := unsize_cast<&'_ (closure), &'_ ((dyn for<'a> Fn<(&'a mut (u32)), parent_clause1::parent_clause1::Output = bool>)), {impl Fn<(&'_ mut (u32))> for closure}<'_>>(move (@2))
     storage_dead(@2)
     @0 := takes_fn<'_>(move (@1))
     storage_dead(@1)

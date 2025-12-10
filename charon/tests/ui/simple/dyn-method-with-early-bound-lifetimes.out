@@ -19,8 +19,8 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Trait<_dyn> + _dyn : '_)),
-  method_foo: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Trait<_dyn> + _dyn : '_))),
+  drop: fn(*mut (dyn Trait)),
+  method_foo: fn<'_0_1>(&'_0_1 ((dyn Trait))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 
@@ -38,10 +38,10 @@ where
     Self : 'a,
 = <method_without_default_body>
 
-fn test_crate::foo<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_0)))
+fn test_crate::foo<'_0>(@1: &'_0 ((dyn Trait + '_0)))
 {
     let @0: (); // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Trait<_dyn> + _dyn : '_)); // arg #1
+    let x@1: &'_ ((dyn Trait)); // arg #1
 
     @0 := ()
     @0 := ()
