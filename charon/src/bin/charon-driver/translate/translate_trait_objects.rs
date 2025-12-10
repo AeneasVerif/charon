@@ -140,6 +140,21 @@ impl ItemTransCtx<'_, '_> {
     }
 }
 
+/// Vtable field info used for translation (same deal as `charon_lib::VTableField` but with
+/// different data).
+pub enum TrVTableField {
+    Size,
+    Align,
+    Drop,
+    Method(TraitItemName, hax::Binder<hax::TyFnSig>),
+    SuperTrait(TraitClauseId, hax::Clause),
+}
+
+pub struct VTableData {
+    pub fields: Vector<FieldId, TrVTableField>,
+    pub supertrait_map: Vector<TraitClauseId, Option<FieldId>>,
+}
+
 //// Generate the vtable struct.
 impl ItemTransCtx<'_, '_> {
     /// Query whether a trait is dyn compatible.
@@ -223,111 +238,113 @@ impl ItemTransCtx<'_, '_> {
         Ok(Some(vtable_ref))
     }
 
-    /// Add a `method_name: fn(...) -> ...` field for the method.
-    fn add_method_to_vtable_def(
+    fn prepare_vtable_fields(
         &mut self,
-        span: Span,
         trait_def: &hax::FullDef,
-        mut mk_field: impl FnMut(String, Ty),
-        item: &hax::AssocItem,
-    ) -> Result<(), Error> {
-        let item_def_id = &item.def_id;
-        let item_def = self.hax_def(
-            &trait_def
-                .this()
-                .with_def_id(&self.t_ctx.hax_state, item_def_id),
-        )?;
-        let hax::FullDefKind::AssocFn {
-            sig,
-            vtable_sig: Some(_),
-            ..
-        } = item_def.kind()
-        else {
-            return Ok(());
-        };
-
-        let item_name = self.t_ctx.translate_trait_item_name(item_def_id)?;
-        // It's ok to translate the method signature in the context of the trait because
-        // `vtable_sig: Some(_)` ensures the method has no generics of its own.
-        let sig = self.translate_fun_sig(span, sig)?;
-        let ty = TyKind::FnPtr(sig).into_ty();
-
-        mk_field(format!("method_{}", item_name.0), ty);
-        Ok(())
-    }
-
-    /// Add `super_trait_n: &'static SuperTraitNVTable` fields.
-    fn add_supertraits_to_vtable_def(
-        &mut self,
-        span: Span,
-        mut mk_field: impl FnMut(String, Ty),
         implied_predicates: &hax::GenericPredicates,
-    ) -> Result<(), Error> {
-        let mut counter = (0..).into_iter();
-        for (clause, _span) in &implied_predicates.predicates {
-            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() {
-                // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-                if !self.pred_is_for_self(&pred.trait_ref) {
-                    continue;
+    ) -> Result<VTableData, Error> {
+        let mut supertrait_map: Vector<TraitClauseId, _> = (0..implied_predicates.predicates.len())
+            .map(|_| None)
+            .collect();
+        let mut fields = Vector::new();
+
+        // Basic fields.
+        fields.push(TrVTableField::Size);
+        fields.push(TrVTableField::Align);
+        fields.push(TrVTableField::Drop);
+
+        // Method fields.
+        if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
+            for item in items {
+                let item_def_id = &item.def_id;
+                // This is ok because dyn-compatible methods don't have generics.
+                let item_def =
+                    self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
+                if let hax::FullDefKind::AssocFn {
+                    sig,
+                    vtable_sig: Some(_),
+                    ..
+                } = item_def.kind()
+                {
+                    let name = self.translate_trait_item_name(&item_def_id)?;
+                    fields.push(TrVTableField::Method(name, sig.clone()));
                 }
-                let vtbl_struct = self
-                    .translate_region_binder(span, &clause.kind, |ctx, _| {
-                        ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
-                    })?
-                    .erase()
-                    .expect("parent trait should be dyn compatible");
-                let ty = Ty::new(TyKind::Ref(
-                    Region::Static,
-                    Ty::new(TyKind::Adt(vtbl_struct)),
-                    RefKind::Shared,
-                ));
-                mk_field(format!("super_trait_{}", counter.next().unwrap()), ty);
             }
         }
-        Ok(())
+
+        // Supertrait fields.
+        for (i, (clause, _span)) in implied_predicates.predicates.iter().enumerate() {
+            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
+                && self.pred_is_for_self(&pred.trait_ref)
+            {
+                let trait_clause_id = TraitClauseId::from_raw(i);
+                supertrait_map[trait_clause_id] = Some(fields.next_id());
+                fields.push(TrVTableField::SuperTrait(trait_clause_id, clause.clone()));
+            }
+        }
+
+        Ok(VTableData {
+            fields,
+            supertrait_map,
+        })
     }
 
     fn gen_vtable_struct_fields(
         &mut self,
         span: Span,
-        trait_def: &hax::FullDef,
-        implied_predicates: &hax::GenericPredicates,
+        vtable_data: &VTableData,
     ) -> Result<Vector<FieldId, Field>, Error> {
         let mut fields = Vector::new();
-        let mut mk_field = |name, ty| {
+        let mut supertrait_counter = (0..).into_iter();
+        for field in &vtable_data.fields {
+            let (name, ty) = match field {
+                TrVTableField::Size => ("size".into(), usize_ty()),
+                TrVTableField::Align => ("align".into(), usize_ty()),
+                TrVTableField::Drop => {
+                    let self_ty =
+                        TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
+                    let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
+                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty((
+                        [self_ptr].into(),
+                        Ty::mk_unit(),
+                    ))));
+                    ("drop".into(), drop_ty)
+                }
+                TrVTableField::Method(item_name, sig) => {
+                    // It's ok to translate the method signature in the context of the trait because
+                    // `vtable_sig: Some(_)` ensures the method has no generics of its own.
+                    let sig = self.translate_fun_sig(span, &sig)?;
+                    let ty = TyKind::FnPtr(sig).into_ty();
+                    let field_name = format!("method_{}", item_name.0);
+                    (field_name, ty)
+                }
+                TrVTableField::SuperTrait(_, clause) => {
+                    let vtbl_struct = self
+                        .translate_region_binder(span, &clause.kind, |ctx, kind| {
+                            let hax::ClauseKind::Trait(pred) = kind else {
+                                unreachable!()
+                            };
+                            ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
+                        })?
+                        .erase()
+                        .expect("parent trait should be dyn compatible");
+                    let ty = Ty::new(TyKind::Ref(
+                        Region::Static,
+                        Ty::new(TyKind::Adt(vtbl_struct)),
+                        RefKind::Shared,
+                    ));
+                    let name = format!("super_trait_{}", supertrait_counter.next().unwrap());
+                    (name, ty)
+                }
+            };
             fields.push(Field {
                 span,
                 attr_info: dummy_public_attr_info(),
                 name: Some(name),
                 ty,
             });
-        };
-
-        // Add the basic fields.
-        // Field: `size: usize`
-        mk_field("size".into(), usize_ty());
-        // Field: `align: usize`
-        mk_field("align".into(), usize_ty());
-        // Field: `drop: fn(*mut Self)` -- `Self` is just a placeholder, will be dynified below.
-        mk_field("drop".into(), {
-            let self_ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
-            let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
-            Ty::new(TyKind::FnPtr(RegionBinder::empty((
-                [self_ptr].into(),
-                Ty::mk_unit(),
-            ))))
-        });
-
-        // Add the method pointers (trait aliases don't have methods).
-        if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
-            for item in items {
-                self.add_method_to_vtable_def(span, trait_def, &mut mk_field, item)?;
-            }
         }
-
-        // Add the supertrait vtables.
-        self.add_supertraits_to_vtable_def(span, &mut mk_field, implied_predicates)?;
-
         Ok(fields)
     }
 
@@ -424,14 +441,27 @@ impl ItemTransCtx<'_, '_> {
             TyKind::DynTrait(dyn_pred).into_ty()
         };
 
+        let mut field_map = Vector::new();
+        let mut supertrait_map: Vector<TraitClauseId, _> = (0..implied_predicates.predicates.len())
+            .map(|_| None)
+            .collect();
         let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
             (TypeDeclKind::Opaque, None)
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
             // type). We fixup the types and generics below.
-            let fields = self.gen_vtable_struct_fields(span, trait_def, implied_predicates)?;
+            let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
+            let fields = self.gen_vtable_struct_fields(span, &vtable_data)?;
             let kind = TypeDeclKind::Struct(fields);
             let layout = self.generate_naive_layout(span, &kind)?;
+            supertrait_map = vtable_data.supertrait_map;
+            field_map = vtable_data.fields.map_ref(|tr_field| match *tr_field {
+                TrVTableField::Size => VTableField::Size,
+                TrVTableField::Align => VTableField::Align,
+                TrVTableField::Drop => VTableField::Drop,
+                TrVTableField::Method(name, ..) => VTableField::Method(name),
+                TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
+            });
             (kind, Some(layout))
         };
 
@@ -458,6 +488,8 @@ impl ItemTransCtx<'_, '_> {
             generics: generics,
             src: ItemSource::VTableTy {
                 dyn_predicate: dyn_predicate.clone(),
+                field_map,
+                supertrait_map,
             },
             kind,
             layout,

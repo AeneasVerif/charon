@@ -60,8 +60,8 @@ where
 struct core::fmt::Debug::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Debug<_dyn> + _dyn : '_)),
-  method_fmt: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Debug<_dyn> + _dyn : '_)), &'_1_1 mut (Formatter<'_2_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}],
+  drop: fn(*mut (dyn Debug)),
+  method_fmt: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 ((dyn Debug)), &'_1_1 mut (Formatter<'_2_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}],
 }
 
 // Full name: core::fmt::Debug
@@ -217,7 +217,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: Debug<_dyn> + _dyn : '_1))) -> !
+fn unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 ((dyn Debug + '_1))) -> !
 = <missing>
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
@@ -230,7 +230,7 @@ where
     let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e@2: E; // local
     let @3: !; // anonymous local
-    let @4: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Debug<_dyn> + _dyn : '_)); // anonymous local
+    let @4: &'_ ((dyn Debug)); // anonymous local
     let @5: &'_ (E); // anonymous local
 
     storage_live(@3)
@@ -243,7 +243,7 @@ where
             e@2 := move ((self@1 as variant Result::Err).0)
             storage_live(@4)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Debug<_dyn> + _dyn : '_)), @TraitClause2>(copy (@5))
+            @4 := unsize_cast<&'_ (E), &'_ ((dyn Debug)), @TraitClause2 with ?>(copy (@5))
             @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }
