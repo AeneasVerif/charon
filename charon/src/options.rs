@@ -438,6 +438,8 @@ pub struct TranslateOptions {
     pub add_destruct_bounds: bool,
     /// Translate drop glue for poly types, knowing that this may cause ICEs.
     pub translate_poly_drop_glue: bool,
+    /// Whether to erase all `Body` lifetimes at the end of translation.
+    pub erase_body_lifetimes: bool,
 }
 
 impl TranslateOptions {
@@ -525,6 +527,7 @@ impl TranslateOptions {
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
             translate_poly_drop_glue: options.precise_drops,
+            erase_body_lifetimes: matches!(options.preset, Some(Preset::Aeneas)),
         }
     }
 

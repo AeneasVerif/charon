@@ -41,6 +41,7 @@ pub mod resugar {
 
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
+    pub mod erase_body_lifetimes;
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod hide_marker_traits;
@@ -210,6 +211,8 @@ pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
     NonBody(&typecheck_and_unify::Check::PostTransformation),
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     NonBody(&simplify_output::unbind_item_vars::Check),
+    // Erase `Body` lifetimes.
+    NonBody(&simplify_output::erase_body_lifetimes::Transform),
 ];
 
 #[derive(Clone, Copy)]
