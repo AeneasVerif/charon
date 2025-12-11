@@ -1,7 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::ids::Vector;
-use core::convert::*;
+use charon_lib::ids::{IndexVec, Vector};
 use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
 
@@ -435,7 +434,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
                     offsets.iter().map(|o| o.bytes()).collect()
                 }
-                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Union(_) => Vector::default(),
+                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Union(_) => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
             VariantLayout {
@@ -529,7 +528,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };
 
-        let mut variant_layouts: Vector<VariantId, VariantLayout> = Vector::new();
+        let mut variant_layouts: IndexVec<VariantId, VariantLayout> = IndexVec::new();
 
         match layout.variants() {
             r_abi::Variants::Multiple { variants, .. } => {
@@ -568,7 +567,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     // All the variants not initialized below are uninhabited.
                     variant_layouts = (0..n_variants)
                         .map(|_| VariantLayout {
-                            field_offsets: Vector::default(),
+                            field_offsets: IndexVec::default(),
                             uninhabited: true,
                             tag: None,
                         })
@@ -614,12 +613,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align: Some(align),
                     discriminant_layout: None,
                     uninhabited: false,
-                    variant_layouts: [VariantLayout {
+                    variant_layouts: IndexVec::from_array([VariantLayout {
                         field_offsets,
                         tag: None,
                         uninhabited: false,
-                    }]
-                    .into(),
+                    }]),
                 })
             }
             _ => raise_error!(
@@ -683,11 +681,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // The type is transparent: explore the variants
-        let mut translated_variants: Vector<VariantId, Variant> = Default::default();
+        let mut translated_variants: IndexVec<VariantId, Variant> = Default::default();
         for (i, var_def) in variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
-            let mut fields: Vector<FieldId, Field> = Default::default();
+            let mut fields: IndexVec<FieldId, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = None;

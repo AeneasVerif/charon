@@ -20,7 +20,7 @@ impl UllbcPass for Transform {
         ctx.for_each_fun_decl(|_ctx, decl| {
             if let Some(body) = decl.body.as_unstructured() {
                 // If the whole body is only a call to this specific panic function.
-                if body.body.elem_count() == 1
+                if body.body.len() == 1
                     && let Some(block) = body.body.iter().next()
                     && block.statements.is_empty()
                     && let TerminatorKind::Abort(AbortKind::Panic(Some(name))) =

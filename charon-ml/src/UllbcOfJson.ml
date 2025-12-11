@@ -14,7 +14,7 @@ let expr_body_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Unstructured", body) ] ->
-        let* body = gexpr_body_of_json blocks_of_json ctx body in
+        let* body = gexpr_body_of_json (list_of_json block_of_json) ctx body in
         Ok (Some body)
     | _ -> Ok None)
 

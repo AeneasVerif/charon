@@ -3,9 +3,6 @@
 //! This data-structure is mostly meant to be used with the index types defined
 //! with [`crate::generate_index_type!`]: by using custom index types, we
 //! leverage the type checker to prevent us from mixing them.
-//!
-//! Note that this data structure is implemented by using persistent vectors.
-//! This makes the clone operation almost a no-op.
 
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
@@ -13,13 +10,14 @@ use serde_state::{DeserializeState, SerializeState};
 use std::{
     iter::{FromIterator, IntoIterator},
     mem,
-    ops::{ControlFlow, Deref, Index, IndexMut},
+    ops::{ControlFlow, Index, IndexMut},
 };
 
 use derive_generic_visitor::*;
 
-/// Indexed vector.
-/// To prevent accidental id reuse, the vector supports reserving a slot to be filled later.
+/// Non-contiguous indexed vector.
+/// To prevent accidental id reuse, the vector supports reserving a slot to be filled later. Use
+/// `IndexVec` if this is not needed.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
@@ -38,8 +36,6 @@ where
         <IndexVec<_, _> as std::fmt::Debug>::fmt(&self.vector, f)
     }
 }
-
-pub struct ReservedSlot<I: Idx>(I);
 
 impl<I, T> Vector<I, T>
 where
@@ -365,18 +361,21 @@ where
         ret.elem_count = ret.iter().count();
         ret
     }
+
+    pub fn make_contiguous(self) -> crate::ids::IndexVec<I, T> {
+        // Ensure that every slot is filled.
+        assert_eq!(
+            self.elem_count(),
+            self.slot_count(),
+            "`Vector` is not contiguous"
+        );
+        self.into_iter().collect()
+    }
 }
 
 impl<I: Idx, T> Default for Vector<I, T> {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl<I: Idx> Deref for ReservedSlot<I> {
-    type Target = I;
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 

@@ -53,7 +53,7 @@ impl UllbcPass for Transform {
         // for this (remark: in the end, it makes the return block dangling).
         // We do this in two steps.
         // First, introduce fresh ids.
-        let mut generator = Generator::new_with_init_value(b.body.next_id());
+        let mut generator = Generator::new_with_init_value(b.body.next_idx());
         let mut new_spans = Vec::new();
         b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
             if let Some(span) = returns.get(bid) {

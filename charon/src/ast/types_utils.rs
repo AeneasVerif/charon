@@ -1384,7 +1384,7 @@ impl TypeDecl {
         let variant_for_tag =
             layout
                 .variant_layouts
-                .iter_indexed()
+                .iter_enumerated()
                 .find_map(|(id, variant_layout)| {
                     if variant_layout.tag == Some(tag) {
                         Some(id)

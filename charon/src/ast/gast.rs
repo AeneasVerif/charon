@@ -1,5 +1,6 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 use crate::ast::*;
+use crate::ids::IndexVec;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
@@ -38,7 +39,7 @@ pub struct Locals {
     /// - the local used for the return value (index 0)
     /// - the `arg_count` input arguments
     /// - the remaining locals, used for the intermediate computations
-    pub locals: Vector<LocalId, Local>,
+    pub locals: IndexVec<LocalId, Local>,
 }
 
 /// An expression body.
@@ -158,7 +159,7 @@ pub enum ItemSource {
         /// The `dyn Trait` predicate implemented by this vtable.
         dyn_predicate: DynPredicate,
         /// Record what each vtable field means.
-        field_map: Vector<FieldId, VTableField>,
+        field_map: IndexVec<FieldId, VTableField>,
         /// For each implied clause that is also a supertrait clause, reords which field id
         /// corresponds to it.
         supertrait_map: Vector<TraitClauseId, Option<FieldId>>,

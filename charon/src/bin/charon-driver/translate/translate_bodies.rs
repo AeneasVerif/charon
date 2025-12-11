@@ -1303,7 +1303,7 @@ impl BodyTransCtx<'_, '_, '_> {
             span,
             locals: self.locals,
             bound_body_regions: self.i_ctx.lifetime_freshener.take().unwrap().slot_count(),
-            body: self.blocks,
+            body: self.blocks.make_contiguous(),
             comments,
         }))
     }

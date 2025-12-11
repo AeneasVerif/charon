@@ -7,12 +7,13 @@ use std::mem;
 use std::ops::ControlFlow::Continue;
 
 use crate::ast::*;
+use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 
 #[derive(Visitor)]
 struct LocalsUsageVisitor {
-    used_locals: Vector<LocalId, bool>,
+    used_locals: IndexVec<LocalId, bool>,
 }
 
 impl VisitBody for LocalsUsageVisitor {
@@ -41,7 +42,7 @@ impl VisitBody for LocalsUsageVisitor {
 
 #[derive(Visitor)]
 struct LocalsRenumberVisitor {
-    ids_map: Vector<LocalId, Option<LocalId>>,
+    ids_map: IndexVec<LocalId, Option<LocalId>>,
 }
 
 impl VisitBodyMut for LocalsRenumberVisitor {
@@ -87,7 +88,7 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
 
     // Keep only the variables that are used (storage statements don't count) and update their
     // indices to be contiguous.
-    let mut ids_map: Vector<LocalId, Option<LocalId>> = body.locals.locals.map_ref(|_| None);
+    let mut ids_map: IndexVec<LocalId, Option<LocalId>> = body.locals.locals.map_ref(|_| None);
     for local in mem::take(&mut body.locals.locals) {
         if used_locals[local.index] {
             let old_id = local.index;
