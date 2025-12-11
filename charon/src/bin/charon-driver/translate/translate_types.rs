@@ -1,6 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::ids::{IndexVec, Vector};
+use charon_lib::ids::{IndexMap, IndexVec};
 use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
 
@@ -294,9 +294,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use hax::GenericArg::*;
         trace!("{:?}", substs);
 
-        let mut regions = Vector::new();
-        let mut types = Vector::new();
-        let mut const_generics = Vector::new();
+        let mut regions = IndexMap::new();
+        let mut types = IndexMap::new();
+        let mut const_generics = IndexMap::new();
         for param in substs {
             match param {
                 Type(param_ty) => {

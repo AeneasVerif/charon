@@ -307,7 +307,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
     let mut sorted_items = ctx.translated.all_items().collect_vec();
     // Pre-sort files to avoid costly string comparisons. Maps file ids to an index that reflects
     // ordering on the crates (with `core` and `std` sorted first) and file names.
-    let sorted_file_ids: Vector<FileId, usize> = ctx
+    let sorted_file_ids: IndexMap<FileId, usize> = ctx
         .translated
         .files
         .all_indices()

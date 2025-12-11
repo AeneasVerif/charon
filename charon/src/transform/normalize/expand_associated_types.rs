@@ -79,7 +79,7 @@ use std::{
 
 use macros::EnumAsGetters;
 
-use crate::{ast::*, formatter::IntoFormatter, ids::Vector, pretty::FmtWithCtx, register_error};
+use crate::{ast::*, formatter::IntoFormatter, ids::IndexMap, pretty::FmtWithCtx, register_error};
 
 use crate::transform::{TransformCtx, ctx::TransformPass, utils::GenericsSource};
 
@@ -352,12 +352,12 @@ mod type_constraint_set {
         /// original constraint if applicable.
         assoc_tys: HashMap<TraitItemName, (Option<TraitTypeConstraintId>, Ty)>,
         /// The types constraints that depend on the ith parent clause.
-        parent_clauses: Vector<TraitClauseId, Self>,
+        parent_clauses: IndexMap<TraitClauseId, Self>,
     }
 
     impl TypeConstraintSet {
         pub fn from_constraints(
-            constraints: &Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
+            constraints: &IndexMap<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
         ) -> Self {
             let mut this = TypeConstraintSet::default();
             for (i, c) in constraints.iter_indexed() {
@@ -612,10 +612,10 @@ enum Processing<T> {
 struct ComputeItemModifications<'a> {
     ctx: &'a TransformCtx,
     /// Records the modifications for each trait.
-    trait_modifications: Vector<TraitDeclId, Processing<ItemModifications>>,
+    trait_modifications: IndexMap<TraitDeclId, Processing<ItemModifications>>,
     /// Records the set of known associated types for this trait impl, including parent impls and
     /// associated type constraints.
-    impl_assoc_tys: Vector<TraitImplId, Processing<TypeConstraintSet>>,
+    impl_assoc_tys: IndexMap<TraitImplId, Processing<TypeConstraintSet>>,
 }
 
 impl<'a> ComputeItemModifications<'a> {

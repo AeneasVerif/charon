@@ -133,7 +133,7 @@ where
         }
     }
 
-    // TODO: rename once we've migrated from `Vector` completely.
+    // TODO: rename once we've migrated from `IndexMap` completely.
     pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
         self.vector.iter_enumerated()
     }

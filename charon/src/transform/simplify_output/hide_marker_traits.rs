@@ -12,7 +12,7 @@ struct RemoveMarkersVisitor {
 }
 
 impl RemoveMarkersVisitor {
-    fn filter_trait_refs(&mut self, trait_refs: &mut Vector<TraitClauseId, TraitRef>) {
+    fn filter_trait_refs(&mut self, trait_refs: &mut IndexMap<TraitClauseId, TraitRef>) {
         for i in trait_refs.all_indices() {
             let tref = &trait_refs[i];
             if self.exclude.contains(&tref.trait_decl_ref.skip_binder.id) {
@@ -21,7 +21,7 @@ impl RemoveMarkersVisitor {
         }
     }
 
-    fn filter_trait_clauses(&mut self, trait_clauses: &mut Vector<TraitClauseId, TraitParam>) {
+    fn filter_trait_clauses(&mut self, trait_clauses: &mut IndexMap<TraitClauseId, TraitParam>) {
         for i in trait_clauses.all_indices() {
             let clause = &trait_clauses[i];
             if self.exclude.contains(&clause.trait_.skip_binder.id) {
@@ -32,7 +32,7 @@ impl RemoveMarkersVisitor {
 }
 
 // Remove clauses and trait refs that mention the offending traits. This relies on the fact that
-// `Vector::remove` does not shift indices: it simply leaves an empty slot.
+// `IndexMap::remove` does not shift indices: it simply leaves an empty slot.
 // FIXME: this is a footgun, it caused at least https://github.com/AeneasVerif/charon/issues/561.
 impl VisitAstMut for RemoveMarkersVisitor {
     fn enter_generic_params(&mut self, args: &mut GenericParams) {

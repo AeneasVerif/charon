@@ -948,15 +948,17 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_refs", trait_refs);
         ] ->
         let* regions =
-          vector_of_json region_id_of_json region_of_json ctx regions
+          index_map_of_json region_id_of_json region_of_json ctx regions
         in
-        let* types = vector_of_json type_var_id_of_json ty_of_json ctx types in
+        let* types =
+          index_map_of_json type_var_id_of_json ty_of_json ctx types
+        in
         let* const_generics =
-          vector_of_json const_generic_var_id_of_json const_generic_of_json ctx
-            const_generics
+          index_map_of_json const_generic_var_id_of_json const_generic_of_json
+            ctx const_generics
         in
         let* trait_refs =
-          vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_map_of_json trait_clause_id_of_json trait_ref_of_json ctx
             trait_refs
         in
         Ok ({ regions; types; const_generics; trait_refs } : generic_args)
@@ -977,17 +979,17 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_type_constraints", trait_type_constraints);
         ] ->
         let* regions =
-          vector_of_json region_id_of_json region_param_of_json ctx regions
+          index_map_of_json region_id_of_json region_param_of_json ctx regions
         in
         let* types =
-          vector_of_json type_var_id_of_json type_param_of_json ctx types
+          index_map_of_json type_var_id_of_json type_param_of_json ctx types
         in
         let* const_generics =
-          vector_of_json const_generic_var_id_of_json
+          index_map_of_json const_generic_var_id_of_json
             const_generic_param_of_json ctx const_generics
         in
         let* trait_clauses =
-          vector_of_json trait_clause_id_of_json trait_param_of_json ctx
+          index_map_of_json trait_clause_id_of_json trait_param_of_json ctx
             trait_clauses
         in
         let* regions_outlive =
@@ -1003,7 +1005,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
             ctx types_outlive
         in
         let* trait_type_constraints =
-          vector_of_json trait_type_constraint_id_of_json
+          index_map_of_json trait_type_constraint_id_of_json
             (region_binder_of_json trait_type_constraint_of_json)
             ctx trait_type_constraints
         in
@@ -1094,6 +1096,21 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Trait", trait) ] ->
         let* trait = trait_impl_id_of_json ctx trait in
         Ok (ImplElemTrait trait)
+    | _ -> Error "")
+
+and index_map_of_json :
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a1 list, string) result =
+ fun arg0_of_json arg1_of_json ctx js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | json ->
+        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
+        Ok (List.filter_map (fun x -> x) list)
     | _ -> Error "")
 
 and index_vec_of_json :
@@ -1239,7 +1256,7 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
           index_vec_of_json field_id_of_json v_table_field_of_json ctx field_map
         in
         let* supertrait_map =
-          vector_of_json trait_clause_id_of_json
+          index_map_of_json trait_clause_id_of_json
             (option_of_json field_id_of_json)
             ctx supertrait_map
         in
@@ -1580,7 +1597,7 @@ and region_binder_of_json :
     (match js with
     | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
         let* binder_regions =
-          vector_of_json region_id_of_json region_param_of_json ctx regions
+          index_map_of_json region_id_of_json region_param_of_json ctx regions
         in
         let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_regions; binder_value } : _ region_binder)
@@ -1783,7 +1800,7 @@ and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
         let* name = trait_item_name_of_json ctx name in
         let* default = option_of_json ty_of_json ctx default in
         let* implied_clauses =
-          vector_of_json trait_clause_id_of_json trait_param_of_json ctx
+          index_map_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses
         in
         Ok ({ name; default; implied_clauses } : trait_assoc_ty)
@@ -1824,7 +1841,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
-          vector_of_json trait_clause_id_of_json trait_param_of_json ctx
+          index_map_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses
         in
         let* consts = list_of_json trait_assoc_const_of_json ctx consts in
@@ -1887,7 +1904,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         let* impl_trait = trait_decl_ref_of_json ctx impl_trait in
         let* generics = generic_params_of_json ctx generics in
         let* implied_trait_refs =
-          vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_map_of_json trait_clause_id_of_json trait_ref_of_json ctx
             implied_trait_refs
         in
         let* consts =
@@ -2029,7 +2046,7 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* builtin_data = builtin_impl_data_of_json ctx builtin_data in
         let* parent_trait_refs =
-          vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_map_of_json trait_clause_id_of_json trait_ref_of_json ctx
             parent_trait_refs
         in
         let* types =
@@ -2332,19 +2349,4 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
         let* uninhabited = bool_of_json ctx uninhabited in
         let* tag = option_of_json scalar_value_of_json ctx tag in
         Ok ({ field_offsets; uninhabited; tag } : variant_layout)
-    | _ -> Error "")
-
-and vector_of_json :
-    'a0 'a1.
-    (of_json_ctx -> json -> ('a0, string) result) ->
-    (of_json_ctx -> json -> ('a1, string) result) ->
-    of_json_ctx ->
-    json ->
-    ('a1 list, string) result =
- fun arg0_of_json arg1_of_json ctx js ->
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | json ->
-        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
-        Ok (List.filter_map (fun x -> x) list)
     | _ -> Error "")

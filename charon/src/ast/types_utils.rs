@@ -1,6 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
-use crate::ids::Vector;
+use crate::ids::IndexMap;
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use std::collections::HashSet;
@@ -381,7 +381,7 @@ impl<T> RegionBinder<T> {
     }
 
     /// Substitute the bound variables with the given lifetimes.
-    pub fn apply(self, regions: Vector<RegionId, Region>) -> T
+    pub fn apply(self, regions: IndexMap<RegionId, Region>) -> T
     where
         T: AstVisitable,
     {
@@ -438,7 +438,7 @@ impl GenericArgs {
         }
     }
 
-    pub fn new_for_builtin(types: Vector<TypeVarId, Ty>) -> Self {
+    pub fn new_for_builtin(types: IndexMap<TypeVarId, Ty>) -> Self {
         GenericArgs {
             types,
             ..Self::empty()
@@ -446,10 +446,10 @@ impl GenericArgs {
     }
 
     pub fn new(
-        regions: Vector<RegionId, Region>,
-        types: Vector<TypeVarId, Ty>,
-        const_generics: Vector<ConstGenericVarId, ConstGeneric>,
-        trait_refs: Vector<TraitClauseId, TraitRef>,
+        regions: IndexMap<RegionId, Region>,
+        types: IndexMap<TypeVarId, Ty>,
+        const_generics: IndexMap<ConstGenericVarId, ConstGeneric>,
+        trait_refs: IndexMap<TraitClauseId, TraitRef>,
     ) -> Self {
         Self {
             regions,
@@ -459,7 +459,7 @@ impl GenericArgs {
         }
     }
 
-    pub fn new_types(types: Vector<TypeVarId, Ty>) -> Self {
+    pub fn new_types(types: IndexMap<TypeVarId, Ty>) -> Self {
         Self {
             types,
             ..Self::empty()
@@ -839,7 +839,7 @@ impl Ty {
         }
     }
 
-    pub fn as_tuple(&self) -> Option<&Vector<TypeVarId, Ty>> {
+    pub fn as_tuple(&self) -> Option<&IndexMap<TypeVarId, Ty>> {
         match self.kind() {
             TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
             _ => None,
@@ -909,7 +909,7 @@ impl TraitRef {
     pub fn new_builtin(
         trait_id: TraitDeclId,
         ty: Ty,
-        parents: Vector<TraitClauseId, TraitRef>,
+        parents: IndexMap<TraitClauseId, TraitRef>,
         builtin_data: BuiltinImplData,
     ) -> Self {
         let trait_decl_ref = RegionBinder::empty(TraitDeclRef {

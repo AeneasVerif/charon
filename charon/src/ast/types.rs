@@ -1,5 +1,5 @@
 use crate::ast::*;
-use crate::ids::{IndexVec, Vector};
+use crate::ids::{IndexMap, IndexVec};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -115,7 +115,7 @@ pub enum TraitRefKind {
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
-        parent_trait_refs: Vector<TraitClauseId, TraitRef>,
+        parent_trait_refs: IndexMap<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
         types: Vec<(TraitItemName, TraitAssocTyImpl)>,
     },
@@ -218,11 +218,11 @@ pub struct TraitTypeConstraint {
 /// A set of generic arguments.
 #[derive(Clone, Eq, PartialEq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: Vector<RegionId, Region>,
-    pub types: Vector<TypeVarId, Ty>,
-    pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
+    pub regions: IndexMap<RegionId, Region>,
+    pub types: IndexMap<TypeVarId, Ty>,
+    pub const_generics: IndexMap<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
-    pub trait_refs: Vector<TraitClauseId, TraitRef>,
+    pub trait_refs: IndexMap<TraitClauseId, TraitRef>,
 }
 
 pub type BoxedArgs = Box<GenericArgs>;
@@ -233,7 +233,7 @@ pub type BoxedArgs = Box<GenericArgs>;
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     #[serde_state(stateless)]
-    pub regions: Vector<RegionId, RegionParam>,
+    pub regions: IndexMap<RegionId, RegionParam>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -280,25 +280,27 @@ pub struct Binder<T> {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
+// FIXME: we use `IndexMap` instead of `IndexVec` because the `remove_marker_traits` pass would
+// otherwise need to renumber clauses across the whole crate and that was too painful.
 #[derive(
     Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct GenericParams {
     #[serde_state(stateless)]
-    pub regions: Vector<RegionId, RegionParam>,
+    pub regions: IndexMap<RegionId, RegionParam>,
     #[serde_state(stateless)]
-    pub types: Vector<TypeVarId, TypeParam>,
+    pub types: IndexMap<TypeVarId, TypeParam>,
     #[serde_state(stateless)]
-    pub const_generics: Vector<ConstGenericVarId, ConstGenericParam>,
+    pub const_generics: IndexMap<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: Vector<TraitClauseId, TraitParam>,
+    pub trait_clauses: IndexMap<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
     pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region
     pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
+    pub trait_type_constraints: IndexMap<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
 /// Where a given predicate came from.

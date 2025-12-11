@@ -1,10 +1,10 @@
 pub mod generator;
+pub mod index_map;
 pub mod index_vec;
-pub mod vector;
 
 pub use generator::Generator;
+pub use index_map::IndexMap;
 pub use index_vec::{Idx, IndexVec};
-pub use vector::Vector;
 
 /// Generate an `Index` index type. We use it because we need manipulate a lot of different indices
 /// (for various kinds of declarations, variables, blocks, etc.).

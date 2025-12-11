@@ -21,7 +21,7 @@ pub mod visitor;
 
 // Re-export everything except llbc/ullbc, for convenience.
 pub use crate::errors::Error;
-pub use crate::ids::Vector;
+pub use crate::ids::IndexMap;
 pub use builtins::*;
 pub use derive_generic_visitor::Visitor;
 pub use expressions::*;

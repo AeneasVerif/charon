@@ -63,7 +63,7 @@ use derive_generic_visitor::*;
         for<A: AstVisitable, B: AstVisitable> OutlivesPred<A, B>,
         for<T: AstVisitable> Vec<T>,
         for<T: AstVisitable + HashConsable> HashConsed<T>,
-        for<I: Idx, T: AstVisitable> Vector<I, T>,
+        for<I: Idx, T: AstVisitable> IndexMap<I, T>,
         for<I: Idx, T: AstVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
@@ -166,7 +166,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
         for<A: BodyVisitable, B: BodyVisitable> (A, B),
         for<A: BodyVisitable, B: BodyVisitable, C: BodyVisitable> (A, B, C),
         for<T: BodyVisitable> Vec<T>,
-        for<I: Idx, T: BodyVisitable> Vector<I, T>,
+        for<I: Idx, T: BodyVisitable> IndexMap<I, T>,
         for<I: Idx, T: BodyVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the

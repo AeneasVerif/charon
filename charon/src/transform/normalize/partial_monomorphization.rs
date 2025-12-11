@@ -74,15 +74,15 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
         let mut builder = Self {
             pm,
             params: GenericParams {
-                regions: Vector::new(),
-                types: Vector::new(),
-                const_generics: Vector::new(),
+                regions: IndexMap::new(),
+                types: IndexMap::new(),
+                const_generics: IndexMap::new(),
                 ..target_params.clone()
             },
             extracted: GenericArgs {
-                regions: Vector::new(),
-                types: Vector::new(),
-                const_generics: Vector::new(),
+                regions: IndexMap::new(),
+                types: IndexMap::new(),
+                const_generics: IndexMap::new(),
                 trait_refs: mem::take(&mut shape_contents.trait_refs),
             },
             binder_depth: DeBruijnId::zero(),
@@ -160,17 +160,17 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
     ) where
         Id: Idx + Display,
         Arg: TyVisitable + Clone,
-        GenericParams: HasVectorOf<Id, Output = Param>,
-        GenericArgs: HasVectorOf<Id, Output = Arg>,
+        GenericParams: HasIdxMapOf<Id, Output = Param>,
+        GenericArgs: HasIdxMapOf<Id, Output = Arg>,
     {
         let Some(shifted_val) = val.clone().move_from_under_binders(self.binder_depth) else {
             // Give up on this value.
             return;
         };
         // Record the mapping in the output `GenericArgs`.
-        self.extracted.get_vector_mut().push(shifted_val);
+        self.extracted.get_idx_map_mut().push(shifted_val);
         // Put a fresh param in place of `val`.
-        let id = self.params.get_vector_mut().push_with(mk_param);
+        let id = self.params.get_idx_map_mut().push_with(mk_param);
         *val = mk_value(DeBruijnVar::bound(self.binder_depth, id));
     }
 }
