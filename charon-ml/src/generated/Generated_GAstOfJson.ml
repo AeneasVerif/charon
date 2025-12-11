@@ -1096,6 +1096,19 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
         Ok (ImplElemTrait trait)
     | _ -> Error "")
 
+and index_vec_of_json :
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a1 list, string) result =
+ fun arg0_of_json arg1_of_json ctx js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | json -> list_of_json arg1_of_json ctx json
+    | _ -> Error "")
+
 and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
     (inline_attr, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1223,7 +1236,7 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* dyn_predicate = dyn_predicate_of_json ctx dyn_predicate in
         let* field_map =
-          vector_of_json field_id_of_json v_table_field_of_json ctx field_map
+          index_vec_of_json field_id_of_json v_table_field_of_json ctx field_map
         in
         let* supertrait_map =
           vector_of_json trait_clause_id_of_json
@@ -1255,7 +1268,7 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* variant_layouts =
-          vector_of_json variant_id_of_json variant_layout_of_json ctx
+          index_vec_of_json variant_id_of_json variant_layout_of_json ctx
             variant_layouts
         in
         Ok
@@ -1335,7 +1348,7 @@ and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
     | `Assoc [ ("arg_count", arg_count); ("locals", locals) ] ->
         let* arg_count = int_of_json ctx arg_count in
         let* locals =
-          vector_of_json local_id_of_json local_of_json ctx locals
+          index_vec_of_json local_id_of_json local_of_json ctx locals
         in
         Ok ({ arg_count; locals } : locals)
     | _ -> Error "")
@@ -2156,16 +2169,18 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Struct", struct_) ] ->
         let* struct_ =
-          vector_of_json field_id_of_json field_of_json ctx struct_
+          index_vec_of_json field_id_of_json field_of_json ctx struct_
         in
         Ok (Struct struct_)
     | `Assoc [ ("Enum", enum) ] ->
         let* enum =
-          vector_of_json variant_id_of_json variant_of_json ctx enum
+          index_vec_of_json variant_id_of_json variant_of_json ctx enum
         in
         Ok (Enum enum)
     | `Assoc [ ("Union", union) ] ->
-        let* union = vector_of_json field_id_of_json field_of_json ctx union in
+        let* union =
+          index_vec_of_json field_id_of_json field_of_json ctx union
+        in
         Ok (Union union)
     | `String "Opaque" -> Ok Opaque
     | `Assoc [ ("Alias", alias) ] ->
@@ -2288,7 +2303,7 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
         let* attr_info = attr_info_of_json ctx attr_info in
         let* variant_name = string_of_json ctx name in
         let* fields =
-          vector_of_json field_id_of_json field_of_json ctx fields
+          index_vec_of_json field_id_of_json field_of_json ctx fields
         in
         let* discriminant = literal_of_json ctx discriminant in
         Ok ({ span; attr_info; variant_name; fields; discriminant } : variant)
@@ -2312,7 +2327,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
           ("tag", tag);
         ] ->
         let* field_offsets =
-          vector_of_json field_id_of_json int_of_json ctx field_offsets
+          index_vec_of_json field_id_of_json int_of_json ctx field_offsets
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* tag = option_of_json scalar_value_of_json ctx tag in
@@ -2325,7 +2340,7 @@ and vector_of_json :
     (of_json_ctx -> json -> ('a1, string) result) ->
     of_json_ctx ->
     json ->
-    (('a0, 'a1) vector, string) result =
+    ('a1 list, string) result =
  fun arg0_of_json arg1_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
