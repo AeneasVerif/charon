@@ -73,6 +73,7 @@ and file_name =
   | Virtual of path_buf  (** A remapped path (namely paths into stdlib) *)
   | Local of path_buf
       (** A local path (a file coming from the current crate for instance) *)
+  | NotReal of string  (** A "not real" file name (macro, query, etc.) *)
 
 (** [#[inline]] built-in attribute. *)
 and inline_attr =

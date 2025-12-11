@@ -196,6 +196,34 @@ and constant_expr = { kind : constant_expr_kind; ty : ty }
     [{ _1 = const a; _2 = (_1.0) }]. *)
 and constant_expr_kind =
   | CLiteral of literal
+  | CAdt of variant_id option * constant_expr list
+      (** In most situations: Enumeration with one variant with no fields,
+          structure with no fields, unit (encoded as a 0-tuple).
+
+          Less frequently: arbitrary ADT values.
+
+          We eliminate this case in a micro-pass. *)
+  | CArray of constant_expr list
+  | CSlice of constant_expr list
+  | CGlobal of global_decl_ref
+      (** The value is a top-level constant/static.
+
+          We eliminate this case in a micro-pass.
+
+          Remark: constants can actually have generic parameters.
+          {@rust[
+            struct V<const N: usize, T> {
+              x: [T; N],
+            }
+
+            impl<const N: usize, T> V<N, T> {
+              const LEN: usize = N; // This has generics <N, T>
+            }
+
+            fn use_v<const N: usize, T>(v: V<N, T>) {
+              let l = V::<N, T>::LEN; // We need to provided a substitution here
+            }
+          ]} *)
   | CTraitConst of trait_ref * trait_item_name
       (** A trait constant.
 
@@ -208,8 +236,25 @@ and constant_expr_kind =
 
           Remark: trait constants can not be used in types, they are necessarily
           values. *)
+  | CRef of constant_expr
+      (** A shared reference to a constant value.
+
+          We eliminate this case in a micro-pass. *)
+  | CPtr of ref_kind * constant_expr
+      (** A pointer to a mutable static.
+
+          We eliminate this case in a micro-pass. *)
   | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
   | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
+  | CFnPtr of fn_ptr
+      (** A function pointer to a function item; this is an actual pointer to
+          that function item.
+
+          We eliminate this case in a micro-pass. *)
+  | CPtrNoProvenance of big_int
+      (** A pointer with no provenance (e.g. 0 for the null pointer)
+
+          We eliminate this case in a micro-pass. *)
   | CRawMemory of byte list
       (** Raw memory value obtained from constant evaluation. Used when a more
           structured representation isn't possible (e.g. for unions) or just

@@ -441,10 +441,7 @@ type cli_options = {
           normally created, including when indexing behind a raw pointer. *)
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
-  raw_consts : bool;
-      (** Do not inline or evaluate constants. Note: this emits constants that
-          the OCaml bindings can't parse; if you need this ping me so I can fix
-          that. *)
+  raw_consts : bool;  (** Do not inline or evaluate constants. *)
   reconstruct_fallible_operations : bool;
       (** Replace "bound checks followed by UB-on-overflow operation" with the
           corresponding panic-on-overflow operation. This loses unwinding

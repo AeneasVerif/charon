@@ -148,18 +148,86 @@ and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   | CTraitConst (trait_ref, const_name) ->
       let trait_ref = trait_ref_to_string env trait_ref in
       trait_ref ^ const_name
-  | CFnDef fn_ptr -> fn_ptr_to_string env fn_ptr
+  | CFnDef fn_ptr | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
   | CRawMemory bytes ->
       "RawMemory(["
       ^ String.concat ", " (List.map (byte_to_string env) bytes)
       ^ "])"
   | COpaque reason -> "Opaque(" ^ reason ^ ")"
+  | CAdt (variant_id, fields) -> begin
+      match cv.ty with
+      | TAdt tref ->
+          aggregate_to_string env
+            (AggregatedAdt (tref, variant_id, None))
+            (List.map (fun c -> Constant c) fields)
+      | _ -> "malformed constant"
+    end
+  | CArray fields | CSlice fields ->
+      "["
+      ^ String.concat ", " (List.map (constant_expr_to_string env) fields)
+      ^ "]"
+  | CGlobal gref -> global_decl_ref_to_string env gref
+  | CPtrNoProvenance n -> "(" ^ Z.to_string n ^ " as *const _)"
+  | CRef c -> "&" ^ constant_expr_to_string env c
+  | CPtr (ref_kind, c) ->
+      let ref_kind =
+        match ref_kind with
+        | RShared -> "&raw const"
+        | RMut -> "&raw mut"
+      in
+      ref_kind ^ constant_expr_to_string env c
 
 and operand_to_string (env : 'a fmt_env) (op : operand) : string =
   match op with
   | Copy p -> "copy " ^ place_to_string env p
   | Move p -> "move " ^ place_to_string env p
   | Constant cv -> constant_expr_to_string env cv
+
+and aggregate_to_string (env : 'a fmt_env) (agg : aggregate_kind)
+    (fields : operand list) : string =
+  let fields = List.map (operand_to_string env) fields in
+  match agg with
+  | AggregatedAdt (tref, opt_variant_id, opt_field_id) -> (
+      match tref.id with
+      | TTuple -> "(" ^ String.concat ", " fields ^ ")"
+      | TAdtId def_id ->
+          let adt_name = type_decl_id_to_string env def_id in
+          let variant_name =
+            match opt_variant_id with
+            | None -> adt_name
+            | Some variant_id ->
+                adt_name ^ "::" ^ adt_variant_to_string env def_id variant_id
+          in
+          let fields =
+            match adt_field_names env def_id opt_variant_id with
+            | None -> "(" ^ String.concat ", " fields ^ ")"
+            | Some field_names ->
+                let field_names =
+                  match opt_field_id with
+                  | None -> field_names
+                  (* Only keep the selected field *)
+                  | Some field_id ->
+                      [ List.nth field_names (FieldId.to_int field_id) ]
+                in
+                let fields = List.combine field_names fields in
+                let fields =
+                  List.map
+                    (fun (field, value) -> field ^ " = " ^ value ^ ";")
+                    fields
+                in
+                let fields = String.concat " " fields in
+                "{ " ^ fields ^ " }"
+          in
+          variant_name ^ " " ^ fields
+      | TBuiltin _ -> raise (Failure "Unreachable"))
+  | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " fields ^ "]"
+  | AggregatedRawPtr (_, refk) ->
+      let refk =
+        match refk with
+        | RShared -> "&raw const"
+        | RMut -> "&raw mut"
+      in
+      refk ^ " (" ^ String.concat ", " fields ^ ")"
 
 and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   match rv with
@@ -206,49 +274,4 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       ^ "]"
   | ShallowInitBox (op, _) ->
       "shallow-init-box(" ^ operand_to_string env op ^ ")"
-  | Aggregate (akind, ops) -> begin
-      let ops = List.map (operand_to_string env) ops in
-      match akind with
-      | AggregatedAdt (tref, opt_variant_id, opt_field_id) -> (
-          match tref.id with
-          | TTuple -> "(" ^ String.concat ", " ops ^ ")"
-          | TAdtId def_id ->
-              let adt_name = type_decl_id_to_string env def_id in
-              let variant_name =
-                match opt_variant_id with
-                | None -> adt_name
-                | Some variant_id ->
-                    adt_name ^ "::"
-                    ^ adt_variant_to_string env def_id variant_id
-              in
-              let fields =
-                match adt_field_names env def_id opt_variant_id with
-                | None -> "(" ^ String.concat ", " ops ^ ")"
-                | Some field_names ->
-                    let field_names =
-                      match opt_field_id with
-                      | None -> field_names
-                      (* Only keep the selected field *)
-                      | Some field_id ->
-                          [ List.nth field_names (FieldId.to_int field_id) ]
-                    in
-                    let fields = List.combine field_names ops in
-                    let fields =
-                      List.map
-                        (fun (field, value) -> field ^ " = " ^ value ^ ";")
-                        fields
-                    in
-                    let fields = String.concat " " fields in
-                    "{ " ^ fields ^ " }"
-              in
-              variant_name ^ " " ^ fields
-          | TBuiltin _ -> raise (Failure "Unreachable"))
-      | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]"
-      | AggregatedRawPtr (_, refk) ->
-          let refk =
-            match refk with
-            | RMut -> "*mut"
-            | RShared -> "*const"
-          in
-          refk ^ " (" ^ String.concat ", " ops ^ ")"
-    end
+  | Aggregate (akind, ops) -> aggregate_to_string env akind ops
