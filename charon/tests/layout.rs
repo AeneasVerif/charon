@@ -164,7 +164,7 @@ fn type_layout() -> anyhow::Result<()> {
         if let Some(layout) = tdecl.layout.as_ref() {
             if layout.discriminant_layout.is_some() {
                 let name = repr_name(&crate_data, &tdecl.item_meta.name);
-                for (var_id, variant) in layout.variant_layouts.iter_indexed() {
+                for (var_id, variant) in layout.variant_layouts.iter_enumerated() {
                     let tag = variant.tag;
                     if layout.is_variant_uninhabited(var_id) {
                         assert_eq!(

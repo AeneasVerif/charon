@@ -86,7 +86,7 @@ impl Transform {
                             // Convert between discriminants and variant indices. Remark: the discriminant can
                             // be of any *signed* integer type (`isize`, `i8`, etc.).
                             let discr_to_id: HashMap<Literal, VariantId> = variants
-                                .iter_indexed_values()
+                                .iter_enumerated()
                                 .map(|(id, variant)| (variant.discriminant.clone(), id))
                                 .collect();
 

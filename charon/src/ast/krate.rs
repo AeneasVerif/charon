@@ -10,7 +10,7 @@ use serde_state::{DeserializeState, SerializeState};
 use crate::ast::*;
 use crate::common::serialize_map_to_array::IndexMapToArray;
 use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::ids::Vector;
+use crate::ids::{IndexVec, Vector};
 use crate::pretty::FmtWithCtx;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 
@@ -198,7 +198,7 @@ pub struct TranslatedCrate {
     /// The translated files.
     #[drive(skip)]
     #[serde_state(stateless)]
-    pub files: Vector<FileId, File>,
+    pub files: IndexVec<FileId, File>,
     /// The translated type definitions
     pub type_decls: Vector<TypeDeclId, TypeDecl>,
     /// The translated function definitions

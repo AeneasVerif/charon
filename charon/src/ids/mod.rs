@@ -1,7 +1,9 @@
 pub mod generator;
+pub mod index_vec;
 pub mod vector;
 
 pub use generator::Generator;
+pub use index_vec::{Idx, IndexVec};
 pub use vector::Vector;
 
 /// Generate an `Index` index type. We use it because we need manipulate a lot of different indices

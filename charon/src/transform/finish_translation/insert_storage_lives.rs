@@ -5,13 +5,14 @@
 use derive_generic_visitor::Visitor;
 
 use crate::ast::*;
+use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::BlockId;
 
 #[derive(Visitor)]
 struct StorageVisitor {
-    local_status: Vector<LocalId, LocalStatus>,
+    local_status: IndexVec<LocalId, LocalStatus>,
 }
 
 enum LocalStatus {

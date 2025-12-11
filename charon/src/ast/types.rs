@@ -1,5 +1,5 @@
 use crate::ast::*;
-use crate::ids::Vector;
+use crate::ids::{IndexVec, Vector};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -357,7 +357,7 @@ pub type ByteCount = u64;
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
-    pub field_offsets: Vector<FieldId, ByteCount>,
+    pub field_offsets: IndexVec<FieldId, ByteCount>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
     #[drive(skip)]
@@ -419,7 +419,7 @@ pub struct Layout {
     pub uninhabited: bool,
     /// Map from `VariantId` to the corresponding field layouts. Structs are modeled as having
     /// exactly one variant, unions as having no variant.
-    pub variant_layouts: Vector<VariantId, VariantLayout>,
+    pub variant_layouts: IndexVec<VariantId, VariantLayout>,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -523,9 +523,9 @@ generate_index_type!(FieldId, "Field");
     Debug, Clone, EnumIsA, EnumAsGetters, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 pub enum TypeDeclKind {
-    Struct(Vector<FieldId, Field>),
-    Enum(Vector<VariantId, Variant>),
-    Union(Vector<FieldId, Field>),
+    Struct(IndexVec<FieldId, Field>),
+    Enum(IndexVec<VariantId, Variant>),
+    Union(IndexVec<FieldId, Field>),
     /// An opaque type.
     ///
     /// Either a local type marked as opaque, or an external type.
@@ -550,7 +550,7 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     #[serde_state(stateful)]
-    pub fields: Vector<FieldId, Field>,
+    pub fields: IndexVec<FieldId, Field>,
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
     /// different than the value stored in memory (called `tag`). That one is described by
     /// [`DiscriminantLayout`] and [`TagEncoding`].

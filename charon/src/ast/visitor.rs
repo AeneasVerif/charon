@@ -13,8 +13,8 @@
 use std::{any::Any, collections::HashMap};
 
 use crate::ast::*;
+use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
-use index_vec::Idx;
 use indexmap::IndexMap;
 
 /// An overrideable visitor trait that can be used to conveniently traverse the whole contents of
@@ -65,6 +65,7 @@ use indexmap::IndexMap;
         for<T: AstVisitable> Vec<T>,
         for<T: AstVisitable + HashConsable> HashConsed<T>,
         for<I: Idx, T: AstVisitable> Vector<I, T>,
+        for<I: Idx, T: AstVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
@@ -167,6 +168,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         for<A: BodyVisitable, B: BodyVisitable, C: BodyVisitable> (A, B, C),
         for<T: BodyVisitable> Vec<T>,
         for<I: Idx, T: BodyVisitable> Vector<I, T>,
+        for<I: Idx, T: BodyVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.

@@ -63,7 +63,7 @@ impl UllbcPass for Transform {
                                 ),
                             );
 
-                            let return_local = outer_body.locals.locals.next_id();
+                            let return_local = outer_body.locals.locals.next_idx();
                             inner_body.dyn_visit_in_body_mut(|l: &mut LocalId| {
                                 *l += return_local;
                             });

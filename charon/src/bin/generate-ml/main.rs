@@ -383,8 +383,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             build_branch(ctx, "`Null", fields, "()")
         }
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
-                && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
+            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
             // These are the special strongly-typed integers.
             let short_name = decl
@@ -400,7 +399,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             format!("| x -> {short_name}.id_of_json ctx x")
         }
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
+            if fields.len() == 1
                 && (fields[0].name.is_none()
                     || decl
                         .item_meta
@@ -486,7 +485,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                         let mut fields = variant.fields.clone();
                         let inner_pat = if fields.iter().all(|f| f.name.is_none()) {
                             // Tuple variant
-                            if variant.fields.elem_count() == 1 {
+                            if variant.fields.len() == 1 {
                                 let var = make_ocaml_ident(&variant.name);
                                 fields[0].name = Some(var.clone());
                                 var
@@ -665,8 +664,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
         }
         TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
-                && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
+            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
             // These are the special strongly-typed integers.
             let short_name = decl
@@ -682,7 +680,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
             format!("{short_name}.id [@visitors.opaque]")
         }
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
+            if fields.len() == 1
                 && (fields[0].name.is_none()
                     || decl
                         .item_meta

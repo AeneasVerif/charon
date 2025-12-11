@@ -44,7 +44,7 @@ use super::translate_crate::TransItemSourceKind;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
-use charon_lib::ids::Vector;
+use charon_lib::ids::IndexVec;
 use charon_lib::ullbc_ast::*;
 use itertools::Itertools;
 
@@ -236,7 +236,7 @@ impl ItemTransCtx<'_, '_> {
             .by_ref_upvar_regions
             .clone()
             .into_iter();
-        let fields: Vector<FieldId, Field> = args
+        let fields: IndexVec<FieldId, Field> = args
             .upvar_tys
             .iter()
             .map(|ty| -> Result<Field, Error> {

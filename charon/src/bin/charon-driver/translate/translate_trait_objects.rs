@@ -7,7 +7,7 @@ use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
 };
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::Vector;
+use charon_lib::ids::{IndexVec, Vector};
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 
@@ -151,7 +151,7 @@ pub enum TrVTableField {
 }
 
 pub struct VTableData {
-    pub fields: Vector<FieldId, TrVTableField>,
+    pub fields: IndexVec<FieldId, TrVTableField>,
     pub supertrait_map: Vector<TraitClauseId, Option<FieldId>>,
 }
 
@@ -246,7 +246,7 @@ impl ItemTransCtx<'_, '_> {
         let mut supertrait_map: Vector<TraitClauseId, _> = (0..implied_predicates.predicates.len())
             .map(|_| None)
             .collect();
-        let mut fields = Vector::new();
+        let mut fields = IndexVec::new();
 
         // Basic fields.
         fields.push(TrVTableField::Size);
@@ -279,7 +279,7 @@ impl ItemTransCtx<'_, '_> {
                 && self.pred_is_for_self(&pred.trait_ref)
             {
                 let trait_clause_id = TraitClauseId::from_raw(i);
-                supertrait_map[trait_clause_id] = Some(fields.next_id());
+                supertrait_map[trait_clause_id] = Some(fields.next_idx());
                 fields.push(TrVTableField::SuperTrait(trait_clause_id, clause.clone()));
             }
         }
@@ -294,8 +294,8 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         vtable_data: &VTableData,
-    ) -> Result<Vector<FieldId, Field>, Error> {
-        let mut fields = Vector::new();
+    ) -> Result<IndexVec<FieldId, Field>, Error> {
+        let mut fields = IndexVec::new();
         let mut supertrait_counter = (0..).into_iter();
         for field in &vtable_data.fields {
             let (name, ty) = match field {
@@ -441,7 +441,7 @@ impl ItemTransCtx<'_, '_> {
             TyKind::DynTrait(dyn_pred).into_ty()
         };
 
-        let mut field_map = Vector::new();
+        let mut field_map = IndexVec::new();
         let mut supertrait_map: Vector<TraitClauseId, _> = (0..implied_predicates.predicates.len())
             .map(|_| None)
             .collect();
