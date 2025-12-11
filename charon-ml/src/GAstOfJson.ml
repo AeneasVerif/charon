@@ -16,6 +16,8 @@ open Expressions
 open GAst
 include Generated_GAstOfJson
 
+let option_list_of_json of_json = list_of_json (option_of_json of_json)
+
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 let rec gfun_decl_of_json
     (body_of_json :
@@ -111,50 +113,30 @@ and gtranslated_crate_of_json
             ctx short_names
         in
         let* type_decls =
-          vector_of_json type_id_of_json type_decl_of_json ctx type_decls
+          option_list_of_json type_decl_of_json ctx type_decls
         in
         let* fun_decls =
-          vector_of_json fun_decl_id_of_json
-            (gfun_decl_of_json body_of_json)
-            ctx fun_decls
+          option_list_of_json (gfun_decl_of_json body_of_json) ctx fun_decls
         in
         let* global_decls =
-          vector_of_json global_decl_id_of_json global_decl_of_json ctx
-            global_decls
+          option_list_of_json global_decl_of_json ctx global_decls
         in
         let* trait_decls =
-          vector_of_json trait_decl_id_of_json trait_decl_of_json ctx
-            trait_decls
+          option_list_of_json trait_decl_of_json ctx trait_decls
         in
         let* trait_impls =
-          vector_of_json trait_impl_id_of_json trait_impl_of_json ctx
-            trait_impls
+          option_list_of_json trait_impl_of_json ctx trait_impls
         in
         let* unit_metadata = global_decl_ref_of_json ctx unit_metadata in
         let* ordered_decls =
           list_of_json declaration_group_of_json ctx ordered_decls
         in
 
-        let type_decls =
-          TypeDeclId.Map.of_list
-            (List.map (fun (d : type_decl) -> (d.def_id, d)) type_decls)
-        in
-        let fun_decls =
-          FunDeclId.Map.of_list
-            (List.map (fun (d : 'body gfun_decl) -> (d.def_id, d)) fun_decls)
-        in
-        let global_decls =
-          GlobalDeclId.Map.of_list
-            (List.map (fun (d : global_decl) -> (d.def_id, d)) global_decls)
-        in
-        let trait_decls =
-          TraitDeclId.Map.of_list
-            (List.map (fun (d : trait_decl) -> (d.def_id, d)) trait_decls)
-        in
-        let trait_impls =
-          TraitImplId.Map.of_list
-            (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
-        in
+        let type_decls = TypeDeclId.map_of_indexed_list type_decls in
+        let fun_decls = FunDeclId.map_of_indexed_list fun_decls in
+        let global_decls = GlobalDeclId.map_of_indexed_list global_decls in
+        let trait_decls = TraitDeclId.map_of_indexed_list trait_decls in
+        let trait_impls = TraitImplId.map_of_indexed_list trait_impls in
 
         Ok
           {
