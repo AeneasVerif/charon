@@ -1,8 +1,6 @@
 #![feature(box_patterns)]
 use std::path::PathBuf;
 
-use indexmap::IndexMap;
-
 use charon_lib::ast::*;
 
 mod util;
@@ -192,7 +190,7 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: IndexMap<String, Option<Layout>> = crate_data
+    let layouts: SeqHashMap<String, Option<Layout>> = crate_data
         .type_decls
         .iter()
         .filter_map(|tdecl| {

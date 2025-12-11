@@ -12,7 +12,6 @@ use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
-use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
@@ -121,7 +120,7 @@ impl Display for DeclarationGroup {
 pub struct Deps {
     dgraph: DiGraphMap<ItemId, ()>,
     // Want to make sure we remember the order of insertion
-    graph: IndexMap<ItemId, IndexSet<ItemId>>,
+    graph: SeqHashMap<ItemId, SeqHashSet<ItemId>>,
     // We use this when computing the graph
     current_id: Option<ItemId>,
     // We use this to track the trait impl block the current item belongs to
@@ -173,7 +172,7 @@ impl Deps {
     fn new() -> Self {
         Deps {
             dgraph: DiGraphMap::new(),
-            graph: IndexMap::new(),
+            graph: SeqHashMap::new(),
             current_id: None,
             parent_trait_impl: None,
             parent_trait_decl: None,
@@ -219,7 +218,7 @@ impl Deps {
         if !self.dgraph.contains_node(id) {
             self.dgraph.add_node(id);
             assert!(!self.graph.contains_key(&id));
-            self.graph.insert(id, IndexSet::new());
+            self.graph.insert(id, SeqHashSet::new());
         }
     }
 

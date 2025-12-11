@@ -16,7 +16,6 @@ use std::mem;
 
 use derive_generic_visitor::Visitor;
 use index_vec::Idx;
-use indexmap::IndexMap;
 
 use crate::ast::types_utils::TyVisitable;
 use crate::ast::visitor::{VisitWithBinderDepth, VisitorWithBinderDepth};
@@ -270,7 +269,7 @@ struct PartialMonomorphizer<'a> {
     /// Map of partial monomorphizations. The source item applied with the generic params gives the
     /// target item. The resulting partially-monomorphized item will have the binder params as
     /// generic params.
-    partial_mono_shapes: IndexMap<(ItemId, MutabilityShape), ItemId>,
+    partial_mono_shapes: SeqHashMap<(ItemId, MutabilityShape), ItemId>,
     /// Reverse of `partial_mono_shapes`.
     reverse_shape_map: HashMap<ItemId, (ItemId, MutabilityShape)>,
     /// Items that need to be processed.
@@ -324,7 +323,7 @@ impl<'a> PartialMonomorphizer<'a> {
             infected_types,
             generic_params,
             to_process,
-            partial_mono_shapes: IndexMap::default(),
+            partial_mono_shapes: SeqHashMap::default(),
             reverse_shape_map: Default::default(),
         }
     }

@@ -27,6 +27,7 @@ pub use derive_generic_visitor::Visitor;
 pub use expressions::*;
 pub use gast::*;
 pub use hash_cons::*;
+pub use indexmap::{IndexMap as SeqHashMap, IndexSet as SeqHashSet};
 pub use krate::*;
 pub use meta::*;
 pub use names::*;

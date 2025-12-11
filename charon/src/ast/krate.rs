@@ -3,12 +3,11 @@ use std::fmt;
 
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
-use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use crate::common::serialize_map_to_array::IndexMapToArray;
+use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::{IndexVec, Vector};
 use crate::pretty::FmtWithCtx;
@@ -189,11 +188,11 @@ pub struct TranslatedCrate {
     /// failed to translate.
     /// Invariant: after translation, any existing `ItemId` must have an associated name, even
     /// if the corresponding item wasn't translated.
-    #[serde(with = "IndexMapToArray::<ItemId, Name>")]
-    pub item_names: IndexMap<ItemId, Name>,
+    #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
+    pub item_names: SeqHashMap<ItemId, Name>,
     /// Short names, for items whose last PathElem is unique.
-    #[serde(with = "IndexMapToArray::<ItemId, Name>")]
-    pub short_names: IndexMap<ItemId, Name>,
+    #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
+    pub short_names: SeqHashMap<ItemId, Name>,
 
     /// The translated files.
     #[drive(skip)]
