@@ -69,7 +69,7 @@ impl UllbcPass for Transform {
                             });
 
                             let start_block = bid_generator.next_id();
-                            bid_generator.advance(inner_body.body.elem_count());
+                            bid_generator.advance(inner_body.body.len());
                             let end_block = bid_generator.next_id();
                             inner_body.dyn_visit_in_body_mut(|b: &mut BlockId| {
                                 *b += start_block;

@@ -63,14 +63,14 @@ where
         }
     }
 
-    /// The number of elements stored in the vector.
-    pub fn elem_count(&self) -> usize {
-        self.vector.len()
+    pub fn from_vec(v: Vec<T>) -> Self {
+        Self {
+            vector: index_vec::IndexVec::from_vec(v),
+        }
     }
 
-    /// The number of slots allocated in the vector (empty or not).
-    pub fn slot_count(&self) -> usize {
-        self.vector.len()
+    pub fn from_array<const N: usize>(v: [T; N]) -> Self {
+        v.into_iter().collect()
     }
 
     /// Shadow the `index_vec::IndexVec` method because it silently shifts ids.
@@ -87,20 +87,6 @@ where
         let x = f(id);
         self.push(x);
         id
-    }
-
-    pub fn push_all<It>(&mut self, it: It) -> impl Iterator<Item = I> + use<'_, I, T, It>
-    where
-        It: IntoIterator<Item = T>,
-    {
-        it.into_iter().map(move |x| self.push(x))
-    }
-
-    pub fn extend<It>(&mut self, it: It)
-    where
-        It: IntoIterator<Item = T>,
-    {
-        self.push_all(it).for_each(|_| ())
     }
 
     pub fn extend_from_slice(&mut self, other: &Self)
@@ -147,6 +133,7 @@ where
         }
     }
 
+    // TODO: rename once we've migrated from `Vector` completely.
     pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
         self.vector.iter_enumerated()
     }
@@ -168,8 +155,7 @@ where
     }
 
     pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
-        // Reuse `iter_indexed` to filter only the filled indices.
-        self.iter_indexed().map(|(id, _)| id)
+        self.vector.indices()
     }
 
     pub fn all_indices(&self) -> impl Iterator<Item = I> + use<I, T> {
@@ -257,26 +243,6 @@ where
         IndexVec {
             vector: index_vec::IndexVec::from_iter(iter),
         }
-    }
-}
-
-// FIXME: this impl is a footgun
-impl<I, T> From<Vec<T>> for IndexVec<I, T>
-where
-    I: Idx,
-{
-    fn from(v: Vec<T>) -> Self {
-        v.into_iter().collect()
-    }
-}
-
-// FIXME: this impl is a footgun
-impl<I, T, const N: usize> From<[T; N]> for IndexVec<I, T>
-where
-    I: Idx,
-{
-    fn from(v: [T; N]) -> Self {
-        v.into_iter().collect()
     }
 }
 

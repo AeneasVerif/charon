@@ -321,10 +321,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         .sorted_by_key(|(_i, file_id)| *file_id)
         .map(|(i, _file_id)| i)
         .collect();
-    assert_eq!(
-        ctx.translated.files.slot_count(),
-        sorted_file_ids.slot_count()
-    );
+    assert_eq!(ctx.translated.files.len(), sorted_file_ids.slot_count());
     sorted_items.sort_by_key(|item| {
         let item_meta = item.item_meta();
         let span = item_meta.span.data;

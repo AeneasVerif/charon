@@ -1,7 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::{IndexVec, Vector};
-use core::convert::*;
 use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
 
@@ -614,12 +613,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align: Some(align),
                     discriminant_layout: None,
                     uninhabited: false,
-                    variant_layouts: [VariantLayout {
+                    variant_layouts: IndexVec::from_array([VariantLayout {
                         field_offsets,
                         tag: None,
                         uninhabited: false,
-                    }]
-                    .into(),
+                    }]),
                 })
             }
             _ => raise_error!(

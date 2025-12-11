@@ -134,7 +134,7 @@ impl CfgInfo {
 
         // Compute reverse postorder numbering.
         for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
-            let rev_post_id = body.slot_count() - i;
+            let rev_post_id = body.len() - i;
             assert!(rev_post_id <= u32::MAX as usize);
             block_data[block_id].reverse_postorder = Some(rev_post_id as u32);
         }
