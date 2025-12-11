@@ -1,6 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::ids::Vector;
+use charon_lib::ids::IndexMap;
 
 impl<'tcx> TranslateCtx<'tcx> {
     pub fn recognize_builtin_impl(
@@ -206,7 +206,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         impl_sources: &[hax::ImplExpr],
-    ) -> Result<Vector<TraitClauseId, TraitRef>, Error> {
+    ) -> Result<IndexMap<TraitClauseId, TraitRef>, Error> {
         impl_sources
             .iter()
             .map(|x| self.translate_trait_impl_expr(span, x))

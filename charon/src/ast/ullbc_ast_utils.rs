@@ -268,7 +268,7 @@ impl BodyBuilder {
     /// Finalize the builder by returning the built body.
     pub fn build(mut self) -> ExprBody {
         // Replace erased regions with fresh ones.
-        let mut freshener: Vector<RegionId, ()> = Vector::new();
+        let mut freshener: IndexMap<RegionId, ()> = IndexMap::new();
         self.body.dyn_visit_mut(|r: &mut Region| {
             if r.is_erased() {
                 *r = Region::Body(freshener.push(()));

@@ -15,7 +15,6 @@ use std::{any::Any, collections::HashMap};
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
-use indexmap::IndexMap;
 
 /// An overrideable visitor trait that can be used to conveniently traverse the whole contents of
 /// an item. This is useful when e.g. dealing with types, which show up pretty much everywhere in
@@ -64,7 +63,7 @@ use indexmap::IndexMap;
         for<A: AstVisitable, B: AstVisitable> OutlivesPred<A, B>,
         for<T: AstVisitable> Vec<T>,
         for<T: AstVisitable + HashConsable> HashConsed<T>,
-        for<I: Idx, T: AstVisitable> Vector<I, T>,
+        for<I: Idx, T: AstVisitable> IndexMap<I, T>,
         for<I: Idx, T: AstVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
@@ -115,7 +114,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
 }
 
 /// Manual impl that only visits the values
-impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
+impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self.values() {
             v.visit(x)?;
@@ -167,7 +166,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         for<A: BodyVisitable, B: BodyVisitable> (A, B),
         for<A: BodyVisitable, B: BodyVisitable, C: BodyVisitable> (A, B, C),
         for<T: BodyVisitable> Vec<T>,
-        for<I: Idx, T: BodyVisitable> Vector<I, T>,
+        for<I: Idx, T: BodyVisitable> IndexMap<I, T>,
         for<I: Idx, T: BodyVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the

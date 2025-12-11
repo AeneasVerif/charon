@@ -6,7 +6,7 @@ use index_vec::Idx;
 
 use crate::ast::*;
 use crate::common::TAB_INCR;
-use crate::ids::Vector;
+use crate::ids::IndexMap;
 use crate::pretty::FmtWithCtx;
 
 pub trait IntoFormatter {
@@ -29,7 +29,7 @@ pub trait AstFormatter: Sized {
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
     fn push_bound_regions<'a>(
         &'a self,
-        regions: &'a Vector<RegionId, RegionParam>,
+        regions: &'a IndexMap<RegionId, RegionParam>,
     ) -> Self::Reborrow<'a> {
         self.push_binder(Cow::Owned(GenericParams {
             regions: regions.clone(),
@@ -51,7 +51,7 @@ pub trait AstFormatter: Sized {
         fmt_var: impl Fn(&T) -> Option<String>,
     ) -> fmt::Result
     where
-        GenericParams: HasVectorOf<Id, Output = T>;
+        GenericParams: HasIdxMapOf<Id, Output = T>;
 
     fn format_enum_variant_name(
         &self,
@@ -186,7 +186,7 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         fmt_var: impl Fn(&T) -> Option<String>,
     ) -> fmt::Result
     where
-        GenericParams: HasVectorOf<Id, Output = T>,
+        GenericParams: HasIdxMapOf<Id, Output = T>,
     {
         if self.generics.is_empty() {
             return write!(f, "{var_prefix}{var}");

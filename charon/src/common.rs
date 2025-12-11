@@ -163,7 +163,7 @@ pub mod serialize_map_to_array {
         hash::{BuildHasher, Hash},
     };
 
-    use indexmap::IndexMap;
+    use indexmap::IndexMap as SeqHashMap;
     use serde::{
         Deserialize, Deserializer, Serialize,
         de::{SeqAccess, Visitor},
@@ -177,13 +177,13 @@ pub mod serialize_map_to_array {
         value: V,
     }
 
-    /// A converter between an `IndexMap` and a sequence of named key-value pairs.
-    pub struct IndexMapToArray<K, V, U = RandomState>(PhantomData<(K, V, U)>);
+    /// A converter between an `SeqHashMap` and a sequence of named key-value pairs.
+    pub struct SeqHashMapToArray<K, V, U = RandomState>(PhantomData<(K, V, U)>);
 
-    impl<K, V, U> IndexMapToArray<K, V, U> {
+    impl<K, V, U> SeqHashMapToArray<K, V, U> {
         /// Serializes the given `map` to an array of named key-values.
         pub fn serialize<'a, S>(
-            map: &'a IndexMap<K, V, U>,
+            map: &'a SeqHashMap<K, V, U>,
             serializer: S,
         ) -> Result<S::Ok, S::Error>
         where
@@ -194,7 +194,7 @@ pub mod serialize_map_to_array {
             serializer.collect_seq(map.into_iter().map(|(key, value)| KeyValue { key, value }))
         }
         pub fn serialize_state<'a, S, State: ?Sized>(
-            map: &'a IndexMap<K, V, U>,
+            map: &'a SeqHashMap<K, V, U>,
             state: &State,
             serializer: S,
         ) -> Result<S::Ok, S::Error>
@@ -211,29 +211,29 @@ pub mod serialize_map_to_array {
         }
 
         /// Deserializes from an array of named key-values.
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<IndexMap<K, V, U>, D::Error>
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<SeqHashMap<K, V, U>, D::Error>
         where
             K: Deserialize<'de> + Eq + Hash,
             V: Deserialize<'de>,
             U: BuildHasher + Default,
             D: Deserializer<'de>,
         {
-            struct IndexMapToArrayVisitor<K, V, U>(PhantomData<(K, V, U)>);
+            struct SeqHashMapToArrayVisitor<K, V, U>(PhantomData<(K, V, U)>);
 
-            impl<'de, K, V, U> Visitor<'de> for IndexMapToArrayVisitor<K, V, U>
+            impl<'de, K, V, U> Visitor<'de> for SeqHashMapToArrayVisitor<K, V, U>
             where
                 K: Deserialize<'de> + Eq + Hash,
                 V: Deserialize<'de>,
                 U: BuildHasher + Default,
             {
-                type Value = IndexMap<K, V, U>;
+                type Value = SeqHashMap<K, V, U>;
 
                 fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     formatter.write_str("a list of key-value objects")
                 }
 
                 fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
-                    let mut map = IndexMap::<K, V, U>::default();
+                    let mut map = SeqHashMap::<K, V, U>::default();
                     while let Some(entry) = seq.next_element::<KeyValue<K, V>>()? {
                         map.insert(entry.key, entry.value);
                     }
@@ -241,36 +241,36 @@ pub mod serialize_map_to_array {
                 }
             }
             let map =
-                deserializer.deserialize_seq(IndexMapToArrayVisitor::<K, V, U>(PhantomData))?;
+                deserializer.deserialize_seq(SeqHashMapToArrayVisitor::<K, V, U>(PhantomData))?;
             Ok(map.into())
         }
         /// Deserializes from an array of named key-values.
         pub fn deserialize_state<'de, D, State>(
             state: &State,
             deserializer: D,
-        ) -> Result<IndexMap<K, V, U>, D::Error>
+        ) -> Result<SeqHashMap<K, V, U>, D::Error>
         where
             K: DeserializeState<'de, State> + Eq + Hash,
             V: DeserializeState<'de, State>,
             U: BuildHasher + Default,
             D: Deserializer<'de>,
         {
-            struct IndexMapToArrayVisitor<'a, State, K, V, U>(&'a State, PhantomData<(K, V, U)>);
+            struct SeqHashMapToArrayVisitor<'a, State, K, V, U>(&'a State, PhantomData<(K, V, U)>);
 
-            impl<'de, State, K, V, U> Visitor<'de> for IndexMapToArrayVisitor<'_, State, K, V, U>
+            impl<'de, State, K, V, U> Visitor<'de> for SeqHashMapToArrayVisitor<'_, State, K, V, U>
             where
                 K: DeserializeState<'de, State> + Eq + Hash,
                 V: DeserializeState<'de, State>,
                 U: BuildHasher + Default,
             {
-                type Value = IndexMap<K, V, U>;
+                type Value = SeqHashMap<K, V, U>;
 
                 fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     formatter.write_str("a list of key-value objects")
                 }
 
                 fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
-                    let mut map = IndexMap::default();
+                    let mut map = SeqHashMap::default();
                     let seed =
                         serde_state::__private::wrap_deserialize_seed::<KeyValue<K, V>, _>(self.0);
                     while let Some(entry) = seq.next_element_seed(seed)? {
@@ -280,7 +280,7 @@ pub mod serialize_map_to_array {
                 }
             }
             let map = deserializer
-                .deserialize_seq(IndexMapToArrayVisitor::<_, K, V, U>(state, PhantomData))?;
+                .deserialize_seq(SeqHashMapToArrayVisitor::<_, K, V, U>(state, PhantomData))?;
             Ok(map.into())
         }
     }

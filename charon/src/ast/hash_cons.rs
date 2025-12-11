@@ -39,14 +39,14 @@ pub struct HashConsId(usize);
 // direct dependency and as a dylib, then the static will be duplicated, causing hashing and
 // equality on `HashCons` to be broken.
 mod intern_table {
-    use indexmap::IndexSet;
+    use indexmap::IndexSet as SeqHashSet;
     use std::sync::{Arc, LazyLock, RwLock};
 
     use super::{HashConsId, HashConsable, HashConsed};
     use crate::common::hash_by_addr::HashByAddr;
     use crate::common::type_map::{Mappable, Mapper, TypeMap};
 
-    // This is a static mutable `IndexSet<Arc<T>>` that records for each `T` value a unique
+    // This is a static mutable `SeqHashSet<Arc<T>>` that records for each `T` value a unique
     // `Arc<T>` that contains the same value. Values inside the set are hashed/compared
     // as is normal for `T`.
     // Once we've gotten an `Arc` out of the set however, we're sure that "T-equality"
@@ -54,7 +54,7 @@ mod intern_table {
     // and hashing behavior.
     struct InternMapper;
     impl Mapper for InternMapper {
-        type Value<T: Mappable> = IndexSet<Arc<T>>;
+        type Value<T: Mappable> = SeqHashSet<Arc<T>>;
     }
     static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> = LazyLock::new(|| Default::default());
 
@@ -69,7 +69,7 @@ mod intern_table {
         } else {
             // Concurrent access is possible right here, so we have to check everything again.
             let mut write_guard = INTERNED.write().unwrap();
-            let set: &mut IndexSet<Arc<T>> = write_guard.or_default::<T>();
+            let set: &mut SeqHashSet<Arc<T>> = write_guard.or_default::<T>();
             if let Some(arc) = set.get(&inner) {
                 arc.clone()
             } else {
@@ -159,7 +159,7 @@ where
 /// `derive(Serialize, Deserialize)` traverse the value in the same order.
 pub use serialize::{HashConsDedupSerializer, HashConsSerializerState};
 mod serialize {
-    use indexmap::IndexMap;
+    use indexmap::IndexMap as SeqHashMap;
     use serde::{Deserialize, Serialize};
     use serde_state::{DeserializeState, SerializeState};
     use std::any::type_name;
@@ -195,7 +195,7 @@ mod serialize {
     }
     struct DeserializeTableMapper;
     impl Mapper for DeserializeTableMapper {
-        type Value<T: Mappable> = IndexMap<HashConsId, HashConsed<T>>;
+        type Value<T: Mappable> = SeqHashMap<HashConsId, HashConsed<T>>;
     }
     #[derive(Default)]
     pub struct HashConsDedupSerializer {

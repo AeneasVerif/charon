@@ -19,7 +19,7 @@ use derive_generic_visitor::*;
 /// To prevent accidental id reuse, the vector supports reserving a slot to be filled later. Use
 /// `IndexVec` if this is not needed.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vector<I, T>
+pub struct IndexMap<I, T>
 where
     I: Idx,
 {
@@ -28,7 +28,7 @@ where
     elem_count: usize,
 }
 
-impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for Vector<I, T>
+impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for IndexMap<I, T>
 where
     I: Idx,
 {
@@ -37,19 +37,19 @@ where
     }
 }
 
-impl<I, T> Vector<I, T>
+impl<I, T> IndexMap<I, T>
 where
     I: Idx,
 {
     pub fn new() -> Self {
-        Vector {
+        IndexMap {
             vector: IndexVec::new(),
             elem_count: 0,
         }
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
-        Vector {
+        IndexMap {
             vector: IndexVec::with_capacity(capacity),
             elem_count: 0,
         }
@@ -183,8 +183,8 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids.
-    pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
-        Vector {
+    pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> IndexMap<I, U> {
+        IndexMap {
             vector: self
                 .vector
                 .into_iter()
@@ -195,8 +195,8 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids.
-    pub fn map_ref<'a, U>(&'a self, mut f: impl FnMut(&'a T) -> U) -> Vector<I, U> {
-        Vector {
+    pub fn map_ref<'a, U>(&'a self, mut f: impl FnMut(&'a T) -> U) -> IndexMap<I, U> {
+        IndexMap {
             vector: self
                 .vector
                 .iter()
@@ -207,8 +207,8 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids.
-    pub fn map_ref_mut<'a, U>(&'a mut self, mut f: impl FnMut(&'a mut T) -> U) -> Vector<I, U> {
-        Vector {
+    pub fn map_ref_mut<'a, U>(&'a mut self, mut f: impl FnMut(&'a mut T) -> U) -> IndexMap<I, U> {
+        IndexMap {
             vector: self
                 .vector
                 .iter_mut()
@@ -219,8 +219,8 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids.
-    pub fn map_indexed<U>(self, mut f: impl FnMut(I, T) -> U) -> Vector<I, U> {
-        Vector {
+    pub fn map_indexed<U>(self, mut f: impl FnMut(I, T) -> U) -> IndexMap<I, U> {
+        IndexMap {
             vector: self
                 .vector
                 .into_iter_enumerated()
@@ -231,8 +231,8 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids.
-    pub fn map_ref_indexed<'a, U>(&'a self, mut f: impl FnMut(I, &'a T) -> U) -> Vector<I, U> {
-        Vector {
+    pub fn map_ref_indexed<'a, U>(&'a self, mut f: impl FnMut(I, &'a T) -> U) -> IndexMap<I, U> {
+        IndexMap {
             vector: self
                 .vector
                 .iter_enumerated()
@@ -243,8 +243,8 @@ where
     }
 
     /// Map each entry to a new one, keeping the same ids. Includes empty slots.
-    pub fn map_opt<U>(self, f: impl FnMut(Option<T>) -> Option<U>) -> Vector<I, U> {
-        Vector {
+    pub fn map_opt<U>(self, f: impl FnMut(Option<T>) -> Option<U>) -> IndexMap<I, U> {
+        IndexMap {
             vector: self.vector.into_iter().map(f).collect(),
             elem_count: self.elem_count,
         }
@@ -254,8 +254,8 @@ where
     pub fn map_ref_opt<'a, U>(
         &'a self,
         mut f: impl FnMut(Option<&'a T>) -> Option<U>,
-    ) -> Vector<I, U> {
-        let mut ret = Vector {
+    ) -> IndexMap<I, U> {
+        let mut ret = IndexMap {
             vector: self.vector.iter().map(|x_opt| f(x_opt.as_ref())).collect(),
             elem_count: self.elem_count,
         };
@@ -367,19 +367,19 @@ where
         assert_eq!(
             self.elem_count(),
             self.slot_count(),
-            "`Vector` is not contiguous"
+            "`IndexMap` is not contiguous"
         );
         self.into_iter().collect()
     }
 }
 
-impl<I: Idx, T> Default for Vector<I, T> {
+impl<I: Idx, T> Default for IndexMap<I, T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<I, R, T> Index<R> for Vector<I, T>
+impl<I, R, T> Index<R> for IndexMap<I, T>
 where
     I: Idx,
     R: IdxSliceIndex<I, Option<T>, Output = Option<T>>,
@@ -390,7 +390,7 @@ where
     }
 }
 
-impl<I, R, T> IndexMut<R> for Vector<I, T>
+impl<I, R, T> IndexMut<R> for IndexMap<I, T>
 where
     I: Idx,
     R: IdxSliceIndex<I, Option<T>, Output = Option<T>>,
@@ -400,7 +400,7 @@ where
     }
 }
 
-impl<'a, I, T> IntoIterator for &'a Vector<I, T>
+impl<'a, I, T> IntoIterator for &'a IndexMap<I, T>
 where
     I: Idx,
 {
@@ -412,7 +412,7 @@ where
     }
 }
 
-impl<'a, I, T> IntoIterator for &'a mut Vector<I, T>
+impl<'a, I, T> IntoIterator for &'a mut IndexMap<I, T>
 where
     I: Idx,
 {
@@ -424,7 +424,7 @@ where
     }
 }
 
-impl<I, T> IntoIterator for Vector<I, T>
+impl<I, T> IntoIterator for IndexMap<I, T>
 where
     I: Idx,
 {
@@ -437,20 +437,20 @@ where
 }
 
 // FIXME: this impl is a footgun
-impl<I, T> FromIterator<T> for Vector<I, T>
+impl<I, T> FromIterator<T> for IndexMap<I, T>
 where
     I: Idx,
 {
     #[inline]
-    fn from_iter<It: IntoIterator<Item = T>>(iter: It) -> Vector<I, T> {
+    fn from_iter<It: IntoIterator<Item = T>>(iter: It) -> IndexMap<I, T> {
         let mut elem_count = 0;
         let vector = IndexVec::from_iter(iter.into_iter().inspect(|_| elem_count += 1).map(Some));
-        Vector { vector, elem_count }
+        IndexMap { vector, elem_count }
     }
 }
 
 // FIXME: this impl is a footgun
-impl<I, T> From<Vec<T>> for Vector<I, T>
+impl<I, T> From<Vec<T>> for IndexMap<I, T>
 where
     I: Idx,
 {
@@ -460,7 +460,7 @@ where
 }
 
 // FIXME: this impl is a footgun
-impl<I, T, const N: usize> From<[T; N]> for Vector<I, T>
+impl<I, T, const N: usize> From<[T; N]> for IndexMap<I, T>
 where
     I: Idx,
 {
@@ -469,7 +469,7 @@ where
     }
 }
 
-impl<I: Idx, T: Serialize> Serialize for Vector<I, T> {
+impl<I: Idx, T: Serialize> Serialize for IndexMap<I, T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -478,7 +478,7 @@ impl<I: Idx, T: Serialize> Serialize for Vector<I, T> {
     }
 }
 
-impl<I: Idx, State, T: SerializeState<State>> SerializeState<State> for Vector<I, T> {
+impl<I: Idx, State, T: SerializeState<State>> SerializeState<State> for IndexMap<I, T> {
     fn serialize_state<S>(&self, state: &State, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -487,7 +487,7 @@ impl<I: Idx, State, T: SerializeState<State>> SerializeState<State> for Vector<I
     }
 }
 
-impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
+impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for IndexMap<I, T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -502,7 +502,7 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
 }
 
 impl<'de, I: Idx, State, T: DeserializeState<'de, State>> DeserializeState<'de, State>
-    for Vector<I, T>
+    for IndexMap<I, T>
 {
     fn deserialize_state<D>(state: &State, deserializer: D) -> Result<Self, D::Error>
     where
@@ -518,7 +518,7 @@ impl<'de, I: Idx, State, T: DeserializeState<'de, State>> DeserializeState<'de, 
     }
 }
 
-impl<'s, I: Idx, T, V: Visit<'s, T>> Drive<'s, V> for Vector<I, T> {
+impl<'s, I: Idx, T, V: Visit<'s, T>> Drive<'s, V> for IndexMap<I, T> {
     fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self {
             v.visit(x)?;
@@ -526,7 +526,7 @@ impl<'s, I: Idx, T, V: Visit<'s, T>> Drive<'s, V> for Vector<I, T> {
         Continue(())
     }
 }
-impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for Vector<I, T> {
+impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for IndexMap<I, T> {
     fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self {
             v.visit(x)?;

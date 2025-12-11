@@ -1,6 +1,7 @@
-use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::vec::Vec;
+
+use crate::ast::*;
 
 /// A structure containing information about SCCs (Strongly Connected Components)
 pub struct SCCs<Id> {
@@ -18,7 +19,7 @@ pub struct SCCs<Id> {
 /// doing a depth-first search.
 fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
     get_id_dependencies: &dyn Fn(Id) -> Vec<Id>,
-    reordered_sccs: &mut IndexSet<usize>,
+    reordered_sccs: &mut SeqHashSet<usize>,
     sccs: &Vec<Vec<Id>>,
     id_to_scc: &HashMap<Id, usize>,
     scc_id: usize,
@@ -116,7 +117,7 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
 
     // Reorder the SCCs themselves - just do a depth first search. Iterate over
     // the def ids, and add the corresponding SCCs (with their dependencies).
-    let mut reordered_sccs_ids = IndexSet::<usize>::new();
+    let mut reordered_sccs_ids = SeqHashSet::<usize>::new();
     for id in ids {
         let scc_id = id_to_scc.get(id).unwrap();
         insert_scc_with_deps(

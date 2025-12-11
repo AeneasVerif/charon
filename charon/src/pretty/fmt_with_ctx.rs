@@ -402,7 +402,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
         assert_eq!(types.elem_count(), 1);
 
         // Format the clauses with their assoc types, e.g. `Iterator<Item = ...>`.
-        let mut cstrs_per_clause: Vector<TraitClauseId, Vec<String>> =
+        let mut cstrs_per_clause: IndexMap<TraitClauseId, Vec<String>> =
             trait_clauses.map_ref(|_| vec![]);
         for cstr in trait_type_constraints {
             let mut tgt_clause = None;

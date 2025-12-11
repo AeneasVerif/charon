@@ -3,14 +3,13 @@ use std::fmt;
 
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
-use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use crate::common::serialize_map_to_array::IndexMapToArray;
+use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::ids::{IndexVec, Vector};
+use crate::ids::{IndexMap, IndexVec};
 use crate::pretty::FmtWithCtx;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 
@@ -189,26 +188,26 @@ pub struct TranslatedCrate {
     /// failed to translate.
     /// Invariant: after translation, any existing `ItemId` must have an associated name, even
     /// if the corresponding item wasn't translated.
-    #[serde(with = "IndexMapToArray::<ItemId, Name>")]
-    pub item_names: IndexMap<ItemId, Name>,
+    #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
+    pub item_names: SeqHashMap<ItemId, Name>,
     /// Short names, for items whose last PathElem is unique.
-    #[serde(with = "IndexMapToArray::<ItemId, Name>")]
-    pub short_names: IndexMap<ItemId, Name>,
+    #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
+    pub short_names: SeqHashMap<ItemId, Name>,
 
     /// The translated files.
     #[drive(skip)]
     #[serde_state(stateless)]
     pub files: IndexVec<FileId, File>,
     /// The translated type definitions
-    pub type_decls: Vector<TypeDeclId, TypeDecl>,
+    pub type_decls: IndexMap<TypeDeclId, TypeDecl>,
     /// The translated function definitions
-    pub fun_decls: Vector<FunDeclId, FunDecl>,
+    pub fun_decls: IndexMap<FunDeclId, FunDecl>,
     /// The translated global definitions
-    pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
+    pub global_decls: IndexMap<GlobalDeclId, GlobalDecl>,
     /// The translated trait declarations
-    pub trait_decls: Vector<TraitDeclId, TraitDecl>,
+    pub trait_decls: IndexMap<TraitDeclId, TraitDecl>,
     /// The translated trait declarations
-    pub trait_impls: Vector<TraitImplId, TraitImpl>,
+    pub trait_impls: IndexMap<TraitImplId, TraitImpl>,
     /// A `const UNIT: () = ();` used whenever we make a thin pointer/reference to avoid creating a
     /// local `let unit = ();` variable. It is always `Some`.
     pub unit_metadata: Option<GlobalDeclRef>,
@@ -523,9 +522,9 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
     }
 }
 
-pub trait HasVectorOf<Id: Idx>: std::ops::Index<Id, Output: Sized> {
-    fn get_vector(&self) -> &Vector<Id, Self::Output>;
-    fn get_vector_mut(&mut self) -> &mut Vector<Id, Self::Output>;
+pub trait HasIdxMapOf<Id: Idx>: std::ops::Index<Id, Output: Sized> {
+    fn get_idx_map(&self) -> &IndexMap<Id, Self::Output>;
+    fn get_idx_map_mut(&mut self) -> &mut IndexMap<Id, Self::Output>;
 }
 
 /// Delegate `Index` implementations to subfields.
@@ -542,11 +541,11 @@ macro_rules! mk_index_impls {
                 &mut self.$field[index]
             }
         }
-        impl HasVectorOf<$idx> for $ty {
-            fn get_vector(&self) -> &Vector<$idx, Self::Output> {
+        impl HasIdxMapOf<$idx> for $ty {
+            fn get_idx_map(&self) -> &IndexMap<$idx, Self::Output> {
                 &self.$field
             }
-            fn get_vector_mut(&mut self) -> &mut Vector<$idx, Self::Output> {
+            fn get_idx_map_mut(&mut self) -> &mut IndexMap<$idx, Self::Output> {
                 &mut self.$field
             }
         }

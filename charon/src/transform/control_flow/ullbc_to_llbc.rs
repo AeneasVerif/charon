@@ -20,7 +20,6 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use indexmap::IndexMap;
 use itertools::Itertools;
 use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
@@ -459,7 +458,7 @@ impl ExitsInfo {
     /// parent loops.
     fn register_children_as_loop_exit_candidates(
         cfg: &CfgInfo,
-        loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
+        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitCandidateInfo>>,
         removed_parent_loops: &Vec<(src::BlockId, usize)>,
         block_id: src::BlockId,
     ) {
@@ -503,7 +502,7 @@ impl ExitsInfo {
         cfg: &CfgInfo,
         explored: &mut HashSet<src::BlockId>,
         ordered_loops: &mut Vec<src::BlockId>,
-        loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
+        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitCandidateInfo>>,
         // List of parent loops, with the distance to the entry of the loop (the distance
         // is the distance between the current node and the loop entry for the last parent,
         // and the distance between the parents for the others).
@@ -719,7 +718,7 @@ impl ExitsInfo {
 
         // Initialize the loop exits candidates
         for loop_id in &cfg.loop_entries {
-            loop_exits.insert(*loop_id, IndexMap::new());
+            loop_exits.insert(*loop_id, SeqHashMap::new());
         }
 
         // Compute the candidates
@@ -1390,8 +1389,8 @@ impl<'a> ReconstructCtx<'a> {
                         // We link block ids to:
                         // - vector of matched integer values
                         // - translated blocks
-                        let mut branches: IndexMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
-                            IndexMap::new();
+                        let mut branches: SeqHashMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
+                            SeqHashMap::new();
 
                         // Translate the children expressions
                         for (v, bid) in targets.iter() {

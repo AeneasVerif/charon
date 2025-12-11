@@ -16,7 +16,7 @@ use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::formatter::FmtCtx;
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::Vector;
+use charon_lib::ids::IndexMap;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax::UnwindAction;
@@ -35,7 +35,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// The map from rust variable indices to translated variables indices.
     pub locals_map: HashMap<usize, LocalId>,
     /// The translated blocks.
-    pub blocks: Vector<BlockId, BlockData>,
+    pub blocks: IndexMap<BlockId, BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
@@ -48,7 +48,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
 
 impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
     pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>, drop_kind: DropKind) -> Self {
-        i_ctx.lifetime_freshener = Some(Vector::new());
+        i_ctx.lifetime_freshener = Some(IndexMap::new());
         BodyTransCtx {
             i_ctx,
             drop_kind,

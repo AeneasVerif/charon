@@ -210,8 +210,8 @@ impl TypeCheckVisitor<'_> {
 
     fn zip_assert_match<'a, I, A, B, FmtA>(
         &'a mut self,
-        a: &Vector<I, A>,
-        b: &Vector<I, B>,
+        a: &IndexMap<I, A>,
+        b: &IndexMap<I, B>,
         a_fmt: &FmtA,
         kind: &str,
         target: &GenericsSource,
@@ -271,8 +271,8 @@ impl TypeCheckVisitor<'_> {
     fn assert_clauses_match(
         &mut self,
         params_fmt: &FmtCtx<'_>,
-        clauses: Substituted<'_, Vector<TraitClauseId, TraitParam>>,
-        trefs: &Vector<TraitClauseId, TraitRef>,
+        clauses: Substituted<'_, IndexMap<TraitClauseId, TraitParam>>,
+        trefs: &IndexMap<TraitClauseId, TraitRef>,
         kind: &str,
         target: &GenericsSource,
     ) {

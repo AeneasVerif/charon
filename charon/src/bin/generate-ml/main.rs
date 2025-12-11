@@ -298,7 +298,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     if base_ty == "ustr" {
                         base_ty = "string".to_string();
                     }
-                    if base_ty == "vector" || base_ty == "index_vec" {
+                    if base_ty == "index_map" || base_ty == "index_vec" {
                         base_ty = "list".to_string();
                         args.remove(0); // Remove the index generic param
                     }
@@ -1078,7 +1078,7 @@ fn generate_ml(
         ),
         // Hand-written because we filter out `None` values.
         (
-            "Vector",
+            "charon_lib::ids::index_map::IndexMap",
             indoc!(
                 r#"
                 let* list = list_of_json (option_of_json arg1_of_json) ctx json in
@@ -1116,7 +1116,7 @@ fn generate_ml(
         "PredicateOrigin",
         "TraitTypeConstraintId",
         "charon_lib::ids::index_vec::IndexVec",
-        "Vector",
+        "charon_lib::ids::index_map::IndexMap",
     ];
     // Types that we don't want visitors to go into.
     let opaque_for_visitor = &["Name"];

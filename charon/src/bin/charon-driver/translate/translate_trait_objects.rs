@@ -7,7 +7,7 @@ use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
 };
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::{IndexVec, Vector};
+use charon_lib::ids::{IndexMap, IndexVec};
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 
@@ -152,7 +152,7 @@ pub enum TrVTableField {
 
 pub struct VTableData {
     pub fields: IndexVec<FieldId, TrVTableField>,
-    pub supertrait_map: Vector<TraitClauseId, Option<FieldId>>,
+    pub supertrait_map: IndexMap<TraitClauseId, Option<FieldId>>,
 }
 
 //// Generate the vtable struct.
@@ -243,9 +243,10 @@ impl ItemTransCtx<'_, '_> {
         trait_def: &hax::FullDef,
         implied_predicates: &hax::GenericPredicates,
     ) -> Result<VTableData, Error> {
-        let mut supertrait_map: Vector<TraitClauseId, _> = (0..implied_predicates.predicates.len())
-            .map(|_| None)
-            .collect();
+        let mut supertrait_map: IndexMap<TraitClauseId, _> =
+            (0..implied_predicates.predicates.len())
+                .map(|_| None)
+                .collect();
         let mut fields = IndexVec::new();
 
         // Basic fields.
@@ -442,9 +443,10 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let mut field_map = IndexVec::new();
-        let mut supertrait_map: Vector<TraitClauseId, _> = (0..implied_predicates.predicates.len())
-            .map(|_| None)
-            .collect();
+        let mut supertrait_map: IndexMap<TraitClauseId, _> =
+            (0..implied_predicates.predicates.len())
+                .map(|_| None)
+                .collect();
         let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
             (TypeDeclKind::Opaque, None)
         } else {
