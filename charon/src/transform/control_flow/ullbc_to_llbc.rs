@@ -32,6 +32,7 @@ use std::mem;
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
 use crate::formatter::IntoFormatter;
+use crate::ids::IndexVec;
 use crate::llbc_ast as tgt;
 use crate::meta::{Span, combine_span};
 use crate::pretty::FmtWithCtx;
@@ -63,7 +64,7 @@ struct CfgInfo {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: Vector<BlockId, BlockData>,
+    pub block_data: IndexVec<BlockId, BlockData>,
 }
 
 #[derive(Debug)]
@@ -85,7 +86,7 @@ struct BlockData {
     /// This is exactly this problems:
     /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
-    pub flow: Vector<src::BlockId, BigRational>,
+    pub flow: IndexVec<BlockId, BigRational>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -118,14 +119,15 @@ impl CfgInfo {
         }
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-        let mut block_data: Vector<BlockId, BlockData> = body.map_ref_indexed(|id, _| BlockData {
-            id,
-            // Default values will stay for unreachable nodes, which are irrelevant.
-            reverse_postorder: None,
-            only_reach_error: false,
-            shortest_paths: Default::default(),
-            flow: empty_flow.clone(),
-        });
+        let mut block_data: IndexVec<BlockId, BlockData> =
+            body.map_ref_indexed(|id, _| BlockData {
+                id,
+                // Default values will stay for unreachable nodes, which are irrelevant.
+                reverse_postorder: None,
+                only_reach_error: false,
+                shortest_paths: Default::default(),
+                flow: empty_flow.clone(),
+            });
 
         // Compute the dominator tree.
         let dominator_tree = simple_fast(&cfg, start_block);
@@ -186,7 +188,7 @@ impl CfgInfo {
             }
 
             // Compute the flows between each pair of nodes.
-            let mut flow: Vector<src::BlockId, BigRational> =
+            let mut flow: IndexVec<src::BlockId, BigRational> =
                 mem::take(&mut block_data[block_id].flow);
             if !fwd_targets.is_empty() {
                 // We need to divide the initial flow equally between the children
@@ -336,7 +338,7 @@ struct ExitInfo {
 /// The exits of a graph
 #[derive(Debug, Clone)]
 struct ExitsInfo {
-    exits: Vector<BlockId, ExitInfo>,
+    exits: IndexVec<BlockId, ExitInfo>,
 }
 
 impl ExitsInfo {

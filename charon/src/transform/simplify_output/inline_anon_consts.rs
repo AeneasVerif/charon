@@ -28,7 +28,7 @@ impl UllbcPass for Transform {
                     // Subtle: This generator must be managed to correctly track the indices that will
                     // be generated when pushing onto `outer_body.body`.
                     let mut bid_generator: Generator<BlockId> =
-                        Generator::new_with_init_value(outer_body.body.next_id());
+                        Generator::new_with_init_value(outer_body.body.next_idx());
                     let start_new_bodies = bid_generator.next_id();
                     let Some(block) = outer_body.body.get_mut(block_id) else {
                         continue;

@@ -361,6 +361,16 @@ where
         ret.elem_count = ret.iter().count();
         ret
     }
+
+    pub fn make_contiguous(self) -> crate::ids::IndexVec<I, T> {
+        // Ensure that every slot is filled.
+        assert_eq!(
+            self.elem_count(),
+            self.slot_count(),
+            "`Vector` is not contiguous"
+        );
+        self.into_iter().collect()
+    }
 }
 
 impl<I: Idx, T> Default for Vector<I, T> {

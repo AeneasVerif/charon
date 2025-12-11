@@ -3,6 +3,7 @@ use crate::{
     common::{TAB_INCR, repeat_except_first},
     formatter::*,
     gast,
+    ids::IndexVec,
     llbc_ast::{self as llbc, *},
     transform::utils::GenericsSource,
     ullbc_ast::{self as ullbc, *},
@@ -823,7 +824,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
         fn fmt_body<C: AstFormatter>(
             f: &mut fmt::Formatter<'_>,
             ctx: &<<C as AstFormatter>::Reborrow<'_> as AstFormatter>::Reborrow<'_>,
-            body: &Vector<BlockId, BlockData>,
+            body: &IndexVec<BlockId, BlockData>,
         ) -> Result<(), fmt::Error> {
             let tab = ctx.indent();
             let ctx = &ctx.increase_indent();

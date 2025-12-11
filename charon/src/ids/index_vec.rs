@@ -73,8 +73,12 @@ where
         self.vector.len()
     }
 
-    /// Remove the value from this slot, leaving other ids unchanged.
-    pub fn remove(&mut self, _: I) -> Option<T> {
+    /// Shadow the `index_vec::IndexVec` method because it silently shifts ids.
+    pub fn remove(&mut self, _: I) -> Option<T>
+    where
+        // Make it not callable.
+        String: Copy,
+    {
         panic!("remove")
     }
 
