@@ -51,9 +51,6 @@ pub enum StatementKind {
     Assert(Assert),
     /// Does nothing. Useful for passes.
     Nop,
-    #[charon::opaque]
-    #[drive(skip)]
-    Error(String),
 }
 
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]

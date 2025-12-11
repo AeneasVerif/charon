@@ -1540,7 +1540,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             }
             StatementKind::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
             StatementKind::Nop => write!(f, "{tab}nop"),
-            StatementKind::Error(s) => write!(f, "{tab}@Error({})", s),
         }
     }
 }

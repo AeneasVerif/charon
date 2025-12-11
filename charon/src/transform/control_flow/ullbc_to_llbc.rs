@@ -1312,7 +1312,6 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
             src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
-            src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
         };
         Some(tgt::Statement::new(src_span, st))
     }

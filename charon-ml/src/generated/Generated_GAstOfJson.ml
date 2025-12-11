@@ -598,16 +598,42 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Literal", literal) ] ->
         let* literal = literal_of_json ctx literal in
         Ok (CLiteral literal)
+    | `Assoc [ ("Adt", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = option_of_json variant_id_of_json ctx x_0 in
+        let* x_1 = list_of_json constant_expr_of_json ctx x_1 in
+        Ok (CAdt (x_0, x_1))
+    | `Assoc [ ("Array", array) ] ->
+        let* array = list_of_json constant_expr_of_json ctx array in
+        Ok (CArray array)
+    | `Assoc [ ("Slice", slice) ] ->
+        let* slice = list_of_json constant_expr_of_json ctx slice in
+        Ok (CSlice slice)
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_ref_of_json ctx global in
+        Ok (CGlobal global)
     | `Assoc [ ("TraitConst", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_ref_of_json ctx x_0 in
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (CTraitConst (x_0, x_1))
+    | `Assoc [ ("Ref", ref) ] ->
+        let* ref = box_of_json constant_expr_of_json ctx ref in
+        Ok (CRef ref)
+    | `Assoc [ ("Ptr", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ref_kind_of_json ctx x_0 in
+        let* x_1 = box_of_json constant_expr_of_json ctx x_1 in
+        Ok (CPtr (x_0, x_1))
     | `Assoc [ ("Var", var) ] ->
         let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
         Ok (CVar var)
     | `Assoc [ ("FnDef", fn_def) ] ->
         let* fn_def = fn_ptr_of_json ctx fn_def in
         Ok (CFnDef fn_def)
+    | `Assoc [ ("FnPtr", fn_ptr) ] ->
+        let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
+        Ok (CFnPtr fn_ptr)
+    | `Assoc [ ("PtrNoProvenance", ptr_no_provenance) ] ->
+        let* ptr_no_provenance = big_int_of_json ctx ptr_no_provenance in
+        Ok (CPtrNoProvenance ptr_no_provenance)
     | `Assoc [ ("RawMemory", raw_memory) ] ->
         let* raw_memory = list_of_json byte_of_json ctx raw_memory in
         Ok (CRawMemory raw_memory)
@@ -793,6 +819,9 @@ and file_name_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Local", local) ] ->
         let* local = path_buf_of_json ctx local in
         Ok (Local local)
+    | `Assoc [ ("NotReal", not_real) ] ->
+        let* not_real = string_of_json ctx not_real in
+        Ok (NotReal not_real)
     | _ -> Error "")
 
 and float_type_of_json (ctx : of_json_ctx) (js : json) :

@@ -249,7 +249,6 @@ pub enum FileName {
     #[drive(skip)] // drive is not implemented for `PathBuf`
     Local(PathBuf),
     /// A "not real" file name (macro, query, etc.)
-    #[charon::opaque]
     NotReal(String),
 }
 

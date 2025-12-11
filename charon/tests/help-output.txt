@@ -108,7 +108,7 @@ Options:
           Treat `Box<T>` as if it was a built-in type
 
       --raw-consts
-          Do not inline or evaluate constants. Note: this emits constants that the OCaml bindings can't parse; if you need this ping me so I can fix that
+          Do not inline or evaluate constants
 
       --reconstruct-fallible-operations
           Replace "bound checks followed by UB-on-overflow operation" with the corresponding panic-on-overflow operation. This loses unwinding information
