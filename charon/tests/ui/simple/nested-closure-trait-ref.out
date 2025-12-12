@@ -36,7 +36,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -126,7 +126,7 @@ where
 }
 
 // Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>(@1: *mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>(@1: *mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -235,7 +235,7 @@ where
 }
 
 // Full name: test_crate::foo::closure::closure::{impl Destruct for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>(@1: *mut test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T>(@1: *mut test_crate::foo::closure::closure<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

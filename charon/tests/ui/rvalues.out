@@ -29,7 +29,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -220,7 +220,7 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
 = <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -451,7 +451,7 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8
 }
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}::drop_in_place
-fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
 = <missing>
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}

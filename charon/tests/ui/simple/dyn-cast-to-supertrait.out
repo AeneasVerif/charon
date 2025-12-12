@@ -14,7 +14,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -30,7 +30,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Feline::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Feline)),
+  drop: unsafe fn(*mut (dyn Feline)),
   method_hunt: fn<'_0_1>(&'_0_1 ((dyn Feline))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -51,7 +51,7 @@ where
 struct test_crate::Pettable::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Pettable)),
+  drop: unsafe fn(*mut (dyn Pettable)),
   method_pet: fn<'_0_1>(&'_0_1 ((dyn Pettable))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -72,7 +72,7 @@ where
 struct test_crate::Cat::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Cat)),
+  drop: unsafe fn(*mut (dyn Cat)),
   method_meow: fn<'_0_1>(&'_0_1 ((dyn Cat))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::Feline::{vtable}),
@@ -98,7 +98,7 @@ where
 struct HouseCat {}
 
 // Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_in_place
-fn {impl Destruct for HouseCat}::drop_in_place(@1: *mut HouseCat)
+unsafe fn {impl Destruct for HouseCat}::drop_in_place(@1: *mut HouseCat)
 {
     let @0: (); // return
     let @1: *mut HouseCat; // arg #1
@@ -128,7 +128,7 @@ fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 (HouseCat))
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable_drop_shim}
-fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Feline))
+unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Feline))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Feline + '0); // arg #1
@@ -192,7 +192,7 @@ fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 (HouseCat))
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable_drop_shim}
-fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Pettable))
+unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Pettable))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Pettable + '0); // arg #1
@@ -256,7 +256,7 @@ fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 (HouseCat))
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable_drop_shim}
-fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Cat))
+unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Cat))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Cat + '0); // arg #1

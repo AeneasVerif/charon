@@ -89,7 +89,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -114,7 +114,7 @@ pub enum AssertKind {
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -184,7 +184,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Super::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Super<T>)),
+  drop: unsafe fn(*mut (dyn Super<T>)),
   method_super_method: fn<'_0_1>(&'_0_1 ((dyn Super<T>)), T) -> i32,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -206,7 +206,7 @@ where
 struct test_crate::Checkable::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Checkable<T>)),
+  drop: unsafe fn(*mut (dyn Checkable<T>)),
   method_check: fn<'_0_1>(&'_0_1 ((dyn Checkable<T>))) -> bool,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::Super::{vtable}<T>),
@@ -250,7 +250,7 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
 }
 
 // Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
-fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
+unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Super<i32> + '0); // arg #1
@@ -321,7 +321,7 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 (i32)) -> bool
 }
 
 // Full name: test_crate::{impl Checkable<i32> for i32}::{vtable_drop_shim}
-fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Checkable<i32>))
+unsafe fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Checkable<i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Checkable<i32> + '0); // arg #1
@@ -379,7 +379,7 @@ impl Checkable<i32> for i32 {
 struct test_crate::NoParam::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn NoParam)),
+  drop: unsafe fn(*mut (dyn NoParam)),
   method_dummy: fn<'_0_1>(&'_0_1 ((dyn NoParam))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -456,7 +456,7 @@ where
 struct test_crate::Modifiable::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Modifiable<T>)),
+  drop: unsafe fn(*mut (dyn Modifiable<T>)),
   method_modify: fn<'_0_1, '_1_1>(&'_0_1 mut ((dyn Modifiable<T>)), &'_1_1 (T)) -> T,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -498,7 +498,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-fn {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
+unsafe fn {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -607,7 +607,7 @@ where
 struct test_crate::BaseOn::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn BaseOn<T>)),
+  drop: unsafe fn(*mut (dyn BaseOn<T>)),
   method_operate_on: fn<'_0_1, '_1_1>(&'_0_1 ((dyn BaseOn<T>)), &'_1_1 (T)),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -629,7 +629,7 @@ where
 struct test_crate::Both32And64::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Both32And64)),
+  drop: unsafe fn(*mut (dyn Both32And64)),
   method_both_operate: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 ((dyn Both32And64)), &'_1_1 (i32), &'_2_1 (i64)),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::BaseOn::{vtable}<i32>),
@@ -715,7 +715,7 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i3
 }
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable_drop_shim}
-fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i32>))
+unsafe fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn BaseOn<i32> + '0); // arg #1
@@ -803,7 +803,7 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i6
 }
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable_drop_shim}
-fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i64>))
+unsafe fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i64>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn BaseOn<i64> + '0); // arg #1
@@ -894,7 +894,7 @@ fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &
 }
 
 // Full name: test_crate::{impl Both32And64 for i32}::{vtable_drop_shim}
-fn {impl Both32And64 for i32}::{vtable_drop_shim}(@1: *mut (dyn Both32And64))
+unsafe fn {impl Both32And64 for i32}::{vtable_drop_shim}(@1: *mut (dyn Both32And64))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Both32And64 + '0); // arg #1
@@ -950,7 +950,7 @@ trait Alias<Self>
 struct test_crate::LifetimeTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn LifetimeTrait<Ty = Ty0>)),
+  drop: unsafe fn(*mut (dyn LifetimeTrait<Ty = Ty0>)),
   method_lifetime_method: fn<'a, '_1_1>(&'_1_1 ((dyn LifetimeTrait<Ty = Ty0>)), &'a (Ty0)) -> &'a (Ty0),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -1000,7 +1000,7 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 (i32), @2: &'
 }
 
 // Full name: test_crate::{impl LifetimeTrait for i32}::{vtable_drop_shim}
-fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn LifetimeTrait<Ty = i32>))
+unsafe fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn LifetimeTrait<Ty = i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn LifetimeTrait<Ty = i32> + '0); // arg #1

@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -94,7 +94,7 @@ where
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
+unsafe fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -143,7 +143,7 @@ pub trait BoolTrait<Self>
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
-fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
+unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
 where
     [@TraitClause0]: Sized<A>,
 {
@@ -462,7 +462,7 @@ where
 }
 
 // Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Wrapper<T>[@TraitClause0])
+unsafe fn {impl Destruct for Wrapper<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Wrapper<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <missing>

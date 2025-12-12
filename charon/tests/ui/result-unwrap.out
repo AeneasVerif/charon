@@ -60,7 +60,7 @@ where
 struct core::fmt::Debug::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Debug)),
+  drop: unsafe fn(*mut (dyn Debug)),
   method_fmt: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 ((dyn Debug)), &'_1_1 mut (Formatter<'_2_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}],
 }
 
@@ -203,7 +203,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <missing>
 
 fn UNIT_METADATA()

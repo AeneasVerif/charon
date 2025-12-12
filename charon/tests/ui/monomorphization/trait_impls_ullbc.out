@@ -57,7 +57,7 @@ pub trait Destruct::<bool>
 }
 
 // Full name: core::marker::Destruct::drop_in_place::<bool>
-fn drop_in_place::<bool>(@1: *mut bool)
+unsafe fn drop_in_place::<bool>(@1: *mut bool)
 = <opaque>
 
 fn UNIT_METADATA()

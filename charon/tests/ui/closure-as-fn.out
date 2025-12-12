@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -128,7 +128,7 @@ fn {impl FnMut<()> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: ())
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
 = <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}

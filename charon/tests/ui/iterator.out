@@ -27,7 +27,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, N>[@TraitClause0])
+unsafe fn {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, N>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -2517,7 +2517,7 @@ where
     [@TraitClause1]: TrustedRandomAccessNoCoerce<Self>,
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)

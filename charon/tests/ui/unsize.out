@@ -64,7 +64,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -72,7 +72,7 @@ fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -96,7 +96,7 @@ where
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
 // Full name: alloc::rc::Rc::{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Rc<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Rc<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -122,7 +122,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}

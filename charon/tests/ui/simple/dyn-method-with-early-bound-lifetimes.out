@@ -19,7 +19,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Trait)),
+  drop: unsafe fn(*mut (dyn Trait)),
   method_foo: fn<'_0_1>(&'_0_1 ((dyn Trait))),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }

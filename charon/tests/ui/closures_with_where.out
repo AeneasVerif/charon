@@ -62,7 +62,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
@@ -128,7 +128,7 @@ where
 }
 
 // Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, const K : usize>(@1: *mut closure<T, K>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, const K : usize>(@1: *mut closure<T, K>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, K>,

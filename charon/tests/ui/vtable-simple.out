@@ -49,7 +49,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -65,7 +65,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Modifiable::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Modifiable<T>)),
+  drop: unsafe fn(*mut (dyn Modifiable<T>)),
   method_modify: fn<'_0_1, '_1_1>(&'_0_1 mut ((dyn Modifiable<T>)), &'_1_1 (T)) -> T,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -107,7 +107,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
+unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

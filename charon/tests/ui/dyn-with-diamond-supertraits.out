@@ -49,7 +49,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 #[lang_item("add")]
@@ -71,7 +71,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Super::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Super<T>)),
+  drop: unsafe fn(*mut (dyn Super<T>)),
   method_super_method: fn<'_0_1>(&'_0_1 ((dyn Super<T>)), T) -> i32,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -93,7 +93,7 @@ where
 struct test_crate::Internal::{vtable}<Ty0> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Internal<Internal = Ty0>)),
+  drop: unsafe fn(*mut (dyn Internal<Internal = Ty0>)),
   method_internal_method: fn<'_0_1>(&'_0_1 ((dyn Internal<Internal = Ty0>))) -> Ty0,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
@@ -116,7 +116,7 @@ where
 struct test_crate::Left::{vtable}<Ty0, Ty1> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Left<parent_clause1::Internal = Ty0, Left = Ty1>)),
+  drop: unsafe fn(*mut (dyn Left<parent_clause1::Internal = Ty0, Left = Ty1>)),
   method_left_method: fn<'_0_1>(&'_0_1 ((dyn Left<parent_clause1::Internal = Ty0, Left = Ty1>))) -> Ty1,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::Internal::{vtable}<Ty0>),
@@ -141,7 +141,7 @@ where
 struct test_crate::Right::{vtable}<T, Ty0, Ty1> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Right<T, parent_clause1::Internal = Ty0, Right = Ty1>)),
+  drop: unsafe fn(*mut (dyn Right<T, parent_clause1::Internal = Ty0, Right = Ty1>)),
   method_right_method: fn<'_0_1>(&'_0_1 ((dyn Right<T, parent_clause1::Internal = Ty0, Right = Ty1>))) -> Ty1,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::Internal::{vtable}<Ty0>),
@@ -169,7 +169,7 @@ where
 struct test_crate::Join::{vtable}<T, Ty0, Ty1, Ty2, Ty3> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Join<T, parent_clause1::parent_clause1::Internal = Ty0, parent_clause1::parent_clause1::Internal = Ty1, parent_clause2::Right = Ty2, parent_clause1::Left = Ty3>)),
+  drop: unsafe fn(*mut (dyn Join<T, parent_clause1::parent_clause1::Internal = Ty0, parent_clause1::parent_clause1::Internal = Ty1, parent_clause2::Right = Ty2, parent_clause1::Left = Ty3>)),
   method_join_method: fn<'_0_1>(&'_0_1 ((dyn Join<T, parent_clause1::parent_clause1::Internal = Ty0, parent_clause1::parent_clause1::Internal = Ty1, parent_clause2::Right = Ty2, parent_clause1::Left = Ty3>))) -> (Ty3, Ty2),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (test_crate::Left::{vtable}<Ty3, Ty1>),
@@ -212,7 +212,7 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 (i32), @2: i32) -> i32
 }
 
 // Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
-fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
+unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Super<i32> + '0); // arg #1
@@ -282,7 +282,7 @@ fn {impl Internal for i32}::internal_method<'_0>(@1: &'_0 (i32)) -> i32
 }
 
 // Full name: test_crate::{impl Internal for i32}::{vtable_drop_shim}
-fn {impl Internal for i32}::{vtable_drop_shim}(@1: *mut (dyn Internal<Internal = i32>))
+unsafe fn {impl Internal for i32}::{vtable_drop_shim}(@1: *mut (dyn Internal<Internal = i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Internal<Internal = i32> + '0); // arg #1
@@ -352,7 +352,7 @@ fn {impl Left for i32}::left_method<'_0>(@1: &'_0 (i32)) -> i32
 }
 
 // Full name: test_crate::{impl Left for i32}::{vtable_drop_shim}
-fn {impl Left for i32}::{vtable_drop_shim}(@1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32>))
+unsafe fn {impl Left for i32}::{vtable_drop_shim}(@1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32> + '0); // arg #1
@@ -456,7 +456,7 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 (i32)) -> i32
 }
 
 // Full name: test_crate::{impl Right<i32> for i32}::{vtable_drop_shim}
-fn {impl Right<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>))
+unsafe fn {impl Right<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '0); // arg #1
@@ -544,7 +544,7 @@ fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 (i32)) -> (i32, i32)
 }
 
 // Full name: test_crate::{impl Join<i32> for i32}::{vtable_drop_shim}
-fn {impl Join<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>))
+unsafe fn {impl Join<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>))
 {
     let ret@0: (); // return
     let dyn_self@1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '0); // arg #1

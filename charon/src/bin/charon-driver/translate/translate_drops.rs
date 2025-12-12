@@ -119,7 +119,7 @@ impl ItemTransCtx<'_, '_> {
 
         let input = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
         let signature = FunSig {
-            is_unsafe: false,
+            is_unsafe: true,
             inputs: vec![input],
             output: Ty::mk_unit(),
         };

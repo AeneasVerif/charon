@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -57,7 +57,7 @@ where
 }
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(@1: *mut HashMap<S>[@TraitClause0])
+unsafe fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(@1: *mut HashMap<S>[@TraitClause0])
 where
     [@TraitClause0]: Sized<S>,
 = <missing>

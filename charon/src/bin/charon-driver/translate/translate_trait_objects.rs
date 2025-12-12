@@ -307,7 +307,7 @@ impl ItemTransCtx<'_, '_> {
                         TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
                     let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
                     let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(FunSig {
-                        is_unsafe: false,
+                        is_unsafe: true,
                         inputs: [self_ptr].into(),
                         output: Ty::mk_unit(),
                     })));
@@ -1021,7 +1021,7 @@ impl ItemTransCtx<'_, '_> {
 
         // `*mut dyn Trait -> ()`
         let signature = FunSig {
-            is_unsafe: false,
+            is_unsafe: true,
             inputs: vec![ref_dyn_self.clone()],
             output: Ty::mk_unit(),
         };

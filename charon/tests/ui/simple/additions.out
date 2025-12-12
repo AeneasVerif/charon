@@ -121,7 +121,7 @@ impl Copy for u8 {
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <missing>
 
 pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8

@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -169,7 +169,7 @@ where
 }
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>(@1: *mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>(@1: *mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,

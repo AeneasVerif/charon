@@ -107,16 +107,16 @@ pub trait Destruct::<Thing>
     vtable: core::marker::Destruct::{vtable}::<Thing>
 }
 
-fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<Thing>(@1: *mut Thing)
+unsafe fn core::marker::Destruct::drop_in_place::<Thing>(@1: *mut Thing)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(u8)>
@@ -239,7 +239,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::Thing::{impl Destruct::<Thing>}::drop_in_place
-fn {impl Destruct::<Thing>}::drop_in_place(@1: *mut Thing)
+unsafe fn {impl Destruct::<Thing>}::drop_in_place(@1: *mut Thing)
 {
     let @0: (); // return
     let @1: *mut Thing; // arg #1
@@ -283,7 +283,7 @@ fn {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '_1>(@1: &'_1 (te
 }
 
 // Full name: test_crate::main::closure::{impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place
-fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(@1: *mut test_crate::main::closure<'_>)
+unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(@1: *mut test_crate::main::closure<'_>)
 {
     let @0: (); // return
     let @1: *mut test_crate::main::closure<'_0>; // arg #1
@@ -350,7 +350,7 @@ fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_1>(@1:
 }
 
 // Full name: test_crate::main::closure#1::{impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place
-fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>(@1: *mut test_crate::main::closure#1<'_>)
+unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>(@1: *mut test_crate::main::closure#1<'_>)
 {
     let @0: (); // return
     let @1: *mut test_crate::main::closure#1<'_0>; // arg #1
@@ -417,7 +417,7 @@ fn {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(@1: test_crate:
 }
 
 // Full name: test_crate::main::closure#2::{impl Destruct::<test_crate::main::closure#2>}::drop_in_place
-fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(@1: *mut test_crate::main::closure#2)
+unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(@1: *mut test_crate::main::closure#2)
 {
     let @0: (); // return
     let @1: *mut test_crate::main::closure#2; // arg #1
