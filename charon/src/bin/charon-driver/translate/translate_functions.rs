@@ -3,102 +3,29 @@
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
-use std::panic;
-
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
-use charon_lib::common::*;
-use charon_lib::formatter::IntoFormatter;
-use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use itertools::Itertools;
 
 impl ItemTransCtx<'_, '_> {
-    /// Translate a function's signature.
-    pub(crate) fn translate_function_signature(
-        &mut self,
-        def: &hax::FullDef,
-        item_meta: &ItemMeta,
-    ) -> Result<FunSig, Error> {
-        let span = item_meta.span;
-
-        let signature = match &def.kind {
-            hax::FullDefKind::Fn { sig, .. } => sig,
-            hax::FullDefKind::AssocFn { sig, .. } => sig,
-            hax::FullDefKind::Ctor {
-                fields, output_ty, ..
-            } => {
-                let sig = hax::TyFnSig {
-                    inputs: fields.iter().map(|field| field.ty.clone()).collect(),
-                    output: output_ty.clone(),
-                    c_variadic: false,
-                    safety: hax::Safety::Safe,
-                    abi: hax::ExternAbi::Rust,
-                };
-                &hax::Binder {
-                    value: sig,
-                    bound_vars: Default::default(),
-                }
-            }
-            hax::FullDefKind::Const { ty, .. }
-            | hax::FullDefKind::AssocConst { ty, .. }
-            | hax::FullDefKind::Static { ty, .. } => {
-                let sig = hax::TyFnSig {
-                    inputs: vec![],
-                    output: ty.clone(),
-                    c_variadic: false,
-                    safety: hax::Safety::Safe,
-                    abi: hax::ExternAbi::Rust,
-                };
-                &hax::Binder {
-                    value: sig,
-                    bound_vars: Default::default(),
-                }
-            }
-            _ => panic!("Unexpected definition for function: {def:?}"),
-        };
-
-        // Translate the signature
-        trace!("signature of {:?}:\n{:?}", def.def_id(), signature.value);
-        let inputs: Vec<Ty> = signature
-            .value
-            .inputs
-            .iter()
-            .map(|ty| self.translate_ty(span, ty))
-            .try_collect()?;
-        let output = self.translate_ty(span, &signature.value.output)?;
-
-        let fmt_ctx = &self.into_fmt();
-        trace!(
-            "# Input variables types:\n{}",
-            pretty_display_list(|x| x.to_string_with_ctx(fmt_ctx), &inputs)
-        );
-        trace!("# Output variable type:\n{}", output.with_ctx(fmt_ctx));
-
-        let is_unsafe = match signature.value.safety {
-            hax::Safety::Unsafe => true,
-            hax::Safety::Safe => false,
-        };
-
-        Ok(FunSig {
-            is_unsafe,
-            inputs,
-            output,
-        })
-    }
-
     /// Generate a fake function body for ADT constructors.
     pub(crate) fn build_ctor_body(
         &mut self,
         span: Span,
         def: &hax::FullDef,
-        adt_def_id: &hax::DefId,
-        ctor_of: &hax::CtorOf,
-        variant_id: usize,
-        fields: &hax::IndexVec<hax::FieldIdx, hax::FieldDef>,
-        output_ty: &hax::Ty,
     ) -> Result<Body, Error> {
+        let hax::FullDefKind::Ctor {
+            adt_def_id,
+            ctor_of,
+            variant_id,
+            fields,
+            output_ty,
+        } = def.kind()
+        else {
+            unreachable!()
+        };
         let tref = self
             .translate_type_decl_ref(span, &def.this().with_def_id(self.hax_state(), adt_def_id))?;
         let output_ty = self.translate_ty(span, output_ty)?;
@@ -115,7 +42,7 @@ impl ItemTransCtx<'_, '_> {
             .try_collect()?;
         let variant = match ctor_of {
             hax::CtorOf::Struct => None,
-            hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
+            hax::CtorOf::Variant => Some(VariantId::from(*variant_id)),
         };
         builder.push_statement(StatementKind::Assign(
             return_place,
