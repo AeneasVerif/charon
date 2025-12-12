@@ -79,6 +79,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             item_src.kind,
             bt_ctx.monomorphize()
         );
+        if !matches!(
+            &item_src.kind,
+            TransItemSourceKind::InherentImpl | TransItemSourceKind::Module,
+        ) {
+            bt_ctx.translate_item_generics(item_meta.span, &def, &item_src.kind)?;
+        }
         match &item_src.kind {
             TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
                 bt_ctx.register_module(item_meta, &def);
@@ -424,9 +430,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TypeDecl, Error> {
         let span = item_meta.span;
 
-        // Translate generics and predicates
-        self.translate_def_generics(span, def)?;
-
         // Get the kind of the type decl -- is it a closure?
         let src = self.get_item_source(span, def)?;
 
@@ -481,7 +484,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        self.translate_def_generics(span, def)?;
         let src = self.get_item_source(span, def)?;
 
         if let hax::FullDefKind::Ctor {
@@ -574,15 +576,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
 
-        // Translate the generics and predicates - globals *can* have generics
-        // Ex.:
-        // ```
-        // impl<const N : usize> Foo<N> {
-        //   const LEN : usize = N;
-        // }
-        // ```
-        self.translate_def_generics(span, def)?;
-
         // Retrieve the kind
         let item_source = self.get_item_source(span, def)?;
 
@@ -627,12 +620,6 @@ impl ItemTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
         let span = item_meta.span;
-
-        // Translate the generics
-        // Note that in the generics returned by [translate_def_generics], the trait refs only
-        // contain the local trait clauses. The parent clauses are stored in
-        // `self.parent_trait_clauses`.
-        self.translate_def_generics(span, def)?;
 
         let (hax::FullDefKind::Trait {
             implied_predicates, ..
@@ -896,8 +883,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        self.translate_def_generics(span, def)?;
-
         let hax::FullDefKind::TraitImpl {
             trait_pred,
             implied_impl_exprs,
@@ -1154,8 +1139,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        self.translate_def_generics(span, def)?;
-
         let hax::FullDefKind::TraitAlias {
             implied_predicates, ..
         } = &def.kind
@@ -1356,9 +1339,6 @@ impl ItemTransCtx<'_, '_> {
         method_name: TraitItemName,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-
-        // Add the generics params of the impl.
-        self.translate_def_generics(span, def)?;
 
         let hax::FullDefKind::TraitImpl { trait_pred, .. } = &def.kind else {
             unreachable!()

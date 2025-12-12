@@ -1,4 +1,4 @@
-use super::translate_ctx::ItemTransCtx;
+use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
 use charon_lib::ast::*;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -422,11 +422,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// This adds generic parameters and predicates to the current environment (as a binder in `self.binding_levels`).
     /// This is necessary to translate types that depend on these generics (such as `Ty` and `TraitRef`).
     /// The constructed `GenericParams` can be recovered at the end using `self.into_generics()` and stored in the translated item.
-    pub(crate) fn translate_def_generics(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-    ) -> Result<(), Error> {
+    fn translate_def_generics(&mut self, span: Span, def: &hax::FullDef) -> Result<(), Error> {
         assert!(self.binding_levels.len() == 0);
         self.binding_levels.push(BindingLevel::new(true));
         self.push_generics_for_def(span, def, false)?;
@@ -435,7 +431,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Translate the generics and predicates of this item without its parents.
-    pub(crate) fn translate_def_generics_without_parents(
+    fn translate_def_generics_without_parents(
         &mut self,
         span: Span,
         def: &hax::FullDef,
@@ -443,6 +439,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.binding_levels.push(BindingLevel::new(true));
         self.push_generics_for_def_without_parents(span, def, true)?;
         self.innermost_binder().params.check_consistency();
+        Ok(())
+    }
+
+    /// Translate the generics and predicates of this item and its parents. This adds generic
+    /// parameters and predicates to the current environment (as a binder in
+    /// `self.binding_levels`). The constructed `GenericParams` can be recovered at the end using
+    /// `self.into_generics()` and stored in the translated item.
+    ///
+    /// On top of the generics introduced by `translate_def_generics`, this adds extra parameters
+    /// required by the `TransItemSourceKind`.
+    pub fn translate_item_generics(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef,
+        kind: &TransItemSourceKind,
+    ) -> Result<(), Error> {
+        self.translate_def_generics(span, def)?;
         Ok(())
     }
 

@@ -393,8 +393,6 @@ impl ItemTransCtx<'_, '_> {
         }
         self.check_no_monomorphize(span)?;
 
-        self.translate_def_generics(span, trait_def)?;
-
         let (hax::FullDefKind::Trait {
             dyn_self,
             implied_predicates,
@@ -590,7 +588,6 @@ impl ItemTransCtx<'_, '_> {
         impl_kind: &TraitImplSource,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
-        self.translate_def_generics(span, impl_def)?;
         self.check_no_monomorphize(span)?;
 
         let (impl_ref, vtable_struct_ref) =
@@ -826,7 +823,6 @@ impl ItemTransCtx<'_, '_> {
         impl_kind: &TraitImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        self.translate_def_generics(span, impl_def)?;
         self.check_no_monomorphize(span)?;
 
         let (impl_ref, vtable_struct_ref) =
@@ -995,7 +991,6 @@ impl ItemTransCtx<'_, '_> {
         impl_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        self.translate_def_generics(span, impl_def)?;
 
         let hax::FullDefKind::TraitImpl {
             dyn_self: Some(dyn_self),
@@ -1065,8 +1060,6 @@ impl ItemTransCtx<'_, '_> {
                 "Trying to generate a vtable shim for a non-vtable-safe method"
             );
         };
-
-        self.translate_def_generics(span, &impl_func_def)?;
 
         // The signature of the shim function.
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;

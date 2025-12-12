@@ -500,7 +500,6 @@ impl ItemTransCtx<'_, '_> {
 
         trace!("About to translate closure:\n{:?}", def.def_id());
 
-        self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
@@ -564,7 +563,6 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
-        self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         assert!(self.innermost_binder_mut().bound_region_vars.is_empty());
         self.innermost_binder_mut()
@@ -636,7 +634,6 @@ impl ItemTransCtx<'_, '_> {
             "Only stateless closures can be translated as functions"
         );
 
-        self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
