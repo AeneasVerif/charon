@@ -255,9 +255,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             item_meta: item_meta.clone(),
             src: ItemSource::TopLevel,
             is_global_initializer: Some(global_id),
+            generics: Default::default(),
             signature: FunSig {
                 is_unsafe: false,
-                generics: Default::default(),
                 inputs: vec![],
                 output: Ty::mk_unit(),
             },
@@ -481,6 +481,8 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
+        self.translate_def_generics(span, def)?;
+
         // Translate the function signature
         trace!("Translating function signature");
         let signature = self.translate_function_signature(def, &item_meta)?;
@@ -531,6 +533,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src,
             is_global_initializer,

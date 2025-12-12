@@ -542,10 +542,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         // Update the context
-        let ctx = &ctx.set_generics(&self.signature.generics);
+        let ctx = &ctx.set_generics(&self.generics);
 
         // Generic parameters
-        let (params, preds) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{params}")?;
 
         // Arguments
@@ -581,37 +581,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
         let id = self.id.with_ctx(ctx);
         let generics = self.generics.with_ctx(ctx);
         write!(f, "{id}{generics}")
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let ctx = &ctx.set_generics(&self.generics);
-
-        // Unsafe keyword
-        if self.is_unsafe {
-            write!(f, "unsafe ")?;
-        }
-
-        // Generic parameters
-        let (params, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        write!(f, "fn{params}")?;
-
-        // Arguments
-        let args = self
-            .inputs
-            .iter()
-            .map(|ty| ty.with_ctx(ctx).to_string())
-            .format(", ");
-        write!(f, "({args})")?;
-
-        // Return type
-        if !self.output.is_unit() {
-            write!(f, " -> {}", self.output.with_ctx(ctx))?;
-        }
-
-        write!(f, "{clauses}")?;
-        Ok(())
     }
 }
 

@@ -15,6 +15,18 @@ end
 module RegionMap = Collections.MakeMap (RegionOrderedType)
 module RegionSet = Collections.MakeSet (RegionOrderedType)
 
+(** Like `binder` but for the free variables bound by the generics of an item.
+    This is not present in the charon ast but returned by helpers so we don't
+    forget to substitute. Use `Substitute.apply_args_to_item_binder` to get the
+    correctly-substituted inner value. *)
+type 'a item_binder = {
+  item_binder_params : generic_params;
+  item_binder_value : 'a;
+}
+[@@deriving show, ord]
+
+type bound_fun_sig = fun_sig item_binder
+
 let to_name (ls : string list) : name =
   List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls
 

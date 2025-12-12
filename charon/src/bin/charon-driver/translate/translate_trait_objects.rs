@@ -839,7 +839,6 @@ impl ItemTransCtx<'_, '_> {
         // Signature: `() -> VTable`.
         let sig = FunSig {
             is_unsafe: false,
-            generics: self.the_only_binder().params.clone(),
             inputs: vec![],
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
@@ -861,6 +860,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: init_func_id,
             item_meta: item_meta,
+            generics: self.into_generics(),
             signature: sig,
             src: ItemSource::VTableInstance { impl_ref },
             is_global_initializer: Some(init_for),
@@ -1021,7 +1021,6 @@ impl ItemTransCtx<'_, '_> {
         // `*mut dyn Trait -> ()`
         let signature = FunSig {
             is_unsafe: false,
-            generics: self.the_only_binder().params.clone(),
             inputs: vec![ref_dyn_self.clone()],
             output: Ty::mk_unit(),
         };
@@ -1036,6 +1035,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: fun_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,
@@ -1077,6 +1077,7 @@ impl ItemTransCtx<'_, '_> {
             def
         };
 
+        self.translate_def_generics(span, &shim_func_def)?;
         // Compute the correct signature for the shim
         let signature = self.translate_function_signature(&shim_func_def, &item_meta)?;
 
@@ -1096,6 +1097,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: fun_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,

@@ -98,7 +98,6 @@ and fn_operand =
 (** A function signature. *)
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
-  generics : generic_params;
   inputs : ty list;
   output : ty;
 }

@@ -770,8 +770,7 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
         | TraitImplItem (_, trait_ref, method_name, _)
           when c.match_with_trait_decl_refs ->
             let subst =
-              Substitute.make_subst_from_generics d.signature.generics
-                func.generics
+              Substitute.make_subst_from_generics d.generics func.generics
             in
             let trait_ref =
               Substitute.trait_decl_ref_substitute subst trait_ref

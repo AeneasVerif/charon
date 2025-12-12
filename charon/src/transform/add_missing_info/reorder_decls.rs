@@ -337,14 +337,24 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 let _ = item.drive(&mut graph);
             }
             ItemRef::Fun(d) => {
+                let FunDecl {
+                    def_id: _,
+                    item_meta: _,
+                    generics,
+                    signature,
+                    src,
+                    is_global_initializer: _,
+                    body,
+                } = d;
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemKind`.
-                let _ = d.signature.drive(&mut graph);
-                let _ = d.body.drive(&mut graph);
+                let _ = generics.drive(&mut graph);
+                let _ = signature.drive(&mut graph);
+                let _ = body.drive(&mut graph);
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
-                if let ItemSource::TraitDecl { trait_ref, .. } = &d.src {
+                if let ItemSource::TraitDecl { trait_ref, .. } = src {
                     graph.insert_edge(trait_ref.id.into());
                 }
             }

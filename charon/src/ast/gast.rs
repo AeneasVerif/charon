@@ -189,6 +189,7 @@ pub struct FunDecl {
     pub def_id: FunDeclId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
+    pub generics: GenericParams,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,

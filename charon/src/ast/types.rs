@@ -986,7 +986,6 @@ pub struct FunSig {
     /// Is the function unsafe or not
     #[drive(skip)]
     pub is_unsafe: bool,
-    pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
 }

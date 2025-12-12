@@ -911,17 +911,11 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [
-          ("is_unsafe", is_unsafe);
-          ("generics", generics);
-          ("inputs", inputs);
-          ("output", output);
-        ] ->
+        [ ("is_unsafe", is_unsafe); ("inputs", inputs); ("output", output) ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
-        let* generics = generic_params_of_json ctx generics in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
-        Ok ({ is_unsafe; generics; inputs; output } : fun_sig)
+        Ok ({ is_unsafe; inputs; output } : fun_sig)
     | _ -> Error "")
 
 and g_declaration_group_of_json :

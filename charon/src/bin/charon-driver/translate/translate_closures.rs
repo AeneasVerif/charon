@@ -320,7 +320,6 @@ impl ItemTransCtx<'_, '_> {
         let output = self.translate_ty(span, &signature.value.output)?;
 
         Ok(FunSig {
-            generics: self.the_only_binder().params.clone(),
             is_unsafe,
             inputs,
             output,
@@ -328,7 +327,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     fn translate_closure_method_body(
-        mut self,
+        &mut self,
         span: Span,
         def: &hax::FullDef,
         target_kind: ClosureKind,
@@ -536,6 +535,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src,
             is_global_initializer: None,
@@ -704,6 +704,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::TopLevel,
             is_global_initializer: None,
