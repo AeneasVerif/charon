@@ -33,6 +33,8 @@ pub(crate) struct BindingLevel {
     pub bound_region_vars: Vec<RegionId>,
     /// The regions added for by-ref upvars, in order of upvars.
     pub by_ref_upvar_regions: Vec<RegionId>,
+    /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
+    pub closure_call_method_region: Option<RegionId>,
     /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translate const generic variable indices.

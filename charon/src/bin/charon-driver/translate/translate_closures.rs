@@ -267,6 +267,18 @@ impl ItemTransCtx<'_, '_> {
         Ok(TypeDeclKind::Struct(fields))
     }
 
+    /// Add a fresh region for the borrow of the closure state in the `call` and `call_mut`
+    /// methods.
+    fn add_call_method_regions(&mut self, target_kind: ClosureKind) {
+        if let ClosureKind::Fn | ClosureKind::FnMut = target_kind {
+            let rid = self
+                .innermost_generics_mut()
+                .regions
+                .push_with(|index| RegionParam { index, name: None });
+            self.innermost_binder_mut().closure_call_method_region = Some(rid);
+        }
+    }
+
     /// Given an item that is a closure, generate the signature of the
     /// `call_once`/`call_mut`/`call` method (depending on `target_kind`).
     fn translate_closure_method_sig(
@@ -292,9 +304,9 @@ impl ItemTransCtx<'_, '_> {
             ClosureKind::FnOnce => state_ty,
             ClosureKind::Fn | ClosureKind::FnMut => {
                 let rid = self
-                    .innermost_generics_mut()
-                    .regions
-                    .push_with(|index| RegionParam { index, name: None });
+                    .innermost_binder_mut()
+                    .closure_call_method_region
+                    .unwrap();
                 let r = Region::Var(DeBruijnVar::new_at_zero(rid));
                 let mutability = if target_kind == ClosureKind::Fn {
                     RefKind::Shared
@@ -493,6 +505,8 @@ impl ItemTransCtx<'_, '_> {
         assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
             .push_params_from_binder(args.fn_sig.rebind(()))?;
+        // Add the lifetime generics coming from the method itself.
+        self.add_call_method_regions(target_kind);
 
         // Hax gives us trait-related information for the impl we're building.
         let vimpl = match target_kind {
