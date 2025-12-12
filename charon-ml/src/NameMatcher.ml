@@ -580,7 +580,7 @@ and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
       let m =
         maps_push_bound_regions_group_if_nonempty m binder.binder_regions
       in
-      let inputs, output = binder.binder_value in
+      let { T.inputs; output; _ } = binder.binder_value in
       (* Match *)
       List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
       &&
@@ -1022,7 +1022,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       let m =
         constraints_map_push_regions_map_if_nonempty m binder.binder_regions
       in
-      let inputs, output = binder.binder_value in
+      let { T.inputs; output; _ } = binder.binder_value in
       let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
       let output =
         if output = TypesUtils.mk_unit_ty then None

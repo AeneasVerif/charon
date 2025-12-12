@@ -211,7 +211,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::fmt::rt::ArgumentType
 enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a (())>),
+  Placeholder(value: NonNull<()>, formatter: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a (())>),
   Count(u16),
 }
 

@@ -95,13 +95,6 @@ and fn_operand =
       (** Regular case: call to a top-level function, trait method, etc. *)
   | FnOpDynamic of operand  (** Use of a function pointer. *)
 
-(** A function signature. *)
-and fun_sig = {
-  is_unsafe : bool;  (** Is the function unsafe or not *)
-  inputs : ty list;
-  output : ty;
-}
-
 (** A variable *)
 and local = {
   index : local_id;  (** Unique index identifying the variable *)

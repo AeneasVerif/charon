@@ -306,10 +306,11 @@ impl ItemTransCtx<'_, '_> {
                     let self_ty =
                         TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
                     let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
-                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty((
-                        [self_ptr].into(),
-                        Ty::mk_unit(),
-                    ))));
+                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(FunSig {
+                        is_unsafe: false,
+                        inputs: [self_ptr].into(),
+                        output: Ty::mk_unit(),
+                    })));
                     ("drop".into(), drop_ty)
                 }
                 TrVTableField::Method(item_name, sig) => {

@@ -498,11 +498,11 @@ fn fn_casts()
 {
     let @0: (); // return
     let @1: fn(); // anonymous local
-    let @2: fn(); // anonymous local
+    let @2: unsafe fn(); // anonymous local
     let closure@3: closure; // local
     let @4: fn(u8); // anonymous local
     let @5: closure; // anonymous local
-    let @6: fn(u8); // anonymous local
+    let @6: unsafe fn(u8); // anonymous local
     let @7: closure; // anonymous local
 
     @0 := ()
@@ -510,7 +510,7 @@ fn fn_casts()
     @1 := cast<test_crate::fn_casts::foo, fn()>(const (test_crate::fn_casts::foo))
     storage_dead(@1)
     storage_live(@2)
-    @2 := cast<bar, fn()>(const (bar))
+    @2 := cast<bar, unsafe fn()>(const (bar))
     storage_dead(@2)
     storage_live(closure@3)
     closure@3 := closure {  }
@@ -523,7 +523,7 @@ fn fn_casts()
     storage_live(@6)
     storage_live(@7)
     @7 := copy (closure@3)
-    @6 := cast<as_fn, fn(u8)>(const (as_fn))
+    @6 := cast<as_fn, unsafe fn(u8)>(const (as_fn))
     storage_dead(@7)
     storage_dead(@6)
     @0 := ()

@@ -272,7 +272,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         sig: &hax::Binder<hax::TyFnSig>,
-    ) -> Result<RegionBinder<(Vec<Ty>, Ty)>, Error> {
+    ) -> Result<RegionBinder<FunSig>, Error> {
         self.translate_region_binder(span, sig, |ctx, sig| {
             let inputs = sig
                 .inputs
@@ -280,7 +280,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 .map(|x| ctx.translate_ty(span, x))
                 .try_collect()?;
             let output = ctx.translate_ty(span, &sig.output)?;
-            Ok((inputs, output))
+            Ok(FunSig {
+                is_unsafe: sig.safety == hax::Safety::Unsafe,
+                inputs,
+                output,
+            })
         })
     }
 

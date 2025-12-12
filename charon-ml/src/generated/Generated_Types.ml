@@ -353,6 +353,13 @@ and fun_id =
       (** A primitive function, coming from a standard library (for instance:
           [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
 
+(** A function signature. *)
+and fun_sig = {
+  is_unsafe : bool;  (** Is the function unsafe or not *)
+  inputs : ty list;
+  output : ty;
+}
+
 (** A set of generic arguments. *)
 and generic_args = {
   regions : region list;
@@ -600,7 +607,7 @@ and ty_kind =
             }
           ]} *)
   | TDynTrait of dyn_predicate  (** [dyn Trait] *)
-  | TFnPtr of (ty list * ty) region_binder
+  | TFnPtr of fun_sig region_binder
       (** Function pointer type. This is a literal pointer to a region of memory
           that contains a callable function. This is a function signature with
           limited generics: it only supports lifetime generics, not other kinds
@@ -691,7 +698,7 @@ and closure_info = {
       (** The [FnMut] implementation of this closure, if any. *)
   fn_impl : trait_impl_ref region_binder option;
       (** The [Fn] implementation of this closure, if any. *)
-  signature : (ty list * ty) region_binder;
+  signature : fun_sig region_binder;
       (** The signature of the function that this closure represents. *)
 }
 

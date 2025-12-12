@@ -529,11 +529,7 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
             (region_binder_of_json trait_impl_ref_of_json)
             ctx fn_impl
         in
-        let* signature =
-          region_binder_of_json
-            (pair_of_json (list_of_json ty_of_json) ty_of_json)
-            ctx signature
-        in
+        let* signature = region_binder_of_json fun_sig_of_json ctx signature in
         Ok
           ({ kind; fn_once_impl; fn_mut_impl; fn_impl; signature }
             : closure_info)
@@ -2142,11 +2138,7 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         let* dyn_trait = dyn_predicate_of_json ctx dyn_trait in
         Ok (TDynTrait dyn_trait)
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
-        let* fn_ptr =
-          region_binder_of_json
-            (pair_of_json (list_of_json ty_of_json) ty_of_json)
-            ctx fn_ptr
-        in
+        let* fn_ptr = region_binder_of_json fun_sig_of_json ctx fn_ptr in
         Ok (TFnPtr fn_ptr)
     | `Assoc [ ("FnDef", fn_def) ] ->
         let* fn_def = region_binder_of_json fn_ptr_of_json ctx fn_def in

@@ -584,6 +584,38 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<FunSig> {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Update the bound regions
+        let ctx = &ctx.push_bound_regions(&self.regions);
+        let FunSig {
+            is_unsafe,
+            inputs,
+            output,
+        } = &self.skip_binder;
+
+        if *is_unsafe {
+            write!(f, "unsafe ")?;
+        }
+
+        write!(f, "fn")?;
+        if !self.regions.is_empty() {
+            write!(
+                f,
+                "<{}>",
+                self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
+            )?;
+        }
+        let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
+        write!(f, "({inputs})")?;
+        if !output.is_unit() {
+            let output = output.with_ctx(ctx);
+            write!(f, " -> {output}")?;
+        }
+        Ok(())
+    }
+}
+
 impl<Id: Copy, C: AstFormatter> FmtWithCtx<C> for GDeclarationGroup<Id>
 where
     Id: FmtWithCtx<C>,
@@ -1944,30 +1976,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
         let trait_ref = self.trait_ref.with_ctx(ctx);
         let ty = self.ty.with_ctx(ctx);
         write!(f, "{}::{} = {}", trait_ref, self.type_name, ty)
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<(Vec<Ty>, Ty)> {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Update the bound regions
-        let ctx = &ctx.push_bound_regions(&self.regions);
-
-        write!(f, "fn")?;
-        if !self.regions.is_empty() {
-            write!(
-                f,
-                "<{}>",
-                self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
-            )?;
-        }
-        let (inputs, output) = &self.skip_binder;
-        let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "({inputs})")?;
-        if !output.is_unit() {
-            let output = output.with_ctx(ctx);
-            write!(f, " -> {output}")?;
-        }
-        Ok(())
     }
 }
 
