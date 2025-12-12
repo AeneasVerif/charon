@@ -269,7 +269,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// Add a fresh region for the borrow of the closure state in the `call` and `call_mut`
     /// methods.
-    fn add_call_method_regions(&mut self, target_kind: ClosureKind) {
+    pub fn add_call_method_regions(&mut self, target_kind: ClosureKind) {
         if let ClosureKind::Fn | ClosureKind::FnMut = target_kind {
             let rid = self
                 .innermost_generics_mut()
@@ -498,15 +498,6 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
-        trace!("About to translate closure:\n{:?}", def.def_id());
-
-        // Add the lifetime generics coming from the higher-kindedness of the signature.
-        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
-        self.innermost_binder_mut()
-            .push_params_from_binder(args.fn_sig.rebind(()))?;
-        // Add the lifetime generics coming from the method itself.
-        self.add_call_method_regions(target_kind);
-
         // Hax gives us trait-related information for the impl we're building.
         let vimpl = match target_kind {
             ClosureKind::FnOnce => fn_once_impl,
@@ -553,7 +544,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
         let hax::FullDefKind::Closure {
-            args,
             fn_once_impl,
             fn_mut_impl,
             fn_impl,
@@ -562,11 +552,6 @@ impl ItemTransCtx<'_, '_> {
         else {
             unreachable!()
         };
-
-        // Add the lifetime generics coming from the higher-kindedness of the signature.
-        assert!(self.innermost_binder_mut().bound_region_vars.is_empty());
-        self.innermost_binder_mut()
-            .push_params_from_binder(args.fn_sig.rebind(()))?;
 
         // Hax gives us trait-related information for the impl we're building.
         let vimpl = match target_kind {
@@ -633,11 +618,6 @@ impl ItemTransCtx<'_, '_> {
             closure.upvar_tys.is_empty(),
             "Only stateless closures can be translated as functions"
         );
-
-        // Add the lifetime generics coming from the higher-kindedness of the signature.
-        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
-        self.innermost_binder_mut()
-            .push_params_from_binder(closure.fn_sig.rebind(()))?;
 
         // Translate the function signature
         let signature = self.translate_fun_sig(span, closure.fn_sig.hax_skip_binder_ref())?;

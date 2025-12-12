@@ -1,3 +1,5 @@
+use crate::translate::translate_ctx::TraitImplSource;
+
 use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
 use charon_lib::ast::*;
 use std::collections::HashMap;
@@ -333,21 +335,38 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
+    // The parameters (and in particular the lifetimes) are split between
+    // early bound and late bound parameters. See those blog posts for explanations:
+    // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    // Note that only lifetimes can be late bound at the moment.
+    //
+    // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound parameters
+    // here.
+    fn push_late_bound_generics_for_def(
+        &mut self,
+        _span: Span,
+        def: &hax::FullDef,
+    ) -> Result<(), Error> {
+        if let hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } = def.kind()
+        {
+            let innermost_binder = self.innermost_binder_mut();
+            assert!(innermost_binder.bound_region_vars.is_empty());
+            innermost_binder.push_params_from_binder(sig.rebind(()))?;
+        }
+        Ok(())
+    }
+
     /// Add the generics and predicates of this item and its parents to the current context.
     #[tracing::instrument(skip(self, span))]
-    fn push_generics_for_def(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-        is_parent: bool,
-    ) -> Result<(), Error> {
+    fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef) -> Result<(), Error> {
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested).
         if let Some(parent_item) = def.typing_parent(self.hax_state()) {
             let parent_def = self.hax_def(&parent_item)?;
-            self.push_generics_for_def(span, &parent_def, true)?;
+            self.push_generics_for_def(span, &parent_def)?;
         }
-        self.push_generics_for_def_without_parents(span, def, !is_parent)?;
+        self.push_generics_for_def_without_parents(span, def)?;
         Ok(())
     }
 
@@ -357,7 +376,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         _span: Span,
         def: &hax::FullDef,
-        include_late_bound: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
         if let Some(param_env) = def.param_env() {
@@ -385,60 +403,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.register_predicates(&param_env.predicates, origin.clone())?;
         }
 
-        if let hax::FullDefKind::Closure { args, .. } = def.kind()
-            && include_late_bound
-        {
-            // Add the lifetime generics coming from the by-ref upvars.
-            args.iter_upvar_borrows().for_each(|_| {
-                self.the_only_binder_mut().push_upvar_region();
-            });
-        }
-
-        // The parameters (and in particular the lifetimes) are split between
-        // early bound and late bound parameters. See those blog posts for explanations:
-        // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-        // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-        // Note that only lifetimes can be late bound.
-        //
-        // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound
-        // parameters here.
-        let signature = match &def.kind {
-            hax::FullDefKind::Fn { sig, .. } => Some(sig),
-            hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
-            _ => None,
-        };
-        if let Some(signature) = signature
-            && include_late_bound
-        {
-            let innermost_binder = self.innermost_binder_mut();
-            assert!(innermost_binder.bound_region_vars.is_empty());
-            innermost_binder.push_params_from_binder(signature.rebind(()))?;
-        }
-
-        Ok(())
-    }
-
-    /// Translate the generics and predicates of this item and its parents.
-    /// This adds generic parameters and predicates to the current environment (as a binder in `self.binding_levels`).
-    /// This is necessary to translate types that depend on these generics (such as `Ty` and `TraitRef`).
-    /// The constructed `GenericParams` can be recovered at the end using `self.into_generics()` and stored in the translated item.
-    fn translate_def_generics(&mut self, span: Span, def: &hax::FullDef) -> Result<(), Error> {
-        assert!(self.binding_levels.len() == 0);
-        self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def(span, def, false)?;
-        self.innermost_binder_mut().params.check_consistency();
-        Ok(())
-    }
-
-    /// Translate the generics and predicates of this item without its parents.
-    fn translate_def_generics_without_parents(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-    ) -> Result<(), Error> {
-        self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def_without_parents(span, def, true)?;
-        self.innermost_binder().params.check_consistency();
         Ok(())
     }
 
@@ -447,7 +411,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// `self.binding_levels`). The constructed `GenericParams` can be recovered at the end using
     /// `self.into_generics()` and stored in the translated item.
     ///
-    /// On top of the generics introduced by `translate_def_generics`, this adds extra parameters
+    /// On top of the generics introduced by `push_generics_for_def`, this adds extra parameters
     /// required by the `TransItemSourceKind`.
     pub fn translate_item_generics(
         &mut self,
@@ -455,7 +419,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
-        self.translate_def_generics(span, def)?;
+        assert!(self.binding_levels.len() == 0);
+        self.binding_levels.push(BindingLevel::new(true));
+        self.push_generics_for_def(span, def)?;
+        self.push_late_bound_generics_for_def(span, def)?;
+
+        if let hax::FullDefKind::Closure { args, .. } = def.kind() {
+            // Add the lifetime generics coming from the by-ref upvars.
+            args.iter_upvar_borrows().for_each(|_| {
+                self.the_only_binder_mut().push_upvar_region();
+            });
+            // Add the lifetime generics coming from the higher-kindedness of the signature.
+            if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
+            | TransItemSourceKind::ClosureMethod(..)
+            | TransItemSourceKind::ClosureAsFnCast = kind
+            {
+                self.innermost_binder_mut()
+                    .push_params_from_binder(args.fn_sig.rebind(()))?;
+            }
+            if let TransItemSourceKind::ClosureMethod(target_kind) = kind {
+                // Add the lifetime generics coming from the method itself.
+                self.add_call_method_regions(*target_kind);
+            }
+        }
+
+        self.innermost_binder_mut().params.check_consistency();
         Ok(())
     }
 
@@ -472,9 +460,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
         assert!(!self.binding_levels.is_empty());
+        self.binding_levels.push(BindingLevel::new(true));
 
-        // Register the type-level parameters. This pushes a new binding level.
-        self.translate_def_generics_without_parents(span, def)?;
+        // Register the type-level parameters for just this binder.
+        self.push_generics_for_def_without_parents(span, def)?;
+        self.push_late_bound_generics_for_def(span, def)?;
+        self.innermost_binder().params.check_consistency();
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self);
