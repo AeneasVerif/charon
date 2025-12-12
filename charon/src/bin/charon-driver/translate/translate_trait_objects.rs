@@ -11,13 +11,6 @@ use charon_lib::ids::{IndexMap, IndexVec};
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 
-fn dummy_public_attr_info() -> AttrInfo {
-    AttrInfo {
-        public: true,
-        ..Default::default()
-    }
-}
-
 fn usize_ty() -> Ty {
     Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
 }
@@ -342,7 +335,7 @@ impl ItemTransCtx<'_, '_> {
             };
             fields.push(Field {
                 span,
-                attr_info: dummy_public_attr_info(),
+                attr_info: AttrInfo::dummy_public(),
                 name: Some(name),
                 ty,
             });

@@ -224,6 +224,22 @@ impl Attribute {
     }
 }
 
+impl AttrInfo {
+    pub fn dummy_private() -> Self {
+        AttrInfo {
+            public: false,
+            ..Default::default()
+        }
+    }
+
+    pub fn dummy_public() -> Self {
+        AttrInfo {
+            public: true,
+            ..Default::default()
+        }
+    }
+}
+
 impl ItemOpacity {
     pub fn with_content_visibility(self, contents_are_public: bool) -> Self {
         use ItemOpacity::*;

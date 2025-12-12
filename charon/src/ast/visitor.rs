@@ -55,6 +55,7 @@ use derive_generic_visitor::*;
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata,
         TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
         ItemByVal, VTableField,
+        for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),

@@ -499,6 +499,7 @@ pub struct Assert {
 }
 
 /// A generic `*DeclRef`-shaped struct, used when we're generic over the type of item.
+#[derive(Debug, Clone, Drive, DriveMut)]
 pub struct DeclRef<Id> {
     pub id: Id,
     pub generics: BoxedArgs,
