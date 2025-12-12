@@ -15,6 +15,7 @@ pub struct CrateData {
     pub charon_version: CharonVersion,
     pub translated: TranslatedCrate,
     #[serde_state(stateless)]
+    #[charon::opaque] // Don't change, this would break version detection for old charon-ml
     /// If there were errors, this contains only a partial description of the input crate.
     pub has_errors: bool,
 }
