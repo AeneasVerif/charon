@@ -187,6 +187,37 @@ impl ItemTransCtx<'_, '_> {
             Ok(inner_ref)
         })
     }
+
+    /// Translate a reference to a closure item that takes upvar lifetimes, late-bound lifetimes,
+    /// and method lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut`
+    /// method (specified by `target_kind`). If you want to instantiate the binder, use the
+    /// lifetimes from `self.closure_method_regions`.
+    fn translate_closure_bound_ref_with_method_bound(
+        &mut self,
+        span: Span,
+        closure: &hax::ClosureArgs,
+        kind: TransItemSourceKind,
+        target_kind: ClosureKind,
+    ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
+        let mut dref = self
+            .translate_closure_bound_ref_with_late_bound(span, closure, kind)?
+            .apply(self.closure_late_regions(closure))
+            .move_under_binder();
+        let mut regions = IndexMap::new();
+        match target_kind {
+            ClosureKind::FnOnce => {}
+            ClosureKind::FnMut | ClosureKind::Fn => {
+                let rid = regions.push_with(|index| RegionParam { index, name: None });
+                dref.generics
+                    .regions
+                    .push(Region::Var(DeBruijnVar::new_at_zero(rid)));
+            }
+        }
+        Ok(RegionBinder {
+            regions,
+            skip_binder: dref,
+        })
+    }
 }
 
 impl ItemTransCtx<'_, '_> {
@@ -585,11 +616,12 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
         let hax::FullDefKind::Closure {
+            args,
             fn_once_impl,
             fn_mut_impl,
             fn_impl,
             ..
-        } = &def.kind
+        } = def.kind()
         else {
             unreachable!()
         };
@@ -603,35 +635,20 @@ impl ItemTransCtx<'_, '_> {
         let mut timpl = self.translate_virtual_trait_impl(def_id, item_meta, vimpl)?;
 
         // Construct the `call_*` method reference.
-        let call_fn_id = self.register_item(
-            span,
-            def.this(),
-            TransItemSourceKind::ClosureMethod(target_kind),
-        );
         let call_fn_name = TraitItemName(target_kind.method_name().into());
         let call_fn_binder = {
-            let mut method_params = GenericParams::empty();
-            match target_kind {
-                ClosureKind::FnOnce => {}
-                ClosureKind::FnMut | ClosureKind::Fn => {
-                    method_params
-                        .regions
-                        .push_with(|index| RegionParam { index, name: None });
-                }
+            let kind = TransItemSourceKind::ClosureMethod(target_kind);
+            let bound_method_ref: RegionBinder<DeclRef<ItemId>> =
+                self.translate_closure_bound_ref_with_method_bound(span, args, kind, target_kind)?;
+            let params = GenericParams {
+                regions: bound_method_ref.regions,
+                ..GenericParams::empty()
             };
-
-            let generics = self
-                .outermost_binder()
-                .params
-                .identity_args_at_depth(DeBruijnId::one())
-                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
+            let fn_decl_ref: FunDeclRef = bound_method_ref.skip_binder.try_into().unwrap();
             Binder::new(
-                BinderKind::TraitMethod(timpl.impl_trait.id, call_fn_name.clone()),
-                method_params,
-                FunDeclRef {
-                    id: call_fn_id,
-                    generics: Box::new(generics),
-                },
+                BinderKind::TraitMethod(timpl.impl_trait.id, call_fn_name),
+                params,
+                fn_decl_ref,
             )
         };
         timpl.methods.push((call_fn_name, call_fn_binder));
