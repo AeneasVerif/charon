@@ -1,0 +1,99 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+= <opaque>
+
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+fn UNIT_METADATA()
+{
+    let @0: (); // return
+
+    @0 := ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::Thing
+pub enum Thing {
+  A(alloc::boxed::Box<()>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]),
+}
+
+// Full name: test_crate::Thing::{impl Destruct for Thing}::drop_in_place
+unsafe fn {impl Destruct for Thing}::drop_in_place(@1: *mut Thing)
+{
+    let @0: (); // return
+    let @1: *mut Thing; // arg #1
+    let @2: &'0 mut (Thing); // anonymous local
+
+    storage_live(@2)
+    @0 := ()
+    @2 := &mut *(@1)
+    match *(@2) {
+        _ => {
+        },
+    }
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] (*(@2) as variant Thing::A).0
+    return
+}
+
+// Full name: test_crate::Thing::{impl Destruct for Thing}
+impl Destruct for Thing {
+    fn drop_in_place = {impl Destruct for Thing}::drop_in_place
+    non-dyn-compatible
+}
+
+// Full name: test_crate::foo
+fn foo(@1: Thing)
+{
+    let @0: (); // return
+    let @1: Thing; // arg #1
+
+    @0 := ()
+    @0 := ()
+    conditional_drop[{impl Destruct for Thing}] @1
+    return
+}
+
+
+
