@@ -860,14 +860,14 @@ where
     [@TraitClause1]: Trait<'a, T>,
 {}
 
-// Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call
-fn {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call<'a, '_1, '_2, T>(@1: &'_2 (test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]), @2: (&'_1 (T))) -> &'_1 (T)
+// Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call
+fn {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call<'a, '_1, '_2, T>(@1: &'_2 (test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]), @2: (&'_1 (T))) -> &'_1 (T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
     let @0: &'_ (T); // return
-    let @1: &'0 (test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]); // arg #1
+    let @1: &'0 (test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]); // arg #1
     let tupled_args@2: (&'_1 (T)); // arg #2
     let y@3: &'_ (T); // local
 
@@ -877,55 +877,55 @@ where
     return
 }
 
-// Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_2, T>(@1: &'_2 mut (test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]), @2: (&'_1 (T))) -> &'_1 (T)
+// Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_mut
+fn {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_2, T>(@1: &'_2 mut (test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]), @2: (&'_1 (T))) -> &'_1 (T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
     let @0: &'_1 (T); // return
-    let state@1: &'_2 mut (test_crate::test_closure_ref_early_bound::closure<'0, T>[@TraitClause0, @TraitClause1]); // arg #1
+    let state@1: &'_2 mut (test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]); // arg #1
     let args@2: (&'_1 (T)); // arg #2
-    let @3: &'2 (test_crate::test_closure_ref_early_bound::closure<'3, T>[@TraitClause0, @TraitClause1]); // anonymous local
+    let @3: &'1 (test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]); // anonymous local
 
     storage_live(@3)
     @3 := &*(state@1)
-    @0 := {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call<'12, '_1, '13, T>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
+    @0 := {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call<'a, '_1, '7, T>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
     return
 }
 
-// Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'a, T>(@1: *mut test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1])
+// Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'a, T>(@1: *mut test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 = <missing>
 
-// Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
-impl<'a, T> Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
+impl<'a, T> Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'a, T>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'a, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::test_closure_ref_early_bound::{impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_once
-fn {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, T>(@1: test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1], @2: (&'_1 (T))) -> &'_1 (T)
+// Full name: test_crate::test_closure_ref_early_bound::{impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_once
+fn {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, T>(@1: test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1], @2: (&'_1 (T))) -> &'_1 (T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
     let @0: &'_ (T); // return
-    let @1: test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]; // arg #1
+    let @1: test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]; // arg #1
     let @2: (&'_ (T)); // arg #2
-    let @3: &'0 mut (test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]); // anonymous local
+    let @3: &'0 mut (test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]); // anonymous local
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_mut<'4, '_1, '_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
-    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}<'8, T>[@TraitClause0, @TraitClause1]] @1
+    @0 := {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
+    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}<'8, T>[@TraitClause0, @TraitClause1]] @1
     return
 }
 
@@ -937,13 +937,13 @@ where
     let @0: &'_1 (T); // return
     let arg1@1: &'_1 (T); // arg #1
     let args@2: (&'_1 (T)); // local
-    let state@3: test_crate::test_closure_ref_early_bound::closure<'0, T>[@TraitClause0, @TraitClause1]; // local
+    let state@3: test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]; // local
 
     storage_live(args@2)
     storage_live(state@3)
     args@2 := (move (arg1@1))
     state@3 := test_crate::test_closure_ref_early_bound::closure {  }
-    @0 := {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_once<'6, '_1, T>[@TraitClause0, @TraitClause1](move (state@3), move (args@2))
+    @0 := {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, T>[@TraitClause0, @TraitClause1](move (state@3), move (args@2))
     return
 }
 
@@ -980,45 +980,45 @@ where
     return
 }
 
-// Full name: test_crate::test_closure_ref_early_bound::{impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
-impl<'a, '_1, T> FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::test_closure_ref_early_bound::{impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
+impl<'a, '_1, T> FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
+    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
     parent_clause1 = {built_in impl Sized for (&'_ (T))}
     parent_clause2 = {built_in impl Tuple for (&'_ (T))}
     parent_clause3 = {built_in impl Sized for &'_ (T)}
-    fn call_once = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, T>[@TraitClause0, @TraitClause1]
+    fn call_once = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_once<'a, '_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
-impl<'a, '_1, T> FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
+impl<'a, '_1, T> FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
-    parent_clause1 = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}<'_, '_1, T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
+    parent_clause1 = {impl FnOnce<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}<'a, '_1, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = {built_in impl Sized for (&'_ (T))}
     parent_clause3 = {built_in impl Tuple for (&'_ (T))}
-    fn call_mut<'_0_1> = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_0_1, T>[@TraitClause0, @TraitClause1]
+    fn call_mut<'_0_1> = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
-impl<'a, '_1, T> Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
+impl<'a, '_1, T> Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<'a, T>,
 {
-    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}
-    parent_clause1 = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}<'_, '_1, T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = {built_in impl MetaSized for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}
+    parent_clause1 = {impl FnMut<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}<'a, '_1, T>[@TraitClause0, @TraitClause1]
     parent_clause2 = {built_in impl Sized for (&'_ (T))}
     parent_clause3 = {built_in impl Tuple for (&'_ (T))}
-    fn call<'_0_1> = {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]}::call<'a, '_1, '_0_1, T>[@TraitClause0, @TraitClause1]
+    fn call<'_0_1> = {impl Fn<(&'_ (T)), &'_ (T)> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call<'a, '_1, '_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 

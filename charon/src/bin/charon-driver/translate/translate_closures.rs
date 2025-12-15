@@ -138,7 +138,17 @@ impl ItemTransCtx<'_, '_> {
                 .map(|_| hax::BoundVariableKind::Region(hax::BoundRegionKind::Anon))
                 .collect(),
         };
-        let tref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
+        let mut tref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
+        // Hack to recover some lifetimes that are erased in `ClosureArgs`.
+        if self.item_src.def_id() == &closure.item.def_id && !self.monomorphize() {
+            let depth = self.binding_levels.depth();
+            // At this point `tref` contains exactly the generic arguments of the enclosing item.
+            // Every closure item gets at least these as generics, so we can simply reuse the
+            // in-scope generics.
+            for (rid, r) in tref.generics.regions.iter_mut_indexed() {
+                *r = Region::Var(DeBruijnVar::bound(depth, rid));
+            }
+        }
         self.translate_region_binder(span, &upvar_binder, |ctx, _| {
             let mut tref = tref.move_under_binder();
             tref.generics.regions.extend(
