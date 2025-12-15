@@ -210,13 +210,14 @@ let
         grep "expected: $expected.*got: $got" charon-results | cut -d':' -f1 | while read f; do
             echo
             echo '`'"$f"'`:'
-            head -1 "$f.charon-output"
+            head -3 "$f.charon-output"
         done || true
         echo
         echo '</details>'
     }
     gather_errors "success" "failure in rustc" >> charon-grouped-results
     gather_errors "success" "failure in hax" >> charon-grouped-results
+    gather_errors "success" "panic" >> charon-grouped-results
     gather_errors "success" "stack overflow" >> charon-grouped-results
   '';
 

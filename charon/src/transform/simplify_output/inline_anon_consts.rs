@@ -46,12 +46,12 @@ impl UllbcPass for Transform {
                             let mut inner_body = inner_body.clone().substitute(&gref.generics);
 
                             // Shift all the body regions in the inner body.
-                            outer_body.bound_body_regions += inner_body.bound_body_regions;
                             inner_body.dyn_visit_mut(|r: &mut Region| {
                                 if let Region::Body(v) = r {
                                     *v += outer_body.bound_body_regions;
                                 }
                             });
+                            outer_body.bound_body_regions += inner_body.bound_body_regions;
 
                             // The init function of a global assumes the return place is live;
                             // this is not the case once we inline it
