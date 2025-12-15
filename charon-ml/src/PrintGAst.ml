@@ -3,6 +3,7 @@
 open Types
 open TypesUtils
 open GAst
+open GAstUtils
 open PrintUtils
 open PrintTypes
 open PrintExpressions
@@ -36,7 +37,8 @@ let assertion_to_string (env : 'a fmt_env) (indent : string) (a : assertion) :
 (** Small helper *)
 let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
     (indent_incr : string) (attribute : string option) (name : string option)
-    (args : local list option) (sg : fun_sig) : string =
+    (args : local list option) (sg : bound_fun_sig) : string =
+  let { item_binder_params = generics; item_binder_value = sg; _ } = sg in
   let ty_to_string = ty_to_string env in
 
   (* Unsafe keyword *)
@@ -44,7 +46,7 @@ let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
 
   (* Generics and predicates *)
   let params, clauses =
-    predicates_and_trait_clauses_to_string env indent indent_incr sg.generics
+    predicates_and_trait_clauses_to_string env indent indent_incr generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -85,7 +87,7 @@ let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
   ^ clauses
 
 let fun_sig_to_string (env : 'a fmt_env) (indent : string)
-    (indent_incr : string) (sg : fun_sig) : string =
+    (indent_incr : string) (sg : fun_sig item_binder) : string =
   fun_sig_with_name_to_string env indent indent_incr None None None sg
 
 let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
@@ -93,7 +95,7 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
     (body_to_string : 'a fmt_env -> string -> string -> 'body -> string)
     (def : 'body gfun_decl) : string =
   (* Locally update the environment *)
-  let env = fmt_env_update_generics_and_preds env def.signature.generics in
+  let env = fmt_env_update_generics_and_preds env def.generics in
 
   let sg = def.signature in
 
@@ -102,6 +104,7 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
 
   (* We print the declaration differently if it is opaque (no body) or transparent
    * (we have access to a body) *)
+  let sg = bound_fun_sig_of_decl def in
   match def.body with
   | None ->
       fun_sig_with_name_to_string env indent indent_incr (Some "opaque")

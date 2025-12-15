@@ -80,7 +80,7 @@ pub trait Destruct::<for<'_0_1> foo::<u32><'_0_1>>
 }
 
 // Full name: core::marker::Destruct::drop_in_place::<for<'_0_1> foo::<u32><'_0_1>>
-fn drop_in_place::<for<'_0_1> foo::<u32><'_0_1>>(@1: *mut for<'_0_1> foo::<u32><'_0_1>)
+unsafe fn drop_in_place::<for<'_0_1> foo::<u32><'_0_1>>(@1: *mut for<'_0_1> foo::<u32><'_0_1>)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(&'_ (u32))>

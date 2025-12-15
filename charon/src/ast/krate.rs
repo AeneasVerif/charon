@@ -355,7 +355,7 @@ impl<'ctx> ItemRef<'ctx> {
     pub fn generic_params(&self) -> &'ctx GenericParams {
         match self {
             ItemRef::Type(d) => &d.generics,
-            ItemRef::Fun(d) => &d.signature.generics,
+            ItemRef::Fun(d) => &d.generics,
             ItemRef::Global(d) => &d.generics,
             ItemRef::TraitDecl(d) => &d.generics,
             ItemRef::TraitImpl(d) => &d.generics,
@@ -446,7 +446,7 @@ impl<'ctx> ItemRefMut<'ctx> {
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {
             ItemRefMut::Type(d) => &mut d.generics,
-            ItemRefMut::Fun(d) => &mut d.signature.generics,
+            ItemRefMut::Fun(d) => &mut d.generics,
             ItemRefMut::Global(d) => &mut d.generics,
             ItemRefMut::TraitDecl(d) => &mut d.generics,
             ItemRefMut::TraitImpl(d) => &mut d.generics,

@@ -119,8 +119,7 @@ impl ItemTransCtx<'_, '_> {
 
         let input = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
         let signature = FunSig {
-            generics: self.into_generics(),
-            is_unsafe: false,
+            is_unsafe: true,
             inputs: vec![input],
             output: Ty::mk_unit(),
         };
@@ -128,6 +127,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src,
             is_global_initializer: None,

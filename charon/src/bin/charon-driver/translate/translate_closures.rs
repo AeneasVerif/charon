@@ -76,7 +76,7 @@ impl ItemTransCtx<'_, '_> {
         } else {
             None
         };
-        let signature = self.translate_fun_sig(span, &args.fn_sig)?;
+        let signature = self.translate_poly_fun_sig(span, &args.fn_sig)?;
         Ok(ClosureInfo {
             kind,
             fn_once_impl,
@@ -283,10 +283,7 @@ impl ItemTransCtx<'_, '_> {
             signature.value,
         );
 
-        let is_unsafe = match signature.value.safety {
-            hax::Safety::Unsafe => true,
-            hax::Safety::Safe => false,
-        };
+        let mut fun_sig = self.translate_fun_sig(span, signature.hax_skip_binder_ref())?;
 
         let state_ty = self.get_closure_state_ty(span, args)?;
 
@@ -309,26 +306,15 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // The types that the closure takes as input.
-        let input_tys: Vec<Ty> = signature
-            .value
-            .inputs
-            .iter()
-            .map(|ty| self.translate_ty(span, ty))
-            .try_collect()?;
+        let input_tys: Vec<Ty> = mem::take(&mut fun_sig.inputs);
         // The method takes `self` and the closure inputs as a tuple.
-        let inputs = vec![state_ty, Ty::mk_tuple(input_tys)];
-        let output = self.translate_ty(span, &signature.value.output)?;
+        fun_sig.inputs = vec![state_ty, Ty::mk_tuple(input_tys)];
 
-        Ok(FunSig {
-            generics: self.the_only_binder().params.clone(),
-            is_unsafe,
-            inputs,
-            output,
-        })
+        Ok(fun_sig)
     }
 
     fn translate_closure_method_body(
-        mut self,
+        &mut self,
         span: Span,
         def: &hax::FullDef,
         target_kind: ClosureKind,
@@ -536,6 +522,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src,
             is_global_initializer: None,
@@ -642,11 +629,8 @@ impl ItemTransCtx<'_, '_> {
             .push_params_from_binder(closure.fn_sig.rebind(()))?;
 
         // Translate the function signature
-        let mut signature =
-            self.translate_closure_method_sig(def, span, closure, ClosureKind::FnOnce)?;
-        let state_ty = signature.inputs.remove(0);
-        let args_tuple_ty = signature.inputs.remove(0);
-        signature.inputs = args_tuple_ty.as_tuple().unwrap().iter().cloned().collect();
+        let signature = self.translate_fun_sig(span, closure.fn_sig.hax_skip_binder_ref())?;
+        let state_ty = self.get_closure_state_ty(span, closure)?;
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
@@ -675,13 +659,14 @@ impl ItemTransCtx<'_, '_> {
                 .enumerate()
                 .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
-            let args_tupled = builder.new_var(Some("args".to_string()), args_tuple_ty.clone());
+            let args_tupled_ty = Ty::mk_tuple(signature.inputs.clone());
+            let args_tupled = builder.new_var(Some("args".to_string()), args_tupled_ty.clone());
             let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 
             builder.push_statement(StatementKind::Assign(
                 args_tupled.clone(),
                 Rvalue::Aggregate(
-                    AggregateKind::Adt(args_tuple_ty.as_adt().unwrap().clone(), None, None),
+                    AggregateKind::Adt(args_tupled_ty.as_adt().unwrap().clone(), None, None),
                     args.into_iter().map(Operand::Move).collect(),
                 ),
             ));
@@ -704,6 +689,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::TopLevel,
             is_global_initializer: None,

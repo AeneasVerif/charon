@@ -52,7 +52,7 @@ impl Clone for i32 {
     non-dyn-compatible
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::ptr::non_null::NonNull
@@ -71,7 +71,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -81,7 +81,7 @@ impl Destruct for Global {
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -114,7 +114,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::Modifiable::{vtable}<T> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn Modifiable<T>)),
+  drop: unsafe fn(*mut (dyn Modifiable<T>)),
   method_modify: fn<'_0_1, '_1_1>(&'_0_1 mut ((dyn Modifiable<T>)), &'_1_1 (T)) -> T,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (core::marker::Destruct::{vtable}),
@@ -179,7 +179,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable_drop_shim}
-fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
+unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

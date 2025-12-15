@@ -88,22 +88,19 @@ impl FunDecl {
         let FunDecl {
             def_id,
             item_meta,
+            generics: _,
             signature,
-            src: kind,
+            src,
             is_global_initializer,
             body,
         } = self;
-        let signature = FunSig {
-            generics: subst.params,
-            inputs: signature.inputs.substitute(&subst.skip_binder),
-            output: signature.output.substitute(&subst.skip_binder),
-            ..signature
-        };
-        let src = kind.substitute(&subst.skip_binder);
+        let signature = signature.substitute(&subst.skip_binder);
+        let src = src.substitute(&subst.skip_binder);
         let body = body.substitute(&subst.skip_binder);
         FunDecl {
             def_id,
             item_meta,
+            generics: subst.params,
             signature,
             src,
             is_global_initializer,

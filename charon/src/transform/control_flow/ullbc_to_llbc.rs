@@ -30,11 +30,9 @@ use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
-use crate::formatter::IntoFormatter;
 use crate::ids::IndexVec;
 use crate::llbc_ast as tgt;
 use crate::meta::{Span, combine_span};
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::{self as src, BlockId};
@@ -1555,18 +1553,10 @@ impl TransformPass for Transform {
             translate_body(ctx, body);
         });
 
-        // Print the functions
-        let fmt_ctx = &ctx.into_fmt();
-        for fun in &ctx.translated.fun_decls {
-            trace!(
-                "# Signature:\n{}\n\n# Function definition:\n{}\n",
-                fun.signature.with_ctx(fmt_ctx),
-                fun.with_ctx(fmt_ctx),
-            );
-        }
-
         if ctx.options.print_built_llbc {
             eprintln!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
+        } else {
+            trace!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
         }
     }
 }

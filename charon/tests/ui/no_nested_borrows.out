@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::deref::Deref
@@ -59,7 +59,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -142,7 +142,7 @@ where
 }
 
 // Full name: test_crate::List::{impl Destruct for List<T>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut List<T>[@TraitClause0])
+unsafe fn {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut List<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <missing>
@@ -257,7 +257,7 @@ where
 }
 
 // Full name: test_crate::IdType::{impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut IdType<T>[@TraitClause0])
+unsafe fn {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut IdType<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <missing>

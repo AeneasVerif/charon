@@ -1,4 +1,5 @@
 open Types
+open TypesUtils
 open GAst
 
 (** Small utility: list the transitive parents of a region var group. We don't
@@ -41,15 +42,10 @@ let locals_get_input_vars (locals : locals) : local list =
 let fun_body_get_input_vars (fbody : 'body gexpr_body) : local list =
   locals_get_input_vars fbody.locals
 
-(** Like `binder` but for the free variables bound by the generics of an item.
-    This is not present in the charon ast but returned by helpers so we don't
-    forget to substitute. Use `Substitute.apply_args_to_item_binder` to get the
-    correctly-substituted inner value. *)
-type 'a item_binder = {
-  item_binder_params : generic_params;
-  item_binder_value : 'a;
-}
-[@@deriving show, ord]
+(** Get the signature of this function as a bound value, i.e. including its
+    generics parameters. *)
+let bound_fun_sig_of_decl (def : 'a gfun_decl) : bound_fun_sig =
+  { item_binder_params = def.generics; item_binder_value = def.signature }
 
 (** Lookup a method in this trait decl. The two levels of binders in the output
     reflect that there are two binding levels: the trait generics and the method

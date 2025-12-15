@@ -47,10 +47,10 @@ pub trait Destruct::<closure::<()>>
     vtable: core::marker::Destruct::{vtable}::<closure::<()>>
 }
 
-fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
+unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
+unsafe fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
 = <opaque>
 
 // Full name: core::marker::Tuple::<(())>
@@ -149,7 +149,7 @@ fn {impl FnMut::<closure::<()>, (())>}::call_mut::<()><'_0>(@1: &'_0 mut (closur
 }
 
 // Full name: test_crate::foo::{const}::closure::{impl Destruct::<closure::<()>>}::drop_in_place::<()>
-fn {impl Destruct::<closure::<()>>}::drop_in_place::<()>(@1: *mut closure::<()>)
+unsafe fn {impl Destruct::<closure::<()>>}::drop_in_place::<()>(@1: *mut closure::<()>)
 {
     let @0: (); // return
     let @1: *mut closure::<()>; // arg #1

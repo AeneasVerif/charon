@@ -547,7 +547,7 @@ impl FunDecl {
         if let Some(body) = self.body.as_unstructured_mut() {
             let mut ctx = UllbcStatementTransformCtx {
                 ctx,
-                params: &self.signature.generics,
+                params: &self.generics,
                 locals: &mut body.locals,
                 span: self.item_meta.span,
                 statements: Vec::new(),
@@ -572,7 +572,7 @@ impl FunDecl {
         if let Some(body) = self.body.as_unstructured_mut() {
             let mut ctx = UllbcStatementTransformCtx {
                 ctx,
-                params: &self.signature.generics,
+                params: &self.generics,
                 locals: &mut body.locals,
                 span: self.item_meta.span,
                 statements: Vec::new(),
@@ -610,7 +610,7 @@ impl FunDecl {
                 locals: &mut body.locals,
                 statements: Vec::new(),
                 span: self.item_meta.span,
-                params: &self.signature.generics,
+                params: &self.generics,
             };
             body.body.visit_blocks_bwd(|block: &mut llbc_ast::Block| {
                 ctx.statements = Vec::with_capacity(block.statements.len());

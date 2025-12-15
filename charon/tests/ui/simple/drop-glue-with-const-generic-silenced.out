@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -28,7 +28,7 @@ fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -57,7 +57,7 @@ struct PortableHash<const K : usize> {
 }
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}::drop_in_place
-fn {impl Destruct for PortableHash<K>}::drop_in_place<const K : usize>(@1: *mut PortableHash<K>)
+unsafe fn {impl Destruct for PortableHash<K>}::drop_in_place<const K : usize>(@1: *mut PortableHash<K>)
 = <opaque>
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}

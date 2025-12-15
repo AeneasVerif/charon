@@ -38,7 +38,7 @@ pub trait Destruct::<closure<'_, '_>>
     vtable: core::marker::Destruct::{vtable}::<closure<'_, '_>>
 }
 
-fn core::marker::Destruct::drop_in_place::<closure<'_, '_>>(@1: *mut closure<'_, '_>)
+unsafe fn core::marker::Destruct::drop_in_place::<closure<'_, '_>>(@1: *mut closure<'_, '_>)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(u8, u8)>
@@ -213,7 +213,7 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut (closure<'_, '_>)) -> u8
 }
 
 // Full name: test_crate::main::closure::{impl Destruct::<closure<'_, '_>>}::drop_in_place
-fn {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>(@1: *mut closure<'_, '_>)
+unsafe fn {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>(@1: *mut closure<'_, '_>)
 {
     let @0: (); // return
     let @1: *mut closure<'_0, '_1>; // arg #1

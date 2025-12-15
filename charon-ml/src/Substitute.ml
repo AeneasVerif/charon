@@ -615,7 +615,7 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
   (* Substitute the signature to be valid under the binder. *)
   let signature =
     st_substitute_visitor#visit_fun_sig
-      (make_subst_from_generics method_decl.signature.generics
+      (make_subst_from_generics method_decl.generics
          bound_method.binder_value.generics)
       method_decl.signature
   in
@@ -625,22 +625,18 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
   in
   Some { item_binder_params = trait_params; item_binder_value = bound_sig }
 
-(* Like [lookup_method_sig], but with no binder shenanigans: the returns
-   fun_sig takes as parameters the concatenation of trait generics and method
-   generics. *)
+(* Like [lookup_method_sig], but with no binder shenanigans: the returned
+   binder binds the concatenation of trait generics and method generics. *)
 let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
-    (name : trait_item_name) : fun_sig option =
+    (name : trait_item_name) : bound_fun_sig option =
   let* bound_sig = lookup_method_sig crate trait_id name in
   let bound_sig = fuse_binders st_substitute_visitor#visit_fun_sig bound_sig in
-  let s =
-    { bound_sig.item_binder_value with generics = bound_sig.item_binder_params }
-  in
-  Some s
+  Some bound_sig
 
 (* Lookup the signature of a `Ty::FnDef`. *)
-let lookup_fndef_sig (crate : 'a gcrate) (fn_def : fn_ptr region_binder) :
-    (ty list * ty) region_binder option =
-  match fn_def.binder_value.kind with
+let lookup_fndef_sig (crate : 'a gcrate) (fn_ptr : fn_ptr region_binder) :
+    fun_sig region_binder option =
+  match fn_ptr.binder_value.kind with
   | FunId (FRegular fun_decl_id) ->
       let* fun_decl =
         LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls
@@ -648,16 +644,12 @@ let lookup_fndef_sig (crate : 'a gcrate) (fn_def : fn_ptr region_binder) :
       (* Substitute the signature to be valid under the binder. *)
       let fn_sig =
         st_substitute_visitor#visit_fun_sig
-          (make_subst_from_generics fun_decl.signature.generics
-             fn_def.binder_value.generics)
+          (make_subst_from_generics fun_decl.generics
+             fn_ptr.binder_value.generics)
           fun_decl.signature
       in
       (* Rebind everything *)
-      Some
-        {
-          binder_regions = fn_def.binder_regions;
-          binder_value = (fn_sig.inputs, fn_sig.output);
-        }
+      Some { binder_regions = fn_ptr.binder_regions; binder_value = fn_sig }
   | _ -> None
 
 (* Construct a set of generic arguments in the scope of `params` that matches

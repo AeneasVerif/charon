@@ -211,7 +211,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::fmt::rt::ArgumentType
 enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a (())>),
+  Placeholder(value: NonNull<()>, formatter: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut (Formatter<'_1_1>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a (())>),
   Count(u16),
 }
 
@@ -1699,7 +1699,7 @@ where
     return
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <missing>
 
 // Full name: core::num::niche_types::NonZeroUsizeInner
@@ -3268,7 +3268,7 @@ where
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
-fn {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(@1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
+unsafe fn {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(@1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,

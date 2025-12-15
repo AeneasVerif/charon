@@ -198,7 +198,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Arrow(sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
-                let sig = self.translate_fun_sig(span, sig)?;
+                let sig = self.translate_poly_fun_sig(span, sig)?;
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
@@ -268,19 +268,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(kind.into_ty())
     }
 
-    pub fn translate_fun_sig(
+    pub fn translate_poly_fun_sig(
         &mut self,
         span: Span,
         sig: &hax::Binder<hax::TyFnSig>,
-    ) -> Result<RegionBinder<(Vec<Ty>, Ty)>, Error> {
-        self.translate_region_binder(span, sig, |ctx, sig| {
-            let inputs = sig
-                .inputs
-                .iter()
-                .map(|x| ctx.translate_ty(span, x))
-                .try_collect()?;
-            let output = ctx.translate_ty(span, &sig.output)?;
-            Ok((inputs, output))
+    ) -> Result<RegionBinder<FunSig>, Error> {
+        self.translate_region_binder(span, sig, |ctx, sig| ctx.translate_fun_sig(span, sig))
+    }
+    pub fn translate_fun_sig(&mut self, span: Span, sig: &hax::TyFnSig) -> Result<FunSig, Error> {
+        let inputs = sig
+            .inputs
+            .iter()
+            .map(|x| self.translate_ty(span, x))
+            .try_collect()?;
+        let output = self.translate_ty(span, &sig.output)?;
+        Ok(FunSig {
+            is_unsafe: sig.safety == hax::Safety::Unsafe,
+            inputs,
+            output,
         })
     }
 

@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -104,7 +104,7 @@ trait Thing<Self>
 }
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A)}::drop_in_place
-fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
+unsafe fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
 {
     let @0: (); // return
     let @1: *mut (A); // arg #1
@@ -201,7 +201,7 @@ where
 }
 
 // Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>(@1: *mut closure<Self>[@TraitClause0])
+unsafe fn {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>(@1: *mut closure<Self>[@TraitClause0])
 where
     [@TraitClause0]: Thing<Self>,
 = <missing>

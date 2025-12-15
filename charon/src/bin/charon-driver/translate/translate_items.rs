@@ -255,9 +255,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             item_meta: item_meta.clone(),
             src: ItemSource::TopLevel,
             is_global_initializer: Some(global_id),
+            generics: Default::default(),
             signature: FunSig {
                 is_unsafe: false,
-                generics: Default::default(),
                 inputs: vec![],
                 output: Ty::mk_unit(),
             },
@@ -481,13 +481,56 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
+        self.translate_def_generics(span, def)?;
+        let src = self.get_item_source(span, def)?;
+
+        if let hax::FullDefKind::Ctor {
+            fields, output_ty, ..
+        } = def.kind()
+        {
+            let signature = FunSig {
+                inputs: fields
+                    .iter()
+                    .map(|field| self.translate_ty(span, &field.ty))
+                    .try_collect()?,
+                output: self.translate_ty(span, output_ty)?,
+                is_unsafe: false,
+            };
+
+            let body = if item_meta.opacity.with_private_contents().is_opaque() {
+                Body::Opaque
+            } else {
+                self.build_ctor_body(span, def)?
+            };
+            return Ok(FunDecl {
+                def_id,
+                item_meta,
+                generics: self.into_generics(),
+                signature,
+                src,
+                is_global_initializer: None,
+                body,
+            });
+        }
+
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = self.translate_function_signature(def, &item_meta)?;
+        let signature = match &def.kind {
+            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                self.translate_fun_sig(span, &sig.value)?
+            }
+            hax::FullDefKind::Const { ty, .. }
+            | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::Static { ty, .. } => FunSig {
+                inputs: vec![],
+                output: self.translate_ty(span, ty)?,
+                is_unsafe: false,
+            },
+            _ => panic!("Unexpected definition for function: {def:?}"),
+        };
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let src = self.get_item_source(span, def)?;
         let is_trait_method_decl_without_default = match &src {
             ItemSource::TraitDecl { has_default, .. } => !has_default,
             _ => false,
@@ -506,24 +549,6 @@ impl ItemTransCtx<'_, '_> {
             Body::Opaque
         } else if is_trait_method_decl_without_default {
             Body::TraitMethodWithoutDefault
-        } else if let hax::FullDefKind::Ctor {
-            adt_def_id,
-            ctor_of,
-            variant_id,
-            fields,
-            output_ty,
-            ..
-        } = def.kind()
-        {
-            self.build_ctor_body(
-                span,
-                def,
-                adt_def_id,
-                ctor_of,
-                *variant_id,
-                fields,
-                output_ty,
-            )?
         } else {
             // Translate the MIR body for this definition.
             self.translate_def_body(item_meta.span, def)
@@ -531,6 +556,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src,
             is_global_initializer,

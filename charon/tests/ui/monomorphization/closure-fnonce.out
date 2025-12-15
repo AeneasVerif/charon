@@ -60,10 +60,10 @@ pub trait Destruct::<NotCopy>
     vtable: core::marker::Destruct::{vtable}::<NotCopy>
 }
 
-fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
+unsafe fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
 = <opaque>
 
-fn core::marker::Destruct::drop_in_place::<NotCopy>(@1: *mut NotCopy)
+unsafe fn core::marker::Destruct::drop_in_place::<NotCopy>(@1: *mut NotCopy)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(u8)>
@@ -136,7 +136,7 @@ fn {impl FnOnce::<closure, (u8)>}::call_once(@1: closure, @2: (u8)) -> u8
 }
 
 // Full name: test_crate::main::closure::{impl Destruct::<closure>}::drop_in_place
-fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
+unsafe fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
 {
     let @0: (); // return
     let @1: *mut closure; // arg #1
@@ -174,7 +174,7 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
 }
 
 // Full name: test_crate::NotCopy::{impl Destruct::<NotCopy>}::drop_in_place
-fn {impl Destruct::<NotCopy>}::drop_in_place(@1: *mut NotCopy)
+unsafe fn {impl Destruct::<NotCopy>}::drop_in_place(@1: *mut NotCopy)
 {
     let @0: (); // return
     let @1: *mut NotCopy; // arg #1

@@ -105,11 +105,11 @@ pub trait Destruct::<&'_ (Str)>
 }
 
 // Full name: core::marker::Destruct::drop_in_place::<i32>
-fn drop_in_place::<i32>(@1: *mut i32)
+unsafe fn drop_in_place::<i32>(@1: *mut i32)
 = <opaque>
 
 // Full name: core::marker::Destruct::drop_in_place::<&'_ (Str)>
-fn drop_in_place::<&'_ (Str)>(@1: *mut &'_ (Str))
+unsafe fn drop_in_place::<&'_ (Str)>(@1: *mut &'_ (Str))
 = <opaque>
 
 // Full name: core::ops::range::RangeFrom::<usize>

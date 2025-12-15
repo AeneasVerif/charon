@@ -542,10 +542,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         // Update the context
-        let ctx = &ctx.set_generics(&self.signature.generics);
+        let ctx = &ctx.set_generics(&self.generics);
 
         // Generic parameters
-        let (params, preds) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{params}")?;
 
         // Arguments
@@ -584,33 +584,34 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
+impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<FunSig> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let ctx = &ctx.set_generics(&self.generics);
+        // Update the bound regions
+        let ctx = &ctx.push_bound_regions(&self.regions);
+        let FunSig {
+            is_unsafe,
+            inputs,
+            output,
+        } = &self.skip_binder;
 
-        // Unsafe keyword
-        if self.is_unsafe {
+        if *is_unsafe {
             write!(f, "unsafe ")?;
         }
 
-        // Generic parameters
-        let (params, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        write!(f, "fn{params}")?;
-
-        // Arguments
-        let args = self
-            .inputs
-            .iter()
-            .map(|ty| ty.with_ctx(ctx).to_string())
-            .format(", ");
-        write!(f, "({args})")?;
-
-        // Return type
-        if !self.output.is_unit() {
-            write!(f, " -> {}", self.output.with_ctx(ctx))?;
+        write!(f, "fn")?;
+        if !self.regions.is_empty() {
+            write!(
+                f,
+                "<{}>",
+                self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
+            )?;
         }
-
-        write!(f, "{clauses}")?;
+        let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
+        write!(f, "({inputs})")?;
+        if !output.is_unit() {
+            let output = output.with_ctx(ctx);
+            write!(f, " -> {output}")?;
+        }
         Ok(())
     }
 }
@@ -1975,30 +1976,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
         let trait_ref = self.trait_ref.with_ctx(ctx);
         let ty = self.ty.with_ctx(ctx);
         write!(f, "{}::{} = {}", trait_ref, self.type_name, ty)
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<(Vec<Ty>, Ty)> {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Update the bound regions
-        let ctx = &ctx.push_bound_regions(&self.regions);
-
-        write!(f, "fn")?;
-        if !self.regions.is_empty() {
-            write!(
-                f,
-                "<{}>",
-                self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
-            )?;
-        }
-        let (inputs, output) = &self.skip_binder;
-        let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "({inputs})")?;
-        if !output.is_unit() {
-            let output = output.with_ctx(ctx);
-            write!(f, " -> {output}")?;
-        }
-        Ok(())
     }
 }
 

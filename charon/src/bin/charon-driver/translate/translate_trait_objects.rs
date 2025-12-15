@@ -306,16 +306,17 @@ impl ItemTransCtx<'_, '_> {
                     let self_ty =
                         TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
                     let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
-                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty((
-                        [self_ptr].into(),
-                        Ty::mk_unit(),
-                    ))));
+                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(FunSig {
+                        is_unsafe: true,
+                        inputs: [self_ptr].into(),
+                        output: Ty::mk_unit(),
+                    })));
                     ("drop".into(), drop_ty)
                 }
                 TrVTableField::Method(item_name, sig) => {
                     // It's ok to translate the method signature in the context of the trait because
                     // `vtable_sig: Some(_)` ensures the method has no generics of its own.
-                    let sig = self.translate_fun_sig(span, &sig)?;
+                    let sig = self.translate_poly_fun_sig(span, &sig)?;
                     let ty = TyKind::FnPtr(sig).into_ty();
                     let field_name = format!("method_{}", item_name.0);
                     (field_name, ty)
@@ -839,7 +840,6 @@ impl ItemTransCtx<'_, '_> {
         // Signature: `() -> VTable`.
         let sig = FunSig {
             is_unsafe: false,
-            generics: self.the_only_binder().params.clone(),
             inputs: vec![],
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
@@ -861,6 +861,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: init_func_id,
             item_meta: item_meta,
+            generics: self.into_generics(),
             signature: sig,
             src: ItemSource::VTableInstance { impl_ref },
             is_global_initializer: Some(init_for),
@@ -1020,8 +1021,7 @@ impl ItemTransCtx<'_, '_> {
 
         // `*mut dyn Trait -> ()`
         let signature = FunSig {
-            is_unsafe: false,
-            generics: self.the_only_binder().params.clone(),
+            is_unsafe: true,
             inputs: vec![ref_dyn_self.clone()],
             output: Ty::mk_unit(),
         };
@@ -1036,6 +1036,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: fun_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,
@@ -1065,21 +1066,11 @@ impl ItemTransCtx<'_, '_> {
             );
         };
 
-        // Replace to get the true signature of the shim function.
-        // As `translate_function_signature` will use the `sig` field of the `hax::FullDef`
-        // TODO: this is a hack.
-        let shim_func_def = {
-            let mut def = impl_func_def.clone();
-            let hax::FullDefKind::AssocFn { sig, .. } = &mut def.kind else {
-                unreachable!()
-            };
-            *sig = vtable_sig.clone();
-            def
-        };
+        self.translate_def_generics(span, &impl_func_def)?;
 
-        // Compute the correct signature for the shim
-        let signature = self.translate_function_signature(&shim_func_def, &item_meta)?;
-
+        // The signature of the shim function.
+        let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
+        // The concrete receiver we will cast to.
         let target_receiver = self.translate_ty(span, &target_signature.value.inputs[0])?;
 
         trace!(
@@ -1096,6 +1087,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: fun_id,
             item_meta,
+            generics: self.into_generics(),
             signature,
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,

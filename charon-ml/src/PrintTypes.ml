@@ -286,7 +286,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       | RShared -> "*const " ^ ty_to_string env rty)
   | TFnPtr binder ->
       let env = fmt_env_push_regions env binder.binder_regions in
-      let inputs, output = binder.binder_value in
+      let { inputs; output; _ } = binder.binder_value in
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
       in

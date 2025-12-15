@@ -877,7 +877,7 @@ pub enum TyKind {
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
     /// other kinds of generics.
-    FnPtr(RegionBinder<(Vec<Ty>, Ty)>),
+    FnPtr(RegionBinder<FunSig>),
     /// The unique type associated with each function item. Each function item is given
     /// a unique generic type that takes as input the function's early-bound generics. This type
     /// is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type
@@ -977,16 +977,15 @@ pub struct ClosureInfo {
     /// The `Fn` implementation of this closure, if any.
     pub fn_impl: Option<RegionBinder<TraitImplRef>>,
     /// The signature of the function that this closure represents.
-    pub signature: RegionBinder<(Vec<Ty>, Ty)>,
+    pub signature: RegionBinder<FunSig>,
 }
 
 /// A function signature.
-#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct FunSig {
     /// Is the function unsafe or not
     #[drive(skip)]
     pub is_unsafe: bool,
-    pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
 }
