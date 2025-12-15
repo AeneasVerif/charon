@@ -14,8 +14,8 @@
 let
   # The rustc commit we use to get the tests. We should update it every now and
   # then to match the version of rustc we're using.
-  tests_commit = "0d9592026226f5a667a0da60c13b955e0b486a07";
-  tests_hash = "sha256-A7aDppOWnvXKH/Q8PP29lubbzfnfWu0VScZvwgCwLao=";
+  tests_commit = "94b49fd998d6723e0a9240a7cff5f9df37b84dd8";
+  tests_hash = "sha256-gNaSgFKWIavLvtr9xuZRrOwzSExPT3+9obJ+sOyTFms=";
 
   rustc-test-suite = fetchFromGitHub {
     owner = "rust-lang";
@@ -69,6 +69,7 @@ let
       || has_feature 'adt_const_params' "$FILE" \
       || has_feature 'effects' "$FILE" \
       || has_feature 'transmutability' "$FILE" \
+      || has_feature 'loop_match' "$FILE" \
       || has_feature 'default_type_parameter_fallback' "$FILE" \
       ; then
         result="unsupported-feature"
