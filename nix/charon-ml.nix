@@ -72,11 +72,6 @@ let
       inherit src;
 
       OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
-      preCheck =
-        if doCheck then ''
-          ln -sf ${charon}/tests-llbc charon-ml/tests/test-outputs
-        '' else
-          "";
       propagatedBuildInputs = with ocamlPackages; [
         core
         ppx_deriving

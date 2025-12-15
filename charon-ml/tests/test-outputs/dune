@@ -1,0 +1,3 @@
+(copy_files
+ (alias runtest)
+ (files ../../../charon/tests/ui/*))
