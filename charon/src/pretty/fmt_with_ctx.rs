@@ -430,7 +430,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
                     .format("::");
                 format!("{path} = {ty}")
             });
-            cstrs_per_clause[tgt_clause.unwrap()].push(cstr);
+            if let Some(cstrs) = cstrs_per_clause.get_mut(tgt_clause.unwrap()) {
+                cstrs.push(cstr);
+            }
         }
         let trait_clauses = trait_clauses.iter().map(|clause| {
             let cstrs = &cstrs_per_clause[clause.clause_id];
