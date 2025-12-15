@@ -66,8 +66,6 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        self.translate_def_generics(span, def)?;
-
         let trait_pred = match def.kind() {
             // Charon-generated `Destruct` impl for an ADT.
             FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. } => {
@@ -174,8 +172,6 @@ impl ItemTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
-
-        self.translate_def_generics(span, def)?;
 
         let (FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. }) =
             def.kind()
