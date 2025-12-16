@@ -19,13 +19,14 @@ let
     buildInputs = [ ocamlPackages.calendar ];
   };
 
-  # We need both `charon-ml` and the `dune-project` file.
+  # We need `charon-ml`, the `dune-project` file, and files that are used in tests.
   src = lib.cleanSourceWith {
     src = ./..;
     filter =
       path: type:
       (lib.hasPrefix (toString ../charon-ml) path)
-      || (lib.hasPrefix (toString ../dune-project) path);
+      || (lib.hasPrefix (toString ../dune-project) path)
+      || (lib.hasPrefix (toString ../charon/tests/ui) path);
   };
 
   charon-name_matcher_parser =
