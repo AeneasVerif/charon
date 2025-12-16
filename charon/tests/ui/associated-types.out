@@ -80,7 +80,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -187,8 +187,8 @@ fn {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]>
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]; // return
-    let x@1: Option<&'_ (T)>[{built_in impl Sized for &'_ (T)}]; // arg #1
+    let @0: Option<&'0 (T)>[{built_in impl Sized for &'0 (T)}]; // return
+    let x@1: Option<&'0 (T)>[{built_in impl Sized for &'0 (T)}]; // arg #1
 
     @0 := copy (x@1)
     return
@@ -275,7 +275,7 @@ where
 {
     let @0: Clause1_Item; // return
     let x@1: Clause1_Item; // arg #1
-    let @2: &'_ (Clause1_Item); // anonymous local
+    let @2: &'1 (Clause1_Item); // anonymous local
     let @3: Clause1_Item; // anonymous local
     let @4: Clause1_Item; // anonymous local
 
@@ -296,14 +296,14 @@ where
 fn call_fn()
 {
     let @0: (); // return
-    let @1: Option<&'_ (bool)>[{built_in impl Sized for &'_ (bool)}]; // anonymous local
-    let @2: Option<&'_ (bool)>[{built_in impl Sized for &'_ (bool)}]; // anonymous local
+    let @1: Option<&'0 (bool)>[{built_in impl Sized for &'0 (bool)}]; // anonymous local
+    let @2: Option<&'0 (bool)>[{built_in impl Sized for &'0 (bool)}]; // anonymous local
 
     @0 := ()
     storage_live(@1)
     storage_live(@2)
     @2 := Option::None {  }
-    @1 := external_use_item<'_, &'_ (bool), Option<&'_ (bool)>[{built_in impl Sized for &'_ (bool)}], &'_ (bool)>[{built_in impl Sized for &'_ (bool)}, {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]> for &'a (T)}<'_, bool>[{built_in impl Sized for bool}], {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}<'_, &'_ (bool)>[{built_in impl Sized for &'_ (bool)}, {impl Copy for &'_0 (T)}<'_, bool>]](move (@2))
+    @1 := external_use_item<'0, &'0 (bool), Option<&'0 (bool)>[{built_in impl Sized for &'_ (bool)}], &'0 (bool)>[{built_in impl Sized for &'0 (bool)}, {impl test_crate::Foo<'a, Option<&'a (T)>[{built_in impl Sized for &'_ (T)}]> for &'a (T)}<'0, bool>[{built_in impl Sized for bool}], {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}<'0, &'0 (bool)>[{built_in impl Sized for &'0 (bool)}, {impl Copy for &'_0 (T)}<'0, bool>]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

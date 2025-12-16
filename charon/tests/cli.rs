@@ -65,7 +65,7 @@ fn charon_version() -> Result<()> {
 
 #[test]
 fn charon_help_output() -> Result<()> {
-    charon(&["help"], ".", |stdout, _| {
+    charon(&["help", "rustc"], ".", |stdout, _| {
         compare_or_overwrite(stdout, &PathBuf::from("./tests/help-output.txt"))?;
         Ok(())
     })
@@ -161,6 +161,30 @@ fn charon_cargo_target() -> Result<()> {
 }
 
 #[test]
+fn charon_cargo_target_dir() -> Result<()> {
+    // Regression test for #938.
+    charon(
+        &[
+            "cargo",
+            "--print-llbc",
+            "--",
+            "-p",
+            "crate2",
+            "--target-dir=target/foo",
+        ],
+        "tests/cargo/workspace",
+        |stdout, cmd| {
+            let search = "pub fn extra_random_number";
+            ensure!(
+                stdout.contains(search),
+                "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {search:?}."
+            );
+            Ok(())
+        },
+    )
+}
+
+#[test]
 fn charon_rustc() -> Result<()> {
     let path = "tests/cargo/workspace/crate1/src/lib.rs";
     let args = &["rustc", "--print-llbc", "--", "--crate-type=lib", path];
@@ -231,30 +255,6 @@ fn handle_multi_trailing_rs_args() {
     let err = charon(args, "tests/ui", |_, _| Ok(())).unwrap_err();
     let err = format!("{err:?}");
     assert!(err.contains("invalid character '.' in crate name"), "{err}");
-}
-
-#[test]
-fn rustc_input_duplicated() {
-    let input = "arrays.rs";
-    let args = &["rustc", "--print-llbc", "--input", input, "--", input];
-    let err = charon(args, "tests/ui", |_, _| Ok(())).unwrap_err();
-    let pat = "error: multiple input filenames provided (first two filenames are `arrays.rs` and `arrays.rs`)";
-    let err = format!("{err:?}");
-    assert!(err.contains(pat), "{err}");
-}
-
-#[test]
-fn charon_input() -> Result<()> {
-    let input = "arrays.rs";
-    let args = &[
-        "rustc",
-        "--print-llbc",
-        "--input",
-        input,
-        "--",
-        "--crate-type=lib",
-    ];
-    charon(args, "tests/ui", |_, _| Ok(()))
 }
 
 #[test]

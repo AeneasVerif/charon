@@ -85,8 +85,7 @@ pub trait FnOnce<Self, Args>
 struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnOnce<_dyn, Args> + _dyn : '_ + @TraitClause0_2::Output = Ty0)),
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  drop: unsafe fn(*mut (dyn FnOnce<Args, Output = Ty0>)),
 }
 
 // Full name: core::ops::function::FnMut
@@ -104,8 +103,8 @@ pub trait FnMut<Self, Args>
 struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::Output = Ty0)),
-  method_call_mut: fn<'_0_1>(&'_0_1 mut ((dyn exists<_dyn> [@TraitClause0_2]: FnMut<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::Output = Ty0)), Args) -> Ty0,
+  drop: unsafe fn(*mut (dyn FnMut<Args, parent_clause1::Output = Ty0>)),
+  method_call_mut: fn<'_0_1>(&'_0_1 mut ((dyn FnMut<Args, parent_clause1::Output = Ty0>)), Args) -> Ty0,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (core::ops::function::FnOnce::{vtable}<Args, Ty0>),
 }
@@ -113,8 +112,8 @@ struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
 struct core::ops::function::Fn::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::parent_clause1::Output = Ty0)),
-  method_call: fn<'_0_1>(&'_0_1 ((dyn exists<_dyn> [@TraitClause0_2]: Fn<_dyn, Args> + _dyn : '_ + @TraitClause0_2::parent_clause1::parent_clause1::Output = Ty0)), Args) -> Ty0,
+  drop: unsafe fn(*mut (dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>)),
+  method_call: fn<'_0_1>(&'_0_1 ((dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>)), Args) -> Ty0,
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
   super_trait_1: &'static (core::ops::function::FnMut::{vtable}<Args, Ty0>),
 }
@@ -211,7 +210,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::construct
-fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : 'static)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, {built_in impl Sized for Global}]
+fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display)}, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Display<T>,
@@ -219,15 +218,15 @@ where
 = <opaque>
 
 // Full name: test_crate::destruct
-fn destruct<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_0))) -> String
+fn destruct<'_0>(@1: &'_0 ((dyn Display + '_0))) -> String
 {
     let @0: String; // return
-    let x@1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)); // anonymous local
+    let x@1: &'0 ((dyn Display + '1)); // arg #1
+    let @2: &'0 ((dyn Display + '1)); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1) with_metadata(copy (x@1.metadata))
-    @0 := {impl ToString for T}::to_string<'_, (dyn exists<_dyn> [@TraitClause0_1]: Display<_dyn> + _dyn : '_)>[{built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)}, Display<(dyn exists<_dyn> [@TraitClause0_2]: Display<_dyn> + _dyn : '_)>](move (@2))
+    @0 := {impl ToString for T}::to_string<'_, (dyn Display + '1)>[{built_in impl MetaSized for (dyn Display + '2)}, Display<(dyn Display + '3)>](move (@2))
     storage_dead(@2)
     return
 }
@@ -237,13 +236,13 @@ fn combine()
 = <opaque>
 
 // Full name: test_crate::foo
-fn foo<'_0, '_1, T>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a (T))> + _dyn : 'static + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = T)), @2: &'_1 ((dyn exists<_dyn> [@TraitClause0_1]: PartialEq<_dyn, Option<T>[@TraitClause0]> + _dyn : '_1)))
+fn foo<'_0, '_1, T>(@1: &'_0 ((dyn for<'a> Fn<(&'a (T)), parent_clause1::parent_clause1::Output = T> + 'static)), @2: &'_1 ((dyn PartialEq<Option<T>[@TraitClause0]> + '_1)))
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a (T))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = T)); // arg #1
-    let @2: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: PartialEq<_dyn, Option<T>[@TraitClause0]> + _dyn : '_)); // arg #2
+    let @1: &'0 ((dyn for<'a> Fn<(&'a (T)), parent_clause1::parent_clause1::Output = T> + '1)); // arg #1
+    let @2: &'4 ((dyn PartialEq<Option<T>[@TraitClause0]> + '5)); // arg #2
 
     @0 := ()
     @0 := ()
@@ -251,10 +250,10 @@ where
 }
 
 // Full name: test_crate::bar
-fn bar<'_0>(@1: &'_0 ((dyn exists<_dyn> [@TraitClause0_1]: for<'_0_2> Fn<_dyn, (&'_0_2 ((dyn exists<_dyn> [@TraitClause0_3]: Display<_dyn> + _dyn : '_0_2)))> + _dyn : '_0 + for<'_0_2> @TraitClause0_1::parent_clause1::parent_clause1::Output = ())))
+fn bar<'_0>(@1: &'_0 ((dyn for<'_0_2> Fn<(&'_0_2 ((dyn Display + '_0_2))), parent_clause1::parent_clause1::Output = ()> + '_0)))
 {
     let @0: (); // return
-    let @1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'_0_2> Fn<_dyn, (&'_0_2 ((dyn exists<_dyn> [@TraitClause0_3]: Display<_dyn> + _dyn : '_0_2)))> + _dyn : '_ + for<'_0_2> @TraitClause0_1::parent_clause1::parent_clause1::Output = ())); // arg #1
+    let @1: &'0 ((dyn for<'_0_2> Fn<(&'_0_2 ((dyn Display + '_0_2))), parent_clause1::parent_clause1::Output = ()> + '1)); // arg #1
 
     @0 := ()
     @0 := ()

@@ -121,8 +121,7 @@ module PatternTest = struct
       match test.call_idx with
       | None ->
           let generics =
-            TypesUtils.generic_args_of_params decl.item_meta.span
-              decl.signature.generics
+            TypesUtils.generic_args_of_params decl.item_meta.span decl.generics
           in
           Types.{ kind = FunId (FRegular decl.def_id); generics }
       | Some idx ->
@@ -161,8 +160,7 @@ module PatternTest = struct
       log#error "Pattern %s failed to match function %s (in `%s`)\n"
         (pattern_to_string env.print_config test.pattern)
         (pattern_to_string env.print_config
-           (fn_ptr_to_pattern env.ctx env.to_pat_config decl.signature.generics
-              fn_ptr))
+           (fn_ptr_to_pattern env.ctx env.to_pat_config decl.generics fn_ptr))
         env.file_name;
       false)
     else if (not test.success) && match_success then (

@@ -122,6 +122,10 @@ module type Id = sig
 
   (** See the comments for {!nth} *)
   val iteri : (id -> 'a -> unit) -> 'a list -> unit
+
+  (** Transforms a list into a map, where each map key is he index that the
+      element had in the list. *)
+  val map_of_indexed_list : 'a option list -> 'a Map.t
 end
 
 (** Generative functor for identifiers.
@@ -215,4 +219,15 @@ module IdGen () : Id = struct
     aux 1 ls
 
   let iteri = List.iteri
+
+  let map_of_indexed_list (list : 'a option list) : 'a Map.t =
+    Map.of_list
+      (List.filter_map
+         (fun x -> x)
+         (mapi
+            (fun i x ->
+              match x with
+              | None -> None
+              | Some x -> Some (i, x))
+            list))
 end

@@ -196,6 +196,34 @@ and constant_expr = { kind : constant_expr_kind; ty : ty }
     [{ _1 = const a; _2 = (_1.0) }]. *)
 and constant_expr_kind =
   | CLiteral of literal
+  | CAdt of variant_id option * constant_expr list
+      (** In most situations: Enumeration with one variant with no fields,
+          structure with no fields, unit (encoded as a 0-tuple).
+
+          Less frequently: arbitrary ADT values.
+
+          We eliminate this case in a micro-pass. *)
+  | CArray of constant_expr list
+  | CSlice of constant_expr list
+  | CGlobal of global_decl_ref
+      (** The value is a top-level constant/static.
+
+          We eliminate this case in a micro-pass.
+
+          Remark: constants can actually have generic parameters.
+          {@rust[
+            struct V<const N: usize, T> {
+              x: [T; N],
+            }
+
+            impl<const N: usize, T> V<N, T> {
+              const LEN: usize = N; // This has generics <N, T>
+            }
+
+            fn use_v<const N: usize, T>(v: V<N, T>) {
+              let l = V::<N, T>::LEN; // We need to provided a substitution here
+            }
+          ]} *)
   | CTraitConst of trait_ref * trait_item_name
       (** A trait constant.
 
@@ -208,8 +236,25 @@ and constant_expr_kind =
 
           Remark: trait constants can not be used in types, they are necessarily
           values. *)
+  | CRef of constant_expr
+      (** A shared reference to a constant value.
+
+          We eliminate this case in a micro-pass. *)
+  | CPtr of ref_kind * constant_expr
+      (** A pointer to a mutable static.
+
+          We eliminate this case in a micro-pass. *)
   | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
   | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
+  | CFnPtr of fn_ptr
+      (** A function pointer to a function item; this is an actual pointer to
+          that function item.
+
+          We eliminate this case in a micro-pass. *)
+  | CPtrNoProvenance of big_int
+      (** A pointer with no provenance (e.g. 0 for the null pointer)
+
+          We eliminate this case in a micro-pass. *)
   | CRawMemory of byte list
       (** Raw memory value obtained from constant evaluation. Used when a more
           structured representation isn't possible (e.g. for unions) or just
@@ -244,13 +289,14 @@ and operand =
 and overflow_mode =
   | OPanic
       (** If this operation overflows, it panics. Only exists in debug mode, for
-          instance in [a + b], and is introduced by the [remove_dynamic_checks]
-          pass. *)
+          instance in [a + b], and only if [--reconstruct-fallible-operations]
+          is passed to Charon. Otherwise the bound check will be explicit. *)
   | OUB
-      (** If this operation overflows, it UBs, for instance in
-          [core::num::unchecked_add]. *)
+      (** If this operation overflows, it is UB; for instance in
+          [core::num::unchecked_add]. This can exists in safe code, but will
+          always be preceded by a bounds check. *)
   | OWrap
-      (** If this operation overflows, it wraps around, for instance in
+      (** If this operation overflows, it wraps around for instance in
           [core::num::wrapping_add], or [a + b] in release mode. *)
 
 and place = { kind : place_kind; ty : ty }
@@ -392,8 +438,19 @@ and unop =
       (** Casts are rvalues in MIR, but we treat them as unops. *)
 
 and unsizing_metadata =
-  | MetaLength of const_generic
-  | MetaVTablePtr of trait_ref
+  | MetaLength of const_generic  (** Cast from [[T; N]] to [[T]]. *)
+  | MetaVTable of trait_ref * global_decl_ref option
+      (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] gives
+          the trait for which we're getting a vtable (this is the _principal_
+          trait of the [dyn Trait] target). The second field is the vtable
+          instance, if we could resolve it. *)
+  | MetaVTableUpcast of field_id list
+      (** Cast from [dyn Trait] to [dyn OtherTrait]. The fields indicate how to
+          retreive the vtable: it's always either the same we already had, or
+          the vtable for a (possibly nested) supertrait.
+
+          Note that we cheat in one case: when upcasting to a marker trait (e.g.
+          [dyn Trait -> dyn Sized]), we keep the current vtable. *)
   | MetaUnknown
 [@@deriving
   show,

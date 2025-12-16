@@ -47,7 +47,7 @@ trait MyIterator::<B>
 fn test_crate::MyIterator::method<'_0>(@1: &'_0 (A))
 {
     let @0: (); // return
-    let self@1: &'_ (A); // arg #1
+    let self@1: &'0 (A); // arg #1
 
     @0 := ()
     @0 := ()
@@ -57,7 +57,7 @@ fn test_crate::MyIterator::method<'_0>(@1: &'_0 (A))
 fn test_crate::MyIterator::method::<A><'_0>(@1: &'_0 (A))
 {
     let @0: (); // return
-    let self@1: &'_ (A); // arg #1
+    let self@1: &'0 (A); // arg #1
 
     @0 := ()
     @0 := ()
@@ -67,7 +67,7 @@ fn test_crate::MyIterator::method::<A><'_0>(@1: &'_0 (A))
 fn test_crate::MyIterator::method::<B><'_0>(@1: &'_0 (B))
 {
     let @0: (); // return
-    let self@1: &'_ (B); // arg #1
+    let self@1: &'0 (B); // arg #1
 
     @0 := ()
     @0 := ()
@@ -78,7 +78,7 @@ fn test_crate::MyIterator::method::<B><'_0>(@1: &'_0 (B))
 fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 (A))
 {
     let @0: (); // return
-    let self@1: &'_ (A); // arg #1
+    let self@1: &'0 (A); // arg #1
 
     @0 := ()
     @0 := ()
@@ -96,7 +96,7 @@ impl MyIterator::<A> {
 fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 (B))
 {
     let @0: (); // return
-    let self@1: &'_ (B); // arg #1
+    let self@1: &'0 (B); // arg #1
 
     @0 := ()
     @0 := ()
@@ -115,11 +115,11 @@ fn main()
 {
     let @0: (); // return
     let @1: (); // anonymous local
-    let @2: &'_ (A); // anonymous local
+    let @2: &'0 (A); // anonymous local
     let @3: (); // anonymous local
-    let @4: &'_ (B); // anonymous local
-    let @5: &'_ (B); // anonymous local
-    let @6: &'_ (A); // anonymous local
+    let @4: &'1 (B); // anonymous local
+    let @5: &'1 (B); // anonymous local
+    let @6: &'0 (A); // anonymous local
     let @7: &'_ (A); // anonymous local
     let @8: A; // anonymous local
     let @9: &'_ (B); // anonymous local

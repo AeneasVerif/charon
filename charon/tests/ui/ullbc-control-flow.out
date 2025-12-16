@@ -466,7 +466,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -608,8 +608,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let iter@6: Range<i32>[{built_in impl Sized for i32}]; // local
     let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @8: &'_ mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @9: &'_ mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @8: &'0 mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @9: &'0 mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
     let @10: isize; // anonymous local
     let @11: usize; // anonymous local
     let @12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
@@ -617,16 +617,16 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @14: usize; // anonymous local
     let iter@15: Range<usize>[{built_in impl Sized for usize}]; // local
     let @16: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let @17: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
-    let @18: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @17: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @18: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
     let @19: isize; // anonymous local
     let @20: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @21: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @22: usize; // anonymous local
     let iter@23: Range<usize>[{built_in impl Sized for usize}]; // local
     let @24: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let @25: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
-    let @26: &'_ mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @25: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @26: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
     let @27: isize; // anonymous local
     let @28: usize; // anonymous local
     let @29: bool; // anonymous local

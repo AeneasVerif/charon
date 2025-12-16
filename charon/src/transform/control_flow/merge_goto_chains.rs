@@ -1,5 +1,7 @@
 //! # Micro-pass: merge single-origin gotos into their parent to reduce CFG graph size.
-use crate::ids::Vector;
+use std::mem;
+
+use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
@@ -29,14 +31,9 @@ impl Antecedents {
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx, body: &mut ExprBody) {
-        // Check the option which instructs to ignore this pass
-        if ctx.options.no_merge_goto_chains {
-            return;
-        }
-
+    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Compute for each block the set of blocks that points to it.
-        let mut antecedents: Vector<BlockId, Antecedents> =
+        let mut antecedents: IndexVec<BlockId, Antecedents> =
             body.body.map_ref(|_| Antecedents::Zero);
         for (block_id, block) in body.body.iter_indexed() {
             let is_goto = block.terminator.kind.is_goto();
@@ -62,7 +59,7 @@ impl UllbcPass for Transform {
                 && let TerminatorKind::Goto { target } = source.terminator.kind
                 && let Antecedents::One { .. } = antecedents[target]
             {
-                let mut target = body.body.remove(target).unwrap();
+                let mut target = mem::replace(&mut body.body[target], BlockData::new_unreachable());
                 let source = &mut body.body[id];
                 source.statements.append(&mut target.statements);
                 source.terminator = target.terminator;

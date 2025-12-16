@@ -1,6 +1,7 @@
 //! "Unstructured LLBC" ast (ULLBC). This is LLBC before the control-flow
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 pub use crate::ast::*;
+use crate::ids::IndexVec;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde_state::{DeserializeState, SerializeState};
@@ -12,7 +13,7 @@ generate_index_type!(BlockId, "Block");
 pub static START_BLOCK_ID: BlockId = BlockId::ZERO;
 
 #[charon::rename("Blocks")]
-pub type BodyContents = Vector<BlockId, BlockData>;
+pub type BodyContents = IndexVec<BlockId, BlockData>;
 pub type ExprBody = GExprBody<BodyContents>;
 
 /// A raw statement: a statement without meta data.
@@ -44,14 +45,12 @@ pub enum StatementKind {
     /// is implicitly deallocated at the end of the function.
     StorageDead(LocalId),
     Deinit(Place),
-    /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
-    /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
+    /// A runtime check for a condition. This can be either:
+    /// - Emitted for bounds/overflow/etc checks if `--reconstruct-fallible-operations` is not set;
+    /// - Reconstructed from `if b { panic() }` if `--reconstruct-assets` is set.
     Assert(Assert),
     /// Does nothing. Useful for passes.
     Nop,
-    #[charon::opaque]
-    #[drive(skip)]
-    Error(String),
 }
 
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]

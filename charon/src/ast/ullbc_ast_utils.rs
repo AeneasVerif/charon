@@ -1,4 +1,5 @@
 //! Implementations for [crate::ullbc_ast]
+use crate::ids::IndexVec;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
 use std::mem;
@@ -68,6 +69,15 @@ impl BlockData {
             statements: vec![],
             terminator: Terminator::goto(span, target),
         }
+    }
+
+    /// Build a block that's UB to reach.
+    pub fn new_unreachable() -> Self {
+        Terminator::new(
+            Span::dummy(),
+            TerminatorKind::Abort(AbortKind::UndefinedBehavior),
+        )
+        .into_block()
     }
 
     pub fn targets(&self) -> Vec<BlockId> {
@@ -239,8 +249,9 @@ impl BodyBuilder {
         let mut body: ExprBody = GExprBody {
             span,
             locals: Locals::new(arg_count),
+            bound_body_regions: 0,
+            body: IndexVec::new(),
             comments: vec![],
-            body: Vector::new(),
         };
         let current_block = body.body.push(BlockData {
             statements: Default::default(),
@@ -255,7 +266,16 @@ impl BodyBuilder {
     }
 
     /// Finalize the builder by returning the built body.
-    pub fn build(self) -> ExprBody {
+    pub fn build(mut self) -> ExprBody {
+        // Replace erased regions with fresh ones.
+        let mut freshener: IndexMap<RegionId, ()> = IndexMap::new();
+        self.body.dyn_visit_mut(|r: &mut Region| {
+            if r.is_erased() {
+                *r = Region::Body(freshener.push(()));
+            }
+        });
+        self.body.bound_body_regions = freshener.slot_count();
+        // Return the built body.
         self.body
     }
 

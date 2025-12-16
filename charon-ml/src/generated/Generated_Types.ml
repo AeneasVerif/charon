@@ -26,7 +26,6 @@ module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
-type ('id, 'x) vector = 'x list [@@deriving show, ord, eq]
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
 type literal_type = Values.literal_type [@@deriving show, ord, eq]
@@ -76,10 +75,9 @@ and de_bruijn_id = int
                                        Bound(0, c)                 Bound(1, c)
     ]}
 
-    To make consumption easier for projects that don't do heavy substitution, a
-    micro-pass at the end changes the variables bound at the top-level (i.e. in
-    the [GenericParams] of items) to be [Free]. This is an optional pass, we may
-    add a flag to deactivate it. The example above becomes:
+    To make consumption easier for projects that don't do heavy substitution,
+    [--unbind-item-vars] changes the variables bound at the top-level (i.e. in
+    the [GenericParams] of items) to be [Free]. The example above becomes:
     {@rust[
       fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
            ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
@@ -88,17 +86,14 @@ and de_bruijn_id = int
                                 Free(b)    |                Free(b)     |     Bound(0, d)
                                            |                            |
                                        Bound(0, c)                 Bound(1, c)
-    ]}
-
-    At the moment only region variables can be bound in a non-top-level binder.
-*)
+    ]} *)
 and 'a0 de_bruijn_var =
   | Bound of de_bruijn_id * 'a0
       (** A variable attached to the nth binder, counting from the innermost. *)
   | Free of 'a0
-      (** A variable attached to the outermost binder (the one on the item). As
-          explained above, This is not used in charon internals, only as a
-          micro-pass before exporting the crate data. *)
+      (** A variable attached to the outermost binder (the one on the item).
+          This is not used within Charon itself, instead ewe insert it at the
+          end if [--unbind-item-vars] is set. *)
 
 and fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
@@ -230,23 +225,29 @@ and binder_kind =
 (** An built-in function identifier, identifying a function coming from a
     standard library. *)
 and builtin_fun_id =
-  | BoxNew  (** [alloc::boxed::Box::new] *)
+  | BoxNew
+      (** Used instead of [alloc::boxed::Box::new] when [--treat-box-as-builtin]
+          is set. *)
   | ArrayToSliceShared
-      (** Cast an array as a slice.
+      (** Cast [&[T; N]] to [&[T]].
 
-          Converted from [UnOp::ArrayToSlice] *)
+          This is used instead of unsizing coercions when
+          [--ops-to-function-calls] is set. *)
   | ArrayToSliceMut
-      (** Cast an array as a slice.
+      (** Cast [&mut [T; N]] to [&mut [T]].
 
-          Converted from [UnOp::ArrayToSlice] *)
+          This is used instead of unsizing coercions when
+          [--ops-to-function-calls] is set. *)
   | ArrayRepeat
       (** [repeat(n, x)] returns an array where [x] has been replicated [n]
           times.
 
-          We introduce this when desugaring the [ArrayRepeat] rvalue. *)
+          This is used instead of [Rvalue::ArrayRepeat] when
+          [--ops-to-function-calls] is set. *)
   | Index of builtin_index_op
-      (** Converted from indexing [ProjectionElem]s. The signature depends on
-          the parameters. It could look like:
+      (** A built-in funciton introduced instead of array/slice place indexing
+          when [--index-to-function-calls] is set. The signature depends on the
+          parameters. It could look like:
           - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
           - [fn SliceIndexShared<T>(&[T], usize) -> &T]
           - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
@@ -256,7 +257,8 @@ and builtin_fun_id =
       (** Build a raw pointer, from a data pointer and metadata. The metadata
           can be unit, if building a thin pointer.
 
-          Converted from [AggregateKind::RawPtr] *)
+          This is used instead of [AggregateKind::RawPtr] when
+          [--ops-to-function-calls] is set. *)
 
 (** Describes a built-in impl. Mostly lists the implemented trait, sometimes
     with more details about the contents of the implementation. *)
@@ -351,6 +353,13 @@ and fun_id =
       (** A primitive function, coming from a standard library (for instance:
           [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
 
+(** A function signature. *)
+and fun_sig = {
+  is_unsafe : bool;  (** Is the function unsafe or not *)
+  inputs : ty list;
+  output : ty;
+}
+
 (** A set of generic arguments. *)
 and generic_args = {
   regions : region list;
@@ -395,11 +404,13 @@ and region =
   | RVar of region_id de_bruijn_var
       (** Region variable. See [DeBruijnVar] for details. *)
   | RStatic  (** Static region *)
+  | RBody of region_id
+      (** Body-local region, considered existentially-bound at the level of a
+          body. *)
   | RErased  (** Erased region *)
 
 (** A value of type [T] bound by regions. We should use [binder] instead but
-    this causes name clash issues in the derived ocaml visitors. TODO: merge
-    with [binder] *)
+    this causes name clash issues in the derived ocaml visitors. *)
 and 'a0 region_binder = {
   binder_regions : region_param list;
   binder_value : 'a0;
@@ -596,7 +607,7 @@ and ty_kind =
             }
           ]} *)
   | TDynTrait of dyn_predicate  (** [dyn Trait] *)
-  | TFnPtr of (ty list * ty) region_binder
+  | TFnPtr of fun_sig region_binder
       (** Function pointer type. This is a literal pointer to a region of memory
           that contains a callable function. This is a function signature with
           limited generics: it only supports lifetime generics, not other kinds
@@ -687,7 +698,7 @@ and closure_info = {
       (** The [FnMut] implementation of this closure, if any. *)
   fn_impl : trait_impl_ref region_binder option;
       (** The [Fn] implementation of this closure, if any. *)
-  signature : (ty list * ty) region_binder;
+  signature : fun_sig region_binder;
       (** The signature of the function that this closure represents. *)
 }
 
@@ -790,12 +801,15 @@ and item_source =
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
-  | VTableTyItem of dyn_predicate
+  | VTableTyItem of dyn_predicate * v_table_field list * field_id option list
       (** This is a vtable struct for a trait.
 
           Fields:
           - [dyn_predicate]: The [dyn Trait] predicate implemented by this
-            vtable. *)
+            vtable.
+          - [field_map]: Record what each vtable field means.
+          - [supertrait_map]: For each implied clause that is also a supertrait
+            clause, reords which field id corresponds to it. *)
   | VTableInstanceItem of trait_impl_ref
       (** This is a vtable value for an impl.
 
@@ -974,6 +988,13 @@ and type_decl_kind =
   | TDeclError of string
       (** Used if an error happened during the extraction, and we don't panic on
           error. *)
+
+and v_table_field =
+  | VTableSize
+  | VTableAlign
+  | VTableDrop
+  | VTableMethod of trait_item_name
+  | VTableSuperTrait of trait_clause_id
 
 and variant = {
   span : span;

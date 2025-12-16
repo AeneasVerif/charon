@@ -151,6 +151,7 @@ let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
+  | RBody id -> "'" ^ RegionId.to_string id
   | RVar var -> region_db_var_to_string env var
 
 let region_binder_to_string (value_to_string : 'a fmt_env -> 'c -> string)
@@ -285,7 +286,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       | RShared -> "*const " ^ ty_to_string env rty)
   | TFnPtr binder ->
       let env = fmt_env_push_regions env binder.binder_regions in
-      let inputs, output = binder.binder_value in
+      let { inputs; output; _ } = binder.binder_value in
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
       in

@@ -60,7 +60,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -129,8 +129,8 @@ where
     let x@1: T; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'_ (U); // anonymous local
-    let @5: &'_ (T); // anonymous local
+    let @4: &'0 (U); // anonymous local
+    let @5: &'1 (T); // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -187,8 +187,8 @@ where
     let x@1: Option<T>[@TraitClause0]; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'_ (U); // anonymous local
-    let @5: &'_ (Option<T>[@TraitClause0]); // anonymous local
+    let @4: &'0 (U); // anonymous local
+    let @5: &'1 (Option<T>[@TraitClause0]); // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -258,8 +258,8 @@ where
     let x@1: Option<T>[@TraitClause0]; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'_ (U); // anonymous local
-    let @5: &'_ (Option<T>[@TraitClause0]); // anonymous local
+    let @4: &'0 (U); // anonymous local
+    let @5: &'1 (Option<T>[@TraitClause0]); // anonymous local
 
     @0 := ()
     storage_live(@3)

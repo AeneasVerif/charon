@@ -1,6 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
-use crate::ids::Vector;
+use crate::ids::IndexMap;
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use std::collections::HashSet;
@@ -381,7 +381,7 @@ impl<T> RegionBinder<T> {
     }
 
     /// Substitute the bound variables with the given lifetimes.
-    pub fn apply(self, regions: Vector<RegionId, Region>) -> T
+    pub fn apply(self, regions: IndexMap<RegionId, Region>) -> T
     where
         T: AstVisitable,
     {
@@ -438,7 +438,7 @@ impl GenericArgs {
         }
     }
 
-    pub fn new_for_builtin(types: Vector<TypeVarId, Ty>) -> Self {
+    pub fn new_for_builtin(types: IndexMap<TypeVarId, Ty>) -> Self {
         GenericArgs {
             types,
             ..Self::empty()
@@ -446,10 +446,10 @@ impl GenericArgs {
     }
 
     pub fn new(
-        regions: Vector<RegionId, Region>,
-        types: Vector<TypeVarId, Ty>,
-        const_generics: Vector<ConstGenericVarId, ConstGeneric>,
-        trait_refs: Vector<TraitClauseId, TraitRef>,
+        regions: IndexMap<RegionId, Region>,
+        types: IndexMap<TypeVarId, Ty>,
+        const_generics: IndexMap<ConstGenericVarId, ConstGeneric>,
+        trait_refs: IndexMap<TraitClauseId, TraitRef>,
     ) -> Self {
         Self {
             regions,
@@ -459,7 +459,7 @@ impl GenericArgs {
         }
     }
 
-    pub fn new_types(types: Vector<TypeVarId, Ty>) -> Self {
+    pub fn new_types(types: IndexMap<TypeVarId, Ty>) -> Self {
         Self {
             types,
             ..Self::empty()
@@ -839,7 +839,7 @@ impl Ty {
         }
     }
 
-    pub fn as_tuple(&self) -> Option<&Vector<TypeVarId, Ty>> {
+    pub fn as_tuple(&self) -> Option<&IndexMap<TypeVarId, Ty>> {
         match self.kind() {
             TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
             _ => None,
@@ -909,7 +909,7 @@ impl TraitRef {
     pub fn new_builtin(
         trait_id: TraitDeclId,
         ty: Ty,
-        parents: Vector<TraitClauseId, TraitRef>,
+        parents: IndexMap<TraitClauseId, TraitRef>,
         builtin_data: BuiltinImplData,
     ) -> Self {
         let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
@@ -1057,6 +1057,7 @@ pub(crate) struct SubstVisitor<'a> {
     self_ref: &'a TraitRefKind,
     /// Whether to substitute explicit variables only (types, regions, const generics).
     explicits_only: bool,
+    had_error: bool,
 }
 impl<'a> SubstVisitor<'a> {
     pub(crate) fn new(
@@ -1068,11 +1069,25 @@ impl<'a> SubstVisitor<'a> {
             generics,
             self_ref,
             explicits_only,
+            had_error: false,
+        }
+    }
+
+    pub fn visit<T: TyVisitable>(mut self, mut x: T) -> Result<T, GenericsMismatch> {
+        let _ = x.visit_vars(&mut self);
+        if self.had_error {
+            Err(GenericsMismatch)
+        } else {
+            Ok(x)
         }
     }
 
     /// Returns the value for this variable, if any.
-    fn process_var<Id, T>(&self, var: DeBruijnVar<Id>, get: impl Fn(Id) -> &'a T) -> Option<T>
+    fn process_var<Id, T>(
+        &mut self,
+        var: DeBruijnVar<Id>,
+        get: impl Fn(Id) -> Option<&'a T>,
+    ) -> Option<T>
     where
         Id: Copy,
         T: Clone + TyVisitable,
@@ -1084,7 +1099,13 @@ impl<'a> SubstVisitor<'a> {
                     // This is bound outside the binder we're substituting for.
                     DeBruijnVar::Bound(dbid, varid).into()
                 } else {
-                    get(varid).clone()
+                    match get(varid) {
+                        Some(v) => v.clone(),
+                        None => {
+                            self.had_error = true;
+                            return None;
+                        }
+                    }
                 })
             }
             DeBruijnVar::Free(..) => None,
@@ -1093,25 +1114,28 @@ impl<'a> SubstVisitor<'a> {
 }
 impl VarsVisitor for SubstVisitor<'_> {
     fn visit_region_var(&mut self, v: RegionDbVar) -> Option<Region> {
-        self.process_var(v, |id| &self.generics[id])
+        self.process_var(v, |id| self.generics.regions.get(id))
     }
     fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
-        self.process_var(v, |id| &self.generics[id])
+        self.process_var(v, |id| self.generics.types.get(id))
     }
     fn visit_const_generic_var(&mut self, v: ConstGenericDbVar) -> Option<ConstGeneric> {
-        self.process_var(v, |id| &self.generics[id])
+        self.process_var(v, |id| self.generics.const_generics.get(id))
     }
     fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
         if self.explicits_only {
             None
         } else {
-            self.process_var(v, |id| &self.generics[id].kind)
+            self.process_var(v, |id| Some(&self.generics.trait_refs.get(id)?.kind))
         }
     }
     fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
         Some(self.self_ref.clone())
     }
 }
+
+#[derive(Debug)]
+pub struct GenericsMismatch;
 
 /// Types that are involved at the type-level and may be substituted around.
 pub trait TyVisitable: Sized + AstVisitable {
@@ -1201,18 +1225,25 @@ pub trait TyVisitable: Sized + AstVisitable {
         self.substitute_with_self(generics, &TraitRefKind::SelfId)
     }
     /// Substitute only the type, region and const generic args.
-    fn substitute_explicits(mut self, generics: &GenericArgs) -> Self {
-        let _ = self.visit_vars(&mut SubstVisitor::new(
-            generics,
-            &TraitRefKind::SelfId,
-            true,
-        ));
-        self
+    fn substitute_explicits(self, generics: &GenericArgs) -> Self {
+        SubstVisitor::new(generics, &TraitRefKind::SelfId, true)
+            .visit(self)
+            .unwrap()
     }
     /// Substitute the generic variables as well as the `TraitRefKind::Self` trait ref.
-    fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
-        let _ = self.visit_vars(&mut SubstVisitor::new(generics, self_ref, false));
-        self
+    fn substitute_with_self(self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
+        self.try_substitute_with_self(generics, self_ref).unwrap()
+    }
+
+    fn try_substitute(self, generics: &GenericArgs) -> Result<Self, GenericsMismatch> {
+        self.try_substitute_with_self(generics, &TraitRefKind::SelfId)
+    }
+    fn try_substitute_with_self(
+        self,
+        generics: &GenericArgs,
+        self_ref: &TraitRefKind,
+    ) -> Result<Self, GenericsMismatch> {
+        SubstVisitor::new(generics, self_ref, false).visit(self)
     }
 
     /// Move under one binder.
@@ -1299,6 +1330,44 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 }
 
+/// A value of type `T` applied to some `GenericArgs`, except we havent applied them yet to avoid a
+/// deep clone.
+#[derive(Debug, Clone, Copy)]
+pub struct Substituted<'a, T> {
+    pub val: &'a T,
+    pub generics: &'a GenericArgs,
+}
+
+impl<'a, T> Substituted<'a, T> {
+    pub fn new(val: &'a T, generics: &'a GenericArgs) -> Self {
+        Self { val, generics }
+    }
+
+    pub fn rebind<U>(&self, val: &'a U) -> Substituted<'a, U> {
+        Substituted::new(val, self.generics)
+    }
+
+    pub fn substitute(&self) -> T
+    where
+        T: TyVisitable + Clone,
+    {
+        self.val.clone().substitute(self.generics)
+    }
+    pub fn try_substitute(&self) -> Result<T, GenericsMismatch>
+    where
+        T: TyVisitable + Clone,
+    {
+        self.val.clone().try_substitute(self.generics)
+    }
+
+    pub fn iter<Item: 'a>(&self) -> impl Iterator<Item = Substituted<'a, Item>>
+    where
+        &'a T: IntoIterator<Item = &'a Item>,
+    {
+        self.val.into_iter().map(move |x| self.rebind(x))
+    }
+}
+
 impl TypeDecl {
     /// Looks up the variant corresponding to the tag (i.e. the in-memory bytes that represent the discriminant).
     /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).
@@ -1315,7 +1384,7 @@ impl TypeDecl {
         let variant_for_tag =
             layout
                 .variant_layouts
-                .iter_indexed()
+                .iter_enumerated()
                 .find_map(|(id, variant_layout)| {
                     if variant_layout.tag == Some(tag) {
                         Some(id)

@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::index::Index
@@ -299,16 +299,16 @@ fn foo()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let slice@3: &'_ (Slice<bool>); // local
-    let @4: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @5: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @6: &'_ (Slice<bool>); // anonymous local
-    let @7: &'_ (Slice<bool>); // anonymous local
-    let @8: &'_ (Slice<bool>); // anonymous local
+    let @2: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let slice@3: &'1 (Slice<bool>); // local
+    let @4: &'2 (Array<bool, 1 : usize>); // anonymous local
+    let @5: &'2 (Array<bool, 1 : usize>); // anonymous local
+    let @6: &'1 (Slice<bool>); // anonymous local
+    let @7: &'1 (Slice<bool>); // anonymous local
+    let @8: &'1 (Slice<bool>); // anonymous local
     let @9: RangeFrom<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let @10: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @11: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @10: &'2 (Array<bool, 1 : usize>); // anonymous local
+    let @11: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
     let @12: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
     let @13: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let @14: &'_ (Array<bool, 1 : usize>); // anonymous local
@@ -423,13 +423,13 @@ fn mono_usage()
 {
     let @0: (); // return
     let _container1@1: MonoContainer<i32>[{built_in impl Sized for i32}]; // local
-    let _container2@2: MonoContainer<&'_ (Str)>[{built_in impl Sized for &'_ (Str)}]; // local
+    let _container2@2: MonoContainer<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}]; // local
 
     @0 := ()
     storage_live(_container1@1)
     _container1@1 := create<i32>[{built_in impl Sized for i32}](const (42 : i32))
     storage_live(_container2@2)
-    _container2@2 := create<&'_ (Str)>[{built_in impl Sized for &'_ (Str)}](const ("test"))
+    _container2@2 := create<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}](const ("test"))
     @0 := ()
     storage_dead(_container2@2)
     storage_dead(_container1@1)

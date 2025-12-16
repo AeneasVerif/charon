@@ -58,7 +58,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -116,10 +116,10 @@ where
 // Full name: test_crate::{impl Foo for ()}::get_ty
 pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
 {
-    let @0: &'_ (u32); // return
-    let self@1: &'_ (()); // arg #1
-    let @2: &'_ (u32); // anonymous local
-    let @3: &'_ (u32); // anonymous local
+    let @0: &'0 (u32); // return
+    let self@1: &'1 (()); // arg #1
+    let @2: &'0 (u32); // anonymous local
+    let @3: &'0 (u32); // anonymous local
     let @4: &'_ (u32); // anonymous local
     let @5: u32; // anonymous local
 
@@ -162,9 +162,9 @@ fn use_foo()
     let @0: (); // return
     let foo@1: (); // local
     let @2: u32; // anonymous local
-    let @3: &'_ (u32); // anonymous local
-    let @4: &'_ (u32); // anonymous local
-    let @5: &'_ (()); // anonymous local
+    let @3: &'0 (u32); // anonymous local
+    let @4: &'0 (u32); // anonymous local
+    let @5: &'1 (()); // anonymous local
 
     @0 := ()
     storage_live(foo@1)
@@ -237,9 +237,9 @@ where
     let @0: (); // return
     let foo@1: @TraitClause1::; // local
     let @2: @TraitClause1::parent_clause2::Type; // anonymous local
-    let @3: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
-    let @4: &'_ (@TraitClause1::parent_clause2::Type); // anonymous local
-    let @5: &'_ (@TraitClause1::); // anonymous local
+    let @3: &'0 (@TraitClause1::parent_clause2::Type); // anonymous local
+    let @4: &'0 (@TraitClause1::parent_clause2::Type); // anonymous local
+    let @5: &'1 (@TraitClause1::); // anonymous local
 
     @0 := ()
     storage_live(foo@1)
@@ -294,7 +294,7 @@ fn {impl FnOnce<(&'_ (U))> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1:
 where
     [@TraitClause0]: Sized<U>,
 {
-    let @0: WrapClone<&'_ (U)>[{built_in impl Sized for &'_ (U)}, {impl Clone for &'_0 (T)}<'_, U>]; // return
+    let @0: WrapClone<&'_ (U)>[{built_in impl Sized for &'0 (U)}, {impl Clone for &'_0 (T)}<'2, U>]; // return
     let @1: closure<U>[@TraitClause0]; // arg #1
     let tupled_args@2: (&'_0 (U)); // arg #2
     let x@3: &'_ (U); // local
@@ -324,7 +324,7 @@ where
 }
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}::drop_in_place
-fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
+unsafe fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
 where
     [@TraitClause0]: Sized<U>,
 = <missing>
@@ -343,12 +343,12 @@ pub fn use_wrap()
 {
     let @0: (); // return
     let f@1: closure<u32>[{built_in impl Sized for u32}]; // local
-    let @2: WrapClone<&'_ (u32)>[{built_in impl Sized for &'_ (u32)}, {impl Clone for &'_0 (T)}<'_, u32>]; // anonymous local
+    let @2: WrapClone<&'0 (u32)>[{built_in impl Sized for &'0 (u32)}, {impl Clone for &'_0 (T)}<'0, u32>]; // anonymous local
     let @3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let @4: (&'_ (u32)); // anonymous local
-    let @5: &'_ (u32); // anonymous local
-    let @6: &'_ (u32); // anonymous local
-    let @7: &'_ (u32); // anonymous local
+    let @4: (&'0 (u32)); // anonymous local
+    let @5: &'0 (u32); // anonymous local
+    let @6: &'0 (u32); // anonymous local
+    let @7: &'0 (u32); // anonymous local
     let @8: &'_ (u32); // anonymous local
     let @9: u32; // anonymous local
 

@@ -71,11 +71,11 @@ pub trait Destruct::<String>
     vtable: core::marker::Destruct::{vtable}::<String>
 }
 
-fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
+unsafe fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct::<String>}::drop_in_place
-fn {impl Destruct::<String>}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct::<String>}::drop_in_place(@1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct::<String>}
@@ -123,8 +123,8 @@ fn main()
 {
     let @0: (); // return
     let a@1: String; // local
-    let @2: &'_ (Str); // anonymous local
-    let @3: &'_ (Str); // anonymous local
+    let @2: &'0 (Str); // anonymous local
+    let @3: &'0 (Str); // anonymous local
 
     @0 := ()
     storage_live(a@1)

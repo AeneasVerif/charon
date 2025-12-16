@@ -315,10 +315,16 @@ let update_map (find_opt : 'a -> 'm -> 'b option) (add : 'a -> 'b -> 'm -> 'm)
       v = v'
 
 let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
+  (* Treat body variables like erased ones *)
+  let v =
+    match v with
+    | RBody _ -> T.RErased
+    | _ -> v
+  in
   (* When it comes to matching, we treat erased regions like variables. *)
   let is_var =
     match v with
-    | RVar _ | RErased -> true
+    | RVar _ | RBody _ | RErased -> true
     | RStatic -> false
   in
   if c.map_vars_to_vars && not is_var then false
@@ -416,10 +422,11 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
     bool =
   match (id, v) with
   | RStatic, RStatic -> true
-  | RVar id, (RVar _ | RErased) ->
+  | RVar id, (RVar _ | RErased | RBody _) ->
       (* When it comes to matching, we treat erased regions like variables *)
       opt_update_rmap c m id v
-  | RVar id, _ -> if c.map_vars_to_vars then false else opt_update_rmap c m id v
+  | RVar id, RStatic ->
+      if c.map_vars_to_vars then false else opt_update_rmap c m id v
   | _ -> false
 
 let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
@@ -573,7 +580,7 @@ and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
       let m =
         maps_push_bound_regions_group_if_nonempty m binder.binder_regions
       in
-      let inputs, output = binder.binder_value in
+      let { T.inputs; output; _ } = binder.binder_value in
       (* Match *)
       List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
       &&
@@ -763,8 +770,7 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
         | TraitImplItem (_, trait_ref, method_name, _)
           when c.match_with_trait_decl_refs ->
             let subst =
-              Substitute.make_subst_from_generics d.signature.generics
-                func.generics
+              Substitute.make_subst_from_generics d.generics func.generics
             in
             let trait_ref =
               Substitute.trait_decl_ref_substitute subst trait_ref
@@ -843,9 +849,8 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
            (fun varid map -> T.RegionId.Map.find_opt varid map.rmap)
            var)
   | RStatic -> RStatic
-  | RErased ->
-      (* We do get there when converting function pointers (when we try to
-         detect specific function calls) to patterns. *)
+  | RBody _ | RErased ->
+      (* These regions cannot be named. *)
       RVar None
 
 let type_var_to_pattern (m : constraints) (var : T.type_db_var) : var option =
@@ -1017,7 +1022,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       let m =
         constraints_map_push_regions_map_if_nonempty m binder.binder_regions
       in
-      let inputs, output = binder.binder_value in
+      let { T.inputs; output; _ } = binder.binder_value in
       let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
       let output =
         if output = TypesUtils.mk_unit_ty then None

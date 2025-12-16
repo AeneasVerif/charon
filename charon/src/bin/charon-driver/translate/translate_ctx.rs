@@ -43,7 +43,7 @@ pub struct TranslateCtx<'tcx> {
     /// When we find a use of a method, we mark it "used" using `mark_method_as_used`. This
     /// enqueues all known and future impls of this method. We also mark a method as used if we
     /// find an implementation of it in a non-opaque impl, and if the method is a required method.
-    pub method_status: Vector<TraitDeclId, HashMap<TraitItemName, MethodStatus>>,
+    pub method_status: IndexMap<TraitDeclId, HashMap<TraitItemName, MethodStatus>>,
 
     /// The map from rustc id to translated id.
     pub id_map: HashMap<TransItemSource, ItemId>,
@@ -106,6 +106,8 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// entry in this stack, with the entry as index `0` being the innermost binder. These
     /// parameters are referenced using [`DeBruijnVar`]; see there for details.
     pub binding_levels: BindingStack<BindingLevel>,
+    /// When `Some`, translate any erased lifetime to a fresh `Region::Body` lifetime.
+    pub lifetime_freshener: Option<IndexMap<RegionId, ()>>,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -212,6 +214,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax_state_with_id,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
+            lifetime_freshener: None,
         }
     }
 

@@ -36,9 +36,11 @@ and statement_kind =
           end of the function. *)
   | Deinit of place
   | Assert of assertion
-      (** A built-in assert, which corresponds to runtime checks that we remove,
-          namely: bounds checks, over/underflow checks, div/rem by zero checks,
-          pointer alignement check. *)
+      (** A runtime check for a condition. This can be either:
+          - Emitted for bounds/overflow/etc checks if
+            [--reconstruct-fallible-operations] is not set;
+          - Reconstructed from [if b { panic() }] if [--reconstruct-assets] is
+            set. *)
   | Nop  (** Does nothing. Useful for passes. *)
 
 and switch =

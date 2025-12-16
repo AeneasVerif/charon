@@ -1,5 +1,5 @@
 use crate::ast::*;
-use crate::ids::Vector;
+use crate::ids::{IndexMap, IndexVec};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,8 @@ pub enum Region {
     Var(RegionDbVar),
     /// Static region
     Static,
+    /// Body-local region, considered existentially-bound at the level of a body.
+    Body(RegionId),
     /// Erased region
     Erased,
 }
@@ -113,7 +115,7 @@ pub enum TraitRefKind {
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
-        parent_trait_refs: Vector<TraitClauseId, TraitRef>,
+        parent_trait_refs: IndexMap<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
         types: Vec<(TraitItemName, TraitAssocTyImpl)>,
     },
@@ -216,23 +218,22 @@ pub struct TraitTypeConstraint {
 /// A set of generic arguments.
 #[derive(Clone, Eq, PartialEq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: Vector<RegionId, Region>,
-    pub types: Vector<TypeVarId, Ty>,
-    pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
+    pub regions: IndexMap<RegionId, Region>,
+    pub types: IndexMap<TypeVarId, Ty>,
+    pub const_generics: IndexMap<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
-    pub trait_refs: Vector<TraitClauseId, TraitRef>,
+    pub trait_refs: IndexMap<TraitClauseId, TraitRef>,
 }
 
 pub type BoxedArgs = Box<GenericArgs>;
 
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
-/// TODO: merge with `binder`
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     #[serde_state(stateless)]
-    pub regions: Vector<RegionId, RegionParam>,
+    pub regions: IndexMap<RegionId, RegionParam>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -279,25 +280,27 @@ pub struct Binder<T> {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
+// FIXME: we use `IndexMap` instead of `IndexVec` because the `remove_marker_traits` pass would
+// otherwise need to renumber clauses across the whole crate and that was too painful.
 #[derive(
     Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct GenericParams {
     #[serde_state(stateless)]
-    pub regions: Vector<RegionId, RegionParam>,
+    pub regions: IndexMap<RegionId, RegionParam>,
     #[serde_state(stateless)]
-    pub types: Vector<TypeVarId, TypeParam>,
+    pub types: IndexMap<TypeVarId, TypeParam>,
     #[serde_state(stateless)]
-    pub const_generics: Vector<ConstGenericVarId, ConstGenericParam>,
+    pub const_generics: IndexMap<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: Vector<TraitClauseId, TraitParam>,
+    pub trait_clauses: IndexMap<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
     pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region
     pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
+    pub trait_type_constraints: IndexMap<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
 /// Where a given predicate came from.
@@ -356,7 +359,7 @@ pub type ByteCount = u64;
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
-    pub field_offsets: Vector<FieldId, ByteCount>,
+    pub field_offsets: IndexVec<FieldId, ByteCount>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
     #[drive(skip)]
@@ -418,7 +421,7 @@ pub struct Layout {
     pub uninhabited: bool,
     /// Map from `VariantId` to the corresponding field layouts. Structs are modeled as having
     /// exactly one variant, unions as having no variant.
-    pub variant_layouts: Vector<VariantId, VariantLayout>,
+    pub variant_layouts: IndexVec<VariantId, VariantLayout>,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -522,9 +525,9 @@ generate_index_type!(FieldId, "Field");
     Debug, Clone, EnumIsA, EnumAsGetters, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 pub enum TypeDeclKind {
-    Struct(Vector<FieldId, Field>),
-    Enum(Vector<VariantId, Variant>),
-    Union(Vector<FieldId, Field>),
+    Struct(IndexVec<FieldId, Field>),
+    Enum(IndexVec<VariantId, Variant>),
+    Union(IndexVec<FieldId, Field>),
     /// An opaque type.
     ///
     /// Either a local type marked as opaque, or an external type.
@@ -549,7 +552,7 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     #[serde_state(stateful)]
-    pub fields: Vector<FieldId, Field>,
+    pub fields: IndexVec<FieldId, Field>,
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
     /// different than the value stored in memory (called `tag`). That one is described by
     /// [`DiscriminantLayout`] and [`TagEncoding`].
@@ -874,7 +877,7 @@ pub enum TyKind {
     /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
     /// other kinds of generics.
-    FnPtr(RegionBinder<(Vec<Ty>, Ty)>),
+    FnPtr(RegionBinder<FunSig>),
     /// The unique type associated with each function item. Each function item is given
     /// a unique generic type that takes as input the function's early-bound generics. This type
     /// is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type
@@ -974,16 +977,15 @@ pub struct ClosureInfo {
     /// The `Fn` implementation of this closure, if any.
     pub fn_impl: Option<RegionBinder<TraitImplRef>>,
     /// The signature of the function that this closure represents.
-    pub signature: RegionBinder<(Vec<Ty>, Ty)>,
+    pub signature: RegionBinder<FunSig>,
 }
 
 /// A function signature.
-#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct FunSig {
     /// Is the function unsafe or not
     #[drive(skip)]
     pub is_unsafe: bool,
-    pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,
 }

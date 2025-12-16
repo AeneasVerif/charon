@@ -12,7 +12,6 @@ use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
-use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
@@ -121,7 +120,7 @@ impl Display for DeclarationGroup {
 pub struct Deps {
     dgraph: DiGraphMap<ItemId, ()>,
     // Want to make sure we remember the order of insertion
-    graph: IndexMap<ItemId, IndexSet<ItemId>>,
+    graph: SeqHashMap<ItemId, SeqHashSet<ItemId>>,
     // We use this when computing the graph
     current_id: Option<ItemId>,
     // We use this to track the trait impl block the current item belongs to
@@ -173,7 +172,7 @@ impl Deps {
     fn new() -> Self {
         Deps {
             dgraph: DiGraphMap::new(),
-            graph: IndexMap::new(),
+            graph: SeqHashMap::new(),
             current_id: None,
             parent_trait_impl: None,
             parent_trait_decl: None,
@@ -219,7 +218,7 @@ impl Deps {
         if !self.dgraph.contains_node(id) {
             self.dgraph.add_node(id);
             assert!(!self.graph.contains_key(&id));
-            self.graph.insert(id, IndexSet::new());
+            self.graph.insert(id, SeqHashSet::new());
         }
     }
 
@@ -308,7 +307,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
     let mut sorted_items = ctx.translated.all_items().collect_vec();
     // Pre-sort files to avoid costly string comparisons. Maps file ids to an index that reflects
     // ordering on the crates (with `core` and `std` sorted first) and file names.
-    let sorted_file_ids: Vector<FileId, usize> = ctx
+    let sorted_file_ids: IndexMap<FileId, usize> = ctx
         .translated
         .files
         .all_indices()
@@ -321,10 +320,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         .sorted_by_key(|(_i, file_id)| *file_id)
         .map(|(i, _file_id)| i)
         .collect();
-    assert_eq!(
-        ctx.translated.files.slot_count(),
-        sorted_file_ids.slot_count()
-    );
+    assert_eq!(ctx.translated.files.len(), sorted_file_ids.slot_count());
     sorted_items.sort_by_key(|item| {
         let item_meta = item.item_meta();
         let span = item_meta.span.data;
@@ -341,14 +337,24 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 let _ = item.drive(&mut graph);
             }
             ItemRef::Fun(d) => {
+                let FunDecl {
+                    def_id: _,
+                    item_meta: _,
+                    generics,
+                    signature,
+                    src,
+                    is_global_initializer: _,
+                    body,
+                } = d;
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemKind`.
-                let _ = d.signature.drive(&mut graph);
-                let _ = d.body.drive(&mut graph);
+                let _ = generics.drive(&mut graph);
+                let _ = signature.drive(&mut graph);
+                let _ = body.drive(&mut graph);
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
-                if let ItemSource::TraitDecl { trait_ref, .. } = &d.src {
+                if let ItemSource::TraitDecl { trait_ref, .. } = src {
                     graph.insert_edge(trait_ref.id.into());
                 }
             }

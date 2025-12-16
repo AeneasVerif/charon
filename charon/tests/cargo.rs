@@ -26,6 +26,8 @@ struct Case {
     expect: Expect,
     /// Extra arguments to pass to charon.
     charon_args: Vec<String>,
+    /// Extra arguments to pass to cargo.
+    cargo_args: Vec<String>,
 }
 
 fn perform_test(test_case: &Case) -> anyhow::Result<()> {
@@ -41,12 +43,16 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
     if matches!(test_case.expect, Failure) {
-        cmd.arg("--cargo-arg=--quiet");
         cmd.arg("--no-serialize");
     }
     cmd.arg("--dest-file");
     cmd.arg(test_case.output_file.with_extension("llbc"));
     cmd.args(&test_case.charon_args);
+    cmd.arg("--");
+    cmd.args(&test_case.cargo_args);
+    if matches!(test_case.expect, Failure) {
+        cmd.arg("--quiet");
+    }
 
     let cmd_str = format!(
         "charon {}",
@@ -89,8 +95,13 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let root: PathBuf = PathBuf::from(TESTS_DIR).canonicalize()?;
-    let mktest = |name: &str, dir: PathBuf, charon_args: &[String], expect: Expect| {
+    let mktest = |name: &str,
+                  dir: PathBuf,
+                  charon_args: &[String],
+                  cargo_args: &[String],
+                  expect: Expect| {
         let charon_args = charon_args.to_vec();
+        let cargo_args = cargo_args.to_vec();
         let output_file = root.join(format!("{name}.out"));
         Trial::test(name, move || {
             let case = Case {
@@ -98,33 +109,34 @@ fn main() -> Result<(), Box<dyn Error>> {
                 output_file,
                 expect,
                 charon_args,
+                cargo_args,
             };
             perform_test(&case).map_err(|err| err.into())
         })
     };
     let tests = vec![
-        mktest("build-script", root.join("build-script"), &[], Success),
+        mktest("build-script", root.join("build-script"), &[], &[], Success),
         mktest(
             "dependencies",
             root.join("dependencies"),
-            &["--cargo-arg=--features=test_feature".to_owned()],
+            &[],
+            &["--features=test_feature".to_owned()],
             Success,
         ),
         mktest(
             "error-dependencies",
             root.join("error-dependencies"),
             &[],
+            &[],
             Failure,
         ),
-        mktest("toml", root.join("toml"), &[], Success),
-        mktest("unsafe_", root.join("unsafe_"), &[], Success),
+        mktest("toml", root.join("toml"), &[], &[], Success),
+        mktest("unsafe_", root.join("unsafe_"), &[], &[], Success),
         mktest(
             "workspace",
             root.join("workspace"),
-            &[
-                "--cargo-arg=--package=crate2".to_owned(),
-                "--extract-opaque-bodies".to_owned(),
-            ],
+            &["--extract-opaque-bodies".to_owned()],
+            &["--package=crate2".to_owned()],
             Success,
         ),
     ];

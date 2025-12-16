@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use charon_lib::ast::*;
 
 mod util;
-use indexmap::IndexMap;
 use util::*;
 
 #[test]
@@ -70,7 +69,7 @@ fn ptr_metadata() -> anyhow::Result<()> {
     "#,
         &[],
     )?;
-    let meta_kinds: IndexMap<String, &PtrMetadata> = crate_data
+    let meta_kinds: SeqHashMap<String, &PtrMetadata> = crate_data
         .type_decls
         .iter()
         .map(|td| {

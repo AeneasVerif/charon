@@ -1,5 +1,5 @@
-pub mod check_generics;
 pub mod ctx;
+pub mod typecheck_and_unify;
 pub mod utils;
 
 /// Passes that finish translation, i.e. required for the output to be a valid output.
@@ -41,12 +41,13 @@ pub mod resugar {
 
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
+    pub mod erase_body_lifetimes;
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod hide_marker_traits;
     pub mod index_intermediate_assigns;
     pub mod index_to_function_calls;
-    pub mod inline_promoted_consts;
+    pub mod inline_anon_consts;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
     pub mod remove_adt_clauses;
@@ -75,8 +76,8 @@ use ctx::{LlbcPass, TransformPass, UllbcPass};
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Compute short names. We do it early to make pretty-printed output more legible in traces.
     NonBody(&add_missing_info::compute_short_names::Transform),
-    // Check that translation emitted consistent generics.
-    NonBody(&check_generics::Check("after translation")),
+    // Check that translation emitted consistent types, and unify body lifetimes (best-effort).
+    NonBody(&typecheck_and_unify::Check::PostTranslation),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&finish_translation::filter_invisible_trait_impls::Transform),
@@ -118,8 +119,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
 
 /// Body cleanup passes on the ullbc.
 pub static ULLBC_PASSES: &[Pass] = &[
-    // Inline promoted consts into their parent bodies.
-    UnstructuredBody(&simplify_output::inline_promoted_consts::Transform),
+    // Inline promoted and inline consts into their parent bodies.
+    UnstructuredBody(&simplify_output::inline_anon_consts::Transform),
     // Remove drop statements that are noops.
     UnstructuredBody(&simplify_output::filter_trivial_drops::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
@@ -206,11 +207,12 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
 /// Final passes to run at the end, after pretty-printing the llbc if applicable. These are only
 /// split from the above list to get test outputs even when generics fail to match.
 pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
-    // Check that all supplied generic types match the corresponding generic parameters.
-    // Check that generics are still consistent after the transformation passes.
-    NonBody(&check_generics::Check("after transformations")),
+    // Check that types are still consistent after the transformation passes.
+    NonBody(&typecheck_and_unify::Check::PostTransformation),
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     NonBody(&simplify_output::unbind_item_vars::Check),
+    // Erase `Body` lifetimes.
+    NonBody(&simplify_output::erase_body_lifetimes::Transform),
 ];
 
 #[derive(Clone, Copy)]
@@ -223,9 +225,21 @@ pub enum Pass {
 impl Pass {
     pub fn run(self, ctx: &mut TransformCtx) {
         match self {
-            NonBody(pass) => pass.transform_ctx(ctx),
-            UnstructuredBody(pass) => pass.transform_ctx(ctx),
-            StructuredBody(pass) => pass.transform_ctx(ctx),
+            NonBody(pass) => {
+                if pass.should_run(&ctx.options) {
+                    pass.transform_ctx(ctx)
+                }
+            }
+            UnstructuredBody(pass) => {
+                if pass.should_run(&ctx.options) {
+                    pass.transform_ctx(ctx)
+                }
+            }
+            StructuredBody(pass) => {
+                if pass.should_run(&ctx.options) {
+                    pass.transform_ctx(ctx)
+                }
+            }
         }
     }
 

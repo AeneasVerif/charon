@@ -13,9 +13,8 @@
 use std::{any::Any, collections::HashMap};
 
 use crate::ast::*;
+use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
-use index_vec::Idx;
-use indexmap::IndexMap;
 
 /// An overrideable visitor trait that can be used to conveniently traverse the whole contents of
 /// an item. This is useful when e.g. dealing with types, which show up pretty much everywhere in
@@ -39,9 +38,11 @@ use indexmap::IndexMap;
     // Defines the `Visit[Mut]` traits and the `drive[_mut]` method that drives them.
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
+    // Types that we ignore.
+    skip(()),
     // Types that we unconditionally explore.
     drive(
-        AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
+        AbortKind, Assert, BinOp, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
         CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
@@ -53,7 +54,8 @@ use indexmap::IndexMap;
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata,
         TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
-        ItemByVal,
+        ItemByVal, VTableField,
+        for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),
@@ -62,14 +64,15 @@ use indexmap::IndexMap;
         for<A: AstVisitable, B: AstVisitable> OutlivesPred<A, B>,
         for<T: AstVisitable> Vec<T>,
         for<T: AstVisitable + HashConsable> HashConsed<T>,
-        for<I: Idx, T: AstVisitable> Vector<I, T>,
+        for<I: Idx, T: AstVisitable> IndexMap<I, T>,
+        for<I: Idx, T: AstVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
         DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefContents, TraitRefKind,
         TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
-        GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
+        GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue, Body,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
@@ -112,7 +115,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
 }
 
 /// Manual impl that only visits the values
-impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
+impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self.values() {
             v.visit(x)?;
@@ -148,7 +151,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal,
+        TraitRef, LiteralTy, Literal, RegionId, ()
     ),
     // Types that we unconditionally explore.
     drive(
@@ -164,7 +167,8 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         for<A: BodyVisitable, B: BodyVisitable> (A, B),
         for<A: BodyVisitable, B: BodyVisitable, C: BodyVisitable> (A, B, C),
         for<T: BodyVisitable> Vec<T>,
-        for<I: Idx, T: BodyVisitable> Vector<I, T>,
+        for<I: Idx, T: BodyVisitable> IndexMap<I, T>,
+        for<I: Idx, T: BodyVisitable> IndexVec<I, T>,
     ),
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.

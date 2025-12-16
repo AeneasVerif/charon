@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::drop::Drop
@@ -43,7 +43,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -53,7 +53,7 @@ impl Destruct for Global {
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -99,7 +99,7 @@ struct A {
 pub fn {impl Drop for B}::drop<'_0>(@1: &'_0 mut (B))
 {
     let @0: (); // return
-    let self@1: &'_ mut (B); // arg #1
+    let self@1: &'0 mut (B); // arg #1
 
     @0 := ()
     @0 := ()
@@ -107,12 +107,12 @@ pub fn {impl Drop for B}::drop<'_0>(@1: &'_0 mut (B))
 }
 
 // Full name: test_crate::B::{impl Destruct for B}::drop_in_place
-fn {impl Destruct for B}::drop_in_place(@1: *mut B)
+unsafe fn {impl Destruct for B}::drop_in_place(@1: *mut B)
 {
     let @0: (); // return
     let @1: *mut B; // arg #1
-    let @2: &'_ mut (B); // anonymous local
-    let @3: &'_ mut (B); // anonymous local
+    let @2: &'0 mut (B); // anonymous local
+    let @3: &'0 mut (B); // anonymous local
     let @4: (); // anonymous local
 
     storage_live(@2)
@@ -134,11 +134,11 @@ impl Destruct for B {
 }
 
 // Full name: test_crate::A::{impl Destruct for A}::drop_in_place
-fn {impl Destruct for A}::drop_in_place(@1: *mut A)
+unsafe fn {impl Destruct for A}::drop_in_place(@1: *mut A)
 {
     let @0: (); // return
     let @1: *mut A; // arg #1
-    let @2: &'_ mut (A); // anonymous local
+    let @2: &'0 mut (A); // anonymous local
 
     storage_live(@2)
     @0 := ()

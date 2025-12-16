@@ -13,7 +13,7 @@ impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Push each block into a new vector to make it consecutive and return the map from old to
         // new ids.
-        let id_map: Vector<BlockId, BlockId> =
+        let id_map: IndexVec<BlockId, BlockId> =
             mem::take(&mut b.body).map(|block| b.body.push(block));
 
         // Update the ids.

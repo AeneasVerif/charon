@@ -27,7 +27,7 @@ const UNIT_METADATA: () = @Fun0()
 struct test_crate::DynableTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,
-  drop: fn(*mut (dyn exists<_dyn> [@TraitClause0_2]: DynableTrait<_dyn, Ty0> + _dyn : '_)),
+  drop: unsafe fn(*mut (dyn DynableTrait<Ty0>)),
   super_trait_0: &'static (core::marker::MetaSized::{vtable}),
 }
 
@@ -48,12 +48,12 @@ trait Trait<Self, Self_TraitType, Self_Clause2_DynableTraitType>
     vtable: test_crate::Trait::{vtable}<Self_TraitType>
 }
 
-// Full name: test_crate::{impl Trait<(dyn exists<_dyn> [@TraitClause0_1]: DynableTrait<_dyn, ()> + _dyn : 'static), ()> for ()}
-impl Trait<(dyn exists<_dyn> [@TraitClause0_1]: DynableTrait<_dyn, ()> + _dyn : 'static), ()> for () {
+// Full name: test_crate::{impl Trait<(dyn DynableTrait<()> + 'static), ()> for ()}
+impl Trait<(dyn DynableTrait<()> + 'static), ()> for () {
     parent_clause0 = {built_in impl MetaSized for ()}
-    parent_clause1 = {built_in impl MetaSized for (dyn exists<_dyn> [@TraitClause0_2]: DynableTrait<_dyn, ()> + _dyn : '_)}
-    parent_clause2 = DynableTrait<(dyn exists<_dyn> [@TraitClause0_2]: DynableTrait<_dyn, ()> + _dyn : '_), ()>
-    vtable: {impl Trait<(dyn exists<_dyn> [@TraitClause0_1]: DynableTrait<_dyn, ()> + _dyn : 'static), ()> for ()}::{vtable}
+    parent_clause1 = {built_in impl MetaSized for (dyn DynableTrait<()>)}
+    parent_clause2 = DynableTrait<(dyn DynableTrait<()>), ()>
+    vtable: {impl Trait<(dyn DynableTrait<()> + 'static), ()> for ()}::{vtable}
 }
 
 

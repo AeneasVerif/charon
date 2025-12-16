@@ -5,14 +5,11 @@ use crate::{ids::Generator, ullbc_ast::*};
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        if ctx.options.raw_consts {
-            return;
-        }
-        // Currently the only anon consts that are not already evaluated are promoted consts. If
-        // that changes, we'll have to restrict this pass to the consts that can be inlined into a
-        // body.
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !options.raw_consts
+    }
 
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Map each anon const id to its initializer, and remove both from `translated`.
         let anon_consts: HashMap<GlobalDeclId, ExprBody> = ctx
             .translated
@@ -30,8 +27,8 @@ impl UllbcPass for Transform {
                 for block_id in outer_body.body.all_indices() {
                     // Subtle: This generator must be managed to correctly track the indices that will
                     // be generated when pushing onto `outer_body.body`.
-                    let mut bid_generator =
-                        Generator::new_with_init_value(outer_body.body.next_id());
+                    let mut bid_generator: Generator<BlockId> =
+                        Generator::new_with_init_value(outer_body.body.next_idx());
                     let start_new_bodies = bid_generator.next_id();
                     let Some(block) = outer_body.body.get_mut(block_id) else {
                         continue;
@@ -48,6 +45,14 @@ impl UllbcPass for Transform {
                             // gotos so that the inner body is executed before the current block.
                             let mut inner_body = inner_body.clone().substitute(&gref.generics);
 
+                            // Shift all the body regions in the inner body.
+                            inner_body.dyn_visit_mut(|r: &mut Region| {
+                                if let Region::Body(v) = r {
+                                    *v += outer_body.bound_body_regions;
+                                }
+                            });
+                            outer_body.bound_body_regions += inner_body.bound_body_regions;
+
                             // The init function of a global assumes the return place is live;
                             // this is not the case once we inline it
                             inner_body.body[0].statements.insert(
@@ -58,13 +63,13 @@ impl UllbcPass for Transform {
                                 ),
                             );
 
-                            let return_local = outer_body.locals.locals.next_id();
+                            let return_local = outer_body.locals.locals.next_idx();
                             inner_body.dyn_visit_in_body_mut(|l: &mut LocalId| {
                                 *l += return_local;
                             });
 
                             let start_block = bid_generator.next_id();
-                            bid_generator.advance(inner_body.body.elem_count());
+                            bid_generator.advance(inner_body.body.len());
                             let end_block = bid_generator.next_id();
                             inner_body.dyn_visit_in_body_mut(|b: &mut BlockId| {
                                 *b += start_block;

@@ -57,7 +57,7 @@ pub trait Destruct::<bool>
 }
 
 // Full name: core::marker::Destruct::drop_in_place::<bool>
-fn drop_in_place::<bool>(@1: *mut bool)
+unsafe fn drop_in_place::<bool>(@1: *mut bool)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -79,8 +79,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let init@1: bool; // arg #1
     let expected@2: bool; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'_ (bool); // anonymous local
-    let @5: &'_ (bool); // anonymous local
+    let @4: &'0 (bool); // anonymous local
+    let @5: &'0 (bool); // anonymous local
 
     bb0: {
         @0 := ();

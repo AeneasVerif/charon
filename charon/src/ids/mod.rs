@@ -1,8 +1,10 @@
 pub mod generator;
-pub mod vector;
+pub mod index_map;
+pub mod index_vec;
 
 pub use generator::Generator;
-pub use vector::Vector;
+pub use index_map::IndexMap;
+pub use index_vec::{Idx, IndexVec};
 
 /// Generate an `Index` index type. We use it because we need manipulate a lot of different indices
 /// (for various kinds of declarations, variables, blocks, etc.).
@@ -18,7 +20,7 @@ macro_rules! generate_index_type {
     };
     ($name:ident, $pretty_name:expr) => {
         index_vec::define_index_type! {
-            #[derive(derive_generic_visitor::Drive, derive_generic_visitor::DriveMut)]
+            #[derive(Default, derive_generic_visitor::Drive, derive_generic_visitor::DriveMut)]
             #[drive(skip)]
             pub struct $name = usize;
             // Must fit in an u32 for serialization.

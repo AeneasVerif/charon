@@ -260,8 +260,18 @@ pub enum CastKind {
 )]
 #[charon::variants_prefix("Meta")]
 pub enum UnsizingMetadata {
+    /// Cast from `[T; N]` to `[T]`.
     Length(ConstGeneric),
-    VTablePtr(TraitRef),
+    /// Cast from a sized value to a `dyn Trait` value. The `TraitRef` gives the trait for which
+    /// we're getting a vtable (this is the _principal_ trait of the `dyn Trait` target). The second
+    /// field is the vtable instance, if we could resolve it.
+    VTable(TraitRef, Option<GlobalDeclRef>),
+    /// Cast from `dyn Trait` to `dyn OtherTrait`. The fields indicate how to retreive the vtable:
+    /// it's always either the same we already had, or the vtable for a (possibly nested) supertrait.
+    ///
+    /// Note that we cheat in one case: when upcasting to a marker trait (e.g. `dyn Trait -> dyn
+    /// Sized`), we keep the current vtable.
+    VTableUpcast(Vec<FieldId>),
     Unknown,
 }
 
@@ -269,11 +279,13 @@ pub enum UnsizingMetadata {
 #[charon::variants_prefix("O")]
 pub enum OverflowMode {
     /// If this operation overflows, it panics. Only exists in debug mode, for instance in
-    /// `a + b`, and is introduced by the `remove_dynamic_checks` pass.
+    /// `a + b`, and only if `--reconstruct-fallible-operations` is passed to Charon. Otherwise the
+    /// bound check will be explicit.
     Panic,
-    /// If this operation overflows, it UBs, for instance in `core::num::unchecked_add`.
+    /// If this operation overflows, it is UB; for instance in `core::num::unchecked_add`. This can
+    /// exists in safe code, but will always be preceded by a bounds check.
     UB,
-    /// If this operation overflows, it wraps around, for instance in `core::num::wrapping_add`,
+    /// If this operation overflows, it wraps around for instance in `core::num::wrapping_add`,
     /// or `a + b` in release mode.
     Wrap,
 }
@@ -414,22 +426,23 @@ impl From<BuiltinFunId> for FunId {
     DriveMut,
 )]
 pub enum BuiltinFunId {
-    /// `alloc::boxed::Box::new`
+    /// Used instead of `alloc::boxed::Box::new` when `--treat-box-as-builtin` is set.
     BoxNew,
-    /// Cast an array as a slice.
+    /// Cast `&[T; N]` to `&[T]`.
     ///
-    /// Converted from `UnOp::ArrayToSlice`
+    /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
     ArrayToSliceShared,
-    /// Cast an array as a slice.
+    /// Cast `&mut [T; N]` to `&mut [T]`.
     ///
-    /// Converted from `UnOp::ArrayToSlice`
+    /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
     ArrayToSliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
-    /// We introduce this when desugaring the `ArrayRepeat` rvalue.
+    /// This is used instead of `Rvalue::ArrayRepeat` when `--ops-to-function-calls` is set.
     ArrayRepeat,
-    /// Converted from indexing `ProjectionElem`s. The signature depends on the parameters. It
-    /// could look like:
+    /// A built-in funciton introduced instead of array/slice place indexing when
+    /// `--index-to-function-calls` is set. The signature depends on the parameters. It could look
+    /// like:
     /// - `fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T`
     /// - `fn SliceIndexShared<T>(&[T], usize) -> &T`
     /// - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
@@ -439,7 +452,7 @@ pub enum BuiltinFunId {
     /// Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
     /// building a thin pointer.
     ///
-    /// Converted from [AggregateKind::RawPtr]
+    /// This is used instead of `AggregateKind::RawPtr` when `--ops-to-function-calls` is set.
     PtrFromParts(RefKind),
 }
 
@@ -596,11 +609,8 @@ pub enum ConstantExprKind {
     /// Less frequently: arbitrary ADT values.
     ///
     /// We eliminate this case in a micro-pass.
-    #[charon::opaque]
     Adt(Option<VariantId>, Vec<ConstantExpr>),
-    #[charon::opaque]
     Array(Vec<ConstantExpr>),
-    #[charon::opaque]
     Slice(Vec<ConstantExpr>),
     /// The value is a top-level constant/static.
     ///
@@ -620,7 +630,6 @@ pub enum ConstantExprKind {
     ///   let l = V::<N, T>::LEN; // We need to provided a substitution here
     /// }
     /// ```
-    #[charon::opaque]
     Global(GlobalDeclRef),
     ///
     /// A trait constant.
@@ -638,12 +647,10 @@ pub enum ConstantExprKind {
     /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.
-    #[charon::opaque]
     Ref(Box<ConstantExpr>),
     /// A pointer to a mutable static.
     ///
     /// We eliminate this case in a micro-pass.
-    #[charon::opaque]
     Ptr(RefKind, Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericDbVar),
@@ -652,13 +659,11 @@ pub enum ConstantExprKind {
     /// A function pointer to a function item; this is an actual pointer to that function item.
     ///
     /// We eliminate this case in a micro-pass.
-    #[charon::opaque]
     FnPtr(FnPtr),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
     /// We eliminate this case in a micro-pass.
     #[drive(skip)]
-    #[charon::opaque]
     PtrNoProvenance(u128),
     /// Raw memory value obtained from constant evaluation. Used when a more structured
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.

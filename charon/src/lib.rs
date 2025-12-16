@@ -21,8 +21,9 @@
 #![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iterator_try_collect)]
-#![feature(trait_alias)]
 #![feature(register_tool)]
+#![feature(trait_alias)]
+#![feature(trivial_bounds)]
 // For when we use charon on itself :3
 #![register_tool(charon)]
 

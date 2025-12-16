@@ -1,6 +1,7 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 use crate::ast::*;
-use crate::ids::Vector;
+use crate::ids::IndexMap;
+use crate::ids::IndexVec;
 use crate::llbc_ast;
 use crate::ullbc_ast;
 use derive_generic_visitor::{Drive, DriveMut};
@@ -38,7 +39,7 @@ pub struct Locals {
     /// - the local used for the return value (index 0)
     /// - the `arg_count` input arguments
     /// - the remaining locals, used for the intermediate computations
-    pub locals: Vector<LocalId, Local>,
+    pub locals: IndexVec<LocalId, Local>,
 }
 
 /// An expression body.
@@ -48,14 +49,19 @@ pub struct Locals {
 #[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
+    /// The number of regions existentially bound in this body. We introduce fresh such regions
+    /// during translation instead of the erased regions that rustc gives us.
+    #[drive(skip)]
+    pub bound_body_regions: usize,
     /// The local variables.
     pub locals: Locals,
+    /// The statements and blocks that compose this body.
+    pub body: T,
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[charon::opaque]
     #[drive(skip)]
     pub comments: Vec<(usize, Vec<String>)>,
-    pub body: T,
 }
 
 /// The body of a function.
@@ -152,6 +158,11 @@ pub enum ItemSource {
     VTableTy {
         /// The `dyn Trait` predicate implemented by this vtable.
         dyn_predicate: DynPredicate,
+        /// Record what each vtable field means.
+        field_map: IndexVec<FieldId, VTableField>,
+        /// For each implied clause that is also a supertrait clause, reords which field id
+        /// corresponds to it.
+        supertrait_map: IndexMap<TraitClauseId, Option<FieldId>>,
     },
     /// This is a vtable value for an impl.
     VTableInstance { impl_ref: TraitImplRef },
@@ -161,6 +172,16 @@ pub enum ItemSource {
     VTableMethodShim,
 }
 
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, PartialEq, Eq)]
+#[charon::variants_prefix("VTable")]
+pub enum VTableField {
+    Size,
+    Align,
+    Drop,
+    Method(TraitItemName),
+    SuperTrait(TraitClauseId),
+}
+
 /// A function definition
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct FunDecl {
@@ -168,6 +189,7 @@ pub struct FunDecl {
     pub def_id: FunDeclId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
+    pub generics: GenericParams,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
@@ -298,7 +320,7 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub implied_clauses: Vector<TraitClauseId, TraitParam>,
+    pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
     /// The associated constants declared in the trait.
     pub consts: Vec<TraitAssocConst>,
     /// The associated types declared in the trait. The binder binds the generic parameters of the
@@ -333,7 +355,7 @@ pub struct TraitAssocTy {
     pub name: TraitItemName,
     pub default: Option<Ty>,
     /// List of trait clauses that apply to this type.
-    pub implied_clauses: Vector<TraitClauseId, TraitParam>,
+    pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
 }
 
 /// A trait method.
@@ -367,7 +389,7 @@ pub struct TraitImpl {
     pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub implied_trait_refs: Vector<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexMap<TraitClauseId, TraitRef>,
     /// The implemented associated constants.
     pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
     /// The implemented associated types.
@@ -383,10 +405,10 @@ pub struct TraitImpl {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocTyImpl {
     pub value: Ty,
-    /// The `Vec` corresponds to the same `Vector` in `TraitAssocTy`. In the same way, this is
-    /// empty after the `lift_associated_item_clauses` pass.
+    /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
+    /// after the `lift_associated_item_clauses` pass.
     #[charon::opaque]
-    pub implied_trait_refs: Vector<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexMap<TraitClauseId, TraitRef>,
 }
 
 /// A function operand is used in function calls.
@@ -477,6 +499,7 @@ pub struct Assert {
 }
 
 /// A generic `*DeclRef`-shaped struct, used when we're generic over the type of item.
+#[derive(Debug, Clone, Drive, DriveMut)]
 pub struct DeclRef<Id> {
     pub id: Id,
     pub generics: BoxedArgs,

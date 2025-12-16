@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -94,11 +94,11 @@ where
 struct NotCopy {}
 
 // Full name: test_crate::NotCopy::{impl Destruct for NotCopy}::drop_in_place
-fn {impl Destruct for NotCopy}::drop_in_place(@1: *mut NotCopy)
+unsafe fn {impl Destruct for NotCopy}::drop_in_place(@1: *mut NotCopy)
 {
     let @0: (); // return
     let @1: *mut NotCopy; // arg #1
-    let @2: &'_ mut (NotCopy); // anonymous local
+    let @2: &'0 mut (NotCopy); // anonymous local
 
     storage_live(@2)
     @0 := ()

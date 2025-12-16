@@ -81,7 +81,7 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 #[lang_item("mem_swap")]
@@ -189,7 +189,7 @@ where
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -233,10 +233,10 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let x@1: &'_ mut (T); // arg #1
-    let y@2: &'_ mut (T); // arg #2
-    let @3: &'_ mut (T); // anonymous local
-    let @4: &'_ mut (T); // anonymous local
+    let x@1: &'0 mut (T); // arg #1
+    let y@2: &'0 mut (T); // arg #2
+    let @3: &'0 mut (T); // anonymous local
+    let @4: &'0 mut (T); // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -273,7 +273,7 @@ pub fn test_vec_push()
     let @0: (); // return
     let v@1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // local
     let @2: (); // anonymous local
-    let @3: &'_ mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]); // anonymous local
+    let @3: &'0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]); // anonymous local
 
     @0 := ()
     storage_live(v@1)
@@ -294,8 +294,8 @@ pub fn test_vec_push()
 pub fn use_get<'_0>(@1: &'_0 (Cell<u32>[{built_in impl MetaSized for u32}])) -> u32
 {
     let @0: u32; // return
-    let rc@1: &'_ (Cell<u32>[{built_in impl MetaSized for u32}]); // arg #1
-    let @2: &'_ (Cell<u32>[{built_in impl MetaSized for u32}]); // anonymous local
+    let rc@1: &'0 (Cell<u32>[{built_in impl MetaSized for u32}]); // arg #1
+    let @2: &'0 (Cell<u32>[{built_in impl MetaSized for u32}]); // anonymous local
 
     storage_live(@2)
     @2 := &*(rc@1)
@@ -308,9 +308,9 @@ pub fn use_get<'_0>(@1: &'_0 (Cell<u32>[{built_in impl MetaSized for u32}])) -> 
 pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>[{built_in impl MetaSized for u32}]))
 {
     let @0: (); // return
-    let rc@1: &'_ mut (Cell<u32>[{built_in impl MetaSized for u32}]); // arg #1
-    let @2: &'_ mut (u32); // anonymous local
-    let @3: &'_ mut (Cell<u32>[{built_in impl MetaSized for u32}]); // anonymous local
+    let rc@1: &'0 mut (Cell<u32>[{built_in impl MetaSized for u32}]); // arg #1
+    let @2: &'1 mut (u32); // anonymous local
+    let @3: &'0 mut (Cell<u32>[{built_in impl MetaSized for u32}]); // anonymous local
     let @4: u32; // anonymous local
 
     storage_live(@4)

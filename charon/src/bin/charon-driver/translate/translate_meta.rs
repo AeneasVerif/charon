@@ -208,12 +208,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
-                        let mut bt_ctx = ItemTransCtx::new(
-                            TransItemSource::new(item.clone(), TransItemSourceKind::InherentImpl),
-                            None,
-                            self,
-                        );
-                        bt_ctx.translate_def_generics(span, &full_def)?;
+                        let item_src =
+                            TransItemSource::new(item.clone(), TransItemSourceKind::InherentImpl);
+                        let mut bt_ctx = ItemTransCtx::new(item_src, None, self);
+                        bt_ctx.translate_item_generics(
+                            span,
+                            &full_def,
+                            &TransItemSourceKind::InherentImpl,
+                        )?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(Binder {
                             kind: BinderKind::InherentImplBlock,

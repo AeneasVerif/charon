@@ -36,21 +36,22 @@ fn make_ocaml_ident(name: &str) -> String {
     let mut name = name.to_case(Case::Snake);
     if matches!(
         &*name,
-        "virtual"
+        "assert"
             | "bool"
             | "char"
-            | "struct"
-            | "type"
-            | "let"
+            | "end"
+            | "float"
             | "fun"
+            | "function"
+            | "include"
+            | "let"
+            | "method"
             | "open"
             | "rec"
-            | "assert"
-            | "float"
-            | "end"
-            | "include"
+            | "struct"
             | "to"
-            | "function"
+            | "type"
+            | "virtual"
     ) {
         name += "_";
     }
@@ -141,19 +142,35 @@ impl<'a> GenerateCtx<'a> {
     /// List the (recursive) children of this type.
     fn children_of(&self, name: &str) -> HashSet<TypeDeclId> {
         let start_id = self.id_from_name(name);
-        self.children_of_inner(vec![start_id])
+        self.children_of_inner(vec![start_id], |_| true)
+    }
+
+    /// List the (recursive) children of the type, except those that are only reachable through
+    /// `except`.
+    fn children_of_except(&self, name: &str, except: &[&str]) -> HashSet<TypeDeclId> {
+        let start_id = self.id_from_name(name);
+        let except: HashSet<_> = except.iter().map(|name| self.id_from_name(name)).collect();
+        self.children_of_inner(vec![start_id], |id| !except.contains(&id))
     }
 
     /// List the (recursive) children of these types.
     fn children_of_many(&self, names: &[&str]) -> HashSet<TypeDeclId> {
-        self.children_of_inner(names.iter().map(|name| self.id_from_name(name)).collect())
+        self.children_of_inner(
+            names.iter().map(|name| self.id_from_name(name)).collect(),
+            |_| true,
+        )
     }
 
-    fn children_of_inner(&self, ty: Vec<TypeDeclId>) -> HashSet<TypeDeclId> {
+    fn children_of_inner(
+        &self,
+        ty: Vec<TypeDeclId>,
+        explore: impl Fn(TypeDeclId) -> bool,
+    ) -> HashSet<TypeDeclId> {
         let mut children = HashSet::new();
         let mut stack = ty.to_vec();
         while let Some(id) = stack.pop() {
             if !children.contains(&id)
+                && explore(id)
                 && self
                     .crate_data
                     .type_decls
@@ -281,7 +298,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     if base_ty == "ustr" {
                         base_ty = "string".to_string();
                     }
-                    if base_ty == "vector" {
+                    if base_ty == "index_map" || base_ty == "index_vec" {
                         base_ty = "list".to_string();
                         args.remove(0); // Remove the index generic param
                     }
@@ -297,7 +314,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 _ => unimplemented!("{ty:?}"),
             }
         }
-        TyKind::TypeVar(DeBruijnVar::Free(id)) => format!("'a{id}"),
+        TyKind::TypeVar(DeBruijnVar::Free(id) | DeBruijnVar::Bound(_, id)) => format!("'a{id}"),
         _ => unimplemented!("{ty:?}"),
     }
 }
@@ -325,10 +342,16 @@ fn build_branch<'a>(
     format!("| {pat} -> {convert} Ok ({construct})")
 }
 
-fn build_function(_ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String {
+fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String {
+    let ty = TyKind::Adt(TypeDeclRef {
+        id: TypeId::Adt(decl.def_id),
+        generics: decl.generics.identity_args().into(),
+    })
+    .into_ty();
     let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
+    let ty = type_to_ocaml_name(ctx, &ty);
     let signature = if decl.generics.types.is_empty() {
-        format!("{ty_name}_of_json (ctx : of_json_ctx) (js : json) : ({ty_name}, string) result =")
+        format!("{ty_name}_of_json (ctx : of_json_ctx) (js : json) : ({ty}, string) result =")
     } else {
         let types = &decl.generics.types;
         let gen_vars_space = types
@@ -336,11 +359,6 @@ fn build_function(_ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String
             .enumerate()
             .map(|(i, _)| format!("'a{i}"))
             .join(" ");
-        let gen_vars_comma = types
-            .iter()
-            .enumerate()
-            .map(|(i, _)| format!("'a{i}"))
-            .join(", ");
 
         let mut args = Vec::new();
         let mut ty_args = Vec::new();
@@ -355,8 +373,7 @@ fn build_function(_ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String
 
         let ty_args = ty_args.into_iter().join(" -> ");
         let args = args.into_iter().join(" ");
-        let fun_ty =
-            format!("{gen_vars_space}. {ty_args} -> (({gen_vars_comma}) {ty_name}, string) result");
+        let fun_ty = format!("{gen_vars_space}. {ty_args} -> ({ty}, string) result");
         format!("{ty_name}_of_json : {fun_ty} = fun {args} ->")
     };
     format!(
@@ -382,8 +399,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             build_branch(ctx, "`Null", fields, "()")
         }
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
-                && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
+            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
             // These are the special strongly-typed integers.
             let short_name = decl
@@ -399,7 +415,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             format!("| x -> {short_name}.id_of_json ctx x")
         }
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
+            if fields.len() == 1
                 && (fields[0].name.is_none()
                     || decl
                         .item_meta
@@ -485,7 +501,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                         let mut fields = variant.fields.clone();
                         let inner_pat = if fields.iter().all(|f| f.name.is_none()) {
                             // Tuple variant
-                            if variant.fields.elem_count() == 1 {
+                            if variant.fields.len() == 1 {
                                 let var = make_ocaml_ident(&variant.name);
                                 fields[0].name = Some(var.clone());
                                 var
@@ -664,8 +680,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
         }
         TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
-                && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
+            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
             // These are the special strongly-typed integers.
             let short_name = decl
@@ -681,7 +696,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
             format!("{short_name}.id [@visitors.opaque]")
         }
         TypeDeclKind::Struct(fields)
-            if fields.elem_count() == 1
+            if fields.len() == 1
                 && (fields[0].name.is_none()
                     || decl
                         .item_meta
@@ -1012,10 +1027,12 @@ fn main() -> Result<()> {
         cmd.arg("cargo");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--hide-allocator");
+        cmd.arg("--treat-box-as-builtin");
         cmd.arg("--ullbc");
         cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
         cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
         cmd.arg("--exclude=charon_lib::common::hash_by_addr::HashByAddr");
+        cmd.arg("--unbind-item-vars");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
         cmd.arg("--");
@@ -1055,9 +1072,13 @@ fn generate_ml(
         ),
     ];
     let manual_json_impls = &[
+        (
+            "charon_lib::ids::index_vec::IndexVec",
+            "list_of_json arg1_of_json ctx json",
+        ),
         // Hand-written because we filter out `None` values.
         (
-            "Vector",
+            "charon_lib::ids::index_map::IndexMap",
             indoc!(
                 r#"
                 let* list = list_of_json (option_of_json arg1_of_json) ctx json in
@@ -1094,7 +1115,8 @@ fn generate_ml(
         "ItemOpacity",
         "PredicateOrigin",
         "TraitTypeConstraintId",
-        "Vector",
+        "charon_lib::ids::index_vec::IndexVec",
+        "charon_lib::ids::index_map::IndexMap",
     ];
     // Types that we don't want visitors to go into.
     let opaque_for_visitor = &["Name"];
@@ -1105,7 +1127,7 @@ fn generate_ml(
         opaque_for_visitor,
     );
 
-    // Compute the sets of types to be put in each module.
+    // Items that we don't want to emit in the generated output.
     let manually_implemented: HashSet<_> = [
         "ItemOpacity",
         "PredicateOrigin",
@@ -1119,9 +1141,21 @@ fn generate_ml(
 
     // Compute type sets for json deserializers.
     let (gast_types, llbc_types, ullbc_types) = {
-        let llbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::llbc_ast::Statement");
-        let ullbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::ullbc_ast::BodyContents");
         let all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
+
+        // (u)llbc types are those that are dominated by the entrypoint of the corresponding
+        // module, i.e. those that can't be reached if you remove these entrypoints.
+        let non_llbc_types: HashSet<_> =
+            ctx.children_of_except("TranslatedCrate", &["charon_lib::ast::llbc_ast::Block"]);
+        let non_ullbc_types: HashSet<_> = ctx.children_of_except(
+            "TranslatedCrate",
+            &[
+                "charon_lib::ast::ullbc_ast::BlockData",
+                "charon_lib::ast::ullbc_ast::BlockId",
+            ],
+        );
+        let llbc_types: HashSet<_> = all_types.difference(&non_llbc_types).copied().collect();
+        let ullbc_types: HashSet<_> = all_types.difference(&non_ullbc_types).copied().collect();
 
         let shared_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
         let llbc_types: HashSet<_> = llbc_types.difference(&shared_types).copied().collect();
@@ -1160,13 +1194,14 @@ fn generate_ml(
             .iter()
             .copied()
             .map(|(kind, type_names)| {
-                let types: HashSet<_> = ctx.children_of_many(type_names);
-                let unprocessed_types: HashSet<_> =
-                    types.difference(&processed_tys).copied().collect();
-                processed_tys.extend(unprocessed_types.iter().copied());
+                let unprocessed_types: HashSet<_> = ctx
+                    .children_of_many(type_names)
+                    .into_iter()
+                    .filter(|&id| processed_tys.insert(id))
+                    .collect();
                 (kind, unprocessed_types)
             })
-            .collect()
+            .collect_vec()
     };
 
     #[rustfmt::skip]

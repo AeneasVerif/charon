@@ -29,8 +29,6 @@ module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
-type ('id, 'x) vector = 'x list [@@deriving show, ord, eq]
-
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
 type literal_type = Values.literal_type [@@deriving show, ord, eq]

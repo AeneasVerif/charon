@@ -20,7 +20,6 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use indexmap::IndexMap;
 use itertools::Itertools;
 use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
@@ -31,10 +30,9 @@ use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
-use crate::formatter::IntoFormatter;
+use crate::ids::IndexVec;
 use crate::llbc_ast as tgt;
 use crate::meta::{Span, combine_span};
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::{self as src, BlockId};
@@ -63,7 +61,7 @@ struct CfgInfo {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: Vector<BlockId, BlockData>,
+    pub block_data: IndexVec<BlockId, BlockData>,
 }
 
 #[derive(Debug)]
@@ -85,7 +83,7 @@ struct BlockData {
     /// This is exactly this problems:
     /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
-    pub flow: Vector<src::BlockId, BigRational>,
+    pub flow: IndexVec<BlockId, BigRational>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -118,21 +116,22 @@ impl CfgInfo {
         }
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-        let mut block_data: Vector<BlockId, BlockData> = body.map_ref_indexed(|id, _| BlockData {
-            id,
-            // Default values will stay for unreachable nodes, which are irrelevant.
-            reverse_postorder: None,
-            only_reach_error: false,
-            shortest_paths: Default::default(),
-            flow: empty_flow.clone(),
-        });
+        let mut block_data: IndexVec<BlockId, BlockData> =
+            body.map_ref_indexed(|id, _| BlockData {
+                id,
+                // Default values will stay for unreachable nodes, which are irrelevant.
+                reverse_postorder: None,
+                only_reach_error: false,
+                shortest_paths: Default::default(),
+                flow: empty_flow.clone(),
+            });
 
         // Compute the dominator tree.
         let dominator_tree = simple_fast(&cfg, start_block);
 
         // Compute reverse postorder numbering.
         for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
-            let rev_post_id = body.slot_count() - i;
+            let rev_post_id = body.len() - i;
             assert!(rev_post_id <= u32::MAX as usize);
             block_data[block_id].reverse_postorder = Some(rev_post_id as u32);
         }
@@ -186,7 +185,7 @@ impl CfgInfo {
             }
 
             // Compute the flows between each pair of nodes.
-            let mut flow: Vector<src::BlockId, BigRational> =
+            let mut flow: IndexVec<src::BlockId, BigRational> =
                 mem::take(&mut block_data[block_id].flow);
             if !fwd_targets.is_empty() {
                 // We need to divide the initial flow equally between the children
@@ -336,7 +335,7 @@ struct ExitInfo {
 /// The exits of a graph
 #[derive(Debug, Clone)]
 struct ExitsInfo {
-    exits: Vector<BlockId, ExitInfo>,
+    exits: IndexVec<BlockId, ExitInfo>,
 }
 
 impl ExitsInfo {
@@ -457,7 +456,7 @@ impl ExitsInfo {
     /// parent loops.
     fn register_children_as_loop_exit_candidates(
         cfg: &CfgInfo,
-        loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
+        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitCandidateInfo>>,
         removed_parent_loops: &Vec<(src::BlockId, usize)>,
         block_id: src::BlockId,
     ) {
@@ -501,7 +500,7 @@ impl ExitsInfo {
         cfg: &CfgInfo,
         explored: &mut HashSet<src::BlockId>,
         ordered_loops: &mut Vec<src::BlockId>,
-        loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
+        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitCandidateInfo>>,
         // List of parent loops, with the distance to the entry of the loop (the distance
         // is the distance between the current node and the loop entry for the last parent,
         // and the distance between the parents for the others).
@@ -717,7 +716,7 @@ impl ExitsInfo {
 
         // Initialize the loop exits candidates
         for loop_id in &cfg.loop_entries {
-            loop_exits.insert(*loop_id, IndexMap::new());
+            loop_exits.insert(*loop_id, SeqHashMap::new());
         }
 
         // Compute the candidates
@@ -1311,7 +1310,6 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
             src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
-            src::StatementKind::Error(s) => tgt::StatementKind::Error(s),
         };
         Some(tgt::Statement::new(src_span, st))
     }
@@ -1388,8 +1386,8 @@ impl<'a> ReconstructCtx<'a> {
                         // We link block ids to:
                         // - vector of matched integer values
                         // - translated blocks
-                        let mut branches: IndexMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
-                            IndexMap::new();
+                        let mut branches: SeqHashMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
+                            SeqHashMap::new();
 
                         // Translate the children expressions
                         for (v, bid) in targets.iter() {
@@ -1540,8 +1538,9 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
     let tgt_body = tgt::ExprBody {
         span: src_body.span,
         locals: src_body.locals.clone(),
-        comments: src_body.comments.clone(),
+        bound_body_regions: src_body.bound_body_regions,
         body: tgt_body,
+        comments: src_body.comments.clone(),
     };
     *body = Structured(tgt_body);
 }
@@ -1554,18 +1553,10 @@ impl TransformPass for Transform {
             translate_body(ctx, body);
         });
 
-        // Print the functions
-        let fmt_ctx = &ctx.into_fmt();
-        for fun in &ctx.translated.fun_decls {
-            trace!(
-                "# Signature:\n{}\n\n# Function definition:\n{}\n",
-                fun.signature.with_ctx(fmt_ctx),
-                fun.with_ctx(fmt_ctx),
-            );
-        }
-
         if ctx.options.print_built_llbc {
             eprintln!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
+        } else {
+            trace!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
         }
     }
 }

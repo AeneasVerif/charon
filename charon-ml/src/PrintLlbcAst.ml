@@ -117,9 +117,7 @@ module Ast = struct
     String.concat ";\n"
       (List.map (statement_to_string env indent indent_incr) b.statements)
 
-  let fun_sig_to_string (env : fmt_env) (indent : string) (indent_incr : string)
-      (sg : fun_sig) : string =
-    fun_sig_to_string env indent indent_incr sg
+  let fun_sig_to_string = fun_sig_to_string
 
   let fun_decl_to_string (env : fmt_env) (indent : string)
       (indent_incr : string) (def : fun_decl) : string =

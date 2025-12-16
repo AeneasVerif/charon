@@ -38,7 +38,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
 // Full name: alloc::borrow::ToOwned
@@ -86,7 +86,7 @@ where
 }
 
 // Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
-fn {impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<'a, B>(@1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2])
+unsafe fn {impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<'a, B>(@1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2])
 where
     [@TraitClause0]: MetaSized<B>,
     [@TraitClause1]: ToOwned<B>,
@@ -96,7 +96,7 @@ where
 {
     let @0: (); // return
     let @1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
-    let @2: &'_ mut (Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]); // anonymous local
+    let @2: &'0 mut (Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]); // anonymous local
 
     storage_live(@2)
     @0 := ()
@@ -134,11 +134,11 @@ where
     B : 'a,
 {
     let @0: (); // return
-    let @1: Cow<'_, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let @1: Cow<'0, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
 
     @0 := ()
     @0 := ()
-    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'_, B>[@TraitClause0, @TraitClause1, @TraitClause2]] @1
+    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'2, B>[@TraitClause0, @TraitClause1, @TraitClause2]] @1
     return
 }
 

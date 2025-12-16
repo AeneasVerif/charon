@@ -477,6 +477,10 @@ fn remove_dynamic_checks(
 
 pub struct Transform;
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.reconstruct_fallible_operations
+    }
+
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.transform_sequences_fwd(|locals, seq| {
             remove_dynamic_checks(ctx, locals, seq);
