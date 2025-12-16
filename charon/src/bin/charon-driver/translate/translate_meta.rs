@@ -401,7 +401,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            TransItemSourceKind::VTableDropShim => {
+            TransItemSourceKind::VTableDropShim(..) => {
                 name.name.push(PathElem::Ident(
                     "{vtable_drop_shim}".into(),
                     Disambiguator::ZERO,

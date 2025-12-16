@@ -933,8 +933,11 @@ impl ItemTransCtx<'_, '_> {
             aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
         };
 
-        let drop_shim =
-            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+        let drop_shim = self.translate_item(
+            span,
+            impl_def.this(),
+            TransItemSourceKind::VTableDropShim(*impl_kind),
+        )?;
 
         mk_field(ConstantExprKind::FnDef(drop_shim));
 
@@ -1261,6 +1264,232 @@ impl ItemTransCtx<'_, '_> {
                 impl_kind,
             )?
         };
+
+        Ok(FunDecl {
+            def_id: fun_id,
+            item_meta,
+            signature,
+            src: ItemSource::VTableMethodShim,
+            is_global_initializer: None,
+            body,
+        })
+    }
+
+    // Given `self_ty` with erased Ref region (e.g., &'_ dyn exists<_dyn> ...),
+    // generate `ref_self` with explicit Reg region
+    // according to RegionId `rid` (e.g., &'_0 dyn exists<_dyn> ...).
+    fn generate_ref_self_from_erased_region(
+        &mut self,
+        self_ty: &hax::Ty,
+        rid: RegionId,
+        span: Span,
+        target_kind: &ClosureKind,
+    ) -> Result<Ty, Error> {
+        let hax::TyKind::Ref(_, raw_self, _) = self_ty.kind() else {
+            unreachable!()
+        };
+
+        let raw_self = self.translate_ty(span, raw_self)?;
+        let ref_self = {
+            let r = Region::Var(DeBruijnVar::new_at_zero(rid));
+            let mutability = if *target_kind == ClosureKind::Fn {
+                RefKind::Shared
+            } else {
+                RefKind::Mut
+            };
+            TyKind::Ref(r, raw_self, mutability).into_ty()
+        };
+        Ok(ref_self)
+    }
+
+    // This follows `translate_vtable_shim`.
+    // Specific vtable_sig and target_signature are fetched according to `target_kind` (Fn or FnMut).
+    // Additionally, lifetime generics coming from the higher-kindedness and
+    // the closure itself are separately dealt with.
+    pub(crate) fn translate_closure_vtable_shim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_func_def: &hax::FullDef,
+        target_kind: &ClosureKind,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        self.check_no_monomorphize(span)?;
+
+        let hax::FullDefKind::Closure {
+            fn_mut_vtable_sig,
+            fn_vtable_sig,
+            fn_mut_sig,
+            fn_sig,
+            args,
+            ..
+        } = impl_func_def.kind()
+        else {
+            raise_error!(
+                self,
+                span,
+                "Trying to generate a vtable shim for a non-vtable-safe method"
+            );
+        };
+
+        let (vtable_sig, target_signature) = match target_kind {
+            ClosureKind::Fn => (fn_vtable_sig, &fn_sig.clone().unwrap()),
+            ClosureKind::FnMut => (fn_mut_vtable_sig, &fn_mut_sig.clone().unwrap()),
+            ClosureKind::FnOnce => {
+                raise_error!(
+                    self,
+                    span,
+                    "I'm here, Trying to generate a vtable shim for a non-vtable-safe method"
+                );
+            }
+        };
+
+        // Compute the correct signature for the shim
+        self.translate_def_generics(span, impl_func_def)?;
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.fn_sig.rebind(()))?;
+
+        let signature = vtable_sig.clone().unwrap();
+
+        let rid = self
+            .innermost_generics_mut()
+            .regions
+            .push_with(|index| RegionParam { index, name: None });
+        let dyn_self = self.generate_ref_self_from_erased_region(
+            &signature.value.inputs[0],
+            rid,
+            span,
+            target_kind,
+        )?;
+
+        let input_tys: Vec<Ty> = signature
+            .value
+            .inputs
+            .iter()
+            .skip(1)
+            .map(|ty| self.translate_ty(span, ty))
+            .try_collect()?;
+        let inputs = vec![dyn_self, Ty::mk_tuple(input_tys)];
+        let output = self.translate_ty(span, &signature.value.output)?;
+
+        let is_unsafe = match signature.value.safety {
+            hax::Safety::Unsafe => true,
+            hax::Safety::Safe => false,
+        };
+
+        let signature = FunSig {
+            generics: self.the_only_binder().params.clone(),
+            is_unsafe,
+            inputs,
+            output,
+        };
+
+        let target_receiver = self.generate_ref_self_from_erased_region(
+            &target_signature.value.inputs[0],
+            rid,
+            span,
+            target_kind,
+        )?;
+
+        trace!(
+            "[VtableShim] Obtained dyn signature with receiver type: {}",
+            signature.inputs[0].with_ctx(&self.into_fmt())
+        );
+
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Body::Opaque
+        } else {
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                impl_func_def,
+                &TraitImplSource::Closure(*target_kind),
+            )?
+        };
+
+        Ok(FunDecl {
+            def_id: fun_id,
+            item_meta,
+            signature,
+            src: ItemSource::VTableMethodShim,
+            is_global_initializer: None,
+            body,
+        })
+    }
+
+    pub(crate) fn translate_closure_vtable_drop_shim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_def: &hax::FullDef,
+        target_kind: &ClosureKind,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        self.translate_def_generics(span, impl_def)?;
+
+        let hax::FullDefKind::Closure {
+            fn_mut_vtable_sig,
+            fn_vtable_sig,
+            fn_once_impl,
+            fn_mut_impl,
+            fn_impl,
+            ..
+        } = impl_def.kind()
+        else {
+            raise_error!(
+                self,
+                span,
+                "Trying to generate a vtable drop shim for a non-trait impl"
+            );
+        };
+
+        let vtable_sig = match target_kind {
+            ClosureKind::Fn => fn_vtable_sig,
+            ClosureKind::FnMut => fn_mut_vtable_sig,
+            ClosureKind::FnOnce => {
+                // Teporarily use fn_vtable_sig to pass the compilation
+                // TODO: The vtable_sig (or at least dyn_self) for FnOnce should be added in hax
+                fn_vtable_sig
+            }
+        };
+
+        let signature = vtable_sig.clone().unwrap();
+        let hax::TyKind::Ref(_, dyn_self, _) = signature.value.inputs[0].kind() else {
+            unreachable!()
+        };
+
+        let vimpl = match target_kind {
+            ClosureKind::FnOnce => fn_once_impl,
+            ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
+            ClosureKind::Fn => fn_impl.as_ref().unwrap(),
+        };
+
+        // `*mut dyn Trait`
+        let ref_dyn_self =
+            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
+        // `*mut T` for `impl Trait for T`
+        let ref_target_self = {
+            let impl_trait = self.translate_trait_ref(span, &vimpl.trait_pred.trait_ref)?;
+            TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
+        };
+
+        // `*mut dyn Trait -> ()`
+        let signature = FunSig {
+            is_unsafe: false,
+            generics: self.the_only_binder().params.clone(),
+            inputs: vec![ref_dyn_self.clone()],
+            output: Ty::mk_unit(),
+        };
+
+        let body: Body = self.translate_vtable_drop_shim_body(
+            span,
+            &ref_dyn_self,
+            &ref_target_self,
+            &vimpl.trait_pred,
+        )?;
 
         Ok(FunDecl {
             def_id: fun_id,
