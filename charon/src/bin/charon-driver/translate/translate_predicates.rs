@@ -315,8 +315,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ..
             } => {
                 let tref = &impl_source.r#trait;
-                let trait_def =
-                    self.hax_def(&tref.hax_skip_binder_ref().erase(self.hax_state_with_id()))?;
+                let trait_def = self.poly_hax_def(&tref.hax_skip_binder_ref().def_id)?;
                 let kind = if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
                     let impl_id = self.register_item(
