@@ -154,11 +154,20 @@ and expr_to_string (c : print_config) (e : expr) : string =
           | _ -> raise (Failure "Ill-formed pattern")))
   | ERef (r, ty, rk) ->
       let rk =
-        match rk with
-        | RMut -> "mut "
-        | RShared -> ""
+        match c.tgt with
+        | TkPattern | TkPretty ->
+            let rk =
+              match rk with
+              | RMut -> "mut "
+              | RShared -> ""
+            in
+            "&" ^ rk
+        | TkName -> (
+            match rk with
+            | RMut -> "Mut"
+            | RShared -> "Shared")
       in
-      "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
+      rk ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
   | EVar v -> opt_var_to_string c v
   | EArrow (inputs, out) -> (
       let inputs = List.map (expr_to_string c) inputs in
