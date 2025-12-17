@@ -12,21 +12,37 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::iter::IntoIter
+#[lang_item("ArrayIntoIter")]
+pub opaque type IntoIter<T, const N : usize>
+where
+    [@TraitClause0]: Sized<T>,
+
 // Full name: core::clone::Clone
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
-// Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl Clone for usize {
+    parent_clause0 = {built_in impl Sized for usize}
+    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+    non-dyn-compatible
+}
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
@@ -115,14 +131,6 @@ where
     [@TraitClause0]: Default<Self>,
 = <opaque>
 
-// Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
-pub trait TrustedRandomAccessNoCoerce<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    const MAY_HAVE_SIDE_EFFECT : bool
-    non-dyn-compatible
-}
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
 pub trait Iterator<Self>
@@ -132,6 +140,186 @@ pub trait Iterator<Self>
     type Item
     fn next<'_0_1> = next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+// Full name: core::iter::adapters::array_chunks::ArrayChunks
+pub opaque type ArrayChunks<I, const N : usize>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+
+// Full name: core::iter::adapters::chain::Chain
+pub opaque type Chain<A, B>
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
+
+// Full name: core::iter::adapters::cloned::Cloned
+pub opaque type Cloned<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::copied::Copied
+pub opaque type Copied<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::cycle::Cycle
+pub opaque type Cycle<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::enumerate::Enumerate
+#[lang_item("Enumerate")]
+pub opaque type Enumerate<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::filter::Filter
+pub opaque type Filter<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::filter_map::FilterMap
+pub opaque type FilterMap<I, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+
+// Full name: core::iter::traits::collect::IntoIterator
+#[lang_item("IntoIterator")]
+pub trait IntoIterator<Self>
+where
+    Self::parent_clause3::Item = Self::Item,
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
+    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
+    type Item
+    type IntoIter
+    fn into_iter = into_iter<Self>[Self]
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
+}
+
+// Full name: core::iter::adapters::flatten::FlatMap
+pub opaque type FlatMap<I, U, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: IntoIterator<U>,
+
+// Full name: core::iter::adapters::flatten::Flatten
+pub opaque type Flatten<I>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+    [@TraitClause2]: IntoIterator<@TraitClause1::Item>,
+
+// Full name: core::iter::adapters::fuse::Fuse
+pub opaque type Fuse<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::inspect::Inspect
+pub opaque type Inspect<I, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+
+// Full name: core::iter::adapters::intersperse::Intersperse
+pub opaque type Intersperse<I>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+    [@TraitClause2]: Clone<@TraitClause1::Item>,
+
+// Full name: core::iter::adapters::intersperse::IntersperseWith
+pub opaque type IntersperseWith<I, G>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<G>,
+    [@TraitClause2]: Iterator<I>,
+
+// Full name: core::iter::adapters::map::Map
+pub opaque type Map<I, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+
+// Full name: core::iter::adapters::map_while::MapWhile
+pub opaque type MapWhile<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::map_windows::MapWindows
+pub opaque type MapWindows<I, F, const N : usize>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Iterator<I>,
+
+// Full name: core::iter::adapters::peekable::Peekable
+#[lang_item("IterPeekable")]
+pub opaque type Peekable<I>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+
+// Full name: core::iter::adapters::rev::Rev
+pub opaque type Rev<T>
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::iter::adapters::scan::Scan
+pub opaque type Scan<I, St, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<St>,
+    [@TraitClause2]: Sized<F>,
+
+// Full name: core::iter::adapters::skip::Skip
+pub opaque type Skip<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::skip_while::SkipWhile
+pub opaque type SkipWhile<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::step_by::StepBy
+pub opaque type StepBy<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::take::Take
+pub opaque type Take<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::take_while::TakeWhile
+pub opaque type TakeWhile<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::zip::Zip
+pub opaque type Zip<A, B>
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
+
+// Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
+pub trait TrustedRandomAccessNoCoerce<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const MAY_HAVE_SIDE_EFFECT : bool
+    non-dyn-compatible
 }
 
 // Full name: core::iter::traits::accum::Sum
@@ -167,22 +355,6 @@ where
     [@TraitClause2]: Iterator<I>,
     @TraitClause2::Item = A,
 = <opaque>
-
-// Full name: core::iter::traits::collect::IntoIterator
-#[lang_item("IntoIterator")]
-pub trait IntoIterator<Self>
-where
-    Self::parent_clause3::Item = Self::Item,
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
-    parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
-    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
-    type Item
-    type IntoIter
-    fn into_iter = into_iter<Self>[Self]
-    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
-}
 
 // Full name: core::iter::traits::collect::FromIterator
 #[lang_item("FromIterator")]
@@ -269,6 +441,13 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::{impl Copy for usize}
+impl Copy for usize {
+    parent_clause0 = {built_in impl MetaSized for usize}
+    parent_clause1 = {impl Clone for usize}
+    non-dyn-compatible
+}
+
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -288,6 +467,70 @@ pub trait Tuple<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
 }
+
+// Full name: core::num::niche_types::NonZeroUsizeInner
+pub opaque type NonZeroUsizeInner
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}::clone
+pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 (NonZeroUsizeInner)) -> NonZeroUsizeInner
+= <opaque>
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}
+impl Clone for NonZeroUsizeInner {
+    parent_clause0 = {built_in impl Sized for NonZeroUsizeInner}
+    fn clone<'_0_1> = {impl Clone for NonZeroUsizeInner}::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::{impl Copy for NonZeroUsizeInner}
+impl Copy for NonZeroUsizeInner {
+    parent_clause0 = {built_in impl MetaSized for NonZeroUsizeInner}
+    parent_clause1 = {impl Clone for NonZeroUsizeInner}
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::private::Sealed
+pub trait Sealed<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::num::nonzero::private::Sealed::{vtable}
+}
+
+// Full name: core::num::nonzero::ZeroablePrimitive
+pub trait ZeroablePrimitive<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Copy<Self>
+    parent_clause2 : [@TraitClause2]: Sealed<Self>
+    parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
+    parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
+    type NonZeroInner
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::{impl Sealed for usize}
+impl Sealed for usize {
+    parent_clause0 = {built_in impl MetaSized for usize}
+    vtable: {impl Sealed for usize}::{vtable}
+}
+
+// Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
+impl ZeroablePrimitive for usize {
+    parent_clause0 = {built_in impl Sized for usize}
+    parent_clause1 = {impl Copy for usize}
+    parent_clause2 = {impl Sealed for usize}
+    parent_clause3 = {built_in impl Sized for NonZeroUsizeInner}
+    parent_clause4 = {impl Copy for NonZeroUsizeInner}
+    type NonZeroInner = NonZeroUsizeInner
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::NonZero
+#[lang_item("NonZero")]
+pub opaque type NonZero<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ZeroablePrimitive<T>,
 
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
@@ -395,6 +638,17 @@ where
     parent_clause3 : [@TraitClause3]: Try<Self::TryType>
     type TryType
     non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
 }
 
 fn UNIT_METADATA()

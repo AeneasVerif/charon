@@ -98,6 +98,17 @@ pub trait StructuralPartialEq<Self>
     vtable: core::marker::StructuralPartialEq::{vtable}
 }
 
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
+{
+  Continue(C),
+  Break(B),
+}
+
 // Full name: core::option::{impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq
 pub fn {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0, '_1, T>(@1: &'_0 (Option<T>[@TraitClause0]), @2: &'_1 (Option<T>[@TraitClause0])) -> bool
 where

@@ -41,6 +41,7 @@
   "alloc::alloc::Global": "None",
   "core::cmp::Ordering": "None",
   "core::option::Option": "None",
+  "core::ops::control_flow::ControlFlow": "None",
   "core::fmt::Formatter": "None",
   "core::result::Result": "None",
   "core::fmt::Error": "None",

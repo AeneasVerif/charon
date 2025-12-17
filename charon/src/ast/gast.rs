@@ -362,6 +362,7 @@ pub struct TraitAssocTy {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitMethod {
     pub name: TraitItemName,
+    pub signature: RegionBinder<FunSig>,
     /// Each method declaration is represented by a function item. That function contains the
     /// signature of the method as well as information like attributes. It has a body iff the
     /// method declaration has a default implementation; otherwise it has an `Opaque` body.

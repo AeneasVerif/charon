@@ -87,6 +87,7 @@ impl ItemTransCtx<'_, '_> {
             .unwrap()
             .clone();
 
+        let signature = self.drop_in_place_method_sig(self_ty.clone());
         let src = match impl_kind {
             Some(impl_kind) => {
                 let destruct_impl_id =
@@ -115,13 +116,6 @@ impl ItemTransCtx<'_, '_> {
             self.translate_drop_in_place_method_body(span, def, &self_ty)?
         };
 
-        let input = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
-        let signature = FunSig {
-            is_unsafe: true,
-            inputs: vec![input],
-            output: Ty::mk_unit(),
-        };
-
         Ok(FunDecl {
             def_id,
             item_meta,
@@ -131,6 +125,16 @@ impl ItemTransCtx<'_, '_> {
             is_global_initializer: None,
             body,
         })
+    }
+
+    // Small helper to deduplicate. Generates the signature `*mut self_ty -> ()`.
+    pub fn drop_in_place_method_sig(&self, self_ty: Ty) -> FunSig {
+        let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
+        FunSig {
+            is_unsafe: true,
+            inputs: [self_ptr].into(),
+            output: Ty::mk_unit(),
+        }
     }
 
     // Small helper to deduplicate.

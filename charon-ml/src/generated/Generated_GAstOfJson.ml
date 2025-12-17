@@ -1987,10 +1987,11 @@ and trait_method_of_json (ctx : of_json_ctx) (js : json) :
     (trait_method, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("name", name); ("item", item) ] ->
+    | `Assoc [ ("name", name); ("signature", signature); ("item", item) ] ->
         let* name = trait_item_name_of_json ctx name in
+        let* signature = region_binder_of_json fun_sig_of_json ctx signature in
         let* item = fun_decl_ref_of_json ctx item in
-        Ok ({ name; item } : trait_method)
+        Ok ({ name; signature; item } : trait_method)
     | _ -> Error "")
 
 and trait_param_of_json (ctx : of_json_ctx) (js : json) :

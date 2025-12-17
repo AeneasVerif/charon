@@ -153,6 +153,17 @@ pub trait Destruct<Self>
 unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
+{
+  Continue(C),
+  Break(B),
+}
+
 fn UNIT_METADATA()
 {
     let @0: (); // return

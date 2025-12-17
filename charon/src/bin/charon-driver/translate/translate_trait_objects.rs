@@ -298,12 +298,9 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Drop => {
                     let self_ty =
                         TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
-                    let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
-                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(FunSig {
-                        is_unsafe: true,
-                        inputs: [self_ptr].into(),
-                        output: Ty::mk_unit(),
-                    })));
+                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(
+                        self.drop_in_place_method_sig(self_ty),
+                    )));
                     ("drop".into(), drop_ty)
                 }
                 TrVTableField::Method(item_name, sig) => {
@@ -994,30 +991,24 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(
                 self,
                 span,
-                "Trying to generate a vtable drop shim for a non-trait impl"
+                "Trying to generate a vtable drop shim for a non-dyn-compatible trait impl"
             );
         };
 
-        // `*mut dyn Trait`
-        let ref_dyn_self =
-            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
+        let dyn_self = self.translate_ty(span, dyn_self)?;
+        // `*mut dyn Trait -> ()`
+        let signature = self.drop_in_place_method_sig(dyn_self.clone());
+
         // `*mut T` for `impl Trait for T`
-        let ref_target_self = {
+        let target_self_ptr = {
             let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
             TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
         };
 
-        // `*mut dyn Trait -> ()`
-        let signature = FunSig {
-            is_unsafe: true,
-            inputs: vec![ref_dyn_self.clone()],
-            output: Ty::mk_unit(),
-        };
-
         let body: Body = self.translate_vtable_drop_shim_body(
             span,
-            &ref_dyn_self,
-            &ref_target_self,
+            &signature.inputs[0],
+            &target_self_ptr,
             trait_pred,
         )?;
 

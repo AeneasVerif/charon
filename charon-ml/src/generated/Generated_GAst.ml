@@ -269,6 +269,7 @@ and trait_decl = {
 (** A trait method. *)
 and trait_method = {
   name : trait_item_name;
+  signature : fun_sig region_binder;
   item : fun_decl_ref;
       (** Each method declaration is represented by a function item. That
           function contains the signature of the method as well as information

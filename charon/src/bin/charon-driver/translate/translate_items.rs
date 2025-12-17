@@ -667,21 +667,15 @@ impl ItemTransCtx<'_, '_> {
             TraitRefKind::SelfId,
             RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?),
         );
-        let items: Vec<(TraitItemName, &hax::AssocItem)> = items
-            .iter()
-            .map(|item| -> Result<_, Error> {
-                let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
-                Ok((name, item))
-            })
-            .try_collect()?;
 
         // Translate the associated items
         let mut consts = Vec::new();
         let mut types = Vec::new();
         let mut methods = Vec::new();
 
-        for &(item_name, ref hax_item) in &items {
+        for hax_item in items {
             let item_def_id = &hax_item.def_id;
+            let item_name = self.t_ctx.translate_trait_item_name(item_def_id)?;
             let item_span = self.def_span(item_def_id);
 
             // In --mono mode, we keep only non-polymorphic items; in not-mono mode, we use the
@@ -745,8 +739,13 @@ impl ItemTransCtx<'_, '_> {
                                 id: method_id,
                                 generics: Box::new(fun_generics),
                             };
+                            let hax::AssocKind::Fn { sig, .. } = &hax_item.kind else {
+                                unreachable!()
+                            };
+                            let signature = bt_ctx.translate_poly_fun_sig(span, sig)?;
                             Ok(TraitMethod {
                                 name: item_name.clone(),
+                                signature,
                                 item: fn_ref,
                             })
                         },
@@ -853,9 +852,20 @@ impl ItemTransCtx<'_, '_> {
             let (method_name, method_binder) =
                 self.prepare_drop_in_place_method(def, span, def_id, None);
             self.mark_method_as_used(def_id, method_name);
-            methods.push(method_binder.map(|fn_ref| TraitMethod {
-                name: method_name,
-                item: fn_ref,
+            methods.push(method_binder.map(|fn_ref| {
+                let self_ty = if self.monomorphize() {
+                    // FIXME: put something real here
+                    Ty::mk_unit()
+                } else {
+                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::one(), TypeVarId::ZERO))
+                        .into_ty()
+                };
+                let sig = self.drop_in_place_method_sig(self_ty);
+                TraitMethod {
+                    name: method_name,
+                    item: fn_ref,
+                    signature: RegionBinder::empty(sig),
+                }
             }));
         }
 

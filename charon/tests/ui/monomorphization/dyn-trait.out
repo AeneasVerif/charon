@@ -56,11 +56,17 @@ error: `dyn Trait` is not yet supported with `--monomorphize`
 error: `dyn Trait` is not yet supported with `--monomorphize`
  --> /rustc/library/core/src/fmt/mod.rs:1186:1
 
+error: `dyn Trait` is not yet supported with `--monomorphize`
+ --> /rustc/library/core/src/fmt/mod.rs:1186:1
+
 note: the error occurred when translating `core::fmt::Display::<type_error("`dyn Trait` is not yet supported with `--monomorphize`")>`, which is (transitively) used at the following location(s):
  --> tests/ui/monomorphization/dyn-trait.rs:7:5
   |
 7 |     x.to_string()
   |     -------------
+error: `dyn Trait` is not yet supported with `--monomorphize`
+ --> /rustc/library/core/src/fmt/mod.rs:1186:1
+
 error: `dyn Trait` is not yet supported with `--monomorphize`
  --> /rustc/library/core/src/fmt/mod.rs:1211:5
 
@@ -126,6 +132,9 @@ error: `dyn Trait` is not yet supported with `--monomorphize`
  --> /rustc/library/alloc/src/string.rs:2840:5
 
 error: `dyn Trait` is not yet supported with `--monomorphize`
+ --> /rustc/library/alloc/src/string.rs:2826:1
+
+error: `dyn Trait` is not yet supported with `--monomorphize`
  --> /rustc/library/alloc/src/string.rs:2840:5
 
 note: the error occurred when translating `alloc::string::ToString::to_string::<type_error("`dyn Trait` is not yet supported with `--monomorphize`")>`, which is (transitively) used at the following location(s):
@@ -154,4 +163,4 @@ note: the error occurred when translating `alloc::string::{impl alloc::string::T
 error: `dyn Trait` is not yet supported with `--monomorphize`
  --> /rustc/library/alloc/src/string.rs:2853:5
 
-ERROR Charon failed to translate this code (34 errors)
+ERROR Charon failed to translate this code (37 errors)
