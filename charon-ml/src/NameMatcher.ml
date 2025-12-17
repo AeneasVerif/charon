@@ -152,13 +152,22 @@ and expr_to_string (c : print_config) (e : expr) : string =
               | TkPattern | TkPretty -> "[" ^ ty ^ "]"
               | TkName -> "Slice" ^ ty)
           | _ -> raise (Failure "Ill-formed pattern")))
-  | ERef (r, ty, rk) ->
-      let rk =
-        match rk with
-        | RMut -> "mut "
-        | RShared -> ""
-      in
-      "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
+  | ERef (r, ty, rk) -> (
+      match c.tgt with
+      | TkPattern | TkPretty ->
+          let rk =
+            match rk with
+            | RMut -> "mut "
+            | RShared -> ""
+          in
+          "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
+      | TkName ->
+          let rk =
+            match rk with
+            | RMut -> "Mut"
+            | RShared -> "Shared"
+          in
+          rk ^ region_to_string c r ^ expr_to_string c ty)
   | EVar v -> opt_var_to_string c v
   | EArrow (inputs, out) -> (
       let inputs = List.map (expr_to_string c) inputs in
@@ -864,6 +873,12 @@ let const_generic_var_to_pattern (m : constraints)
     (fun varid map -> T.ConstGenericVarId.Map.find_opt varid map.cmap)
     var
 
+(** Remove the ['] character in a region name *)
+let remove_region_tick (s : string) : string =
+  if String.length s > 0 && s.[0] = '\'' then
+    String.sub s 1 (String.length s - 1)
+  else s
+
 let constraints_map_compute_regions_map (regions : T.region_param list) :
     var option T.RegionId.Map.t =
   let fresh_id (gen : int ref) : int =
@@ -878,7 +893,7 @@ let constraints_map_compute_regions_map (regions : T.region_param list) :
          let v =
            match r.name with
            | None -> VarIndex (fresh_id rid_gen)
-           | Some name -> VarName name
+           | Some name -> VarName (remove_region_tick name)
          in
          (r.index, Some v))
        regions)

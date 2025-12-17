@@ -436,5 +436,46 @@ fn mono_usage()
     return
 }
 
+// Full name: test_crate::Get
+trait Get<'a, Self, T>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn get = test_crate::Get::get<'a, Self, T>[Self]
+    vtable: test_crate::Get::{vtable}<'a, T>
+}
+
+fn test_crate::Get::get<'a, Self, T>(@1: Self) -> &'a (T)
+where
+    [@TraitClause0]: Get<'a, Self, T>,
+= <method_without_default_body>
+
+// Full name: test_crate::{impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::get
+fn {impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::get<'a, T>(@1: &'a (MonoContainer<T>[@TraitClause0])) -> &'a (T)
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: &'0 (T); // return
+    let self@1: &'1 (MonoContainer<T>[@TraitClause0]); // arg #1
+    let @2: &'0 (T); // anonymous local
+
+    storage_live(@2)
+    @2 := &(*(self@1)).item
+    @0 := &*(@2)
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::{impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}
+impl<'a, T> Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = {built_in impl MetaSized for &'_ (MonoContainer<T>[@TraitClause0])}
+    parent_clause1 = @TraitClause0
+    fn get = {impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::get<'a, T>[@TraitClause0]
+    vtable: {impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::{vtable}<'a, T>[@TraitClause0]
+}
+
 
 
