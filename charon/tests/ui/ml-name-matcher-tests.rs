@@ -106,3 +106,14 @@ fn mono_usage() {
     let _container1 = MonoContainer::create(42i32);
     let _container2 = MonoContainer::create("test");
 }
+
+trait Get<'a, T> {
+    fn get(self) -> &'a T;
+}
+
+impl<'a, T> Get<'a, T> for &'a MonoContainer<T> {
+    #[pattern::to_name("test_cratetest_crateGetASharedAtest_crateMonoContainerTTget")]
+    fn get(self) -> &'a T {
+        &self.item
+    }
+}
