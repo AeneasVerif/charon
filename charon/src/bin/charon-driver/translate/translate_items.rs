@@ -188,18 +188,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTableMethod => {
+            TransItemSourceKind::VTableMethod(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
+                // let TraitImplSource::Closure(target_kind) =
+                let fun_decl = match impl_kind {
+                    TraitImplSource::Closure(target_kind) => {
+                        let ret = bt_ctx.translate_closure_vtable_shim(
+                            id,
+                            item_meta,
+                            &def,
+                            target_kind,
+                        )?;
+                        // eprintln!("{}", self.translated);
+                        ret
+                    }
+                    _ => bt_ctx.translate_vtable_shim(id, item_meta, &def, impl_kind)?,
+                };
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTableDropShim => {
+            TransItemSourceKind::VTableDropShim(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }

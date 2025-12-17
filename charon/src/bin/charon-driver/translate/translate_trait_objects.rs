@@ -1,7 +1,7 @@
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use hax::TraitPredicate;
 use itertools::Itertools;
-use std::mem;
+use std::{mem, vec};
 
 use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
@@ -247,6 +247,24 @@ impl ItemTransCtx<'_, '_> {
         fields.push(TrVTableField::Align);
         fields.push(TrVTableField::Drop);
 
+        // The `FnOnce::call_once` is not compatible with the dyn-compatibility as described in:
+        // https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility
+        // But the Rustc offers a special backdoor for this and allows this method to be `vtable_safe`.
+        // The only way to call such a function seems to be with `Box<dyn FnOnce>`.
+        // The implementation of `Box<dyn FnOnce>::call_once` is a special case and should translate specially with some special magic.
+        // TODO(ssyram): in the future we may implement the function with type `fn call_once(self: Box<Self>, Args) -> Output`
+        //               This function is the vtable-specific version of the `call_once` method.
+        //               A very special case that the type signature differs from the original signature.
+        // Anyway, if we allow this to happen, there will be a severe breakage in that we can perform concretization on `dyn FnOnce`,
+        // This will make the life in backend tools, especially Eurydice much harder.
+        // Likewise, we skip translation of the `call_once` method below in the instance.
+        if trait_def.lang_item == Some("fn_once".into()) {
+            return Ok(VTableData {
+                fields,
+                supertrait_map,
+            });
+        }
+
         // Method fields.
         if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
             for item in items {
@@ -439,7 +457,15 @@ impl ItemTransCtx<'_, '_> {
             (0..implied_predicates.predicates.len())
                 .map(|_| None)
                 .collect();
-        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
+        let is_closure = |lang_item: &Option<String>| match lang_item {
+            Some(name) => name == "r#fn" || name == "fn_mut" || name == "fn_once",
+            None => false,
+        };
+
+        // Translate normal traits and Closure traits.
+        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque()
+            && !is_closure(&trait_def.lang_item)
+        {
             (TypeDeclKind::Opaque, None)
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
@@ -541,22 +567,44 @@ impl ItemTransCtx<'_, '_> {
     fn get_vtable_instance_info<'a>(
         &mut self,
         span: Span,
-        impl_def: &'a hax::FullDef,
+        def: &'a hax::FullDef,
         impl_kind: &TraitImplSource,
-    ) -> Result<(TraitImplRef, TypeDeclRef), Error> {
-        let implemented_trait = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
-            _ => unreachable!(),
+    ) -> Result<(TraitImplRef, TraitDeclRef, TypeDeclRef), Error> {
+        let (implemented_trait, impl_ref) = match def.kind() {
+            hax::FullDefKind::TraitImpl { trait_pred, .. } => (
+                &trait_pred.trait_ref,
+                self.translate_item(span, def.this(), TransItemSourceKind::TraitImpl(*impl_kind))?,
+            ),
+            hax::FullDefKind::Closure {
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                args,
+                ..
+            } => {
+                let target_kind = match impl_kind {
+                    TraitImplSource::Closure(kind) => *kind,
+                    _ => unreachable!(),
+                };
+                // For closures, get the trait implementation based on the closure kind
+                let closure_trait_impl = match target_kind {
+                    ClosureKind::FnOnce => fn_once_impl,
+                    ClosureKind::FnMut => fn_mut_impl.as_ref().expect("FnMut impl should exist"),
+                    ClosureKind::Fn => fn_impl.as_ref().expect("Fn impl should exist"),
+                };
+                (
+                    &closure_trait_impl.trait_pred.trait_ref,
+                    self.translate_closure_bound_impl_ref(span, args, target_kind)?
+                        .erase(),
+                )
+            }
+            _ => panic!("Unknown type of impl full def: {:?}", def.kind()),
         };
         let vtable_struct_ref = self
             .translate_vtable_struct_ref(span, implemented_trait)?
             .expect("trait should be dyn-compatible");
-        let impl_ref = self.translate_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::TraitImpl(*impl_kind),
-        )?;
-        Ok((impl_ref, vtable_struct_ref))
+        let implemented_trait = self.translate_trait_decl_ref(span, implemented_trait)?;
+        Ok((impl_ref, implemented_trait, vtable_struct_ref))
     }
 
     /// E.g.,
@@ -583,7 +631,7 @@ impl ItemTransCtx<'_, '_> {
         let span = item_meta.span;
         self.check_no_monomorphize(span)?;
 
-        let (impl_ref, vtable_struct_ref) =
+        let (impl_ref, _, vtable_struct_ref) =
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;
         // Initializer function for this global.
         let init = self.register_item(
@@ -629,7 +677,11 @@ impl ItemTransCtx<'_, '_> {
                 // generics -- the lifetime binder will be added as `Erased` in `translate_fn_ptr`.
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
                 let shim_ref = self
-                    .translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?
+                    .translate_fn_ptr(
+                        span,
+                        &item_ref,
+                        TransItemSourceKind::VTableMethod(TraitImplSource::Normal),
+                    )?
                     .erase();
                 ConstantExprKind::FnDef(shim_ref)
             }
@@ -653,12 +705,29 @@ impl ItemTransCtx<'_, '_> {
         impl_def: &hax::FullDef,
         mut mk_field: impl FnMut(ConstantExprKind),
     ) -> Result<(), Error> {
-        let hax::FullDefKind::TraitImpl {
-            implied_impl_exprs, ..
-        } = impl_def.kind()
-        else {
-            unreachable!()
+        let implied_impl_exprs = match impl_def.kind() {
+            hax::FullDefKind::TraitImpl {
+                implied_impl_exprs, ..
+            } => implied_impl_exprs,
+            hax::FullDefKind::Closure {
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
+            } => match trait_def.lang_item {
+                Some("fn") | Some("r#fn") => &fn_impl.as_ref().unwrap().implied_impl_exprs,
+                Some("fn_once") => &fn_once_impl.as_ref().implied_impl_exprs,
+                Some("fn_mut") => &fn_mut_impl.as_ref().unwrap().implied_impl_exprs,
+                _ => unreachable!(),
+            },
+            kind => raise_error!(self, span, "TODO: Unknown type of impl full def: {kind:?}"),
         };
+        // let hax::FullDefKind::TraitImpl {
+        //     implied_impl_exprs, ..
+        // } = impl_def.kind()
+        // else {
+        //     unreachable!()
+        // };
         let hax::FullDefKind::Trait {
             implied_predicates, ..
         } = trait_def.kind()
@@ -696,8 +765,90 @@ impl ItemTransCtx<'_, '_> {
                     });
                     ConstantExprKind::Ref(global)
                 }
-                // TODO(dyn): builtin impls
-                _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),
+                hax::ImplExprAtom::Builtin { trait_data, .. } => {
+                    // Handle built-in implementations, including closures
+                    let tref = &impl_expr.r#trait;
+                    let hax_state = self.hax_state_with_id();
+                    let trait_def = self.hax_def(&tref.hax_skip_binder_ref().erase(hax_state))?;
+
+                    trace!(
+                        "Processing builtin impl for trait {:?}, lang_item: {:?}, trait_data: {:?}",
+                        trait_def.def_id(),
+                        trait_def.lang_item,
+                        trait_data
+                    );
+
+                    let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
+                        "fn_once" => Some(ClosureKind::FnOnce),
+                        "fn_mut" => Some(ClosureKind::FnMut),
+                        "fn" | "r#fn" => Some(ClosureKind::Fn),
+                        _ => None,
+                    });
+
+                    // Check if this is a closure trait implementation
+                    if let Some(closure_kind) = closure_kind
+                        && let Some(hax::GenericArg::Type(closure_ty)) =
+                            impl_expr.r#trait.hax_skip_binder_ref().generic_args.first()
+                        && let hax::TyKind::Closure(closure_args) = closure_ty.kind()
+                    {
+                        // Register the closure vtable instance
+                        let vtable_instance_ref: GlobalDeclRef = self.translate_item(
+                            span,
+                            &closure_args.item,
+                            TransItemSourceKind::VTableInstance(TraitImplSource::Closure(
+                                closure_kind,
+                            )),
+                        )?;
+                        let global = Box::new(ConstantExpr {
+                            kind: ConstantExprKind::Global(vtable_instance_ref),
+                            ty: fn_ptr_ty,
+                        });
+                        ConstantExprKind::Ref(global)
+                    } else if self
+                        .translate_vtable_struct_ref(span, impl_expr.r#trait.hax_skip_binder_ref())?
+                        .is_some()
+                    {
+                        // TODO: other builtin impls
+                        trace!(
+                            "Handling dyn-compatible builtin trait: {:?}",
+                            trait_def.lang_item
+                        );
+
+                        ConstantExprKind::Opaque("missing supertrait vtable".into())
+                    } else {
+                        // For non-dyn-compatible builtin traits, this branch should not happen
+                        raise_error!(
+                            self,
+                            span,
+                            "`non-dyn-compatible builtin traits` should not appear in vtable construction"
+                        )
+                    }
+                }
+                hax::ImplExprAtom::LocalBound { .. } => {
+                    // No need to register anything here as there is no concrete impl
+                    // This results in that: the vtable instance in generic case might not exist
+                    // But this case should not happen in the monomorphized case
+                    if self.monomorphize() {
+                        raise_error!(
+                            self,
+                            span,
+                            "Unexpected `LocalBound` in monomorphized context"
+                        )
+                    } else {
+                        ConstantExprKind::Opaque("generic supertrait vtable".into())
+                    }
+                }
+                hax::ImplExprAtom::Dyn | hax::ImplExprAtom::Error(..) => {
+                    // No need to register anything for these cases
+                    ConstantExprKind::Opaque("dyn or error supertrait vtable".into())
+                }
+                hax::ImplExprAtom::SelfImpl { .. } => {
+                    raise_error!(
+                        self,
+                        span,
+                        "`SelfImpl` should not appear in vtable construction"
+                    )
+                }
             };
             mk_field(kind);
         }
@@ -705,7 +856,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Generate the body of the vtable instance function.
-    /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
+    /// It handles `impl Trait for T` implementation and builtin impls (including closure).
     /// ```ignore
     /// let ret@0 : VTable;
     /// ret@0 = VTable { ... };
@@ -716,15 +867,49 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         impl_def: &hax::FullDef,
         vtable_struct_ref: TypeDeclRef,
+        impl_kind: &TraitImplSource,
     ) -> Result<Body, Error> {
-        let hax::FullDefKind::TraitImpl {
-            trait_pred, items, ..
-        } = impl_def.kind()
-        else {
-            unreachable!()
+        // Get trait reference (`trait_ref`)
+        let trait_ref = {
+            match impl_kind {
+                TraitImplSource::Normal => {
+                    let hax::FullDefKind::TraitImpl { trait_pred, .. } = impl_def.kind() else {
+                        unreachable!()
+                    };
+                    &trait_pred.trait_ref
+                }
+                TraitImplSource::Closure(closure_kind) => {
+                    let hax::FullDefKind::Closure {
+                        fn_once_impl,
+                        fn_mut_impl,
+                        fn_impl,
+                        ..
+                    } = impl_def.kind()
+                    else {
+                        unreachable!()
+                    };
+                    // Get the appropriate trait implementation for this closure kind
+                    let trait_impl = match closure_kind {
+                        ClosureKind::FnOnce => fn_once_impl,
+                        ClosureKind::FnMut => {
+                            fn_mut_impl.as_ref().expect("FnMut impl should exist")
+                        }
+                        ClosureKind::Fn => fn_impl.as_ref().expect("Fn impl should exist"),
+                    };
+                    &trait_impl.trait_pred.trait_ref
+                }
+                _ => {
+                    raise_error!(
+                        self,
+                        span,
+                        "Don't know how to generate a vtable for a virtual impl {impl_kind:?}"
+                    );
+                }
+            }
         };
-        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
+
+        let trait_def = self.hax_def(trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, trait_ref)?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
 
@@ -773,21 +958,39 @@ impl ItemTransCtx<'_, '_> {
 
         // Helper to fill in the remaining fields with constant values.
         let mut mk_field = |kind| {
-            let ty = field_ty_iter.next().unwrap();
-            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
+            // Check whether there are remaining fields.
+            // Special case: FnOnce does not have supertrait.
+            if let Some(ty) = field_ty_iter.next() {
+                aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
+            }
         };
 
-        let drop_shim =
-            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+        let drop_shim = self.translate_item(
+            span,
+            impl_def.this(),
+            TransItemSourceKind::VTableDropShim(*impl_kind),
+        )?;
 
         mk_field(ConstantExprKind::FnDef(drop_shim));
 
-        for item in items {
-            self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
+        // Add methods
+        if let hax::FullDefKind::TraitImpl { items, .. } = impl_def.kind() {
+            // Add the normal method
+            for item in items {
+                self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
+            }
+        } else if let TraitImplSource::Closure(closure_kind) = *impl_kind
+            && !matches!(closure_kind, ClosureKind::FnOnce)
+        {
+            // Add the closure method (call, call_mut)
+            // We do not translate `call_once` for the reason discussed above -- the function is not dyn-compatible
+            mk_field(self.generate_closure_method_shim_ref(span, impl_def, closure_kind)?);
         }
 
+        // Add supertraits to vtable value.
         self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
 
+        // Check if every field is filled
         if field_ty_iter.next().is_some() {
             raise_error!(
                 self,
@@ -818,7 +1021,7 @@ impl ItemTransCtx<'_, '_> {
         let span = item_meta.span;
         self.check_no_monomorphize(span)?;
 
-        let (impl_ref, vtable_struct_ref) =
+        let (impl_ref, _, vtable_struct_ref) =
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;
         let init_for = self.register_item(
             span,
@@ -833,18 +1036,10 @@ impl ItemTransCtx<'_, '_> {
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
 
-        let body = match impl_kind {
-            _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
-            TraitImplSource::Normal => {
-                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
-            }
-            _ => {
-                raise_error!(
-                    self,
-                    span,
-                    "Don't know how to generate a vtable for a virtual impl {impl_kind:?}"
-                );
-            }
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Body::Opaque
+        } else {
+            self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)?
         };
 
         Ok(FunDecl {
@@ -881,6 +1076,7 @@ impl ItemTransCtx<'_, '_> {
         target_receiver: &Ty,
         shim_signature: &FunSig,
         impl_func_def: &hax::FullDef,
+        impl_kind: &TraitImplSource,
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
 
@@ -907,8 +1103,18 @@ impl ItemTransCtx<'_, '_> {
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        let fun_id = self.register_item(span, &impl_func_def.this(), TransItemSourceKind::Fun);
+        let fun_id = self.register_item(
+            span,
+            &impl_func_def.this(),
+            match impl_kind {
+                TraitImplSource::Normal => TransItemSourceKind::Fun,
+                TraitImplSource::Closure(kind) => TransItemSourceKind::ClosureMethod(*kind),
+                _ => unreachable!(),
+            },
+        );
+
         let generics = self.outermost_binder().params.identity_args();
+
         builder.call(Call {
             func: FnOperand::Regular(FnPtr::new(FnPtrKind::Fun(fun_id), generics)),
             args: method_args
@@ -982,20 +1188,56 @@ impl ItemTransCtx<'_, '_> {
         fun_id: FunDeclId,
         item_meta: ItemMeta,
         impl_def: &hax::FullDef,
+        impl_kind: &TraitImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        let hax::FullDefKind::TraitImpl {
-            dyn_self: Some(dyn_self),
-            trait_pred,
-            ..
-        } = impl_def.kind()
-        else {
-            raise_error!(
-                self,
-                span,
-                "Trying to generate a vtable drop shim for a non-trait impl"
-            );
+        let (dyn_self, trait_pred) = match impl_def.kind() {
+            hax::FullDefKind::TraitImpl {
+                dyn_self: Some(dyn_self),
+                trait_pred,
+                ..
+            } => (dyn_self, trait_pred),
+            hax::FullDefKind::Closure {
+                fn_mut_vtable_sig,
+                fn_vtable_sig,
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
+            } => {
+                let TraitImplSource::Closure(target_kind) = *impl_kind else {
+                    unreachable!()
+                };
+                let vtable_sig = match target_kind {
+                    ClosureKind::Fn => fn_vtable_sig,
+                    ClosureKind::FnMut => fn_mut_vtable_sig,
+                    ClosureKind::FnOnce => {
+                        // Teporarily use fn_vtable_sig to pass the compilation
+                        // TODO: The vtable_sig (or at least dyn_self) for FnOnce should be added in hax
+                        fn_vtable_sig
+                    }
+                };
+
+                let signature = vtable_sig.as_ref().unwrap();
+                let hax::TyKind::Ref(_, dyn_self, _) = signature.value.inputs[0].kind() else {
+                    unreachable!()
+                };
+
+                let vimpl = match target_kind {
+                    ClosureKind::FnOnce => fn_once_impl,
+                    ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
+                    ClosureKind::Fn => fn_impl.as_ref().unwrap(),
+                };
+                (dyn_self.as_ref(), &vimpl.trait_pred)
+            }
+            _ => {
+                raise_error!(
+                    self,
+                    span,
+                    "Trying to generate a vtable drop shim for a non-trait impl"
+                );
+            }
         };
 
         // `*mut dyn Trait`
@@ -1037,6 +1279,7 @@ impl ItemTransCtx<'_, '_> {
         fun_id: FunDeclId,
         item_meta: ItemMeta,
         impl_func_def: &hax::FullDef,
+        impl_kind: &TraitImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
         self.check_no_monomorphize(span)?;
@@ -1067,7 +1310,155 @@ impl ItemTransCtx<'_, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            self.translate_vtable_shim_body(span, &target_receiver, &signature, impl_func_def)?
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                impl_func_def,
+                impl_kind,
+            )?
+        };
+
+        Ok(FunDecl {
+            def_id: fun_id,
+            item_meta,
+            generics: self.into_generics(),
+            signature,
+            src: ItemSource::VTableMethodShim,
+            is_global_initializer: None,
+            body,
+        })
+    }
+
+    // Given `self_ty` with erased Ref region (e.g., &'_ dyn exists<_dyn> ...),
+    // generate `ref_self` with explicit Reg region
+    // according to RegionId `rid` (e.g., &'_0 dyn exists<_dyn> ...).
+    fn generate_ref_self_from_erased_region(
+        &mut self,
+        self_ty: &hax::Ty,
+        rid: RegionId,
+        span: Span,
+        target_kind: &ClosureKind,
+    ) -> Result<Ty, Error> {
+        let hax::TyKind::Ref(_, raw_self, _) = self_ty.kind() else {
+            unreachable!()
+        };
+
+        let raw_self = self.translate_ty(span, raw_self)?;
+        let ref_self = {
+            let r = Region::Var(DeBruijnVar::new_at_zero(rid));
+            let mutability = if *target_kind == ClosureKind::Fn {
+                RefKind::Shared
+            } else {
+                RefKind::Mut
+            };
+            TyKind::Ref(r, raw_self, mutability).into_ty()
+        };
+        Ok(ref_self)
+    }
+
+    // This follows `translate_vtable_shim`.
+    // Specific vtable_sig and target_signature are fetched according to `target_kind` (Fn or FnMut).
+    // Additionally, lifetime generics coming from the higher-kindedness and
+    // the closure itself are separately dealt with.
+    pub(crate) fn translate_closure_vtable_shim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_func_def: &hax::FullDef,
+        target_kind: &ClosureKind,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        self.check_no_monomorphize(span)?;
+
+        let hax::FullDefKind::Closure {
+            fn_mut_vtable_sig,
+            fn_vtable_sig,
+            fn_mut_sig,
+            fn_sig,
+            args,
+            ..
+        } = impl_func_def.kind()
+        else {
+            raise_error!(
+                self,
+                span,
+                "Trying to generate a vtable shim for a non-vtable-safe method"
+            );
+        };
+
+        let (vtable_sig, target_signature) = match target_kind {
+            ClosureKind::Fn => (fn_vtable_sig, &fn_sig.clone().unwrap()),
+            ClosureKind::FnMut => (fn_mut_vtable_sig, &fn_mut_sig.clone().unwrap()),
+            ClosureKind::FnOnce => {
+                raise_error!(self, span, "Trying to generate a vtable shim for FnOnce");
+            }
+        };
+
+        // Compute the correct signature for the shim
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.fn_sig.rebind(()))?;
+
+        let signature = vtable_sig.as_ref().unwrap();
+
+        // translate dyn_self
+        let rid = self
+            .innermost_generics_mut()
+            .regions
+            .push_with(|index| RegionParam { index, name: None });
+        let dyn_self = self.generate_ref_self_from_erased_region(
+            &signature.value.inputs[0],
+            rid,
+            span,
+            target_kind,
+        )?;
+
+        // translate Args
+        let input_tys: Vec<Ty> = signature
+            .value
+            .inputs
+            .iter()
+            .skip(1)
+            .map(|ty| self.translate_ty(span, ty))
+            .try_collect()?;
+        let inputs = vec![dyn_self, Ty::mk_tuple(input_tys)];
+        let output = self.translate_ty(span, &signature.value.output)?;
+
+        let is_unsafe = match signature.value.safety {
+            hax::Safety::Unsafe => true,
+            hax::Safety::Safe => false,
+        };
+
+        let signature = FunSig {
+            is_unsafe,
+            inputs,
+            output,
+        };
+
+        let target_receiver = self.generate_ref_self_from_erased_region(
+            &target_signature.value.inputs[0],
+            rid,
+            span,
+            target_kind,
+        )?;
+
+        trace!(
+            "[VtableShim] Obtained dyn signature with receiver type: {}",
+            signature.inputs[0].with_ctx(&self.into_fmt())
+        );
+
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Body::Opaque
+        } else {
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                impl_func_def,
+                &TraitImplSource::Closure(*target_kind),
+            )?
         };
 
         Ok(FunDecl {

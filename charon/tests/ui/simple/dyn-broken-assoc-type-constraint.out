@@ -132,7 +132,7 @@ where
     size@1 := size_of<T>
     storage_live(align@2)
     align@2 := align_of<T>
-    ret@0 := test_crate::Broken::{vtable} { size: move (size@1), align: move (align@2), drop: const ({vtable_drop_shim}<T>[@TraitClause0]), method_broken: const ({vtable_method}<'1, T>[@TraitClause0]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret@0 := test_crate::Broken::{vtable} { size: move (size@1), align: move (align@2), drop: const ({vtable_drop_shim}<T>[@TraitClause0]), method_broken: const ({vtable_method}<'1, T>[@TraitClause0]), super_trait_0: const (Opaque(generic supertrait vtable)) }
     return
 }
 

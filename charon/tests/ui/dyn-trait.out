@@ -22,6 +22,8 @@ pub struct Error {}
 
 opaque type core::fmt::Display::{vtable}
 
+opaque type core::marker::MetaSized::{vtable}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -67,8 +69,6 @@ pub trait Tuple<Self>
     vtable: core::marker::Tuple::{vtable}
 }
 
-opaque type core::ops::function::Fn::{vtable}<Args, Ty0>
-
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -82,6 +82,12 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
+struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn(*mut (dyn FnOnce<Args, Output = Ty0>)),
+}
+
 // Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
@@ -92,6 +98,24 @@ pub trait FnMut<Self, Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
     fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+}
+
+struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn(*mut (dyn FnMut<Args, parent_clause1::Output = Ty0>)),
+  method_call_mut: fn<'_0_1>(&'_0_1 mut ((dyn FnMut<Args, parent_clause1::Output = Ty0>)), Args) -> Ty0,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (core::ops::function::FnOnce::{vtable}<Args, Ty0>),
+}
+
+struct core::ops::function::Fn::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn(*mut (dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>)),
+  method_call: fn<'_0_1>(&'_0_1 ((dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>)), Args) -> Ty0,
+  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_1: &'static (core::ops::function::FnMut::{vtable}<Args, Ty0>),
 }
 
 // Full name: core::ops::function::Fn

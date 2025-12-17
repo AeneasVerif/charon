@@ -582,7 +582,49 @@ impl BodyTransCtx<'_, '_, '_> {
                                             ),
                                         )?)
                                     }
-                                    // TODO(dyn): more ways of registering vtable instance?
+                                    hax::ImplExprAtom::Builtin { .. } => {
+                                        // Handle built-in implementations, including closures
+                                        let tref = &impl_expr.r#trait;
+                                        let hax_state = self.hax_state_with_id().clone();
+                                        let trait_def = self.hax_def(
+                                            &tref.hax_skip_binder_ref().erase(&hax_state),
+                                        )?;
+                                        let closure_kind =
+                                            trait_def.lang_item.as_deref().and_then(|lang| {
+                                                match lang {
+                                                    "fn_once" => Some(ClosureKind::FnOnce),
+                                                    "fn_mut" => Some(ClosureKind::FnMut),
+                                                    "fn" | "r#fn" => Some(ClosureKind::Fn),
+                                                    _ => None,
+                                                }
+                                            });
+
+                                        // Check if this is a closure trait implementation
+                                        if let Some(closure_kind) = closure_kind
+                                            && let Some(hax::GenericArg::Type(closure_ty)) =
+                                                impl_expr
+                                                    .r#trait
+                                                    .hax_skip_binder_ref()
+                                                    .generic_args
+                                                    .first()
+                                            && let hax::TyKind::Closure(closure_args) =
+                                                closure_ty.kind()
+                                        {
+                                            Some(self.translate_item(
+                                                span,
+                                                &closure_args.item,
+                                                TransItemSourceKind::VTableInstance(
+                                                    TraitImplSource::Closure(closure_kind),
+                                                ),
+                                            )?)
+                                        } else {
+                                            raise_error!(
+                                                self.i_ctx,
+                                                span,
+                                                "Handle non-closure virtual trait implementations."
+                                            );
+                                        }
+                                    }
                                     _ => {
                                         trace!(
                                             "impl_expr not triggering registering vtable: {:?}",
