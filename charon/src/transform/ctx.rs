@@ -266,20 +266,17 @@ pub trait BodyTransformCtx: Sized {
             // `storage_live(len_var)`
             // `len_var = len(p)`
             let len_var = self.fresh_var(None, Ty::mk_usize());
+            let len = match len_place.ty().kind() {
+                TyKind::Array(_, len) => Some(len.clone()),
+                TyKind::Slice(_) => None,
+                _ => panic!(
+                    "called `compute_subslice_end_idx` on something that isn't an array or slice: {:?}",
+                    len_place.ty()
+                ),
+            };
             self.insert_assn_stmt(
                 len_var.clone(),
-                Rvalue::Len(
-                    len_place.clone(),
-                    len_place.ty().clone(),
-                    len_place
-                        .ty()
-                        .as_adt()
-                        .unwrap()
-                        .generics
-                        .const_generics
-                        .get(0.into())
-                        .cloned(),
-                ),
+                Rvalue::Len(len_place.clone(), len_place.ty().clone(), len),
             );
 
             // `storage_live(index_var)`

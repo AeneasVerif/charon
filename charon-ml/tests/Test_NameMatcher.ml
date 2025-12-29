@@ -185,10 +185,13 @@ module PatternTest = struct
       | None -> (None, true)
     in
     if test.success && not match_success then (
+      let fn_ptr =
+        try fn_ptr_to_pattern env.ctx env.to_pat_config decl.generics fn_ptr
+        with _ -> [ PIdent ("ERROR", 0, []) ]
+      in
       log#error "Pattern %s failed to match function %s (in `%s`)\n"
         (pattern_to_string env.print_config (Option.get test.pattern))
-        (pattern_to_string env.print_config
-           (fn_ptr_to_pattern env.ctx env.to_pat_config decl.generics fn_ptr))
+        (pattern_to_string env.print_config fn_ptr)
         env.file_name;
       false)
     else if (not test.success) && match_success then (

@@ -890,6 +890,10 @@ pub enum TyKind {
     /// As a marker of taking out metadata from a given type
     /// The internal type is assumed to be a type variable
     PtrMetadata(Ty),
+    /// An array type `[T; N]`
+    Array(Ty, ConstGeneric),
+    /// A slice type `[T]`
+    Slice(Ty),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
@@ -926,10 +930,6 @@ pub enum TyKind {
 pub enum BuiltinTy {
     /// Boxes are de facto a primitive type.
     Box,
-    /// Primitive type
-    Array,
-    /// Primitive type
-    Slice,
     /// Primitive type
     Str,
 }
