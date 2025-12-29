@@ -11,9 +11,9 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::SLICE
-fn SLICE() -> Array<(), 4 : usize>
+fn SLICE() -> [(); 4 : usize]
 {
-    let @0: Array<(), 4 : usize>; // return
+    let @0: [(); 4 : usize]; // return
     let @1: (); // anonymous local
 
     storage_live(@1)
@@ -24,7 +24,7 @@ fn SLICE() -> Array<(), 4 : usize>
 }
 
 // Full name: test_crate::SLICE
-static SLICE: Array<(), 4 : usize> = SLICE()
+static SLICE: [(); 4 : usize] = SLICE()
 
 // Full name: test_crate::four
 fn four() -> usize
@@ -39,9 +39,9 @@ fn four() -> usize
 }
 
 // Full name: test_crate::BAR
-fn BAR() -> Array<(), 42 : usize>
+fn BAR() -> [(); 42 : usize]
 {
-    let @0: Array<(), 42 : usize>; // return
+    let @0: [(); 42 : usize]; // return
     let @1: (); // anonymous local
 
     storage_live(@1)
@@ -52,7 +52,7 @@ fn BAR() -> Array<(), 42 : usize>
 }
 
 // Full name: test_crate::BAR
-const BAR: Array<(), 42 : usize> = BAR()
+const BAR: [(); 42 : usize] = BAR()
 
 // Full name: test_crate::FOO
 fn FOO() -> usize

@@ -700,24 +700,11 @@ impl Ty {
     }
 
     pub fn mk_array(ty: Ty, len: ConstGeneric) -> Ty {
-        TyKind::Adt(TypeDeclRef {
-            id: TypeId::Builtin(BuiltinTy::Array),
-            generics: Box::new(GenericArgs::new(
-                vec![].into(),
-                vec![ty].into(),
-                vec![len].into(),
-                vec![].into(),
-            )),
-        })
-        .into_ty()
+        TyKind::Array(ty, len).into_ty()
     }
 
     pub fn mk_slice(ty: Ty) -> Ty {
-        TyKind::Adt(TypeDeclRef {
-            id: TypeId::Builtin(BuiltinTy::Slice),
-            generics: Box::new(GenericArgs::new_for_builtin(vec![ty].into())),
-        })
-        .into_ty()
+        TyKind::Slice(ty).into_ty()
     }
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
@@ -752,7 +739,7 @@ impl Ty {
 
     pub fn is_slice(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Slice) = ty_ref.id => true,
+            TyKind::Slice(_) => true,
             _ => false,
         }
     }
@@ -804,10 +791,7 @@ impl Ty {
                     }
                     // Box is a pointer like ref & raw ptr, hence no metadata
                     TypeId::Builtin(BuiltinTy::Box) => PtrMetadata::None,
-                    // Array: `[T; N]` has no metadata
-                    TypeId::Builtin(BuiltinTy::Array) => PtrMetadata::None,
-                    // `[T]` & `str` all have metadata length
-                    TypeId::Builtin(BuiltinTy::Slice) => PtrMetadata::Length,
+                    // `str` has metadata length
                     TypeId::Builtin(BuiltinTy::Str) => PtrMetadata::Length,
                 }
             }
@@ -815,6 +799,8 @@ impl Ty {
                 Some(vtable) => PtrMetadata::VTable(vtable),
                 None => PtrMetadata::InheritFrom(self.clone()),
             },
+            // `[T]` has metadata length
+            TyKind::Slice(..) => PtrMetadata::Length,
             TyKind::TraitType(..) | TyKind::TypeVar(_) => PtrMetadata::InheritFrom(self.clone()),
             TyKind::Literal(_)
             | TyKind::Never
@@ -822,6 +808,7 @@ impl Ty {
             | TyKind::RawPtr(..)
             | TyKind::FnPtr(..)
             | TyKind::FnDef(..)
+            | TyKind::Array(..)
             | TyKind::Error(_) => PtrMetadata::None,
             // The metadata itself must be Sized, hence must with `PtrMetadata::None`
             TyKind::PtrMetadata(_) => PtrMetadata::None,
@@ -830,11 +817,7 @@ impl Ty {
 
     pub fn as_array_or_slice(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(ty_ref)
-                if let TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice) = ty_ref.id =>
-            {
-                Some(&ty_ref.generics.types[0])
-            }
+            TyKind::Slice(ty) | TyKind::Array(ty, _) => Some(ty),
             _ => None,
         }
     }

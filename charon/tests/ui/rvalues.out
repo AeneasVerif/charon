@@ -319,10 +319,10 @@ fn test_crate::ptr_casts::foo()
 fn ptr_casts()
 {
     let @0: (); // return
-    let array_ptr@1: *const Array<u32, 64 : usize>; // local
-    let @2: &'0 (Array<u32, 64 : usize>); // anonymous local
+    let array_ptr@1: *const [u32; 64 : usize]; // local
+    let @2: &'0 ([u32; 64 : usize]); // anonymous local
     let @3: *const u32; // anonymous local
-    let @4: *const Array<u32, 64 : usize>; // anonymous local
+    let @4: *const [u32; 64 : usize]; // anonymous local
     let x@5: u8; // local
     let x@6: *const u8; // local
     let @7: &'1 (u8); // anonymous local
@@ -335,9 +335,9 @@ fn ptr_casts()
     let @14: *const u8; // anonymous local
     let @15: *const u8; // anonymous local
     let @16: fn(); // anonymous local
-    let @17: &'0 (Array<u32, 64 : usize>); // anonymous local
-    let @18: &'_ (Array<u32, 64 : usize>); // anonymous local
-    let @19: Array<u32, 64 : usize>; // anonymous local
+    let @17: &'0 ([u32; 64 : usize]); // anonymous local
+    let @18: &'_ ([u32; 64 : usize]); // anonymous local
+    let @19: [u32; 64 : usize]; // anonymous local
 
     storage_live(@18)
     storage_live(@19)
@@ -354,7 +354,7 @@ fn ptr_casts()
     storage_live(@3)
     storage_live(@4)
     @4 := copy (array_ptr@1)
-    @3 := cast<*const Array<u32, 64 : usize>, *const u32>(move (@4))
+    @3 := cast<*const [u32; 64 : usize], *const u32>(move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_live(x@5)
@@ -583,9 +583,9 @@ fn boxes()
 }
 
 // Full name: test_crate::STEAL
-fn STEAL() -> Array<(), 1 : usize>
+fn STEAL() -> [(); 1 : usize]
 {
-    let @0: Array<(), 1 : usize>; // return
+    let @0: [(); 1 : usize]; // return
     let @1: (); // anonymous local
 
     storage_live(@1)
@@ -596,27 +596,27 @@ fn STEAL() -> Array<(), 1 : usize>
 }
 
 // Full name: test_crate::STEAL
-static STEAL: Array<(), 1 : usize> = STEAL()
+static STEAL: [(); 1 : usize] = STEAL()
 
 // Full name: test_crate::transmute
-fn transmute(@1: Array<u32, 2 : usize>) -> u64
+fn transmute(@1: [u32; 2 : usize]) -> u64
 {
     let @0: u64; // return
-    let x@1: Array<u32, 2 : usize>; // arg #1
-    let @2: Array<u32, 2 : usize>; // anonymous local
+    let x@1: [u32; 2 : usize]; // arg #1
+    let @2: [u32; 2 : usize]; // anonymous local
 
     storage_live(@2)
     // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
     @2 := copy (x@1)
-    @0 := transmute<Array<u32, 2 : usize>, u64>(move (@2))
+    @0 := transmute<[u32; 2 : usize], u64>(move (@2))
     storage_dead(@2)
     return
 }
 
 // Full name: test_crate::STEAL2
-fn STEAL2() -> Array<(), 13 : usize>
+fn STEAL2() -> [(); 13 : usize]
 {
-    let @0: Array<(), 13 : usize>; // return
+    let @0: [(); 13 : usize]; // return
     let @1: (); // anonymous local
 
     storage_live(@1)
@@ -627,7 +627,7 @@ fn STEAL2() -> Array<(), 13 : usize>
 }
 
 // Full name: test_crate::STEAL2
-static STEAL2: Array<(), 13 : usize> = STEAL2()
+static STEAL2: [(); 13 : usize] = STEAL2()
 
 // Full name: test_crate::nullary_ops::Struct
 struct Struct<T>

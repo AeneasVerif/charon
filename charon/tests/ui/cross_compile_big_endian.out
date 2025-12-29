@@ -8,7 +8,7 @@ pub fn MAX() -> usize
 pub const MAX: usize = MAX()
 
 // Full name: core::num::{u128}::to_ne_bytes
-pub fn to_ne_bytes(@1: u128) -> Array<u8, 16 : usize>
+pub fn to_ne_bytes(@1: u128) -> [u8; 16 : usize]
 = <opaque>
 
 fn UNIT_METADATA()
@@ -22,16 +22,16 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::S
-fn S() -> Array<u8, 16 : usize>
+fn S() -> [u8; 16 : usize]
 {
-    let @0: Array<u8, 16 : usize>; // return
+    let @0: [u8; 16 : usize]; // return
 
     @0 := to_ne_bytes(const (24197857199965561741520400062332047378 : u128))
     return
 }
 
 // Full name: test_crate::S
-const S: Array<u8, 16 : usize> = S()
+const S: [u8; 16 : usize] = S()
 
 // Full name: test_crate::HasBEDiscr
 enum HasBEDiscr {

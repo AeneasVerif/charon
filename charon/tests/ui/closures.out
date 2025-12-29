@@ -44,8 +44,8 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
-// Full name: core::array::{Array<T, N>}::map
-pub fn map<T, F, U, const N : usize>(@1: Array<T, N>, @2: F) -> Array<U, N>
+// Full name: core::array::{[T; N]}::map
+pub fn map<T, F, U, const N : usize>(@1: [T; N], @2: F) -> [U; N]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -2003,11 +2003,11 @@ impl FnMut<(i32), i32> for test_crate::test_array_map::closure {
 }
 
 // Full name: test_crate::test_array_map
-pub fn test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+pub fn test_array_map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
 {
-    let @0: Array<i32, 256 : usize>; // return
-    let x@1: Array<i32, 256 : usize>; // arg #1
-    let @2: Array<i32, 256 : usize>; // anonymous local
+    let @0: [i32; 256 : usize]; // return
+    let x@1: [i32; 256 : usize]; // arg #1
+    let @2: [i32; 256 : usize]; // anonymous local
     let @3: test_crate::test_array_map::closure; // anonymous local
 
     storage_live(@2)

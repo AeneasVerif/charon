@@ -112,7 +112,7 @@ where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
 
-pub fn core::hash::Hasher::write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+pub fn core::hash::Hasher::write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 ([u8]))
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
@@ -257,7 +257,7 @@ pub fn {impl Hasher for DefaultHasher}::finish<'_0>(@1: &'_0 (DefaultHasher)) ->
 = <opaque>
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}::write
-pub fn {impl Hasher for DefaultHasher}::write<'_0, '_1>(@1: &'_0 mut (DefaultHasher), @2: &'_1 (Slice<u8>))
+pub fn {impl Hasher for DefaultHasher}::write<'_0, '_1>(@1: &'_0 mut (DefaultHasher), @2: &'_1 ([u8]))
 = <opaque>
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}

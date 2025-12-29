@@ -97,8 +97,8 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Trait<T> for Slice<T>}::method
-fn {impl Trait<T> for Slice<T>}::method<T, U>()
+// Full name: test_crate::{impl Trait<T> for [T]}::method
+fn {impl Trait<T> for [T]}::method<T, U>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -110,19 +110,19 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<T> for Slice<T>}
-impl<T> Trait<T> for Slice<T>
+// Full name: test_crate::{impl Trait<T> for [T]}
+impl<T> Trait<T> for [T]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Slice<T>}
+    parent_clause0 = {built_in impl MetaSized for [T]}
     parent_clause1 = @TraitClause0
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for Slice<T>}::method<T, U>[@TraitClause0, @TraitClause0_1]
+    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for [T]}::method<T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Trait<T> for &'_0 (Slice<T>)}::method
-fn {impl Trait<T> for &'_0 (Slice<T>)}::method<'_0, T, U>()
+// Full name: test_crate::{impl Trait<T> for &'_0 ([T])}::method
+fn {impl Trait<T> for &'_0 ([T])}::method<'_0, T, U>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -134,14 +134,14 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<T> for &'_0 (Slice<T>)}
-impl<'_0, T> Trait<T> for &'_0 (Slice<T>)
+// Full name: test_crate::{impl Trait<T> for &'_0 ([T])}
+impl<'_0, T> Trait<T> for &'_0 ([T])
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<T>)}
+    parent_clause0 = {built_in impl MetaSized for &'_ ([T])}
     parent_clause1 = @TraitClause0
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for &'_0 (Slice<T>)}::method<'_0, T, U>[@TraitClause0, @TraitClause0_1]
+    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for &'_0 ([T])}::method<'_0, T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 

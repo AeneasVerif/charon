@@ -172,9 +172,7 @@ let rec type_id_to_string (env : 'a fmt_env) (id : type_id) : string =
   | TBuiltin aty -> (
       match aty with
       | TBox -> "alloc::boxed::Box"
-      | TStr -> "str"
-      | TArray -> "@Array"
-      | TSlice -> "@Slice")
+      | TStr -> "str")
 
 and type_decl_id_to_string env def_id =
   (* We don't want the printing functions to crash if the crate is partial *)
@@ -305,6 +303,9 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
         | r :: _ -> " + " ^ r
       in
       "dyn (" ^ String.concat " + " clauses ^ reg_str ^ ")"
+  | TArray (ty, len) ->
+      "[" ^ ty_to_string env ty ^ "; " ^ const_generic_to_string env len ^ "]"
+  | TSlice ty -> "[" ^ ty_to_string env ty ^ "]"
   | TPtrMetadata ty -> "PtrMetadata(" ^ ty_to_string env ty ^ ")"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"
 

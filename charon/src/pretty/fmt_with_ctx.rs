@@ -1434,9 +1434,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                         match ty_ref.id {
                             TypeId::Tuple => write!(f, "({})", ops_s),
                             TypeId::Builtin(BuiltinTy::Box) => write!(f, "Box({})", ops_s),
-                            TypeId::Builtin(
-                                BuiltinTy::Array | BuiltinTy::Slice | BuiltinTy::Str,
-                            ) => {
+                            TypeId::Builtin(BuiltinTy::Str) => {
                                 write!(f, "[{}]", ops_s)
                             }
                             TypeId::Adt(ty_id) => {
@@ -2010,6 +2008,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     RefKind::Mut => write!(f, "mut")?,
                 }
                 write!(f, " {}", ty.with_ctx(ctx))
+            }
+            TyKind::Array(ty, len) => {
+                write!(f, "[{}; {}]", ty.with_ctx(ctx), len.with_ctx(ctx))
+            }
+            TyKind::Slice(ty) => {
+                write!(f, "[{}]", ty.with_ctx(ctx))
             }
             TyKind::TraitType(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)

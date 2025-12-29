@@ -82,7 +82,7 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{Iter<'a, T>[@TraitClause0]}::as_slice
-pub fn as_slice<'a, '_1, T>(@1: &'_1 (Iter<'a, T>[@TraitClause0])) -> &'a (Slice<T>)
+pub fn as_slice<'a, '_1, T>(@1: &'_1 (Iter<'a, T>[@TraitClause0])) -> &'a ([T])
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>

@@ -13,7 +13,7 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::Foo
 union Foo {
   one: u64,
-  two: Array<u32, 2 : usize>,
+  two: [u32; 2 : usize],
 }
 
 // Full name: test_crate::use_union
@@ -21,7 +21,7 @@ fn use_union()
 {
     let @0: (); // return
     let one@1: Foo; // local
-    let _two@2: Array<u32, 2 : usize>; // local
+    let _two@2: [u32; 2 : usize]; // local
 
     @0 := ()
     storage_live(one@1)

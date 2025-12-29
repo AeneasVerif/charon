@@ -1,3 +1,224 @@
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: Sized<T>
+            got: {built_in impl Sized for [u8; 1 : usize]}: Sized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<missing(@TypeBound(1, 0))>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: Sized<T>
+            got: {built_in impl Sized for [u8; 1 : usize]}: Sized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<missing(@TypeBound(1, 0))>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8]}: MetaSized<[u8]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::ullbc_ast::TerminatorKind
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:54:9
+
 error: Could not reconstruct `Box` initialization; branching during `Box` initialization is not supported.
  --> tests/ui/issue-393-shallowinitbox.rs:2:1
   |
@@ -7,4 +228,188 @@ error: Could not reconstruct `Box` initialization; branching during `Box` initia
 5 | | }
   | |_^
 
-ERROR Charon failed to translate this code (1 errors)
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: Sized<T>
+            got: {built_in impl Sized for [u8; 1 : usize]}: Sized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<missing(@TypeBound(1, 0))>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: Sized<T>
+            got: {built_in impl Sized for [u8; 1 : usize]}: Sized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<missing(@TypeBound(1, 0))>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::expressions::ConstantExprKind
+         charon_lib::ast::expressions::ConstantExpr
+         alloc::boxed::Box<charon_lib::ast::expressions::ConstantExpr>
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:13
+
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::llbc_ast::Switch
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause0]: MetaSized<T>
+            got: {built_in impl MetaSized for [u8; 1 : usize]}: MetaSized<[u8; 1 : usize]>
+       Visitor stack:
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRefContents
+         charon_lib::ast::hash_cons::HashConsed<charon_lib::ast::types::TraitRefContents>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/macros.rs:53:45
+
+ERROR Charon failed to translate this code (17 errors)

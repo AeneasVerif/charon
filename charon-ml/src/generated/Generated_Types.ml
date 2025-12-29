@@ -304,8 +304,6 @@ and builtin_index_op = {
     modular. TODO: move to builtins.rs? *)
 and builtin_ty =
   | TBox  (** Boxes are de facto a primitive type. *)
-  | TArray  (** Primitive type *)
-  | TSlice  (** Primitive type *)
   | TStr  (** Primitive type *)
 
 (** A const generic variable in a signature or binder. *)
@@ -626,6 +624,8 @@ and ty_kind =
   | TPtrMetadata of ty
       (** As a marker of taking out metadata from a given type The internal type
           is assumed to be a type variable *)
+  | TArray of ty * const_generic  (** An array type [[T; N]] *)
+  | TSlice of ty  (** A slice type [[T]] *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
 (** Reference to a type declaration or builtin type. *)

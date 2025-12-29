@@ -333,7 +333,10 @@ impl<'a> PartialMonomorphizer<'a> {
     fn is_infected(&self, ty: &Ty) -> bool {
         match ty.kind() {
             TyKind::Ref(_, _, RefKind::Mut) => true,
-            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => self.is_infected(ty),
+            TyKind::Ref(_, ty, _)
+            | TyKind::RawPtr(ty, _)
+            | TyKind::Array(ty, _)
+            | TyKind::Slice(ty) => self.is_infected(ty),
             TyKind::Adt(tref) => {
                 let ty_infected =
                     matches!(&tref.id, TypeId::Adt(id) if self.infected_types.contains(id));
