@@ -22,7 +22,7 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -37,7 +37,7 @@ pub trait PartialEq<Self, Rhs>
 
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -74,7 +74,7 @@ where
 }
 
 // Full name: core::option::{impl Clone for Option<T>[@TraitClause0]}::clone
-pub fn {impl Clone for Option<T>[@TraitClause0]}::clone<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> Option<T>[@TraitClause0]
+pub fn {impl Clone for Option<T>[@TraitClause0]}::clone<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -129,8 +129,8 @@ where
     let x@1: T; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'0 (U); // anonymous local
-    let @5: &'1 (T); // anonymous local
+    let @4: &'0 U; // anonymous local
+    let @5: &'1 T; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -187,8 +187,8 @@ where
     let x@1: Option<T>[@TraitClause0]; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'0 (U); // anonymous local
-    let @5: &'1 (Option<T>[@TraitClause0]); // anonymous local
+    let @4: &'0 U; // anonymous local
+    let @5: &'1 Option<T>[@TraitClause0]; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -258,8 +258,8 @@ where
     let x@1: Option<T>[@TraitClause0]; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'0 (U); // anonymous local
-    let @5: &'1 (Option<T>[@TraitClause0]); // anonymous local
+    let @4: &'0 U; // anonymous local
+    let @5: &'1 Option<T>[@TraitClause0]; // anonymous local
 
     @0 := ()
     storage_live(@3)

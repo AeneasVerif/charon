@@ -31,19 +31,19 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <method_without_default_body>
 
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
 {
     let @0: (); // return
-    let self@1: &'0 mut (Self); // arg #1
-    let source@2: &'1 (Self); // arg #2
+    let self@1: &'0 mut Self; // arg #1
+    let source@2: &'1 Self; // arg #2
     let @3: Self; // anonymous local
 
     @0 := ()
@@ -56,23 +56,23 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
+pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
 {
     let @0: u8; // return
-    let self@1: &'0 (u8); // arg #1
+    let self@1: &'0 u8; // arg #1
 
     @0 := copy (*(self@1))
     return
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone_from
-pub fn {impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
+pub fn {impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut u8, @2: &'_1 u8)
 where
     [@TraitClause0]: Destruct<u8>,
 {
     let @0: (); // return
-    let self@1: &'0 mut (u8); // arg #1
-    let source@2: &'1 (u8); // arg #2
+    let self@1: &'0 mut u8; // arg #1
+    let source@2: &'1 u8; // arg #2
     let @3: u8; // anonymous local
 
     @0 := ()

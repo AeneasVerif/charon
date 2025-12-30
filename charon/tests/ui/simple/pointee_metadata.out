@@ -23,7 +23,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -38,7 +38,7 @@ pub trait PartialEq<Self, Rhs>
 
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -90,14 +90,14 @@ pub trait Ord<Self>
 
 // Full name: core::cmp::Ord::cmp
 #[lang_item("ord_cmp_method")]
-pub fn cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+pub fn cmp<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
 = <opaque>
 
 // Full name: core::cmp::PartialOrd::partial_cmp
 #[lang_item("cmp_partialord_cmp")]
-pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 = <opaque>
@@ -125,7 +125,7 @@ pub trait Debug<Self>
 }
 
 // Full name: core::fmt::Debug::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
@@ -148,7 +148,7 @@ pub trait Hash<Self>
 }
 
 // Full name: core::hash::Hash::hash
-pub fn hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+pub fn hash<'_0, '_1, Self, H>(@1: &'_0 Self, @2: &'_1 mut H)
 where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
@@ -156,13 +156,13 @@ where
 = <opaque>
 
 // Full name: core::hash::Hasher::finish
-pub fn finish<'_0, Self>(@1: &'_0 (Self)) -> u64
+pub fn finish<'_0, Self>(@1: &'_0 Self) -> u64
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
 
 // Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+pub fn write<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 [u8])
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
@@ -241,9 +241,9 @@ fn empty_metadata()
     let @0: (); // return
     let @1: (*const (), ()); // anonymous local
     let @2: *const u32; // anonymous local
-    let @3: &'0 (u32); // anonymous local
-    let @4: &'0 (u32); // anonymous local
-    let @5: &'_ (u32); // anonymous local
+    let @3: &'0 u32; // anonymous local
+    let @4: &'0 u32; // anonymous local
+    let @5: &'_ u32; // anonymous local
     let @6: u32; // anonymous local
 
     storage_live(@5)
@@ -271,12 +271,12 @@ fn slice_metadata()
 {
     let @0: (); // return
     let @1: (*const (), usize); // anonymous local
-    let @2: *const Slice<u32>; // anonymous local
-    let @3: *const Array<u32, 2 : usize>; // anonymous local
-    let @4: &'0 (Array<u32, 2 : usize>); // anonymous local
-    let @5: &'0 (Array<u32, 2 : usize>); // anonymous local
-    let @6: &'_ (Array<u32, 2 : usize>); // anonymous local
-    let @7: Array<u32, 2 : usize>; // anonymous local
+    let @2: *const [u32]; // anonymous local
+    let @3: *const [u32; 2 : usize]; // anonymous local
+    let @4: &'0 [u32; 2 : usize]; // anonymous local
+    let @5: &'0 [u32; 2 : usize]; // anonymous local
+    let @6: &'_ [u32; 2 : usize]; // anonymous local
+    let @7: [u32; 2 : usize]; // anonymous local
 
     storage_live(@6)
     storage_live(@7)
@@ -291,9 +291,9 @@ fn slice_metadata()
     @5 := move (@6)
     @4 := &*(@5)
     @3 := &raw const *(@4)
-    @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>, 2 : usize>(move (@3))
+    @2 := unsize_cast<*const [u32; 2 : usize], *const [u32], 2 : usize>(move (@3))
     storage_dead(@3)
-    @1 := to_raw_parts<Slice<u32>>(move (@2))
+    @1 := to_raw_parts<[u32]>(move (@2))
     storage_dead(@2)
     storage_dead(@4)
     storage_dead(@1)

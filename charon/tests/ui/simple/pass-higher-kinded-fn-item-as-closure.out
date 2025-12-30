@@ -68,13 +68,13 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause1_Clause1_Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 Self, @2: Args) -> Clause0_Clause1_Clause1_Output
 where
     [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut (Self), @2: Args) -> Clause0_Clause1_Output
+pub fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut Self, @2: Args) -> Clause0_Clause1_Output
 where
     [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
 = <opaque>
@@ -96,10 +96,10 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::flabada
-pub fn flabada<'a>(@1: &'a (())) -> &'a (())
+pub fn flabada<'a>(@1: &'a ()) -> &'a ()
 {
-    let @0: &'0 (()); // return
-    let x@1: &'0 (()); // arg #1
+    let @0: &'0 (); // return
+    let x@1: &'0 (); // arg #1
 
     @0 := copy (x@1)
     return
@@ -108,7 +108,7 @@ pub fn flabada<'a>(@1: &'a (())) -> &'a (())
 pub fn test_crate::call<'b, F>(@1: F)
 where
     [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Fn<F, (&'b (())), &'b (())>,
+    [@TraitClause1]: Fn<F, (&'b ()), &'b ()>,
 {
     let @0: (); // return
     let @1: F; // arg #1
@@ -127,7 +127,7 @@ pub fn flibidi()
 
     @0 := ()
     storage_live(@1)
-    @1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (())), &'8 (())> for for<'a> flabada<'a>}](const (flabada<'_>))
+    @1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ()), &'8 ()> for for<'a> flabada<'a>}](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     return

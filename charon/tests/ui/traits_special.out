@@ -50,11 +50,11 @@ where
     [@TraitClause1]: Sized<Self>,
 = <method_without_default_body>
 
-// Full name: test_crate::{impl From<&'_0 (bool)> for bool}::from
-pub fn {impl From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
+// Full name: test_crate::{impl From<&'_0 bool> for bool}::from
+pub fn {impl From<&'_0 bool> for bool}::from<'_0>(@1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
     let @0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
-    let v@1: &'0 (bool); // arg #1
+    let v@1: &'0 bool; // arg #1
     let @2: bool; // anonymous local
 
     storage_live(@2)
@@ -64,14 +64,14 @@ pub fn {impl From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<b
     return
 }
 
-// Full name: test_crate::{impl From<&'_0 (bool)> for bool}
-impl<'_0> From<&'_0 (bool)> for bool {
+// Full name: test_crate::{impl From<&'_0 bool> for bool}
+impl<'_0> From<&'_0 bool> for bool {
     parent_clause0 = {built_in impl MetaSized for bool}
-    parent_clause1 = {built_in impl Sized for &'_ (bool)}
+    parent_clause1 = {built_in impl Sized for &'_ bool}
     parent_clause2 = {built_in impl Sized for ()}
     type Error = ()
-    fn from = {impl From<&'_0 (bool)> for bool}::from<'_0>
-    vtable: {impl From<&'_0 (bool)> for bool}::{vtable}<'_0>
+    fn from = {impl From<&'_0 bool> for bool}::from<'_0>
+    vtable: {impl From<&'_0 bool> for bool}::{vtable}<'_0>
 }
 
 

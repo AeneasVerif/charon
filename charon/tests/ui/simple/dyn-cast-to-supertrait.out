@@ -31,8 +31,8 @@ struct test_crate::Feline::{vtable} {
   size: usize,
   align: usize,
   drop: unsafe fn(*mut (dyn Feline)),
-  method_hunt: fn<'_0_1>(&'_0_1 ((dyn Feline))),
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  method_hunt: fn<'_0_1>(&'_0_1 (dyn Feline)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 
 // Full name: test_crate::Feline
@@ -43,7 +43,7 @@ trait Feline<Self>
     vtable: test_crate::Feline::{vtable}
 }
 
-fn test_crate::Feline::hunt<'_0, Self>(@1: &'_0 (Self))
+fn test_crate::Feline::hunt<'_0, Self>(@1: &'_0 Self)
 where
     [@TraitClause0]: Feline<Self>,
 = <method_without_default_body>
@@ -52,8 +52,8 @@ struct test_crate::Pettable::{vtable} {
   size: usize,
   align: usize,
   drop: unsafe fn(*mut (dyn Pettable)),
-  method_pet: fn<'_0_1>(&'_0_1 ((dyn Pettable))),
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  method_pet: fn<'_0_1>(&'_0_1 (dyn Pettable)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 
 // Full name: test_crate::Pettable
@@ -64,7 +64,7 @@ trait Pettable<Self>
     vtable: test_crate::Pettable::{vtable}
 }
 
-fn test_crate::Pettable::pet<'_0, Self>(@1: &'_0 (Self))
+fn test_crate::Pettable::pet<'_0, Self>(@1: &'_0 Self)
 where
     [@TraitClause0]: Pettable<Self>,
 = <method_without_default_body>
@@ -73,10 +73,10 @@ struct test_crate::Cat::{vtable} {
   size: usize,
   align: usize,
   drop: unsafe fn(*mut (dyn Cat)),
-  method_meow: fn<'_0_1>(&'_0_1 ((dyn Cat))),
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
-  super_trait_1: &'static (test_crate::Feline::{vtable}),
-  super_trait_2: &'static (test_crate::Pettable::{vtable}),
+  method_meow: fn<'_0_1>(&'_0_1 (dyn Cat)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static test_crate::Feline::{vtable},
+  super_trait_2: &'static test_crate::Pettable::{vtable},
 }
 
 // Full name: test_crate::Cat
@@ -89,7 +89,7 @@ trait Cat<Self>
     vtable: test_crate::Cat::{vtable}
 }
 
-fn test_crate::Cat::meow<'_0, Self>(@1: &'_0 (Self))
+fn test_crate::Cat::meow<'_0, Self>(@1: &'_0 Self)
 where
     [@TraitClause0]: Cat<Self>,
 = <method_without_default_body>
@@ -102,7 +102,7 @@ unsafe fn {impl Destruct for HouseCat}::drop_in_place(@1: *mut HouseCat)
 {
     let @0: (); // return
     let @1: *mut HouseCat; // arg #1
-    let @2: &'0 mut (HouseCat); // anonymous local
+    let @2: &'0 mut HouseCat; // anonymous local
 
     storage_live(@2)
     @0 := ()
@@ -117,10 +117,10 @@ impl Destruct for HouseCat {
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::hunt
-fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 (HouseCat))
+fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 HouseCat)
 {
     let @0: (); // return
-    let self@1: &'0 (HouseCat); // arg #1
+    let self@1: &'0 HouseCat; // arg #1
 
     @0 := ()
     @0 := ()
@@ -142,15 +142,15 @@ unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Feline))
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::hunt::{vtable_method}
-fn {impl Feline for HouseCat}::hunt::{vtable_method}<'_0>(@1: &'_0 ((dyn Feline)))
+fn {impl Feline for HouseCat}::hunt::{vtable_method}<'_0>(@1: &'_0 (dyn Feline))
 {
     let @0: (); // return
-    let @1: &'_0 ((dyn Feline + '0)); // arg #1
-    let @2: &'_0 (HouseCat); // anonymous local
+    let @1: &'_0 (dyn Feline + '0); // arg #1
+    let @2: &'_0 HouseCat; // anonymous local
 
     @0 := ()
     storage_live(@2)
-    @2 := concretize<&'_0 ((dyn Feline + '1)), &'_0 (HouseCat)>(move (@1))
+    @2 := concretize<&'_0 (dyn Feline + '1), &'_0 HouseCat>(move (@1))
     @0 := {impl Feline for HouseCat}::hunt<'_0>(move (@2))
     return
 }
@@ -181,10 +181,10 @@ impl Feline for HouseCat {
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::pet
-fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 (HouseCat))
+fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 HouseCat)
 {
     let @0: (); // return
-    let self@1: &'0 (HouseCat); // arg #1
+    let self@1: &'0 HouseCat; // arg #1
 
     @0 := ()
     @0 := ()
@@ -206,15 +206,15 @@ unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Pettabl
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::pet::{vtable_method}
-fn {impl Pettable for HouseCat}::pet::{vtable_method}<'_0>(@1: &'_0 ((dyn Pettable)))
+fn {impl Pettable for HouseCat}::pet::{vtable_method}<'_0>(@1: &'_0 (dyn Pettable))
 {
     let @0: (); // return
-    let @1: &'_0 ((dyn Pettable + '0)); // arg #1
-    let @2: &'_0 (HouseCat); // anonymous local
+    let @1: &'_0 (dyn Pettable + '0); // arg #1
+    let @2: &'_0 HouseCat; // anonymous local
 
     @0 := ()
     storage_live(@2)
-    @2 := concretize<&'_0 ((dyn Pettable + '1)), &'_0 (HouseCat)>(move (@1))
+    @2 := concretize<&'_0 (dyn Pettable + '1), &'_0 HouseCat>(move (@1))
     @0 := {impl Pettable for HouseCat}::pet<'_0>(move (@2))
     return
 }
@@ -245,10 +245,10 @@ impl Pettable for HouseCat {
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::meow
-fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 (HouseCat))
+fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 HouseCat)
 {
     let @0: (); // return
-    let self@1: &'0 (HouseCat); // arg #1
+    let self@1: &'0 HouseCat; // arg #1
 
     @0 := ()
     @0 := ()
@@ -270,15 +270,15 @@ unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Cat))
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::meow::{vtable_method}
-fn {impl Cat for HouseCat}::meow::{vtable_method}<'_0>(@1: &'_0 ((dyn Cat)))
+fn {impl Cat for HouseCat}::meow::{vtable_method}<'_0>(@1: &'_0 (dyn Cat))
 {
     let @0: (); // return
-    let @1: &'_0 ((dyn Cat + '0)); // arg #1
-    let @2: &'_0 (HouseCat); // anonymous local
+    let @1: &'_0 (dyn Cat + '0); // arg #1
+    let @2: &'_0 HouseCat; // anonymous local
 
     @0 := ()
     storage_live(@2)
-    @2 := concretize<&'_0 ((dyn Cat + '1)), &'_0 (HouseCat)>(move (@1))
+    @2 := concretize<&'_0 (dyn Cat + '1), &'_0 HouseCat>(move (@1))
     @0 := {impl Cat for HouseCat}::meow<'_0>(move (@2))
     return
 }
@@ -289,8 +289,8 @@ fn {impl Cat for HouseCat}::{vtable}() -> test_crate::Cat::{vtable}
     let ret@0: test_crate::Cat::{vtable}; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let @3: &'static (test_crate::Feline::{vtable}); // anonymous local
-    let @4: &'static (test_crate::Pettable::{vtable}); // anonymous local
+    let @3: &'static test_crate::Feline::{vtable}; // anonymous local
+    let @4: &'static test_crate::Pettable::{vtable}; // anonymous local
 
     storage_live(size@1)
     size@1 := size_of<HouseCat>
@@ -321,13 +321,13 @@ fn main()
 {
     let @0: (); // return
     let cat@1: HouseCat; // local
-    let dyn_cat@2: &'0 ((dyn Cat + '1)); // local
-    let @3: &'2 (HouseCat); // anonymous local
-    let @4: &'2 (HouseCat); // anonymous local
-    let dyn_feline@5: &'3 ((dyn Feline + '4)); // local
-    let @6: &'0 ((dyn Cat + '1)); // anonymous local
-    let dyn_pettable@7: &'5 ((dyn Pettable + '6)); // local
-    let @8: &'0 ((dyn Cat + '1)); // anonymous local
+    let dyn_cat@2: &'0 (dyn Cat + '1); // local
+    let @3: &'2 HouseCat; // anonymous local
+    let @4: &'2 HouseCat; // anonymous local
+    let dyn_feline@5: &'3 (dyn Feline + '4); // local
+    let @6: &'0 (dyn Cat + '1); // anonymous local
+    let dyn_pettable@7: &'5 (dyn Pettable + '6); // local
+    let @8: &'0 (dyn Cat + '1); // anonymous local
 
     @0 := ()
     storage_live(cat@1)
@@ -337,18 +337,18 @@ fn main()
     storage_live(@4)
     @4 := &cat@1
     @3 := &*(@4)
-    dyn_cat@2 := unsize_cast<&'2 (HouseCat), &'0 ((dyn Cat + '1)), {impl Cat for HouseCat} with {impl Cat for HouseCat}::{vtable}>(move (@3))
+    dyn_cat@2 := unsize_cast<&'2 HouseCat, &'0 (dyn Cat + '1), {impl Cat for HouseCat} with {impl Cat for HouseCat}::{vtable}>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
     storage_live(dyn_feline@5)
     storage_live(@6)
     @6 := &*(dyn_cat@2) with_metadata(copy (dyn_cat@2.metadata))
-    dyn_feline@5 := unsize_cast<&'0 ((dyn Cat + '1)), &'3 ((dyn Feline + '4)),  at [5]>(move (@6))
+    dyn_feline@5 := unsize_cast<&'0 (dyn Cat + '1), &'3 (dyn Feline + '4),  at [5]>(move (@6))
     storage_dead(@6)
     storage_live(dyn_pettable@7)
     storage_live(@8)
     @8 := &*(dyn_cat@2) with_metadata(copy (dyn_cat@2.metadata))
-    dyn_pettable@7 := unsize_cast<&'0 ((dyn Cat + '1)), &'5 ((dyn Pettable + '6)),  at [6]>(move (@8))
+    dyn_pettable@7 := unsize_cast<&'0 (dyn Cat + '1), &'5 (dyn Pettable + '6),  at [6]>(move (@8))
     storage_dead(@8)
     @0 := ()
     storage_dead(dyn_pettable@7)

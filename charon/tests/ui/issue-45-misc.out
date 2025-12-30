@@ -45,7 +45,7 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-pub fn core::array::{Array<T, N>}::map<T, F, U, const N : usize>(@1: Array<T, N>, @2: F) -> Array<U, N>
+pub fn core::array::{[T; N]}::map<T, F, U, const N : usize>(@1: [T; N], @2: F) -> [U; N]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -64,13 +64,13 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
+pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
@@ -89,7 +89,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -140,19 +140,19 @@ pub trait Ord<Self>
 }
 
 #[lang_item("ord_cmp_method")]
-pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
 = <opaque>
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
-pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
@@ -162,7 +162,7 @@ impl PartialEq<u8> for u8 {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}::partial_cmp
-pub fn {impl PartialOrd<u8> for u8}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn {impl PartialOrd<u8> for u8}::partial_cmp<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}
@@ -213,7 +213,7 @@ pub trait Step<Self>
     non-dyn-compatible
 }
 
-pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     [@TraitClause0]: Step<Self>,
 = <opaque>
@@ -229,7 +229,7 @@ where
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::steps_between
-pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::forward_checked
@@ -273,7 +273,7 @@ where
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut (Range<A>[@TraitClause0])) -> Option<A>[@TraitClause0]
+pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
@@ -401,7 +401,7 @@ pub trait Extend<Self, A>
 }
 
 // Full name: core::iter::traits::collect::Extend::extend
-pub fn extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
+pub fn extend<'_0, Self, A, T>(@1: &'_0 mut Self, @2: T)
 where
     [@TraitClause0]: Extend<Self, A>,
     [@TraitClause1]: Sized<T>,
@@ -420,7 +420,7 @@ pub trait DoubleEndedIterator<Self>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
+pub fn next_back<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
 where
     [@TraitClause0]: DoubleEndedIterator<Self>,
 = <opaque>
@@ -434,7 +434,7 @@ pub trait ExactSizeIterator<Self>
 }
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
@@ -470,7 +470,7 @@ where
   Break(B),
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
@@ -548,7 +548,7 @@ pub enum AssertKind {
 }
 
 #[lang_item("slice_len_fn")]
-pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+pub fn core::slice::{[T]}::len<'_0, T>(@1: &'_0 [T]) -> usize
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -567,10 +567,10 @@ const UNIT_METADATA: () = @Fun0()
 struct closure {}
 
 // Full name: test_crate::map::{impl FnMut<(i32)> for closure}::call_mut
-fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (i32)) -> i32
+fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32)) -> i32
 {
     let @0: i32; // return
-    let @1: &'0 mut (closure); // arg #1
+    let @1: &'0 mut closure; // arg #1
     let tupled_args@2: (i32); // arg #2
     let v@3: i32; // local
 
@@ -596,7 +596,7 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
     let @0: i32; // return
     let @1: closure; // arg #1
     let @2: (i32); // arg #2
-    let @3: &'0 mut (closure); // anonymous local
+    let @3: &'0 mut closure; // anonymous local
 
     storage_live(@3)
     @3 := &mut @1
@@ -626,48 +626,48 @@ impl FnMut<(i32)> for closure {
     non-dyn-compatible
 }
 
-pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
 {
-    let @0: Array<i32, 256 : usize>; // return
-    let x@1: Array<i32, 256 : usize>; // arg #1
-    let @2: Array<i32, 256 : usize>; // anonymous local
+    let @0: [i32; 256 : usize]; // return
+    let x@1: [i32; 256 : usize]; // arg #1
+    let @2: [i32; 256 : usize]; // anonymous local
     let @3: closure; // anonymous local
 
     storage_live(@2)
     @2 := copy (x@1)
     storage_live(@3)
     @3 := closure {  }
-    @0 := core::array::{Array<T, N>}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
+    @0 := core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
 }
 
 // Full name: test_crate::array
-pub fn array<const LEN : usize>() -> Array<u8, LEN>
+pub fn array<const LEN : usize>() -> [u8; LEN]
 {
-    let @0: Array<u8, LEN>; // return
+    let @0: [u8; LEN]; // return
 
     @0 := @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
     return
 }
 
 // Full name: test_crate::cbd
-fn cbd(@1: Array<u8, 33 : usize>)
+fn cbd(@1: [u8; 33 : usize])
 {
     let @0: (); // return
-    let prf_input@1: Array<u8, 33 : usize>; // arg #1
+    let prf_input@1: [u8; 33 : usize]; // arg #1
     let @2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let @3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let iter@4: Range<u8>[{built_in impl Sized for u8}]; // local
     let @5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @6: &'0 mut (Range<u8>[{built_in impl Sized for u8}]); // anonymous local
-    let @7: &'0 mut (Range<u8>[{built_in impl Sized for u8}]); // anonymous local
+    let @6: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let @7: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let i@8: u8; // local
     let @9: u8; // anonymous local
     let @10: usize; // anonymous local
-    let @11: &'_ mut (Array<u8, 33 : usize>); // anonymous local
-    let @12: &'_ mut (u8); // anonymous local
+    let @11: &'_ mut [u8; 33 : usize]; // anonymous local
+    let @12: &'_ mut u8; // anonymous local
 
     @0 := ()
     storage_live(@2)
@@ -719,30 +719,30 @@ fn cbd(@1: Array<u8, 33 : usize>)
 }
 
 // Full name: test_crate::select
-fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
+fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
 {
     let @0: (); // return
-    let lhs@1: &'0 (Slice<u8>); // arg #1
-    let rhs@2: &'0 (Slice<u8>); // arg #2
+    let lhs@1: &'0 [u8]; // arg #1
+    let rhs@2: &'0 [u8]; // arg #2
     let @3: bool; // anonymous local
-    let @4: (&'1 (usize), &'1 (usize)); // anonymous local
-    let @5: &'1 (usize); // anonymous local
+    let @4: (&'1 usize, &'1 usize); // anonymous local
+    let @5: &'1 usize; // anonymous local
     let @6: usize; // anonymous local
-    let @7: &'0 (Slice<u8>); // anonymous local
-    let @8: &'1 (usize); // anonymous local
+    let @7: &'0 [u8]; // anonymous local
+    let @8: &'1 usize; // anonymous local
     let @9: usize; // anonymous local
-    let @10: &'0 (Slice<u8>); // anonymous local
-    let left_val@11: &'1 (usize); // local
-    let right_val@12: &'1 (usize); // local
+    let @10: &'0 [u8]; // anonymous local
+    let left_val@11: &'1 usize; // local
+    let right_val@12: &'1 usize; // local
     let @13: bool; // anonymous local
     let @14: usize; // anonymous local
     let @15: usize; // anonymous local
     let kind@16: AssertKind; // local
     let @17: AssertKind; // anonymous local
-    let @18: &'1 (usize); // anonymous local
-    let @19: &'1 (usize); // anonymous local
-    let @20: &'1 (usize); // anonymous local
-    let @21: &'1 (usize); // anonymous local
+    let @18: &'1 usize; // anonymous local
+    let @19: &'1 usize; // anonymous local
+    let @20: &'1 usize; // anonymous local
+    let @21: &'1 usize; // anonymous local
     let @22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
 
     @0 := ()
@@ -754,14 +754,14 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@6)
         storage_live(@7)
         @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
-        @6 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
+        @6 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
         storage_dead(@7)
         @5 := &@6
         storage_live(@8)
         storage_live(@9)
         storage_live(@10)
         @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
-        @9 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
+        @9 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
         storage_dead(@10)
         @8 := &@9
         @4 := (move (@5), move (@8))

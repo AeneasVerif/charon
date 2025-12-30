@@ -7,7 +7,7 @@ enum E1 {
 }
 
 // Full name: core::intrinsics::discriminant_value::<E1>
-pub fn discriminant_value::<E1><'_0>(@1: &'_0 (E1)) -> isize
+pub fn discriminant_value::<E1><'_0>(@1: &'_0 E1) -> isize
 = <opaque>
 
 // Full name: test_crate::E2
@@ -17,7 +17,7 @@ enum E2 {
 }
 
 // Full name: core::intrinsics::discriminant_value::<E2>
-pub fn discriminant_value::<E2><'_0>(@1: &'_0 (E2)) -> isize
+pub fn discriminant_value::<E2><'_0>(@1: &'_0 E2) -> isize
 = <opaque>
 
 // Full name: core::marker::MetaSized::<E1>
@@ -59,16 +59,16 @@ fn main()
 {
     let @0: (); // return
     let @1: isize; // anonymous local
-    let @2: &'0 (E1); // anonymous local
-    let @3: &'0 (E1); // anonymous local
+    let @2: &'0 E1; // anonymous local
+    let @3: &'0 E1; // anonymous local
     let @4: isize; // anonymous local
-    let @5: &'1 (E2); // anonymous local
-    let @6: &'1 (E2); // anonymous local
-    let @7: &'1 (E2); // anonymous local
-    let @8: &'0 (E1); // anonymous local
-    let @9: &'_ (E1); // anonymous local
+    let @5: &'1 E2; // anonymous local
+    let @6: &'1 E2; // anonymous local
+    let @7: &'1 E2; // anonymous local
+    let @8: &'0 E1; // anonymous local
+    let @9: &'_ E1; // anonymous local
     let @10: E1; // anonymous local
-    let @11: &'_ (E2); // anonymous local
+    let @11: &'_ E2; // anonymous local
     let @12: E2; // anonymous local
 
     storage_live(@9)

@@ -22,7 +22,7 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -72,10 +72,10 @@ trait Trait<Self, T, Self_Item>
 struct Struct {}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
-pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 (Struct)) -> Struct
+pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 Struct) -> Struct
 {
     let @0: Struct; // return
-    let self@1: &'0 (Struct); // arg #1
+    let self@1: &'0 Struct; // arg #1
 
     @0 := Struct {  }
     return
@@ -133,7 +133,7 @@ where
     let @0: (); // return
     let x@1: T; // arg #1
     let @2: T; // anonymous local
-    let @3: &'0 (T); // anonymous local
+    let @3: &'0 T; // anonymous local
 
     @0 := ()
     storage_live(@2)

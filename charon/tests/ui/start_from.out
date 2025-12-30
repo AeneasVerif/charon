@@ -23,7 +23,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -37,7 +37,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -82,7 +82,7 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{Iter<'a, T>[@TraitClause0]}::as_slice
-pub fn as_slice<'a, '_1, T>(@1: &'_1 (Iter<'a, T>[@TraitClause0])) -> &'a (Slice<T>)
+pub fn as_slice<'a, '_1, T>(@1: &'_1 Iter<'a, T>[@TraitClause0]) -> &'a [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>

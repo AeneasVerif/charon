@@ -145,6 +145,26 @@ impl Pattern {
                     TypeId::Tuple => false,
                 }
             }
+            TyKind::Array(ty, len) => {
+                let type_name = Name::from_path(&["Array"]);
+                let args = GenericArgs {
+                    regions: [].into(),
+                    types: [ty.clone()].into(),
+                    const_generics: [len.clone()].into(),
+                    trait_refs: [].into(),
+                };
+                self.matches_with_generics(ctx, &type_name, Some(&args))
+            }
+            TyKind::Slice(ty) => {
+                let type_name = Name::from_path(&["Slice"]);
+                let args = GenericArgs {
+                    regions: [].into(),
+                    types: [ty.clone()].into(),
+                    const_generics: [].into(),
+                    trait_refs: [].into(),
+                };
+                self.matches_with_generics(ctx, &type_name, Some(&args))
+            }
             TyKind::TypeVar(..)
             | TyKind::Literal(..)
             | TyKind::Never

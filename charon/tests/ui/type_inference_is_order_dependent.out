@@ -50,7 +50,7 @@ pub opaque type Arguments<'a>
 pub opaque type Argument<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a (Array<u8, N>), @2: &'a (Array<Argument<'a>, M>)) -> Arguments<'a>
+pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a [u8; N], @2: &'a [Argument<'a>; M]) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::result::Result
@@ -72,13 +72,13 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}::fmt
-pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 bool, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}
@@ -88,7 +88,7 @@ impl Debug for bool {
 }
 
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
-pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
+pub fn new_debug<'_0, '_1, T>(@1: &'_1 T) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
@@ -163,18 +163,18 @@ where
     let @0: (); // return
     let @1: (); // anonymous local
     let @2: Arguments<'0>; // anonymous local
-    let args@3: (&'1 (U)); // local
-    let @4: &'1 (U); // anonymous local
+    let args@3: (&'1 U); // local
+    let @4: &'1 U; // anonymous local
     let @5: U; // anonymous local
-    let args@6: Array<Argument<'2>, 1 : usize>; // local
+    let args@6: [Argument<'2>; 1 : usize]; // local
     let @7: Argument<'2>; // anonymous local
-    let @8: &'1 (U); // anonymous local
-    let @9: &'3 (Array<u8, 4 : usize>); // anonymous local
-    let @10: &'3 (Array<u8, 4 : usize>); // anonymous local
-    let @11: &'4 (Array<Argument<'2>, 1 : usize>); // anonymous local
-    let @12: &'4 (Array<Argument<'2>, 1 : usize>); // anonymous local
-    let @13: Array<u8, 4 : usize>; // anonymous local
-    let @14: &'3 (Array<u8, 4 : usize>); // anonymous local
+    let @8: &'1 U; // anonymous local
+    let @9: &'3 [u8; 4 : usize]; // anonymous local
+    let @10: &'3 [u8; 4 : usize]; // anonymous local
+    let @11: &'4 [Argument<'2>; 1 : usize]; // anonymous local
+    let @12: &'4 [Argument<'2>; 1 : usize]; // anonymous local
+    let @13: [u8; 4 : usize]; // anonymous local
+    let @14: &'3 [u8; 4 : usize]; // anonymous local
 
     @0 := ()
     storage_live(@1)

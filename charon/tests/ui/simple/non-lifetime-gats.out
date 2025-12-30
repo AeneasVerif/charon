@@ -34,7 +34,7 @@ pub trait Deref<Self>
 }
 
 #[lang_item("deref_method")]
-pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Target)
+pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 Self) -> &'_0 @TraitClause0::Target
 where
     [@TraitClause0]: Deref<Self>,
 = <opaque>
@@ -61,7 +61,7 @@ where
 }
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])) -> &'_0 (T)
+pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(@1: &'_0 alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 T
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,

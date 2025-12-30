@@ -71,9 +71,9 @@ pub enum AssertKind {
   Match,
 }
 
-// Full name: core::slice::{Slice<T>}::len
+// Full name: core::slice::{[T]}::len
 #[lang_item("slice_len_fn")]
-pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+pub fn len<'_0, T>(@1: &'_0 [T]) -> usize
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -100,10 +100,10 @@ fn function_call(@1: u32)
 }
 
 // Full name: test_crate::sum
-pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
+pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
 {
     let @0: u32; // return
-    let s@1: &'0 (Slice<u32>); // arg #1
+    let s@1: &'0 [u32]; // arg #1
     let sum@2: u32; // local
     let i@3: usize; // local
     let @4: (); // anonymous local
@@ -113,7 +113,7 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let @8: bool; // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
-    let @11: &'0 (Slice<u32>); // anonymous local
+    let @11: &'0 [u32]; // anonymous local
     let @12: u32; // anonymous local
     let @13: usize; // anonymous local
     let @14: u32; // anonymous local
@@ -127,8 +127,8 @@ pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let @22: u32; // anonymous local
     let @23: u32; // anonymous local
     let @24: u32; // anonymous local
-    let @25: &'_ (Slice<u32>); // anonymous local
-    let @26: &'_ (u32); // anonymous local
+    let @25: &'_ [u32]; // anonymous local
+    let @26: &'_ u32; // anonymous local
 
     storage_live(@7)
     storage_live(@14)
@@ -326,28 +326,28 @@ fn foo()
     let @12: Bar; // anonymous local
     let @13: u32; // anonymous local
     let @14: u32; // anonymous local
-    let a@15: Array<u32, 10 : usize>; // local
-    let @16: (&'0 (u32), &'0 (u32)); // anonymous local
-    let @17: &'0 (u32); // anonymous local
+    let a@15: [u32; 10 : usize]; // local
+    let @16: (&'0 u32, &'0 u32); // anonymous local
+    let @17: &'0 u32; // anonymous local
     let @18: usize; // anonymous local
-    let @19: &'0 (u32); // anonymous local
-    let left_val@20: &'0 (u32); // local
-    let right_val@21: &'0 (u32); // local
+    let @19: &'0 u32; // anonymous local
+    let left_val@20: &'0 u32; // local
+    let right_val@21: &'0 u32; // local
     let @22: bool; // anonymous local
     let @23: u32; // anonymous local
     let @24: u32; // anonymous local
     let kind@25: AssertKind; // local
     let @26: AssertKind; // anonymous local
-    let @27: &'0 (u32); // anonymous local
-    let @28: &'0 (u32); // anonymous local
-    let @29: &'0 (u32); // anonymous local
-    let @30: &'0 (u32); // anonymous local
+    let @27: &'0 u32; // anonymous local
+    let @28: &'0 u32; // anonymous local
+    let @29: &'0 u32; // anonymous local
+    let @30: &'0 u32; // anonymous local
     let @31: Option<Arguments<'1>>[{built_in impl Sized for Arguments<'1>}]; // anonymous local
-    let @32: &'0 (u32); // anonymous local
-    let @33: &'_ (u32); // anonymous local
+    let @32: &'0 u32; // anonymous local
+    let @33: &'_ u32; // anonymous local
     let @34: u32; // anonymous local
-    let @35: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @36: &'_ (u32); // anonymous local
+    let @35: &'_ [u32; 10 : usize]; // anonymous local
+    let @36: &'_ u32; // anonymous local
 
     storage_live(@32)
     @0 := ()
@@ -522,7 +522,7 @@ pub fn fake_read(@1: u32)
 fn fool()
 {
     let @0: (); // return
-    let @1: &'0 (Str); // anonymous local
+    let @1: &'0 Str; // anonymous local
 
     @0 := ()
     storage_live(@1)

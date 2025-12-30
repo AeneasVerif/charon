@@ -563,20 +563,39 @@ and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
   | [ PWild ] -> true
   | _ -> false
 
-and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
-  match (pid, id) with
-  | TTuple, TTuple | TArray, TBuiltin TArray | TSlice, TBuiltin TSlice -> true
-  | _ -> false
-
 and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pty : expr) (ty : T.ty) : bool =
   match (pty, ty) with
   | EComp pid, TAdt tref ->
       match_pattern_with_type_id ctx c m pid tref.id tref.generics
   | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
-  | EPrimAdt (pid, pgenerics), TAdt tref ->
-      match_primitive_adt pid tref.id
-      && match_generic_args ctx c m pgenerics tref.generics
+  | EPrimAdt (pid, pgenerics), ty -> begin
+      match (pid, ty) with
+      | TArray, TArray (ty, len) ->
+          let generics : T.generic_args =
+            {
+              types = [ ty ];
+              const_generics = [ len ];
+              regions = [];
+              trait_refs = [];
+            }
+          in
+          match_generic_args ctx c m pgenerics generics
+      | TSlice, TSlice ty ->
+          let generics : T.generic_args =
+            {
+              types = [ ty ];
+              const_generics = [];
+              regions = [];
+              trait_refs = [];
+            }
+          in
+          match_generic_args ctx c m pgenerics generics
+      | TTuple, TAdt tref ->
+          tref.id == TTuple
+          && match_generic_args ctx c m pgenerics tref.generics
+      | _ -> false
+    end
   | ERef (pr, pty, prk), TRef (r, ty, rk) ->
       match_region c m pr r
       && match_expr_with_ty ctx c m pty ty
@@ -1015,8 +1034,6 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
             (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
                (Some generics))
       | TTuple -> EPrimAdt (TTuple, generics)
-      | TBuiltin TArray -> EPrimAdt (TArray, generics)
-      | TBuiltin TSlice -> EPrimAdt (TSlice, generics)
       | TBuiltin TBox -> EComp [ PIdent ("Box", 0, generics) ]
       | TBuiltin TStr -> EComp [ PIdent ("str", 0, generics) ])
   | TVar v -> EVar (type_var_to_pattern m v)
@@ -1047,6 +1064,23 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
   | TError _ -> EVar None
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
+  | TArray (ty, len) ->
+      let generics =
+        generic_args_to_pattern ctx c m
+          {
+            types = [ ty ];
+            const_generics = [ len ];
+            regions = [];
+            trait_refs = [];
+          }
+      in
+      EPrimAdt (TArray, generics)
+  | TSlice ty ->
+      let generics =
+        generic_args_to_pattern ctx c m
+          { types = [ ty ]; const_generics = []; regions = []; trait_refs = [] }
+      in
+      EPrimAdt (TSlice, generics)
   | _ ->
       let fmt_env = ctx_to_fmt_env ctx in
       raise

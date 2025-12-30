@@ -97,8 +97,8 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Trait<T> for Slice<T>}::method
-fn {impl Trait<T> for Slice<T>}::method<T, U>()
+// Full name: test_crate::{impl Trait<T> for [T]}::method
+fn {impl Trait<T> for [T]}::method<T, U>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -110,19 +110,19 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<T> for Slice<T>}
-impl<T> Trait<T> for Slice<T>
+// Full name: test_crate::{impl Trait<T> for [T]}
+impl<T> Trait<T> for [T]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Slice<T>}
+    parent_clause0 = {built_in impl MetaSized for [T]}
     parent_clause1 = @TraitClause0
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for Slice<T>}::method<T, U>[@TraitClause0, @TraitClause0_1]
+    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for [T]}::method<T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Trait<T> for &'_0 (Slice<T>)}::method
-fn {impl Trait<T> for &'_0 (Slice<T>)}::method<'_0, T, U>()
+// Full name: test_crate::{impl Trait<T> for &'_0 [T]}::method
+fn {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -134,14 +134,14 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<T> for &'_0 (Slice<T>)}
-impl<'_0, T> Trait<T> for &'_0 (Slice<T>)
+// Full name: test_crate::{impl Trait<T> for &'_0 [T]}
+impl<'_0, T> Trait<T> for &'_0 [T]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<T>)}
+    parent_clause0 = {built_in impl MetaSized for &'_ [T]}
     parent_clause1 = @TraitClause0
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for &'_0 (Slice<T>)}::method<'_0, T, U>[@TraitClause0, @TraitClause0_1]
+    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>[@TraitClause0, @TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -172,13 +172,13 @@ where
 }
 
 // Full name: test_crate::{Generic<T>[@TraitClause0]}::get
-fn get<'_0, T>(@1: &'_0 (Generic<T>[@TraitClause0])) -> &'_0 (T)
+fn get<'_0, T>(@1: &'_0 Generic<T>[@TraitClause0]) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 (T); // return
-    let self@1: &'1 (Generic<T>[@TraitClause0]); // arg #1
-    let @2: &'0 (T); // anonymous local
+    let @0: &'0 T; // return
+    let self@1: &'1 Generic<T>[@TraitClause0]; // arg #1
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &(*(self@1)).value
@@ -192,15 +192,15 @@ fn use_generic()
 {
     let @0: (); // return
     let _int_generic@1: Generic<i32>[{built_in impl Sized for i32}]; // local
-    let _str_generic@2: Generic<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}]; // local
-    let @3: &'3 (i32); // anonymous local
-    let @4: &'4 (Generic<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let _str_generic@2: Generic<&'0 Str>[{built_in impl Sized for &'0 Str}]; // local
+    let @3: &'3 i32; // anonymous local
+    let @4: &'4 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     @0 := ()
     storage_live(_int_generic@1)
     _int_generic@1 := new<i32>[{built_in impl Sized for i32}](const (42 : i32))
     storage_live(_str_generic@2)
-    _str_generic@2 := new<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}](const ("hello"))
+    _str_generic@2 := new<&'0 Str>[{built_in impl Sized for &'0 Str}](const ("hello"))
     storage_live(@3)
     storage_live(@4)
     @4 := &_int_generic@1

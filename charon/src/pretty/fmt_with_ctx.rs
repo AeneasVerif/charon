@@ -1434,9 +1434,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                         match ty_ref.id {
                             TypeId::Tuple => write!(f, "({})", ops_s),
                             TypeId::Builtin(BuiltinTy::Box) => write!(f, "Box({})", ops_s),
-                            TypeId::Builtin(
-                                BuiltinTy::Array | BuiltinTy::Slice | BuiltinTy::Str,
-                            ) => {
+                            TypeId::Builtin(BuiltinTy::Str) => {
                                 write!(f, "[{}]", ops_s)
                             }
                             TypeId::Adt(ty_id) => {
@@ -1984,15 +1982,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
 impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
-            TyKind::Adt(tref) => {
-                if tref.id.is_tuple() {
-                    assert!(tref.generics.trait_refs.is_empty());
+            TyKind::Adt(tref) => match tref.id {
+                TypeId::Tuple => {
                     let generics = tref.generics.fmt_explicits(ctx).format(", ");
                     write!(f, "({generics})")
-                } else {
-                    write!(f, "{}", tref.with_ctx(ctx))
                 }
-            }
+                _ => write!(f, "{}", tref.with_ctx(ctx)),
+            },
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
             TyKind::Literal(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),
@@ -2001,7 +1997,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 if let RefKind::Mut = kind {
                     write!(f, "mut ")?;
                 }
-                write!(f, "({})", ty.with_ctx(ctx))
+                write!(f, "{}", ty.with_ctx(ctx))
             }
             TyKind::RawPtr(ty, kind) => {
                 write!(f, "*")?;
@@ -2010,6 +2006,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     RefKind::Mut => write!(f, "mut")?,
                 }
                 write!(f, " {}", ty.with_ctx(ctx))
+            }
+            TyKind::Array(ty, len) => {
+                write!(f, "[{}; {}]", ty.with_ctx(ctx), len.with_ctx(ctx))
+            }
+            TyKind::Slice(ty) => {
+                write!(f, "[{}]", ty.with_ctx(ctx))
             }
             TyKind::TraitType(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)

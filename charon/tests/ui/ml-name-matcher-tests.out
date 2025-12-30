@@ -36,7 +36,7 @@ pub trait Index<Self, Idx>
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
 where
     [@TraitClause0]: Index<Self, Idx>,
 = <opaque>
@@ -61,7 +61,7 @@ where
 }
 
 // Full name: core::option::{Option<T>[@TraitClause0]}::is_some
-pub fn is_some<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+pub fn is_some<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -91,27 +91,27 @@ pub trait SliceIndex<Self, T>
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
-// Full name: core::slice::index::{impl Index<I> for Slice<T>}::index
-pub fn {impl Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
+// Full name: core::slice::index::{impl Index<I> for [T]}::index
+pub fn {impl Index<I> for [T]}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: SliceIndex<I, Slice<T>>,
+    [@TraitClause2]: SliceIndex<I, [T]>,
 = <opaque>
 
-// Full name: core::slice::index::{impl Index<I> for Slice<T>}
-impl<T, I> Index<I> for Slice<T>
+// Full name: core::slice::index::{impl Index<I> for [T]}
+impl<T, I> Index<I> for [T]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: SliceIndex<I, Slice<T>>,
+    [@TraitClause2]: SliceIndex<I, [T]>,
 {
-    parent_clause0 = {built_in impl MetaSized for Slice<T>}
+    parent_clause0 = {built_in impl MetaSized for [T]}
     parent_clause1 = @TraitClause1::parent_clause0
     parent_clause2 = @TraitClause2::parent_clause3
     type Output = @TraitClause2::Output
-    fn index<'_0_1> = {impl Index<I> for Slice<T>}::index<'_0_1, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I> for Slice<T>}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0_1> = {impl Index<I> for [T]}::index<'_0_1, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Index<I> for [T]}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
@@ -120,12 +120,12 @@ impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}] {
     vtable: {impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}::{vtable}
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[{built_in impl Sized for &'_0 (@TraitClause0::Output)}]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 T) -> Option<&'_0 @TraitClause0::Output>[{built_in impl Sized for &'_0 @TraitClause0::Output}]
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[{built_in impl Sized for &'_0 mut (@TraitClause0::Output)}]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> Option<&'_0 mut @TraitClause0::Output>[{built_in impl Sized for &'_0 mut @TraitClause0::Output}]
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
@@ -140,69 +140,69 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (@TraitClause0::Output)
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 T) -> &'_0 @TraitClause0::Output
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (@TraitClause0::Output)
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> &'_0 mut @TraitClause0::Output
 where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get
-pub fn {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[{built_in impl Sized for &'_0 (Slice<T>)}]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (Slice<T>)>[{built_in impl Sized for &'_0 mut (Slice<T>)}]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *const Slice<T>) -> *const Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked
+pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *const [T]) -> *const [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *mut Slice<T>) -> *mut Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *mut [T]) -> *mut [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index
-pub fn {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 [T]) -> &'_0 [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}
-impl<T> SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}
+impl<T> SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {built_in impl MetaSized for RangeFrom<usize>[{built_in impl Sized for usize}]}
     parent_clause1 = {impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
-    parent_clause2 = {built_in impl MetaSized for Slice<T>}
-    parent_clause3 = {built_in impl MetaSized for Slice<T>}
-    type Output = Slice<T>
-    fn get<'_0_1> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0_1, T>[@TraitClause0]
-    fn get_mut<'_0_1> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0_1, T>[@TraitClause0]
-    fn get_unchecked = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0_1> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index<'_0_1, T>[@TraitClause0]
-    fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[@TraitClause0]
-    vtable: {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[@TraitClause0]
+    parent_clause2 = {built_in impl MetaSized for [T]}
+    parent_clause3 = {built_in impl MetaSized for [T]}
+    type Output = [T]
+    fn get<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0_1, T>[@TraitClause0]
+    fn get_mut<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0_1, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index<'_0_1, T>[@TraitClause0]
+    fn index_mut<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[@TraitClause0]
+    vtable: {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: alloc::alloc::Global
@@ -299,20 +299,20 @@ fn foo()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let slice@3: &'1 (Slice<bool>); // local
-    let @4: &'2 (Array<bool, 1 : usize>); // anonymous local
-    let @5: &'2 (Array<bool, 1 : usize>); // anonymous local
-    let @6: &'1 (Slice<bool>); // anonymous local
-    let @7: &'1 (Slice<bool>); // anonymous local
-    let @8: &'1 (Slice<bool>); // anonymous local
+    let @2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let slice@3: &'1 [bool]; // local
+    let @4: &'2 [bool; 1 : usize]; // anonymous local
+    let @5: &'2 [bool; 1 : usize]; // anonymous local
+    let @6: &'1 [bool]; // anonymous local
+    let @7: &'1 [bool]; // anonymous local
+    let @8: &'1 [bool]; // anonymous local
     let @9: RangeFrom<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let @10: &'2 (Array<bool, 1 : usize>); // anonymous local
-    let @11: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @12: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @10: &'2 [bool; 1 : usize]; // anonymous local
+    let @11: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @12: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let @13: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @14: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @15: Array<bool, 1 : usize>; // anonymous local
+    let @14: &'_ [bool; 1 : usize]; // anonymous local
+    let @15: [bool; 1 : usize]; // anonymous local
 
     storage_live(@12)
     storage_live(@13)
@@ -347,7 +347,7 @@ fn foo()
     @8 := &*(slice@3) with_metadata(copy (slice@3.metadata))
     storage_live(@9)
     @9 := RangeFrom { start: const (1 : usize) }
-    @7 := {impl Index<I> for Slice<T>}::index<'_, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<Slice<T>> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move (@8), move (@9))
+    @7 := {impl Index<I> for [T]}::index<'_, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move (@8), move (@9))
     storage_dead(@9)
     storage_dead(@8)
     @6 := &*(@7) with_metadata(copy (@7.metadata))
@@ -423,13 +423,13 @@ fn mono_usage()
 {
     let @0: (); // return
     let _container1@1: MonoContainer<i32>[{built_in impl Sized for i32}]; // local
-    let _container2@2: MonoContainer<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}]; // local
+    let _container2@2: MonoContainer<&'0 Str>[{built_in impl Sized for &'0 Str}]; // local
 
     @0 := ()
     storage_live(_container1@1)
     _container1@1 := create<i32>[{built_in impl Sized for i32}](const (42 : i32))
     storage_live(_container2@2)
-    _container2@2 := create<&'0 (Str)>[{built_in impl Sized for &'0 (Str)}](const ("test"))
+    _container2@2 := create<&'0 Str>[{built_in impl Sized for &'0 Str}](const ("test"))
     @0 := ()
     storage_dead(_container2@2)
     storage_dead(_container1@1)
@@ -445,19 +445,19 @@ trait Get<'a, Self, T>
     vtable: test_crate::Get::{vtable}<'a, T>
 }
 
-fn test_crate::Get::get<'a, Self, T>(@1: Self) -> &'a (T)
+fn test_crate::Get::get<'a, Self, T>(@1: Self) -> &'a T
 where
     [@TraitClause0]: Get<'a, Self, T>,
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::get
-fn {impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::get<'a, T>(@1: &'a (MonoContainer<T>[@TraitClause0])) -> &'a (T)
+// Full name: test_crate::{impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::get
+fn {impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::get<'a, T>(@1: &'a MonoContainer<T>[@TraitClause0]) -> &'a T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 (T); // return
-    let self@1: &'1 (MonoContainer<T>[@TraitClause0]); // arg #1
-    let @2: &'0 (T); // anonymous local
+    let @0: &'0 T; // return
+    let self@1: &'1 MonoContainer<T>[@TraitClause0]; // arg #1
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &(*(self@1)).item
@@ -466,15 +466,15 @@ where
     return
 }
 
-// Full name: test_crate::{impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}
-impl<'a, T> Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])
+// Full name: test_crate::{impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}
+impl<'a, T> Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ (MonoContainer<T>[@TraitClause0])}
+    parent_clause0 = {built_in impl MetaSized for &'_ MonoContainer<T>[@TraitClause0]}
     parent_clause1 = @TraitClause0
-    fn get = {impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::get<'a, T>[@TraitClause0]
-    vtable: {impl Get<'a, T> for &'a (MonoContainer<T>[@TraitClause0])}::{vtable}<'a, T>[@TraitClause0]
+    fn get = {impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::get<'a, T>[@TraitClause0]
+    vtable: {impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
 

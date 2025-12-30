@@ -42,14 +42,14 @@ pub trait Trait::<bool>
     vtable: test_crate::Trait::{vtable}::<bool>
 }
 
-pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 (bool))
+pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 bool)
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait::<bool>}::method
-pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 (bool))
+pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 bool)
 {
     let @0: (); // return
-    let self@1: &'0 (bool); // arg #1
+    let self@1: &'0 bool; // arg #1
 
     @0 := ()
     @0 := ()
@@ -68,7 +68,7 @@ fn do_test::<bool>(@1: bool)
 {
     let @0: (); // return
     let x@1: bool; // arg #1
-    let @2: &'0 (bool); // anonymous local
+    let @2: &'0 bool; // anonymous local
 
     @0 := ()
     storage_live(@2)

@@ -18,11 +18,11 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::wrap_shared_in_option
-pub fn wrap_shared_in_option<'a, T>(@1: &'a (T)) -> Option<&'a (T)>
+pub fn wrap_shared_in_option<'a, T>(@1: &'a T) -> Option<&'a T>
 {
-    let @0: Option<&'0 (T)>; // return
-    let x@1: &'0 (T); // arg #1
-    let @2: &'0 (T); // anonymous local
+    let @0: Option<&'0 T>; // return
+    let x@1: &'0 T; // arg #1
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)

@@ -9,7 +9,7 @@ pub trait PartialEq::<bool, bool>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
 = <opaque>
 
 // Full name: core::cmp::Eq::<bool>
@@ -21,7 +21,7 @@ pub trait Eq::<bool>
 }
 
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
-pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
@@ -79,8 +79,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let init@1: bool; // arg #1
     let expected@2: bool; // arg #2
     let @3: bool; // anonymous local
-    let @4: &'0 (bool); // anonymous local
-    let @5: &'0 (bool); // anonymous local
+    let @4: &'0 bool; // anonymous local
+    let @5: &'0 bool; // anonymous local
 
     bb0: {
         @0 := ();

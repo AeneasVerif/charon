@@ -31,31 +31,34 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         let Some((subplace, pe @ (Index { .. } | Subslice { .. }))) = place.as_projection() else {
             return;
         };
-        let tref = subplace.ty.as_adt().unwrap();
-        let builtin_ty = tref.id.as_builtin().unwrap();
+
+        let (ty, len) = match subplace.ty.kind() {
+            TyKind::Array(ty, len) => (ty.clone(), Some(len.clone())),
+            TyKind::Slice(ty) => (ty.clone(), None),
+            _ => unreachable!("Indexing can only be done on arrays or slices"),
+        };
 
         // The built-in function to call.
         let indexing_function = {
             let builtin_fun = BuiltinFunId::Index(BuiltinIndexOp {
-                is_array: matches!(builtin_ty, BuiltinTy::Array),
+                is_array: subplace.ty.kind().is_array(),
                 mutability: RefKind::mutable(mut_access),
-                is_range: matches!(pe, Subslice { .. }),
+                is_range: pe.is_subslice(),
             });
             // Same generics as the array/slice type, except for the extra lifetime.
-            let mut generics = tref.generics.clone();
-            generics.regions = [Region::Erased].into();
+            let generics = GenericArgs {
+                types: [ty.clone()].into(),
+                const_generics: len.map(|l| [l].into()).unwrap_or_default(),
+                regions: [Region::Erased].into(),
+                trait_refs: [].into(),
+            };
             FnOperand::Regular(FnPtr::new(FnPtrKind::mk_builtin(builtin_fun), generics))
         };
 
-        let elem_ty = tref.generics.types[0].clone();
         let output_inner_ty = if matches!(pe, Index { .. }) {
-            elem_ty
+            ty
         } else {
-            TyKind::Adt(TypeDeclRef {
-                id: TypeId::Builtin(BuiltinTy::Slice),
-                generics: Box::new(GenericArgs::new_for_builtin(vec![elem_ty].into())),
-            })
-            .into_ty()
+            TyKind::Slice(ty).into_ty()
         };
         let output_ty = {
             TyKind::Ref(

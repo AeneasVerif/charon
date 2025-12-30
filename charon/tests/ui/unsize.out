@@ -22,7 +22,7 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -51,7 +51,7 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
 = <opaque>
@@ -136,7 +136,7 @@ pub fn alloc::string::{String}::new() -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
-pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
+pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 String) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Clone for String}
@@ -147,7 +147,7 @@ impl Clone for String {
 }
 
 // Full name: alloc::string::{impl Display for String}::fmt
-pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 (String), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 String, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
@@ -177,28 +177,28 @@ const UNIT_METADATA: () = @Fun0()
 fn foo()
 {
     let @0: (); // return
-    let array@1: Array<i32, 2 : usize>; // local
-    let @2: &'0 (Slice<i32>); // anonymous local
-    let @3: &'1 (Array<i32, 2 : usize>); // anonymous local
-    let @4: &'1 (Array<i32, 2 : usize>); // anonymous local
-    let @5: alloc::boxed::Box<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]; // anonymous local
-    let @6: alloc::boxed::Box<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]; // anonymous local
-    let @7: Array<i32, 2 : usize>; // anonymous local
-    let @8: Rc<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]; // anonymous local
-    let @9: Rc<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]; // anonymous local
-    let @10: Array<i32, 2 : usize>; // anonymous local
+    let array@1: [i32; 2 : usize]; // local
+    let @2: &'0 [i32]; // anonymous local
+    let @3: &'1 [i32; 2 : usize]; // anonymous local
+    let @4: &'1 [i32; 2 : usize]; // anonymous local
+    let @5: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
+    let @6: alloc::boxed::Box<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let @7: [i32; 2 : usize]; // anonymous local
+    let @8: Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
+    let @9: Rc<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let @10: [i32; 2 : usize]; // anonymous local
     let string@11: String; // local
-    let @12: &'2 ((dyn Display + '3)); // anonymous local
-    let @13: &'4 (String); // anonymous local
-    let @14: &'4 (String); // anonymous local
+    let @12: &'2 (dyn Display + '3); // anonymous local
+    let @13: &'4 String; // anonymous local
+    let @14: &'4 String; // anonymous local
     let @15: alloc::boxed::Box<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '5)}, {built_in impl Sized for Global}]; // anonymous local
     let @16: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let @17: String; // anonymous local
-    let @18: &'4 (String); // anonymous local
+    let @18: &'4 String; // anonymous local
     let @19: Rc<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '6)}, {built_in impl Sized for Global}]; // anonymous local
     let @20: Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let @21: String; // anonymous local
-    let @22: &'4 (String); // anonymous local
+    let @22: &'4 String; // anonymous local
 
     @0 := ()
     storage_live(array@1)
@@ -216,23 +216,23 @@ fn foo()
     storage_live(@6)
     storage_live(@7)
     @7 := copy (array@1)
-    @6 := @BoxNew<Array<i32, 2 : usize>>[{built_in impl Sized for Array<i32, 2 : usize>}](move (@7))
-    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}], alloc::boxed::Box<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}], 2 : usize>(move (@6))
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]] @6
+    @6 := @BoxNew<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move (@7))
+    @5 := unsize_cast<alloc::boxed::Box<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2 : usize>(move (@6))
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] @6
     storage_dead(@7)
     storage_dead(@6)
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<Slice<i32>, Global>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]] @5
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] @5
     storage_dead(@5)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
     @10 := copy (array@1)
-    @9 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<Array<i32, 2 : usize>>[{built_in impl Sized for Array<i32, 2 : usize>}](move (@10))
-    @8 := unsize_cast<Rc<Array<i32, 2 : usize>>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}], Rc<Slice<i32>>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]>(move (@9))
-    conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<Array<i32, 2 : usize>, Global>[{built_in impl MetaSized for Array<i32, 2 : usize>}, {built_in impl Sized for Global}]] @9
+    @9 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move (@10))
+    @8 := unsize_cast<Rc<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]>(move (@9))
+    conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] @9
     storage_dead(@10)
     storage_dead(@9)
-    conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<Slice<i32>, Global>[{built_in impl MetaSized for Slice<i32>}, {built_in impl Sized for Global}]] @8
+    conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] @8
     storage_dead(@8)
     storage_live(string@11)
     string@11 := alloc::string::{String}::new()
@@ -241,7 +241,7 @@ fn foo()
     storage_live(@14)
     @14 := &string@11
     @13 := &*(@14)
-    @12 := unsize_cast<&'4 (String), &'2 ((dyn Display + '3)), {impl Display for String} with {impl Display for String}::{vtable}>(move (@13))
+    @12 := unsize_cast<&'4 String, &'2 (dyn Display + '3), {impl Display for String} with {impl Display for String}::{vtable}>(move (@13))
     storage_dead(@13)
     storage_dead(@14)
     storage_dead(@12)

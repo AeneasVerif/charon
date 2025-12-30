@@ -23,7 +23,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -37,7 +37,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -51,7 +51,7 @@ pub trait Eq<Self>
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
-pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
@@ -60,19 +60,19 @@ impl PartialEq<u8> for u8 {
     vtable: {impl PartialEq<u8> for u8}::{vtable}
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq
-pub fn {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 (&'_1 (A)), @2: &'_3 (&'_0 (B))) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}::eq
+pub fn {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 &'_1 A, @2: &'_3 &'_0 B) -> bool
 where
     [@TraitClause0]: PartialEq<A, B>,
 = <opaque>
 
-// Full name: core::cmp::impls::{impl PartialEq<&'_0 (B)> for &'_1 (A)}
-impl<'_0, '_1, A, B> PartialEq<&'_0 (B)> for &'_1 (A)
+// Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}
+impl<'_0, '_1, A, B> PartialEq<&'_0 B> for &'_1 A
 where
     [@TraitClause0]: PartialEq<A, B>,
 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'_0, '_1, '_0_1, '_1_1, A, B>[@TraitClause0]
-    vtable: {impl PartialEq<&'_0 (B)> for &'_1 (A)}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_0_1, '_1_1, A, B>[@TraitClause0]
+    vtable: {impl PartialEq<&'_0 B> for &'_1 A}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
 }
 
 // Full name: core::fmt::Error
@@ -98,7 +98,7 @@ pub trait Debug<Self>
 }
 
 // Full name: core::fmt::Debug::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
@@ -121,7 +121,7 @@ pub trait Hash<Self>
 }
 
 // Full name: core::hash::Hash::hash
-pub fn hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+pub fn hash<'_0, '_1, Self, H>(@1: &'_0 Self, @2: &'_1 mut H)
 where
     [@TraitClause0]: Hash<Self>,
     [@TraitClause1]: Sized<H>,
@@ -129,13 +129,13 @@ where
 = <opaque>
 
 // Full name: core::hash::Hasher::finish
-pub fn finish<'_0, Self>(@1: &'_0 (Self)) -> u64
+pub fn finish<'_0, Self>(@1: &'_0 Self) -> u64
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
 
 // Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+pub fn write<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 [u8])
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
@@ -181,7 +181,7 @@ pub trait DiscriminantKind<Self>
 }
 
 // Full name: core::intrinsics::discriminant_value
-pub fn discriminant_value<'_0, T>(@1: &'_0 (T)) -> {built_in impl DiscriminantKind for T}::Discriminant
+pub fn discriminant_value<'_0, T>(@1: &'_0 T) -> {built_in impl DiscriminantKind for T}::Discriminant
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -229,25 +229,25 @@ impl StructuralPartialEq for Enum {
 }
 
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}::eq
-pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (Enum)) -> bool
+pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enum) -> bool
 {
     let @0: bool; // return
-    let self@1: &'0 (Enum); // arg #1
-    let other@2: &'0 (Enum); // arg #2
+    let self@1: &'0 Enum; // arg #1
+    let other@2: &'0 Enum; // arg #2
     let __self_discr@3: isize; // local
-    let @4: &'0 (Enum); // anonymous local
+    let @4: &'0 Enum; // anonymous local
     let __arg1_discr@5: isize; // local
-    let @6: &'0 (Enum); // anonymous local
+    let @6: &'0 Enum; // anonymous local
     let @7: bool; // anonymous local
     let @8: isize; // anonymous local
     let @9: isize; // anonymous local
-    let @10: (&'0 (Enum), &'0 (Enum)); // anonymous local
-    let @11: &'0 (Enum); // anonymous local
-    let @12: &'0 (Enum); // anonymous local
-    let __self_0@13: &'1 (u8); // local
-    let __arg1_0@14: &'1 (u8); // local
-    let @15: &'2 (&'1 (u8)); // anonymous local
-    let @16: &'2 (&'1 (u8)); // anonymous local
+    let @10: (&'0 Enum, &'0 Enum); // anonymous local
+    let @11: &'0 Enum; // anonymous local
+    let @12: &'0 Enum; // anonymous local
+    let __self_0@13: &'1 u8; // local
+    let __arg1_0@14: &'1 u8; // local
+    let @15: &'2 &'1 u8; // anonymous local
+    let @16: &'2 &'1 u8; // anonymous local
 
     storage_live(__self_discr@3)
     storage_live(@4)
@@ -288,7 +288,7 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1 (
                         @15 := &__self_0@13
                         storage_live(@16)
                         @16 := &__arg1_0@14
-                        @0 := {impl PartialEq<&'_0 (B)> for &'_1 (A)}::eq<'3, '4, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}](move (@15), move (@16))
+                        @0 := {impl PartialEq<&'_0 B> for &'_1 A}::eq<'3, '4, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}](move (@15), move (@16))
                         storage_dead(@16)
                         storage_dead(@15)
                         storage_dead(__arg1_0@14)

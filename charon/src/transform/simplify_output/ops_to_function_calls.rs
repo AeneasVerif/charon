@@ -18,21 +18,15 @@ fn transform_st(s: &mut Statement) {
             ),
         ) => {
             if let (
-                TyKind::Ref(_, deref!(TyKind::Adt(tref1)), kind1),
-                TyKind::Ref(_, deref!(TyKind::Adt(tref2)), kind2),
+                TyKind::Ref(_, deref!(TyKind::Array(arr_ty, len)), kind1),
+                TyKind::Ref(_, deref!(TyKind::Slice(slice_ty)), kind2),
             ) = (src_ty.kind(), tgt_ty.kind())
-                && matches!(tref1.id, TypeId::Builtin(BuiltinTy::Array))
-                && matches!(tref2.id, TypeId::Builtin(BuiltinTy::Slice))
             {
                 // In MIR terminology, we go from &[T; l] to &[T] which means we
                 // effectively "unsize" the type, as `l` no longer appears in the
                 // destination type. At runtime, the converse happens: the length
                 // materializes into the fat pointer.
-                assert!(
-                    tref1.generics.types.elem_count() == 1
-                        && tref1.generics.const_generics.elem_count() == 1
-                );
-                assert!(tref1.generics.types[0] == tref2.generics.types[0]);
+                assert!(arr_ty == slice_ty);
                 assert!(kind1 == kind2);
                 // We could avoid the clone operations below if we take the content of
                 // the statement. In practice, this shouldn't have much impact.
@@ -43,8 +37,8 @@ fn transform_st(s: &mut Statement) {
                 let func = FnPtrKind::mk_builtin(id);
                 let generics = GenericArgs::new(
                     [Region::Erased].into(),
-                    tref1.generics.types.clone(),
-                    tref1.generics.const_generics.clone(),
+                    [arr_ty.clone()].into(),
+                    [len.clone()].into(),
                     [].into(),
                 );
                 s.kind = StatementKind::Call(Call {

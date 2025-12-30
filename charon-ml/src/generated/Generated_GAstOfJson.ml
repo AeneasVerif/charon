@@ -305,8 +305,6 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Box" -> Ok TBox
-    | `String "Array" -> Ok TArray
-    | `String "Slice" -> Ok TSlice
     | `String "Str" -> Ok TStr
     | _ -> Error "")
 
@@ -2146,6 +2144,13 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
     | `Assoc [ ("PtrMetadata", ptr_metadata) ] ->
         let* ptr_metadata = ty_of_json ctx ptr_metadata in
         Ok (TPtrMetadata ptr_metadata)
+    | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json ctx x_0 in
+        let* x_1 = const_generic_of_json ctx x_1 in
+        Ok (TArray (x_0, x_1))
+    | `Assoc [ ("Slice", slice) ] ->
+        let* slice = ty_of_json ctx slice in
+        Ok (TSlice slice)
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TError error)

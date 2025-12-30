@@ -25,7 +25,7 @@ pub trait Borrow<Self, Borrowed>
 }
 
 // Full name: core::borrow::Borrow::borrow
-pub fn borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+pub fn borrow<'_0, Self, Borrowed>(@1: &'_0 Self) -> &'_0 Borrowed
 where
     [@TraitClause0]: Borrow<Self, Borrowed>,
 = <opaque>
@@ -57,7 +57,7 @@ pub trait ToOwned<Self>
 
 // Full name: alloc::borrow::ToOwned::to_owned
 #[lang_item("to_owned_method")]
-pub fn to_owned<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Owned
+pub fn to_owned<'_0, Self>(@1: &'_0 Self) -> @TraitClause0::Owned
 where
     [@TraitClause0]: ToOwned<Self>,
 = <opaque>
@@ -81,7 +81,7 @@ where
     B : 'a,
     B : 'a,
 {
-  Borrowed(&'a (B)),
+  Borrowed(&'a B),
   Owned(@TraitClause1::Owned),
 }
 
@@ -96,7 +96,7 @@ where
 {
     let @0: (); // return
     let @1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
-    let @2: &'0 mut (Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]); // anonymous local
+    let @2: &'0 mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // anonymous local
 
     storage_live(@2)
     @0 := ()

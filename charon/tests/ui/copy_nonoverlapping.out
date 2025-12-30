@@ -250,13 +250,13 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::write
-fn write<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 (T))
+fn write<'_0, '_1, T>(@1: &'_0 mut T, @2: &'_1 T)
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let x@1: &'0 mut (T); // arg #1
-    let y@2: &'1 (T); // arg #2
+    let x@1: &'0 mut T; // arg #1
+    let y@2: &'1 T; // arg #2
     let @3: (); // anonymous local
     let @4: *const T; // anonymous local
     let @5: *mut T; // anonymous local

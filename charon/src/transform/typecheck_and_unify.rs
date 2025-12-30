@@ -93,6 +93,12 @@ impl TypeCheckVisitor<'_> {
             (TyKind::TypeVar(a), TyKind::TypeVar(b)) if a == b => {}
             (TyKind::Literal(a), TyKind::Literal(b)) if a == b => {}
             (TyKind::Never, TyKind::Never) => {}
+            (TyKind::Array(aty, _), TyKind::Array(bty, _)) => {
+                self.match_tys(aty, bty)?;
+            }
+            (TyKind::Slice(aty), TyKind::Slice(bty)) => {
+                self.match_tys(aty, bty)?;
+            }
             (TyKind::Ref(aregion, aty, akind), TyKind::Ref(bregion, bty, bkind))
                 if akind == bkind =>
             {
