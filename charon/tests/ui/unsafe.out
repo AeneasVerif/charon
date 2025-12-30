@@ -206,7 +206,7 @@ where
 = <opaque>
 
 // Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 ([u8]))
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
@@ -393,7 +393,7 @@ fn access_mutable_static()
 // Full name: test_crate::Foo
 union Foo {
   one: u64,
-  two: Array<u32, 2 : usize>,
+  two: [u32; 2 : usize],
 }
 
 // Full name: test_crate::access_union_field
@@ -401,7 +401,7 @@ fn access_union_field()
 {
     let @0: (); // return
     let one@1: Foo; // local
-    let _two@2: Array<u32, 2 : usize>; // local
+    let _two@2: [u32; 2 : usize]; // local
 
     @0 := ()
     storage_live(one@1)

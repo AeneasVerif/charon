@@ -415,7 +415,7 @@ pub struct V<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 {
-  x: Array<T, N>,
+  x: [T; N],
 }
 
 // Full name: test_crate::{V<T, N>[@TraitClause0]}::LEN

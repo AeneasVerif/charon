@@ -632,21 +632,21 @@ struct ArrayWrapper<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 {
-  Array<T, N>,
+  [T; N],
 }
 
 struct test_crate::ArrayWrapper::<&_ mut (_), 1 : usize><'_0, T0>
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
 {
-  Array<&'_0 mut (T0), 1 : usize>,
+  [&'_0 mut (T0); 1 : usize],
 }
 
 struct test_crate::ArrayWrapper::<&_ mut (_), 2 : usize><'_0, T0>
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut (_)><'_0, T0>,
 {
-  Array<&'_0 mut (T0), 2 : usize>,
+  [&'_0 mut (T0); 2 : usize],
 }
 
 // Full name: test_crate::use_const_generic

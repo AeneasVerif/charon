@@ -46,7 +46,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::array::from_fn
-pub fn from_fn<T, F, const N : usize>(@1: F) -> Array<T, N>
+pub fn from_fn<T, F, const N : usize>(@1: F) -> [T; N]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -192,12 +192,12 @@ where
 }
 
 // Full name: test_crate::test
-fn test<T, const K : usize>() -> Array<T, 1 : usize>
+fn test<T, const K : usize>() -> [T; 1 : usize]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, K>,
 {
-    let @0: Array<T, 1 : usize>; // return
+    let @0: [T; 1 : usize]; // return
     let @1: closure<T, K>[@TraitClause0, @TraitClause1]; // anonymous local
 
     storage_live(@1)

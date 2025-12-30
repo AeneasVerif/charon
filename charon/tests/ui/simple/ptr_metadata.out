@@ -206,7 +206,7 @@ where
 = <opaque>
 
 // Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 ([u8]))
 where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>

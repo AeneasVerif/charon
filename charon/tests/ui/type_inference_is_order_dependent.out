@@ -50,7 +50,7 @@ pub opaque type Arguments<'a>
 pub opaque type Argument<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a (Array<u8, N>), @2: &'a (Array<Argument<'a>, M>)) -> Arguments<'a>
+pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a ([u8; N]), @2: &'a ([Argument<'a>; M])) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::result::Result
@@ -166,15 +166,15 @@ where
     let args@3: (&'1 (U)); // local
     let @4: &'1 (U); // anonymous local
     let @5: U; // anonymous local
-    let args@6: Array<Argument<'2>, 1 : usize>; // local
+    let args@6: [Argument<'2>; 1 : usize]; // local
     let @7: Argument<'2>; // anonymous local
     let @8: &'1 (U); // anonymous local
-    let @9: &'3 (Array<u8, 4 : usize>); // anonymous local
-    let @10: &'3 (Array<u8, 4 : usize>); // anonymous local
-    let @11: &'4 (Array<Argument<'2>, 1 : usize>); // anonymous local
-    let @12: &'4 (Array<Argument<'2>, 1 : usize>); // anonymous local
-    let @13: Array<u8, 4 : usize>; // anonymous local
-    let @14: &'3 (Array<u8, 4 : usize>); // anonymous local
+    let @9: &'3 ([u8; 4 : usize]); // anonymous local
+    let @10: &'3 ([u8; 4 : usize]); // anonymous local
+    let @11: &'4 ([Argument<'2>; 1 : usize]); // anonymous local
+    let @12: &'4 ([Argument<'2>; 1 : usize]); // anonymous local
+    let @13: [u8; 4 : usize]; // anonymous local
+    let @14: &'3 ([u8; 4 : usize]); // anonymous local
 
     @0 := ()
     storage_live(@1)

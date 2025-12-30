@@ -734,59 +734,59 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get
-pub fn {impl SliceIndex<Slice<T>> for usize}::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> Option<&'_0 (T)>[{built_in impl Sized for &'_0 (T)}]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
+pub fn {impl SliceIndex<[T]> for usize}::get<'_0, T>(@1: usize, @2: &'_0 ([T])) -> Option<&'_0 (T)>[{built_in impl Sized for &'_0 (T)}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_mut
-pub fn {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (T)>[{built_in impl Sized for &'_0 mut (T)}]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
+pub fn {impl SliceIndex<[T]> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut ([T])) -> Option<&'_0 mut (T)>[{built_in impl Sized for &'_0 mut (T)}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_unchecked
-pub unsafe fn {impl SliceIndex<Slice<T>> for usize}::get_unchecked<T>(@1: usize, @2: *const Slice<T>) -> *const T
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
+pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked<T>(@1: usize, @2: *const [T]) -> *const T
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>(@1: usize, @2: *mut Slice<T>) -> *mut T
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>(@1: usize, @2: *mut [T]) -> *mut T
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::index
-pub fn {impl SliceIndex<Slice<T>> for usize}::index<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> &'_0 (T)
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn {impl SliceIndex<[T]> for usize}::index<'_0, T>(@1: usize, @2: &'_0 ([T])) -> &'_0 (T)
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}::index_mut
-pub fn {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (T)
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn {impl SliceIndex<[T]> for usize}::index_mut<'_0, T>(@1: usize, @2: &'_0 mut ([T])) -> &'_0 mut (T)
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for usize}
-impl<T> SliceIndex<Slice<T>> for usize
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
+impl<T> SliceIndex<[T]> for usize
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {built_in impl MetaSized for usize}
     parent_clause1 = {impl Sealed for usize}
-    parent_clause2 = {built_in impl MetaSized for Slice<T>}
+    parent_clause2 = {built_in impl MetaSized for [T]}
     parent_clause3 = @TraitClause0::parent_clause0
     type Output = T
-    fn get<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::get<'_0_1, T>[@TraitClause0]
-    fn get_mut<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::get_mut<'_0_1, T>[@TraitClause0]
-    fn get_unchecked = {impl SliceIndex<Slice<T>> for usize}::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for usize}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::index<'_0_1, T>[@TraitClause0]
-    fn index_mut<'_0_1> = {impl SliceIndex<Slice<T>> for usize}::index_mut<'_0_1, T>[@TraitClause0]
-    vtable: {impl SliceIndex<Slice<T>> for usize}::{vtable}<T>[@TraitClause0]
+    fn get<'_0_1> = {impl SliceIndex<[T]> for usize}::get<'_0_1, T>[@TraitClause0]
+    fn get_mut<'_0_1> = {impl SliceIndex<[T]> for usize}::get_mut<'_0_1, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<[T]> for usize}::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0_1> = {impl SliceIndex<[T]> for usize}::index<'_0_1, T>[@TraitClause0]
+    fn index_mut<'_0_1> = {impl SliceIndex<[T]> for usize}::index_mut<'_0_1, T>[@TraitClause0]
+    vtable: {impl SliceIndex<[T]> for usize}::{vtable}<T>[@TraitClause0]
 }
 
 // Full name: alloc::alloc::Global
@@ -812,7 +812,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, Slice<T>>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
 = <opaque>
 
 // Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}
@@ -821,7 +821,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, Slice<T>>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
 {
     parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
     parent_clause1 = @TraitClause1::parent_clause0
@@ -837,7 +837,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, Slice<T>>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
 = <opaque>
 
 // Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}
@@ -846,7 +846,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, Slice<T>>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
 {
     parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
     parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
@@ -1853,10 +1853,10 @@ pub fn test_crate::sum(@1: u32) -> u32
 }
 
 // Full name: test_crate::sum_array
-pub fn sum_array<const N : usize>(@1: Array<u32, N>) -> u32
+pub fn sum_array<const N : usize>(@1: [u32; N]) -> u32
 {
     let @0: u32; // return
-    let a@1: Array<u32, N>; // arg #1
+    let a@1: [u32; N]; // arg #1
     let i@2: usize; // local
     let s@3: u32; // local
     let @4: bool; // anonymous local
@@ -1865,7 +1865,7 @@ pub fn sum_array<const N : usize>(@1: Array<u32, N>) -> u32
     let @7: usize; // anonymous local
     let @8: u32; // anonymous local
     let @9: usize; // anonymous local
-    let @10: &'_ (Array<u32, N>); // anonymous local
+    let @10: &'_ ([u32; N]); // anonymous local
     let @11: &'_ (u32); // anonymous local
 
     storage_live(@8)
@@ -1949,7 +1949,7 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_i
         @8 := &mut *(v@1)
         storage_live(@9)
         @9 := copy (i@2)
-        @7 := {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<Slice<T>> for usize}<u32>[{built_in impl Sized for u32}]](move (@8), move (@9))
+        @7 := {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move (@8), move (@9))
         storage_dead(@9)
         storage_dead(@8)
         *(@7) := const (0 : u32)

@@ -274,7 +274,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     let @10: usize; // anonymous local
     let @11: usize; // anonymous local
     let @12: *const Str; // anonymous local
-    let @13: &'3 (Slice<u8>); // anonymous local
+    let @13: &'3 ([u8]); // anonymous local
 
     storage_live(msg@2)
     storage_live(@3)
@@ -301,7 +301,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
             storage_live(@10)
             storage_live(@11)
             storage_live(@13)
-            @13 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+            @13 := transmute<&'0 (Str), &'3 ([u8])>(const ("unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
             @11 := copy (@13.metadata)
             storage_dead(@13)
             @10 := move (@11) wrap.<< const (1 : i32)
@@ -449,7 +449,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     let @11: usize; // anonymous local
     let @12: usize; // anonymous local
     let @13: *const Str; // anonymous local
-    let @14: &'3 (Slice<u8>); // anonymous local
+    let @14: &'3 ([u8]); // anonymous local
 
     storage_live(msg@4)
     storage_live(@5)
@@ -473,7 +473,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
         storage_live(@11)
         storage_live(@12)
         storage_live(@14)
-        @14 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+        @14 := transmute<&'0 (Str), &'3 ([u8])>(const ("unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
         @12 := copy (@14.metadata)
         storage_dead(@14)
         @11 := move (@12) wrap.<< const (1 : i32)
@@ -533,7 +533,7 @@ pub trait Allocator<Self>
     vtable: core::alloc::Allocator::{vtable}
 }
 
-pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 = <method_without_default_body>
@@ -573,7 +573,7 @@ pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
     let @14: usize; // anonymous local
     let @15: usize; // anonymous local
     let @16: *const Str; // anonymous local
-    let @17: &'3 (Slice<u8>); // anonymous local
+    let @17: &'3 ([u8]); // anonymous local
 
     storage_live(@7)
     @7 := ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy (align@2))
@@ -598,7 +598,7 @@ pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
             storage_live(@14)
             storage_live(@15)
             storage_live(@17)
-            @17 := transmute<&'1 (Str), &'3 (Slice<u8>)>(const ("is_aligned_to: align is not a power-of-two"))
+            @17 := transmute<&'1 (Str), &'3 ([u8])>(const ("is_aligned_to: align is not a power-of-two"))
             @15 := copy (@17.metadata)
             storage_dead(@17)
             @14 := move (@15) wrap.<< const (1 : i32)
@@ -651,7 +651,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     let @15: usize; // anonymous local
     let @16: usize; // anonymous local
     let @17: *const Str; // anonymous local
-    let @18: &'3 (Slice<u8>); // anonymous local
+    let @18: &'3 ([u8]); // anonymous local
 
     storage_live(msg@5)
     storage_live(@6)
@@ -697,7 +697,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(@15)
     storage_live(@16)
     storage_live(@18)
-    @18 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @18 := transmute<&'0 (Str), &'3 ([u8])>(const ("unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
     @16 := copy (@18.metadata)
     storage_dead(@18)
     @15 := move (@16) wrap.<< const (1 : i32)
@@ -919,29 +919,29 @@ where
     undefined_behavior
 }
 
-pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Self); // arg #1
     let layout@2: Layout; // arg #2
-    let @3: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
-    let self@4: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
-    let ptr@5: NonNull<Slice<u8>>; // local
+    let @3: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let self@4: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
+    let ptr@5: NonNull<[u8]>; // local
     let @6: (); // anonymous local
     let self@7: *mut u8; // local
     let self@8: NonNull<u8>; // local
     let count@9: usize; // local
-    let v@10: NonNull<Slice<u8>>; // local
+    let v@10: NonNull<[u8]>; // local
     let @11: *const u8; // anonymous local
-    let @12: *mut Slice<u8>; // anonymous local
+    let @12: *mut [u8]; // anonymous local
     let @13: (); // anonymous local
     let @14: *const (); // anonymous local
     let @15: bool; // anonymous local
     let @16: bool; // anonymous local
     let @17: AllocError; // anonymous local
-    let @18: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @18: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(ptr@5)
     storage_live(@6)
@@ -975,11 +975,11 @@ where
     storage_live(self@7)
     storage_live(self@8)
     storage_live(@11)
-    @12 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (ptr@5))
-    @11 := cast<*mut Slice<u8>, *const u8>(copy (@12))
+    @12 := transmute<NonNull<[u8]>, *mut [u8]>(copy (ptr@5))
+    @11 := cast<*mut [u8], *const u8>(copy (@12))
     self@8 := NonNull { pointer: copy (@11) }
     storage_dead(@11)
-    self@7 := cast<*mut Slice<u8>, *mut u8>(copy (@12))
+    self@7 := cast<*mut [u8], *mut u8>(copy (@12))
     storage_dead(self@8)
     storage_live(count@9)
     count@9 := copy (@12.metadata)
@@ -987,7 +987,7 @@ where
     @16 := ub_checks<bool>
     if copy (@16) {
         storage_live(@14)
-        @14 := cast<*mut Slice<u8>, *const ()>(copy (@12))
+        @14 := cast<*mut [u8], *const ()>(copy (@12))
         storage_live(@15)
         @15 := copy (count@9) == const (0 : usize)
         @13 := core::ptr::write_bytes::precondition_check(move (@14), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), move (@15))
@@ -1029,7 +1029,7 @@ pub fn from_str<'a>(@1: &'static (Str)) -> Arguments<'a>
     let @6: usize; // anonymous local
     let @7: usize; // anonymous local
     let @8: *const Str; // anonymous local
-    let @9: &'3 (Slice<u8>); // anonymous local
+    let @9: &'3 ([u8]); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -1044,7 +1044,7 @@ pub fn from_str<'a>(@1: &'static (Str)) -> Arguments<'a>
     storage_live(@6)
     storage_live(@7)
     storage_live(@9)
-    @9 := transmute<&'1 (Str), &'3 (Slice<u8>)>(copy (s@1))
+    @9 := transmute<&'1 (Str), &'3 ([u8])>(copy (s@1))
     @7 := copy (@9.metadata)
     storage_dead(@9)
     @6 := move (@7) wrap.<< const (1 : i32)
@@ -1182,7 +1182,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     let @26: usize; // anonymous local
     let @27: usize; // anonymous local
     let @28: *const Str; // anonymous local
-    let @29: &'3 (Slice<u8>); // anonymous local
+    let @29: &'3 ([u8]); // anonymous local
 
     storage_live(zero_size@7)
     storage_live(ptr@12)
@@ -1398,7 +1398,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_live(@26)
     storage_live(@27)
     storage_live(@29)
-    @29 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @29 := transmute<&'0 (Str), &'3 ([u8])>(const ("unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
     @27 := copy (@29.metadata)
     storage_dead(@29)
     @26 := move (@27) wrap.<< const (1 : i32)
@@ -1413,30 +1413,30 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     @14 := panic_nounwind_fmt<'_>(move (@15), const (false))
 }
 
-pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Self); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
-    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
-    let self@6: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
-    let new_ptr@7: NonNull<Slice<u8>>; // local
+    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let self@6: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
+    let new_ptr@7: NonNull<[u8]>; // local
     let src@8: *const u8; // local
     let dst@9: *mut u8; // local
     let count@10: usize; // local
     let @11: (); // anonymous local
-    let v@12: NonNull<Slice<u8>>; // local
-    let @13: *mut Slice<u8>; // anonymous local
+    let v@12: NonNull<[u8]>; // local
+    let @13: *mut [u8]; // anonymous local
     let @14: (); // anonymous local
     let @15: *const (); // anonymous local
     let @16: *mut (); // anonymous local
     let @17: bool; // anonymous local
     let @18: AllocError; // anonymous local
-    let @19: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @19: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_ptr@7)
     storage_live(@11)
@@ -1470,8 +1470,8 @@ where
     storage_live(src@8)
     src@8 := transmute<NonNull<u8>, *const u8>(copy (ptr@2))
     storage_live(dst@9)
-    @13 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (new_ptr@7))
-    dst@9 := cast<*mut Slice<u8>, *mut u8>(copy (@13))
+    @13 := transmute<NonNull<[u8]>, *mut [u8]>(copy (new_ptr@7))
+    dst@9 := cast<*mut [u8], *mut u8>(copy (@13))
     storage_live(count@10)
     count@10 := copy ((old_layout@3).size)
     storage_live(@17)
@@ -1480,7 +1480,7 @@ where
         storage_live(@15)
         @15 := transmute<NonNull<u8>, *const ()>(copy (ptr@2))
         storage_live(@16)
-        @16 := cast<*mut Slice<u8>, *mut ()>(copy (@13))
+        @16 := cast<*mut [u8], *mut ()>(copy (@13))
         @14 := core::ptr::copy_nonoverlapping::precondition_check(move (@15), move (@16), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), copy (count@10))
         storage_dead(@16)
         storage_dead(@15)
@@ -1496,30 +1496,30 @@ where
     return
 }
 
-pub unsafe fn core::alloc::Allocator::grow_zeroed<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub unsafe fn core::alloc::Allocator::grow_zeroed<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Self); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
-    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
-    let self@6: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
-    let new_ptr@7: NonNull<Slice<u8>>; // local
+    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let self@6: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
+    let new_ptr@7: NonNull<[u8]>; // local
     let src@8: *const u8; // local
     let dst@9: *mut u8; // local
     let count@10: usize; // local
     let @11: (); // anonymous local
-    let v@12: NonNull<Slice<u8>>; // local
-    let @13: *mut Slice<u8>; // anonymous local
+    let v@12: NonNull<[u8]>; // local
+    let @13: *mut [u8]; // anonymous local
     let @14: (); // anonymous local
     let @15: *const (); // anonymous local
     let @16: *mut (); // anonymous local
     let @17: bool; // anonymous local
     let @18: AllocError; // anonymous local
-    let @19: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @19: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_ptr@7)
     storage_live(@11)
@@ -1553,8 +1553,8 @@ where
     storage_live(src@8)
     src@8 := transmute<NonNull<u8>, *const u8>(copy (ptr@2))
     storage_live(dst@9)
-    @13 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (new_ptr@7))
-    dst@9 := cast<*mut Slice<u8>, *mut u8>(copy (@13))
+    @13 := transmute<NonNull<[u8]>, *mut [u8]>(copy (new_ptr@7))
+    dst@9 := cast<*mut [u8], *mut u8>(copy (@13))
     storage_live(count@10)
     count@10 := copy ((old_layout@3).size)
     storage_live(@17)
@@ -1563,7 +1563,7 @@ where
         storage_live(@15)
         @15 := transmute<NonNull<u8>, *const ()>(copy (ptr@2))
         storage_live(@16)
-        @16 := cast<*mut Slice<u8>, *mut ()>(copy (@13))
+        @16 := cast<*mut [u8], *mut ()>(copy (@13))
         @14 := core::ptr::copy_nonoverlapping::precondition_check(move (@15), move (@16), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), copy (count@10))
         storage_dead(@16)
         storage_dead(@15)
@@ -1579,30 +1579,30 @@ where
     return
 }
 
-pub unsafe fn core::alloc::Allocator::shrink<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub unsafe fn core::alloc::Allocator::shrink<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Self); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
-    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
-    let self@6: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
-    let new_ptr@7: NonNull<Slice<u8>>; // local
+    let @5: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let self@6: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
+    let new_ptr@7: NonNull<[u8]>; // local
     let src@8: *const u8; // local
     let dst@9: *mut u8; // local
     let count@10: usize; // local
     let @11: (); // anonymous local
-    let v@12: NonNull<Slice<u8>>; // local
-    let @13: *mut Slice<u8>; // anonymous local
+    let v@12: NonNull<[u8]>; // local
+    let @13: *mut [u8]; // anonymous local
     let @14: (); // anonymous local
     let @15: *const (); // anonymous local
     let @16: *mut (); // anonymous local
     let @17: bool; // anonymous local
     let @18: AllocError; // anonymous local
-    let @19: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @19: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_ptr@7)
     storage_live(@11)
@@ -1636,8 +1636,8 @@ where
     storage_live(src@8)
     src@8 := transmute<NonNull<u8>, *const u8>(copy (ptr@2))
     storage_live(dst@9)
-    @13 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (new_ptr@7))
-    dst@9 := cast<*mut Slice<u8>, *mut u8>(copy (@13))
+    @13 := transmute<NonNull<[u8]>, *mut [u8]>(copy (new_ptr@7))
+    dst@9 := cast<*mut [u8], *mut u8>(copy (@13))
     storage_live(count@10)
     count@10 := copy ((new_layout@4).size)
     storage_live(@17)
@@ -1646,7 +1646,7 @@ where
         storage_live(@15)
         @15 := transmute<NonNull<u8>, *const ()>(copy (ptr@2))
         storage_live(@16)
-        @16 := cast<*mut Slice<u8>, *mut ()>(copy (@13))
+        @16 := cast<*mut [u8], *mut ()>(copy (@13))
         @14 := core::ptr::copy_nonoverlapping::precondition_check(move (@15), move (@16), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), copy (count@10))
         storage_dead(@16)
         storage_dead(@15)
@@ -1818,7 +1818,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     let @10: usize; // anonymous local
     let @11: usize; // anonymous local
     let @12: *const Str; // anonymous local
-    let @13: &'3 (Slice<u8>); // anonymous local
+    let @13: &'3 ([u8]); // anonymous local
 
     storage_live(msg@2)
     storage_live(@3)
@@ -1849,7 +1849,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     storage_live(@10)
     storage_live(@11)
     storage_live(@13)
-    @13 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @13 := transmute<&'0 (Str), &'3 ([u8])>(const ("unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
     @11 := copy (@13.metadata)
     storage_dead(@13)
     @10 := move (@11) wrap.<< const (1 : i32)
@@ -1878,7 +1878,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
     let @11: *const Str; // anonymous local
-    let @12: &'3 (Slice<u8>); // anonymous local
+    let @12: &'3 ([u8]); // anonymous local
 
     storage_live(msg@2)
     storage_live(@3)
@@ -1900,7 +1900,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
         storage_live(@9)
         storage_live(@10)
         storage_live(@12)
-        @12 := transmute<&'0 (Str), &'3 (Slice<u8>)>(const ("unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+        @12 := transmute<&'0 (Str), &'3 ([u8])>(const ("unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
         @10 := copy (@12.metadata)
         storage_dead(@12)
         @9 := move (@10) wrap.<< const (1 : i32)
@@ -1942,29 +1942,29 @@ unsafe fn __rust_no_alloc_shim_is_unstable_v2()
 pub struct Global {}
 
 // Full name: alloc::alloc::{Global}::alloc_impl
-fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let layout@2: Layout; // arg #2
     let zeroed@3: bool; // arg #3
     let size@4: usize; // local
-    let @5: NonNull<Slice<u8>>; // anonymous local
+    let @5: NonNull<[u8]>; // anonymous local
     let data@6: NonNull<u8>; // local
     let raw_ptr@7: *mut u8; // local
     let @8: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<u8>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<u8>}]; // anonymous local
     let self@9: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // local
     let self@10: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // local
     let ptr@11: NonNull<u8>; // local
-    let @12: NonNull<Slice<u8>>; // anonymous local
+    let @12: NonNull<[u8]>; // anonymous local
     let @13: NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]; // anonymous local
     let @14: Alignment; // anonymous local
     let @15: *const u8; // anonymous local
-    let ptr@16: *mut Slice<u8>; // local
+    let ptr@16: *mut [u8]; // local
     let data@17: *mut u8; // local
     let @18: (); // anonymous local
     let @19: *mut (); // anonymous local
-    let @20: *const Slice<u8>; // anonymous local
+    let @20: *const [u8]; // anonymous local
     let @21: bool; // anonymous local
     let @22: (); // anonymous local
     let @23: usize; // anonymous local
@@ -1980,17 +1980,17 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
     let @33: bool; // anonymous local
     let v@34: NonNull<u8>; // local
     let v@35: NonNull<u8>; // local
-    let ptr@36: *mut Slice<u8>; // local
+    let ptr@36: *mut [u8]; // local
     let data@37: *mut u8; // local
     let @38: (); // anonymous local
     let @39: *mut (); // anonymous local
-    let @40: *const Slice<u8>; // anonymous local
+    let @40: *const [u8]; // anonymous local
     let @41: bool; // anonymous local
     let @42: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @43: AllocError; // anonymous local
     let @44: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @45: AllocError; // anonymous local
-    let @46: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @46: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(size@4)
     storage_live(raw_ptr@7)
@@ -2079,7 +2079,7 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
                         storage_dead(@39)
                     } else {
                     }
-                    @40 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@36))
+                    @40 := cast<*mut [u8], *const [u8]>(copy (ptr@36))
                     @12 := NonNull { pointer: copy (@40) }
                     storage_dead(@41)
                     storage_dead(@40)
@@ -2138,7 +2138,7 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
         storage_dead(@19)
     } else {
     }
-    @20 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@16))
+    @20 := cast<*mut [u8], *const [u8]>(copy (ptr@16))
     @5 := NonNull { pointer: copy (@20) }
     storage_dead(@21)
     storage_dead(@20)
@@ -2150,9 +2150,9 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
 }
 
 // Full name: alloc::alloc::{Global}::grow_impl
-unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout, @5: bool) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout, @5: bool) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -2177,10 +2177,10 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     let self@22: *mut u8; // local
     let self@23: *mut u8; // local
     let count@24: usize; // local
-    let @25: NonNull<Slice<u8>>; // anonymous local
-    let @26: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
-    let self@27: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
-    let new_ptr@28: NonNull<Slice<u8>>; // local
+    let @25: NonNull<[u8]>; // anonymous local
+    let @26: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let self@27: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
+    let new_ptr@28: NonNull<[u8]>; // local
     let src@29: *const u8; // local
     let ptr@30: *mut u8; // local
     let dst@31: *mut u8; // local
@@ -2199,24 +2199,24 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
     let @44: (); // anonymous local
     let @45: *const (); // anonymous local
     let @46: bool; // anonymous local
-    let ptr@47: *mut Slice<u8>; // local
+    let ptr@47: *mut [u8]; // local
     let data@48: *mut u8; // local
     let @49: (); // anonymous local
     let @50: *mut (); // anonymous local
-    let @51: *const Slice<u8>; // anonymous local
-    let v@52: NonNull<Slice<u8>>; // local
-    let @53: *mut Slice<u8>; // anonymous local
+    let @51: *const [u8]; // anonymous local
+    let v@52: NonNull<[u8]>; // local
+    let @53: *mut [u8]; // anonymous local
     let @54: (); // anonymous local
     let @55: *const (); // anonymous local
     let @56: *mut (); // anonymous local
     let @57: bool; // anonymous local
     let @58: AllocError; // anonymous local
-    let @59: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @59: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @60: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @61: AllocError; // anonymous local
     let @62: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @63: AllocError; // anonymous local
-    let @64: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @64: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(old_size@6)
     storage_live(@8)
@@ -2283,15 +2283,15 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 ptr@30 := transmute<NonNull<u8>, *mut u8>(copy (ptr@2))
                 src@29 := transmute<NonNull<u8>, *const u8>(copy (ptr@2))
                 storage_live(dst@31)
-                @53 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (new_ptr@28))
-                dst@31 := cast<*mut Slice<u8>, *mut u8>(copy (@53))
+                @53 := transmute<NonNull<[u8]>, *mut [u8]>(copy (new_ptr@28))
+                dst@31 := cast<*mut [u8], *mut u8>(copy (@53))
                 storage_live(@57)
                 @57 := ub_checks<bool>
                 if copy (@57) {
                     storage_live(@55)
                     @55 := transmute<NonNull<u8>, *const ()>(copy (ptr@2))
                     storage_live(@56)
-                    @56 := cast<*mut Slice<u8>, *mut ()>(copy (@53))
+                    @56 := cast<*mut [u8], *mut ()>(copy (@53))
                     @54 := core::ptr::copy_nonoverlapping::precondition_check(move (@55), move (@56), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), copy (old_size@6))
                     storage_dead(@56)
                     storage_dead(@55)
@@ -2405,7 +2405,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                             storage_dead(@50)
                         } else {
                         }
-                        @51 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@47))
+                        @51 := cast<*mut [u8], *const [u8]>(copy (ptr@47))
                         @25 := NonNull { pointer: copy (@51) }
                         storage_dead(@51)
                         storage_dead(ptr@47)
@@ -2547,7 +2547,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
                 storage_dead(@50)
             } else {
             }
-            @51 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@47))
+            @51 := cast<*mut [u8], *const [u8]>(copy (ptr@47))
             @25 := NonNull { pointer: copy (@51) }
             storage_dead(@51)
             storage_dead(ptr@47)
@@ -2561,9 +2561,9 @@ unsafe fn grow_impl<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Lay
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let layout@2: Layout; // arg #2
 
@@ -2572,9 +2572,9 @@ pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout)
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate_zeroed
-pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let layout@2: Layout; // arg #2
 
@@ -2618,9 +2618,9 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::grow
-pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -2631,9 +2631,9 @@ pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 (Global), @2: NonN
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::grow_zeroed
-pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
@@ -2644,16 +2644,16 @@ pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 (Global), @
 }
 
 // Full name: alloc::alloc::{impl Allocator for Global}::shrink
-pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]
+pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
-    let @0: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // return
+    let @0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self@1: &'0 (Global); // arg #1
     let ptr@2: NonNull<u8>; // arg #2
     let old_layout@3: Layout; // arg #3
     let new_layout@4: Layout; // arg #4
     let new_size@5: usize; // local
     let @6: (); // anonymous local
-    let @7: NonNull<Slice<u8>>; // anonymous local
+    let @7: NonNull<[u8]>; // anonymous local
     let data@8: NonNull<u8>; // local
     let @9: bool; // anonymous local
     let @10: usize; // anonymous local
@@ -2669,10 +2669,10 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let self@20: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // local
     let ptr@21: *mut u8; // local
     let ptr@22: NonNull<u8>; // local
-    let @23: NonNull<Slice<u8>>; // anonymous local
-    let @24: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
-    let self@25: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // local
-    let new_ptr@26: NonNull<Slice<u8>>; // local
+    let @23: NonNull<[u8]>; // anonymous local
+    let @24: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let self@25: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
+    let new_ptr@26: NonNull<[u8]>; // local
     let src@27: *const u8; // local
     let ptr@28: *mut u8; // local
     let dst@29: *mut u8; // local
@@ -2685,11 +2685,11 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let @36: NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]; // anonymous local
     let @37: Alignment; // anonymous local
     let @38: *const u8; // anonymous local
-    let ptr@39: *mut Slice<u8>; // local
+    let ptr@39: *mut [u8]; // local
     let data@40: *mut u8; // local
     let @41: (); // anonymous local
     let @42: *mut (); // anonymous local
-    let @43: *const Slice<u8>; // anonymous local
+    let @43: *const [u8]; // anonymous local
     let @44: bool; // anonymous local
     let @45: AlignmentEnum; // anonymous local
     let @46: (); // anonymous local
@@ -2701,13 +2701,13 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let @52: *mut (); // anonymous local
     let v@53: NonNull<u8>; // local
     let v@54: NonNull<u8>; // local
-    let ptr@55: *mut Slice<u8>; // local
+    let ptr@55: *mut [u8]; // local
     let data@56: *mut u8; // local
     let @57: (); // anonymous local
     let @58: *mut (); // anonymous local
-    let @59: *const Slice<u8>; // anonymous local
-    let v@60: NonNull<Slice<u8>>; // local
-    let @61: *mut Slice<u8>; // anonymous local
+    let @59: *const [u8]; // anonymous local
+    let v@60: NonNull<[u8]>; // local
+    let @61: *mut [u8]; // anonymous local
     let @62: (); // anonymous local
     let @63: *const (); // anonymous local
     let @64: *mut (); // anonymous local
@@ -2715,14 +2715,14 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
     let @66: usize; // anonymous local
     let @67: AllocError; // anonymous local
     let @68: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
-    let @69: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<Slice<u8>>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<Slice<u8>>}]; // anonymous local
+    let @69: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
     let @70: Option<NonNull<u8>>[{built_in impl Sized for NonNull<u8>}]; // anonymous local
     let @71: AllocError; // anonymous local
-    let @72: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @72: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @73: AllocError; // anonymous local
     let @74: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // anonymous local
     let @75: AllocError; // anonymous local
-    let @76: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let @76: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
 
     storage_live(new_size@5)
     storage_live(@6)
@@ -2883,7 +2883,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                     storage_dead(@58)
                                 } else {
                                 }
-                                @59 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@55))
+                                @59 := cast<*mut [u8], *const [u8]>(copy (ptr@55))
                                 @23 := NonNull { pointer: copy (@59) }
                                 storage_dead(@59)
                                 storage_dead(ptr@55)
@@ -2932,7 +2932,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                     storage_dead(@58)
                                 } else {
                                 }
-                                @59 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@55))
+                                @59 := cast<*mut [u8], *const [u8]>(copy (ptr@55))
                                 @23 := NonNull { pointer: copy (@59) }
                                 storage_dead(@59)
                                 storage_dead(ptr@55)
@@ -2975,15 +2975,15 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 ptr@28 := transmute<NonNull<u8>, *mut u8>(copy (ptr@2))
                                 src@27 := transmute<NonNull<u8>, *const u8>(copy (ptr@2))
                                 storage_live(dst@29)
-                                @61 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (new_ptr@26))
-                                dst@29 := cast<*mut Slice<u8>, *mut u8>(copy (@61))
+                                @61 := transmute<NonNull<[u8]>, *mut [u8]>(copy (new_ptr@26))
+                                dst@29 := cast<*mut [u8], *mut u8>(copy (@61))
                                 storage_live(@65)
                                 @65 := ub_checks<bool>
                                 if copy (@65) {
                                     storage_live(@63)
                                     @63 := transmute<NonNull<u8>, *const ()>(copy (ptr@2))
                                     storage_live(@64)
-                                    @64 := cast<*mut Slice<u8>, *mut ()>(copy (@61))
+                                    @64 := cast<*mut [u8], *mut ()>(copy (@61))
                                     @62 := core::ptr::copy_nonoverlapping::precondition_check(move (@63), move (@64), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), copy (new_size@5))
                                     storage_dead(@64)
                                     storage_dead(@63)
@@ -3035,15 +3035,15 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
                                 ptr@28 := transmute<NonNull<u8>, *mut u8>(copy (ptr@2))
                                 src@27 := transmute<NonNull<u8>, *const u8>(copy (ptr@2))
                                 storage_live(dst@29)
-                                @61 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (new_ptr@26))
-                                dst@29 := cast<*mut Slice<u8>, *mut u8>(copy (@61))
+                                @61 := transmute<NonNull<[u8]>, *mut [u8]>(copy (new_ptr@26))
+                                dst@29 := cast<*mut [u8], *mut u8>(copy (@61))
                                 storage_live(@65)
                                 @65 := ub_checks<bool>
                                 if copy (@65) {
                                     storage_live(@63)
                                     @63 := transmute<NonNull<u8>, *const ()>(copy (ptr@2))
                                     storage_live(@64)
-                                    @64 := cast<*mut Slice<u8>, *mut ()>(copy (@61))
+                                    @64 := cast<*mut [u8], *mut ()>(copy (@61))
                                     @62 := core::ptr::copy_nonoverlapping::precondition_check(move (@63), move (@64), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE), const ({impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN), copy (new_size@5))
                                     storage_dead(@64)
                                     storage_dead(@63)
@@ -3126,7 +3126,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 (Global), @2: No
         storage_dead(@42)
     } else {
     }
-    @43 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@39))
+    @43 := cast<*mut [u8], *const [u8]>(copy (ptr@39))
     @7 := NonNull { pointer: copy (@43) }
     storage_dead(@44)
     storage_dead(@43)
@@ -3208,13 +3208,13 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
     let size@1: usize; // arg #1
     let align@2: usize; // arg #2
     let layout@3: Layout; // local
-    let @4: Result<NonNull<Slice<u8>>, AllocError>[{built_in impl Sized for NonNull<Slice<u8>>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let ptr@5: NonNull<Slice<u8>>; // local
+    let @4: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let ptr@5: NonNull<[u8]>; // local
     let @6: !; // anonymous local
     let @7: bool; // anonymous local
     let @8: (); // anonymous local
     let @9: Alignment; // anonymous local
-    let @10: *mut Slice<u8>; // anonymous local
+    let @10: *mut [u8]; // anonymous local
     let @11: &'_ (Global); // anonymous local
     let @12: Global; // anonymous local
 
@@ -3248,8 +3248,8 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
     }
     ptr@5 := copy ((@4 as variant Result::Ok).0)
     storage_live(@10)
-    @10 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (ptr@5))
-    @0 := cast<*mut Slice<u8>, *mut u8>(copy (@10))
+    @10 := transmute<NonNull<[u8]>, *mut [u8]>(copy (ptr@5))
+    @0 := cast<*mut [u8], *mut u8>(copy (@10))
     storage_dead(@10)
     storage_dead(@4)
     return

@@ -52,7 +52,7 @@ struct KeccakState {}
 
 // Full name: test_crate::PortableHash
 struct PortableHash<const K : usize> {
-  shake128_state: Array<KeccakState, K>,
+  shake128_state: [KeccakState; K],
   make_non_trivial: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}],
 }
 

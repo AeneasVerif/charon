@@ -1984,15 +1984,22 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
 impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
-            TyKind::Adt(tref) => {
-                if tref.id.is_tuple() {
-                    assert!(tref.generics.trait_refs.is_empty());
+            TyKind::Adt(tref) => match tref.id {
+                TypeId::Tuple => {
                     let generics = tref.generics.fmt_explicits(ctx).format(", ");
                     write!(f, "({generics})")
-                } else {
-                    write!(f, "{}", tref.with_ctx(ctx))
                 }
-            }
+                TypeId::Builtin(BuiltinTy::Array) => {
+                    let ty = &tref.generics.types[0];
+                    let len = &tref.generics.const_generics[0];
+                    write!(f, "[{}; {}]", ty.with_ctx(ctx), len.with_ctx(ctx))
+                }
+                TypeId::Builtin(BuiltinTy::Slice) => {
+                    let ty = &tref.generics.types[0];
+                    write!(f, "[{}]", ty.with_ctx(ctx))
+                }
+                _ => write!(f, "{}", tref.with_ctx(ctx)),
+            },
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
             TyKind::Literal(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),

@@ -45,7 +45,7 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-pub fn core::array::{Array<T, N>}::map<T, F, U, const N : usize>(@1: Array<T, N>, @2: F) -> Array<U, N>
+pub fn core::array::{[T; N]}::map<T, F, U, const N : usize>(@1: [T; N], @2: F) -> [U; N]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -548,7 +548,7 @@ pub enum AssertKind {
 }
 
 #[lang_item("slice_len_fn")]
-pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+pub fn core::slice::{[T]}::len<'_0, T>(@1: &'_0 ([T])) -> usize
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -626,37 +626,37 @@ impl FnMut<(i32)> for closure {
     non-dyn-compatible
 }
 
-pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
 {
-    let @0: Array<i32, 256 : usize>; // return
-    let x@1: Array<i32, 256 : usize>; // arg #1
-    let @2: Array<i32, 256 : usize>; // anonymous local
+    let @0: [i32; 256 : usize]; // return
+    let x@1: [i32; 256 : usize]; // arg #1
+    let @2: [i32; 256 : usize]; // anonymous local
     let @3: closure; // anonymous local
 
     storage_live(@2)
     @2 := copy (x@1)
     storage_live(@3)
     @3 := closure {  }
-    @0 := core::array::{Array<T, N>}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
+    @0 := core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
 }
 
 // Full name: test_crate::array
-pub fn array<const LEN : usize>() -> Array<u8, LEN>
+pub fn array<const LEN : usize>() -> [u8; LEN]
 {
-    let @0: Array<u8, LEN>; // return
+    let @0: [u8; LEN]; // return
 
     @0 := @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
     return
 }
 
 // Full name: test_crate::cbd
-fn cbd(@1: Array<u8, 33 : usize>)
+fn cbd(@1: [u8; 33 : usize])
 {
     let @0: (); // return
-    let prf_input@1: Array<u8, 33 : usize>; // arg #1
+    let prf_input@1: [u8; 33 : usize]; // arg #1
     let @2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let @3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let iter@4: Range<u8>[{built_in impl Sized for u8}]; // local
@@ -666,7 +666,7 @@ fn cbd(@1: Array<u8, 33 : usize>)
     let i@8: u8; // local
     let @9: u8; // anonymous local
     let @10: usize; // anonymous local
-    let @11: &'_ mut (Array<u8, 33 : usize>); // anonymous local
+    let @11: &'_ mut ([u8; 33 : usize]); // anonymous local
     let @12: &'_ mut (u8); // anonymous local
 
     @0 := ()
@@ -719,19 +719,19 @@ fn cbd(@1: Array<u8, 33 : usize>)
 }
 
 // Full name: test_crate::select
-fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
+fn select<'_0, '_1>(@1: &'_0 ([u8]), @2: &'_1 ([u8]))
 {
     let @0: (); // return
-    let lhs@1: &'0 (Slice<u8>); // arg #1
-    let rhs@2: &'0 (Slice<u8>); // arg #2
+    let lhs@1: &'0 ([u8]); // arg #1
+    let rhs@2: &'0 ([u8]); // arg #2
     let @3: bool; // anonymous local
     let @4: (&'1 (usize), &'1 (usize)); // anonymous local
     let @5: &'1 (usize); // anonymous local
     let @6: usize; // anonymous local
-    let @7: &'0 (Slice<u8>); // anonymous local
+    let @7: &'0 ([u8]); // anonymous local
     let @8: &'1 (usize); // anonymous local
     let @9: usize; // anonymous local
-    let @10: &'0 (Slice<u8>); // anonymous local
+    let @10: &'0 ([u8]); // anonymous local
     let left_val@11: &'1 (usize); // local
     let right_val@12: &'1 (usize); // local
     let @13: bool; // anonymous local
@@ -754,14 +754,14 @@ fn select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@6)
         storage_live(@7)
         @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
-        @6 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
+        @6 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
         storage_dead(@7)
         @5 := &@6
         storage_live(@8)
         storage_live(@9)
         storage_live(@10)
         @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
-        @9 := core::slice::{Slice<T>}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
+        @9 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
         storage_dead(@10)
         @8 := &@9
         @4 := (move (@5), move (@8))

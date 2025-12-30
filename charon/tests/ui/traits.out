@@ -807,7 +807,7 @@ where
     [@TraitClause0]: WithConstTy<Self, LEN>,
  = LEN2()
 
-pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 (Array<u8, LEN>))
+pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 ([u8; LEN]))
 where
     [@TraitClause0]: WithConstTy<Self, LEN>,
 = <method_without_default_body>
@@ -825,11 +825,11 @@ pub fn LEN1() -> usize
 pub const LEN1: usize = LEN1()
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
-pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
+pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 ([u8; 32 : usize]))
 {
     let @0: (); // return
     let @1: &'0 mut (u64); // arg #1
-    let @2: &'1 (Array<u8, 32 : usize>); // arg #2
+    let @2: &'1 ([u8; 32 : usize]); // arg #2
 
     @0 := ()
     @0 := ()
@@ -1235,8 +1235,8 @@ pub trait Trait<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Trait for Array<T, N>}::LEN
-pub fn {impl Trait for Array<T, N>}::LEN<T, const N : usize>() -> usize
+// Full name: test_crate::{impl Trait for [T; N]}::LEN
+pub fn {impl Trait for [T; N]}::LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -1246,19 +1246,19 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait for Array<T, N>}::LEN
-pub const {impl Trait for Array<T, N>}::LEN<T, const N : usize>: usize
+// Full name: test_crate::{impl Trait for [T; N]}::LEN
+pub const {impl Trait for [T; N]}::LEN<T, const N : usize>: usize
 where
     [@TraitClause0]: Sized<T>,
- = {impl Trait for Array<T, N>}::LEN()
+ = {impl Trait for [T; N]}::LEN()
 
-// Full name: test_crate::{impl Trait for Array<T, N>}
-impl<T, const N : usize> Trait for Array<T, N>
+// Full name: test_crate::{impl Trait for [T; N]}
+impl<T, const N : usize> Trait for [T; N]
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for Array<T, N>}
-    const LEN = {impl Trait for Array<T, N>}::LEN<T, N>[@TraitClause0]
+    parent_clause0 = {built_in impl MetaSized for [T; N]}
+    const LEN = {impl Trait for [T; N]}::LEN<T, N>[@TraitClause0]
     non-dyn-compatible
 }
 

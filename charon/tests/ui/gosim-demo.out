@@ -127,7 +127,7 @@ pub opaque type Arguments<'a>
 pub opaque type Argument<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a (Array<u8, N>), @2: &'a (Array<Argument<'a>, M>)) -> Arguments<'a>
+pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a ([u8; N]), @2: &'a ([Argument<'a>; M])) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::result::Result
@@ -492,25 +492,25 @@ where
     vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
-// Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}::into_iter
-pub fn {impl IntoIterator for &'a (Slice<T>)}::into_iter<'a, T>(@1: &'a (Slice<T>)) -> Iter<'a, T>[@TraitClause0]
+// Full name: core::slice::iter::{impl IntoIterator for &'a ([T])}::into_iter
+pub fn {impl IntoIterator for &'a ([T])}::into_iter<'a, T>(@1: &'a ([T])) -> Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::iter::{impl IntoIterator for &'a (Slice<T>)}
-impl<'a, T> IntoIterator for &'a (Slice<T>)
+// Full name: core::slice::iter::{impl IntoIterator for &'a ([T])}
+impl<'a, T> IntoIterator for &'a ([T])
 where
     [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ (Slice<T>)}
+    parent_clause0 = {built_in impl MetaSized for &'_ ([T])}
     parent_clause1 = {built_in impl Sized for &'_ (T)}
     parent_clause2 = {built_in impl Sized for Iter<'_, T>[@TraitClause0]}
     parent_clause3 = {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, T>[@TraitClause0]
     type Item = &'a (T)
     type IntoIter = Iter<'a, T>[@TraitClause0]
-    fn into_iter = {impl IntoIterator for &'a (Slice<T>)}::into_iter<'a, T>[@TraitClause0]
-    vtable: {impl IntoIterator for &'a (Slice<T>)}::{vtable}<'a, T>[@TraitClause0]
+    fn into_iter = {impl IntoIterator for &'a ([T])}::into_iter<'a, T>[@TraitClause0]
+    vtable: {impl IntoIterator for &'a ([T])}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: std::io::stdio::_eprint
@@ -528,15 +528,15 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::debug_slice
-fn debug_slice<'_0, T>(@1: &'_0 (Slice<T>))
+fn debug_slice<'_0, T>(@1: &'_0 ([T]))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
 {
     let @0: (); // return
-    let slice@1: &'0 (Slice<T>); // arg #1
+    let slice@1: &'0 ([T]); // arg #1
     let @2: Iter<'1, T>[@TraitClause0]; // anonymous local
-    let @3: &'0 (Slice<T>); // anonymous local
+    let @3: &'0 ([T]); // anonymous local
     let iter@4: Iter<'1, T>[@TraitClause0]; // local
     let @5: Option<&'2 (T)>[{built_in impl Sized for &'2 (T)}]; // anonymous local
     let @6: &'5 mut (Iter<'1, T>[@TraitClause0]); // anonymous local
@@ -546,21 +546,21 @@ where
     let @10: Arguments<'6>; // anonymous local
     let args@11: (&'7 (&'2 (T))); // local
     let @12: &'7 (&'2 (T)); // anonymous local
-    let args@13: Array<Argument<'8>, 1 : usize>; // local
+    let args@13: [Argument<'8>; 1 : usize]; // local
     let @14: Argument<'8>; // anonymous local
     let @15: &'7 (&'2 (T)); // anonymous local
-    let @16: &'9 (Array<u8, 7 : usize>); // anonymous local
-    let @17: &'9 (Array<u8, 7 : usize>); // anonymous local
-    let @18: &'10 (Array<Argument<'8>, 1 : usize>); // anonymous local
-    let @19: &'10 (Array<Argument<'8>, 1 : usize>); // anonymous local
-    let @20: Array<u8, 7 : usize>; // anonymous local
-    let @21: &'9 (Array<u8, 7 : usize>); // anonymous local
+    let @16: &'9 ([u8; 7 : usize]); // anonymous local
+    let @17: &'9 ([u8; 7 : usize]); // anonymous local
+    let @18: &'10 ([Argument<'8>; 1 : usize]); // anonymous local
+    let @19: &'10 ([Argument<'8>; 1 : usize]); // anonymous local
+    let @20: [u8; 7 : usize]; // anonymous local
+    let @21: &'9 ([u8; 7 : usize]); // anonymous local
 
     @0 := ()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (slice@1)
-    @2 := {impl IntoIterator for &'a (Slice<T>)}::into_iter<'11, T>[@TraitClause0](move (@3))
+    @2 := {impl IntoIterator for &'a ([T])}::into_iter<'11, T>[@TraitClause0](move (@3))
     storage_dead(@3)
     storage_live(iter@4)
     iter@4 := move (@2)
@@ -636,12 +636,12 @@ fn main()
 {
     let @0: (); // return
     let @1: (); // anonymous local
-    let @2: &'0 (Slice<i32>); // anonymous local
-    let @3: &'1 (Array<i32, 3 : usize>); // anonymous local
-    let @4: &'1 (Array<i32, 3 : usize>); // anonymous local
-    let @5: &'1 (Array<i32, 3 : usize>); // anonymous local
-    let @6: &'_ (Array<i32, 3 : usize>); // anonymous local
-    let @7: Array<i32, 3 : usize>; // anonymous local
+    let @2: &'0 ([i32]); // anonymous local
+    let @3: &'1 ([i32; 3 : usize]); // anonymous local
+    let @4: &'1 ([i32; 3 : usize]); // anonymous local
+    let @5: &'1 ([i32; 3 : usize]); // anonymous local
+    let @6: &'_ ([i32; 3 : usize]); // anonymous local
+    let @7: [i32; 3 : usize]; // anonymous local
 
     storage_live(@6)
     storage_live(@7)
