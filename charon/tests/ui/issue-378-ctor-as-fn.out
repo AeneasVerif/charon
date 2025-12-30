@@ -91,7 +91,7 @@ unsafe fn {impl Destruct for Foo}::drop_in_place(@1: *mut Foo)
 {
     let @0: (); // return
     let @1: *mut Foo; // arg #1
-    let @2: &'0 mut (Foo); // anonymous local
+    let @2: &'0 mut Foo; // anonymous local
 
     storage_live(@2)
     @0 := ()
@@ -123,17 +123,17 @@ where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
-  Variant(&'a (T)),
+  Variant(&'a T),
 }
 
 // Full name: test_crate::Bar::Variant
-fn Variant<'a, T>(@1: &'a (T)) -> Bar<'a, T>[@TraitClause0]
+fn Variant<'a, T>(@1: &'a T) -> Bar<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
     let @0: Bar<'a, T>[@TraitClause0]; // return
-    let @1: &'a (T); // arg #1
+    let @1: &'a T; // arg #1
 
     @0 := Bar::Variant { 0: move (@1) }
     return
@@ -157,10 +157,10 @@ fn main()
     let f@12: Variant<'0, i32>[{built_in impl Sized for i32}]; // local
     let @13: Bar<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
     let @14: Variant<'0, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @15: &'2 (i32); // anonymous local
-    let @16: &'2 (i32); // anonymous local
-    let @17: &'2 (i32); // anonymous local
-    let @18: &'_ (i32); // anonymous local
+    let @15: &'2 i32; // anonymous local
+    let @16: &'2 i32; // anonymous local
+    let @17: &'2 i32; // anonymous local
+    let @18: &'_ i32; // anonymous local
     let @19: i32; // anonymous local
 
     storage_live(@17)

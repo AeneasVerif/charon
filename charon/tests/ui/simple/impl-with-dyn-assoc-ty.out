@@ -28,7 +28,7 @@ struct test_crate::DynableTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,
   drop: unsafe fn(*mut (dyn DynableTrait<Ty0>)),
-  super_trait_0: &'static (core::marker::MetaSized::{vtable}),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 
 // Full name: test_crate::DynableTrait

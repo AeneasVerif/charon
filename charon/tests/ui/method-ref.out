@@ -39,7 +39,7 @@ trait Ord<Self>
 }
 
 // Full name: test_crate::Ord::cmp
-fn cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+fn cmp<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
 = <method_without_default_body>

@@ -38,13 +38,13 @@ where
 }
 
 // Full name: test_crate::{AVLTree<T>[@TraitClause0]}::insert
-pub fn insert<'_0, T>(@1: &'_0 mut (AVLTree<T>[@TraitClause0]))
+pub fn insert<'_0, T>(@1: &'_0 mut AVLTree<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ord<T>,
 {
     let @0: (); // return
-    let self@1: &'0 mut (AVLTree<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 mut AVLTree<T>[@TraitClause0]; // arg #1
 
     @0 := ()
     panic(core::panicking::panic)
@@ -62,7 +62,7 @@ pub fn test(@1: AVLTree<u32>[{built_in impl Sized for u32}])
     let @0: (); // return
     let tree@1: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1
     let @2: (); // anonymous local
-    let @3: &'0 mut (AVLTree<u32>[{built_in impl Sized for u32}]); // anonymous local
+    let @3: &'0 mut AVLTree<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     @0 := ()
     storage_live(@2)

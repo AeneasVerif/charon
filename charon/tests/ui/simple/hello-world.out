@@ -18,11 +18,11 @@ pub trait Display::<Str>
     vtable: core::fmt::Display::{vtable}::<Str>
 }
 
-pub fn core::fmt::Display::fmt::<Str><'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter::<'_>)) -> Result::<(), Error>
+pub fn core::fmt::Display::fmt::<Str><'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter::<'_>) -> Result::<(), Error>
 = <opaque>
 
 // Full name: core::fmt::{impl Display::<Str>}::fmt
-pub fn {impl Display::<Str>}::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (Formatter::<'_>)) -> Result::<(), Error>
+pub fn {impl Display::<Str>}::fmt<'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter::<'_>) -> Result::<(), Error>
 = <opaque>
 
 // Full name: core::fmt::{impl Display::<Str>}
@@ -94,11 +94,11 @@ pub trait ToString::<Str>
 }
 
 #[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string::<Str><'_0>(@1: &'_0 (Str)) -> String
+pub fn alloc::string::ToString::to_string::<Str><'_0>(@1: &'_0 Str) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl ToString::<Str>}::to_string::<Str>
-pub fn {impl ToString::<Str>}::to_string::<Str><'_0>(@1: &'_0 (Str)) -> String
+pub fn {impl ToString::<Str>}::to_string::<Str><'_0>(@1: &'_0 Str) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl ToString::<Str>}::<Str>
@@ -123,8 +123,8 @@ fn main()
 {
     let @0: (); // return
     let a@1: String; // local
-    let @2: &'0 (Str); // anonymous local
-    let @3: &'0 (Str); // anonymous local
+    let @2: &'0 Str; // anonymous local
+    let @3: &'0 Str; // anonymous local
 
     @0 := ()
     storage_live(a@1)

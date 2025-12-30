@@ -17,8 +17,8 @@ pub fn index_array_generic<const N : usize>(@1: [u32; N], @2: usize) -> u32
     let s@1: [u32; N]; // arg #1
     let i@2: usize; // arg #2
     let @3: usize; // anonymous local
-    let @4: &'_ ([u32; N]); // anonymous local
-    let @5: &'_ (u32); // anonymous local
+    let @4: &'_ [u32; N]; // anonymous local
+    let @5: &'_ u32; // anonymous local
 
     storage_live(@3)
     @3 := copy (i@2)

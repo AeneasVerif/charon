@@ -64,7 +64,7 @@ unsafe fn {impl Destruct for Thing}::drop_in_place(@1: *mut Thing)
 {
     let @0: (); // return
     let @1: *mut Thing; // arg #1
-    let @2: &'0 mut (Thing); // anonymous local
+    let @2: &'0 mut Thing; // anonymous local
 
     storage_live(@2)
     @0 := ()

@@ -68,12 +68,12 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
@@ -149,7 +149,7 @@ where
 {
     let @0: (); // return
     let @1: *mut (A, B); // arg #1
-    let @2: &'0 mut ((A, B)); // anonymous local
+    let @2: &'0 mut (A, B); // anonymous local
 
     storage_live(@2)
     @0 := ()
@@ -168,37 +168,37 @@ where
     non-dyn-compatible
 }
 
-pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 Self) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
 = <method_without_default_body>
 
-pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 Self) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
 {
     let @0: bool; // return
-    let self@1: &'0 (Self); // arg #1
+    let self@1: &'0 Self; // arg #1
 
     @0 := const (true)
     return
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
-pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 {
     let @0: bool; // return
-    let self@1: &'0 (bool); // arg #1
+    let self@1: &'0 bool; // arg #1
 
     @0 := copy (*(self@1))
     return
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::ret_true
-pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
 {
     let @0: bool; // return
-    let self@1: &'0 (bool); // arg #1
+    let self@1: &'0 bool; // arg #1
 
     @0 := const (true)
     return
@@ -218,8 +218,8 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     let @0: bool; // return
     let x@1: bool; // arg #1
     let @2: bool; // anonymous local
-    let @3: &'0 (bool); // anonymous local
-    let @4: &'0 (bool); // anonymous local
+    let @3: &'0 bool; // anonymous local
+    let @4: &'0 bool; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -240,12 +240,12 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::get_bool
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: bool; // return
-    let self@1: &'0 (Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
 
     match *(self@1) {
         Option::None => {
@@ -260,12 +260,12 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: bool; // return
-    let self@1: &'0 (Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
 
     @0 := const (true)
     return
@@ -290,8 +290,8 @@ where
     let @0: bool; // return
     let x@1: Option<T>[@TraitClause0]; // arg #1
     let @2: bool; // anonymous local
-    let @3: &'0 (Option<T>[@TraitClause0]); // anonymous local
-    let @4: &'0 (Option<T>[@TraitClause0]); // anonymous local
+    let @3: &'0 Option<T>[@TraitClause0]; // anonymous local
+    let @4: &'0 Option<T>[@TraitClause0]; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -320,7 +320,7 @@ where
 {
     let @0: bool; // return
     let x@1: T; // arg #1
-    let @2: &'0 (T); // anonymous local
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &x@1
@@ -660,10 +660,10 @@ struct TestType1 {
 }
 
 // Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}::test
-fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
+fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 TestType1) -> bool
 {
     let @0: bool; // return
-    let self@1: &'0 (TestType1); // arg #1
+    let self@1: &'0 TestType1; // arg #1
     let @2: u64; // anonymous local
 
     storage_live(@2)
@@ -673,20 +673,20 @@ fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 (TestType1)) -> bool
     return
 }
 
-pub fn test_crate::{TestType<T>[@TraitClause0]}::test<'_0, T>(@1: &'_0 (TestType<T>[@TraitClause0]), @2: T) -> bool
+pub fn test_crate::{TestType<T>[@TraitClause0]}::test<'_0, T>(@1: &'_0 TestType<T>[@TraitClause0], @2: T) -> bool
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
     let @0: bool; // return
-    let self@1: &'0 (TestType<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 TestType<T>[@TraitClause0]; // arg #1
     let x@2: T; // arg #2
     let x@3: u64; // local
     let @4: T; // anonymous local
     let y@5: TestType1; // local
     let @6: bool; // anonymous local
     let @7: u64; // anonymous local
-    let @8: &'1 (TestType1); // anonymous local
+    let @8: &'1 TestType1; // anonymous local
 
     storage_live(x@3)
     storage_live(@4)
@@ -729,7 +729,7 @@ trait TestTrait<Self>
     vtable: test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::{vtable}
 }
 
-fn test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
+fn test_crate::{TestType<T>[@TraitClause0]}::test::TestTrait::test<'_0, Self>(@1: &'_0 Self) -> bool
 where
     [@TraitClause0]: TestTrait<Self>,
 = <method_without_default_body>
@@ -807,7 +807,7 @@ where
     [@TraitClause0]: WithConstTy<Self, LEN>,
  = LEN2()
 
-pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (@TraitClause0::W), @2: &'_1 ([u8; LEN]))
+pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut @TraitClause0::W, @2: &'_1 [u8; LEN])
 where
     [@TraitClause0]: WithConstTy<Self, LEN>,
 = <method_without_default_body>
@@ -825,11 +825,11 @@ pub fn LEN1() -> usize
 pub const LEN1: usize = LEN1()
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
-pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 ([u8; 32 : usize]))
+pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut u64, @2: &'_1 [u8; 32 : usize])
 {
     let @0: (); // return
-    let @1: &'0 mut (u64); // arg #1
-    let @2: &'1 ([u8; 32 : usize]); // arg #2
+    let @1: &'0 mut u64; // arg #1
+    let @2: &'1 [u8; 32 : usize]; // arg #2
 
     @0 := ()
     @0 := ()
@@ -896,13 +896,13 @@ where
 }
 
 // Full name: test_crate::test_where1
-pub fn test_where1<'a, T>(@1: &'a (T))
+pub fn test_where1<'a, T>(@1: &'a T)
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
     let @0: (); // return
-    let _x@1: &'0 (T); // arg #1
+    let _x@1: &'0 T; // arg #1
 
     @0 := ()
     @0 := ()
@@ -936,12 +936,12 @@ pub trait ParentTrait0<Self>
 }
 
 // Full name: test_crate::ParentTrait0::get_name
-pub fn get_name<'_0, Self>(@1: &'_0 (Self)) -> String
+pub fn get_name<'_0, Self>(@1: &'_0 Self) -> String
 where
     [@TraitClause0]: ParentTrait0<Self>,
 = <method_without_default_body>
 
-pub fn test_crate::ParentTrait0::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
+pub fn test_crate::ParentTrait0::get_w<'_0, Self>(@1: &'_0 Self) -> @TraitClause0::W
 where
     [@TraitClause0]: ParentTrait0<Self>,
 = <method_without_default_body>
@@ -963,14 +963,14 @@ pub trait ChildTrait<Self>
 }
 
 // Full name: test_crate::test_child_trait1
-pub fn test_child_trait1<'_0, T>(@1: &'_0 (T)) -> String
+pub fn test_child_trait1<'_0, T>(@1: &'_0 T) -> String
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ChildTrait<T>,
 {
     let @0: String; // return
-    let x@1: &'0 (T); // arg #1
-    let @2: &'0 (T); // anonymous local
+    let x@1: &'0 T; // arg #1
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
@@ -980,14 +980,14 @@ where
 }
 
 // Full name: test_crate::test_child_trait2
-pub fn test_child_trait2<'_0, T>(@1: &'_0 (T)) -> @TraitClause1::parent_clause1::W
+pub fn test_child_trait2<'_0, T>(@1: &'_0 T) -> @TraitClause1::parent_clause1::W
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ChildTrait<T>,
 {
     let @0: @TraitClause1::parent_clause1::W; // return
-    let x@1: &'0 (T); // arg #1
-    let @2: &'0 (T); // anonymous local
+    let x@1: &'0 T; // arg #1
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
@@ -1175,7 +1175,7 @@ pub trait CFnMut<Self, Args>
     vtable: test_crate::CFnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: CFnMut<Self, Args>,
 = <method_without_default_body>
@@ -1190,7 +1190,7 @@ pub trait CFn<Self, Args>
     vtable: test_crate::CFn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: CFn<Self, Args>,
 = <method_without_default_body>
@@ -1205,20 +1205,20 @@ pub trait GetTrait<Self>
     vtable: test_crate::GetTrait::{vtable}<Self::W>
 }
 
-pub fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::W
+pub fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 Self) -> @TraitClause0::W
 where
     [@TraitClause0]: GetTrait<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::test_get_trait
-pub fn test_get_trait<'_0, T>(@1: &'_0 (T)) -> @TraitClause1::W
+pub fn test_get_trait<'_0, T>(@1: &'_0 T) -> @TraitClause1::W
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: GetTrait<T>,
 {
     let @0: @TraitClause1::W; // return
-    let x@1: &'0 (T); // arg #1
-    let @2: &'0 (T); // anonymous local
+    let x@1: &'0 T; // arg #1
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
@@ -1381,10 +1381,10 @@ impl RecursiveImpl for () {
 }
 
 // Full name: test_crate::flabada
-pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[{built_in impl Sized for (bool, &'a (()))}]
+pub fn flabada<'a>(@1: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let @0: Wrapper<(bool, &'0 (()))>[{built_in impl Sized for (bool, &'0 (()))}]; // return
-    let _x@1: &'0 (()); // arg #1
+    let @0: Wrapper<(bool, &'0 ())>[{built_in impl Sized for (bool, &'0 ())}]; // return
+    let _x@1: &'0 (); // arg #1
 
     panic(core::panicking::panic)
 }
@@ -1392,8 +1392,8 @@ pub fn flabada<'a>(@1: &'a (())) -> Wrapper<(bool, &'a (()))>[{built_in impl Siz
 pub fn test_crate::call<'a, F>(@1: F)
 where
     [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Fn<F, (&'a (()))>,
-    @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a (()))>[{built_in impl Sized for (bool, &'_ (()))}],
+    [@TraitClause1]: Fn<F, (&'a ())>,
+    @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'_ ())}],
 {
     let @0: (); // return
     let @1: F; // arg #1
@@ -1412,7 +1412,7 @@ pub fn flibidi()
 
     @0 := ()
     storage_live(@1)
-    @1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (()))> for for<'a> flabada<'a>}](const (flabada<'_>))
+    @1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ())> for for<'a> flabada<'a>}](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     return

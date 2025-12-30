@@ -22,7 +22,7 @@ where
 }
 
 // Full name: core::any::Any::type_id
-pub fn type_id<'_0, Self>(@1: &'_0 (Self)) -> TypeId
+pub fn type_id<'_0, Self>(@1: &'_0 Self) -> TypeId
 where
     [@TraitClause0]: Any<Self>,
 = <opaque>

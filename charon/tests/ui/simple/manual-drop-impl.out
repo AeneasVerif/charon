@@ -32,7 +32,7 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
 where
     [@TraitClause0]: Drop<Self>,
 = <opaque>
@@ -82,12 +82,12 @@ where
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}::drop
-pub fn {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Foo<T>[@TraitClause0]))
+pub fn {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut Foo<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'0 mut (Foo<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 mut Foo<T>[@TraitClause0]; // arg #1
 
     @0 := ()
     @0 := ()

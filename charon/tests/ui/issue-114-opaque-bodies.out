@@ -64,20 +64,20 @@ pub trait PartialEq<Self, Rhs>
 
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <method_without_default_body>
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
-pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 {
     let @0: bool; // return
-    let self@1: &'0 (Self); // arg #1
-    let other@2: &'1 (Rhs); // arg #2
+    let self@1: &'0 Self; // arg #1
+    let other@2: &'1 Rhs; // arg #2
     let @3: bool; // anonymous local
 
     storage_live(@3)

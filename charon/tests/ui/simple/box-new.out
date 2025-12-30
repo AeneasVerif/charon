@@ -43,12 +43,12 @@ pub trait Allocator<Self>
     vtable: core::alloc::Allocator::{vtable}
 }
 
-pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 (Self), @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 Self, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 = <opaque>
 
-pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 (Self), @2: NonNull<u8>, @3: Layout)
+pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 Self, @2: NonNull<u8>, @3: Layout)
 where
     [@TraitClause0]: Allocator<Self>,
 = <opaque>
@@ -69,11 +69,11 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 (Global), @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
-pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 (Global), @2: NonNull<u8>, @3: Layout)
+pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout)
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}

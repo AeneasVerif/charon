@@ -24,18 +24,18 @@ pub trait Add<Self, Rhs>
     vtable: core::ops::arith::Add::{vtable}<Rhs, Self::Output>
 }
 
-// Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}::add
-pub fn {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
+// Full name: core::ops::arith::{impl Add<&'_0 u32> for &'_1 u32}::add
+pub fn {impl Add<&'_0 u32> for &'_1 u32}::add<'_0, '_1>(@1: &'_1 u32, @2: &'_0 u32) -> u32
 = <opaque>
 
-// Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}
-impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {
-    parent_clause0 = {built_in impl MetaSized for &'_ (u32)}
-    parent_clause1 = {built_in impl Sized for &'_ (u32)}
+// Full name: core::ops::arith::{impl Add<&'_0 u32> for &'_1 u32}
+impl<'_0, '_1> Add<&'_0 u32> for &'_1 u32 {
+    parent_clause0 = {built_in impl MetaSized for &'_ u32}
+    parent_clause1 = {built_in impl Sized for &'_ u32}
     parent_clause2 = {built_in impl Sized for u32}
     type Output = u32
-    fn add = {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'_0, '_1>
-    vtable: {impl Add<&'_0 (u32)> for &'_1 (u32)}::{vtable}<'_0, '_1>
+    fn add = {impl Add<&'_0 u32> for &'_1 u32}::add<'_0, '_1>
+    vtable: {impl Add<&'_0 u32> for &'_1 u32}::{vtable}<'_0, '_1>
 }
 
 #[lang_item("add")]
@@ -58,18 +58,18 @@ const UNIT_METADATA: () = @Fun0()
 fn six() -> u32
 {
     let @0: u32; // return
-    let x@1: &'0 (u32); // local
+    let x@1: &'0 u32; // local
     let @2: u32; // anonymous local
-    let y@3: &'0 (u32); // local
+    let y@3: &'0 u32; // local
     let @4: u32; // anonymous local
-    let @5: &'0 (u32); // anonymous local
-    let @6: &'0 (u32); // anonymous local
-    let @7: &'0 (u32); // anonymous local
-    let @8: &'0 (u32); // anonymous local
-    let @9: &'_ (u32); // anonymous local
+    let @5: &'0 u32; // anonymous local
+    let @6: &'0 u32; // anonymous local
+    let @7: &'0 u32; // anonymous local
+    let @8: &'0 u32; // anonymous local
+    let @9: &'_ u32; // anonymous local
     let @10: u32; // anonymous local
     let @11: u32; // anonymous local
-    let @12: &'_ (u32); // anonymous local
+    let @12: &'_ u32; // anonymous local
     let @13: u32; // anonymous local
     let @14: u32; // anonymous local
 
@@ -101,7 +101,7 @@ fn six() -> u32
     @5 := copy (x@1)
     storage_live(@6)
     @6 := copy (y@3)
-    @0 := {impl Add<&'_0 (u32)> for &'_1 (u32)}::add<'1, '2>(move (@5), move (@6))
+    @0 := {impl Add<&'_0 u32> for &'_1 u32}::add<'1, '2>(move (@5), move (@6))
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(y@3)

@@ -40,12 +40,12 @@ pub trait BoolTrait<Self>
     vtable: test_crate::BoolTrait::{vtable}
 }
 
-pub fn test_crate::BoolTrait::foo<'_0, Self>(@1: &'_0 (Self))
+pub fn test_crate::BoolTrait::foo<'_0, Self>(@1: &'_0 Self)
 where
     [@TraitClause0]: BoolTrait<Self>,
 {
     let @0: (); // return
-    let self@1: &'0 (Self); // arg #1
+    let self@1: &'0 Self; // arg #1
 
     @0 := ()
     @0 := ()
@@ -53,12 +53,12 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0]))
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 Option<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'0 (Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
 
     @0 := ()
     @0 := ()

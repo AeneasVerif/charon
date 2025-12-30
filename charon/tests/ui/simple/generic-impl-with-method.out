@@ -30,18 +30,18 @@ pub trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
+pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 Self)
 where
     [@TraitClause0]: Trait<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for T}::method
-pub fn {impl Trait for T}::method<'_0, T>(@1: &'_0 (T))
+pub fn {impl Trait for T}::method<'_0, T>(@1: &'_0 T)
 where
     [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'0 (T); // arg #1
+    let self@1: &'0 T; // arg #1
 
     @0 := ()
     @0 := ()

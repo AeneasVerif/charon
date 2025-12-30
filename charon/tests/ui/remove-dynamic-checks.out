@@ -47,10 +47,10 @@ pub fn add_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(@1: &'_0 mut (u32))
+pub fn incr<'_0>(@1: &'_0 mut u32)
 {
     let @0: (); // return
-    let x@1: &'0 mut (u32); // arg #1
+    let x@1: &'0 mut u32; // arg #1
     let @2: u32; // anonymous local
 
     storage_live(@2)
@@ -605,10 +605,10 @@ fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::index_slice_ignore_value
-fn index_slice_ignore_value<'_0>(@1: &'_0 ([u32]))
+fn index_slice_ignore_value<'_0>(@1: &'_0 [u32])
 {
     let @0: (); // return
-    let x@1: &'0 ([u32]); // arg #1
+    let x@1: &'0 [u32]; // arg #1
     let @2: usize; // anonymous local
 
     @0 := ()
@@ -819,15 +819,15 @@ fn div_signed_with_constant() -> i32
 }
 
 // Full name: test_crate::div_unsigned_to_slice
-fn div_unsigned_to_slice<'_0>(@1: &'_0 mut ([u32]), @2: u32)
+fn div_unsigned_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 {
     let @0: (); // return
-    let result@1: &'0 mut ([u32]); // arg #1
+    let result@1: &'0 mut [u32]; // arg #1
     let x@2: u32; // arg #2
     let @3: u32; // anonymous local
     let @4: usize; // anonymous local
-    let @5: &'_ mut ([u32]); // anonymous local
-    let @6: &'_ mut (u32); // anonymous local
+    let @5: &'_ mut [u32]; // anonymous local
+    let @6: &'_ mut u32; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -846,15 +846,15 @@ fn div_unsigned_to_slice<'_0>(@1: &'_0 mut ([u32]), @2: u32)
 }
 
 // Full name: test_crate::div_signed_to_slice
-fn div_signed_to_slice<'_0>(@1: &'_0 mut ([i32]), @2: i32)
+fn div_signed_to_slice<'_0>(@1: &'_0 mut [i32], @2: i32)
 {
     let @0: (); // return
-    let result@1: &'0 mut ([i32]); // arg #1
+    let result@1: &'0 mut [i32]; // arg #1
     let x@2: i32; // arg #2
     let @3: i32; // anonymous local
     let @4: usize; // anonymous local
-    let @5: &'_ mut ([i32]); // anonymous local
-    let @6: &'_ mut (i32); // anonymous local
+    let @5: &'_ mut [i32]; // anonymous local
+    let @6: &'_ mut i32; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -873,16 +873,16 @@ fn div_signed_to_slice<'_0>(@1: &'_0 mut ([i32]), @2: i32)
 }
 
 // Full name: test_crate::add_to_slice
-fn add_to_slice<'_0>(@1: &'_0 mut ([u32]), @2: u32)
+fn add_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 {
     let @0: (); // return
-    let result@1: &'0 mut ([u32]); // arg #1
+    let result@1: &'0 mut [u32]; // arg #1
     let x@2: u32; // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
     let @5: usize; // anonymous local
-    let @6: &'_ mut ([u32]); // anonymous local
-    let @7: &'_ mut (u32); // anonymous local
+    let @6: &'_ mut [u32]; // anonymous local
+    let @7: &'_ mut u32; // anonymous local
 
     storage_live(@4)
     @0 := ()
@@ -903,10 +903,10 @@ fn add_to_slice<'_0>(@1: &'_0 mut ([u32]), @2: u32)
 }
 
 // Full name: test_crate::add_to_slice2
-fn add_to_slice2<'_0>(@1: &'_0 mut ([u8]), @2: usize, @3: u8)
+fn add_to_slice2<'_0>(@1: &'_0 mut [u8], @2: usize, @3: u8)
 {
     let @0: (); // return
-    let result@1: &'0 mut ([u8]); // arg #1
+    let result@1: &'0 mut [u8]; // arg #1
     let i@2: usize; // arg #2
     let x@3: u8; // arg #3
     let @4: u8; // anonymous local
@@ -914,8 +914,8 @@ fn add_to_slice2<'_0>(@1: &'_0 mut ([u8]), @2: usize, @3: u8)
     let @6: usize; // anonymous local
     let @7: usize; // anonymous local
     let @8: usize; // anonymous local
-    let @9: &'_ mut ([u8]); // anonymous local
-    let @10: &'_ mut (u8); // anonymous local
+    let @9: &'_ mut [u8]; // anonymous local
+    let @10: &'_ mut u8; // anonymous local
 
     storage_live(@5)
     storage_live(@8)

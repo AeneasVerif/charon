@@ -23,7 +23,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -133,7 +133,7 @@ trait X<Self, Self_Assoc>
 }
 
 // Full name: test_crate::X::method
-fn method<'_0, Self, Clause0_Assoc>(@1: &'_0 (Self)) -> Clause0_Assoc
+fn method<'_0, Self, Clause0_Assoc>(@1: &'_0 Self) -> Clause0_Assoc
 where
     [@TraitClause0]: X<Self, Clause0_Assoc>,
 = <method_without_default_body>
@@ -162,7 +162,7 @@ where
 {
     let @0: Clause1_Clause1_Assoc; // return
     let x@1: T; // arg #1
-    let @2: &'0 (T); // anonymous local
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &x@1
@@ -180,7 +180,7 @@ where
 {
     let @0: Clause1_Clause1_Assoc; // return
     let x@1: T; // arg #1
-    let @2: &'0 (T); // anonymous local
+    let @2: &'0 T; // anonymous local
 
     storage_live(@2)
     @2 := &x@1

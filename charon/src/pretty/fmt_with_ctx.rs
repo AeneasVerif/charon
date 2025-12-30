@@ -2008,7 +2008,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 if let RefKind::Mut = kind {
                     write!(f, "mut ")?;
                 }
-                write!(f, "({})", ty.with_ctx(ctx))
+                write!(f, "{}", ty.with_ctx(ctx))
             }
             TyKind::RawPtr(ty, kind) => {
                 write!(f, "*")?;

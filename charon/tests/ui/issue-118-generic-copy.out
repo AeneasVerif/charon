@@ -22,7 +22,7 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -71,10 +71,10 @@ const UNIT_METADATA: () = @Fun0()
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
+pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 Foo) -> Foo
 {
     let @0: Foo; // return
-    let self@1: &'0 (Foo); // arg #1
+    let self@1: &'0 Foo; // arg #1
 
     @0 := copy (*(self@1))
     return

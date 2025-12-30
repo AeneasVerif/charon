@@ -195,12 +195,12 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
@@ -252,7 +252,7 @@ fn addr_of()
     let @0: (); // return
     let x@1: u32; // local
     let @2: *const u32; // anonymous local
-    let @3: &'0 (u32); // anonymous local
+    let @3: &'0 u32; // anonymous local
     let @4: *const u32; // anonymous local
     let @5: *mut u32; // anonymous local
 
@@ -320,12 +320,12 @@ fn ptr_casts()
 {
     let @0: (); // return
     let array_ptr@1: *const [u32; 64 : usize]; // local
-    let @2: &'0 ([u32; 64 : usize]); // anonymous local
+    let @2: &'0 [u32; 64 : usize]; // anonymous local
     let @3: *const u32; // anonymous local
     let @4: *const [u32; 64 : usize]; // anonymous local
     let x@5: u8; // local
     let x@6: *const u8; // local
-    let @7: &'1 (u8); // anonymous local
+    let @7: &'1 u8; // anonymous local
     let @8: *const u8; // anonymous local
     let @9: *const u8; // anonymous local
     let @10: *mut u8; // anonymous local
@@ -335,8 +335,8 @@ fn ptr_casts()
     let @14: *const u8; // anonymous local
     let @15: *const u8; // anonymous local
     let @16: fn(); // anonymous local
-    let @17: &'0 ([u32; 64 : usize]); // anonymous local
-    let @18: &'_ ([u32; 64 : usize]); // anonymous local
+    let @17: &'0 [u32; 64 : usize]; // anonymous local
+    let @18: &'_ [u32; 64 : usize]; // anonymous local
     let @19: [u32; 64 : usize]; // anonymous local
 
     storage_live(@18)
@@ -421,10 +421,10 @@ unsafe fn bar()
 }
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8)> for closure}::call
-fn {impl Fn<(u8)> for closure}::call<'_0>(@1: &'_0 (closure), @2: (u8))
+fn {impl Fn<(u8)> for closure}::call<'_0>(@1: &'_0 closure, @2: (u8))
 {
     let @0: (); // return
-    let @1: &'0 (closure); // arg #1
+    let @1: &'0 closure; // arg #1
     let tupled_args@2: (u8); // arg #2
     let @3: u8; // anonymous local
 
@@ -436,12 +436,12 @@ fn {impl Fn<(u8)> for closure}::call<'_0>(@1: &'_0 (closure), @2: (u8))
 }
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8)> for closure}::call_mut
-fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut (closure), @2: (u8))
+fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (u8))
 {
     let @0: (); // return
-    let state@1: &'_0 mut (closure); // arg #1
+    let state@1: &'_0 mut closure; // arg #1
     let args@2: (u8); // arg #2
-    let @3: &'0 (closure); // anonymous local
+    let @3: &'0 closure; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -466,7 +466,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
     let @0: (); // return
     let @1: closure; // arg #1
     let @2: (u8); // arg #2
-    let @3: &'0 mut (closure); // anonymous local
+    let @3: &'0 mut closure; // anonymous local
 
     storage_live(@3)
     @0 := ()

@@ -144,7 +144,7 @@ where
     [@TraitClause0]: Sized<A>,
 
 // Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}::grow_one
-fn grow_one<'_0, T, A>(@1: &'_0 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]))
+fn grow_one<'_0, T, A>(@1: &'_0 mut RawVec<T, A>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -172,19 +172,19 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push_mut
-pub fn push_mut<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T) -> &'_0 mut (T)
+pub fn push_mut<'_0, T, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], @2: T) -> &'_0 mut T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    let @0: &'0 mut (T); // return
-    let self@1: &'1 mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
+    let @0: &'0 mut T; // return
+    let self@1: &'1 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
     let value@2: T; // arg #2
     let len@3: usize; // local
     let @4: bool; // anonymous local
     let @5: usize; // anonymous local
     let @6: (); // anonymous local
-    let @7: &'3 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]); // anonymous local
+    let @7: &'3 mut RawVec<T, A>[@TraitClause0, @TraitClause1]; // anonymous local
     let end@8: *mut T; // local
     let self@9: *mut T; // local
     let src@10: T; // local
@@ -236,15 +236,15 @@ where
 }
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T>[@TraitClause0, @TraitClause1]), @2: T)
+pub fn push<'_0, T, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], @2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
     let @0: (); // return
-    let self@1: &'0 mut (Vec<T>[@TraitClause0, @TraitClause1]); // arg #1
+    let self@1: &'0 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
     let value@2: T; // arg #2
-    let @3: &'1 mut (T); // anonymous local
+    let @3: &'1 mut T; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -254,11 +254,11 @@ where
 }
 
 // Full name: test_crate::vec
-fn vec<'_0>(@1: &'_0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]))
+fn vec<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let @0: (); // return
-    let x@1: &'0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]); // arg #1
-    let @2: &'0 mut (Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]); // anonymous local
+    let x@1: &'0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
+    let @2: &'0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     @0 := ()
     storage_live(@2)

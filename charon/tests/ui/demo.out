@@ -27,18 +27,18 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::choose
-pub fn choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
+pub fn choose<'a, T>(@1: bool, @2: &'a mut T, @3: &'a mut T) -> &'a mut T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 mut (T); // return
+    let @0: &'0 mut T; // return
     let b@1: bool; // arg #1
-    let x@2: &'0 mut (T); // arg #2
-    let y@3: &'0 mut (T); // arg #3
-    let @4: &'0 mut (T); // anonymous local
-    let @5: &'0 mut (T); // anonymous local
+    let x@2: &'0 mut T; // arg #2
+    let y@3: &'0 mut T; // arg #3
+    let @4: &'0 mut T; // anonymous local
+    let @5: &'0 mut T; // anonymous local
     let @6: bool; // anonymous local
-    let @7: &'0 mut (T); // anonymous local
+    let @7: &'0 mut T; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
@@ -114,10 +114,10 @@ pub fn use_mul2_add1(@1: u32, @2: u32) -> u32
     return
 }
 
-pub fn test_crate::incr<'a>(@1: &'a mut (u32))
+pub fn test_crate::incr<'a>(@1: &'a mut u32)
 {
     let @0: (); // return
-    let x@1: &'0 mut (u32); // arg #1
+    let x@1: &'0 mut u32; // arg #1
     let @2: u32; // anonymous local
 
     storage_live(@2)
@@ -134,14 +134,14 @@ pub fn use_incr()
     let @0: (); // return
     let x@1: u32; // local
     let @2: (); // anonymous local
-    let @3: &'0 mut (u32); // anonymous local
-    let @4: &'0 mut (u32); // anonymous local
+    let @3: &'0 mut u32; // anonymous local
+    let @4: &'0 mut u32; // anonymous local
     let @5: (); // anonymous local
-    let @6: &'0 mut (u32); // anonymous local
-    let @7: &'0 mut (u32); // anonymous local
+    let @6: &'0 mut u32; // anonymous local
+    let @7: &'0 mut u32; // anonymous local
     let @8: (); // anonymous local
-    let @9: &'0 mut (u32); // anonymous local
-    let @10: &'0 mut (u32); // anonymous local
+    let @9: &'0 mut u32; // anonymous local
+    let @10: &'0 mut u32; // anonymous local
 
     @0 := ()
     storage_live(x@1)
@@ -188,19 +188,19 @@ where
 }
 
 // Full name: test_crate::list_nth
-pub fn list_nth<'a, T>(@1: &'a (CList<T>[@TraitClause0]), @2: u32) -> &'a (T)
+pub fn list_nth<'a, T>(@1: &'a CList<T>[@TraitClause0], @2: u32) -> &'a T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 (T); // return
-    let l@1: &'1 (CList<T>[@TraitClause0]); // arg #1
+    let @0: &'0 T; // return
+    let l@1: &'1 CList<T>[@TraitClause0]; // arg #1
     let i@2: u32; // arg #2
-    let x@3: &'0 (T); // local
-    let tl@4: &'2 (alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]); // local
+    let x@3: &'0 T; // local
+    let tl@4: &'2 alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
     let @5: bool; // anonymous local
     let @6: u32; // anonymous local
-    let @7: &'0 (T); // anonymous local
-    let @8: &'1 (CList<T>[@TraitClause0]); // anonymous local
+    let @7: &'0 T; // anonymous local
+    let @8: &'1 CList<T>[@TraitClause0]; // anonymous local
     let @9: u32; // anonymous local
     let @10: u32; // anonymous local
     let @11: u32; // anonymous local
@@ -248,24 +248,24 @@ where
 }
 
 // Full name: test_crate::list_nth_mut
-pub fn list_nth_mut<'a, T>(@1: &'a mut (CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
+pub fn list_nth_mut<'a, T>(@1: &'a mut CList<T>[@TraitClause0], @2: u32) -> &'a mut T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 mut (T); // return
-    let l@1: &'1 mut (CList<T>[@TraitClause0]); // arg #1
+    let @0: &'0 mut T; // return
+    let l@1: &'1 mut CList<T>[@TraitClause0]; // arg #1
     let i@2: u32; // arg #2
-    let @3: &'0 mut (T); // anonymous local
-    let @4: &'0 mut (T); // anonymous local
-    let x@5: &'0 mut (T); // local
-    let tl@6: &'2 mut (alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]); // local
-    let @7: &'0 mut (T); // anonymous local
-    let @8: &'0 mut (T); // anonymous local
+    let @3: &'0 mut T; // anonymous local
+    let @4: &'0 mut T; // anonymous local
+    let x@5: &'0 mut T; // local
+    let tl@6: &'2 mut alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let @7: &'0 mut T; // anonymous local
+    let @8: &'0 mut T; // anonymous local
     let @9: bool; // anonymous local
     let @10: u32; // anonymous local
-    let @11: &'0 mut (T); // anonymous local
-    let @12: &'0 mut (T); // anonymous local
-    let @13: &'1 mut (CList<T>[@TraitClause0]); // anonymous local
+    let @11: &'0 mut T; // anonymous local
+    let @12: &'0 mut T; // anonymous local
+    let @13: &'1 mut CList<T>[@TraitClause0]; // anonymous local
     let @14: u32; // anonymous local
     let @15: u32; // anonymous local
     let @16: u32; // anonymous local
@@ -328,19 +328,19 @@ where
 }
 
 // Full name: test_crate::list_nth_mut1
-pub fn list_nth_mut1<'a, T>(@1: &'a mut (CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
+pub fn list_nth_mut1<'a, T>(@1: &'a mut CList<T>[@TraitClause0], @2: u32) -> &'a mut T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 mut (T); // return
-    let l@1: &'1 mut (CList<T>[@TraitClause0]); // arg #1
+    let @0: &'0 mut T; // return
+    let l@1: &'1 mut CList<T>[@TraitClause0]; // arg #1
     let i@2: u32; // arg #2
-    let x@3: &'0 mut (T); // local
-    let tl@4: &'2 mut (alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]); // local
+    let x@3: &'0 mut T; // local
+    let tl@4: &'2 mut alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
     let @5: bool; // anonymous local
     let @6: u32; // anonymous local
     let @7: u32; // anonymous local
-    let @8: &'1 mut (CList<T>[@TraitClause0]); // anonymous local
+    let @8: &'1 mut CList<T>[@TraitClause0]; // anonymous local
 
     storage_live(@7)
     loop {
@@ -424,17 +424,17 @@ pub fn i32_id(@1: i32) -> i32
 }
 
 // Full name: test_crate::list_tail
-pub fn list_tail<'a, T>(@1: &'a mut (CList<T>[@TraitClause0])) -> &'a mut (CList<T>[@TraitClause0])
+pub fn list_tail<'a, T>(@1: &'a mut CList<T>[@TraitClause0]) -> &'a mut CList<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: &'0 mut (CList<T>[@TraitClause0]); // return
-    let l@1: &'0 mut (CList<T>[@TraitClause0]); // arg #1
-    let @2: &'0 mut (CList<T>[@TraitClause0]); // anonymous local
-    let @3: &'0 mut (CList<T>[@TraitClause0]); // anonymous local
-    let tl@4: &'1 mut (alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]); // local
-    let @5: &'0 mut (CList<T>[@TraitClause0]); // anonymous local
-    let @6: &'0 mut (CList<T>[@TraitClause0]); // anonymous local
+    let @0: &'0 mut CList<T>[@TraitClause0]; // return
+    let l@1: &'0 mut CList<T>[@TraitClause0]; // arg #1
+    let @2: &'0 mut CList<T>[@TraitClause0]; // anonymous local
+    let @3: &'0 mut CList<T>[@TraitClause0]; // anonymous local
+    let tl@4: &'1 mut alloc::boxed::Box<CList<T>[@TraitClause0]>[{built_in impl MetaSized for CList<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let @5: &'0 mut CList<T>[@TraitClause0]; // anonymous local
+    let @6: &'0 mut CList<T>[@TraitClause0]; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
@@ -470,16 +470,16 @@ pub trait Counter<Self>
     vtable: test_crate::Counter::{vtable}
 }
 
-pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
+pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut Self) -> usize
 where
     [@TraitClause0]: Counter<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Counter for usize}::incr
-pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
+pub fn {impl Counter for usize}::incr<'_0>(@1: &'_0 mut usize) -> usize
 {
     let @0: usize; // return
-    let self@1: &'0 mut (usize); // arg #1
+    let self@1: &'0 mut usize; // arg #1
     let x@2: usize; // local
     let @3: usize; // anonymous local
 
@@ -501,14 +501,14 @@ impl Counter for usize {
 }
 
 // Full name: test_crate::use_counter
-pub fn use_counter<'a, T>(@1: &'a mut (T)) -> usize
+pub fn use_counter<'a, T>(@1: &'a mut T) -> usize
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Counter<T>,
 {
     let @0: usize; // return
-    let cnt@1: &'0 mut (T); // arg #1
-    let @2: &'0 mut (T); // anonymous local
+    let cnt@1: &'0 mut T; // arg #1
+    let @2: &'0 mut T; // anonymous local
 
     storage_live(@2)
     @2 := &two-phase-mut *(cnt@1)

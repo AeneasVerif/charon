@@ -22,13 +22,13 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
+pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
@@ -39,7 +39,7 @@ impl Clone for i32 {
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 (usize)) -> usize
+pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}
@@ -58,7 +58,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -109,19 +109,19 @@ pub trait Ord<Self>
 }
 
 #[lang_item("ord_cmp_method")]
-pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
 = <opaque>
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
-pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
@@ -131,7 +131,7 @@ impl PartialEq<i32> for i32 {
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
-pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
+pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
@@ -141,7 +141,7 @@ impl PartialEq<usize> for usize {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
-pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
@@ -152,7 +152,7 @@ impl PartialOrd<i32> for i32 {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
-pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
@@ -199,7 +199,7 @@ pub trait Step<Self>
     non-dyn-compatible
 }
 
-pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     [@TraitClause0]: Step<Self>,
 = <opaque>
@@ -215,7 +215,7 @@ where
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
@@ -238,7 +238,7 @@ impl Step for usize {
 }
 
 // Full name: core::iter::range::{impl Step for i32}::steps_between
-pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::forward_checked
@@ -282,7 +282,7 @@ where
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut (Range<A>[@TraitClause0])) -> Option<A>[@TraitClause0]
+pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
@@ -410,7 +410,7 @@ pub trait Extend<Self, A>
 }
 
 // Full name: core::iter::traits::collect::Extend::extend
-pub fn extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
+pub fn extend<'_0, Self, A, T>(@1: &'_0 mut Self, @2: T)
 where
     [@TraitClause0]: Extend<Self, A>,
     [@TraitClause1]: Sized<T>,
@@ -429,7 +429,7 @@ pub trait DoubleEndedIterator<Self>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
+pub fn next_back<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
 where
     [@TraitClause0]: DoubleEndedIterator<Self>,
 = <opaque>
@@ -443,7 +443,7 @@ pub trait ExactSizeIterator<Self>
 }
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
@@ -514,7 +514,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
@@ -608,8 +608,8 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let iter@6: Range<i32>[{built_in impl Sized for i32}]; // local
     let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @8: &'0 mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @9: &'0 mut (Range<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @8: &'0 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @9: &'0 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let @10: isize; // anonymous local
     let @11: usize; // anonymous local
     let @12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
@@ -617,16 +617,16 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let @14: usize; // anonymous local
     let iter@15: Range<usize>[{built_in impl Sized for usize}]; // local
     let @16: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let @17: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
-    let @18: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @17: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let @18: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @19: isize; // anonymous local
     let @20: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @21: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @22: usize; // anonymous local
     let iter@23: Range<usize>[{built_in impl Sized for usize}]; // local
     let @24: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let @25: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
-    let @26: &'1 mut (Range<usize>[{built_in impl Sized for usize}]); // anonymous local
+    let @25: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let @26: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let @27: isize; // anonymous local
     let @28: usize; // anonymous local
     let @29: bool; // anonymous local

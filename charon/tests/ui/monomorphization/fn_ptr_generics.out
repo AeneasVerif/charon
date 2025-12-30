@@ -37,8 +37,8 @@ fn init_option()
     let @2: Option::<u8>; // anonymous local
     let b@3: Option::<u8>; // local
     let @4: usize; // anonymous local
-    let @5: &'_ ([Option::<u8>; 6 : usize]); // anonymous local
-    let @6: &'_ (Option::<u8>); // anonymous local
+    let @5: &'_ [Option::<u8>; 6 : usize]; // anonymous local
+    let @6: &'_ Option::<u8>; // anonymous local
 
     @0 := ()
     storage_live(a@1)

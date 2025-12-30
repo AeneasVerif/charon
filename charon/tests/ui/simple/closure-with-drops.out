@@ -84,12 +84,12 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
@@ -125,7 +125,7 @@ where
 {
     let @0: (); // return
     let @1: *mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]; // arg #1
-    let @2: &'0 mut (test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]); // anonymous local
+    let @2: &'0 mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]; // anonymous local
 
     storage_live(@2)
     @0 := ()
@@ -221,7 +221,7 @@ unsafe fn {impl Destruct for test_crate::bar::closure}::drop_in_place(@1: *mut t
 {
     let @0: (); // return
     let @1: *mut test_crate::bar::closure; // arg #1
-    let @2: &'0 mut (test_crate::bar::closure); // anonymous local
+    let @2: &'0 mut test_crate::bar::closure; // anonymous local
 
     storage_live(@2)
     @0 := ()
@@ -236,10 +236,10 @@ impl Destruct for test_crate::bar::closure {
 }
 
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::closure}::call
-fn {impl Fn<()> for test_crate::bar::closure}::call<'_0>(@1: &'_0 (test_crate::bar::closure), @2: ())
+fn {impl Fn<()> for test_crate::bar::closure}::call<'_0>(@1: &'_0 test_crate::bar::closure, @2: ())
 {
     let @0: (); // return
-    let @1: &'0 (test_crate::bar::closure); // arg #1
+    let @1: &'0 test_crate::bar::closure; // arg #1
     let tupled_args@2: (); // arg #2
 
     @0 := ()
@@ -248,12 +248,12 @@ fn {impl Fn<()> for test_crate::bar::closure}::call<'_0>(@1: &'_0 (test_crate::b
 }
 
 // Full name: test_crate::bar::{impl FnMut<()> for test_crate::bar::closure}::call_mut
-fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::bar::closure), @2: ())
+fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut test_crate::bar::closure, @2: ())
 {
     let @0: (); // return
-    let state@1: &'_0 mut (test_crate::bar::closure); // arg #1
+    let state@1: &'_0 mut test_crate::bar::closure; // arg #1
     let args@2: (); // arg #2
-    let @3: &'0 (test_crate::bar::closure); // anonymous local
+    let @3: &'0 test_crate::bar::closure; // anonymous local
 
     @0 := ()
     storage_live(@3)
@@ -268,7 +268,7 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
     let @0: (); // return
     let @1: test_crate::bar::closure; // arg #1
     let @2: (); // arg #2
-    let @3: &'0 mut (test_crate::bar::closure); // anonymous local
+    let @3: &'0 mut test_crate::bar::closure; // anonymous local
 
     storage_live(@3)
     @0 := ()

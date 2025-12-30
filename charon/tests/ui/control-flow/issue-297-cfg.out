@@ -23,7 +23,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -37,7 +37,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -88,13 +88,13 @@ pub trait Ord<Self>
 }
 
 #[lang_item("ord_cmp_method")]
-pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> Ordering
 where
     [@TraitClause0]: Ord<Self>,
 = <opaque>
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 = <opaque>
@@ -243,7 +243,7 @@ pub trait Extend<Self, A>
 }
 
 // Full name: core::iter::traits::collect::Extend::extend
-pub fn extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
+pub fn extend<'_0, Self, A, T>(@1: &'_0 mut Self, @2: T)
 where
     [@TraitClause0]: Extend<Self, A>,
     [@TraitClause1]: Sized<T>,
@@ -262,7 +262,7 @@ pub trait DoubleEndedIterator<Self>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
+pub fn next_back<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::parent_clause1::Item>[@TraitClause0::parent_clause1::parent_clause1]
 where
     [@TraitClause0]: DoubleEndedIterator<Self>,
 = <opaque>
@@ -276,7 +276,7 @@ pub trait ExactSizeIterator<Self>
 }
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
@@ -347,7 +347,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
@@ -426,7 +426,7 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut (Chunks<'a, T>[@TraitClause0])) -> Option<&'a ([T])>[{built_in impl Sized for &'_ ([T])}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -437,14 +437,14 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {built_in impl MetaSized for Chunks<'_, T>[@TraitClause0]}
-    parent_clause1 = {built_in impl Sized for &'_ ([T])}
-    type Item = &'a ([T])
+    parent_clause1 = {built_in impl Sized for &'_ [T]}
+    type Item = &'a [T]
     fn next<'_0_1> = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
     vtable: {impl Iterator for Chunks<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
 }
 
 // Full name: core::slice::{[T]}::chunks
-pub fn chunks<'_0, T>(@1: &'_0 ([T]), @2: usize) -> Chunks<'_0, T>[@TraitClause0]
+pub fn chunks<'_0, T>(@1: &'_0 [T], @2: usize) -> Chunks<'_0, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -460,10 +460,10 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::f1
-fn f1<'_0>(@1: &'_0 ([u8])) -> usize
+fn f1<'_0>(@1: &'_0 [u8]) -> usize
 {
     let @0: usize; // return
-    let a@1: &'0 ([u8]); // arg #1
+    let a@1: &'0 [u8]; // arg #1
     let sampled@2: usize; // local
     let @3: bool; // anonymous local
     let @4: u8; // anonymous local
@@ -473,10 +473,10 @@ fn f1<'_0>(@1: &'_0 ([u8])) -> usize
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
-    let @11: &'_ ([u8]); // anonymous local
-    let @12: &'_ (u8); // anonymous local
-    let @13: &'_ ([u8]); // anonymous local
-    let @14: &'_ (u8); // anonymous local
+    let @11: &'_ [u8]; // anonymous local
+    let @12: &'_ u8; // anonymous local
+    let @13: &'_ [u8]; // anonymous local
+    let @14: &'_ u8; // anonymous local
 
     storage_live(@9)
     storage_live(@10)
@@ -540,20 +540,20 @@ fn FIELD_MODULUS() -> i16
 const FIELD_MODULUS: i16 = FIELD_MODULUS()
 
 // Full name: test_crate::f2
-fn f2<'_0, '_1>(@1: &'_0 ([u8]), @2: &'_1 mut ([i16])) -> usize
+fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
 {
     let @0: usize; // return
-    let a@1: &'0 ([u8]); // arg #1
-    let result@2: &'1 mut ([i16]); // arg #2
+    let a@1: &'0 [u8]; // arg #1
+    let result@2: &'1 mut [i16]; // arg #2
     let sampled@3: usize; // local
     let @4: Chunks<'2, u8>[{built_in impl Sized for u8}]; // anonymous local
     let @5: Chunks<'2, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @6: &'0 ([u8]); // anonymous local
+    let @6: &'0 [u8]; // anonymous local
     let iter@7: Chunks<'2, u8>[{built_in impl Sized for u8}]; // local
-    let @8: Option<&'0 ([u8])>[{built_in impl Sized for &'0 ([u8])}]; // anonymous local
-    let @9: &'5 mut (Chunks<'2, u8>[{built_in impl Sized for u8}]); // anonymous local
-    let @10: &'5 mut (Chunks<'2, u8>[{built_in impl Sized for u8}]); // anonymous local
-    let bytes@11: &'0 ([u8]); // local
+    let @8: Option<&'0 [u8]>[{built_in impl Sized for &'0 [u8]}]; // anonymous local
+    let @9: &'5 mut Chunks<'2, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let @10: &'5 mut Chunks<'2, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let bytes@11: &'0 [u8]; // local
     let b1@12: i16; // local
     let @13: u8; // anonymous local
     let @14: usize; // anonymous local
@@ -587,16 +587,16 @@ fn f2<'_0, '_1>(@1: &'_0 ([u8]), @2: &'_1 mut ([i16])) -> usize
     let @42: i16; // anonymous local
     let @43: usize; // anonymous local
     let @44: usize; // anonymous local
-    let @45: &'_ mut ([i16]); // anonymous local
-    let @46: &'_ mut (i16); // anonymous local
-    let @47: &'_ mut ([i16]); // anonymous local
-    let @48: &'_ mut (i16); // anonymous local
-    let @49: &'_ ([u8]); // anonymous local
-    let @50: &'_ (u8); // anonymous local
-    let @51: &'_ ([u8]); // anonymous local
-    let @52: &'_ (u8); // anonymous local
-    let @53: &'_ ([u8]); // anonymous local
-    let @54: &'_ (u8); // anonymous local
+    let @45: &'_ mut [i16]; // anonymous local
+    let @46: &'_ mut i16; // anonymous local
+    let @47: &'_ mut [i16]; // anonymous local
+    let @48: &'_ mut i16; // anonymous local
+    let @49: &'_ [u8]; // anonymous local
+    let @50: &'_ u8; // anonymous local
+    let @51: &'_ [u8]; // anonymous local
+    let @52: &'_ u8; // anonymous local
+    let @53: &'_ [u8]; // anonymous local
+    let @54: &'_ u8; // anonymous local
 
     storage_live(@37)
     storage_live(@44)

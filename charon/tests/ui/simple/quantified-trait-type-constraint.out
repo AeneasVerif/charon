@@ -34,7 +34,7 @@ trait Trait<'a, Self, Self_Type>
 fn foo<T>()
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: for<'a> Trait<'a, T, &'_ (())>,
+    [@TraitClause1]: for<'a> Trait<'a, T, &'_ ()>,
 {
     let @0: (); // return
 

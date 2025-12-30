@@ -22,7 +22,7 @@ where
 }
 
 // Full name: core::any::Any::type_id
-pub fn type_id<'_0, Self>(@1: &'_0 (Self)) -> TypeId
+pub fn type_id<'_0, Self>(@1: &'_0 Self) -> TypeId
 where
     [@TraitClause0]: Any<Self>,
 = <opaque>
@@ -46,25 +46,25 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(@1: &'_0 (T)) -> &'_0 ((dyn Any + 'static))
+fn foo<'_0, T>(@1: &'_0 T) -> &'_0 (dyn Any + 'static)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,
 {
-    let @0: &'0 ((dyn Any + '1)); // return
-    let x@1: &'2 (T); // arg #1
-    let @2: &'0 ((dyn Any + '1)); // anonymous local
-    let @3: &'0 ((dyn Any + '1)); // anonymous local
-    let @4: &'2 (T); // anonymous local
+    let @0: &'0 (dyn Any + '1); // return
+    let x@1: &'2 T; // arg #1
+    let @2: &'0 (dyn Any + '1); // anonymous local
+    let @3: &'0 (dyn Any + '1); // anonymous local
+    let @4: &'2 T; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &*(x@1)
-    @3 := unsize_cast<&'2 (T), &'0 ((dyn Any + '1)), @TraitClause1 with ?>(move (@4))
+    @3 := unsize_cast<&'2 T, &'0 (dyn Any + '1), @TraitClause1 with ?>(move (@4))
     storage_dead(@4)
     @2 := &*(@3) with_metadata(copy (@3.metadata))
-    @0 := unsize_cast<&'0 ((dyn Any + '1)), &'0 ((dyn Any + '1)),  at []>(move (@2))
+    @0 := unsize_cast<&'0 (dyn Any + '1), &'0 (dyn Any + '1),  at []>(move (@2))
     storage_dead(@3)
     storage_dead(@2)
     return

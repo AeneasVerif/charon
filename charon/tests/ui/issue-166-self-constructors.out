@@ -27,15 +27,15 @@ pub fn b() -> Foo
 
 // Full name: test_crate::Bar
 struct Bar<'a> {
-  r: &'a (i32),
+  r: &'a i32,
 }
 
 // Full name: test_crate::{Bar<'a>}::new
-fn new<'a>(@1: &'a (i32)) -> Bar<'a>
+fn new<'a>(@1: &'a i32) -> Bar<'a>
 {
     let @0: Bar<'0>; // return
-    let r@1: &'1 (i32); // arg #1
-    let @2: &'1 (i32); // anonymous local
+    let r@1: &'1 i32; // arg #1
+    let @2: &'1 i32; // anonymous local
 
     storage_live(@2)
     @2 := copy (r@1)

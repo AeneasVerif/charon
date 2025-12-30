@@ -52,10 +52,10 @@ fn f0()
 }
 
 // Full name: test_crate::f1
-fn f1<'_0>(@1: &'_0 ([u8; 1 : usize]))
+fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
 {
     let @0: (); // return
-    let serialized@1: &'0 ([u8; 1 : usize]); // arg #1
+    let serialized@1: &'0 [u8; 1 : usize]; // arg #1
     let previous_true_hints_seen@2: usize; // local
     let i@3: i32; // local
     let @4: bool; // anonymous local

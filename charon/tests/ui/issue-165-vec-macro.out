@@ -26,13 +26,13 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 (i32)) -> i32
+pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}

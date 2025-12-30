@@ -9,7 +9,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 = <opaque>
@@ -54,13 +54,13 @@ pub trait PartialOrd<Self, Rhs>
 }
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
-pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
@@ -70,7 +70,7 @@ impl PartialEq<i32> for i32 {
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
-pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
@@ -80,7 +80,7 @@ impl PartialEq<u32> for u32 {
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
-pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
@@ -99,7 +99,7 @@ pub trait StructuralPartialEq<Self>
 }
 
 // Full name: core::option::{impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq
-pub fn {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0, '_1, T>(@1: &'_0 (Option<T>[@TraitClause0]), @2: &'_1 (Option<T>[@TraitClause0])) -> bool
+pub fn {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0, '_1, T>(@1: &'_0 Option<T>[@TraitClause0], @2: &'_1 Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: PartialEq<T, T>,
@@ -130,13 +130,13 @@ fn main()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @3: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @4: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @5: &'0 (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
-    let @6: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @3: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @4: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @5: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let @6: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @8: &'_ (Option<i32>[{built_in impl Sized for i32}]); // anonymous local
+    let @8: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let @9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(@6)
@@ -177,11 +177,11 @@ impl StructuralPartialEq for Foo {
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 (Foo), @2: &'_1 (Foo)) -> bool
+pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> bool
 {
     let @0: bool; // return
-    let self@1: &'0 (Foo); // arg #1
-    let other@2: &'0 (Foo); // arg #2
+    let self@1: &'0 Foo; // arg #1
+    let other@2: &'0 Foo; // arg #2
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
@@ -202,15 +202,15 @@ impl PartialEq<Foo> for Foo {
 }
 
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}::partial_cmp
-pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 (Foo), @2: &'_1 (Foo)) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let @0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
-    let self@1: &'0 (Foo); // arg #1
-    let other@2: &'0 (Foo); // arg #2
-    let @3: &'1 (u32); // anonymous local
-    let @4: &'1 (u32); // anonymous local
-    let @5: &'1 (u32); // anonymous local
-    let @6: &'1 (u32); // anonymous local
+    let self@1: &'0 Foo; // arg #1
+    let other@2: &'0 Foo; // arg #2
+    let @3: &'1 u32; // anonymous local
+    let @4: &'1 u32; // anonymous local
+    let @5: &'1 u32; // anonymous local
+    let @6: &'1 u32; // anonymous local
 
     storage_live(@3)
     storage_live(@4)
