@@ -14,7 +14,6 @@
 //! are opaque (this can be controlled with `--include`, `--opaque` and `--exclude`). If an item is
 //! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
 //! signature) but not its contents.
-use itertools::Itertools;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -619,29 +618,21 @@ pub fn translate<'tcx, 'ctx>(
     };
     ctx.register_target_info();
 
-    if cli_options.start_from.is_empty() {
-        // Recursively register all the items in the crate, starting from the crate root.
-        ctx.enqueue_module_item(&crate_def_id);
-    } else {
-        // Start translating from the selected items.
-        for path in cli_options.start_from.iter() {
-            let path = path.split("::").collect_vec();
-            let resolved = super::resolve_path::def_path_def_ids(&ctx.hax_state, &path);
-            match resolved {
-                Ok(resolved) => {
-                    for def_id in resolved {
-                        let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                        ctx.enqueue_module_item(&def_id);
-                    }
+    // Start translating from the selected items.
+    for pat in ctx.options.start_from.clone() {
+        match super::resolve_path::def_path_def_ids(&ctx.hax_state, &pat) {
+            Ok(resolved) => {
+                for def_id in resolved {
+                    let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
+                    ctx.enqueue_module_item(&def_id);
                 }
-                Err(path) => {
-                    let path = path.join("::");
-                    register_error!(
-                        ctx,
-                        Span::dummy(),
-                        "path {path} does not correspond to any item"
-                    );
-                }
+            }
+            Err(err) => {
+                register_error!(
+                    ctx,
+                    Span::dummy(),
+                    "when processing starting pattern `{pat}`: {err}"
+                );
             }
         }
     }
