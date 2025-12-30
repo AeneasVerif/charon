@@ -393,6 +393,8 @@ impl CliOpts {
 
 /// The options that control translation and transformation.
 pub struct TranslateOptions {
+    /// Items from which to start translation.
+    pub start_from: Vec<NamePattern>,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
@@ -464,6 +466,16 @@ impl TranslateOptions {
             mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
         }
 
+        let start_from = if options.start_from.is_empty() {
+            vec![parse_pattern("crate").unwrap()]
+        } else {
+            options
+                .start_from
+                .iter()
+                .filter_map(|path| parse_pattern(&path).ok())
+                .collect()
+        };
+
         let item_opacities = {
             use ItemOpacity::*;
             let mut opacities = vec![];
@@ -509,6 +521,7 @@ impl TranslateOptions {
             .collect();
 
         TranslateOptions {
+            start_from,
             mir_level,
             monomorphize_mut: options.monomorphize_mut,
             hide_marker_traits: options.hide_marker_traits,

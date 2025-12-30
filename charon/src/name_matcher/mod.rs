@@ -11,11 +11,11 @@ pub use Pattern as NamePattern;
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Pattern {
-    elems: Vec<PatElem>,
+    pub elems: Vec<PatElem>,
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-enum PatElem {
+pub enum PatElem {
     /// An identifier, optionally with generic arguments. E.g. `std` or `Box<_>`.
     Ident {
         name: String,
@@ -31,7 +31,7 @@ enum PatElem {
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-enum PatTy {
+pub enum PatTy {
     /// A path, like `my_crate::foo::Type<_, usize>`
     Pat(Pattern),
     /// `&T`, `&mut T`
