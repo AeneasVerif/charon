@@ -43,7 +43,7 @@ pub fn IS_ZST() -> bool
 
     storage_live(_1)
     _1 = size_of::<()>()
-    _0 = move (_1) == const (0 : usize)
+    _0 = move _1 == const 0 : usize
     storage_dead(_1)
     return
 }
@@ -69,7 +69,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = const ({impl SizedTypeProperties::<()>}::<()>::IS_ZST)
+    _1 = const {impl SizedTypeProperties::<()>}::<()>::IS_ZST
     storage_dead(_1)
     _0 = ()
     return

@@ -119,10 +119,10 @@ where
     let _4: usize; // anonymous local
 
     storage_live(i_3)
-    i_3 = move ((tupled_args_2).0)
+    i_3 = move tupled_args_2.0
     storage_live(_4)
-    _4 = copy (i_3)
-    _0 = @TraitClause1::of_usize(move (_4))
+    _4 = copy i_3
+    _0 = @TraitClause1::of_usize(move _4)
     storage_dead(_4)
     return
 }
@@ -157,7 +157,7 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, K>[@TraitClause0, @TraitClause1](move (_3), move (_2))
+    _0 = {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, K>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]] _1
     return
 }
@@ -202,7 +202,7 @@ where
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<T, closure<T, K>[@TraitClause0, @TraitClause1], 1 : usize>[@TraitClause0, {built_in impl Sized for closure<T, K>[@TraitClause0, @TraitClause1]}, {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]](move (_1))
+    _0 = from_fn<T, closure<T, K>[@TraitClause0, @TraitClause1], 1 : usize>[@TraitClause0, {built_in impl Sized for closure<T, K>[@TraitClause0, @TraitClause1]}, {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]](move _1)
     storage_dead(_1)
     return
 }

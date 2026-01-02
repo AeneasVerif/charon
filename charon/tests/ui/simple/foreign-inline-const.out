@@ -110,7 +110,7 @@ where
     _f_2 = closure {  }
     _1 = size_of<T>[@TraitClause0]()
     storage_dead(_f_2)
-    _0 = move (_1)
+    _0 = move _1
     return
 }
 
@@ -133,7 +133,7 @@ where
     let _1: &'0 closure<T>[@TraitClause0]; // arg #1
     let tupled_args_2: (); // arg #2
 
-    _0 = const (42 : i32)
+    _0 = const 42 : i32
     return
 }
 
@@ -148,8 +148,8 @@ where
     let _3: &'0 closure<T>[@TraitClause0]; // anonymous local
 
     storage_live(_3)
-    _3 = &*(state_1)
-    _0 = {impl Fn<()> for closure<T>[@TraitClause0]}::call<'2, T>[@TraitClause0](move (_3), move (args_2))
+    _3 = &(*state_1)
+    _0 = {impl Fn<()> for closure<T>[@TraitClause0]}::call<'2, T>[@TraitClause0](move _3, move args_2)
     return
 }
 
@@ -180,7 +180,7 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_, T>[@TraitClause0](move (_3), move (_2))
+    _0 = {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_, T>[@TraitClause0](move _3, move _2)
     drop[{impl Destruct for closure<T>[@TraitClause0]}<T>[@TraitClause0]] _1
     return
 }

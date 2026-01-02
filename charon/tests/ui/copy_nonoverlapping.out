@@ -97,7 +97,7 @@ where
 {
     let _0: bool; // return
 
-    _0 = const (@TraitClause0::SIZE) == const (0 : usize)
+    _0 = const @TraitClause0::SIZE == const 0 : usize
     return
 }
 
@@ -114,7 +114,7 @@ where
 {
     let _0: Layout; // return
 
-    _0 = from_size_align_unchecked(const (@TraitClause0::SIZE), const (@TraitClause0::ALIGN))
+    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
     return
 }
 
@@ -128,7 +128,7 @@ pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
 
-    _0 = ~(const (0 : usize))
+    _0 = ~(const 0 : usize)
     return
 }
 
@@ -140,8 +140,8 @@ pub fn core::num::{isize}::MAX() -> isize
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 = copy (core::num::{usize}::MAX) panic.>> const (1 : i32)
-    _0 = cast<usize, isize>(move (_1))
+    _1 = copy core::num::{usize}::MAX panic.>> const 1 : i32
+    _0 = cast<usize, isize>(move _1)
     storage_dead(_1)
     return
 }
@@ -160,19 +160,19 @@ where
     let _4: usize; // anonymous local
 
     storage_live(_1)
-    _1 = const (@TraitClause0::SIZE)
-    switch copy (_1) {
+    _1 = const @TraitClause0::SIZE
+    switch copy _1 {
         0 : usize => {
-            _0 = copy (core::num::{usize}::MAX)
+            _0 = copy core::num::{usize}::MAX
         },
         _ => {
             storage_live(n_2)
-            n_2 = copy (_1)
+            n_2 = copy _1
             storage_live(_3)
-            _3 = cast<isize, usize>(copy (core::num::{isize}::MAX))
+            _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
             storage_live(_4)
-            _4 = copy (n_2)
-            _0 = move (_3) panic./ move (_4)
+            _4 = copy n_2
+            _0 = move _3 panic./ move _4
             storage_dead(_4)
             storage_dead(_3)
             storage_dead(n_2)
@@ -225,17 +225,17 @@ where
     storage_live(_7)
     _0 = ()
     _7 = ub_checks<bool>
-    if copy (_7) {
+    if copy _7 {
         storage_live(_5)
-        _5 = cast<*const T, *const ()>(copy (src_1))
+        _5 = cast<*const T, *const ()>(copy src_1)
         storage_live(_6)
-        _6 = cast<*mut T, *mut ()>(copy (dst_2))
-        _4 = precondition_check(move (_5), move (_6), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN), copy (count_3))
+        _6 = cast<*mut T, *mut ()>(copy dst_2)
+        _4 = precondition_check(move _5, move _6, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN, copy count_3)
         storage_dead(_6)
         storage_dead(_5)
     } else {
     }
-    copy_nonoverlapping(copy (src_1), copy (dst_2), copy (count_3))
+    copy_nonoverlapping(copy src_1, copy dst_2, copy count_3)
     return
 }
 
@@ -264,10 +264,10 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &raw const *(y_2)
+    _4 = &raw const (*y_2)
     storage_live(_5)
-    _5 = &raw mut *(x_1)
-    _3 = copy_nonoverlapping<T>[@TraitClause0](move (_4), move (_5), const (1 : usize))
+    _5 = &raw mut (*x_1)
+    _3 = copy_nonoverlapping<T>[@TraitClause0](move _4, move _5, const 1 : usize)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

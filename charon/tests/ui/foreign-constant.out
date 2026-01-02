@@ -22,7 +22,7 @@ fn foo() -> u8
 {
     let _0: u8; // return
 
-    _0 = copy (CONSTANT)
+    _0 = copy CONSTANT
     return
 }
 

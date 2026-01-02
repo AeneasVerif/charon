@@ -122,8 +122,8 @@ where
 
     _0 = ()
     storage_live(_2)
-    _2 = copy (x_1)
-    _0 = @TraitClause0::parent_clause2::g(move (_2))
+    _2 = copy x_1
+    _0 = @TraitClause0::parent_clause2::g(move _2)
     storage_dead(_2)
     return
 }

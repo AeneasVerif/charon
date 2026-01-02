@@ -44,13 +44,13 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 = const (0 : i32)
+    _4 = const 0 : i32
     _3 = &_4
     storage_live(_2)
     _0 = ()
     storage_live(_promoted_1)
-    _2 = move (_3)
-    _promoted_1 = &*(_2)
+    _2 = move _3
+    _promoted_1 = &(*_2)
     _0 = ()
     storage_dead(_promoted_1)
     return

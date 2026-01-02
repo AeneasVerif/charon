@@ -73,7 +73,7 @@ fn do_test::<bool>(@1: bool)
     _0 = ()
     storage_live(_2)
     _2 = &x_1
-    _0 = {impl Trait::<bool>}::method<'_>(move (_2))
+    _0 = {impl Trait::<bool>}::method<'_>(move _2)
     storage_dead(_2)
     return
 }
@@ -86,7 +86,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = do_test::<bool>(const (true))
+    _1 = do_test::<bool>(const true)
     storage_dead(_1)
     _0 = ()
     return

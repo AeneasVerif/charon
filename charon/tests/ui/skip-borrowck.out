@@ -39,18 +39,18 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = copy (b_1)
-    if move (_6) {
+    _6 = copy b_1
+    if move _6 {
         storage_live(_7)
-        _7 = &mut *(x_2)
-        _5 = &mut *(_7)
+        _7 = &mut (*x_2)
+        _5 = &mut (*_7)
         storage_dead(_7)
     } else {
-        _5 = &mut *(y_3)
+        _5 = &mut (*y_3)
     }
-    _4 = &mut *(_5)
+    _4 = &mut (*_5)
     storage_dead(_6)
-    _0 = &mut *(_4)
+    _0 = &mut (*_4)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -80,30 +80,30 @@ pub fn choose_test()
     storage_live(_8)
     _0 = ()
     storage_live(x_1)
-    x_1 = const (0 : i32)
+    x_1 = const 0 : i32
     storage_live(y_2)
-    y_2 = const (0 : i32)
+    y_2 = const 0 : i32
     storage_live(z_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &mut x_1
-    _4 = &two-phase-mut *(_5)
+    _4 = &two-phase-mut (*_5)
     storage_live(_6)
     storage_live(_7)
     _7 = &mut y_2
-    _6 = &two-phase-mut *(_7)
-    z_3 = choose<'_, i32>[{built_in impl Sized for i32}](const (true), move (_4), move (_6))
+    _6 = &two-phase-mut (*_7)
+    z_3 = choose<'_, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_7)
     storage_dead(_5)
-    _8 = copy (*(z_3)) panic.+ const (1 : i32)
-    *(z_3) = move (_8)
+    _8 = copy (*z_3) panic.+ const 1 : i32
+    (*z_3) = move _8
     storage_live(_9)
     storage_live(_10)
-    _10 = copy (*(z_3))
-    _9 = move (_10) == const (1 : i32)
-    if move (_9) {
+    _10 = copy (*z_3)
+    _9 = move _10 == const 1 : i32
+    if move _9 {
     } else {
         storage_dead(_10)
         panic(core::panicking::panic)
@@ -113,9 +113,9 @@ pub fn choose_test()
     storage_live(_11)
     storage_live(_12)
     // drop(z)
-    _12 = copy (x_1)
-    _11 = move (_12) == const (1 : i32)
-    if move (_11) {
+    _12 = copy x_1
+    _11 = move _12 == const 1 : i32
+    if move _11 {
     } else {
         storage_dead(_12)
         panic(core::panicking::panic)
@@ -124,9 +124,9 @@ pub fn choose_test()
     storage_dead(_11)
     storage_live(_13)
     storage_live(_14)
-    _14 = copy (y_2)
-    _13 = move (_14) == const (0 : i32)
-    if move (_13) {
+    _14 = copy y_2
+    _13 = move _14 == const 0 : i32
+    if move _13 {
     } else {
         storage_dead(_14)
         panic(core::panicking::panic)
@@ -135,9 +135,9 @@ pub fn choose_test()
     storage_dead(_13)
     storage_live(_15)
     storage_live(_16)
-    _16 = copy (*(z_3))
-    _15 = move (_16) == const (1 : i32)
-    if move (_15) {
+    _16 = copy (*z_3)
+    _15 = move _16 == const 1 : i32
+    if move _15 {
     } else {
         storage_dead(_16)
         panic(core::panicking::panic)

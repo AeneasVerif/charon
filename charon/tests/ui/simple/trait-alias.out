@@ -139,7 +139,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = @TraitClause1::parent_clause2::clone<'_>(move (_3))
+    _2 = @TraitClause1::parent_clause2::clone<'_>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for T}] _2
     storage_dead(_2)
@@ -159,7 +159,7 @@ fn use_alias()
     storage_live(_1)
     storage_live(_2)
     _2 = Struct {  }
-    _1 = takes_alias<Struct>[{built_in impl Sized for Struct}, {impl Alias<U> for Self}<Struct, ()>[{built_in impl MetaSized for Struct}, {impl Trait<T, u32> for Struct}<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], {impl Clone for Struct}, {built_in impl Sized for ()}]](move (_2))
+    _1 = takes_alias<Struct>[{built_in impl Sized for Struct}, {impl Alias<U> for Self}<Struct, ()>[{built_in impl MetaSized for Struct}, {impl Trait<T, u32> for Struct}<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], {impl Clone for Struct}, {built_in impl Sized for ()}]](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

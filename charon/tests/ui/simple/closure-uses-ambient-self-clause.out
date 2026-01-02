@@ -112,8 +112,8 @@ unsafe fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
 
     storage_live(_2)
     _0 = ()
-    _2 = &mut *(_1) with_metadata(copy (_1.metadata))
-    drop[{built_in impl Destruct for A}] (*(_2)).0
+    _2 = &mut (*_1) with_metadata(copy _1.metadata)
+    drop[{built_in impl Destruct for A}] (*_2).0
     return
 }
 
@@ -141,7 +141,7 @@ where
 
     storage_live(_3)
     _0 = ()
-    _3 = move ((tupled_args_2).0)
+    _3 = move tupled_args_2.0
     _0 = ()
     conditional_drop[{built_in impl Destruct for @TraitClause0::Item}] _3
     return
@@ -168,13 +168,13 @@ where
     storage_live(_5)
     _0 = ()
     storage_live(_2)
-    _5 = move (_6)
-    _2 = &*(_5)
+    _5 = move _6
+    _2 = &(*_5)
     storage_live(_3)
     storage_live(_4)
-    _4 = move (i_1)
-    _3 = (move (_4))
-    _0 = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move (_2), move (_3))
+    _4 = move i_1
+    _3 = (move _4)
+    _0 = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'_, Self>[@TraitClause0](move _2, move _3)
     conditional_drop[{built_in impl Destruct for @TraitClause0::Item}] _4
     storage_dead(_4)
     storage_dead(_3)
@@ -195,8 +195,8 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = &*(state_1)
-    _0 = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'2, Self>[@TraitClause0](move (_3), move (args_2))
+    _3 = &(*state_1)
+    _0 = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'2, Self>[@TraitClause0](move _3, move args_2)
     return
 }
 
@@ -228,7 +228,7 @@ where
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move (_3), move (_2))
+    _0 = {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_, Self>[@TraitClause0](move _3, move _2)
     drop[{impl Destruct for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]] _1
     return
 }

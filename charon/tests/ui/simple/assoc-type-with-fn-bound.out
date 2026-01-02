@@ -111,10 +111,10 @@ where
 
     _0 = ()
     storage_live(_2)
-    _2 = &*(self_1)
+    _2 = &(*self_1)
     storage_live(_3)
     _3 = ()
-    _0 = @TraitClause0::call<'_>(move (_2), move (_3))
+    _0 = @TraitClause0::call<'_>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return

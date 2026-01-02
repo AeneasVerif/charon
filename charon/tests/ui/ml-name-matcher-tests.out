@@ -316,41 +316,41 @@ fn foo()
 
     storage_live(_12)
     storage_live(_13)
-    _13 = Option::Some { 0: const (0 : i32) }
+    _13 = Option::Some { 0: const 0 : i32 }
     _12 = &_13
     storage_live(_10)
     storage_live(_11)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _11 = move (_12)
-    _2 = &*(_11)
-    _1 = is_some<'_, i32>[{built_in impl Sized for i32}](move (_2))
+    _11 = move _12
+    _2 = &(*_11)
+    _1 = is_some<'_, i32>[{built_in impl Sized for i32}](move _2)
     storage_live(_14)
     storage_live(_15)
-    _15 = [const (false)]
+    _15 = [const false]
     _14 = &_15
     storage_dead(_2)
     storage_dead(_1)
     storage_live(slice_3)
     storage_live(_4)
     storage_live(_5)
-    _10 = move (_14)
-    _5 = &*(_10)
-    _4 = &*(_5)
-    slice_3 = @ArrayToSliceShared<'_, bool, 1 : usize>(move (_4))
+    _10 = move _14
+    _5 = &(*_10)
+    _4 = &(*_5)
+    slice_3 = @ArrayToSliceShared<'_, bool, 1 : usize>(move _4)
     storage_dead(_4)
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &*(slice_3) with_metadata(copy (slice_3.metadata))
+    _8 = &(*slice_3) with_metadata(copy slice_3.metadata)
     storage_live(_9)
-    _9 = RangeFrom { start: const (1 : usize) }
-    _7 = {impl Index<I> for [T]}::index<'_, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move (_8), move (_9))
+    _9 = RangeFrom { start: const 1 : usize }
+    _7 = {impl Index<I> for [T]}::index<'_, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
-    _6 = &*(_7) with_metadata(copy (_7.metadata))
+    _6 = &(*_7) with_metadata(copy _7.metadata)
     storage_dead(_6)
     _0 = ()
     storage_dead(_7)
@@ -362,7 +362,7 @@ fn test_crate::funs_with_disambiguator::f() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (0 : u32)
+    _0 = const 0 : u32
     return
 }
 
@@ -370,7 +370,7 @@ fn test_crate::funs_with_disambiguator::f#1() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (1 : u32)
+    _0 = const 1 : u32
     return
 }
 
@@ -382,8 +382,8 @@ fn funs_with_disambiguator(@1: bool) -> u32
     let _2: bool; // anonymous local
 
     storage_live(_2)
-    _2 = copy (b_1)
-    if move (_2) {
+    _2 = copy b_1
+    if move _2 {
         _0 = test_crate::funs_with_disambiguator::f()
     } else {
         _0 = test_crate::funs_with_disambiguator::f#1()
@@ -410,8 +410,8 @@ where
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move (item_1)
-    _0 = MonoContainer { item: move (_2) }
+    _2 = move item_1
+    _0 = MonoContainer { item: move _2 }
     conditional_drop[{built_in impl Destruct for T}] _2
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] item_1
@@ -427,9 +427,9 @@ fn mono_usage()
 
     _0 = ()
     storage_live(_container1_1)
-    _container1_1 = create<i32>[{built_in impl Sized for i32}](const (42 : i32))
+    _container1_1 = create<i32>[{built_in impl Sized for i32}](const 42 : i32)
     storage_live(_container2_2)
-    _container2_2 = create<&'0 Str>[{built_in impl Sized for &'0 Str}](const ("test"))
+    _container2_2 = create<&'0 Str>[{built_in impl Sized for &'0 Str}](const "test")
     _0 = ()
     storage_dead(_container2_2)
     storage_dead(_container1_1)
@@ -460,8 +460,8 @@ where
     let _2: &'0 T; // anonymous local
 
     storage_live(_2)
-    _2 = &(*(self_1)).item
-    _0 = &*(_2)
+    _2 = &((*self_1)).item
+    _0 = &(*_2)
     storage_dead(_2)
     return
 }

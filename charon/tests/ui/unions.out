@@ -25,10 +25,10 @@ fn use_union()
 
     _0 = ()
     storage_live(one_1)
-    one_1 = Foo { one: const (42 : u64) }
-    (one_1).one = const (43 : u64)
+    one_1 = Foo { one: const 42 : u64 }
+    (one_1).one = const 43 : u64
     storage_live(_two_2)
-    _two_2 = copy ((one_1).two)
+    _two_2 = copy (one_1).two
     _0 = ()
     storage_dead(_two_2)
     storage_dead(one_1)

@@ -24,20 +24,20 @@ fn main()
 
     storage_live(_6)
     storage_live(_7)
-    _7 = const (0 : u8)
+    _7 = const 0 : u8
     _6 = &_7
     storage_live(_5)
     _0 = ()
     storage_live(x_1)
     storage_live(_2)
-    _5 = move (_6)
-    _2 = &*(_5)
-    x_1 = &raw const *(_2)
+    _5 = move _6
+    _2 = &(*_5)
+    x_1 = &raw const (*_2)
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (x_1)
-    _3 = cast<*const u8, usize>(move (_4))
+    _4 = copy x_1
+    _3 = cast<*const u8, usize>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

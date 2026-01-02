@@ -37,7 +37,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const (42 : usize)
+    _0 = const 42 : usize
     return
 }
 
@@ -64,7 +64,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const ({impl Trait for T}<T>[@TraitClause0]::FOO)
+    _0 = const {impl Trait for T}<T>[@TraitClause0]::FOO
     return
 }
 

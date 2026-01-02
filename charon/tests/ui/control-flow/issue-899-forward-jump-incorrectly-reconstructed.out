@@ -16,7 +16,7 @@ fn condition(@1: u32) -> bool
     let _0: bool; // return
     let _x_1: u32; // arg #1
 
-    _0 = const (true)
+    _0 = const true
     return
 }
 
@@ -54,12 +54,12 @@ fn absorb_full()
     storage_live(_2)
     // bb0
     // bb1
-    _2 = condition(const (1 : u32))
-    if move (_2) {
+    _2 = condition(const 1 : u32)
+    if move _2 {
         storage_live(_3)
         // bb3
-        _3 = condition(const (2 : u32))
-        if move (_3) {
+        _3 = condition(const 2 : u32)
+        if move _3 {
             // bb7
             _1 = foo()
             // bb8
@@ -82,8 +82,8 @@ fn absorb_full()
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_4)
-    _4 = condition(const (3 : u32))
-    if move (_4) {
+    _4 = condition(const 3 : u32)
+    if move _4 {
     } else {
         storage_dead(_4)
         _0 = bar()

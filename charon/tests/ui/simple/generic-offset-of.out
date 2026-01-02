@@ -62,13 +62,13 @@ where
     _3 = offset_of(A<T>[@TraitClause0].x)<usize>
     storage_live(_4)
     _4 = offset_of(B<T>[@TraitClause0].y)<usize>
-    _5 = copy (_3) panic.+ copy (_4)
-    _2 = move (_5)
+    _5 = copy _3 panic.+ copy _4
+    _2 = move _5
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
     storage_live(_1)
-    _1 = move (_2)
+    _1 = move _2
     storage_dead(_1)
     _0 = ()
     return

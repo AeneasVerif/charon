@@ -138,8 +138,8 @@ where
     _4 = &y_2
     storage_live(_5)
     _5 = &x_1
-    _3 = @TraitClause2::eq<'_, '_>(move (_4), move (_5))
-    if move (_3) {
+    _3 = @TraitClause2::eq<'_, '_>(move _4, move _5)
+    if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         _0 = @TraitClause0::other_method()
@@ -196,8 +196,8 @@ where
     _4 = &y_2
     storage_live(_5)
     _5 = &x_1
-    _3 = @TraitClause3::eq<'_, '_>(move (_4), move (_5))
-    if move (_3) {
+    _3 = @TraitClause3::eq<'_, '_>(move _4, move _5)
+    if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         _0 = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
@@ -267,8 +267,8 @@ where
     _4 = &y_2
     storage_live(_5)
     _5 = &x_1
-    _3 = @TraitClause3::eq<'_, '_>(move (_4), move (_5))
-    if move (_3) {
+    _3 = @TraitClause3::eq<'_, '_>(move _4, move _5)
+    if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         _0 = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()

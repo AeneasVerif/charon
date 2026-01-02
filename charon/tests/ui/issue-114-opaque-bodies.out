@@ -40,15 +40,15 @@ where
     let t_2: T; // arg #2
     let _3: T; // anonymous local
 
-    if copy (self_1) {
+    if copy self_1 {
     } else {
         _0 = Option::None {  }
         drop[{built_in impl Destruct for T}] t_2
         return
     }
     storage_live(_3)
-    _3 = move (t_2)
-    _0 = Option::Some { 0: move (_3) }
+    _3 = move t_2
+    _0 = Option::Some { 0: move _3 }
     storage_dead(_3)
     return
 }
@@ -81,8 +81,8 @@ where
     let _3: bool; // anonymous local
 
     storage_live(_3)
-    _3 = @TraitClause0::eq<'_, '_>(move (self_1), move (other_2))
-    _0 = ~(move (_3))
+    _3 = @TraitClause0::eq<'_, '_>(move self_1, move other_2)
+    _0 = ~(move _3)
     storage_dead(_3)
     return
 }
@@ -109,7 +109,7 @@ pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
     let _0: i64; // return
     let small_1: i32; // arg #1
 
-    _0 = cast<i32, i64>(copy (small_1))
+    _0 = cast<i32, i64>(copy small_1)
     return
 }
 
@@ -138,7 +138,7 @@ pub fn MAX() -> usize
 {
     let _0: usize; // return
 
-    _0 = ~(const (0 : usize))
+    _0 = ~(const 0 : usize)
     return
 }
 
@@ -214,7 +214,7 @@ pub fn inline_always() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (42 : u32)
+    _0 = const 42 : u32
     return
 }
 
@@ -223,7 +223,7 @@ pub fn inline_sometimes() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (42 : u32)
+    _0 = const 42 : u32
     return
 }
 
@@ -232,7 +232,7 @@ pub fn inline_never() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (42 : u32)
+    _0 = const 42 : u32
     return
 }
 
@@ -243,7 +243,7 @@ where
 {
     let _0: u32; // return
 
-    _0 = const (42 : u32)
+    _0 = const 42 : u32
     return
 }
 
@@ -280,20 +280,20 @@ fn use_inlines() -> u32
     _3 = inline_always()
     storage_live(_4)
     _4 = inline_sometimes()
-    _5 = copy (_3) panic.+ copy (_4)
-    _2 = move (_5)
+    _5 = copy _3 panic.+ copy _4
+    _2 = move _5
     storage_dead(_4)
     storage_dead(_3)
     storage_live(_6)
     _6 = inline_never()
-    _7 = copy (_2) panic.+ copy (_6)
-    _1 = move (_7)
+    _7 = copy _2 panic.+ copy _6
+    _1 = move _7
     storage_dead(_6)
     storage_dead(_2)
     storage_live(_8)
     _8 = inline_generic<bool>[{built_in impl Sized for bool}]()
-    _9 = copy (_1) panic.+ copy (_8)
-    _0 = move (_9)
+    _9 = copy _1 panic.+ copy _8
+    _0 = move _9
     storage_dead(_8)
     storage_dead(_1)
     return
@@ -308,10 +308,10 @@ fn bool_to_opt(@1: bool) -> Option<()>[{built_in impl Sized for ()}]
     let _3: (); // anonymous local
 
     storage_live(_2)
-    _2 = copy (b_1)
+    _2 = copy b_1
     storage_live(_3)
     _3 = ()
-    _0 = then_some<()>[{built_in impl Sized for ()}](move (_2), move (_3))
+    _0 = then_some<()>[{built_in impl Sized for ()}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -325,8 +325,8 @@ fn convert(@1: i32) -> i64
     let _2: i32; // anonymous local
 
     storage_live(_2)
-    _2 = copy (x_1)
-    _0 = {impl From<i32> for i64}::from(move (_2))
+    _2 = copy x_1
+    _0 = {impl From<i32> for i64}::from(move _2)
     storage_dead(_2)
     return
 }
@@ -348,7 +348,7 @@ fn max() -> usize
 {
     let _0: usize; // return
 
-    _0 = copy (MAX)
+    _0 = copy MAX
     return
 }
 

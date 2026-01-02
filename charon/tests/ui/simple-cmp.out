@@ -111,13 +111,13 @@ pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(@1: &'_0 i32, @2: &
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (*(self_1))
+    _4 = copy (*self_1)
     storage_live(_5)
-    _5 = copy (*(other_2))
-    _3 = move (_4) cmp move (_5)
+    _5 = copy (*other_2)
+    _3 = move _4 cmp move _5
     storage_dead(_5)
     storage_dead(_4)
-    _0 = Option::Some { 0: move (_3) }
+    _0 = Option::Some { 0: move _3 }
     storage_dead(_3)
     return
 }
@@ -176,17 +176,17 @@ fn main()
 
     _0 = ()
     storage_live(x_1)
-    x_1 = const (11 : i32)
+    x_1 = const 11 : i32
     storage_live(y_2)
-    y_2 = const (22 : i32)
+    y_2 = const 22 : i32
     storage_live(_3)
     storage_live(_4)
     _4 = &x_1
     storage_live(_5)
     storage_live(_6)
     _6 = &y_2
-    _5 = &*(_6)
-    _3 = {impl Ord for i32}::cmp<'_, '_>(move (_4), move (_5))
+    _5 = &(*_6)
+    _3 = {impl Ord for i32}::cmp<'_, '_>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_6)

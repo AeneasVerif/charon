@@ -92,8 +92,8 @@ unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 
     storage_live(_2)
     _0 = ()
-    _2 = &mut *(_1)
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]] (*(_2)).vec
+    _2 = &mut (*_1)
+    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]] ((*_2)).vec
     return
 }
 
@@ -133,7 +133,7 @@ fn main()
     storage_live(_2)
     _2 = new()
     drop[{impl Destruct for String}] s_1
-    s_1 = move (_2)
+    s_1 = move _2
     storage_dead(_2)
     _0 = ()
     drop[{impl Destruct for String}] s_1

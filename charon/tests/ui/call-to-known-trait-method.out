@@ -133,7 +133,7 @@ where
 
     storage_live(_1)
     _1 = @TraitClause1::default()
-    _0 = Struct { 0: move (_1) }
+    _0 = Struct { 0: move _1 }
     conditional_drop[{built_in impl Destruct for A}] _1
     storage_dead(_1)
     return
@@ -207,7 +207,7 @@ fn main()
 
     _0 = ()
     storage_live(_x_1)
-    _x_1 = (const (0 : u8), const (false))
+    _x_1 = (const 0 : u8, const false)
     storage_live(_y_2)
     _y_2 = {impl Default for Struct<A>[@TraitClause0]}::default<bool>[{built_in impl Sized for bool}, {impl Default for bool}]()
     storage_live(_3)

@@ -15,7 +15,7 @@ pub fn FOO() -> u8
 {
     let _0: u8; // return
 
-    _0 = const (42 : u8)
+    _0 = const 42 : u8
     return
 }
 

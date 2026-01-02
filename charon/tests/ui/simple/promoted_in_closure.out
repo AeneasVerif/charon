@@ -123,13 +123,13 @@ fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 closure, @2: ())
 
     storage_live(_5)
     storage_live(_6)
-    _6 = const (42 : i32)
+    _6 = const 42 : i32
     _5 = &_6
     storage_live(_4)
     _0 = ()
     storage_live(_3)
-    _4 = move (_5)
-    _3 = &*(_4)
+    _4 = move _5
+    _3 = &(*_4)
     storage_dead(_3)
     _0 = ()
     return
@@ -145,8 +145,8 @@ fn {impl FnMut<()> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: ())
 
     _0 = ()
     storage_live(_3)
-    _3 = &*(state_1)
-    _0 = {impl Fn<()> for closure}::call<'2>(move (_3), move (args_2))
+    _3 = &(*state_1)
+    _0 = {impl Fn<()> for closure}::call<'2>(move _3, move args_2)
     return
 }
 
@@ -171,7 +171,7 @@ fn {impl FnOnce<()> for closure}::call_once(@1: closure, @2: ())
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure}::call_mut<'_>(move (_3), move (_2))
+    _0 = {impl FnMut<()> for closure}::call_mut<'_>(move _3, move _2)
     drop[{impl Destruct for closure}] _1
     return
 }

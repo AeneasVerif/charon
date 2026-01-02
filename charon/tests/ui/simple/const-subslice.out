@@ -26,21 +26,21 @@ fn main()
     _0 = ()
     storage_live(y_1)
     storage_live(_6)
-    _6 = [const (0 : u8), const (1 : u8), const (2 : u8)]
+    _6 = [const 0 : u8, const 1 : u8, const 2 : u8]
     storage_live(_7)
     _7 = &_6
     storage_live(_8)
-    _8 = @ArrayToSliceShared<'_, u8, 3 : usize>(move (_7))
-    y_1 = move (_8)
+    _8 = @ArrayToSliceShared<'_, u8, 3 : usize>(move _7)
+    y_1 = move _8
     storage_live(z_2)
     storage_live(_3)
-    _3 = &raw const *(y_1) with_metadata(copy (y_1.metadata))
-    z_2 = cast<*const [u8], *const u8>(move (_3))
+    _3 = &raw const (*y_1) with_metadata(copy y_1.metadata)
+    z_2 = cast<*const [u8], *const u8>(move _3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy (z_2)
-    _4 = cast<*const u8, usize>(move (_5))
+    _5 = copy z_2
+    _4 = cast<*const u8, usize>(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

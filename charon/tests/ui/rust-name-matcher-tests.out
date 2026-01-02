@@ -163,8 +163,8 @@ where
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move (value_1)
-    _0 = Generic { value: move (_2) }
+    _2 = move value_1
+    _0 = Generic { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}] _2
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] value_1
@@ -181,8 +181,8 @@ where
     let _2: &'0 T; // anonymous local
 
     storage_live(_2)
-    _2 = &(*(self_1)).value
-    _0 = &*(_2)
+    _2 = &((*self_1)).value
+    _0 = &(*_2)
     storage_dead(_2)
     return
 }
@@ -198,13 +198,13 @@ fn use_generic()
 
     _0 = ()
     storage_live(_int_generic_1)
-    _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const (42 : i32))
+    _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42 : i32)
     storage_live(_str_generic_2)
-    _str_generic_2 = new<&'0 Str>[{built_in impl Sized for &'0 Str}](const ("hello"))
+    _str_generic_2 = new<&'0 Str>[{built_in impl Sized for &'0 Str}](const "hello")
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic_1
-    _3 = get<'_, i32>[{built_in impl Sized for i32}](move (_4))
+    _3 = get<'_, i32>[{built_in impl Sized for i32}](move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

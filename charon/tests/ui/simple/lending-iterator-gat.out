@@ -133,8 +133,8 @@ unsafe fn {impl Destruct for (A)}::drop_in_place<A>(@1: *mut (A))
 
     storage_live(_2)
     _0 = ()
-    _2 = &mut *(_1) with_metadata(copy (_1.metadata))
-    drop[{built_in impl Destruct for A}] (*(_2)).0
+    _2 = &mut (*_1) with_metadata(copy _1.metadata)
+    drop[{built_in impl Destruct for A}] (*_2).0
     return
 }
 
@@ -161,7 +161,7 @@ where
     let _4: Option<&'0 T>[{built_in impl Sized for &'0 T}]; // anonymous local
     let _5: &'0 T; // anonymous local
 
-    match *(self_1) {
+    match (*self_1) {
         Option::Some => {
         },
         _ => {
@@ -170,16 +170,16 @@ where
         },
     }
     storage_live(item_2)
-    item_2 = &mut (*(self_1) as variant Option::Some).0
+    item_2 = &mut ((*self_1) as variant Option::Some).0
     storage_live(item_3)
-    item_3 = &*(*(item_2))
+    item_3 = &(*(*item_2))
     storage_live(_4)
     _4 = Option::None {  }
-    *(self_1) = move (_4)
+    (*self_1) = move _4
     storage_dead(_4)
     storage_live(_5)
-    _5 = &*(item_3)
-    _0 = Option::Some { 0: move (_5) }
+    _5 = &(*item_3)
+    _0 = Option::Some { 0: move _5 }
     storage_dead(_5)
     storage_dead(item_3)
     storage_dead(item_2)
@@ -223,7 +223,7 @@ where
         storage_live(_4)
         storage_live(_5)
         _5 = &two-phase-mut iter_1
-        _4 = @TraitClause2::next<'_>(move (_5))
+        _4 = @TraitClause2::next<'_>(move _5)
         storage_dead(_5)
         match _4 {
             Option::Some => {
@@ -233,14 +233,14 @@ where
             },
         }
         storage_live(item_6)
-        item_6 = move ((_4 as variant Option::Some).0)
+        item_6 = move (_4 as variant Option::Some).0
         storage_live(_7)
         _7 = &mut f_2
         storage_live(_8)
         storage_live(_9)
-        _9 = move (item_6)
-        _8 = (move (_9))
-        _3 = @TraitClause3::call_mut<'_>(move (_7), move (_8))
+        _9 = move item_6
+        _8 = (move _9)
+        _3 = @TraitClause3::call_mut<'_>(move _7, move _8)
         conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] _9
         storage_dead(_9)
         storage_dead(_8)
@@ -277,11 +277,11 @@ fn {impl FnMut<(&'_ i32)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mu
     storage_live(item_3)
     storage_live(_5)
     _0 = ()
-    item_3 = move ((tupled_args_2).0)
+    item_3 = move tupled_args_2.0
     storage_live(_4)
-    _4 = copy (*(item_3))
-    _5 = copy (*((*(_1)).0)) panic.+ copy (_4)
-    *((*(_1)).0) = move (_5)
+    _4 = copy (*item_3)
+    _5 = copy (*((*_1)).0) panic.+ copy _4
+    (*((*_1)).0) = move _5
     _0 = ()
     storage_dead(_4)
     return
@@ -308,7 +308,7 @@ fn {impl FnOnce<(&'_ i32)> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<'_
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ i32)> for closure<'_0>}::call_mut<'_0, '_1, '_>(move (_3), move (_2))
+    _0 = {impl FnMut<(&'_ i32)> for closure<'_0>}::call_mut<'_0, '_1, '_>(move _3, move _2)
     drop[{impl Destruct for closure<'_0>}<'_>] _1
     return
 }
@@ -370,33 +370,33 @@ pub fn main()
 
     storage_live(_26)
     storage_live(_27)
-    _27 = const (42 : i32)
+    _27 = const 42 : i32
     _26 = &_27
     storage_live(_24)
     storage_live(_25)
     _0 = ()
     storage_live(x_1)
-    x_1 = const (42 : i32)
+    x_1 = const 42 : i32
     storage_live(iter_2)
     storage_live(_3)
-    _25 = move (_26)
-    _3 = &*(_25)
-    iter_2 = Option::Some { 0: move (_3) }
+    _25 = move _26
+    _3 = &(*_25)
+    iter_2 = Option::Some { 0: move _3 }
     storage_dead(_3)
     storage_live(sum_4)
-    sum_4 = const (0 : i32)
+    sum_4 = const 0 : i32
     storage_live(_5)
     storage_live(_6)
-    _6 = copy (iter_2)
+    _6 = copy iter_2
     storage_live(_7)
     storage_live(_8)
     _8 = &mut sum_4
-    _7 = closure { 0: move (_8) }
+    _7 = closure { 0: move _8 }
     storage_dead(_8)
-    _5 = for_each<Option<&'0 i32>[{built_in impl Sized for &'0 i32}], closure<'_>>[{built_in impl Sized for Option<&'0 i32>[{built_in impl Sized for &'0 i32}]}, {built_in impl Sized for closure<'_>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}<'0, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32)> for closure<'_0>}<'_, '_>](move (_6), move (_7))
+    _5 = for_each<Option<&'0 i32>[{built_in impl Sized for &'0 i32}], closure<'_>>[{built_in impl Sized for Option<&'0 i32>[{built_in impl Sized for &'0 i32}]}, {built_in impl Sized for closure<'_>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}<'0, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32)> for closure<'_0>}<'_, '_>](move _6, move _7)
     storage_live(_28)
     storage_live(_29)
-    _29 = const (42 : i32)
+    _29 = const 42 : i32
     _28 = &_29
     storage_dead(_7)
     storage_dead(_6)
@@ -405,37 +405,37 @@ pub fn main()
     storage_live(_10)
     _10 = &sum_4
     storage_live(_11)
-    _24 = move (_28)
-    _11 = &*(_24)
-    _9 = (move (_10), move (_11))
+    _24 = move _28
+    _11 = &(*_24)
+    _9 = (move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
     storage_live(left_val_12)
-    left_val_12 = copy ((_9).0)
+    left_val_12 = copy _9.0
     storage_live(right_val_13)
-    right_val_13 = copy ((_9).1)
+    right_val_13 = copy _9.1
     storage_live(_14)
     storage_live(_15)
-    _15 = copy (*(left_val_12))
+    _15 = copy (*left_val_12)
     storage_live(_16)
-    _16 = copy (*(right_val_13))
-    _14 = move (_15) == move (_16)
-    if move (_14) {
+    _16 = copy (*right_val_13)
+    _14 = move _15 == move _16
+    if move _14 {
     } else {
         storage_dead(_16)
         storage_dead(_15)
         storage_live(kind_17)
         kind_17 = AssertKind::Eq {  }
         storage_live(_18)
-        _18 = move (kind_17)
+        _18 = move kind_17
         storage_live(_19)
         storage_live(_20)
-        _20 = &*(left_val_12)
-        _19 = &*(_20)
+        _20 = &(*left_val_12)
+        _19 = &(*_20)
         storage_live(_21)
         storage_live(_22)
-        _22 = &*(right_val_13)
-        _21 = &*(_22)
+        _22 = &(*right_val_13)
+        _21 = &(*_22)
         storage_live(_23)
         _23 = Option::None {  }
         panic(core::panicking::assert_failed)

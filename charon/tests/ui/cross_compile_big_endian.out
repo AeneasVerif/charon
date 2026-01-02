@@ -26,7 +26,7 @@ fn S() -> [u8; 16 : usize]
 {
     let _0: [u8; 16 : usize]; // return
 
-    _0 = to_ne_bytes(const (24197857199965561741520400062332047378 : u128))
+    _0 = to_ne_bytes(const 24197857199965561741520400062332047378 : u128)
     return
 }
 
@@ -55,20 +55,20 @@ fn main()
     storage_live(_6)
     _0 = ()
     storage_live(x_1)
-    x_1 = const (52 : usize)
+    x_1 = const 52 : usize
     storage_live(y_2)
-    y_2 = copy (MAX)
+    y_2 = copy MAX
     storage_live(z_3)
     storage_live(_4)
-    _4 = copy (y_2)
+    _4 = copy y_2
     storage_live(_5)
-    _5 = copy (x_1)
-    _6 = copy (_4) panic.- copy (_5)
-    z_3 = move (_6)
+    _5 = copy x_1
+    _6 = copy _4 panic.- copy _5
+    z_3 = move _6
     storage_dead(_5)
     storage_dead(_4)
     storage_live(a_7)
-    a_7 = const (102 : u128) panic.<< const (64 : i32)
+    a_7 = const 102 : u128 panic.<< const 64 : i32
     storage_live(b_8)
     b_8 = HasBEDiscr::Second {  }
     _0 = ()

@@ -38,7 +38,7 @@ fn main()
 
     _0 = ()
     storage_live(res_1)
-    res_1 = Result::<u32, u32>::Ok { 0: const (0 : u32) }
+    res_1 = Result::<u32, u32>::Ok { 0: const 0 : u32 }
     match res_1 {
         Result::<u32, u32>::Ok => {
         },
@@ -47,7 +47,7 @@ fn main()
         },
     }
     storage_live(n_2)
-    n_2 = copy ((res_1 as variant Result::<u32, u32>::Ok).0)
+    n_2 = copy (res_1 as variant Result::<u32, u32>::Ok).0
     _0 = ()
     storage_dead(n_2)
     storage_dead(res_1)

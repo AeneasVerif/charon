@@ -74,9 +74,9 @@ where
 
     storage_live(_2)
     storage_live(_3)
-    _3 = move (x_1)
-    _2 = (@TraitClause1::Type::[@TraitClause1])::foo(move (_3))
-    _0 = &*(_2)
+    _3 = move x_1
+    _2 = (@TraitClause1::Type::[@TraitClause1])::foo(move _3)
+    _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for @TraitClause1::Type}] x_1

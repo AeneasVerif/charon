@@ -239,11 +239,11 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 i32, @2: i32) -> i32
 
     storage_live(_5)
     storage_live(_3)
-    _3 = copy (*(self_1))
+    _3 = copy (*self_1)
     storage_live(_4)
-    _4 = copy (arg_2)
-    _5 = copy (_3) panic.+ copy (_4)
-    _0 = move (_5)
+    _4 = copy arg_2
+    _5 = copy _3 panic.+ copy _4
+    _0 = move _5
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -258,7 +258,7 @@ unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Super<i32> + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn Super<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -271,8 +271,8 @@ fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 (dyn S
     let _3: &'_0 i32; // anonymous local
 
     storage_live(_3)
-    _3 = concretize<&'_0 (dyn Super<i32> + '1), &'_0 i32>(move (_1))
-    _0 = {impl Super<i32> for i32}::super_method<'_0>(move (_3), move (_2))
+    _3 = concretize<&'_0 (dyn Super<i32> + '1), &'_0 i32>(move _1)
+    _0 = {impl Super<i32> for i32}::super_method<'_0>(move _3, move _2)
     return
 }
 
@@ -287,7 +287,7 @@ fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::Super::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Super<i32> for i32}::{vtable_drop_shim}), method_super_method: const ({impl Super<i32> for i32}::super_method::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret_0 = test_crate::Super::{vtable} { size: move size_1, align: move align_2, drop: const {impl Super<i32> for i32}::{vtable_drop_shim}, method_super_method: const {impl Super<i32> for i32}::super_method::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
@@ -312,10 +312,10 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 i32) -> bool
 
     storage_live(_2)
     storage_live(_3)
-    _3 = &*(self_1)
-    _2 = {impl Super<i32> for i32}::super_method<'_>(move (_3), const (10 : i32))
+    _3 = &(*self_1)
+    _2 = {impl Super<i32> for i32}::super_method<'_>(move _3, const 10 : i32)
     storage_dead(_3)
-    _0 = move (_2) > const (0 : i32)
+    _0 = move _2 > const 0 : i32
     storage_dead(_2)
     return
 }
@@ -329,7 +329,7 @@ unsafe fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Checka
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Checkable<i32> + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn Checkable<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -341,8 +341,8 @@ fn {impl Checkable<i32> for i32}::check::{vtable_method}<'_0>(@1: &'_0 (dyn Chec
     let _2: &'_0 i32; // anonymous local
 
     storage_live(_2)
-    _2 = concretize<&'_0 (dyn Checkable<i32> + '1), &'_0 i32>(move (_1))
-    _0 = {impl Checkable<i32> for i32}::check<'_0>(move (_2))
+    _2 = concretize<&'_0 (dyn Checkable<i32> + '1), &'_0 i32>(move _1)
+    _0 = {impl Checkable<i32> for i32}::check<'_0>(move _2)
     return
 }
 
@@ -360,7 +360,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     align_2 = align_of<i32>
     storage_live(_3)
     _3 = &{impl Super<i32> for i32}::{vtable}
-    ret_0 = test_crate::Checkable::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Checkable<i32> for i32}::{vtable_drop_shim}), method_check: const ({impl Checkable<i32> for i32}::check::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (_3) }
+    ret_0 = test_crate::Checkable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Checkable<i32> for i32}::{vtable_drop_shim}, method_check: const {impl Checkable<i32> for i32}::check::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable), super_trait_1: move _3 }
     return
 }
 
@@ -408,9 +408,9 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 i32)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = copy (*(self_1))
-    _2 = move (_3) > const (0 : i32)
-    if move (_2) {
+    _3 = copy (*self_1)
+    _2 = move _3 > const 0 : i32
+    if move _2 {
     } else {
         storage_dead(_3)
         panic(core::panicking::panic)
@@ -443,11 +443,11 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &*(arg_1)
-    _3 = unsize_cast<&'2 T, &'0 (dyn NoParam + '1), @TraitClause1 with ?>(move (_4))
+    _4 = &(*arg_1)
+    _3 = unsize_cast<&'2 T, &'0 (dyn NoParam + '1), @TraitClause1 with ?>(move _4)
     storage_dead(_4)
-    _2 = &*(_3) with_metadata(copy (_3.metadata))
-    _0 = unsize_cast<&'0 (dyn NoParam + '1), &'0 (dyn NoParam + '1),  at []>(move (_2))
+    _2 = &(*_3) with_metadata(copy _3.metadata)
+    _0 = unsize_cast<&'0 (dyn NoParam + '1), &'0 (dyn NoParam + '1),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -488,11 +488,11 @@ where
     let _4: &'1 T; // anonymous local
 
     storage_live(_3)
-    _3 = copy (*(self_1)) panic.+ const (1 : i32)
-    *(self_1) = move (_3)
+    _3 = copy (*self_1) panic.+ const 1 : i32
+    (*self_1) = move _3
     storage_live(_4)
-    _4 = &*(arg_2)
-    _0 = @TraitClause1::clone<'_>(move (_4))
+    _4 = &(*arg_2)
+    _0 = @TraitClause1::clone<'_>(move _4)
     storage_dead(_4)
     return
 }
@@ -509,7 +509,7 @@ where
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -525,8 +525,8 @@ where
     let _3: &'_0 mut i32; // anonymous local
 
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move (_1))
-    _0 = {impl Modifiable<T> for i32}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1](move (_3), move (_2))
+    _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
+    _0 = {impl Modifiable<T> for i32}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1](move _3, move _2)
     return
 }
 
@@ -544,7 +544,7 @@ where
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::Modifiable::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Modifiable<T> for i32}::{vtable_drop_shim}<T>[@TraitClause0, @TraitClause1]), method_modify: const ({impl Modifiable<T> for i32}::modify::{vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>[@TraitClause0, @TraitClause1], method_modify: const {impl Modifiable<T> for i32}::modify::{vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1], super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
@@ -586,17 +586,17 @@ where
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = const (199 : i32)
+    _5 = const 199 : i32
     _4 = &mut _5
-    _3 = &mut *(_4)
-    x_2 = unsize_cast<&'3 mut i32, &'1 mut (dyn Modifiable<T> + '2), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1] with {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]>(move (_3))
+    _3 = &mut (*_4)
+    x_2 = unsize_cast<&'3 mut i32, &'1 mut (dyn Modifiable<T> + '2), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1] with {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_live(_6)
-    _6 = &two-phase-mut *(x_2) with_metadata(copy (x_2.metadata))
+    _6 = &two-phase-mut (*x_2) with_metadata(copy x_2.metadata)
     storage_live(_7)
-    _7 = &*(arg_1)
-    _0 = (copy ((*(_6.metadata)).method_modify))(move (_6), move (_7))
+    _7 = &(*arg_1)
+    _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -664,19 +664,19 @@ where
     _0 = ()
     storage_live(_4)
     storage_live(_5)
-    _5 = &*(self_1) with_metadata(copy (self_1.metadata))
+    _5 = &(*self_1) with_metadata(copy self_1.metadata)
     storage_live(_6)
-    _6 = &*(t32_2)
-    _4 = @TraitClause0::parent_clause1::operate_on<'_, '_>(move (_5), move (_6))
+    _6 = &(*t32_2)
+    _4 = @TraitClause0::parent_clause1::operate_on<'_, '_>(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_7)
     storage_live(_8)
-    _8 = &*(self_1) with_metadata(copy (self_1.metadata))
+    _8 = &(*self_1) with_metadata(copy self_1.metadata)
     storage_live(_9)
-    _9 = &*(t64_3)
-    _7 = @TraitClause0::parent_clause2::operate_on<'_, '_>(move (_8), move (_9))
+    _9 = &(*t64_3)
+    _7 = @TraitClause0::parent_clause2::operate_on<'_, '_>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -697,11 +697,11 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (*(self_1))
+    _4 = copy (*self_1)
     storage_live(_5)
-    _5 = copy (*(t_2))
-    _3 = move (_4) > move (_5)
-    if move (_3) {
+    _5 = copy (*t_2)
+    _3 = move _4 > move _5
+    if move _3 {
     } else {
         storage_dead(_5)
         storage_dead(_4)
@@ -723,7 +723,7 @@ unsafe fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i3
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn BaseOn<i32> + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn BaseOn<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -737,8 +737,8 @@ fn {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_0, '_1>(@1: &'_0 (d
 
     _0 = ()
     storage_live(_3)
-    _3 = concretize<&'_0 (dyn BaseOn<i32> + '1), &'_0 i32>(move (_1))
-    _0 = {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(move (_3), move (_2))
+    _3 = concretize<&'_0 (dyn BaseOn<i32> + '1), &'_0 i32>(move _1)
+    _0 = {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(move _3, move _2)
     return
 }
 
@@ -753,7 +753,7 @@ fn {impl BaseOn<i32> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::BaseOn::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl BaseOn<i32> for i32}::{vtable_drop_shim}), method_operate_on: const ({impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'1, '2>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret_0 = test_crate::BaseOn::{vtable} { size: move size_1, align: move align_2, drop: const {impl BaseOn<i32> for i32}::{vtable_drop_shim}, method_operate_on: const {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'1, '2>, super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
@@ -783,13 +783,13 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i64)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy (*(self_1))
-    _4 = cast<i32, i64>(move (_5))
+    _5 = copy (*self_1)
+    _4 = cast<i32, i64>(move _5)
     storage_dead(_5)
     storage_live(_6)
-    _6 = copy (*(t_2))
-    _3 = move (_4) > move (_6)
-    if move (_3) {
+    _6 = copy (*t_2)
+    _3 = move _4 > move _6
+    if move _3 {
     } else {
         storage_dead(_6)
         storage_dead(_4)
@@ -811,7 +811,7 @@ unsafe fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i6
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn BaseOn<i64> + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn BaseOn<i64> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -825,8 +825,8 @@ fn {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_0, '_1>(@1: &'_0 (d
 
     _0 = ()
     storage_live(_3)
-    _3 = concretize<&'_0 (dyn BaseOn<i64> + '1), &'_0 i32>(move (_1))
-    _0 = {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(move (_3), move (_2))
+    _3 = concretize<&'_0 (dyn BaseOn<i64> + '1), &'_0 i32>(move _1)
+    _0 = {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(move _3, move _2)
     return
 }
 
@@ -841,7 +841,7 @@ fn {impl BaseOn<i64> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::BaseOn::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl BaseOn<i64> for i32}::{vtable_drop_shim}), method_operate_on: const ({impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'1, '2>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret_0 = test_crate::BaseOn::{vtable} { size: move size_1, align: move align_2, drop: const {impl BaseOn<i64> for i32}::{vtable_drop_shim}, method_operate_on: const {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'1, '2>, super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
@@ -873,19 +873,19 @@ fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 i32, @2: &'_
     _0 = ()
     storage_live(_4)
     storage_live(_5)
-    _5 = &*(self_1)
+    _5 = &(*self_1)
     storage_live(_6)
-    _6 = &*(t32_2)
-    _4 = {impl Both32And64 for i32}::parent_clause1::operate_on<'_, '_>(move (_5), move (_6))
+    _6 = &(*t32_2)
+    _4 = {impl Both32And64 for i32}::parent_clause1::operate_on<'_, '_>(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_7)
     storage_live(_8)
-    _8 = &*(self_1)
+    _8 = &(*self_1)
     storage_live(_9)
-    _9 = &*(t64_3)
-    _7 = {impl Both32And64 for i32}::parent_clause2::operate_on<'_, '_>(move (_8), move (_9))
+    _9 = &(*t64_3)
+    _7 = {impl Both32And64 for i32}::parent_clause2::operate_on<'_, '_>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -902,7 +902,7 @@ unsafe fn {impl Both32And64 for i32}::{vtable_drop_shim}(@1: *mut (dyn Both32And
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Both32And64 + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn Both32And64 + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -923,7 +923,7 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     _3 = &{impl BaseOn<i32> for i32}::{vtable}
     storage_live(_4)
     _4 = &{impl BaseOn<i64> for i32}::{vtable}
-    ret_0 = test_crate::Both32And64::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Both32And64 for i32}::{vtable_drop_shim}), method_both_operate: const (Opaque(shim for default methods aren't yet supported)), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (_3), super_trait_2: move (_4) }
+    ret_0 = test_crate::Both32And64::{vtable} { size: move size_1, align: move align_2, drop: const {impl Both32And64 for i32}::{vtable_drop_shim}, method_both_operate: const Opaque(shim for default methods aren't yet supported), super_trait_0: const Opaque(missing supertrait vtable), super_trait_1: move _3, super_trait_2: move _4 }
     return
 }
 
@@ -982,11 +982,11 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 i32, @2: &'a 
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (*(self_1))
+    _4 = copy (*self_1)
     storage_live(_5)
-    _5 = copy (*(arg_2))
-    _3 = move (_4) > move (_5)
-    if move (_3) {
+    _5 = copy (*arg_2)
+    _3 = move _4 > move _5
+    if move _3 {
     } else {
         storage_dead(_5)
         storage_dead(_4)
@@ -995,7 +995,7 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 i32, @2: &'a 
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    _0 = copy (arg_2)
+    _0 = copy arg_2
     return
 }
 
@@ -1008,7 +1008,7 @@ unsafe fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn Lifetim
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn LifetimeTrait<Ty = i32> + '1), *mut i32>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn LifetimeTrait<Ty = i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -1021,8 +1021,8 @@ fn {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'a, '_1>(@1: &
     let _3: &'_1 i32; // anonymous local
 
     storage_live(_3)
-    _3 = concretize<&'_1 (dyn LifetimeTrait<Ty = i32> + '1), &'_1 i32>(move (_1))
-    _0 = {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(move (_3), move (_2))
+    _3 = concretize<&'_1 (dyn LifetimeTrait<Ty = i32> + '1), &'_1 i32>(move _1)
+    _0 = {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(move _3, move _2)
     return
 }
 
@@ -1037,7 +1037,7 @@ fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtabl
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::LifetimeTrait::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl LifetimeTrait for i32}::{vtable_drop_shim}), method_lifetime_method: const ({impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'1, '2>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    ret_0 = test_crate::LifetimeTrait::{vtable} { size: move size_1, align: move align_2, drop: const {impl LifetimeTrait for i32}::{vtable_drop_shim}, method_lifetime_method: const {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'1, '2>, super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
@@ -1065,11 +1065,11 @@ fn use_lifetime_trait<'a, '_1>(@1: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), @2:
 
     storage_live(_3)
     storage_live(_4)
-    _4 = &*(x_1) with_metadata(copy (x_1.metadata))
+    _4 = &(*x_1) with_metadata(copy x_1.metadata)
     storage_live(_5)
-    _5 = &*(y_2)
-    _3 = (copy ((*(_4.metadata)).method_lifetime_method))(move (_4), move (_5))
-    _0 = &*(_3)
+    _5 = &(*y_2)
+    _3 = (copy ((*_4.metadata)).method_lifetime_method)(move _4, move _5)
+    _0 = &(*_3)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -1096,29 +1096,29 @@ fn use_alias<'_0>(@1: &'_0 (dyn Both32And64 + '_0))
 
     storage_live(_10)
     storage_live(_11)
-    _11 = const (100 : i32)
+    _11 = const 100 : i32
     _10 = &_11
     storage_live(_12)
     storage_live(_13)
-    _13 = const (200 : i64)
+    _13 = const 200 : i64
     _12 = &_13
     storage_live(_8)
     storage_live(_9)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &*(x_1) with_metadata(copy (x_1.metadata))
+    _3 = &(*x_1) with_metadata(copy x_1.metadata)
     storage_live(_4)
     storage_live(_5)
-    _9 = move (_10)
-    _5 = &*(_9)
-    _4 = &*(_5)
+    _9 = move _10
+    _5 = &(*_9)
+    _4 = &(*_5)
     storage_live(_6)
     storage_live(_7)
-    _8 = move (_12)
-    _7 = &*(_8)
-    _6 = &*(_7)
-    _2 = (copy ((*(_3.metadata)).method_both_operate))(move (_3), move (_4), move (_6))
+    _8 = move _12
+    _7 = &(*_8)
+    _6 = &(*_7)
+    _2 = (copy ((*_3.metadata)).method_both_operate)(move _3, move _4, move _6)
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)
@@ -1239,7 +1239,7 @@ fn main()
 
     storage_live(_86)
     storage_live(_87)
-    _87 = const (42 : i32)
+    _87 = const 42 : i32
     _86 = &_87
     storage_live(_77)
     storage_live(_78)
@@ -1254,17 +1254,17 @@ fn main()
     storage_live(x_1)
     storage_live(_2)
     storage_live(_3)
-    _85 = move (_86)
-    _3 = &*(_85)
-    _2 = &*(_3)
-    x_1 = unsize_cast<&'2 i32, &'0 (dyn Checkable<i32> + '1), {impl Checkable<i32> for i32} with {impl Checkable<i32> for i32}::{vtable}>(move (_2))
+    _85 = move _86
+    _3 = &(*_85)
+    _2 = &(*_3)
+    x_1 = unsize_cast<&'2 i32, &'0 (dyn Checkable<i32> + '1), {impl Checkable<i32> for i32} with {impl Checkable<i32> for i32}::{vtable}>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &*(x_1) with_metadata(copy (x_1.metadata))
-    _4 = (copy ((*(_5.metadata)).method_check))(move (_5))
-    if move (_4) {
+    _5 = &(*x_1) with_metadata(copy x_1.metadata)
+    _4 = (copy ((*_5.metadata)).method_check)(move _5)
+    if move _4 {
     } else {
         storage_dead(_5)
         panic(core::panicking::panic)
@@ -1275,10 +1275,10 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
-    _9 = const (99 : i32)
+    _9 = const 99 : i32
     _8 = &mut _9
-    _7 = &mut *(_8)
-    y_6 = unsize_cast<&'5 mut i32, &'3 mut (dyn Modifiable<i32> + '4), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}] with {impl Modifiable<T> for i32}::{vtable}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move (_7))
+    _7 = &mut (*_8)
+    y_6 = unsize_cast<&'5 mut i32, &'3 mut (dyn Modifiable<i32> + '4), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}] with {impl Modifiable<T> for i32}::{vtable}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move _7)
     storage_dead(_7)
     storage_dead(_8)
     storage_live(_10)
@@ -1289,17 +1289,17 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     storage_live(_17)
-    _17 = const ("Hello")
-    _16 = &*(_17) with_metadata(copy (_17.metadata))
-    _15 = {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move (_16))
+    _17 = const "Hello"
+    _16 = &(*_17) with_metadata(copy _17.metadata)
+    _15 = {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
     storage_dead(_16)
     _14 = &_15
-    _13 = &*(_14)
-    _12 = modify_trait_object<'_, String>[{built_in impl Sized for String}, {impl Clone for String}](move (_13))
+    _13 = &(*_14)
+    _12 = modify_trait_object<'_, String>[{built_in impl Sized for String}, {impl Clone for String}](move _13)
     _11 = &_12
     storage_dead(_13)
-    _10 = is_empty<'_>(move (_11))
-    if move (_10) {
+    _10 = is_empty<'_>(move _11)
+    if move _10 {
     } else {
         storage_dead(_11)
         conditional_drop[{impl Destruct for String}] _12
@@ -1313,60 +1313,60 @@ fn main()
         storage_live(_19)
         storage_live(_20)
         storage_live(_21)
-        _21 = &two-phase-mut *(y_6) with_metadata(copy (y_6.metadata))
+        _21 = &two-phase-mut (*y_6) with_metadata(copy y_6.metadata)
         storage_live(_22)
         storage_live(_23)
         storage_live(_24)
-        _24 = const (100 : i32)
+        _24 = const 100 : i32
         _23 = &mut _24
-        _22 = &*(_23)
-        _20 = (copy ((*(_21.metadata)).method_modify))(move (_21), move (_22))
+        _22 = &(*_23)
+        _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
         storage_live(_88)
         storage_live(_89)
-        _89 = const (100 : i32)
+        _89 = const 100 : i32
         _88 = &_89
         storage_dead(_22)
         storage_dead(_21)
         _19 = &_20
         storage_live(_25)
-        _84 = move (_88)
-        _25 = &*(_84)
-        _18 = (move (_19), move (_25))
+        _84 = move _88
+        _25 = &(*_84)
+        _18 = (move _19, move _25)
         storage_dead(_25)
         storage_dead(_19)
         storage_live(left_val_26)
-        left_val_26 = copy ((_18).0)
+        left_val_26 = copy _18.0
         storage_live(right_val_27)
-        right_val_27 = copy ((_18).1)
+        right_val_27 = copy _18.1
         storage_live(_28)
         storage_live(_29)
-        _29 = copy (*(left_val_26))
+        _29 = copy (*left_val_26)
         storage_live(_30)
-        _30 = copy (*(right_val_27))
-        _28 = move (_29) == move (_30)
-        if move (_28) {
+        _30 = copy (*right_val_27)
+        _28 = move _29 == move _30
+        if move _28 {
         } else {
             storage_dead(_30)
             storage_dead(_29)
             storage_live(kind_31)
             kind_31 = AssertKind::Eq {  }
             storage_live(_32)
-            _32 = move (kind_31)
+            _32 = move kind_31
             storage_live(_33)
             storage_live(_34)
-            _34 = &*(left_val_26)
-            _33 = &*(_34)
+            _34 = &(*left_val_26)
+            _33 = &(*_34)
             storage_live(_35)
             storage_live(_36)
-            _36 = &*(right_val_27)
-            _35 = &*(_36)
+            _36 = &(*right_val_27)
+            _35 = &(*_36)
             storage_live(_37)
             _37 = Option::None {  }
             panic(core::panicking::assert_failed)
         }
         storage_live(_90)
         storage_live(_91)
-        _91 = const (42 : i32)
+        _91 = const 42 : i32
         _90 = &_91
         storage_dead(_30)
         storage_dead(_29)
@@ -1382,64 +1382,64 @@ fn main()
         storage_live(_40)
         storage_live(_41)
         storage_live(_42)
-        _83 = move (_90)
-        _42 = &*(_83)
-        _41 = &*(_42)
-        _40 = to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move (_41))
-        _39 = &*(_40) with_metadata(copy (_40.metadata))
-        z_38 = unsize_cast<&'11 (dyn NoParam + '12), &'11 (dyn NoParam + '12),  at []>(move (_39))
+        _83 = move _90
+        _42 = &(*_83)
+        _41 = &(*_42)
+        _40 = to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move _41)
+        _39 = &(*_40) with_metadata(copy _40.metadata)
+        z_38 = unsize_cast<&'11 (dyn NoParam + '12), &'11 (dyn NoParam + '12),  at []>(move _39)
         storage_dead(_41)
         storage_dead(_39)
         storage_dead(_42)
         storage_dead(_40)
         storage_live(_43)
         storage_live(_44)
-        _44 = &*(z_38) with_metadata(copy (z_38.metadata))
-        _43 = (copy ((*(_44.metadata)).method_dummy))(move (_44))
+        _44 = &(*z_38) with_metadata(copy z_38.metadata)
+        _43 = (copy ((*_44.metadata)).method_dummy)(move _44)
         storage_live(_92)
         storage_live(_93)
-        _93 = const (42 : i32)
+        _93 = const 42 : i32
         _92 = &_93
         storage_live(_94)
         storage_live(_95)
-        _95 = const (100 : i32)
+        _95 = const 100 : i32
         _94 = &_95
         storage_live(_96)
         storage_live(_97)
-        _97 = const (200 : i64)
+        _97 = const 200 : i64
         _96 = &_97
         storage_dead(_44)
         storage_dead(_43)
         storage_live(a_45)
         storage_live(_46)
         storage_live(_47)
-        _82 = move (_92)
-        _47 = &*(_82)
-        _46 = &*(_47)
-        a_45 = unsize_cast<&'2 i32, &'13 (dyn Both32And64 + '14), {impl Both32And64 for i32} with {impl Both32And64 for i32}::{vtable}>(move (_46))
+        _82 = move _92
+        _47 = &(*_82)
+        _46 = &(*_47)
+        a_45 = unsize_cast<&'2 i32, &'13 (dyn Both32And64 + '14), {impl Both32And64 for i32} with {impl Both32And64 for i32}::{vtable}>(move _46)
         storage_dead(_46)
         storage_dead(_47)
         storage_live(_48)
         storage_live(_49)
-        _49 = &*(a_45) with_metadata(copy (a_45.metadata))
+        _49 = &(*a_45) with_metadata(copy a_45.metadata)
         storage_live(_50)
         storage_live(_51)
-        _81 = move (_94)
-        _51 = &*(_81)
-        _50 = &*(_51)
+        _81 = move _94
+        _51 = &(*_81)
+        _50 = &(*_51)
         storage_live(_52)
         storage_live(_53)
-        _80 = move (_96)
-        _53 = &*(_80)
-        _52 = &*(_53)
-        _48 = (copy ((*(_49.metadata)).method_both_operate))(move (_49), move (_50), move (_52))
+        _80 = move _96
+        _53 = &(*_80)
+        _52 = &(*_53)
+        _48 = (copy ((*_49.metadata)).method_both_operate)(move _49, move _50, move _52)
         storage_live(_98)
         storage_live(_99)
-        _99 = const (42 : i32)
+        _99 = const 42 : i32
         _98 = &_99
         storage_live(_100)
         storage_live(_101)
-        _101 = const (10 : i32)
+        _101 = const 10 : i32
         _100 = &_101
         storage_dead(_52)
         storage_dead(_50)
@@ -1450,10 +1450,10 @@ fn main()
         storage_live(b_54)
         storage_live(_55)
         storage_live(_56)
-        _79 = move (_98)
-        _56 = &*(_79)
-        _55 = &*(_56)
-        b_54 = unsize_cast<&'2 i32, &'16 (dyn LifetimeTrait<Ty = i32> + '17), {impl LifetimeTrait for i32} with {impl LifetimeTrait for i32}::{vtable}>(move (_55))
+        _79 = move _98
+        _56 = &(*_79)
+        _55 = &(*_56)
+        b_54 = unsize_cast<&'2 i32, &'16 (dyn LifetimeTrait<Ty = i32> + '17), {impl LifetimeTrait for i32} with {impl LifetimeTrait for i32}::{vtable}>(move _55)
         storage_dead(_55)
         storage_dead(_56)
         storage_live(_57)
@@ -1461,54 +1461,54 @@ fn main()
         storage_live(_59)
         storage_live(_60)
         storage_live(_61)
-        _61 = &*(b_54) with_metadata(copy (b_54.metadata))
-        _60 = unsize_cast<&'16 (dyn LifetimeTrait<Ty = i32> + '17), &'16 (dyn LifetimeTrait<Ty = i32> + '17),  at []>(move (_61))
+        _61 = &(*b_54) with_metadata(copy b_54.metadata)
+        _60 = unsize_cast<&'16 (dyn LifetimeTrait<Ty = i32> + '17), &'16 (dyn LifetimeTrait<Ty = i32> + '17),  at []>(move _61)
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
-        _78 = move (_100)
-        _63 = &*(_78)
-        _62 = &*(_63)
-        _59 = use_lifetime_trait<'_, '_>(move (_60), move (_62))
+        _78 = move _100
+        _63 = &(*_78)
+        _62 = &(*_63)
+        _59 = use_lifetime_trait<'_, '_>(move _60, move _62)
         storage_live(_102)
         storage_live(_103)
-        _103 = const (10 : i32)
+        _103 = const 10 : i32
         _102 = &_103
         storage_dead(_62)
         storage_dead(_60)
-        _58 = &*(_59)
+        _58 = &(*_59)
         storage_live(_64)
-        _77 = move (_102)
-        _64 = &*(_77)
-        _57 = (move (_58), move (_64))
+        _77 = move _102
+        _64 = &(*_77)
+        _57 = (move _58, move _64)
         storage_dead(_64)
         storage_dead(_58)
         storage_live(left_val_65)
-        left_val_65 = copy ((_57).0)
+        left_val_65 = copy _57.0
         storage_live(right_val_66)
-        right_val_66 = copy ((_57).1)
+        right_val_66 = copy _57.1
         storage_live(_67)
         storage_live(_68)
-        _68 = copy (*(left_val_65))
+        _68 = copy (*left_val_65)
         storage_live(_69)
-        _69 = copy (*(right_val_66))
-        _67 = move (_68) == move (_69)
-        if move (_67) {
+        _69 = copy (*right_val_66)
+        _67 = move _68 == move _69
+        if move _67 {
         } else {
             storage_dead(_69)
             storage_dead(_68)
             storage_live(kind_70)
             kind_70 = AssertKind::Eq {  }
             storage_live(_71)
-            _71 = move (kind_70)
+            _71 = move kind_70
             storage_live(_72)
             storage_live(_73)
-            _73 = &*(left_val_65)
-            _72 = &*(_73)
+            _73 = &(*left_val_65)
+            _72 = &(*_73)
             storage_live(_74)
             storage_live(_75)
-            _75 = &*(right_val_66)
-            _74 = &*(_75)
+            _75 = &(*right_val_66)
+            _74 = &(*_75)
             storage_live(_76)
             _76 = Option::None {  }
             panic(core::panicking::assert_failed)

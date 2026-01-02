@@ -23,14 +23,14 @@ fn SOME_INT() -> &'static &'static i32
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = const (0 : i32)
+    _5 = const 0 : i32
     _4 = &_5
     _3 = &_4
     storage_live(_2)
     storage_live(_1)
-    _2 = move (_3)
-    _1 = &*(_2)
-    _0 = &*(_1)
+    _2 = move _3
+    _1 = &(*_2)
+    _0 = &(*_1)
     storage_dead(_1)
     return
 }

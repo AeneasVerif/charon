@@ -169,7 +169,7 @@ fn main()
     storage_live(_1)
     storage_live(_2)
     _2 = closure {  }
-    _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move (_2))
+    _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move _2)
     storage_dead(_2)
     conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn Any + Send + '0)>[{built_in impl MetaSized for (dyn Any + Send + '1)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '12)>[{built_in impl MetaSized for (dyn Any + Send + '13)}, {built_in impl Sized for Global}]}]] _1
     storage_dead(_1)

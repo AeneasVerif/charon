@@ -89,11 +89,11 @@ fn do_test::<bool>(@1: bool, @2: bool)
         _4 = &expected_2;
         storage_live(_5);
         _5 = &init_1;
-        _3 = {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (_4), move (_5)) -> bb1 (unwind: bb2);
+        _3 = {impl PartialEq::<bool, bool>}::eq<'_, '_>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {
-        if move (_3) -> bb3 else -> bb4;
+        if move _3 -> bb3 else -> bb4;
     }
 
     bb2: {
@@ -124,7 +124,7 @@ fn main()
     bb0: {
         _0 = ();
         storage_live(_1);
-        _1 = do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
+        _1 = do_test::<bool>(const true, const true) -> bb1 (unwind: bb2);
     }
 
     bb1: {

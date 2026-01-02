@@ -68,8 +68,8 @@ where
     let _2: &'0 Option<T>[@TraitClause0]; // anonymous local
 
     storage_live(_2)
-    _2 = &*(opt_1)
-    _0 = @discriminant(*(_2))
+    _2 = &(*opt_1)
+    _0 = @discriminant((*_2))
     storage_dead(_2)
     return
 }
@@ -89,10 +89,10 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &opt_1
-    _3 = &*(_4)
-    _2 = discriminant_value<'_, T>[@TraitClause0](move (_3))
+    _3 = &(*_4)
+    _2 = discriminant_value<'_, T>[@TraitClause0](move _3)
     storage_dead(_3)
-    _0 = move (_2) != const (0 : isize)
+    _0 = move _2 != const 0 : isize
     storage_dead(_2)
     storage_dead(_4)
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt_1
@@ -109,10 +109,10 @@ where
 
     match opt_1 {
         Option::None => {
-            _0 = const (0 : isize)
+            _0 = const 0 : isize
         },
         Option::Some => {
-            _0 = const (1 : isize)
+            _0 = const 1 : isize
         },
     }
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt_1

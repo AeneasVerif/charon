@@ -50,14 +50,14 @@ fn main()
     storage_live(_7)
     _7 = ()
     _6 = &_7
-    _5 = &*(_6)
-    _4 = Ref { 0: move (_5) }
+    _5 = &(*_6)
+    _4 = Ref { 0: move _5 }
     _3 = &_4
     storage_live(_2)
     _0 = ()
     storage_live(_1)
-    _2 = move (_3)
-    _1 = &*(_2)
+    _2 = move _3
+    _1 = &(*_2)
     storage_dead(_1)
     _0 = ()
     return

@@ -258,11 +258,11 @@ fn addr_of()
 
     _0 = ()
     storage_live(x_1)
-    x_1 = const (0 : u32)
+    x_1 = const 0 : u32
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = &raw const *(_3)
+    _2 = &raw const (*_3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
@@ -288,19 +288,19 @@ fn literal_casts()
 
     _0 = ()
     storage_live(_1)
-    _1 = cast<u64, u8>(const (0 : u64))
+    _1 = cast<u64, u8>(const 0 : u64)
     storage_dead(_1)
     storage_live(_2)
-    _2 = cast<u8, u64>(const (0 : u8))
+    _2 = cast<u8, u64>(const 0 : u8)
     storage_dead(_2)
     storage_live(_3)
-    _3 = cast<u64, f64>(const (0 : u64))
+    _3 = cast<u64, f64>(const 0 : u64)
     storage_dead(_3)
     storage_live(_4)
-    _4 = cast<f64, u64>(copy (MIN))
+    _4 = cast<f64, u64>(copy MIN)
     storage_dead(_4)
     storage_live(_5)
-    _5 = cast<f32, f64>(copy (MAX))
+    _5 = cast<f32, f64>(copy MAX)
     storage_dead(_5)
     _0 = ()
     return
@@ -341,54 +341,54 @@ fn ptr_casts()
 
     storage_live(_18)
     storage_live(_19)
-    _19 = @ArrayRepeat<'_, u32, 64 : usize>(const (0 : u32))
+    _19 = @ArrayRepeat<'_, u32, 64 : usize>(const 0 : u32)
     _18 = &_19
     storage_live(_17)
     _0 = ()
     storage_live(array_ptr_1)
     storage_live(_2)
-    _17 = move (_18)
-    _2 = &*(_17)
-    array_ptr_1 = &raw const *(_2)
+    _17 = move _18
+    _2 = &(*_17)
+    array_ptr_1 = &raw const (*_2)
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (array_ptr_1)
-    _3 = cast<*const [u32; 64 : usize], *const u32>(move (_4))
+    _4 = copy array_ptr_1
+    _3 = cast<*const [u32; 64 : usize], *const u32>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_live(x_5)
-    x_5 = const (0 : u8)
+    x_5 = const 0 : u8
     storage_live(x_6)
     storage_live(_7)
     _7 = &x_5
-    x_6 = &raw const *(_7)
+    x_6 = &raw const (*_7)
     storage_dead(_7)
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
     storage_live(_11)
-    _11 = copy (x_6)
-    _10 = cast<*const u8, *mut u8>(move (_11))
-    _9 = cast<*mut u8, *const u8>(move (_10))
+    _11 = copy x_6
+    _10 = cast<*const u8, *mut u8>(move _11)
+    _9 = cast<*mut u8, *const u8>(move _10)
     storage_dead(_11)
     storage_dead(_10)
-    _8 = cast<*const u8, *const u8>(move (_9))
+    _8 = cast<*const u8, *const u8>(move _9)
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_12)
     storage_live(_13)
-    _13 = copy (x_6)
-    _12 = cast<*const u8, usize>(move (_13))
+    _13 = copy x_6
+    _12 = cast<*const u8, usize>(move _13)
     storage_dead(_13)
     storage_dead(_12)
     storage_live(_14)
-    _14 = cast<usize, *const u8>(const (0 : usize))
+    _14 = cast<usize, *const u8>(const 0 : usize)
     storage_dead(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = cast<test_crate::ptr_casts::foo, fn()>(const (test_crate::ptr_casts::foo))
-    _15 = cast<fn(), *const u8>(move (_16))
+    _16 = cast<test_crate::ptr_casts::foo, fn()>(const test_crate::ptr_casts::foo)
+    _15 = cast<fn(), *const u8>(move _16)
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
@@ -430,7 +430,7 @@ fn {impl Fn<(u8)> for closure}::call<'_0>(@1: &'_0 closure, @2: (u8))
 
     storage_live(_3)
     _0 = ()
-    _3 = move ((tupled_args_2).0)
+    _3 = move tupled_args_2.0
     _0 = ()
     return
 }
@@ -445,8 +445,8 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (u8))
 
     _0 = ()
     storage_live(_3)
-    _3 = &*(state_1)
-    _0 = {impl Fn<(u8)> for closure}::call<'2>(move (_3), move (args_2))
+    _3 = &(*state_1)
+    _0 = {impl Fn<(u8)> for closure}::call<'2>(move _3, move args_2)
     return
 }
 
@@ -471,7 +471,7 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8))
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(u8)> for closure}::call_mut<'_>(move (_3), move (_2))
+    _0 = {impl FnMut<(u8)> for closure}::call_mut<'_>(move _3, move _2)
     drop[{impl Destruct for closure}] _1
     return
 }
@@ -487,9 +487,9 @@ fn as_fn(@1: u8)
     _0 = ()
     storage_live(args_2)
     storage_live(state_3)
-    args_2 = (move (arg1_1))
+    args_2 = (move arg1_1)
     state_3 = closure {  }
-    _0 = {impl FnOnce<(u8)> for closure}::call_once(move (state_3), move (args_2))
+    _0 = {impl FnOnce<(u8)> for closure}::call_once(move state_3, move args_2)
     return
 }
 
@@ -507,23 +507,23 @@ fn fn_casts()
 
     _0 = ()
     storage_live(_1)
-    _1 = cast<test_crate::fn_casts::foo, fn()>(const (test_crate::fn_casts::foo))
+    _1 = cast<test_crate::fn_casts::foo, fn()>(const test_crate::fn_casts::foo)
     storage_dead(_1)
     storage_live(_2)
-    _2 = cast<bar, unsafe fn()>(const (bar))
+    _2 = cast<bar, unsafe fn()>(const bar)
     storage_dead(_2)
     storage_live(closure_3)
     closure_3 = closure {  }
     storage_live(_4)
     storage_live(_5)
-    _5 = copy (closure_3)
-    _4 = cast<as_fn, fn(u8)>(const (as_fn))
+    _5 = copy closure_3
+    _4 = cast<as_fn, fn(u8)>(const as_fn)
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy (closure_3)
-    _6 = cast<as_fn, unsafe fn(u8)>(const (as_fn))
+    _7 = copy closure_3
+    _6 = cast<as_fn, unsafe fn(u8)>(const as_fn)
     storage_dead(_7)
     storage_dead(_6)
     _0 = ()
@@ -572,8 +572,8 @@ fn boxes()
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = @BoxNew<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](const (42 : i32))
-    _1 = move (_2)
+    _2 = @BoxNew<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](const 42 : i32)
+    _1 = move _2
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _1
@@ -590,7 +590,7 @@ fn STEAL() -> [(); 1 : usize]
 
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<'_, (), 1 : usize>(move (_1))
+    _0 = @ArrayRepeat<'_, (), 1 : usize>(move _1)
     storage_dead(_1)
     return
 }
@@ -607,8 +607,8 @@ fn transmute(@1: [u32; 2 : usize]) -> u64
 
     storage_live(_2)
     // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
-    _2 = copy (x_1)
-    _0 = transmute<[u32; 2 : usize], u64>(move (_2))
+    _2 = copy x_1
+    _0 = transmute<[u32; 2 : usize], u64>(move _2)
     storage_dead(_2)
     return
 }
@@ -621,7 +621,7 @@ fn STEAL2() -> [(); 13 : usize]
 
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<'_, (), 13 : usize>(move (_1))
+    _0 = @ArrayRepeat<'_, (), 13 : usize>(move _1)
     storage_dead(_1)
     return
 }
@@ -673,30 +673,30 @@ where
     storage_live(ub_3)
     ub_3 = ub_checks<bool>
     storage_live(offset_4)
-    offset_4 = move (_15)
+    offset_4 = move _15
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy (size_1)
+    _7 = copy size_1
     storage_live(_8)
-    _8 = copy (align_2)
-    _9 = copy (_7) panic.+ copy (_8)
-    _6 = move (_9)
+    _8 = copy align_2
+    _9 = copy _7 panic.+ copy _8
+    _6 = move _9
     storage_dead(_8)
     storage_dead(_7)
     storage_live(_10)
     storage_live(_11)
-    _11 = copy (ub_3)
-    _10 = cast<bool, usize>(move (_11))
+    _11 = copy ub_3
+    _10 = cast<bool, usize>(move _11)
     storage_dead(_11)
-    _12 = copy (_6) panic.+ copy (_10)
-    _5 = move (_12)
+    _12 = copy _6 panic.+ copy _10
+    _5 = move _12
     storage_dead(_10)
     storage_dead(_6)
     storage_live(_13)
-    _13 = copy (offset_4)
-    _14 = copy (_5) panic.+ copy (_13)
-    _0 = move (_14)
+    _13 = copy offset_4
+    _14 = copy _5 panic.+ copy _13
+    _0 = move _14
     storage_dead(_13)
     storage_dead(_5)
     storage_dead(offset_4)

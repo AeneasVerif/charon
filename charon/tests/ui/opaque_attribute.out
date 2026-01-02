@@ -51,7 +51,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
     let _0: bool; // return
     let self_1: &'0 bool; // arg #1
 
-    _0 = copy (*(self_1))
+    _0 = copy (*self_1)
     return
 }
 
@@ -73,21 +73,21 @@ where
     let x_2: &'1 T; // local
     let _3: &'1 T; // anonymous local
 
-    match *(self_1) {
+    match (*self_1) {
         Option::None => {
         },
         Option::Some => {
             storage_live(x_2)
-            x_2 = &(*(self_1) as variant Option::Some).0
+            x_2 = &((*self_1) as variant Option::Some).0
             storage_live(_3)
-            _3 = &*(x_2)
-            _0 = @TraitClause1::get_bool<'_>(move (_3))
+            _3 = &(*x_2)
+            _0 = @TraitClause1::get_bool<'_>(move _3)
             storage_dead(_3)
             storage_dead(x_2)
             return
         },
     }
-    _0 = const (false)
+    _0 = const false
     return
 }
 
@@ -127,7 +127,7 @@ pub fn fn_in_opaque_module() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (42 : u32)
+    _0 = const 42 : u32
     return
 }
 

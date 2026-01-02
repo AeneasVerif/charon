@@ -58,8 +58,8 @@ pub fn {impl From<&'_0 bool> for bool}::from<'_0>(@1: &'_0 bool) -> Result<bool,
     let _2: bool; // anonymous local
 
     storage_live(_2)
-    _2 = copy (*(v_1))
-    _0 = Result::Ok { 0: move (_2) }
+    _2 = copy (*v_1)
+    _0 = Result::Ok { 0: move _2 }
     storage_dead(_2)
     return
 }

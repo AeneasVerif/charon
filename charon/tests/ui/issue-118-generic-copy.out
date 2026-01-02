@@ -76,7 +76,7 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 Foo) -> Foo
     let _0: Foo; // return
     let self_1: &'0 Foo; // arg #1
 
-    _0 = copy (*(self_1))
+    _0 = copy (*self_1)
     return
 }
 
@@ -111,9 +111,9 @@ fn copy_foo(@1: Foo)
 
     _0 = ()
     storage_live(y_2)
-    y_2 = copy (x_1)
+    y_2 = copy x_1
     storage_live(z_3)
-    z_3 = copy (x_1)
+    z_3 = copy x_1
     _0 = ()
     storage_dead(z_3)
     storage_dead(y_2)
@@ -133,9 +133,9 @@ where
 
     _0 = ()
     storage_live(y_2)
-    y_2 = copy (x_1)
+    y_2 = copy x_1
     storage_live(z_3)
-    z_3 = copy (x_1)
+    z_3 = copy x_1
     _0 = ()
     storage_dead(z_3)
     storage_dead(y_2)
@@ -165,9 +165,9 @@ where
 
     _0 = ()
     storage_live(y_2)
-    y_2 = copy (x_1)
+    y_2 = copy x_1
     storage_live(z_3)
-    z_3 = copy (x_1)
+    z_3 = copy x_1
     _0 = ()
     storage_dead(z_3)
     storage_dead(y_2)

@@ -317,8 +317,8 @@ fn call_unsafe_fn()
     x_1 = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(_2)
     storage_live(_3)
-    _3 = copy (x_1)
-    _2 = read<u32>[{built_in impl Sized for u32}](move (_3))
+    _3 = copy x_1
+    _2 = read<u32>[{built_in impl Sized for u32}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -337,7 +337,7 @@ fn deref_raw_ptr()
     storage_live(x_1)
     x_1 = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(_2)
-    _2 = copy (*(x_1))
+    _2 = copy (*x_1)
     storage_dead(_2)
     _0 = ()
     storage_dead(x_1)
@@ -362,7 +362,7 @@ fn COUNTER() -> usize
 {
     let _0: usize; // return
 
-    _0 = const (0 : usize)
+    _0 = const 0 : usize
     return
 }
 
@@ -382,9 +382,9 @@ fn access_mutable_static()
     storage_live(_1)
     storage_live(_3)
     _3 = &raw mut COUNTER
-    _1 = move (_3)
-    _2 = copy (*(_1)) panic.+ const (1 : usize)
-    *(_1) = move (_2)
+    _1 = move _3
+    _2 = copy (*_1) panic.+ const 1 : usize
+    (*_1) = move _2
     storage_dead(_1)
     _0 = ()
     return
@@ -405,9 +405,9 @@ fn access_union_field()
 
     _0 = ()
     storage_live(one_1)
-    one_1 = Foo { one: const (42 : u64) }
+    one_1 = Foo { one: const 42 : u64 }
     storage_live(_two_2)
-    _two_2 = copy ((one_1).two)
+    _two_2 = copy (one_1).two
     _0 = ()
     storage_dead(_two_2)
     storage_dead(one_1)
@@ -419,7 +419,7 @@ fn test_crate::assume()
     let _0: (); // return
 
     _0 = ()
-    _0 = core::intrinsics::assume(const (true))
+    _0 = core::intrinsics::assume(const true)
     return
 }
 

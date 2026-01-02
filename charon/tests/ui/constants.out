@@ -34,7 +34,7 @@ pub fn X0() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (0 : u32)
+    _0 = const 0 : u32
     return
 }
 
@@ -46,7 +46,7 @@ pub fn X1() -> u32
 {
     let _0: u32; // return
 
-    _0 = copy (MAX)
+    _0 = copy MAX
     return
 }
 
@@ -60,8 +60,8 @@ pub fn X2() -> u32
     let x_1: u32; // local
 
     storage_live(x_1)
-    x_1 = const (3 : u32)
-    _0 = copy (x_1)
+    x_1 = const 3 : u32
+    _0 = copy x_1
     storage_dead(x_1)
     return
 }
@@ -79,9 +79,9 @@ pub fn incr(@1: u32) -> u32
 
     storage_live(_3)
     storage_live(_2)
-    _2 = copy (n_1)
-    _3 = copy (_2) panic.+ const (1 : u32)
-    _0 = move (_3)
+    _2 = copy n_1
+    _3 = copy _2 panic.+ const 1 : u32
+    _0 = move _3
     storage_dead(_2)
     return
 }
@@ -91,7 +91,7 @@ pub fn X3() -> u32
 {
     let _0: u32; // return
 
-    _0 = incr(const (32 : u32))
+    _0 = incr(const 32 : u32)
     return
 }
 
@@ -108,10 +108,10 @@ pub fn mk_pair0(@1: u32, @2: u32) -> (u32, u32)
     let _4: u32; // anonymous local
 
     storage_live(_3)
-    _3 = copy (x_1)
+    _3 = copy x_1
     storage_live(_4)
-    _4 = copy (y_2)
-    _0 = (move (_3), move (_4))
+    _4 = copy y_2
+    _0 = (move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -137,10 +137,10 @@ pub fn mk_pair1(@1: u32, @2: u32) -> Pair<u32, u32>[{built_in impl Sized for u32
     let _4: u32; // anonymous local
 
     storage_live(_3)
-    _3 = copy (x_1)
+    _3 = copy x_1
     storage_live(_4)
-    _4 = copy (y_2)
-    _0 = Pair { x: move (_3), y: move (_4) }
+    _4 = copy y_2
+    _0 = Pair { x: move _3, y: move _4 }
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -151,7 +151,7 @@ pub fn P0() -> (u32, u32)
 {
     let _0: (u32, u32); // return
 
-    _0 = mk_pair0(const (0 : u32), const (1 : u32))
+    _0 = mk_pair0(const 0 : u32, const 1 : u32)
     return
 }
 
@@ -163,7 +163,7 @@ pub fn P1() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
-    _0 = mk_pair1(const (0 : u32), const (1 : u32))
+    _0 = mk_pair1(const 0 : u32, const 1 : u32)
     return
 }
 
@@ -175,7 +175,7 @@ pub fn P2() -> (u32, u32)
 {
     let _0: (u32, u32); // return
 
-    _0 = (const (0 : u32), const (1 : u32))
+    _0 = (const 0 : u32, const 1 : u32)
     return
 }
 
@@ -187,7 +187,7 @@ pub fn P3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
-    _0 = Pair { x: const (0 : u32), y: const (1 : u32) }
+    _0 = Pair { x: const 0 : u32, y: const 1 : u32 }
     return
 }
 
@@ -212,8 +212,8 @@ where
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move (value_1)
-    _0 = Wrap { value: move (_2) }
+    _2 = move value_1
+    _0 = Wrap { value: move _2 }
     storage_dead(_2)
     return
 }
@@ -223,7 +223,7 @@ pub fn Y() -> Wrap<i32>[{built_in impl Sized for i32}]
 {
     let _0: Wrap<i32>[{built_in impl Sized for i32}]; // return
 
-    _0 = new<i32>[{built_in impl Sized for i32}](const (2 : i32))
+    _0 = new<i32>[{built_in impl Sized for i32}](const 2 : i32)
     return
 }
 
@@ -237,8 +237,8 @@ pub fn unwrap_y() -> i32
     let _1: Wrap<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(_1)
-    _1 = copy (Y)
-    _0 = copy ((_1).value)
+    _1 = copy Y
+    _0 = copy (_1).value
     storage_dead(_1)
     return
 }
@@ -260,7 +260,7 @@ fn Z1() -> i32
 {
     let _0: i32; // return
 
-    _0 = const (3 : i32)
+    _0 = const 3 : i32
     return
 }
 
@@ -272,7 +272,7 @@ pub fn get_z1() -> i32
 {
     let _0: i32; // return
 
-    _0 = copy (Z1)
+    _0 = copy Z1
     return
 }
 
@@ -288,11 +288,11 @@ pub fn add(@1: i32, @2: i32) -> i32
 
     storage_live(_5)
     storage_live(_3)
-    _3 = copy (a_1)
+    _3 = copy a_1
     storage_live(_4)
-    _4 = copy (b_2)
-    _5 = copy (_3) panic.+ copy (_4)
-    _0 = move (_5)
+    _4 = copy b_2
+    _5 = copy _3 panic.+ copy _4
+    _0 = move _5
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -303,7 +303,7 @@ pub fn Q1() -> i32
 {
     let _0: i32; // return
 
-    _0 = const (5 : i32)
+    _0 = const 5 : i32
     return
 }
 
@@ -315,7 +315,7 @@ pub fn Q2() -> i32
 {
     let _0: i32; // return
 
-    _0 = copy (Q1)
+    _0 = copy Q1
     return
 }
 
@@ -327,7 +327,7 @@ pub fn Q3() -> i32
 {
     let _0: i32; // return
 
-    _0 = add(copy (Q2), const (3 : i32))
+    _0 = add(copy Q2, const 3 : i32)
     return
 }
 
@@ -344,9 +344,9 @@ pub fn get_z2() -> i32
     storage_live(_1)
     storage_live(_2)
     _2 = get_z1()
-    _1 = add(move (_2), copy (Q3))
+    _1 = add(move _2, copy Q3)
     storage_dead(_2)
-    _0 = add(copy (Q1), move (_1))
+    _0 = add(copy Q1, move _1)
     storage_dead(_1)
     return
 }
@@ -356,7 +356,7 @@ pub fn S1() -> u32
 {
     let _0: u32; // return
 
-    _0 = const (6 : u32)
+    _0 = const 6 : u32
     return
 }
 
@@ -375,9 +375,9 @@ pub fn S2() -> u32
     storage_live(_2)
     storage_live(_3)
     _3 = &S1
-    _2 = move (_3)
-    _1 = copy (*(_2))
-    _0 = incr(move (_1))
+    _2 = move _3
+    _1 = copy (*_2)
+    _0 = incr(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -391,7 +391,7 @@ pub fn S3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
-    _0 = copy (P3)
+    _0 = copy P3
     return
 }
 
@@ -403,7 +403,7 @@ pub fn S4() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
-    _0 = mk_pair1(const (7 : u32), const (8 : u32))
+    _0 = mk_pair1(const 7 : u32, const 8 : u32)
     return
 }
 
@@ -425,7 +425,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const (N)
+    _0 = const N
     return
 }
 
@@ -442,7 +442,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = copy (LEN<T, N>[@TraitClause0])
+    _0 = copy LEN<T, N>[@TraitClause0]
     return
 }
 

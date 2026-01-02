@@ -145,7 +145,7 @@ where
 
     storage_live(_x_3)
     _0 = ()
-    _x_3 = move ((tupled_args_2).0)
+    _x_3 = move tupled_args_2.0
     _0 = ()
     return
 }
@@ -163,8 +163,8 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = &*(state_1)
-    _0 = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (_3), move (args_2))
+    _3 = &(*state_1)
+    _0 = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move args_2)
     return
 }
 
@@ -199,7 +199,7 @@ where
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move (_3), move (_2))
+    _0 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]] _1
     return
 }

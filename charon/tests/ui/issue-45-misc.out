@@ -575,8 +575,8 @@ fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32
     let v_3: i32; // local
 
     storage_live(v_3)
-    v_3 = move ((tupled_args_2).0)
-    _0 = copy (v_3)
+    v_3 = move tupled_args_2.0
+    _0 = copy v_3
     return
 }
 
@@ -600,7 +600,7 @@ fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(i32)> for closure}::call_mut<'_>(move (_3), move (_2))
+    _0 = {impl FnMut<(i32)> for closure}::call_mut<'_>(move _3, move _2)
     drop[{impl Destruct for closure}] _1
     return
 }
@@ -634,10 +634,10 @@ pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
     let _3: closure; // anonymous local
 
     storage_live(_2)
-    _2 = copy (x_1)
+    _2 = copy x_1
     storage_live(_3)
     _3 = closure {  }
-    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (_2), move (_3))
+    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -648,7 +648,7 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
 {
     let _0: [u8; LEN]; // return
 
-    _0 = @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
+    _0 = @ArrayRepeat<'_, u8, LEN>(const 0 : u8)
     return
 }
 
@@ -672,18 +672,18 @@ fn cbd(@1: [u8; 33 : usize])
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = Range { start: const (0 : u8), end: const (3 : u8) }
-    _2 = {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move (_3))
+    _3 = Range { start: const 0 : u8, end: const 3 : u8 }
+    _2 = {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move _3)
     storage_dead(_3)
     storage_live(iter_4)
-    iter_4 = move (_2)
+    iter_4 = move _2
     loop {
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
         _7 = &mut iter_4
-        _6 = &two-phase-mut *(_7)
-        _5 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move (_6))
+        _6 = &two-phase-mut (*_7)
+        _5 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move _6)
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -691,16 +691,16 @@ fn cbd(@1: [u8; 33 : usize])
             },
             Option::Some => {
                 storage_live(i_8)
-                i_8 = copy ((_5 as variant Option::Some).0)
+                i_8 = copy (_5 as variant Option::Some).0
                 storage_live(_9)
-                _9 = copy (i_8)
+                _9 = copy i_8
                 storage_live(_10)
-                _10 = const (0 : usize)
+                _10 = const 0 : usize
                 storage_live(_11)
                 _11 = &mut prf_input_1
                 storage_live(_12)
-                _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move (_11), copy (_10))
-                *(_12) = move (_9)
+                _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move _11, copy _10)
+                (*_12) = move _9
                 storage_dead(_9)
                 storage_dead(_10)
                 storage_dead(i_8)
@@ -747,52 +747,52 @@ fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
 
     _0 = ()
     storage_live(_3)
-    _3 = const (true)
-    if move (_3) {
+    _3 = const true
+    if move _3 {
         storage_live(_4)
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = &*(lhs_1) with_metadata(copy (lhs_1.metadata))
-        _6 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (_7))
+        _7 = &(*lhs_1) with_metadata(copy lhs_1.metadata)
+        _6 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move _7)
         storage_dead(_7)
         _5 = &_6
         storage_live(_8)
         storage_live(_9)
         storage_live(_10)
-        _10 = &*(rhs_2) with_metadata(copy (rhs_2.metadata))
-        _9 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (_10))
+        _10 = &(*rhs_2) with_metadata(copy rhs_2.metadata)
+        _9 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move _10)
         storage_dead(_10)
         _8 = &_9
-        _4 = (move (_5), move (_8))
+        _4 = (move _5, move _8)
         storage_dead(_8)
         storage_dead(_5)
         storage_live(left_val_11)
-        left_val_11 = copy ((_4).0)
+        left_val_11 = copy _4.0
         storage_live(right_val_12)
-        right_val_12 = copy ((_4).1)
+        right_val_12 = copy _4.1
         storage_live(_13)
         storage_live(_14)
-        _14 = copy (*(left_val_11))
+        _14 = copy (*left_val_11)
         storage_live(_15)
-        _15 = copy (*(right_val_12))
-        _13 = move (_14) == move (_15)
-        if move (_13) {
+        _15 = copy (*right_val_12)
+        _13 = move _14 == move _15
+        if move _13 {
         } else {
             storage_dead(_15)
             storage_dead(_14)
             storage_live(kind_16)
             kind_16 = AssertKind::Eq {  }
             storage_live(_17)
-            _17 = move (kind_16)
+            _17 = move kind_16
             storage_live(_18)
             storage_live(_19)
-            _19 = &*(left_val_11)
-            _18 = &*(_19)
+            _19 = &(*left_val_11)
+            _18 = &(*_19)
             storage_live(_20)
             storage_live(_21)
-            _21 = &*(right_val_12)
-            _20 = &*(_21)
+            _21 = &(*right_val_12)
+            _20 = &(*_21)
             storage_live(_22)
             _22 = Option::None {  }
             panic(core::panicking::assert_failed)

@@ -44,7 +44,7 @@ fn bar::<bool>() -> u64
 {
     let _0: u64; // return
 
-    _0 = const (0 : u64)
+    _0 = const 0 : u64
     return
 }
 

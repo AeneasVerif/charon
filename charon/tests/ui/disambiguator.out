@@ -36,8 +36,8 @@ fn nonzero_disambiguator()
 
     _0 = ()
     storage_live(_1)
-    _1 = const (true)
-    if move (_1) {
+    _1 = const true
+    if move _1 {
         _0 = test_crate::nonzero_disambiguator::my_function()
     } else {
         _0 = test_crate::nonzero_disambiguator::my_function#1()

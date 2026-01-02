@@ -205,7 +205,7 @@ pub fn use_tuple_struct<'_0>(@1: &'_0 mut Tuple<u32, u32>[{built_in impl Sized f
     let x_1: &'0 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
 
     _0 = ()
-    (*(x_1)).0 = const (1 : u32)
+    ((*x_1)).0 = const 1 : u32
     _0 = ()
     return
 }
@@ -220,10 +220,10 @@ pub fn create_tuple_struct(@1: u32, @2: u64) -> Tuple<u32, u64>[{built_in impl S
     let _4: u64; // anonymous local
 
     storage_live(_3)
-    _3 = copy (x_1)
+    _3 = copy x_1
     storage_live(_4)
-    _4 = copy (y_2)
-    _0 = Tuple { 0: move (_3), 1: move (_4) }
+    _4 = copy y_2
+    _0 = Tuple { 0: move _3, 1: move _4 }
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -239,10 +239,10 @@ pub fn create_pair(@1: u32, @2: u64) -> Pair<u32, u64>[{built_in impl Sized for 
     let _4: u64; // anonymous local
 
     storage_live(_3)
-    _3 = copy (x_1)
+    _3 = copy x_1
     storage_live(_4)
-    _4 = copy (y_2)
-    _0 = Pair { x: move (_3), y: move (_4) }
+    _4 = copy y_2
+    _0 = Pair { x: move _3, y: move _4 }
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -279,7 +279,7 @@ where
     let _0: T; // return
     let x_1: IdType<T>[@TraitClause0]; // arg #1
 
-    _0 = move ((x_1).0)
+    _0 = move (x_1).0
     conditional_drop[{impl Destruct for IdType<T>[@TraitClause0]}<T>[@TraitClause0]] x_1
     return
 }
@@ -294,8 +294,8 @@ where
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move (x_1)
-    _0 = IdType { 0: move (_2) }
+    _2 = move x_1
+    _0 = IdType { 0: move _2 }
     conditional_drop[{built_in impl Destruct for T}] _2
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
@@ -310,8 +310,8 @@ pub fn cast_u32_to_i32(@1: u32) -> i32
     let _2: u32; // anonymous local
 
     storage_live(_2)
-    _2 = copy (x_1)
-    _0 = cast<u32, i32>(move (_2))
+    _2 = copy x_1
+    _0 = cast<u32, i32>(move _2)
     storage_dead(_2)
     return
 }
@@ -324,8 +324,8 @@ pub fn cast_bool_to_i32(@1: bool) -> i32
     let _2: bool; // anonymous local
 
     storage_live(_2)
-    _2 = copy (x_1)
-    _0 = cast<bool, i32>(move (_2))
+    _2 = copy x_1
+    _0 = cast<bool, i32>(move _2)
     storage_dead(_2)
     return
 }
@@ -336,7 +336,7 @@ pub fn cast_bool_to_bool(@1: bool) -> bool
     let _0: bool; // return
     let x_1: bool; // arg #1
 
-    _0 = copy (x_1)
+    _0 = copy x_1
     return
 }
 
@@ -362,34 +362,34 @@ pub fn test2()
     storage_live(_6)
     _0 = ()
     storage_live(x_1)
-    x_1 = const (23 : u32)
+    x_1 = const 23 : u32
     storage_live(y_2)
-    y_2 = const (44 : u32)
+    y_2 = const 44 : u32
     storage_live(z_3)
     storage_live(_4)
-    _4 = copy (x_1)
+    _4 = copy x_1
     storage_live(_5)
-    _5 = copy (y_2)
-    _6 = copy (_4) panic.+ copy (_5)
-    z_3 = move (_6)
+    _5 = copy y_2
+    _6 = copy _4 panic.+ copy _5
+    z_3 = move _6
     storage_dead(_5)
     storage_dead(_4)
     storage_live(p_7)
     storage_live(_8)
-    _8 = copy (x_1)
+    _8 = copy x_1
     storage_live(_9)
-    _9 = copy (z_3)
-    p_7 = Pair { x: move (_8), y: move (_9) }
+    _9 = copy z_3
+    p_7 = Pair { x: move _8, y: move _9 }
     storage_dead(_9)
     storage_dead(_8)
     storage_live(s_10)
-    s_10 = Sum::Right { 0: const (true) }
+    s_10 = Sum::Right { 0: const true }
     storage_live(o_11)
-    o_11 = One::One { 0: const (3 : u64) }
+    o_11 = One::One { 0: const 3 : u64 }
     storage_live(e0_12)
     e0_12 = EmptyEnum::Empty {  }
     storage_live(e1_13)
-    e1_13 = move (e0_12)
+    e1_13 = move e0_12
     storage_live(enum0_14)
     enum0_14 = Enum::Variant1 {  }
     _0 = ()
@@ -417,18 +417,18 @@ pub fn get_max(@1: u32, @2: u32) -> u32
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (x_1)
+    _4 = copy x_1
     storage_live(_5)
-    _5 = copy (y_2)
-    _3 = move (_4) >= move (_5)
-    if move (_3) {
+    _5 = copy y_2
+    _3 = move _4 >= move _5
+    if move _3 {
         storage_dead(_5)
         storage_dead(_4)
-        _0 = copy (x_1)
+        _0 = copy x_1
     } else {
         storage_dead(_5)
         storage_dead(_4)
-        _0 = copy (y_2)
+        _0 = copy y_2
     }
     storage_dead(_3)
     return
@@ -447,9 +447,9 @@ pub fn test_list1()
     storage_live(_2)
     storage_live(_3)
     _3 = List::Nil {  }
-    _2 = @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move (_3))
+    _2 = @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     storage_dead(_3)
-    l_1 = List::Cons { 0: const (0 : i32), 1: move (_2) }
+    l_1 = List::Cons { 0: const 0 : i32, 1: move _2 }
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     _0 = ()
@@ -472,23 +472,23 @@ pub fn test_box1()
 
     _0 = ()
     storage_live(b_1)
-    b_1 = @BoxNew<i32>[{built_in impl Sized for i32}](const (0 : i32))
+    b_1 = @BoxNew<i32>[{built_in impl Sized for i32}](const 0 : i32)
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b_1
-    x_2 = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move (_3))
+    x_2 = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     storage_dead(_3)
-    *(x_2) = const (1 : i32)
+    (*x_2) = const 1 : i32
     storage_live(x_4)
     storage_live(_5)
     _5 = &b_1
-    x_4 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move (_5))
+    x_4 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy (*(x_4))
-    _6 = move (_7) == const (1 : i32)
-    if move (_6) {
+    _7 = copy (*x_4)
+    _6 = move _7 == const 1 : i32
+    if move _6 {
     } else {
         storage_dead(_7)
         panic(core::panicking::panic)
@@ -509,7 +509,7 @@ pub fn copy_int(@1: i32) -> i32
     let _0: i32; // return
     let x_1: i32; // arg #1
 
-    _0 = copy (x_1)
+    _0 = copy x_1
     return
 }
 
@@ -522,8 +522,8 @@ pub fn test_unreachable(@1: bool)
 
     _0 = ()
     storage_live(_2)
-    _2 = copy (b_1)
-    assert(move (_2) == false)
+    _2 = copy b_1
+    assert(move _2 == false)
     _0 = ()
     storage_dead(_2)
     return
@@ -537,15 +537,15 @@ where
     let _0: bool; // return
     let l_1: &'0 List<T>[@TraitClause0]; // arg #1
 
-    match *(l_1) {
+    match (*l_1) {
         List::Cons => {
         },
         List::Nil => {
-            _0 = const (false)
+            _0 = const false
             return
         },
     }
-    _0 = const (true)
+    _0 = const true
     return
 }
 
@@ -569,14 +569,14 @@ where
         },
     }
     storage_live(hd_2)
-    hd_2 = move ((l_1 as variant List::Cons).0)
+    hd_2 = move (l_1 as variant List::Cons).0
     storage_live(tl_3)
-    tl_3 = move ((l_1 as variant List::Cons).1)
+    tl_3 = move (l_1 as variant List::Cons).1
     storage_live(_4)
-    _4 = move (hd_2)
+    _4 = move hd_2
     storage_live(_5)
-    _5 = move (*(tl_3))
-    _0 = (move (_4), move (_5))
+    _5 = move (*tl_3)
+    _0 = (move _4, move _5)
     conditional_drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] _5
     storage_dead(_5)
     conditional_drop[{built_in impl Destruct for T}] _4
@@ -594,7 +594,7 @@ pub fn test_char() -> char
 {
     let _0: char; // return
 
-    _0 = const (a)
+    _0 = const a
     return
 }
 
@@ -630,20 +630,20 @@ pub fn even(@1: u32) -> bool
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy (x_1)
-    _2 = move (_3) == const (0 : u32)
-    if move (_2) {
+    _3 = copy x_1
+    _2 = move _3 == const 0 : u32
+    if move _2 {
         storage_dead(_3)
-        _0 = const (true)
+        _0 = const true
     } else {
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
-        _5 = copy (x_1)
-        _6 = copy (_5) panic.- const (1 : u32)
-        _4 = move (_6)
+        _5 = copy x_1
+        _6 = copy _5 panic.- const 1 : u32
+        _4 = move _6
         storage_dead(_5)
-        _0 = odd(move (_4))
+        _0 = odd(move _4)
         storage_dead(_4)
     }
     storage_dead(_2)
@@ -664,20 +664,20 @@ pub fn odd(@1: u32) -> bool
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy (x_1)
-    _2 = move (_3) == const (0 : u32)
-    if move (_2) {
+    _3 = copy x_1
+    _2 = move _3 == const 0 : u32
+    if move _2 {
         storage_dead(_3)
-        _0 = const (false)
+        _0 = const false
     } else {
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
-        _5 = copy (x_1)
-        _6 = copy (_5) panic.- const (1 : u32)
-        _4 = move (_6)
+        _5 = copy x_1
+        _6 = copy _5 panic.- const 1 : u32
+        _4 = move _6
         storage_dead(_5)
-        _0 = even(move (_4))
+        _0 = even(move _4)
         storage_dead(_4)
     }
     storage_dead(_2)
@@ -695,20 +695,20 @@ pub fn test_even_odd()
 
     _0 = ()
     storage_live(_1)
-    _1 = even(const (0 : u32))
-    assert(move (_1) == true)
+    _1 = even(const 0 : u32)
+    assert(move _1 == true)
     storage_dead(_1)
     storage_live(_2)
-    _2 = even(const (4 : u32))
-    assert(move (_2) == true)
+    _2 = even(const 4 : u32)
+    assert(move _2 == true)
     storage_dead(_2)
     storage_live(_3)
-    _3 = odd(const (1 : u32))
-    assert(move (_3) == true)
+    _3 = odd(const 1 : u32)
+    assert(move _3 == true)
     storage_dead(_3)
     storage_live(_4)
-    _4 = odd(const (5 : u32))
-    assert(move (_4) == true)
+    _4 = odd(const 5 : u32)
+    assert(move _4 == true)
     storage_dead(_4)
     _0 = ()
     return
@@ -730,8 +730,8 @@ pub fn new_tuple1() -> StructWithTuple<u32, u32>[{built_in impl Sized for u32}, 
     let _1: (u32, u32); // anonymous local
 
     storage_live(_1)
-    _1 = (const (1 : u32), const (2 : u32))
-    _0 = StructWithTuple { p: move (_1) }
+    _1 = (const 1 : u32, const 2 : u32)
+    _0 = StructWithTuple { p: move _1 }
     storage_dead(_1)
     return
 }
@@ -743,8 +743,8 @@ pub fn new_tuple2() -> StructWithTuple<i16, i16>[{built_in impl Sized for i16}, 
     let _1: (i16, i16); // anonymous local
 
     storage_live(_1)
-    _1 = (const (1 : i16), const (2 : i16))
-    _0 = StructWithTuple { p: move (_1) }
+    _1 = (const 1 : i16, const 2 : i16)
+    _0 = StructWithTuple { p: move _1 }
     storage_dead(_1)
     return
 }
@@ -756,8 +756,8 @@ pub fn new_tuple3() -> StructWithTuple<u64, i64>[{built_in impl Sized for u64}, 
     let _1: (u64, i64); // anonymous local
 
     storage_live(_1)
-    _1 = (const (1 : u64), const (2 : i64))
-    _0 = StructWithTuple { p: move (_1) }
+    _1 = (const 1 : u64, const 2 : i64)
+    _0 = StructWithTuple { p: move _1 }
     storage_dead(_1)
     return
 }
@@ -780,8 +780,8 @@ pub fn new_pair1() -> StructWithPair<u32, u32>[{built_in impl Sized for u32}, {b
     storage_live(_1)
     // This actually doesn't make rustc generate a constant...
     // I guess it only happens for tuples.
-    _1 = Pair { x: const (1 : u32), y: const (2 : u32) }
-    _0 = StructWithPair { p: move (_1) }
+    _1 = Pair { x: const 1 : u32, y: const 2 : u32 }
+    _0 = StructWithPair { p: move _1 }
     storage_dead(_1)
     return
 }
@@ -795,8 +795,8 @@ pub fn incr<'_0>(@1: &'_0 mut u32)
 
     storage_live(_2)
     _0 = ()
-    _2 = copy (*(x_1)) panic.+ const (1 : u32)
-    *(x_1) = move (_2)
+    _2 = copy (*x_1) panic.+ const 1 : u32
+    (*x_1) = move _2
     _0 = ()
     return
 }
@@ -811,10 +811,10 @@ pub fn read_then_incr<'_0>(@1: &'_0 mut u32) -> u32
 
     storage_live(_3)
     storage_live(r_2)
-    r_2 = copy (*(x_1))
-    _3 = copy (*(x_1)) panic.+ const (1 : u32)
-    *(x_1) = move (_3)
-    _0 = copy (r_2)
+    r_2 = copy (*x_1)
+    _3 = copy (*x_1) panic.+ const 1 : u32
+    (*x_1) = move _3
+    _0 = copy r_2
     storage_dead(r_2)
     return
 }

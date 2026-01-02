@@ -134,7 +134,7 @@ fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(@1: closure<'a>, @2: ()) -> 
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '_>(move (_3), move (_2))
+    _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '_>(move _3, move _2)
     drop[{impl Destruct for closure<'a>}<'4>] _1
     return
 }
@@ -168,7 +168,7 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<u8, closure<'0>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'0>}, {impl FnMut<()> for closure<'a>}<'0>](move (_1))
+    _0 = from_fn<u8, closure<'0>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'0>}, {impl FnMut<()> for closure<'a>}<'0>](move _1)
     storage_dead(_1)
     return
 }

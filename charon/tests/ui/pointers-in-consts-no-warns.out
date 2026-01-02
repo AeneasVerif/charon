@@ -17,8 +17,8 @@ fn DISGUISED_INT() -> *const ()
     let _1: *const (); // anonymous local
 
     storage_live(_1)
-    _1 = cast<i32, *const ()>(const (42 : i32))
-    _0 = copy (_1)
+    _1 = cast<i32, *const ()>(const 42 : i32)
+    _0 = copy _1
     storage_dead(_1)
     return
 }
@@ -36,9 +36,9 @@ pub fn bar()
     storage_live(_2)
     _0 = ()
     storage_live(_1)
-    _1 = cast<usize, *const ()>(const (43 : usize))
-    _2 = const (Opaque(`ConstantExprKind::Cast {{..}}`)) == copy (_1)
-    if move (_2) {
+    _1 = cast<usize, *const ()>(const 43 : usize)
+    _2 = const Opaque(`ConstantExprKind::Cast {{..}}`) == copy _1
+    if move _2 {
         _0 = ()
     } else {
         _0 = ()

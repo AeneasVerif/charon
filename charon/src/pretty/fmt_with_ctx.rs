@@ -1087,9 +1087,9 @@ impl_display_via_ctx!(Operand);
 impl<C: AstFormatter> FmtWithCtx<C> for Operand {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Operand::Copy(p) => write!(f, "copy ({})", p.with_ctx(ctx)),
-            Operand::Move(p) => write!(f, "move ({})", p.with_ctx(ctx)),
-            Operand::Const(c) => write!(f, "const ({})", c.with_ctx(ctx)),
+            Operand::Copy(p) => write!(f, "copy {}", p.with_ctx(ctx)),
+            Operand::Move(p) => write!(f, "move {}", p.with_ctx(ctx)),
+            Operand::Const(c) => write!(f, "const {}", c.with_ctx(ctx)),
         }
     }
 }
@@ -1157,7 +1157,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                 let sub = subplace.with_ctx(ctx);
                 match projection {
                     ProjectionElem::Deref => {
-                        write!(f, "*({sub})")
+                        write!(f, "(*{sub})")
                     }
                     ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                         FieldProjKind::Adt(adt_id, opt_variant_id) => {
@@ -1171,7 +1171,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                             Ok(())
                         }
                         FieldProjKind::Tuple(_) => {
-                            write!(f, "({sub}).{field_id}")
+                            write!(f, "{sub}.{field_id}")
                         }
                     },
                     ProjectionElem::PtrMetadata => {
@@ -1181,24 +1181,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         offset,
                         from_end: true,
                         ..
-                    } => write!(f, "({sub})[-{}]", offset.with_ctx(ctx)),
+                    } => write!(f, "{sub}[-{}]", offset.with_ctx(ctx)),
                     ProjectionElem::Index {
                         offset,
                         from_end: false,
                         ..
-                    } => write!(f, "({sub})[{}]", offset.with_ctx(ctx)),
+                    } => write!(f, "{sub}[{}]", offset.with_ctx(ctx)),
                     ProjectionElem::Subslice {
                         from,
                         to,
                         from_end: true,
                         ..
-                    } => write!(f, "({sub})[{}..-{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
+                    } => write!(f, "{sub}[{}..-{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
                     ProjectionElem::Subslice {
                         from,
                         to,
                         from_end: false,
                         ..
-                    } => write!(f, "({sub})[{}..{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
+                    } => write!(f, "{sub}[{}..{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
                 }
             }
         }
