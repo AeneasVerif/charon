@@ -208,9 +208,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -231,87 +231,87 @@ impl StructuralPartialEq for Enum {
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}::eq
 pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enum) -> bool
 {
-    let @0: bool; // return
-    let self@1: &'0 Enum; // arg #1
-    let other@2: &'0 Enum; // arg #2
-    let __self_discr@3: isize; // local
-    let @4: &'0 Enum; // anonymous local
-    let __arg1_discr@5: isize; // local
-    let @6: &'0 Enum; // anonymous local
-    let @7: bool; // anonymous local
-    let @8: isize; // anonymous local
-    let @9: isize; // anonymous local
-    let @10: (&'0 Enum, &'0 Enum); // anonymous local
-    let @11: &'0 Enum; // anonymous local
-    let @12: &'0 Enum; // anonymous local
-    let __self_0@13: &'1 u8; // local
-    let __arg1_0@14: &'1 u8; // local
-    let @15: &'2 &'1 u8; // anonymous local
-    let @16: &'2 &'1 u8; // anonymous local
+    let _0: bool; // return
+    let self_1: &'0 Enum; // arg #1
+    let other_2: &'0 Enum; // arg #2
+    let __self_discr_3: isize; // local
+    let _4: &'0 Enum; // anonymous local
+    let __arg1_discr_5: isize; // local
+    let _6: &'0 Enum; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: isize; // anonymous local
+    let _9: isize; // anonymous local
+    let _10: (&'0 Enum, &'0 Enum); // anonymous local
+    let _11: &'0 Enum; // anonymous local
+    let _12: &'0 Enum; // anonymous local
+    let __self_0_13: &'1 u8; // local
+    let __arg1_0_14: &'1 u8; // local
+    let _15: &'2 &'1 u8; // anonymous local
+    let _16: &'2 &'1 u8; // anonymous local
 
-    storage_live(__self_discr@3)
-    storage_live(@4)
-    @4 := &*(self@1)
-    __self_discr@3 := @discriminant(*(@4))
-    storage_dead(@4)
-    storage_live(__arg1_discr@5)
-    storage_live(@6)
-    @6 := &*(other@2)
-    __arg1_discr@5 := @discriminant(*(@6))
-    storage_dead(@6)
-    storage_live(@7)
-    storage_live(@8)
-    @8 := copy (__self_discr@3)
-    storage_live(@9)
-    @9 := copy (__arg1_discr@5)
-    @7 := move (@8) == move (@9)
-    if move (@7) {
-        storage_dead(@9)
-        storage_dead(@8)
-        storage_live(@10)
-        storage_live(@11)
-        @11 := copy (self@1)
-        storage_live(@12)
-        @12 := copy (other@2)
-        @10 := (move (@11), move (@12))
-        storage_dead(@12)
-        storage_dead(@11)
-        match *((@10).0) {
+    storage_live(__self_discr_3)
+    storage_live(_4)
+    _4 = &(*self_1)
+    __self_discr_3 = @discriminant((*_4))
+    storage_dead(_4)
+    storage_live(__arg1_discr_5)
+    storage_live(_6)
+    _6 = &(*other_2)
+    __arg1_discr_5 = @discriminant((*_6))
+    storage_dead(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy __self_discr_3
+    storage_live(_9)
+    _9 = copy __arg1_discr_5
+    _7 = move _8 == move _9
+    if move _7 {
+        storage_dead(_9)
+        storage_dead(_8)
+        storage_live(_10)
+        storage_live(_11)
+        _11 = copy self_1
+        storage_live(_12)
+        _12 = copy other_2
+        _10 = (move _11, move _12)
+        storage_dead(_12)
+        storage_dead(_11)
+        match (*_10.0) {
             Enum::Some => {
-                match *((@10).1) {
+                match (*_10.1) {
                     Enum::Some => {
-                        storage_live(__self_0@13)
-                        __self_0@13 := &(*((@10).0) as variant Enum::Some).0
-                        storage_live(__arg1_0@14)
-                        __arg1_0@14 := &(*((@10).1) as variant Enum::Some).0
-                        storage_live(@15)
-                        @15 := &__self_0@13
-                        storage_live(@16)
-                        @16 := &__arg1_0@14
-                        @0 := {impl PartialEq<&'_0 B> for &'_1 A}::eq<'3, '4, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}](move (@15), move (@16))
-                        storage_dead(@16)
-                        storage_dead(@15)
-                        storage_dead(__arg1_0@14)
-                        storage_dead(__self_0@13)
+                        storage_live(__self_0_13)
+                        __self_0_13 = &((*_10.0) as variant Enum::Some).0
+                        storage_live(__arg1_0_14)
+                        __arg1_0_14 = &((*_10.1) as variant Enum::Some).0
+                        storage_live(_15)
+                        _15 = &__self_0_13
+                        storage_live(_16)
+                        _16 = &__arg1_0_14
+                        _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'3, '4, '_, '_, u8, u8>[{impl PartialEq<u8> for u8}](move _15, move _16)
+                        storage_dead(_16)
+                        storage_dead(_15)
+                        storage_dead(__arg1_0_14)
+                        storage_dead(__self_0_13)
                     },
                     _ => {
-                        @0 := const (true)
+                        _0 = const true
                     },
                 }
             },
             _ => {
-                @0 := const (true)
+                _0 = const true
             },
         }
-        storage_dead(@10)
+        storage_dead(_10)
     } else {
-        storage_dead(@9)
-        storage_dead(@8)
-        @0 := const (false)
+        storage_dead(_9)
+        storage_dead(_8)
+        _0 = const false
     }
-    storage_dead(@7)
-    storage_dead(__arg1_discr@5)
-    storage_dead(__self_discr@3)
+    storage_dead(_7)
+    storage_dead(__arg1_discr_5)
+    storage_dead(__self_discr_3)
     return
 }
 

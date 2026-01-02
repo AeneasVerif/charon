@@ -19,9 +19,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -49,28 +49,28 @@ fn foo<T>()
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: (); // return
-    let @1: usize; // anonymous local
-    let @2: usize; // anonymous local
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
-    let @5: usize; // anonymous local
+    let _0: (); // return
+    let _1: usize; // anonymous local
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: usize; // anonymous local
 
-    storage_live(@2)
-    storage_live(@5)
-    storage_live(@3)
-    @3 := offset_of(A<T>[@TraitClause0].x)<usize>
-    storage_live(@4)
-    @4 := offset_of(B<T>[@TraitClause0].y)<usize>
-    @5 := copy (@3) panic.+ copy (@4)
-    @2 := move (@5)
-    storage_dead(@4)
-    storage_dead(@3)
-    @0 := ()
-    storage_live(@1)
-    @1 := move (@2)
-    storage_dead(@1)
-    @0 := ()
+    storage_live(_2)
+    storage_live(_5)
+    storage_live(_3)
+    _3 = offset_of(A<T>[@TraitClause0].x)<usize>
+    storage_live(_4)
+    _4 = offset_of(B<T>[@TraitClause0].y)<usize>
+    _5 = copy _3 panic.+ copy _4
+    _2 = move _5
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = ()
+    storage_live(_1)
+    _1 = move _2
+    storage_dead(_1)
+    _0 = ()
     return
 }
 

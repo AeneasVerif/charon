@@ -8,9 +8,9 @@ pub trait MetaSized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -40,11 +40,11 @@ where
 
 fn test_crate::foo<'_0>(@1: &'_0 (dyn Trait + '_0))
 {
-    let @0: (); // return
-    let x@1: &'0 (dyn Trait + '1); // arg #1
+    let _0: (); // return
+    let x_1: &'0 (dyn Trait + '1); // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 

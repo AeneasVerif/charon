@@ -124,9 +124,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -138,12 +138,12 @@ struct closure {}
 // Full name: test_crate::main::{impl FnOnce<()> for closure}::call_once
 fn {impl FnOnce<()> for closure}::call_once(@1: closure, @2: ())
 {
-    let @0: (); // return
-    let @1: closure; // arg #1
-    let tupled_args@2: (); // arg #2
+    let _0: (); // return
+    let _1: closure; // arg #1
+    let tupled_args_2: (); // arg #2
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -161,19 +161,19 @@ impl FnOnce<()> for closure {
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: Result<(), alloc::boxed::Box<(dyn Any + Send + '0)>[{built_in impl MetaSized for (dyn Any + Send + '1)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '2)>[{built_in impl MetaSized for (dyn Any + Send + '3)}, {built_in impl Sized for Global}]}]; // anonymous local
-    let @2: closure; // anonymous local
+    let _0: (); // return
+    let _1: Result<(), alloc::boxed::Box<(dyn Any + Send + '0)>[{built_in impl MetaSized for (dyn Any + Send + '1)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '2)>[{built_in impl MetaSized for (dyn Any + Send + '3)}, {built_in impl Sized for Global}]}]; // anonymous local
+    let _2: closure; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    @2 := closure {  }
-    @1 := catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move (@2))
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn Any + Send + '0)>[{built_in impl MetaSized for (dyn Any + Send + '1)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '12)>[{built_in impl MetaSized for (dyn Any + Send + '13)}, {built_in impl Sized for Global}]}]] @1
-    storage_dead(@1)
-    @0 := ()
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = closure {  }
+    _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move _2)
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn Any + Send + '0)>[{built_in impl MetaSized for (dyn Any + Send + '1)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '12)>[{built_in impl MetaSized for (dyn Any + Send + '13)}, {built_in impl Sized for Global}]}]] _1
+    storage_dead(_1)
+    _0 = ()
     return
 }
 

@@ -18,9 +18,9 @@ pub struct Global {}
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -29,10 +29,10 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::test_static
 fn test_static(@1: &'static u32) -> &'static u32
 {
-    let @0: &'0 u32; // return
-    let x@1: &'0 u32; // arg #1
+    let _0: &'0 u32; // return
+    let x_1: &'0 u32; // arg #1
 
-    @0 := copy (x@1)
+    _0 = copy x_1
     return
 }
 

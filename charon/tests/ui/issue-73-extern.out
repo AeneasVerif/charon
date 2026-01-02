@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -27,11 +27,11 @@ opaque type Type
 // Full name: test_crate::use_type
 fn use_type<'_0>(@1: &'_0 Type)
 {
-    let @0: (); // return
-    let _x@1: &'0 Type; // arg #1
+    let _0: (); // return
+    let _x_1: &'0 Type; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 

@@ -46,9 +46,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -62,18 +62,18 @@ pub enum Thing {
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_in_place
 unsafe fn {impl Destruct for Thing}::drop_in_place(@1: *mut Thing)
 {
-    let @0: (); // return
-    let @1: *mut Thing; // arg #1
-    let @2: &'0 mut Thing; // anonymous local
+    let _0: (); // return
+    let _1: *mut Thing; // arg #1
+    let _2: &'0 mut Thing; // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    @2 := &mut *(@1)
-    match *(@2) {
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    match (*_2) {
         _ => {
         },
     }
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] (*(@2) as variant Thing::A).0
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_2) as variant Thing::A).0
     return
 }
 
@@ -86,12 +86,12 @@ impl Destruct for Thing {
 // Full name: test_crate::foo
 fn foo(@1: Thing)
 {
-    let @0: (); // return
-    let @1: Thing; // arg #1
+    let _0: (); // return
+    let _1: Thing; // arg #1
 
-    @0 := ()
-    @0 := ()
-    conditional_drop[{impl Destruct for Thing}] @1
+    _0 = ()
+    _0 = ()
+    conditional_drop[{impl Destruct for Thing}] _1
     return
 }
 

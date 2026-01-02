@@ -24,9 +24,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -44,11 +44,11 @@ pub fn test_crate::BoolTrait::foo<'_0, Self>(@1: &'_0 Self)
 where
     [@TraitClause0]: BoolTrait<Self>,
 {
-    let @0: (); // return
-    let self@1: &'0 Self; // arg #1
+    let _0: (); // return
+    let self_1: &'0 Self; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -57,11 +57,11 @@ pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 Optio
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: (); // return
-    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let _0: (); // return
+    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 

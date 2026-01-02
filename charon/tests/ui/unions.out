@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -19,19 +19,19 @@ union Foo {
 // Full name: test_crate::use_union
 fn use_union()
 {
-    let @0: (); // return
-    let one@1: Foo; // local
-    let _two@2: [u32; 2 : usize]; // local
+    let _0: (); // return
+    let one_1: Foo; // local
+    let _two_2: [u32; 2 : usize]; // local
 
-    @0 := ()
-    storage_live(one@1)
-    one@1 := Foo { one: const (42 : u64) }
-    (one@1).one := const (43 : u64)
-    storage_live(_two@2)
-    _two@2 := copy ((one@1).two)
-    @0 := ()
-    storage_dead(_two@2)
-    storage_dead(one@1)
+    _0 = ()
+    storage_live(one_1)
+    one_1 = Foo { one: const 42 : u64 }
+    (one_1).one = const 43 : u64
+    storage_live(_two_2)
+    _two_2 = copy (one_1).two
+    _0 = ()
+    storage_dead(_two_2)
+    storage_dead(one_1)
     return
 }
 

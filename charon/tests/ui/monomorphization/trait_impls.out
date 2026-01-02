@@ -26,9 +26,9 @@ unsafe fn drop_in_place::<bool>(@1: *mut bool)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -48,11 +48,11 @@ pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 bool)
 // Full name: test_crate::{impl Trait::<bool>}::method
 pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 bool)
 {
-    let @0: (); // return
-    let self@1: &'0 bool; // arg #1
+    let _0: (); // return
+    let self_1: &'0 bool; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -66,29 +66,29 @@ impl Trait::<bool> {
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(@1: bool)
 {
-    let @0: (); // return
-    let x@1: bool; // arg #1
-    let @2: &'0 bool; // anonymous local
+    let _0: (); // return
+    let x_1: bool; // arg #1
+    let _2: &'0 bool; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    @2 := &x@1
-    @0 := {impl Trait::<bool>}::method<'_>(move (@2))
-    storage_dead(@2)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x_1
+    _0 = {impl Trait::<bool>}::method<'_>(move _2)
+    storage_dead(_2)
     return
 }
 
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: (); // anonymous local
+    let _0: (); // return
+    let _1: (); // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := do_test::<bool>(const (true))
-    storage_dead(@1)
-    @0 := ()
+    _0 = ()
+    storage_live(_1)
+    _1 = do_test::<bool>(const true)
+    storage_dead(_1)
+    _0 = ()
     return
 }
 

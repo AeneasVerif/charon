@@ -227,9 +227,9 @@ pub fn to_raw_parts<T>(@1: *const T) -> (*const (), {built_in impl Pointee for T
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -238,66 +238,66 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::empty_metadata
 fn empty_metadata()
 {
-    let @0: (); // return
-    let @1: (*const (), ()); // anonymous local
-    let @2: *const u32; // anonymous local
-    let @3: &'0 u32; // anonymous local
-    let @4: &'0 u32; // anonymous local
-    let @5: &'_ u32; // anonymous local
-    let @6: u32; // anonymous local
+    let _0: (); // return
+    let _1: (*const (), ()); // anonymous local
+    let _2: *const u32; // anonymous local
+    let _3: &'0 u32; // anonymous local
+    let _4: &'0 u32; // anonymous local
+    let _5: &'_ u32; // anonymous local
+    let _6: u32; // anonymous local
 
-    storage_live(@5)
-    storage_live(@6)
-    @6 := const (0 : u32)
-    @5 := &@6
-    storage_live(@4)
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    storage_live(@3)
-    @4 := move (@5)
-    @3 := &*(@4)
-    @2 := &raw const *(@3)
-    @1 := to_raw_parts<u32>(move (@2))
-    storage_dead(@2)
-    storage_dead(@3)
-    storage_dead(@1)
-    @0 := ()
+    storage_live(_5)
+    storage_live(_6)
+    _6 = const 0 : u32
+    _5 = &_6
+    storage_live(_4)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &raw const (*_3)
+    _1 = to_raw_parts<u32>(move _2)
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(_1)
+    _0 = ()
     return
 }
 
 // Full name: test_crate::slice_metadata
 fn slice_metadata()
 {
-    let @0: (); // return
-    let @1: (*const (), usize); // anonymous local
-    let @2: *const [u32]; // anonymous local
-    let @3: *const [u32; 2 : usize]; // anonymous local
-    let @4: &'0 [u32; 2 : usize]; // anonymous local
-    let @5: &'0 [u32; 2 : usize]; // anonymous local
-    let @6: &'_ [u32; 2 : usize]; // anonymous local
-    let @7: [u32; 2 : usize]; // anonymous local
+    let _0: (); // return
+    let _1: (*const (), usize); // anonymous local
+    let _2: *const [u32]; // anonymous local
+    let _3: *const [u32; 2 : usize]; // anonymous local
+    let _4: &'0 [u32; 2 : usize]; // anonymous local
+    let _5: &'0 [u32; 2 : usize]; // anonymous local
+    let _6: &'_ [u32; 2 : usize]; // anonymous local
+    let _7: [u32; 2 : usize]; // anonymous local
 
-    storage_live(@6)
-    storage_live(@7)
-    @7 := [const (0 : u32), const (1 : u32)]
-    @6 := &@7
-    storage_live(@5)
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    @5 := move (@6)
-    @4 := &*(@5)
-    @3 := &raw const *(@4)
-    @2 := unsize_cast<*const [u32; 2 : usize], *const [u32], 2 : usize>(move (@3))
-    storage_dead(@3)
-    @1 := to_raw_parts<[u32]>(move (@2))
-    storage_dead(@2)
-    storage_dead(@4)
-    storage_dead(@1)
-    @0 := ()
+    storage_live(_6)
+    storage_live(_7)
+    _7 = [const 0 : u32, const 1 : u32]
+    _6 = &_7
+    storage_live(_5)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _5 = move _6
+    _4 = &(*_5)
+    _3 = &raw const (*_4)
+    _2 = unsize_cast<*const [u32; 2 : usize], *const [u32], 2 : usize>(move _3)
+    storage_dead(_3)
+    _1 = to_raw_parts<[u32]>(move _2)
+    storage_dead(_2)
+    storage_dead(_4)
+    storage_dead(_1)
+    _0 = ()
     return
 }
 

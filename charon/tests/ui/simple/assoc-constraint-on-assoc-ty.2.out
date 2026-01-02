@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -46,10 +46,10 @@ where
     [@TraitClause1]: IntoIterator<I, Clause1_IntoIter>,
     [@TraitClause2]: Trait<Clause1_IntoIter, Clause2_Assoc>,
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 

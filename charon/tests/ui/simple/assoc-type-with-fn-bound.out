@@ -75,9 +75,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -104,19 +104,19 @@ where
     [@TraitClause0]: Fn<F, (), ()>,
     [@TraitClause1]: Sized<F>,
 {
-    let @0: (); // return
-    let self@1: &'0 F; // arg #1
-    let @2: &'0 F; // anonymous local
-    let @3: (); // anonymous local
+    let _0: (); // return
+    let self_1: &'0 F; // arg #1
+    let _2: &'0 F; // anonymous local
+    let _3: (); // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    @2 := &*(self@1)
-    storage_live(@3)
-    @3 := ()
-    @0 := @TraitClause0::call<'_>(move (@2), move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
+    _0 = ()
+    storage_live(_2)
+    _2 = &(*self_1)
+    storage_live(_3)
+    _3 = ()
+    _0 = @TraitClause0::call<'_>(move _2, move _3)
+    storage_dead(_3)
+    storage_dead(_2)
     return
 }
 
@@ -136,10 +136,10 @@ where
 // Full name: test_crate::use_foo
 pub fn use_foo()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 

@@ -74,9 +74,9 @@ impl Destruct for String {
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -88,43 +88,43 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
 {
-    let @0: (); // return
-    let @1: *mut [T; N]; // arg #1
-    let @2: &'0 mut [T; N]; // anonymous local
-    let @3: *mut [T; N]; // anonymous local
-    let @4: *mut [T]; // anonymous local
-    let @5: usize; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: *mut T; // anonymous local
-    let @8: bool; // anonymous local
-    let @9: &'_ mut [T]; // anonymous local
-    let @10: &'_ mut T; // anonymous local
+    let _0: (); // return
+    let _1: *mut [T; N]; // arg #1
+    let _2: &'0 mut [T; N]; // anonymous local
+    let _3: *mut [T; N]; // anonymous local
+    let _4: *mut [T]; // anonymous local
+    let _5: usize; // anonymous local
+    let _6: usize; // anonymous local
+    let _7: *mut T; // anonymous local
+    let _8: bool; // anonymous local
+    let _9: &'_ mut [T]; // anonymous local
+    let _10: &'_ mut T; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    @0 := ()
-    @2 := &mut *(@1)
-    @3 := &raw mut *(@2)
-    @4 := unsize_cast<*mut [T; N], *mut [T], N>(move (@3))
-    @5 := copy (@4.metadata)
-    @6 := const (0 : usize)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = &raw mut (*_2)
+    _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
+    _5 = copy _4.metadata
+    _6 = const 0 : usize
     loop {
-        @8 := copy (@6) == copy (@5)
-        if move (@8) {
+        _8 = copy _6 == copy _5
+        if move _8 {
             break 0
         } else {
-            storage_live(@9)
-            @9 := &mut *(@4) with_metadata(copy (@4.metadata))
-            storage_live(@10)
-            @10 := @SliceIndexMut<'_, T>(move (@9), copy (@6))
-            @7 := &raw mut *(@10)
-            @6 := move (@6) wrap.+ const (1 : usize)
-            drop[@TraitClause1] *(@7)
+            storage_live(_9)
+            _9 = &mut (*_4) with_metadata(copy _4.metadata)
+            storage_live(_10)
+            _10 = @SliceIndexMut<'_, T>(move _9, copy _6)
+            _7 = &raw mut (*_10)
+            _6 = move _6 wrap.+ const 1 : usize
+            drop[@TraitClause1] (*_7)
             continue 0
         }
     }
@@ -147,37 +147,37 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
 {
-    let @0: (); // return
-    let @1: *mut [T]; // arg #1
-    let @2: &'0 mut [T]; // anonymous local
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
-    let @5: *mut T; // anonymous local
-    let @6: bool; // anonymous local
-    let @7: &'_ mut [T]; // anonymous local
-    let @8: &'_ mut T; // anonymous local
+    let _0: (); // return
+    let _1: *mut [T]; // arg #1
+    let _2: &'0 mut [T]; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: *mut T; // anonymous local
+    let _6: bool; // anonymous local
+    let _7: &'_ mut [T]; // anonymous local
+    let _8: &'_ mut T; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    @0 := ()
-    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
-    @3 := copy (@2.metadata)
-    @4 := const (0 : usize)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _0 = ()
+    _2 = &mut (*_1) with_metadata(copy _1.metadata)
+    _3 = copy _2.metadata
+    _4 = const 0 : usize
     loop {
-        @6 := copy (@4) == copy (@3)
-        if move (@6) {
+        _6 = copy _4 == copy _3
+        if move _6 {
             break 0
         } else {
-            storage_live(@7)
-            @7 := &mut *(@2) with_metadata(copy (@2.metadata))
-            storage_live(@8)
-            @8 := @SliceIndexMut<'_, T>(move (@7), copy (@4))
-            @5 := &raw mut *(@8)
-            @4 := move (@4) wrap.+ const (1 : usize)
-            drop[@TraitClause1] *(@5)
+            storage_live(_7)
+            _7 = &mut (*_2) with_metadata(copy _2.metadata)
+            storage_live(_8)
+            _8 = @SliceIndexMut<'_, T>(move _7, copy _4)
+            _5 = &raw mut (*_8)
+            _4 = move _4 wrap.+ const 1 : usize
+            drop[@TraitClause1] (*_5)
             continue 0
         }
     }
@@ -201,15 +201,15 @@ where
     [@TraitClause1]: Destruct<A>,
     [@TraitClause2]: Destruct<B>,
 {
-    let @0: (); // return
-    let @1: *mut (A, B); // arg #1
-    let @2: &'0 mut (A, B); // anonymous local
+    let _0: (); // return
+    let _1: *mut (A, B); // arg #1
+    let _2: &'0 mut (A, B); // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
-    drop[@TraitClause1] (*(@2)).0
-    drop[@TraitClause2] (*(@2)).1
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1) with_metadata(copy _1.metadata)
+    drop[@TraitClause1] (*_2).0
+    drop[@TraitClause2] (*_2).1
     return
 }
 
@@ -227,24 +227,24 @@ where
 // Full name: test_crate::drop_array
 fn drop_array(@1: [String; 4 : usize])
 {
-    let @0: (); // return
-    let @1: [String; 4 : usize]; // arg #1
+    let _0: (); // return
+    let _1: [String; 4 : usize]; // arg #1
 
-    @0 := ()
-    @0 := ()
-    drop[{impl Destruct for [T; N]}<String, 4 : usize>[{built_in impl Sized for String}, {impl Destruct for String}]] @1
+    _0 = ()
+    _0 = ()
+    drop[{impl Destruct for [T; N]}<String, 4 : usize>[{built_in impl Sized for String}, {impl Destruct for String}]] _1
     return
 }
 
 // Full name: test_crate::drop_slice
 fn drop_slice(@1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}])
 {
-    let @0: (); // return
-    let @1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]; // arg #1
+    let _0: (); // return
+    let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]; // arg #1
 
-    @0 := ()
-    @0 := ()
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<[String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]] @1
+    _0 = ()
+    _0 = ()
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<[String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]] _1
     return
 }
 
@@ -256,12 +256,12 @@ where
     [@TraitClause2]: Destruct<A>,
     [@TraitClause3]: Destruct<B>,
 {
-    let @0: (); // return
-    let @1: (A, B); // arg #1
+    let _0: (); // return
+    let _1: (A, B); // arg #1
 
-    @0 := ()
-    @0 := ()
-    drop[{impl Destruct for (A, B)}<A, B>[@TraitClause0, @TraitClause2, @TraitClause3]] @1
+    _0 = ()
+    _0 = ()
+    drop[{impl Destruct for (A, B)}<A, B>[@TraitClause0, @TraitClause2, @TraitClause3]] _1
     return
 }
 

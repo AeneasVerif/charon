@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -39,10 +39,10 @@ where
 // Full name: test_crate::{impl Trait for ()}::method
 fn {impl Trait for ()}::method()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -56,10 +56,10 @@ impl Trait for () {
 // Full name: test_crate::main
 pub fn main()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := {impl Trait for ()}::method()
+    _0 = ()
+    _0 = {impl Trait for ()}::method()
     return
 }
 

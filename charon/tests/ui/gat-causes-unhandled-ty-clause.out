@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -51,7 +51,7 @@ where
     [@TraitClause0]: Sized<C>,
     [@TraitClause1]: HasGAT<C>,
 {
-    let @0: @TraitClause1::parent_clause2::Assoc; // return
+    let _0: @TraitClause1::parent_clause2::Assoc; // return
 
     panic(core::panicking::panic)
 }

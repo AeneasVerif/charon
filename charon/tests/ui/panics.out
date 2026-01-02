@@ -14,9 +14,9 @@ pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -25,108 +25,108 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::panic1
 fn panic1()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
 // Full name: test_crate::panic2
 fn panic2()
 {
-    let @0: (); // return
-    let @1: Arguments<'0>; // anonymous local
+    let _0: (); // return
+    let _1: Arguments<'0>; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := from_str<'1>(const ("O no!"))
+    _0 = ()
+    storage_live(_1)
+    _1 = from_str<'1>(const "O no!")
     panic(core::panicking::panic_fmt)
 }
 
 // Full name: test_crate::panic3
 fn panic3()
 {
-    let @0: (); // return
-    let @1: Arguments<'0>; // anonymous local
+    let _0: (); // return
+    let _1: Arguments<'0>; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := from_str_nonconst<'1>(const ("O no!"))
+    _0 = ()
+    storage_live(_1)
+    _1 = from_str_nonconst<'1>(const "O no!")
     panic(core::panicking::panic_fmt)
 }
 
 // Full name: test_crate::panic4
 fn panic4()
 {
-    let @0: (); // return
-    let @1: bool; // anonymous local
+    let _0: (); // return
+    let _1: bool; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const (false)
-    assert(move (@1) == true)
-    storage_dead(@1)
-    @0 := ()
+    _0 = ()
+    storage_live(_1)
+    _1 = const false
+    assert(move _1 == true)
+    storage_dead(_1)
+    _0 = ()
     return
 }
 
 // Full name: test_crate::panic5
 fn panic5()
 {
-    let @0: (); // return
-    let @1: bool; // anonymous local
-    let @2: Arguments<'0>; // anonymous local
+    let _0: (); // return
+    let _1: bool; // anonymous local
+    let _2: Arguments<'0>; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const (false)
-    if move (@1) {
+    _0 = ()
+    storage_live(_1)
+    _1 = const false
+    if move _1 {
     } else {
-        storage_live(@2)
-        @2 := from_str<'1>(const ("assert failed"))
+        storage_live(_2)
+        _2 = from_str<'1>(const "assert failed")
         panic(core::panicking::panic_fmt)
     }
-    storage_dead(@1)
-    @0 := ()
+    storage_dead(_1)
+    _0 = ()
     return
 }
 
 // Full name: test_crate::panic6
 fn panic6()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
 // Full name: test_crate::panic7
 fn panic7()
 {
-    let @0: (); // return
-    let @1: Arguments<'0>; // anonymous local
+    let _0: (); // return
+    let _1: Arguments<'0>; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := from_str_nonconst<'1>(const ("internal error: entered unreachable code: can't reach this"))
+    _0 = ()
+    storage_live(_1)
+    _1 = from_str_nonconst<'1>(const "internal error: entered unreachable code: can't reach this")
     panic(core::panicking::panic_fmt)
 }
 
 // Full name: test_crate::panic8
 fn panic8()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
 // Full name: test_crate::panic9
 fn panic9()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     panic(std::panicking::begin_panic)
 }
 

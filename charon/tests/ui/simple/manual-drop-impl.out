@@ -50,9 +50,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -86,11 +86,11 @@ pub fn {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut Foo<T>[@
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: (); // return
-    let self@1: &'0 mut Foo<T>[@TraitClause0]; // arg #1
+    let _0: (); // return
+    let self_1: &'0 mut Foo<T>[@TraitClause0]; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -107,12 +107,12 @@ where
 // Full name: test_crate::drop_foo
 fn drop_foo(@1: Foo<u32>[{built_in impl Sized for u32}])
 {
-    let @0: (); // return
-    let @1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
+    let _0: (); // return
+    let _1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
 
-    @0 := ()
-    @0 := ()
-    conditional_drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] @1
+    _0 = ()
+    _0 = ()
+    conditional_drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] _1
     return
 }
 

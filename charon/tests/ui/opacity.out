@@ -50,10 +50,10 @@ where
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: From<U, T>,
 {
-    let @0: U; // return
-    let self@1: T; // arg #1
+    let _0: U; // return
+    let self_1: T; // arg #1
 
-    @0 := @TraitClause2::from(move (self@1))
+    _0 = @TraitClause2::from(move self_1)
     return
 }
 
@@ -73,10 +73,10 @@ where
 // Full name: core::convert::num::{impl From<u32> for u64}::from
 pub fn {impl From<u32> for u64}::from(@1: u32) -> u64
 {
-    let @0: u64; // return
-    let small@1: u32; // arg #1
+    let _0: u64; // return
+    let small_1: u32; // arg #1
 
-    @0 := cast<u32, u64>(copy (small@1))
+    _0 = cast<u32, u64>(copy small_1)
     return
 }
 
@@ -103,21 +103,21 @@ pub fn is_some<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: bool; // return
-    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
-    let @2: isize; // anonymous local
+    let _0: bool; // return
+    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let _2: isize; // anonymous local
 
-    storage_live(@2)
-    @2 := @discriminant(*(self@1))
-    @0 := copy (@2) == const (1 : isize)
+    storage_live(_2)
+    _2 = @discriminant((*self_1))
+    _0 = copy _2 == const 1 : isize
     return
 }
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -126,52 +126,52 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::foo
 fn foo()
 {
-    let @0: (); // return
-    let @1: bool; // anonymous local
-    let @2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @3: u64; // anonymous local
-    let @4: &'1 [i32]; // anonymous local
-    let @5: &'2 i32; // anonymous local
-    let @6: &'2 i32; // anonymous local
-    let @7: &'2 i32; // anonymous local
-    let @8: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @9: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @10: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @11: &'_ i32; // anonymous local
-    let @12: i32; // anonymous local
+    let _0: (); // return
+    let _1: bool; // anonymous local
+    let _2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _3: u64; // anonymous local
+    let _4: &'1 [i32]; // anonymous local
+    let _5: &'2 i32; // anonymous local
+    let _6: &'2 i32; // anonymous local
+    let _7: &'2 i32; // anonymous local
+    let _8: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _9: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _10: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _11: &'_ i32; // anonymous local
+    let _12: i32; // anonymous local
 
-    storage_live(@9)
-    storage_live(@10)
-    @10 := Option::Some { 0: const (0 : i32) }
-    @9 := &@10
-    storage_live(@7)
-    storage_live(@8)
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    @8 := move (@9)
-    @2 := &*(@8)
-    @1 := is_some<'_, i32>[{built_in impl Sized for i32}](move (@2))
-    storage_dead(@2)
-    storage_dead(@1)
-    storage_live(@3)
-    @3 := {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const (42 : u32))
-    storage_live(@11)
-    storage_live(@12)
-    @12 := const (0 : i32)
-    @11 := &@12
-    storage_dead(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    @7 := move (@11)
-    @6 := &*(@7)
-    @5 := &*(@6)
-    @4 := from_ref<'_, i32>[{built_in impl Sized for i32}](move (@5))
-    storage_dead(@5)
-    storage_dead(@6)
-    storage_dead(@4)
-    @0 := ()
+    storage_live(_9)
+    storage_live(_10)
+    _10 = Option::Some { 0: const 0 : i32 }
+    _9 = &_10
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _8 = move _9
+    _2 = &(*_8)
+    _1 = is_some<'_, i32>[{built_in impl Sized for i32}](move _2)
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_live(_3)
+    _3 = {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = const 0 : i32
+    _11 = &_12
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _7 = move _11
+    _6 = &(*_7)
+    _5 = &(*_6)
+    _4 = from_ref<'_, i32>[{built_in impl Sized for i32}](move _5)
+    storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(_4)
+    _0 = ()
     return
 }
 

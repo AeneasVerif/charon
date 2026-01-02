@@ -95,9 +95,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -125,32 +125,32 @@ where
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: PartialEq<U, T>,
 {
-    let @0: (); // return
-    let x@1: T; // arg #1
-    let y@2: U; // arg #2
-    let @3: bool; // anonymous local
-    let @4: &'0 U; // anonymous local
-    let @5: &'1 T; // anonymous local
+    let _0: (); // return
+    let x_1: T; // arg #1
+    let y_2: U; // arg #2
+    let _3: bool; // anonymous local
+    let _4: &'0 U; // anonymous local
+    let _5: &'1 T; // anonymous local
 
-    @0 := ()
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &y@2
-    storage_live(@5)
-    @5 := &x@1
-    @3 := @TraitClause2::eq<'_, '_>(move (@4), move (@5))
-    if move (@3) {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := @TraitClause0::other_method()
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &y_2
+    storage_live(_5)
+    _5 = &x_1
+    _3 = @TraitClause2::eq<'_, '_>(move _4, move _5)
+    if move _3 {
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = @TraitClause0::other_method()
     } else {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := ()
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
     }
-    storage_dead(@3)
-    conditional_drop[{built_in impl Destruct for U}] y@2
-    conditional_drop[{built_in impl Destruct for T}] x@1
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for U}] y_2
+    conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }
 
@@ -168,10 +168,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -183,31 +183,31 @@ where
     [@TraitClause2]: Sized<U>,
     [@TraitClause3]: PartialEq<U, Option<T>[@TraitClause0]>,
 {
-    let @0: (); // return
-    let x@1: Option<T>[@TraitClause0]; // arg #1
-    let y@2: U; // arg #2
-    let @3: bool; // anonymous local
-    let @4: &'0 U; // anonymous local
-    let @5: &'1 Option<T>[@TraitClause0]; // anonymous local
+    let _0: (); // return
+    let x_1: Option<T>[@TraitClause0]; // arg #1
+    let y_2: U; // arg #2
+    let _3: bool; // anonymous local
+    let _4: &'0 U; // anonymous local
+    let _5: &'1 Option<T>[@TraitClause0]; // anonymous local
 
-    @0 := ()
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &y@2
-    storage_live(@5)
-    @5 := &x@1
-    @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
-    if move (@3) {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &y_2
+    storage_live(_5)
+    _5 = &x_1
+    _3 = @TraitClause3::eq<'_, '_>(move _4, move _5)
+    if move _3 {
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
     } else {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := ()
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
     }
-    storage_dead(@3)
-    conditional_drop[{built_in impl Destruct for U}] y@2
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for U}] y_2
     return
 }
 
@@ -239,10 +239,10 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -254,32 +254,32 @@ where
     [@TraitClause2]: Sized<U>,
     [@TraitClause3]: PartialEq<U, Option<T>[@TraitClause0]>,
 {
-    let @0: (); // return
-    let x@1: Option<T>[@TraitClause0]; // arg #1
-    let y@2: U; // arg #2
-    let @3: bool; // anonymous local
-    let @4: &'0 U; // anonymous local
-    let @5: &'1 Option<T>[@TraitClause0]; // anonymous local
+    let _0: (); // return
+    let x_1: Option<T>[@TraitClause0]; // arg #1
+    let y_2: U; // arg #2
+    let _3: bool; // anonymous local
+    let _4: &'0 U; // anonymous local
+    let _5: &'1 Option<T>[@TraitClause0]; // anonymous local
 
-    @0 := ()
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &y@2
-    storage_live(@5)
-    @5 := &x@1
-    @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
-    if move (@3) {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &y_2
+    storage_live(_5)
+    _5 = &x_1
+    _3 = @TraitClause3::eq<'_, '_>(move _4, move _5)
+    if move _3 {
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
     } else {
-        storage_dead(@5)
-        storage_dead(@4)
-        @0 := ()
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
     }
-    storage_dead(@3)
-    conditional_drop[{built_in impl Destruct for U}] y@2
-    conditional_drop[{built_in impl Destruct for Option<T>[@TraitClause0]}] x@1
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for U}] y_2
+    conditional_drop[{built_in impl Destruct for Option<T>[@TraitClause0]}] x_1
     return
 }
 

@@ -117,9 +117,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -128,40 +128,40 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: bool; // anonymous local
-    let @2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @3: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @4: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @5: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @6: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @8: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _0: (); // return
+    let _1: bool; // anonymous local
+    let _2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _3: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _4: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _5: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _6: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _8: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
-    storage_live(@6)
-    storage_live(@7)
-    @7 := Option::Some { 0: const (1 : i32) }
-    @6 := &@7
-    storage_live(@8)
-    storage_live(@9)
-    @9 := Option::Some { 0: const (1 : i32) }
-    @8 := &@9
-    storage_live(@4)
-    storage_live(@5)
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    @5 := move (@6)
-    @2 := &*(@5)
-    storage_live(@3)
-    @4 := move (@8)
-    @3 := &*(@4)
-    @1 := {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_, '_, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move (@2), move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
-    storage_dead(@1)
-    @0 := ()
+    storage_live(_6)
+    storage_live(_7)
+    _7 = Option::Some { 0: const 1 : i32 }
+    _6 = &_7
+    storage_live(_8)
+    storage_live(_9)
+    _9 = Option::Some { 0: const 1 : i32 }
+    _8 = &_9
+    storage_live(_4)
+    storage_live(_5)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _5 = move _6
+    _2 = &(*_5)
+    storage_live(_3)
+    _4 = move _8
+    _3 = &(*_4)
+    _1 = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_, '_, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move _2, move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    _0 = ()
     return
 }
 
@@ -179,19 +179,19 @@ impl StructuralPartialEq for Foo {
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
 pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> bool
 {
-    let @0: bool; // return
-    let self@1: &'0 Foo; // arg #1
-    let other@2: &'0 Foo; // arg #2
-    let @3: u32; // anonymous local
-    let @4: u32; // anonymous local
+    let _0: bool; // return
+    let self_1: &'0 Foo; // arg #1
+    let other_2: &'0 Foo; // arg #2
+    let _3: u32; // anonymous local
+    let _4: u32; // anonymous local
 
-    storage_live(@3)
-    @3 := copy ((*(self@1)).0)
-    storage_live(@4)
-    @4 := copy ((*(other@2)).0)
-    @0 := move (@3) == move (@4)
-    storage_dead(@4)
-    storage_dead(@3)
+    storage_live(_3)
+    _3 = copy ((*self_1)).0
+    storage_live(_4)
+    _4 = copy ((*other_2)).0
+    _0 = move _3 == move _4
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 
@@ -204,27 +204,27 @@ impl PartialEq<Foo> for Foo {
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}::partial_cmp
 pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
-    let @0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
-    let self@1: &'0 Foo; // arg #1
-    let other@2: &'0 Foo; // arg #2
-    let @3: &'1 u32; // anonymous local
-    let @4: &'1 u32; // anonymous local
-    let @5: &'1 u32; // anonymous local
-    let @6: &'1 u32; // anonymous local
+    let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
+    let self_1: &'0 Foo; // arg #1
+    let other_2: &'0 Foo; // arg #2
+    let _3: &'1 u32; // anonymous local
+    let _4: &'1 u32; // anonymous local
+    let _5: &'1 u32; // anonymous local
+    let _6: &'1 u32; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &(*(self@1)).0
-    @3 := &*(@4)
-    storage_live(@5)
-    storage_live(@6)
-    @6 := &(*(other@2)).0
-    @5 := &*(@6)
-    @0 := {impl PartialOrd<u32> for u32}::partial_cmp<'_, '_>(move (@3), move (@5))
-    storage_dead(@6)
-    storage_dead(@5)
-    storage_dead(@4)
-    storage_dead(@3)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &((*self_1)).0
+    _3 = &(*_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &((*other_2)).0
+    _5 = &(*_6)
+    _0 = {impl PartialOrd<u32> for u32}::partial_cmp<'_, '_>(move _3, move _5)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 

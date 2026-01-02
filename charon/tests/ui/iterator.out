@@ -5154,9 +5154,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -5165,291 +5165,291 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let a@1: [i32; 7 : usize]; // local
-    let i@2: i32; // local
-    let @3: IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
-    let @4: IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
-    let @5: [i32; 7 : usize]; // anonymous local
-    let iter@6: IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // local
-    let @7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @8: &'0 mut IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
-    let @9: &'0 mut IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
-    let v@10: i32; // local
-    let @11: i32; // anonymous local
-    let @12: i32; // anonymous local
-    let @13: Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @14: Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @15: &'2 [i32]; // anonymous local
-    let @16: &'3 [i32; 7 : usize]; // anonymous local
-    let iter@17: Iter<'1, i32>[{built_in impl Sized for i32}]; // local
-    let @18: Option<&'4 i32>[{built_in impl Sized for &'4 i32}]; // anonymous local
-    let @19: &'7 mut Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @20: &'7 mut Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let v@21: &'4 i32; // local
-    let @22: (); // anonymous local
-    let @23: &'8 mut i32; // anonymous local
-    let @24: &'4 i32; // anonymous local
-    let @25: Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @26: Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @27: &'2 [i32]; // anonymous local
-    let @28: &'3 [i32; 7 : usize]; // anonymous local
-    let iter@29: Chunks<'9, i32>[{built_in impl Sized for i32}]; // local
-    let @30: Option<&'2 [i32]>[{built_in impl Sized for &'2 [i32]}]; // anonymous local
-    let @31: &'12 mut Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @32: &'12 mut Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @33: i32; // anonymous local
-    let @34: ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @35: ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @36: &'2 [i32]; // anonymous local
-    let @37: &'3 [i32; 7 : usize]; // anonymous local
-    let iter@38: ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // local
-    let @39: Option<&'2 [i32]>[{built_in impl Sized for &'2 [i32]}]; // anonymous local
-    let @40: &'14 mut ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @41: &'14 mut ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @42: i32; // anonymous local
-    let expected@43: i32; // local
-    let @44: (&'4 i32, &'4 i32); // anonymous local
-    let @45: &'4 i32; // anonymous local
-    let @46: &'4 i32; // anonymous local
-    let left_val@47: &'4 i32; // local
-    let right_val@48: &'4 i32; // local
-    let @49: bool; // anonymous local
-    let @50: i32; // anonymous local
-    let @51: i32; // anonymous local
-    let kind@52: AssertKind; // local
-    let @53: AssertKind; // anonymous local
-    let @54: &'4 i32; // anonymous local
-    let @55: &'4 i32; // anonymous local
-    let @56: &'4 i32; // anonymous local
-    let @57: &'4 i32; // anonymous local
-    let @58: Option<Arguments<'15>>[{built_in impl Sized for Arguments<'15>}]; // anonymous local
+    let _0: (); // return
+    let a_1: [i32; 7 : usize]; // local
+    let i_2: i32; // local
+    let _3: IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
+    let _4: IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
+    let _5: [i32; 7 : usize]; // anonymous local
+    let iter_6: IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // local
+    let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _8: &'0 mut IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
+    let _9: &'0 mut IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]; // anonymous local
+    let v_10: i32; // local
+    let _11: i32; // anonymous local
+    let _12: i32; // anonymous local
+    let _13: Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _14: Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _15: &'2 [i32]; // anonymous local
+    let _16: &'3 [i32; 7 : usize]; // anonymous local
+    let iter_17: Iter<'1, i32>[{built_in impl Sized for i32}]; // local
+    let _18: Option<&'4 i32>[{built_in impl Sized for &'4 i32}]; // anonymous local
+    let _19: &'7 mut Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _20: &'7 mut Iter<'1, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let v_21: &'4 i32; // local
+    let _22: (); // anonymous local
+    let _23: &'8 mut i32; // anonymous local
+    let _24: &'4 i32; // anonymous local
+    let _25: Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _26: Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _27: &'2 [i32]; // anonymous local
+    let _28: &'3 [i32; 7 : usize]; // anonymous local
+    let iter_29: Chunks<'9, i32>[{built_in impl Sized for i32}]; // local
+    let _30: Option<&'2 [i32]>[{built_in impl Sized for &'2 [i32]}]; // anonymous local
+    let _31: &'12 mut Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _32: &'12 mut Chunks<'9, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _33: i32; // anonymous local
+    let _34: ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _35: ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _36: &'2 [i32]; // anonymous local
+    let _37: &'3 [i32; 7 : usize]; // anonymous local
+    let iter_38: ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // local
+    let _39: Option<&'2 [i32]>[{built_in impl Sized for &'2 [i32]}]; // anonymous local
+    let _40: &'14 mut ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _41: &'14 mut ChunksExact<'13, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _42: i32; // anonymous local
+    let expected_43: i32; // local
+    let _44: (&'4 i32, &'4 i32); // anonymous local
+    let _45: &'4 i32; // anonymous local
+    let _46: &'4 i32; // anonymous local
+    let left_val_47: &'4 i32; // local
+    let right_val_48: &'4 i32; // local
+    let _49: bool; // anonymous local
+    let _50: i32; // anonymous local
+    let _51: i32; // anonymous local
+    let kind_52: AssertKind; // local
+    let _53: AssertKind; // anonymous local
+    let _54: &'4 i32; // anonymous local
+    let _55: &'4 i32; // anonymous local
+    let _56: &'4 i32; // anonymous local
+    let _57: &'4 i32; // anonymous local
+    let _58: Option<Arguments<'15>>[{built_in impl Sized for Arguments<'15>}]; // anonymous local
 
-    storage_live(@12)
-    storage_live(@33)
-    storage_live(@42)
-    @0 := ()
-    storage_live(a@1)
-    a@1 := [const (0 : i32), const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
-    storage_live(i@2)
-    i@2 := const (0 : i32)
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := copy (a@1)
-    @4 := {impl IntoIterator for [T; N]}::into_iter<i32, 7 : usize>[{built_in impl Sized for i32}](move (@5))
-    storage_dead(@5)
-    @3 := {impl IntoIterator for I}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move (@4))
-    storage_dead(@4)
-    storage_live(iter@6)
-    iter@6 := move (@3)
+    storage_live(_12)
+    storage_live(_33)
+    storage_live(_42)
+    _0 = ()
+    storage_live(a_1)
+    a_1 = [const 0 : i32, const 1 : i32, const 2 : i32, const 3 : i32, const 4 : i32, const 5 : i32, const 6 : i32]
+    storage_live(i_2)
+    i_2 = const 0 : i32
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy a_1
+    _4 = {impl IntoIterator for [T; N]}::into_iter<i32, 7 : usize>[{built_in impl Sized for i32}](move _5)
+    storage_dead(_5)
+    _3 = {impl IntoIterator for I}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move _4)
+    storage_dead(_4)
+    storage_live(iter_6)
+    iter_6 = move _3
     loop {
-        storage_live(@7)
-        storage_live(@8)
-        storage_live(@9)
-        @9 := &mut iter@6
-        @8 := &two-phase-mut *(@9)
-        @7 := {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next<'_, i32, 7 : usize>[{built_in impl Sized for i32}](move (@8))
-        storage_dead(@8)
-        match @7 {
+        storage_live(_7)
+        storage_live(_8)
+        storage_live(_9)
+        _9 = &mut iter_6
+        _8 = &two-phase-mut (*_9)
+        _7 = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next<'_, i32, 7 : usize>[{built_in impl Sized for i32}](move _8)
+        storage_dead(_8)
+        match _7 {
             Option::None => {
                 break 0
             },
             Option::Some => {
-                storage_live(v@10)
-                v@10 := copy ((@7 as variant Option::Some).0)
-                storage_live(@11)
-                @11 := copy (v@10)
-                @12 := copy (i@2) panic.+ copy (@11)
-                i@2 := move (@12)
-                storage_dead(@11)
-                storage_dead(v@10)
-                storage_dead(@9)
-                storage_dead(@7)
+                storage_live(v_10)
+                v_10 = copy (_7 as variant Option::Some).0
+                storage_live(_11)
+                _11 = copy v_10
+                _12 = copy i_2 panic.+ copy _11
+                i_2 = move _12
+                storage_dead(_11)
+                storage_dead(v_10)
+                storage_dead(_9)
+                storage_dead(_7)
                 continue 0
             },
         }
     }
-    storage_dead(@9)
-    storage_dead(@7)
-    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter@6
-    storage_dead(iter@6)
-    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] @3
-    storage_dead(@3)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    @16 := &a@1
-    @15 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@16))
-    storage_dead(@16)
-    @14 := iter<'_, i32>[{built_in impl Sized for i32}](move (@15))
-    storage_dead(@15)
-    @13 := {impl IntoIterator for I}::into_iter<Iter<'1, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'1, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'1, i32>[{built_in impl Sized for i32}]](move (@14))
-    storage_dead(@14)
-    storage_live(iter@17)
-    iter@17 := move (@13)
+    storage_dead(_9)
+    storage_dead(_7)
+    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] iter_6
+    storage_dead(iter_6)
+    conditional_drop[{impl Destruct for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]] _3
+    storage_dead(_3)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = &a_1
+    _15 = @ArrayToSliceShared<'_, i32, 7 : usize>(move _16)
+    storage_dead(_16)
+    _14 = iter<'_, i32>[{built_in impl Sized for i32}](move _15)
+    storage_dead(_15)
+    _13 = {impl IntoIterator for I}::into_iter<Iter<'1, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'1, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'1, i32>[{built_in impl Sized for i32}]](move _14)
+    storage_dead(_14)
+    storage_live(iter_17)
+    iter_17 = move _13
     loop {
-        storage_live(@18)
-        storage_live(@19)
-        storage_live(@20)
-        @20 := &mut iter@17
-        @19 := &two-phase-mut *(@20)
-        @18 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'22, '_, i32>[{built_in impl Sized for i32}](move (@19))
-        storage_dead(@19)
-        match @18 {
+        storage_live(_18)
+        storage_live(_19)
+        storage_live(_20)
+        _20 = &mut iter_17
+        _19 = &two-phase-mut (*_20)
+        _18 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'22, '_, i32>[{built_in impl Sized for i32}](move _19)
+        storage_dead(_19)
+        match _18 {
             Option::None => {
                 break 0
             },
             Option::Some => {
-                storage_live(v@21)
-                v@21 := copy ((@18 as variant Option::Some).0)
-                storage_live(@22)
-                storage_live(@23)
-                @23 := &two-phase-mut i@2
-                storage_live(@24)
-                @24 := copy (v@21)
-                @22 := {impl AddAssign<&'_0 i32> for i32}::add_assign<'23, '_>(move (@23), move (@24))
-                storage_dead(@24)
-                storage_dead(@23)
-                storage_dead(@22)
-                storage_dead(v@21)
-                storage_dead(@20)
-                storage_dead(@18)
+                storage_live(v_21)
+                v_21 = copy (_18 as variant Option::Some).0
+                storage_live(_22)
+                storage_live(_23)
+                _23 = &two-phase-mut i_2
+                storage_live(_24)
+                _24 = copy v_21
+                _22 = {impl AddAssign<&'_0 i32> for i32}::add_assign<'23, '_>(move _23, move _24)
+                storage_dead(_24)
+                storage_dead(_23)
+                storage_dead(_22)
+                storage_dead(v_21)
+                storage_dead(_20)
+                storage_dead(_18)
                 continue 0
             },
         }
     }
-    storage_dead(@20)
-    storage_dead(@18)
-    storage_dead(iter@17)
-    storage_dead(@13)
-    storage_live(@25)
-    storage_live(@26)
-    storage_live(@27)
-    storage_live(@28)
-    @28 := &a@1
-    @27 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@28))
-    storage_dead(@28)
-    @26 := chunks<'_, i32>[{built_in impl Sized for i32}](move (@27), const (2 : usize))
-    storage_dead(@27)
-    @25 := {impl IntoIterator for I}::into_iter<Chunks<'9, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'9, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'9, i32>[{built_in impl Sized for i32}]](move (@26))
-    storage_dead(@26)
-    storage_live(iter@29)
-    iter@29 := move (@25)
+    storage_dead(_20)
+    storage_dead(_18)
+    storage_dead(iter_17)
+    storage_dead(_13)
+    storage_live(_25)
+    storage_live(_26)
+    storage_live(_27)
+    storage_live(_28)
+    _28 = &a_1
+    _27 = @ArrayToSliceShared<'_, i32, 7 : usize>(move _28)
+    storage_dead(_28)
+    _26 = chunks<'_, i32>[{built_in impl Sized for i32}](move _27, const 2 : usize)
+    storage_dead(_27)
+    _25 = {impl IntoIterator for I}::into_iter<Chunks<'9, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'9, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'9, i32>[{built_in impl Sized for i32}]](move _26)
+    storage_dead(_26)
+    storage_live(iter_29)
+    iter_29 = move _25
     loop {
-        storage_live(@30)
-        storage_live(@31)
-        storage_live(@32)
-        @32 := &mut iter@29
-        @31 := &two-phase-mut *(@32)
-        @30 := {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'28, '_, i32>[{built_in impl Sized for i32}](move (@31))
-        storage_dead(@31)
-        match @30 {
+        storage_live(_30)
+        storage_live(_31)
+        storage_live(_32)
+        _32 = &mut iter_29
+        _31 = &two-phase-mut (*_32)
+        _30 = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'28, '_, i32>[{built_in impl Sized for i32}](move _31)
+        storage_dead(_31)
+        match _30 {
             Option::None => {
                 break 0
             },
             Option::Some => {
-                @33 := copy (i@2) panic.+ const (1 : i32)
-                i@2 := move (@33)
-                storage_dead(@32)
-                storage_dead(@30)
+                _33 = copy i_2 panic.+ const 1 : i32
+                i_2 = move _33
+                storage_dead(_32)
+                storage_dead(_30)
                 continue 0
             },
         }
     }
-    storage_dead(@32)
-    storage_dead(@30)
-    storage_dead(iter@29)
-    storage_dead(@25)
-    storage_live(@34)
-    storage_live(@35)
-    storage_live(@36)
-    storage_live(@37)
-    @37 := &a@1
-    @36 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@37))
-    storage_dead(@37)
-    @35 := chunks_exact<'_, i32>[{built_in impl Sized for i32}](move (@36), const (2 : usize))
-    storage_dead(@36)
-    @34 := {impl IntoIterator for I}::into_iter<ChunksExact<'13, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'13, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'13, i32>[{built_in impl Sized for i32}]](move (@35))
-    storage_dead(@35)
-    storage_live(iter@38)
-    iter@38 := move (@34)
+    storage_dead(_32)
+    storage_dead(_30)
+    storage_dead(iter_29)
+    storage_dead(_25)
+    storage_live(_34)
+    storage_live(_35)
+    storage_live(_36)
+    storage_live(_37)
+    _37 = &a_1
+    _36 = @ArrayToSliceShared<'_, i32, 7 : usize>(move _37)
+    storage_dead(_37)
+    _35 = chunks_exact<'_, i32>[{built_in impl Sized for i32}](move _36, const 2 : usize)
+    storage_dead(_36)
+    _34 = {impl IntoIterator for I}::into_iter<ChunksExact<'13, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'13, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'13, i32>[{built_in impl Sized for i32}]](move _35)
+    storage_dead(_35)
+    storage_live(iter_38)
+    iter_38 = move _34
     loop {
-        storage_live(@39)
-        storage_live(@40)
-        storage_live(@41)
-        @41 := &mut iter@38
-        @40 := &two-phase-mut *(@41)
-        @39 := {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'33, '_, i32>[{built_in impl Sized for i32}](move (@40))
-        storage_dead(@40)
-        match @39 {
+        storage_live(_39)
+        storage_live(_40)
+        storage_live(_41)
+        _41 = &mut iter_38
+        _40 = &two-phase-mut (*_41)
+        _39 = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'33, '_, i32>[{built_in impl Sized for i32}](move _40)
+        storage_dead(_40)
+        match _39 {
             Option::None => {
                 break 0
             },
             Option::Some => {
-                @42 := copy (i@2) panic.+ const (1 : i32)
-                i@2 := move (@42)
-                storage_dead(@41)
-                storage_dead(@39)
+                _42 = copy i_2 panic.+ const 1 : i32
+                i_2 = move _42
+                storage_dead(_41)
+                storage_dead(_39)
                 continue 0
             },
         }
     }
-    storage_dead(@41)
-    storage_dead(@39)
-    storage_dead(iter@38)
-    storage_dead(@34)
-    storage_live(expected@43)
-    expected@43 := const (28 : i32)
-    storage_live(@44)
-    storage_live(@45)
-    @45 := &i@2
-    storage_live(@46)
-    @46 := &expected@43
-    @44 := (move (@45), move (@46))
-    storage_dead(@46)
-    storage_dead(@45)
-    storage_live(left_val@47)
-    left_val@47 := copy ((@44).0)
-    storage_live(right_val@48)
-    right_val@48 := copy ((@44).1)
-    storage_live(@49)
-    storage_live(@50)
-    @50 := copy (*(left_val@47))
-    storage_live(@51)
-    @51 := copy (*(right_val@48))
-    @49 := move (@50) == move (@51)
-    if move (@49) {
+    storage_dead(_41)
+    storage_dead(_39)
+    storage_dead(iter_38)
+    storage_dead(_34)
+    storage_live(expected_43)
+    expected_43 = const 28 : i32
+    storage_live(_44)
+    storage_live(_45)
+    _45 = &i_2
+    storage_live(_46)
+    _46 = &expected_43
+    _44 = (move _45, move _46)
+    storage_dead(_46)
+    storage_dead(_45)
+    storage_live(left_val_47)
+    left_val_47 = copy _44.0
+    storage_live(right_val_48)
+    right_val_48 = copy _44.1
+    storage_live(_49)
+    storage_live(_50)
+    _50 = copy (*left_val_47)
+    storage_live(_51)
+    _51 = copy (*right_val_48)
+    _49 = move _50 == move _51
+    if move _49 {
     } else {
-        storage_dead(@51)
-        storage_dead(@50)
-        storage_live(kind@52)
-        kind@52 := AssertKind::Eq {  }
-        storage_live(@53)
-        @53 := move (kind@52)
-        storage_live(@54)
-        storage_live(@55)
-        @55 := &*(left_val@47)
-        @54 := &*(@55)
-        storage_live(@56)
-        storage_live(@57)
-        @57 := &*(right_val@48)
-        @56 := &*(@57)
-        storage_live(@58)
-        @58 := Option::None {  }
+        storage_dead(_51)
+        storage_dead(_50)
+        storage_live(kind_52)
+        kind_52 = AssertKind::Eq {  }
+        storage_live(_53)
+        _53 = move kind_52
+        storage_live(_54)
+        storage_live(_55)
+        _55 = &(*left_val_47)
+        _54 = &(*_55)
+        storage_live(_56)
+        storage_live(_57)
+        _57 = &(*right_val_48)
+        _56 = &(*_57)
+        storage_live(_58)
+        _58 = Option::None {  }
         panic(core::panicking::assert_failed)
     }
-    storage_dead(@51)
-    storage_dead(@50)
-    storage_dead(@49)
-    storage_dead(right_val@48)
-    storage_dead(left_val@47)
-    storage_dead(@44)
-    @0 := ()
-    storage_dead(expected@43)
-    storage_dead(i@2)
-    storage_dead(a@1)
+    storage_dead(_51)
+    storage_dead(_50)
+    storage_dead(_49)
+    storage_dead(right_val_48)
+    storage_dead(left_val_47)
+    storage_dead(_44)
+    _0 = ()
+    storage_dead(expected_43)
+    storage_dead(i_2)
+    storage_dead(a_1)
     return
 }
 

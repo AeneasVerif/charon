@@ -176,9 +176,9 @@ impl Destruct for String {
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -187,47 +187,47 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::into_inner
 fn into_inner(@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}])
 {
-    let @0: (); // return
-    let b@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
-    let _x@2: String; // local
-    let @3: &'0 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let @4: (); // anonymous local
-    let @5: *const String; // anonymous local
-    let @6: *const String; // anonymous local
-    let @7: *const (); // anonymous local
-    let @8: usize; // anonymous local
-    let @9: bool; // anonymous local
-    let @10: bool; // anonymous local
-    let @11: bool; // anonymous local
-    let @12: bool; // anonymous local
+    let _0: (); // return
+    let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
+    let _x_2: String; // local
+    let _3: &'0 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
+    let _4: (); // anonymous local
+    let _5: *const String; // anonymous local
+    let _6: *const String; // anonymous local
+    let _7: *const (); // anonymous local
+    let _8: usize; // anonymous local
+    let _9: bool; // anonymous local
+    let _10: bool; // anonymous local
+    let _11: bool; // anonymous local
+    let _12: bool; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    storage_live(@8)
-    storage_live(@9)
-    storage_live(@10)
-    storage_live(@11)
-    storage_live(@12)
-    @0 := ()
-    storage_live(_x@2)
-    @6 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
-    @7 := cast<*const String, *const ()>(copy (@6))
-    @8 := transmute<*const (), usize>(copy (@7))
-    @9 := const ({impl SizedTypeProperties for T}<String>[{built_in impl Sized for String}]::SIZE) != const (0 : usize)
-    @10 := copy (@8) == const (0 : usize)
-    @11 := copy (@10) & copy (@9)
-    @12 := ~(copy (@11))
-    assert(copy (@12) == true)
-    _x@2 := move (*(@6))
-    @0 := ()
-    drop[{impl Destruct for String}] _x@2
-    storage_dead(_x@2)
-    @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
-    @3 := &mut b@1
-    @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move (@3))
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _0 = ()
+    storage_live(_x_2)
+    _6 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
+    _7 = cast<*const String, *const ()>(copy _6)
+    _8 = transmute<*const (), usize>(copy _7)
+    _9 = const {impl SizedTypeProperties for T}<String>[{built_in impl Sized for String}]::SIZE != const 0 : usize
+    _10 = copy _8 == const 0 : usize
+    _11 = copy _10 & copy _9
+    _12 = ~(copy _11)
+    assert(copy _12 == true)
+    _x_2 = move (*_6)
+    _0 = ()
+    drop[{impl Destruct for String}] _x_2
+    storage_dead(_x_2)
+    _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
+    _3 = &mut b_1
+    _4 = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _3)
     return
 }
 

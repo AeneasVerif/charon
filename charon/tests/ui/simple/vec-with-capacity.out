@@ -176,32 +176,32 @@ pub fn with_capacity<T>(@1: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: Vec<T>[@TraitClause0, {built_in impl Sized for Global}]; // return
-    let capacity@1: usize; // arg #1
-    let @2: RawVec<T, Global>[@TraitClause0, {built_in impl Sized for Global}]; // anonymous local
-    let @3: RawVecInner<Global>[{built_in impl Sized for Global}]; // anonymous local
-    let @4: PhantomData<T>; // anonymous local
-    let @5: Global; // anonymous local
+    let _0: Vec<T>[@TraitClause0, {built_in impl Sized for Global}]; // return
+    let capacity_1: usize; // arg #1
+    let _2: RawVec<T, Global>[@TraitClause0, {built_in impl Sized for Global}]; // anonymous local
+    let _3: RawVecInner<Global>[{built_in impl Sized for Global}]; // anonymous local
+    let _4: PhantomData<T>; // anonymous local
+    let _5: Global; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@5)
-    @5 := Global {  }
-    @3 := with_capacity_in<Global>[{built_in impl Sized for Global}](move (capacity@1), move (@5), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
-    storage_live(@4)
-    @4 := PhantomData {  }
-    @2 := RawVec { 0: move (@3), 1: move (@4) }
-    storage_dead(@3)
-    @0 := Vec { buf: move (@2), len: const (0 : usize) }
-    storage_dead(@2)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_5)
+    _5 = Global {  }
+    _3 = with_capacity_in<Global>[{built_in impl Sized for Global}](move capacity_1, move _5, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT)
+    storage_live(_4)
+    _4 = PhantomData {  }
+    _2 = RawVec { 0: move _3, 1: move _4 }
+    storage_dead(_3)
+    _0 = Vec { buf: move _2, len: const 0 : usize }
+    storage_dead(_2)
     return
 }
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -210,15 +210,15 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::vec
 fn vec()
 {
-    let @0: (); // return
-    let @1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let _0: (); // return
+    let _1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := with_capacity<u32>[{built_in impl Sized for u32}](const (42 : usize))
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] @1
-    storage_dead(@1)
-    @0 := ()
+    _0 = ()
+    storage_live(_1)
+    _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42 : usize)
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
+    storage_dead(_1)
+    _0 = ()
     return
 }
 

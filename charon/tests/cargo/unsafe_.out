@@ -14,9 +14,9 @@ pub fn _print<'_0>(@1: Arguments<'_0>)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -25,18 +25,18 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: unsafe::main
 fn main()
 {
-    let @0: (); // return
-    let @1: (); // anonymous local
-    let @2: Arguments<'0>; // anonymous local
+    let _0: (); // return
+    let _1: (); // anonymous local
+    let _2: Arguments<'0>; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    @2 := from_str<'1>(const ("Hello, world!\n"))
-    @1 := _print<'_>(move (@2))
-    storage_dead(@2)
-    storage_dead(@1)
-    @0 := ()
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = from_str<'1>(const "Hello, world!\n")
+    _1 = _print<'_>(move _2)
+    storage_dead(_2)
+    storage_dead(_1)
+    _0 = ()
     return
 }
 

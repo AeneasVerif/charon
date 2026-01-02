@@ -431,9 +431,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -442,47 +442,47 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let slice@1: &'0 [i32]; // local
-    let @2: &'1 [i32; 1 : usize]; // anonymous local
-    let @3: &'1 [i32; 1 : usize]; // anonymous local
-    let @4: Option<&'2 i32>[{built_in impl Sized for &'2 i32}]; // anonymous local
-    let @5: &'5 mut Iter<'6, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @6: Iter<'6, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let @7: &'0 [i32]; // anonymous local
-    let @8: &'1 [i32; 1 : usize]; // anonymous local
-    let @9: &'_ [i32; 1 : usize]; // anonymous local
-    let @10: [i32; 1 : usize]; // anonymous local
+    let _0: (); // return
+    let slice_1: &'0 [i32]; // local
+    let _2: &'1 [i32; 1 : usize]; // anonymous local
+    let _3: &'1 [i32; 1 : usize]; // anonymous local
+    let _4: Option<&'2 i32>[{built_in impl Sized for &'2 i32}]; // anonymous local
+    let _5: &'5 mut Iter<'6, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _6: Iter<'6, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _7: &'0 [i32]; // anonymous local
+    let _8: &'1 [i32; 1 : usize]; // anonymous local
+    let _9: &'_ [i32; 1 : usize]; // anonymous local
+    let _10: [i32; 1 : usize]; // anonymous local
 
-    storage_live(@9)
-    storage_live(@10)
-    @10 := [const (0 : i32)]
-    @9 := &@10
-    storage_live(@8)
-    @0 := ()
-    storage_live(slice@1)
-    storage_live(@2)
-    storage_live(@3)
-    @8 := move (@9)
-    @3 := &*(@8)
-    @2 := &*(@3)
-    slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
-    storage_dead(@2)
-    storage_dead(@3)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    storage_live(@7)
-    @7 := &*(slice@1) with_metadata(copy (slice@1.metadata))
-    @6 := iter<'_, i32>[{built_in impl Sized for i32}](move (@7))
-    @5 := &two-phase-mut @6
-    storage_dead(@7)
-    @4 := {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'7, '_, i32>[{built_in impl Sized for i32}](move (@5))
-    storage_dead(@5)
-    storage_dead(@6)
-    storage_dead(@4)
-    @0 := ()
-    storage_dead(slice@1)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = [const 0 : i32]
+    _9 = &_10
+    storage_live(_8)
+    _0 = ()
+    storage_live(slice_1)
+    storage_live(_2)
+    storage_live(_3)
+    _8 = move _9
+    _3 = &(*_8)
+    _2 = &(*_3)
+    slice_1 = @ArrayToSliceShared<'_, i32, 1 : usize>(move _2)
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = &(*slice_1) with_metadata(copy slice_1.metadata)
+    _6 = iter<'_, i32>[{built_in impl Sized for i32}](move _7)
+    _5 = &two-phase-mut _6
+    storage_dead(_7)
+    _4 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'7, '_, i32>[{built_in impl Sized for i32}](move _5)
+    storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(slice_1)
     return
 }
 

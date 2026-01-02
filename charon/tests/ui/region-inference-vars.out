@@ -25,9 +25,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -53,14 +53,14 @@ where
 // Full name: test_crate::{impl MyTryFrom<&'_0 bool> for bool}::from
 pub fn {impl MyTryFrom<&'_0 bool> for bool}::from<'_0>(@1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
-    let @0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
-    let v@1: &'0 bool; // arg #1
-    let @2: bool; // anonymous local
+    let _0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
+    let v_1: &'0 bool; // arg #1
+    let _2: bool; // anonymous local
 
-    storage_live(@2)
-    @2 := copy (*(v@1))
-    @0 := Result::Ok { 0: move (@2) }
-    storage_dead(@2)
+    storage_live(_2)
+    _2 = copy (*v_1)
+    _0 = Result::Ok { 0: move _2 }
+    storage_dead(_2)
     return
 }
 

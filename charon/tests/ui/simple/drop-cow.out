@@ -64,9 +64,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -94,18 +94,18 @@ where
     B : 'a,
     B : 'a,
 {
-    let @0: (); // return
-    let @1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
-    let @2: &'0 mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // anonymous local
+    let _0: (); // return
+    let _1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let _2: &'0 mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    @2 := &mut *(@1)
-    match *(@2) {
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    match (*_2) {
         Cow::Borrowed => {
         },
         _ => {
-            drop[@TraitClause1::parent_clause4] (*(@2) as variant Cow::Owned).0
+            drop[@TraitClause1::parent_clause4] ((*_2) as variant Cow::Owned).0
             return
         },
     }
@@ -133,12 +133,12 @@ where
     [@TraitClause2]: Destruct<B>,
     B : 'a,
 {
-    let @0: (); // return
-    let @1: Cow<'0, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let _0: (); // return
+    let _1: Cow<'0, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
 
-    @0 := ()
-    @0 := ()
-    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'2, B>[@TraitClause0, @TraitClause1, @TraitClause2]] @1
+    _0 = ()
+    _0 = ()
+    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'2, B>[@TraitClause0, @TraitClause1, @TraitClause2]] _1
     return
 }
 

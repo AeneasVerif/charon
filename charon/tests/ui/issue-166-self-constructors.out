@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -19,9 +19,9 @@ enum Foo {
 // Full name: test_crate::{Foo}::b
 pub fn b() -> Foo
 {
-    let @0: Foo; // return
+    let _0: Foo; // return
 
-    @0 := Foo::B { 0: const (0 : usize) }
+    _0 = Foo::B { 0: const 0 : usize }
     return
 }
 
@@ -33,14 +33,14 @@ struct Bar<'a> {
 // Full name: test_crate::{Bar<'a>}::new
 fn new<'a>(@1: &'a i32) -> Bar<'a>
 {
-    let @0: Bar<'0>; // return
-    let r@1: &'1 i32; // arg #1
-    let @2: &'1 i32; // anonymous local
+    let _0: Bar<'0>; // return
+    let r_1: &'1 i32; // arg #1
+    let _2: &'1 i32; // anonymous local
 
-    storage_live(@2)
-    @2 := copy (r@1)
-    @0 := Bar { r: move (@2) }
-    storage_dead(@2)
+    storage_live(_2)
+    _2 = copy r_1
+    _0 = Bar { r: move _2 }
+    storage_dead(_2)
     return
 }
 

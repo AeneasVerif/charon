@@ -28,9 +28,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -78,11 +78,11 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Foo<()>,
 {
-    let @0: (); // return
-    let self@1: &'0 T; // arg #1
+    let _0: (); // return
+    let self_1: &'0 T; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -91,14 +91,14 @@ unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Broken<Assoc = ()>))
 where
     [@TraitClause0]: Sized<T>,
 {
-    let ret@0: (); // return
-    let dyn_self@1: *mut (dyn Broken<Assoc = ()> + '0); // arg #1
-    let target_self@2: *mut T; // local
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Broken<Assoc = ()> + '0); // arg #1
+    let target_self_2: *mut T; // local
 
-    ret@0 := ()
-    storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn Broken<Assoc = ()> + '1), *mut T>(move (dyn_self@1))
-    drop[{built_in impl Destruct for T}] *(target_self@2)
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Broken<Assoc = ()> + '1), *mut T>(move dyn_self_1)
+    drop[{built_in impl Destruct for T}] (*target_self_2)
     return
 }
 
@@ -108,14 +108,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Foo<()>,
 {
-    let @0: (); // return
-    let @1: &'_0 (dyn Broken + '0); // arg #1
-    let @2: &'_0 T; // anonymous local
+    let _0: (); // return
+    let _1: &'_0 (dyn Broken + '0); // arg #1
+    let _2: &'_0 T; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    @2 := concretize<&'_0 (dyn Broken + '1), &'_0 T>(move (@1))
-    @0 := {impl Broken for T}::broken<'_0, T>[@TraitClause0, @TraitClause1](move (@2))
+    _0 = ()
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Broken + '1), &'_0 T>(move _1)
+    _0 = {impl Broken for T}::broken<'_0, T>[@TraitClause0, @TraitClause1](move _2)
     return
 }
 
@@ -124,15 +124,15 @@ fn {impl Broken for T}::{vtable}<T>() -> test_crate::Broken::{vtable}<()>
 where
     [@TraitClause0]: Sized<T>,
 {
-    let ret@0: test_crate::Broken::{vtable}<()>; // return
-    let size@1: usize; // local
-    let align@2: usize; // local
+    let ret_0: test_crate::Broken::{vtable}<()>; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
 
-    storage_live(size@1)
-    size@1 := size_of<T>
-    storage_live(align@2)
-    align@2 := align_of<T>
-    ret@0 := test_crate::Broken::{vtable} { size: move (size@1), align: move (align@2), drop: const ({vtable_drop_shim}<T>[@TraitClause0]), method_broken: const ({vtable_method}<'1, T>[@TraitClause0]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(size_1)
+    size_1 = size_of<T>
+    storage_live(align_2)
+    align_2 = align_of<T>
+    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0], method_broken: const {vtable_method}<'1, T>[@TraitClause0], super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
@@ -157,31 +157,31 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let _m@1: &'0 (dyn Broken<Assoc = ()> + '1); // local
-    let @2: &'2 (); // anonymous local
-    let @3: &'2 (); // anonymous local
-    let @4: &'2 (); // anonymous local
-    let @5: &'_ (); // anonymous local
-    let @6: (); // anonymous local
+    let _0: (); // return
+    let _m_1: &'0 (dyn Broken<Assoc = ()> + '1); // local
+    let _2: &'2 (); // anonymous local
+    let _3: &'2 (); // anonymous local
+    let _4: &'2 (); // anonymous local
+    let _5: &'_ (); // anonymous local
+    let _6: (); // anonymous local
 
-    storage_live(@5)
-    storage_live(@6)
-    @6 := ()
-    @5 := &@6
-    storage_live(@4)
-    @0 := ()
-    storage_live(_m@1)
-    storage_live(@2)
-    storage_live(@3)
-    @4 := move (@5)
-    @3 := &*(@4)
-    @2 := &*(@3)
-    _m@1 := unsize_cast<&'2 (), &'0 (dyn Broken<Assoc = ()> + '1), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move (@2))
-    storage_dead(@2)
-    storage_dead(@3)
-    @0 := ()
-    storage_dead(_m@1)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = ()
+    _5 = &_6
+    storage_live(_4)
+    _0 = ()
+    storage_live(_m_1)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &(*_3)
+    _m_1 = unsize_cast<&'2 (), &'0 (dyn Broken<Assoc = ()> + '1), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
+    storage_dead(_2)
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(_m_1)
     return
 }
 

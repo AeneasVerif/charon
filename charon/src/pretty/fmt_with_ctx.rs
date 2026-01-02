@@ -273,7 +273,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Call {
         let dest = self.dest.with_ctx(ctx);
         let func = self.func.with_ctx(ctx);
         let args = self.args.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "{dest} := {func}({args})")
+        write!(f, "{dest} = {func}({args})")
     }
 }
 
@@ -1038,7 +1038,7 @@ impl Display for Local {
         if let Some(name) = &self.name {
             write!(f, "{name}")?
         }
-        write!(f, "{}", self.index.to_pretty_string())?;
+        write!(f, "_{}", self.index)?;
         Ok(())
     }
 }
@@ -1087,9 +1087,9 @@ impl_display_via_ctx!(Operand);
 impl<C: AstFormatter> FmtWithCtx<C> for Operand {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Operand::Copy(p) => write!(f, "copy ({})", p.with_ctx(ctx)),
-            Operand::Move(p) => write!(f, "move ({})", p.with_ctx(ctx)),
-            Operand::Const(c) => write!(f, "const ({})", c.with_ctx(ctx)),
+            Operand::Copy(p) => write!(f, "copy {}", p.with_ctx(ctx)),
+            Operand::Move(p) => write!(f, "move {}", p.with_ctx(ctx)),
+            Operand::Const(c) => write!(f, "const {}", c.with_ctx(ctx)),
         }
     }
 }
@@ -1157,7 +1157,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                 let sub = subplace.with_ctx(ctx);
                 match projection {
                     ProjectionElem::Deref => {
-                        write!(f, "*({sub})")
+                        write!(f, "(*{sub})")
                     }
                     ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                         FieldProjKind::Adt(adt_id, opt_variant_id) => {
@@ -1171,7 +1171,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                             Ok(())
                         }
                         FieldProjKind::Tuple(_) => {
-                            write!(f, "({sub}).{field_id}")
+                            write!(f, "{sub}.{field_id}")
                         }
                     },
                     ProjectionElem::PtrMetadata => {
@@ -1181,24 +1181,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         offset,
                         from_end: true,
                         ..
-                    } => write!(f, "({sub})[-{}]", offset.with_ctx(ctx)),
+                    } => write!(f, "{sub}[-{}]", offset.with_ctx(ctx)),
                     ProjectionElem::Index {
                         offset,
                         from_end: false,
                         ..
-                    } => write!(f, "({sub})[{}]", offset.with_ctx(ctx)),
+                    } => write!(f, "{sub}[{}]", offset.with_ctx(ctx)),
                     ProjectionElem::Subslice {
                         from,
                         to,
                         from_end: true,
                         ..
-                    } => write!(f, "({sub})[{}..-{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
+                    } => write!(f, "{sub}[{}..-{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
                     ProjectionElem::Subslice {
                         from,
                         to,
                         from_end: false,
                         ..
-                    } => write!(f, "({sub})[{}..{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
+                    } => write!(f, "{sub}[{}..{}]", from.with_ctx(ctx), to.with_ctx(ctx)),
                 }
             }
         }
@@ -1508,15 +1508,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             writeln!(f, "{tab}// {line}")?;
         }
         match &self.kind {
-            StatementKind::Assign(place, rvalue) => write!(
-                f,
-                "{tab}{} := {}",
-                place.with_ctx(ctx),
-                rvalue.with_ctx(ctx),
-            ),
+            StatementKind::Assign(place, rvalue) => {
+                write!(f, "{tab}{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
+            }
             StatementKind::SetDiscriminant(place, variant_id) => write!(
                 f,
-                "{tab}@discriminant({}) := {}",
+                "{tab}@discriminant({}) = {}",
                 place.with_ctx(ctx),
                 variant_id
             ),
@@ -1555,14 +1552,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
         write!(f, "{tab}")?;
         match &self.kind {
             StatementKind::Assign(place, rvalue) => {
-                write!(f, "{} := {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
+                write!(f, "{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
             }
-            StatementKind::SetDiscriminant(place, variant_id) => write!(
-                f,
-                "@discriminant({}) := {}",
-                place.with_ctx(ctx),
-                variant_id
-            ),
+            StatementKind::SetDiscriminant(place, variant_id) => {
+                write!(f, "@discriminant({}) = {}", place.with_ctx(ctx), variant_id)
+            }
             StatementKind::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => {
                 write!(
                     f,

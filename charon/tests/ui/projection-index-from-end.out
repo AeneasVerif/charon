@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -13,45 +13,45 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::slice_pattern_end
 fn slice_pattern_end<'_0>(@1: &'_0 [()])
 {
-    let @0: (); // return
-    let x@1: &'0 [()]; // arg #1
-    let @2: usize; // anonymous local
-    let @3: usize; // anonymous local
-    let @4: usize; // anonymous local
-    let @5: bool; // anonymous local
-    let _named@6: &'1 (); // local
-    let @7: &'_ [()]; // anonymous local
-    let @8: usize; // anonymous local
-    let @9: usize; // anonymous local
-    let @10: &'_ (); // anonymous local
+    let _0: (); // return
+    let x_1: &'0 [()]; // arg #1
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: bool; // anonymous local
+    let _named_6: &'1 (); // local
+    let _7: &'_ [()]; // anonymous local
+    let _8: usize; // anonymous local
+    let _9: usize; // anonymous local
+    let _10: &'_ (); // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @0 := ()
-    @3 := copy (x@1.metadata)
-    @2 := move (@3)
-    @4 := const (1 : usize)
-    @5 := move (@2) >= move (@4)
-    if move (@5) {
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _0 = ()
+    _3 = copy x_1.metadata
+    _2 = move _3
+    _4 = const 1 : usize
+    _5 = move _2 >= move _4
+    if move _5 {
     } else {
-        @0 := ()
+        _0 = ()
         return
     }
-    storage_live(_named@6)
-    storage_live(@7)
-    @7 := &*(x@1) with_metadata(copy (x@1.metadata))
-    storage_live(@8)
-    @8 := len(*(x@1))
-    storage_live(@9)
-    @9 := copy (@8) ub.- const (1 : usize)
-    storage_dead(@8)
-    storage_live(@10)
-    @10 := @SliceIndexShared<'_, ()>(move (@7), copy (@9))
-    _named@6 := &*(@10)
-    @0 := ()
-    storage_dead(_named@6)
+    storage_live(_named_6)
+    storage_live(_7)
+    _7 = &(*x_1) with_metadata(copy x_1.metadata)
+    storage_live(_8)
+    _8 = len((*x_1))
+    storage_live(_9)
+    _9 = copy _8 ub.- const 1 : usize
+    storage_dead(_8)
+    storage_live(_10)
+    _10 = @SliceIndexShared<'_, ()>(move _7, copy _9)
+    _named_6 = &(*_10)
+    _0 = ()
+    storage_dead(_named_6)
     return
 }
 

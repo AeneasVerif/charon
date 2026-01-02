@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 = ()
     return
 }
 
@@ -38,9 +38,9 @@ fn test_crate::Trait::CONST1<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (0 : usize)
+    _0 = const 0 : usize
     return
 }
 
@@ -53,9 +53,9 @@ fn test_crate::Trait::CONST2<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (0 : usize)
+    _0 = const 0 : usize
     return
 }
 
@@ -68,9 +68,9 @@ fn test_crate::Trait::CONST3<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (0 : usize)
+    _0 = const 0 : usize
     return
 }
 
@@ -83,10 +83,10 @@ fn test_crate::Trait::method1<Self>()
 where
     [@TraitClause0]: Trait<Self>,
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -94,19 +94,19 @@ fn test_crate::Trait::method2<Self>()
 where
     [@TraitClause0]: Trait<Self>,
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}::CONST1
 fn {impl Trait for ()}::CONST1() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (1 : usize)
+    _0 = const 1 : usize
     return
 }
 
@@ -116,9 +116,9 @@ const {impl Trait for ()}::CONST1: usize = {impl Trait for ()}::CONST1()
 // Full name: test_crate::{impl Trait for ()}::CONST2
 fn {impl Trait for ()}::CONST2() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (1 : usize)
+    _0 = const 1 : usize
     return
 }
 
@@ -128,9 +128,9 @@ const {impl Trait for ()}::CONST2: usize = {impl Trait for ()}::CONST2()
 // Full name: test_crate::{impl Trait for ()}::CONST3
 fn {impl Trait for ()}::CONST3() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (1 : usize)
+    _0 = const 1 : usize
     return
 }
 
@@ -140,20 +140,20 @@ const {impl Trait for ()}::CONST3: usize = {impl Trait for ()}::CONST3()
 // Full name: test_crate::{impl Trait for ()}::method1
 fn {impl Trait for ()}::method1()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}::method2
 fn {impl Trait for ()}::method2()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -171,9 +171,9 @@ impl Trait for () {
 // Full name: test_crate::{impl Trait for u8}::CONST2
 fn {impl Trait for u8}::CONST2() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (2 : usize)
+    _0 = const 2 : usize
     return
 }
 
@@ -183,20 +183,20 @@ const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
 // Full name: test_crate::{impl Trait for u8}::method1
 fn {impl Trait for u8}::method1()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
 // Full name: test_crate::{impl Trait for u8}::method2
 fn {impl Trait for u8}::method2()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -217,18 +217,18 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    let @0: (); // return
-    let @1: (); // anonymous local
-    let @2: usize; // anonymous local
+    let _0: (); // return
+    let _1: (); // anonymous local
+    let _2: usize; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := @TraitClause1::method1()
-    storage_dead(@1)
-    storage_live(@2)
-    @2 := const (@TraitClause1::CONST1)
-    storage_dead(@2)
-    @0 := ()
+    _0 = ()
+    storage_live(_1)
+    _1 = @TraitClause1::method1()
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = const @TraitClause1::CONST1
+    storage_dead(_2)
+    _0 = ()
     return
 }
 
