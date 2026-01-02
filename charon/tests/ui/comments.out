@@ -82,7 +82,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -94,8 +94,8 @@ fn function_call(@1: u32)
     let _0: (); // return
     let _1: u32; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -137,34 +137,34 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
     storage_live(_24)
     storage_live(sum_2)
     // `let sum`
-    sum_2 := const (0 : u32)
+    sum_2 = const (0 : u32)
     storage_live(i_3)
     // `let i`
     //  indented sub-comment
     // unindented sub-comment
-    i_3 := const (0 : usize)
+    i_3 = const (0 : usize)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     // Function call
-    _6 := copy (sum_2)
-    _7 := copy (_6) panic.+ const (2 : u32)
-    _5 := move (_7)
+    _6 = copy (sum_2)
+    _7 = copy (_6) panic.+ const (2 : u32)
+    _5 = move (_7)
     storage_dead(_6)
-    _4 := function_call(move (_5))
+    _4 = function_call(move (_5))
     storage_dead(_5)
     storage_dead(_4)
     // Start of loop
     loop {
         storage_live(_8)
         storage_live(_9)
-        _9 := copy (i_3)
+        _9 = copy (i_3)
         storage_live(_10)
         storage_live(_11)
-        _11 := &*(s_1) with_metadata(copy (s_1.metadata))
-        _10 := len<'_, u32>[{built_in impl Sized for u32}](move (_11))
+        _11 = &*(s_1) with_metadata(copy (s_1.metadata))
+        _10 = len<'_, u32>[{built_in impl Sized for u32}](move (_11))
         storage_dead(_11)
-        _8 := move (_9) < move (_10)
+        _8 = move (_9) < move (_10)
         if move (_8) {
         } else {
             break 0
@@ -174,19 +174,19 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
         storage_live(_12)
         storage_live(_13)
         // Add to running sum
-        _13 := copy (i_3)
+        _13 = copy (i_3)
         storage_live(_25)
-        _25 := &*(s_1) with_metadata(copy (s_1.metadata))
+        _25 = &*(s_1) with_metadata(copy (s_1.metadata))
         storage_live(_26)
-        _26 := @SliceIndexShared<'_, u32>(move (_25), copy (_13))
-        _12 := copy (*(_26))
-        _14 := copy (sum_2) panic.+ copy (_12)
-        sum_2 := move (_14)
+        _26 = @SliceIndexShared<'_, u32>(move (_25), copy (_13))
+        _12 = copy (*(_26))
+        _14 = copy (sum_2) panic.+ copy (_12)
+        sum_2 = move (_14)
         storage_dead(_12)
         storage_dead(_13)
         // Increment `i`
-        _15 := copy (i_3) panic.+ const (1 : usize)
-        i_3 := move (_15)
+        _15 = copy (i_3) panic.+ const (1 : usize)
+        i_3 = move (_15)
         // Before end of loop
         storage_dead(_8)
         continue 0
@@ -198,37 +198,37 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
     storage_live(_17)
     storage_live(_18)
     // Assign the result of an `if`.
-    _18 := copy (sum_2)
-    _17 := move (_18) > const (10 : u32)
+    _18 = copy (sum_2)
+    _17 = move (_18) > const (10 : u32)
     if move (_17) {
         storage_dead(_18)
         storage_live(_19)
         // sum + 100
-        _19 := copy (sum_2)
-        _20 := copy (_19) panic.+ const (100 : u32)
-        _16 := move (_20)
+        _19 = copy (sum_2)
+        _20 = copy (_19) panic.+ const (100 : u32)
+        _16 = move (_20)
         storage_dead(_19)
     } else {
         storage_dead(_18)
         // let sum untouched
-        _16 := copy (sum_2)
+        _16 = copy (sum_2)
     }
     storage_dead(_17)
-    sum_2 := move (_16)
+    sum_2 = move (_16)
     storage_dead(_16)
     storage_live(_21)
     storage_live(_22)
     storage_live(_23)
     // Function call
-    _23 := copy (sum_2)
-    _24 := copy (_23) panic.+ const (2 : u32)
-    _22 := move (_24)
+    _23 = copy (sum_2)
+    _24 = copy (_23) panic.+ const (2 : u32)
+    _22 = move (_24)
     storage_dead(_23)
-    _21 := function_call(move (_22))
+    _21 = function_call(move (_22))
     storage_dead(_22)
     storage_dead(_21)
     // Return final value
-    _0 := copy (sum_2)
+    _0 = copy (sum_2)
     storage_dead(i_3)
     storage_dead(sum_2)
     return
@@ -248,10 +248,10 @@ pub fn {impl Default for Foo}::default() -> Foo
     let _2: u32; // anonymous local
 
     storage_live(_1)
-    _1 := {impl Default for u32}::default()
+    _1 = {impl Default for u32}::default()
     storage_live(_2)
-    _2 := {impl Default for u32}::default()
-    _0 := Foo { x: move (_1), y: move (_2) }
+    _2 = {impl Default for u32}::default()
+    _0 = Foo { x: move (_1), y: move (_2) }
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -278,10 +278,10 @@ pub fn {impl Default for Bar}::default() -> Bar
     let _2: u32; // anonymous local
 
     storage_live(_1)
-    _1 := {impl Default for u32}::default()
+    _1 = {impl Default for u32}::default()
     storage_live(_2)
-    _2 := {impl Default for u32}::default()
-    _0 := Bar { x: move (_1), super_long_field_name: move (_2) }
+    _2 = {impl Default for u32}::default()
+    _0 = Bar { x: move (_1), super_long_field_name: move (_2) }
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -302,8 +302,8 @@ where
     let _0: (); // return
     let _1: T; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for T}] _1
     return
 }
@@ -350,102 +350,102 @@ fn foo()
     let _36: &'_ u32; // anonymous local
 
     storage_live(_32)
-    _0 := ()
+    _0 = ()
     storage_live(_3)
     // Call `default` and destructure the result
-    _3 := {impl Default for Foo}::default()
+    _3 = {impl Default for Foo}::default()
     storage_live(x_1)
-    x_1 := copy ((_3).x)
+    x_1 = copy ((_3).x)
     storage_live(y_2)
-    y_2 := copy ((_3).y)
+    y_2 = copy ((_3).y)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     // Call `eat` on an aggregate value
-    _6 := copy (x_1)
+    _6 = copy (x_1)
     storage_live(_7)
-    _7 := copy (y_2)
-    _5 := Foo { x: move (_6), y: move (_7) }
+    _7 = copy (y_2)
+    _5 = Foo { x: move (_6), y: move (_7) }
     storage_dead(_7)
     storage_dead(_6)
-    _4 := eat<Foo>[{built_in impl Sized for Foo}](move (_5))
+    _4 = eat<Foo>[{built_in impl Sized for Foo}](move (_5))
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_10)
     // Call `default` and destructure the result
     // This is the long field
-    _10 := {impl Default for Bar}::default()
+    _10 = {impl Default for Bar}::default()
     storage_live(x_8)
-    x_8 := copy ((_10).x)
+    x_8 = copy ((_10).x)
     storage_live(super_long_field_name_9)
-    super_long_field_name_9 := copy ((_10).super_long_field_name)
+    super_long_field_name_9 = copy ((_10).super_long_field_name)
     storage_dead(_10)
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
     // Call `eat` on an aggregate value
-    _13 := copy (x_8)
+    _13 = copy (x_8)
     storage_live(_14)
     // This is the long field
-    _14 := copy (super_long_field_name_9)
-    _12 := Bar { x: move (_13), super_long_field_name: move (_14) }
+    _14 = copy (super_long_field_name_9)
+    _12 = Bar { x: move (_13), super_long_field_name: move (_14) }
     storage_dead(_14)
     storage_dead(_13)
-    _11 := eat<Bar>[{built_in impl Sized for Bar}](move (_12))
+    _11 = eat<Bar>[{built_in impl Sized for Bar}](move (_12))
     storage_dead(_12)
     storage_dead(_11)
     storage_live(a_15)
     // Build an array
-    a_15 := @ArrayRepeat<'_, u32, 10 : usize>(const (0 : u32))
+    a_15 = @ArrayRepeat<'_, u32, 10 : usize>(const (0 : u32))
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
     // `assert_eq`
-    _18 := const (9 : usize)
+    _18 = const (9 : usize)
     storage_live(_33)
     storage_live(_34)
-    _34 := const (9 : u32)
-    _33 := &_34
+    _34 = const (9 : u32)
+    _33 = &_34
     storage_live(_35)
-    _35 := &a_15
+    _35 = &a_15
     storage_live(_36)
-    _36 := @ArrayIndexShared<'_, u32, 10 : usize>(move (_35), copy (_18))
-    _17 := &*(_36)
+    _36 = @ArrayIndexShared<'_, u32, 10 : usize>(move (_35), copy (_18))
+    _17 = &*(_36)
     storage_live(_19)
-    _32 := move (_33)
-    _19 := &*(_32)
-    _16 := (move (_17), move (_19))
+    _32 = move (_33)
+    _19 = &*(_32)
+    _16 = (move (_17), move (_19))
     storage_dead(_19)
     storage_dead(_17)
     storage_live(left_val_20)
-    left_val_20 := copy ((_16).0)
+    left_val_20 = copy ((_16).0)
     storage_live(right_val_21)
-    right_val_21 := copy ((_16).1)
+    right_val_21 = copy ((_16).1)
     storage_live(_22)
     storage_live(_23)
-    _23 := copy (*(left_val_20))
+    _23 = copy (*(left_val_20))
     storage_live(_24)
-    _24 := copy (*(right_val_21))
-    _22 := move (_23) == move (_24)
+    _24 = copy (*(right_val_21))
+    _22 = move (_23) == move (_24)
     if move (_22) {
     } else {
         storage_dead(_24)
         storage_dead(_23)
         storage_live(kind_25)
-        kind_25 := AssertKind::Eq {  }
+        kind_25 = AssertKind::Eq {  }
         storage_live(_26)
-        _26 := move (kind_25)
+        _26 = move (kind_25)
         storage_live(_27)
         storage_live(_28)
-        _28 := &*(left_val_20)
-        _27 := &*(_28)
+        _28 = &*(left_val_20)
+        _27 = &*(_28)
         storage_live(_29)
         storage_live(_30)
-        _30 := &*(right_val_21)
-        _29 := &*(_30)
+        _30 = &*(right_val_21)
+        _29 = &*(_30)
         storage_live(_31)
-        _31 := Option::None {  }
+        _31 = Option::None {  }
         panic(core::panicking::assert_failed)
     }
     storage_dead(_24)
@@ -455,7 +455,7 @@ fn foo()
     storage_dead(left_val_20)
     storage_dead(_18)
     storage_dead(_16)
-    _0 := ()
+    _0 = ()
     storage_dead(a_15)
     storage_dead(super_long_field_name_9)
     storage_dead(x_8)
@@ -469,7 +469,7 @@ fn CONSTANT() -> u32
 {
     let _0: u32; // return
 
-    _0 := const (42 : u32)
+    _0 = const (42 : u32)
     return
 }
 
@@ -487,21 +487,21 @@ pub fn thing()
     let _5: u32; // anonymous local
 
     storage_live(_3)
-    _0 := ()
+    _0 = ()
     storage_live(x_1)
     storage_live(_2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    _2 := copy (CONSTANT) panic.>> const (3 : i32)
-    _3 := copy (_2) panic.+ const (12 : u32)
-    x_1 := move (_3)
+    _2 = copy (CONSTANT) panic.>> const (3 : i32)
+    _3 = copy (_2) panic.+ const (12 : u32)
+    x_1 = move (_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 := copy (x_1)
-    _4 := function_call(move (_5))
+    _5 = copy (x_1)
+    _4 = function_call(move (_5))
     storage_dead(_5)
     storage_dead(_4)
-    _0 := ()
+    _0 = ()
     storage_dead(x_1)
     return
 }
@@ -512,8 +512,8 @@ pub fn fake_read(@1: u32)
     let _0: (); // return
     let x_1: u32; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     // This statement is translated to a `fake_read`.
     return
 }
@@ -524,12 +524,12 @@ fn fool()
     let _0: (); // return
     let _1: &'0 Str; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const ("\n    // Fooled ya")
+    _1 = const ("\n    // Fooled ya")
     storage_dead(_1)
     // Fooled ya";
-    _0 := ()
+    _0 = ()
     return
 }
 

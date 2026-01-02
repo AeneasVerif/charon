@@ -48,7 +48,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -75,36 +75,36 @@ fn main()
     storage_live(_10)
     // We detect these in a pass; this test makes sure we don't mess up the generics in `--mono`
     // mode.
-    _10 := E1::A {  }
-    _9 := &_10
+    _10 = E1::A {  }
+    _9 = &_10
     storage_live(_7)
     storage_live(_8)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _8 := move (_9)
-    _3 := &*(_8)
-    _2 := &*(_3)
-    _1 := @discriminant(*(_2))
+    _8 = move (_9)
+    _3 = &*(_8)
+    _2 = &*(_3)
+    _1 = @discriminant(*(_2))
     storage_live(_11)
     storage_live(_12)
-    _12 := E2::A {  }
-    _11 := &_12
+    _12 = E2::A {  }
+    _11 = &_12
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _7 := move (_11)
-    _6 := &*(_7)
-    _5 := &*(_6)
-    _4 := @discriminant(*(_5))
+    _7 = move (_11)
+    _6 = &*(_7)
+    _5 = &*(_6)
+    _4 = @discriminant(*(_5))
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
-    _0 := ()
+    _0 = ()
     return
 }
 

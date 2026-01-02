@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -15,7 +15,7 @@ fn CONST() -> u8
 {
     let _0: u8; // return
 
-    _0 := const (0 : u8)
+    _0 = const (0 : u8)
     return
 }
 
@@ -30,22 +30,22 @@ fn f0()
     let _2: bool; // anonymous local
     let x_3: u8; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (0 : i32) < const (1 : i32)
+    _1 = const (0 : i32) < const (1 : i32)
     if move (_1) {
         storage_live(_2)
-        _2 := const (0 : i32) < const (1 : i32)
+        _2 = const (0 : i32) < const (1 : i32)
         if move (_2) {
         } else {
         }
         storage_dead(_2)
         storage_live(x_3)
-        x_3 := copy (CONST)
-        _0 := ()
+        x_3 = copy (CONST)
+        _0 = ()
         storage_dead(x_3)
     } else {
-        _0 := ()
+        _0 = ()
     }
     storage_dead(_1)
     return
@@ -67,24 +67,24 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
     let _10: i32; // anonymous local
     let x_11: u8; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(previous_true_hints_seen_2)
-    previous_true_hints_seen_2 := const (0 : usize)
+    previous_true_hints_seen_2 = const (0 : usize)
     storage_live(i_3)
-    i_3 := const (0 : i32)
+    i_3 = const (0 : i32)
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 := copy (i_3)
-        _4 := move (_5) < const (1 : i32)
+        _5 = copy (i_3)
+        _4 = move (_5) < const (1 : i32)
         if move (_4) {
             storage_dead(_5)
             storage_live(_6)
-            _6 := const (0 : i32) < const (1 : i32)
+            _6 = const (0 : i32) < const (1 : i32)
             if move (_6) {
             } else {
                 storage_live(_7)
-                _7 := const (1 : i32) > const (1 : i32)
+                _7 = const (1 : i32) > const (1 : i32)
                 if move (_7) {
                 } else {
                 }
@@ -92,16 +92,16 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
             storage_dead(_7)
             storage_dead(_6)
             storage_live(j_8)
-            j_8 := const (0 : i32)
+            j_8 = const (0 : i32)
             loop {
                 storage_live(_9)
                 storage_live(_10)
-                _10 := copy (j_8)
-                _9 := move (_10) < const (1 : i32)
+                _10 = copy (j_8)
+                _9 = move (_10) < const (1 : i32)
                 if move (_9) {
                     storage_dead(_10)
                     storage_live(x_11)
-                    x_11 := copy (CONST)
+                    x_11 = copy (CONST)
                     storage_dead(x_11)
                     storage_dead(_9)
                     continue 0
@@ -119,7 +119,7 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
         }
     }
     storage_dead(_5)
-    _0 := ()
+    _0 = ()
     storage_dead(_4)
     storage_dead(i_3)
     storage_dead(previous_true_hints_seen_2)

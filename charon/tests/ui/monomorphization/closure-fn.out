@@ -106,7 +106,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -135,28 +135,28 @@ fn {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '_2>(@1: &'_2 closure<
     storage_live(_9)
     storage_live(_11)
     storage_live(_13)
-    x_3 := move ((tupled_args_2).0)
-    y_4 := move ((tupled_args_2).1)
+    x_3 = move ((tupled_args_2).0)
+    y_4 = move ((tupled_args_2).1)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 := copy (*((*(_1)).0))
+    _7 = copy (*((*(_1)).0))
     storage_live(_8)
-    _8 := copy (x_3)
-    _9 := copy (_7) panic.+ copy (_8)
-    _6 := move (_9)
+    _8 = copy (x_3)
+    _9 = copy (_7) panic.+ copy (_8)
+    _6 = move (_9)
     storage_dead(_8)
     storage_dead(_7)
     storage_live(_10)
-    _10 := copy (y_4)
-    _11 := copy (_6) panic.+ copy (_10)
-    _5 := move (_11)
+    _10 = copy (y_4)
+    _11 = copy (_6) panic.+ copy (_10)
+    _5 = move (_11)
     storage_dead(_10)
     storage_dead(_6)
     storage_live(_12)
-    _12 := copy (*((*(_1)).1))
-    _13 := copy (_5) panic.+ copy (_12)
-    _0 := move (_13)
+    _12 = copy (*((*(_1)).1))
+    _13 = copy (_5) panic.+ copy (_12)
+    _0 = move (_13)
     storage_dead(_12)
     storage_dead(_5)
     return
@@ -171,10 +171,10 @@ fn apply_to::<closure<'_, '_>><'_0>(@1: &'_0 closure<'_, '_>) -> u8
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 := &*(f_1)
+    _2 = &*(f_1)
     storage_live(_3)
-    _3 := (const (10 : u8), const (20 : u8))
-    _0 := {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_, '_, '_>(move (_2), move (_3))
+    _3 = (const (10 : u8), const (20 : u8))
+    _0 = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_, '_, '_>(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -189,8 +189,8 @@ fn {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_2>(@1: &'_2 m
     let _3: &'0 closure<'_0, '_1>; // anonymous local
 
     storage_live(_3)
-    _3 := &*(state_1)
-    _0 := {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '2>(move (_3), move (args_2))
+    _3 = &*(state_1)
+    _0 = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_0, '_1, '2>(move (_3), move (args_2))
     return
 }
 
@@ -203,10 +203,10 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut closure<'_, '_>) -> u8
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 := &mut *(f_1)
+    _2 = &mut *(f_1)
     storage_live(_3)
-    _3 := (const (10 : u8), const (20 : u8))
-    _0 := {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_, '_, '_>(move (_2), move (_3))
+    _3 = (const (10 : u8), const (20 : u8))
+    _0 = {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_, '_, '_>(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -220,8 +220,8 @@ unsafe fn {impl Destruct::<closure<'_, '_>>}::drop_in_place<'_0, '_1>(@1: *mut c
     let _2: &'0 mut closure<'_0, '_1>; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -240,8 +240,8 @@ fn {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_0, '_1>(@1: closure<'
     let _3: &'0 mut closure<'_0, '_1>; // anonymous local
 
     storage_live(_3)
-    _3 := &mut _1
-    _0 := {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_>(move (_3), move (_2))
+    _3 = &mut _1
+    _0 = {impl FnMut::<closure<'_, '_>, (u8, u8)>}::call_mut<'_0, '_1, '_>(move (_3), move (_2))
     drop[{impl Destruct::<closure<'_, '_>>}<'_, '_>] _1
     return
 }
@@ -255,10 +255,10 @@ fn apply_to_once::<closure<'_, '_>>(@1: closure<'_, '_>) -> u8
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 := move (f_1)
+    _2 = move (f_1)
     storage_live(_3)
-    _3 := (const (10 : u8), const (20 : u8))
-    _0 := {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_, '_>(move (_2), move (_3))
+    _3 = (const (10 : u8), const (20 : u8))
+    _0 = {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'_, '_>(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{impl Destruct::<closure<'_, '_>>}<'_, '_>] f_1
@@ -286,53 +286,53 @@ fn main()
     let _15: u8; // anonymous local
     let _16: closure<'_, '_>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(v_1)
-    v_1 := const (5 : u8)
+    v_1 = const (5 : u8)
     storage_live(z_2)
-    z_2 := const (1 : u8)
+    z_2 = const (1 : u8)
     storage_live(f_3)
     storage_live(_4)
-    _4 := &v_1
+    _4 = &v_1
     storage_live(_5)
-    _5 := &z_2
-    f_3 := closure { 0: move (_4), 1: move (_5) }
+    _5 = &z_2
+    f_3 = closure { 0: move (_4), 1: move (_5) }
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
     storage_live(_7)
-    _7 := &f_3
+    _7 = &f_3
     storage_live(_8)
-    _8 := (const (10 : u8), const (20 : u8))
-    _6 := {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_, '_, '_>(move (_7), move (_8))
+    _8 = (const (10 : u8), const (20 : u8))
+    _6 = {impl Fn::<closure<'_, '_>, (u8, u8)>}::call<'_, '_, '_>(move (_7), move (_8))
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
     storage_live(_9)
     storage_live(_10)
     storage_live(_11)
-    _11 := &f_3
-    _10 := &*(_11)
-    _9 := apply_to::<closure<'_, '_>><'_>(move (_10))
+    _11 = &f_3
+    _10 = &*(_11)
+    _9 = apply_to::<closure<'_, '_>><'_>(move (_10))
     storage_dead(_10)
     storage_dead(_11)
     storage_dead(_9)
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    _14 := &mut f_3
-    _13 := &two-phase-mut *(_14)
-    _12 := apply_to_mut::<closure<'_, '_>><'_>(move (_13))
+    _14 = &mut f_3
+    _13 = &two-phase-mut *(_14)
+    _12 = apply_to_mut::<closure<'_, '_>><'_>(move (_13))
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)
     storage_live(_15)
     storage_live(_16)
-    _16 := copy (f_3)
-    _15 := apply_to_once::<closure<'_, '_>>(move (_16))
+    _16 = copy (f_3)
+    _15 = apply_to_once::<closure<'_, '_>>(move (_16))
     storage_dead(_16)
     storage_dead(_15)
-    _0 := ()
+    _0 = ()
     storage_dead(f_3)
     storage_dead(z_2)
     storage_dead(v_1)

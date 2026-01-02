@@ -62,7 +62,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -74,8 +74,8 @@ fn use_box(@1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_
     let _0: (); // return
     let _1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] _1
     return
 }
@@ -91,24 +91,24 @@ fn main()
     let _5: bool; // anonymous local
 
     storage_live(_5)
-    _0 := ()
-    _5 := const (false)
+    _0 = ()
+    _5 = const (false)
     storage_live(b_1)
-    _5 := const (true)
-    b_1 := @BoxNew<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const (1 : u32))
+    _5 = const (true)
+    b_1 = @BoxNew<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const (1 : u32))
     storage_live(_2)
-    _2 := const (false)
+    _2 = const (false)
     if move (_2) {
         storage_live(_3)
         storage_live(_4)
-        _5 := const (false)
-        _4 := move (b_1)
-        _3 := use_box(move (_4))
+        _5 = const (false)
+        _4 = move (b_1)
+        _3 = use_box(move (_4))
         storage_dead(_4)
         storage_dead(_3)
-        _0 := ()
+        _0 = ()
     } else {
-        _0 := ()
+        _0 = ()
     }
     storage_dead(_2)
     // `b` is dropped implicitly here
@@ -116,7 +116,7 @@ fn main()
         drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] b_1
     } else {
     }
-    _5 := const (false)
+    _5 = const (false)
     storage_dead(b_1)
     return
 }

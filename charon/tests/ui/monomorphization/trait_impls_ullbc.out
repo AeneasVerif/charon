@@ -65,7 +65,7 @@ fn UNIT_METADATA()
     let _0: (); // return
 
     bb0: {
-        _0 := ();
+        _0 = ();
         return;
     }
 }
@@ -83,13 +83,13 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let _5: &'0 bool; // anonymous local
 
     bb0: {
-        _0 := ();
+        _0 = ();
         storage_live(_3);
         storage_live(_4);
-        _4 := &expected_2;
+        _4 = &expected_2;
         storage_live(_5);
-        _5 := &init_1;
-        _3 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (_4), move (_5)) -> bb1 (unwind: bb2);
+        _5 = &init_1;
+        _3 = {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (_4), move (_5)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -104,7 +104,7 @@ fn do_test::<bool>(@1: bool, @2: bool)
         storage_dead(_5);
         storage_dead(_4);
         storage_dead(_3);
-        _0 := ();
+        _0 = ();
         return;
     }
 
@@ -122,14 +122,14 @@ fn main()
     let _1: (); // anonymous local
 
     bb0: {
-        _0 := ();
+        _0 = ();
         storage_live(_1);
-        _1 := do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
+        _1 = do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
         storage_dead(_1);
-        _0 := ();
+        _0 = ();
         return;
     }
 

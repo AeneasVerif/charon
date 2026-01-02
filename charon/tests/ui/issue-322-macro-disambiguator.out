@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -21,14 +21,14 @@ fn main()
     let _1: test_crate::main::AssertIsAsBytes; // anonymous local
     let _2: test_crate::main::AssertIsAsBytes#1; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := test_crate::main::AssertIsAsBytes {  }
+    _1 = test_crate::main::AssertIsAsBytes {  }
     storage_dead(_1)
     storage_live(_2)
-    _2 := test_crate::main::AssertIsAsBytes#1 {  }
+    _2 = test_crate::main::AssertIsAsBytes#1 {  }
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 

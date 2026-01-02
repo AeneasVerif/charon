@@ -423,7 +423,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -443,24 +443,24 @@ fn iter(@1: usize)
     let _8: &'0 mut Range<usize>; // anonymous local
     let i_9: usize; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 := copy (n_1)
-    _3 := Range { start: const (0 : usize), end: move (_4) }
+    _4 = copy (n_1)
+    _3 = Range { start: const (0 : usize), end: move (_4) }
     storage_dead(_4)
-    _2 := {impl IntoIterator<Clause0_Item, I> for I}::into_iter<Range<usize>, usize>[{impl Iterator<A> for Range<A>}<usize>[{impl Step for usize}]](move (_3))
+    _2 = {impl IntoIterator<Clause0_Item, I> for I}::into_iter<Range<usize>, usize>[{impl Iterator<A> for Range<A>}<usize>[{impl Step for usize}]](move (_3))
     storage_dead(_3)
     storage_live(iter_5)
-    iter_5 := move (_2)
+    iter_5 = move (_2)
     loop {
         storage_live(_6)
         storage_live(_7)
         storage_live(_8)
-        _8 := &mut iter_5
-        _7 := &two-phase-mut *(_8)
-        _6 := {impl Iterator<A> for Range<A>}::next<'_, usize>[{impl Step for usize}](move (_7))
+        _8 = &mut iter_5
+        _7 = &two-phase-mut *(_8)
+        _6 = {impl Iterator<A> for Range<A>}::next<'_, usize>[{impl Step for usize}](move (_7))
         storage_dead(_7)
         match _6 {
             Option::None => {
@@ -468,7 +468,7 @@ fn iter(@1: usize)
             },
             Option::Some => {
                 storage_live(i_9)
-                i_9 := copy ((_6 as variant Option::Some).0)
+                i_9 = copy ((_6 as variant Option::Some).0)
                 storage_dead(i_9)
                 storage_dead(_8)
                 storage_dead(_6)
@@ -476,7 +476,7 @@ fn iter(@1: usize)
             },
         }
     }
-    _0 := ()
+    _0 = ()
     storage_dead(_8)
     storage_dead(_6)
     storage_dead(iter_5)

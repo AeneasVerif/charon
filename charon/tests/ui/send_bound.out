@@ -32,7 +32,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -47,8 +47,8 @@ where
     let _0: (); // return
     let _msg_1: M; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for M}] _msg_1
     return
 }
@@ -60,14 +60,14 @@ fn main()
     let _1: (); // anonymous local
     let _2: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 := ()
-    _1 := foo<()>[{built_in impl Sized for ()}, {built_in impl Send for ()}](move (_2))
+    _2 = ()
+    _1 = foo<()>[{built_in impl Sized for ()}, {built_in impl Send for ()}](move (_2))
     storage_dead(_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

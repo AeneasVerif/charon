@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -59,7 +59,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const ({impl Trait for T}<T>[@TraitClause0]::FOO)
+    _0 = const ({impl Trait for T}<T>[@TraitClause0]::FOO)
     return
 }
 
@@ -71,11 +71,11 @@ where
     let _0: (); // return
     let _1: usize; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := foo<T>[@TraitClause0]()
+    _1 = foo<T>[@TraitClause0]()
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

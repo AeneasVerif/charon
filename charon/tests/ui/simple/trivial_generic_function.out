@@ -28,7 +28,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -42,8 +42,8 @@ where
     let _0: (); // return
     let t_1: T; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for T}] t_1
     return
 }

@@ -133,7 +133,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -147,12 +147,12 @@ fn use_string(@1: String)
     let drop_arg_2: *mut String; // local
     let drop_ret_3: (); // local
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     storage_live(drop_arg_2)
-    drop_arg_2 := &raw mut _1
+    drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 := {impl Destruct for String}::drop_in_place(move (drop_arg_2))
+    drop_ret_3 = {impl Destruct for String}::drop_in_place(move (drop_arg_2))
     return
 }
 
@@ -164,12 +164,12 @@ fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
     let drop_arg_2: *mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
     let drop_ret_3: (); // local
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     storage_live(drop_arg_2)
-    drop_arg_2 := &raw mut _1
+    drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 := {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_2))
+    drop_ret_3 = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_2))
     return
 }
 
@@ -184,12 +184,12 @@ where
     let drop_arg_2: *mut T; // local
     let drop_ret_3: (); // local
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     storage_live(drop_arg_2)
-    drop_arg_2 := &raw mut _1
+    drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 := @TraitClause1::drop_in_place(move (drop_arg_2))
+    drop_ret_3 = @TraitClause1::drop_in_place(move (drop_arg_2))
     return
 }
 
@@ -199,8 +199,8 @@ fn skip_drop_scalar(@1: i32)
     let _0: (); // return
     let _1: i32; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -218,14 +218,14 @@ pub fn {impl Drop for Point}::drop<'_0>(@1: &'_0 mut Point)
     let _2: (); // anonymous local
     let _3: Arguments<'1>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := from_str<'2>(const ("Dropping Point\n"))
-    _2 := _print<'_>(move (_3))
+    _3 = from_str<'2>(const ("Dropping Point\n"))
+    _2 = _print<'_>(move (_3))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -245,18 +245,18 @@ unsafe fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _0 := ()
-    _2 := &mut *(_1)
-    _3 := &mut *(_2)
-    _4 := {impl Drop for Point}::drop<'_>(move (_3))
+    _0 = ()
+    _2 = &mut *(_1)
+    _3 = &mut *(_2)
+    _4 = {impl Drop for Point}::drop<'_>(move (_3))
     storage_live(drop_arg_5)
-    drop_arg_5 := &raw mut (*(_2)).x
+    drop_arg_5 = &raw mut (*(_2)).x
     storage_live(drop_ret_6)
-    drop_ret_6 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_5))
+    drop_ret_6 = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_5))
     storage_live(drop_arg_7)
-    drop_arg_7 := &raw mut (*(_2)).y
+    drop_arg_7 = &raw mut (*(_2)).y
     storage_live(drop_ret_8)
-    drop_ret_8 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_7))
+    drop_ret_8 = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_7))
     return
 }
 
@@ -284,20 +284,20 @@ fn main()
     let drop_arg_4: *mut Point; // local
     let drop_ret_5: (); // local
 
-    _0 := ()
+    _0 = ()
     storage_live(p_1)
     storage_live(_2)
-    _2 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (1 : i32))
+    _2 = @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (1 : i32))
     storage_live(_3)
-    _3 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (2 : i32))
-    p_1 := Point { x: move (_2), y: move (_3) }
+    _3 = @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (2 : i32))
+    p_1 = Point { x: move (_2), y: move (_3) }
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_live(drop_arg_4)
-    drop_arg_4 := &raw mut p_1
+    drop_arg_4 = &raw mut p_1
     storage_live(drop_ret_5)
-    drop_ret_5 := {impl Destruct for Point}::drop_in_place(move (drop_arg_4))
+    drop_ret_5 = {impl Destruct for Point}::drop_in_place(move (drop_arg_4))
     storage_dead(p_1)
     return
 }

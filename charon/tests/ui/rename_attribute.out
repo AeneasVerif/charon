@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -43,7 +43,7 @@ where
     let _0: bool; // return
     let self_1: &'0 Self; // arg #1
 
-    _0 := const (true)
+    _0 = const (true)
     return
 }
 
@@ -53,7 +53,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
     let _0: bool; // return
     let self_1: &'0 bool; // arg #1
 
-    _0 := copy (*(self_1))
+    _0 = copy (*(self_1))
     return
 }
 
@@ -63,7 +63,7 @@ pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
     let _0: bool; // return
     let self_1: &'0 bool; // arg #1
 
-    _0 := const (true)
+    _0 = const (true)
     return
 }
 
@@ -88,17 +88,17 @@ where
 
     storage_live(_2)
     storage_live(_3)
-    _3 := &x_1
-    _2 := {impl BoolTrait for bool}::get_bool<'_>(move (_3))
+    _3 = &x_1
+    _2 = {impl BoolTrait for bool}::get_bool<'_>(move (_3))
     if move (_2) {
         storage_dead(_3)
         storage_live(_4)
-        _4 := &x_1
-        _0 := {impl BoolTrait for bool}::ret_true<'_>(move (_4))
+        _4 = &x_1
+        _0 = {impl BoolTrait for bool}::ret_true<'_>(move (_4))
         storage_dead(_4)
     } else {
         storage_dead(_3)
-        _0 := const (false)
+        _0 = const (false)
     }
     storage_dead(_2)
     return
@@ -130,10 +130,10 @@ fn C() -> u32
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
-    _2 := const (100 : u32) panic.+ const (10 : u32)
-    _1 := move (_2)
-    _3 := copy (_1) panic.+ const (1 : u32)
-    _0 := move (_3)
+    _2 = const (100 : u32) panic.+ const (10 : u32)
+    _1 = move (_2)
+    _3 = copy (_1) panic.+ const (1 : u32)
+    _0 = move (_3)
     storage_dead(_1)
     return
 }

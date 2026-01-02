@@ -273,7 +273,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Call {
         let dest = self.dest.with_ctx(ctx);
         let func = self.func.with_ctx(ctx);
         let args = self.args.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "{dest} := {func}({args})")
+        write!(f, "{dest} = {func}({args})")
     }
 }
 
@@ -1508,15 +1508,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             writeln!(f, "{tab}// {line}")?;
         }
         match &self.kind {
-            StatementKind::Assign(place, rvalue) => write!(
-                f,
-                "{tab}{} := {}",
-                place.with_ctx(ctx),
-                rvalue.with_ctx(ctx),
-            ),
+            StatementKind::Assign(place, rvalue) => {
+                write!(f, "{tab}{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
+            }
             StatementKind::SetDiscriminant(place, variant_id) => write!(
                 f,
-                "{tab}@discriminant({}) := {}",
+                "{tab}@discriminant({}) = {}",
                 place.with_ctx(ctx),
                 variant_id
             ),
@@ -1555,14 +1552,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
         write!(f, "{tab}")?;
         match &self.kind {
             StatementKind::Assign(place, rvalue) => {
-                write!(f, "{} := {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
+                write!(f, "{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
             }
-            StatementKind::SetDiscriminant(place, variant_id) => write!(
-                f,
-                "@discriminant({}) := {}",
-                place.with_ctx(ctx),
-                variant_id
-            ),
+            StatementKind::SetDiscriminant(place, variant_id) => {
+                write!(f, "@discriminant({}) = {}", place.with_ctx(ctx), variant_id)
+            }
             StatementKind::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => {
                 write!(
                     f,

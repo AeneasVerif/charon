@@ -13,7 +13,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -34,14 +34,14 @@ fn foo(@1: Foo)
     let _2: (); // anonymous local
     let _3: alloc::boxed::Box<u32>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := move ((f_1).x)
-    _2 := drop<alloc::boxed::Box<u32>>(move (_3))
+    _3 = move ((f_1).x)
+    _2 = drop<alloc::boxed::Box<u32>>(move (_3))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     // Only `y` and `z` should be dropped here
     drop[{impl#2}<u32, Global>] (f_1).y
     drop[{impl#2}<u32, Global>] (f_1).z

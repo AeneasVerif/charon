@@ -167,7 +167,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -200,24 +200,24 @@ fn foo()
     let _21: String; // anonymous local
     let _22: &'4 String; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(array_1)
-    array_1 := @ArrayRepeat<'_, i32, 2 : usize>(const (0 : i32))
+    array_1 = @ArrayRepeat<'_, i32, 2 : usize>(const (0 : i32))
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 := &array_1
-    _3 := &*(_4)
-    _2 := @ArrayToSliceShared<'_, i32, 2 : usize>(move (_3))
+    _4 = &array_1
+    _3 = &*(_4)
+    _2 = @ArrayToSliceShared<'_, i32, 2 : usize>(move (_3))
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 := copy (array_1)
-    _6 := @BoxNew<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move (_7))
-    _5 := unsize_cast<alloc::boxed::Box<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2 : usize>(move (_6))
+    _7 = copy (array_1)
+    _6 = @BoxNew<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move (_7))
+    _5 = unsize_cast<alloc::boxed::Box<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2 : usize>(move (_6))
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] _6
     storage_dead(_7)
     storage_dead(_6)
@@ -226,22 +226,22 @@ fn foo()
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    _10 := copy (array_1)
-    _9 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move (_10))
-    _8 := unsize_cast<Rc<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]>(move (_9))
+    _10 = copy (array_1)
+    _9 = alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move (_10))
+    _8 = unsize_cast<Rc<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]>(move (_9))
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] _9
     storage_dead(_10)
     storage_dead(_9)
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _8
     storage_dead(_8)
     storage_live(string_11)
-    string_11 := alloc::string::{String}::new()
+    string_11 = alloc::string::{String}::new()
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    _14 := &string_11
-    _13 := &*(_14)
-    _12 := unsize_cast<&'4 String, &'2 (dyn Display + '3), {impl Display for String} with {impl Display for String}::{vtable}>(move (_13))
+    _14 = &string_11
+    _13 = &*(_14)
+    _12 = unsize_cast<&'4 String, &'2 (dyn Display + '3), {impl Display for String} with {impl Display for String}::{vtable}>(move (_13))
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)
@@ -249,11 +249,11 @@ fn foo()
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
-    _18 := &string_11
-    _17 := {impl Clone for String}::clone<'_>(move (_18))
+    _18 = &string_11
+    _17 = {impl Clone for String}::clone<'_>(move (_18))
     storage_dead(_18)
-    _16 := @BoxNew<String>[{built_in impl Sized for String}](move (_17))
-    _15 := unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '5)}, {built_in impl Sized for Global}], {impl Display for String} with {impl Display for String}::{vtable}>(move (_16))
+    _16 = @BoxNew<String>[{built_in impl Sized for String}](move (_17))
+    _15 = unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '5)}, {built_in impl Sized for Global}], {impl Display for String} with {impl Display for String}::{vtable}>(move (_16))
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _16
     storage_dead(_17)
     storage_dead(_16)
@@ -263,17 +263,17 @@ fn foo()
     storage_live(_20)
     storage_live(_21)
     storage_live(_22)
-    _22 := &string_11
-    _21 := {impl Clone for String}::clone<'_>(move (_22))
+    _22 = &string_11
+    _21 = {impl Clone for String}::clone<'_>(move (_22))
     storage_dead(_22)
-    _20 := alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move (_21))
-    _19 := unsize_cast<Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Rc<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '6)}, {built_in impl Sized for Global}]>(move (_20))
+    _20 = alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move (_21))
+    _19 = unsize_cast<Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Rc<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '6)}, {built_in impl Sized for Global}]>(move (_20))
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _20
     storage_dead(_21)
     storage_dead(_20)
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '3), Global>[{built_in impl MetaSized for (dyn Display + '15)}, {built_in impl Sized for Global}]] _19
     storage_dead(_19)
-    _0 := ()
+    _0 = ()
     conditional_drop[{impl Destruct for String}] string_11
     storage_dead(string_11)
     storage_dead(array_1)

@@ -52,7 +52,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -89,8 +89,8 @@ where
     let _0: (); // return
     let self_1: &'0 mut Foo<T>[@TraitClause0]; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -110,8 +110,8 @@ fn drop_foo(@1: Foo<u32>[{built_in impl Sized for u32}])
     let _0: (); // return
     let _1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{impl Destruct for Foo<T>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] _1
     return
 }

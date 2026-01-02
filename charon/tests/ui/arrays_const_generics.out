@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -21,12 +21,12 @@ pub fn index_array_generic<const N : usize>(@1: [u32; N], @2: usize) -> u32
     let _5: &'_ u32; // anonymous local
 
     storage_live(_3)
-    _3 := copy (i_2)
+    _3 = copy (i_2)
     storage_live(_4)
-    _4 := &s_1
+    _4 = &s_1
     storage_live(_5)
-    _5 := @ArrayIndexShared<'_, u32, N>(move (_4), copy (_3))
-    _0 := copy (*(_5))
+    _5 = @ArrayIndexShared<'_, u32, N>(move (_4), copy (_3))
+    _0 = copy (*(_5))
     storage_dead(_3)
     return
 }
@@ -41,10 +41,10 @@ pub fn index_array_generic_call<const N : usize>(@1: [u32; N], @2: usize) -> u32
     let _4: usize; // anonymous local
 
     storage_live(_3)
-    _3 := copy (s_1)
+    _3 = copy (s_1)
     storage_live(_4)
-    _4 := copy (i_2)
-    _0 := index_array_generic<N>(move (_3), move (_4))
+    _4 = copy (i_2)
+    _0 = index_array_generic<N>(move (_3), move (_4))
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -55,7 +55,7 @@ pub fn const_gen_ret<const N : usize>() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (N)
+    _0 = const (N)
     return
 }
 
@@ -64,7 +64,7 @@ pub fn init_array_variable_len<const LEN : usize>() -> [u8; LEN]
 {
     let _0: [u8; LEN]; // return
 
-    _0 := @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
+    _0 = @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
     return
 }
 

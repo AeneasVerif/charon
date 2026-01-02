@@ -28,7 +28,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -51,8 +51,8 @@ pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 bool)
     let _0: (); // return
     let self_1: &'0 bool; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -70,10 +70,10 @@ fn do_test::<bool>(@1: bool)
     let x_1: bool; // arg #1
     let _2: &'0 bool; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
-    _2 := &x_1
-    _0 := {impl Trait::<bool>}::method<'_>(move (_2))
+    _2 = &x_1
+    _0 = {impl Trait::<bool>}::method<'_>(move (_2))
     storage_dead(_2)
     return
 }
@@ -84,11 +84,11 @@ fn main()
     let _0: (); // return
     let _1: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := do_test::<bool>(const (true))
+    _1 = do_test::<bool>(const (true))
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

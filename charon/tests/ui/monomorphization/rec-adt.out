@@ -39,7 +39,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -63,8 +63,8 @@ fn new::<u8>() -> LinkedList::<u8>
     let _1: Option::<NonNull::<Node::<u8>>>; // anonymous local
 
     storage_live(_1)
-    _1 := Option::<NonNull::<Node::<u8>>>::None {  }
-    _0 := LinkedList::<u8> { head: move (_1) }
+    _1 = Option::<NonNull::<Node::<u8>>>::None {  }
+    _0 = LinkedList::<u8> { head: move (_1) }
     storage_dead(_1)
     return
 }
@@ -75,10 +75,10 @@ fn main()
     let _0: (); // return
     let list_1: LinkedList::<u8>; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(list_1)
-    list_1 := new::<u8>()
-    _0 := ()
+    list_1 = new::<u8>()
+    _0 = ()
     storage_dead(list_1)
     return
 }

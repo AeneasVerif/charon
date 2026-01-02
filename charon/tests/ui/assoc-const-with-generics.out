@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -36,7 +36,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const (N)
+    _0 = const (N)
     return
 }
 
@@ -58,7 +58,7 @@ fn {impl HasLen for [(); N]}::LEN<const N : usize>() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (N)
+    _0 = const (N)
     return
 }
 
@@ -79,8 +79,8 @@ fn {impl HasLen for [bool; N]}::LEN<const N : usize>() -> usize
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 := const (N) panic.+ const (1 : usize)
-    _0 := move (_1)
+    _1 = const (N) panic.+ const (1 : usize)
+    _0 = move (_1)
     return
 }
 
@@ -110,7 +110,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const (@TraitClause1::LEN)
+    _0 = const (@TraitClause1::LEN)
     return
 }
 
@@ -146,7 +146,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const (M)
+    _0 = const (M)
     return
 }
 
@@ -172,11 +172,11 @@ pub fn {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>() -> usize
     let _1: bool; // anonymous local
 
     storage_live(_1)
-    _1 := const (true)
+    _1 = const (true)
     if move (_1) {
-        _0 := const (N)
+        _0 = const (N)
     } else {
-        _0 := copy ({impl HasDefaultLen<N> for [bool; N]}::LEN<N>)
+        _0 = copy ({impl HasDefaultLen<N> for [bool; N]}::LEN<N>)
     }
     storage_dead(_1)
     return
@@ -207,8 +207,8 @@ where
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 := const (@TraitClause0::parent_clause1::LEN) panic.+ const (1 : usize)
-    _0 := move (_1)
+    _1 = const (@TraitClause0::parent_clause1::LEN) panic.+ const (1 : usize)
+    _0 = move (_1)
     return
 }
 

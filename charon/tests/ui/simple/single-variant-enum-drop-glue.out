@@ -48,7 +48,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -67,8 +67,8 @@ unsafe fn {impl Destruct for Thing}::drop_in_place(@1: *mut Thing)
     let _2: &'0 mut Thing; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     match *(_2) {
         _ => {
         },
@@ -89,8 +89,8 @@ fn foo(@1: Thing)
     let _0: (); // return
     let _1: Thing; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{impl Destruct for Thing}] _1
     return
 }

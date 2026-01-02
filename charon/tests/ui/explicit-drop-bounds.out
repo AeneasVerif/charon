@@ -41,7 +41,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -70,8 +70,8 @@ where
     let _0: (); // return
     let x_1: U; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     drop[@TraitClause2] x_1
     return
 }
@@ -85,8 +85,8 @@ where
     let _0: (); // return
     let x_1: U; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     drop[@TraitClause1] x_1
     return
 }
@@ -117,8 +117,8 @@ where
     let _x_1: T; // arg #1
     let _y_2: X; // arg #2
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     drop[@TraitClause4] _y_2
     drop[@TraitClause3] _x_1
     return
@@ -131,14 +131,14 @@ fn main()
     let _1: (); // anonymous local
     let _2: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 := ()
-    _1 := use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, {impl Trait<u32> for ()}, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const (42 : u32), move (_2))
+    _2 = ()
+    _1 = use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, {impl Trait<u32> for ()}, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const (42 : u32), move (_2))
     storage_dead(_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

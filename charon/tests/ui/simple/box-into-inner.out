@@ -178,7 +178,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -211,23 +211,23 @@ fn into_inner(@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _0 := ()
+    _0 = ()
     storage_live(_x_2)
-    _6 := transmute<NonNull<String>, *const String>(copy ((*(b_1)).0))
-    _7 := cast<*const String, *const ()>(copy (_6))
-    _8 := transmute<*const (), usize>(copy (_7))
-    _9 := const ({impl SizedTypeProperties for T}<String>[{built_in impl Sized for String}]::SIZE) != const (0 : usize)
-    _10 := copy (_8) == const (0 : usize)
-    _11 := copy (_10) & copy (_9)
-    _12 := ~(copy (_11))
+    _6 = transmute<NonNull<String>, *const String>(copy ((*(b_1)).0))
+    _7 = cast<*const String, *const ()>(copy (_6))
+    _8 = transmute<*const (), usize>(copy (_7))
+    _9 = const ({impl SizedTypeProperties for T}<String>[{built_in impl Sized for String}]::SIZE) != const (0 : usize)
+    _10 = copy (_8) == const (0 : usize)
+    _11 = copy (_10) & copy (_9)
+    _12 = ~(copy (_11))
     assert(copy (_12) == true)
-    _x_2 := move (*(_6))
-    _0 := ()
+    _x_2 = move (*(_6))
+    _0 = ()
     drop[{impl Destruct for String}] _x_2
     storage_dead(_x_2)
-    _5 := transmute<NonNull<String>, *const String>(copy ((*(b_1)).0))
-    _3 := &mut b_1
-    _4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move (_3))
+    _5 = transmute<NonNull<String>, *const String>(copy ((*(b_1)).0))
+    _3 = &mut b_1
+    _4 = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move (_3))
     return
 }
 

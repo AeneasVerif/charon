@@ -108,7 +108,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -132,8 +132,8 @@ where
     let _1: A; // anonymous local
 
     storage_live(_1)
-    _1 := @TraitClause1::default()
-    _0 := Struct { 0: move (_1) }
+    _1 = @TraitClause1::default()
+    _0 = Struct { 0: move (_1) }
     conditional_drop[{built_in impl Destruct for A}] _1
     storage_dead(_1)
     return
@@ -177,8 +177,8 @@ where
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -205,15 +205,15 @@ fn main()
     let _y_2: Struct<bool>[{built_in impl Sized for bool}]; // local
     let _3: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_x_1)
-    _x_1 := (const (0 : u8), const (false))
+    _x_1 = (const (0 : u8), const (false))
     storage_live(_y_2)
-    _y_2 := {impl Default for Struct<A>[@TraitClause0]}::default<bool>[{built_in impl Sized for bool}, {impl Default for bool}]()
+    _y_2 = {impl Default for Struct<A>[@TraitClause0]}::default<bool>[{built_in impl Sized for bool}, {impl Default for bool}]()
     storage_live(_3)
-    _3 := {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, {impl Clone for u8}, {impl PartialEq<bool> for bool}, {built_in impl Sized for String}]()
+    _3 = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, {impl Clone for u8}, {impl PartialEq<bool> for bool}, {built_in impl Sized for String}]()
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     storage_dead(_y_2)
     storage_dead(_x_1)
     return

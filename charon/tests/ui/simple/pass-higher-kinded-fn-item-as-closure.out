@@ -89,7 +89,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -101,7 +101,7 @@ pub fn flabada<'a>(@1: &'a ()) -> &'a ()
     let _0: &'0 (); // return
     let x_1: &'0 (); // arg #1
 
-    _0 := copy (x_1)
+    _0 = copy (x_1)
     return
 }
 
@@ -113,8 +113,8 @@ where
     let _0: (); // return
     let _1: F; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for F}] _1
     return
 }
@@ -125,11 +125,11 @@ pub fn flibidi()
     let _0: (); // return
     let _1: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ()), &'8 ()> for for<'a> flabada<'a>}](const (flabada<'_>))
+    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ()), &'8 ()> for for<'a> flabada<'a>}](const (flabada<'_>))
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

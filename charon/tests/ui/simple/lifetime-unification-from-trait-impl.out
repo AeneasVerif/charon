@@ -35,7 +35,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -67,11 +67,11 @@ fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(@1: &'a u32) -> &
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 := &raw const *(self_1)
-    _3 := cast<u32, [u8; 4 : usize]>[{built_in impl Sized for [u8; 4 : usize]}](move (_4))
+    _4 = &raw const *(self_1)
+    _3 = cast<u32, [u8; 4 : usize]>[{built_in impl Sized for [u8; 4 : usize]}](move (_4))
     storage_dead(_4)
-    _2 := &*(_3)
-    _0 := &*(_2)
+    _2 = &*(_3)
+    _0 = &*(_2)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -97,8 +97,8 @@ where
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 := move (x_1)
-    _0 := @TraitClause2::method(move (_2))
+    _2 = move (x_1)
+    _0 = @TraitClause2::method(move (_2))
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
     return
@@ -116,9 +116,9 @@ pub fn to_bytes_by_ref<'b>(@1: &'b u32) -> &'b [u8; 4 : usize]
     storage_live(_3)
     // Here `convert` is given generics `<&'_ u32, &'_ [u8; 4]>`, which loses the information
     // that the lifetime is the same by virtue of the trait impl.
-    _3 := copy (s_1)
-    _2 := convert<&'0 u32, &'0 [u8; 4 : usize]>[{built_in impl Sized for &'0 u32}, {built_in impl Sized for &'0 [u8; 4 : usize]}, {impl Convert<&'a [u8; 4 : usize]> for &'a u32}<'0>](move (_3))
-    _0 := &*(_2)
+    _3 = copy (s_1)
+    _2 = convert<&'0 u32, &'0 [u8; 4 : usize]>[{built_in impl Sized for &'0 u32}, {built_in impl Sized for &'0 [u8; 4 : usize]}, {impl Convert<&'a [u8; 4 : usize]> for &'a u32}<'0>](move (_3))
+    _0 = &*(_2)
     storage_dead(_3)
     storage_dead(_2)
     return

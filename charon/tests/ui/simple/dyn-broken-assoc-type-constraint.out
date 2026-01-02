@@ -30,7 +30,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -81,8 +81,8 @@ where
     let _0: (); // return
     let self_1: &'0 T; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -95,9 +95,9 @@ where
     let dyn_self_1: *mut (dyn Broken<Assoc = ()> + '0); // arg #1
     let target_self_2: *mut T; // local
 
-    ret_0 := ()
+    ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 := concretize<*mut (dyn Broken<Assoc = ()> + '1), *mut T>(move (dyn_self_1))
+    target_self_2 = concretize<*mut (dyn Broken<Assoc = ()> + '1), *mut T>(move (dyn_self_1))
     drop[{built_in impl Destruct for T}] *(target_self_2)
     return
 }
@@ -112,10 +112,10 @@ where
     let _1: &'_0 (dyn Broken + '0); // arg #1
     let _2: &'_0 T; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
-    _2 := concretize<&'_0 (dyn Broken + '1), &'_0 T>(move (_1))
-    _0 := {impl Broken for T}::broken<'_0, T>[@TraitClause0, @TraitClause1](move (_2))
+    _2 = concretize<&'_0 (dyn Broken + '1), &'_0 T>(move (_1))
+    _0 = {impl Broken for T}::broken<'_0, T>[@TraitClause0, @TraitClause1](move (_2))
     return
 }
 
@@ -129,10 +129,10 @@ where
     let align_2: usize; // local
 
     storage_live(size_1)
-    size_1 := size_of<T>
+    size_1 = size_of<T>
     storage_live(align_2)
-    align_2 := align_of<T>
-    ret_0 := test_crate::Broken::{vtable} { size: move (size_1), align: move (align_2), drop: const ({vtable_drop_shim}<T>[@TraitClause0]), method_broken: const ({vtable_method}<'1, T>[@TraitClause0]), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    align_2 = align_of<T>
+    ret_0 = test_crate::Broken::{vtable} { size: move (size_1), align: move (align_2), drop: const ({vtable_drop_shim}<T>[@TraitClause0]), method_broken: const ({vtable_method}<'1, T>[@TraitClause0]), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -167,20 +167,20 @@ fn main()
 
     storage_live(_5)
     storage_live(_6)
-    _6 := ()
-    _5 := &_6
+    _6 = ()
+    _5 = &_6
     storage_live(_4)
-    _0 := ()
+    _0 = ()
     storage_live(_m_1)
     storage_live(_2)
     storage_live(_3)
-    _4 := move (_5)
-    _3 := &*(_4)
-    _2 := &*(_3)
-    _m_1 := unsize_cast<&'2 (), &'0 (dyn Broken<Assoc = ()> + '1), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move (_2))
+    _4 = move (_5)
+    _3 = &*(_4)
+    _2 = &*(_3)
+    _m_1 = unsize_cast<&'2 (), &'0 (dyn Broken<Assoc = ()> + '1), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move (_2))
     storage_dead(_2)
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     storage_dead(_m_1)
     return
 }

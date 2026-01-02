@@ -100,7 +100,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -120,17 +120,17 @@ fn {impl FnOnce::<closure, (u8)>}::call_once(@1: closure, @2: (u8)) -> u8
 
     storage_live(x_3)
     storage_live(_7)
-    x_3 := move ((tupled_args_2).0)
+    x_3 = move ((tupled_args_2).0)
     storage_live(_4)
     storage_live(_5)
-    _5 := move ((_1).0)
-    _4 := drop::<NotCopy>(move (_5))
+    _5 = move ((_1).0)
+    _4 = drop::<NotCopy>(move (_5))
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
-    _6 := copy (x_3)
-    _7 := copy (_6) panic.+ const (1 : u8)
-    _0 := move (_7)
+    _6 = copy (x_3)
+    _7 = copy (_6) panic.+ const (1 : u8)
+    _0 = move (_7)
     storage_dead(_6)
     return
 }
@@ -143,8 +143,8 @@ unsafe fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
     let _2: &'0 mut closure; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -163,10 +163,10 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     let _3: (u8); // anonymous local
 
     storage_live(_2)
-    _2 := move (f_1)
+    _2 = move (f_1)
     storage_live(_3)
-    _3 := (const (0 : u8))
-    _0 := {impl FnOnce::<closure, (u8)>}::call_once(move (_2), move (_3))
+    _3 = (const (0 : u8))
+    _0 = {impl FnOnce::<closure, (u8)>}::call_once(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{impl Destruct::<closure>}] f_1
@@ -181,8 +181,8 @@ unsafe fn {impl Destruct::<NotCopy>}::drop_in_place(@1: *mut NotCopy)
     let _2: &'0 mut NotCopy; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -200,16 +200,16 @@ fn main()
     let _2: u8; // anonymous local
     let _3: closure; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(z_1)
-    z_1 := NotCopy {  }
+    z_1 = NotCopy {  }
     storage_live(_2)
     storage_live(_3)
-    _3 := closure { 0: move (z_1) }
-    _2 := apply_to_zero_once::<closure>(move (_3))
+    _3 = closure { 0: move (z_1) }
+    _2 = apply_to_zero_once::<closure>(move (_3))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_dead(z_1)
     return
 }

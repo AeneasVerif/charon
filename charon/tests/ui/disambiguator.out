@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -14,8 +14,8 @@ fn test_crate::nonzero_disambiguator::my_function()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -23,8 +23,8 @@ fn test_crate::nonzero_disambiguator::my_function#1()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -34,13 +34,13 @@ fn nonzero_disambiguator()
     let _0: (); // return
     let _1: bool; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (true)
+    _1 = const (true)
     if move (_1) {
-        _0 := test_crate::nonzero_disambiguator::my_function()
+        _0 = test_crate::nonzero_disambiguator::my_function()
     } else {
-        _0 := test_crate::nonzero_disambiguator::my_function#1()
+        _0 = test_crate::nonzero_disambiguator::my_function#1()
     }
     storage_dead(_1)
     return

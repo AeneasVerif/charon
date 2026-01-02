@@ -186,13 +186,13 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_5)
-    _5 := Global {  }
-    _3 := with_capacity_in<Global>[{built_in impl Sized for Global}](move (capacity_1), move (_5), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
+    _5 = Global {  }
+    _3 = with_capacity_in<Global>[{built_in impl Sized for Global}](move (capacity_1), move (_5), const ({impl SizedTypeProperties for T}<T>[@TraitClause0]::LAYOUT))
     storage_live(_4)
-    _4 := PhantomData {  }
-    _2 := RawVec { 0: move (_3), 1: move (_4) }
+    _4 = PhantomData {  }
+    _2 = RawVec { 0: move (_3), 1: move (_4) }
     storage_dead(_3)
-    _0 := Vec { buf: move (_2), len: const (0 : usize) }
+    _0 = Vec { buf: move (_2), len: const (0 : usize) }
     storage_dead(_2)
     return
 }
@@ -201,7 +201,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -213,12 +213,12 @@ fn vec()
     let _0: (); // return
     let _1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := with_capacity<u32>[{built_in impl Sized for u32}](const (42 : usize))
+    _1 = with_capacity<u32>[{built_in impl Sized for u32}](const (42 : usize))
     conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

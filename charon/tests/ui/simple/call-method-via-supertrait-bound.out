@@ -28,7 +28,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -71,8 +71,8 @@ where
     let _0: (); // return
     let self_1: &'0 T; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -98,14 +98,14 @@ where
     let _2: (); // anonymous local
     let _3: &'0 T; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := &x_1
-    _2 := {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause1](move (_3))
+    _3 = &x_1
+    _2 = {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause1](move (_3))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }

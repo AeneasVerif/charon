@@ -56,7 +56,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -91,8 +91,8 @@ unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
     let _2: &'0 mut String; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]] (*(_2)).vec
     return
 }
@@ -114,8 +114,8 @@ fn use_string(@1: String)
     let _0: (); // return
     let _1: String; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     drop[{impl Destruct for String}] _1
     return
 }
@@ -127,15 +127,15 @@ fn main()
     let s_1: String; // local
     let _2: String; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(s_1)
-    s_1 := new()
+    s_1 = new()
     storage_live(_2)
-    _2 := new()
+    _2 = new()
     drop[{impl Destruct for String}] s_1
-    s_1 := move (_2)
+    s_1 = move (_2)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     drop[{impl Destruct for String}] s_1
     storage_dead(s_1)
     return

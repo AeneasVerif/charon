@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -15,8 +15,8 @@ fn foo()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -28,16 +28,16 @@ fn main()
     let _2: (); // anonymous local
     let _3: fn(); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(f_1)
-    f_1 := cast<foo, fn()>(const (foo))
+    f_1 = cast<foo, fn()>(const (foo))
     storage_live(_2)
     storage_live(_3)
-    _3 := copy (f_1)
-    _2 := (move (_3))()
+    _3 = copy (f_1)
+    _2 = (move (_3))()
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_dead(f_1)
     return
 }

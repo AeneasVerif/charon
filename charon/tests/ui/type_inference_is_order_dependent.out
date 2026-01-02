@@ -114,7 +114,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -176,49 +176,49 @@ where
     let _13: [u8; 4 : usize]; // anonymous local
     let _14: &'3 [u8; 4 : usize]; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(args_3)
     storage_live(_4)
     storage_live(_5)
-    _5 := @TraitClause4::default()
-    _4 := &_5
-    args_3 := (move (_4))
+    _5 = @TraitClause4::default()
+    _4 = &_5
+    args_3 = (move (_4))
     storage_dead(_4)
     storage_live(args_6)
     storage_live(_7)
     storage_live(_8)
-    _8 := &*((args_3).0)
-    _7 := new_debug<'5, '_, U>[@TraitClause1, @TraitClause5](move (_8))
+    _8 = &*((args_3).0)
+    _7 = new_debug<'5, '_, U>[@TraitClause1, @TraitClause5](move (_8))
     storage_dead(_8)
-    args_6 := [move (_7)]
+    args_6 = [move (_7)]
     storage_dead(_7)
     storage_live(_9)
     storage_live(_10)
     storage_live(_13)
-    _13 := [const (192 : u8), const (1 : u8), const (10 : u8), const (0 : u8)]
+    _13 = [const (192 : u8), const (1 : u8), const (10 : u8), const (0 : u8)]
     storage_live(_14)
-    _14 := &_13
-    _10 := move (_14)
-    _9 := &*(_10)
+    _14 = &_13
+    _10 = move (_14)
+    _9 = &*(_10)
     storage_live(_11)
     storage_live(_12)
-    _12 := &args_6
-    _11 := &*(_12)
-    _2 := new<'6, 4 : usize, 1 : usize>(move (_9), move (_11))
+    _12 = &args_6
+    _11 = &*(_12)
+    _2 = new<'6, 4 : usize, 1 : usize>(move (_9), move (_11))
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 := _print<'_>(move (_2))
+    _1 = _print<'_>(move (_2))
     storage_dead(_2)
     storage_dead(args_6)
     conditional_drop[{built_in impl Destruct for U}] _5
     storage_dead(_5)
     storage_dead(args_3)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -275,8 +275,8 @@ where
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := {impl Join<U> for T}::test<T, bool>[@TraitClause0, {built_in impl Sized for bool}, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, {built_in impl Sized for bool}, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
+    _0 = ()
+    _0 = {impl Join<U> for T}::test<T, bool>[@TraitClause0, {built_in impl Sized for bool}, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, {built_in impl Sized for bool}, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
     return
 }
 

@@ -7,7 +7,7 @@ pub fn wrapping_add(@1: u8, @2: u8) -> u8
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 := copy (self_1) wrap.+ copy (rhs_2)
+    _0 = copy (self_1) wrap.+ copy (rhs_2)
     return
 }
 
@@ -18,7 +18,7 @@ pub fn wrapping_sub(@1: u8, @2: u8) -> u8
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 := copy (self_1) wrap.- copy (rhs_2)
+    _0 = copy (self_1) wrap.- copy (rhs_2)
     return
 }
 
@@ -29,7 +29,7 @@ pub fn wrapping_mul(@1: u8, @2: u8) -> u8
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 := copy (self_1) wrap.* copy (rhs_2)
+    _0 = copy (self_1) wrap.* copy (rhs_2)
     return
 }
 
@@ -37,7 +37,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -54,26 +54,26 @@ fn main()
     let _5: u8; // anonymous local
     let _6: u8; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (255 : u8) wrap.+ const (1 : u8)
+    _1 = const (255 : u8) wrap.+ const (1 : u8)
     storage_dead(_1)
     storage_live(_2)
-    _2 := const (0 : u8) wrap.- const (1 : u8)
+    _2 = const (0 : u8) wrap.- const (1 : u8)
     storage_dead(_2)
     storage_live(_3)
-    _3 := const (255 : u8) wrap.* const (2 : u8)
+    _3 = const (255 : u8) wrap.* const (2 : u8)
     storage_dead(_3)
     storage_live(_4)
-    _4 := wrapping_add(const (255 : u8), const (1 : u8))
+    _4 = wrapping_add(const (255 : u8), const (1 : u8))
     storage_dead(_4)
     storage_live(_5)
-    _5 := wrapping_sub(const (0 : u8), const (1 : u8))
+    _5 = wrapping_sub(const (0 : u8), const (1 : u8))
     storage_dead(_5)
     storage_live(_6)
-    _6 := wrapping_mul(const (255 : u8), const (2 : u8))
+    _6 = wrapping_mul(const (255 : u8), const (2 : u8))
     storage_dead(_6)
-    _0 := ()
+    _0 = ()
     return
 }
 

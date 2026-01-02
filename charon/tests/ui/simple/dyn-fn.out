@@ -89,7 +89,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -107,31 +107,31 @@ fn takes_fn<'_0>(@1: &'_0 (dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_
     let _6: &'4 mut u32; // anonymous local
     let _7: &'4 mut u32; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(counter_2)
-    counter_2 := const (0 : u32)
+    counter_2 = const (0 : u32)
     storage_live(_3)
     storage_live(_4)
-    _4 := &*(f_1) with_metadata(copy (f_1.metadata))
+    _4 = &*(f_1) with_metadata(copy (f_1.metadata))
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 := &mut counter_2
-    _6 := &two-phase-mut *(_7)
-    _5 := (move (_6))
-    _3 := Fn<(dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_clause1::Output = bool> + '5), (&'8 mut u32)>::call<'_>(move (_4), move (_5))
+    _7 = &mut counter_2
+    _6 = &two-phase-mut *(_7)
+    _5 = (move (_6))
+    _3 = Fn<(dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_clause1::Output = bool> + '5), (&'8 mut u32)>::call<'_>(move (_4), move (_5))
     if move (_3) {
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
-        _0 := ()
+        _0 = ()
     } else {
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
-        _0 := ()
+        _0 = ()
     }
     storage_dead(_3)
     storage_dead(counter_2)
@@ -152,10 +152,10 @@ fn {impl Fn<(&'_ mut u32)> for closure}::call<'_0, '_1>(@1: &'_1 closure, @2: (&
 
     storage_live(counter_3)
     storage_live(_4)
-    counter_3 := move ((tupled_args_2).0)
-    _4 := copy (*(counter_3)) panic.+ const (1 : u32)
-    *(counter_3) := move (_4)
-    _0 := const (true)
+    counter_3 = move ((tupled_args_2).0)
+    _4 = copy (*(counter_3)) panic.+ const (1 : u32)
+    *(counter_3) = move (_4)
+    _0 = const (true)
     return
 }
 
@@ -168,8 +168,8 @@ fn {impl FnMut<(&'_ mut u32)> for closure}::call_mut<'_0, '_1>(@1: &'_1 mut clos
     let _3: &'0 closure; // anonymous local
 
     storage_live(_3)
-    _3 := &*(state_1)
-    _0 := {impl Fn<(&'_ mut u32)> for closure}::call<'_0, '2>(move (_3), move (args_2))
+    _3 = &*(state_1)
+    _0 = {impl Fn<(&'_ mut u32)> for closure}::call<'_0, '2>(move (_3), move (args_2))
     return
 }
 
@@ -192,8 +192,8 @@ fn {impl FnOnce<(&'_ mut u32)> for closure}::call_once<'_0>(@1: closure, @2: (&'
     let _3: &'0 mut closure; // anonymous local
 
     storage_live(_3)
-    _3 := &mut _1
-    _0 := {impl FnMut<(&'_ mut u32)> for closure}::call_mut<'_0, '_>(move (_3), move (_2))
+    _3 = &mut _1
+    _0 = {impl FnMut<(&'_ mut u32)> for closure}::call_mut<'_0, '_>(move (_3), move (_2))
     drop[{impl Destruct for closure}] _1
     return
 }
@@ -242,19 +242,19 @@ fn gives_fn()
 
     storage_live(_5)
     storage_live(_6)
-    _6 := closure {  }
-    _5 := &_6
+    _6 = closure {  }
+    _5 = &_6
     storage_live(_4)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _4 := move (_5)
-    _3 := &*(_4)
-    _2 := &*(_3)
-    _1 := unsize_cast<&'4 closure, &'0 (dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_clause1::Output = bool> + '1), {impl Fn<(&'_ mut u32)> for closure}<'_> with ?>(move (_2))
+    _4 = move (_5)
+    _3 = &*(_4)
+    _2 = &*(_3)
+    _1 = unsize_cast<&'4 closure, &'0 (dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_clause1::Output = bool> + '1), {impl Fn<(&'_ mut u32)> for closure}<'_> with ?>(move (_2))
     storage_dead(_2)
-    _0 := takes_fn<'_>(move (_1))
+    _0 = takes_fn<'_>(move (_1))
     storage_dead(_1)
     storage_dead(_3)
     return

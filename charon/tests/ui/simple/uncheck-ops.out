@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -20,23 +20,23 @@ fn main()
     let _4: u8; // anonymous local
     let _5: u8; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (255 : u8) ub.+ const (1 : u8)
+    _1 = const (255 : u8) ub.+ const (1 : u8)
     storage_dead(_1)
     storage_live(_2)
-    _2 := const (0 : u8) ub.- const (1 : u8)
+    _2 = const (0 : u8) ub.- const (1 : u8)
     storage_dead(_2)
     storage_live(_3)
-    _3 := const (255 : u8) ub.* const (2 : u8)
+    _3 = const (255 : u8) ub.* const (2 : u8)
     storage_dead(_3)
     storage_live(_4)
-    _4 := const (255 : u8) ub.<< const (9 : i32)
+    _4 = const (255 : u8) ub.<< const (9 : i32)
     storage_dead(_4)
     storage_live(_5)
-    _5 := const (255 : u8) ub.>> const (9 : i32)
+    _5 = const (255 : u8) ub.>> const (9 : i32)
     storage_dead(_5)
-    _0 := ()
+    _0 = ()
     return
 }
 

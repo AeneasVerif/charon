@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -35,8 +35,8 @@ fn foo<T>(@1: T)
     let _0: (); // return
     let _x_1: T; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for T}] _x_1
     return
 }

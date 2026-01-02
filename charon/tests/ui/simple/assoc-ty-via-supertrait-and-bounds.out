@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -90,8 +90,8 @@ where
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -100,8 +100,8 @@ fn main()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := take<Wrapper<()>[{built_in impl Sized for ()}], ()>[{built_in impl Sized for Wrapper<()>[{built_in impl Sized for ()}]}, {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[{built_in impl Sized for ()}, {impl HasOutput2<()> for ()}]]()
+    _0 = ()
+    _0 = take<Wrapper<()>[{built_in impl Sized for ()}], ()>[{built_in impl Sized for Wrapper<()>[{built_in impl Sized for ()}]}, {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[@TraitClause0]}<(), ()>[{built_in impl Sized for ()}, {impl HasOutput2<()> for ()}]]()
     return
 }
 

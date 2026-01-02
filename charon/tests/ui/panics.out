@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -27,7 +27,7 @@ fn panic1()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
@@ -37,9 +37,9 @@ fn panic2()
     let _0: (); // return
     let _1: Arguments<'0>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := from_str<'1>(const ("O no!"))
+    _1 = from_str<'1>(const ("O no!"))
     panic(core::panicking::panic_fmt)
 }
 
@@ -49,9 +49,9 @@ fn panic3()
     let _0: (); // return
     let _1: Arguments<'0>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := from_str_nonconst<'1>(const ("O no!"))
+    _1 = from_str_nonconst<'1>(const ("O no!"))
     panic(core::panicking::panic_fmt)
 }
 
@@ -61,12 +61,12 @@ fn panic4()
     let _0: (); // return
     let _1: bool; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (false)
+    _1 = const (false)
     assert(move (_1) == true)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -77,17 +77,17 @@ fn panic5()
     let _1: bool; // anonymous local
     let _2: Arguments<'0>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (false)
+    _1 = const (false)
     if move (_1) {
     } else {
         storage_live(_2)
-        _2 := from_str<'1>(const ("assert failed"))
+        _2 = from_str<'1>(const ("assert failed"))
         panic(core::panicking::panic_fmt)
     }
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -96,7 +96,7 @@ fn panic6()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
@@ -106,9 +106,9 @@ fn panic7()
     let _0: (); // return
     let _1: Arguments<'0>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := from_str_nonconst<'1>(const ("internal error: entered unreachable code: can't reach this"))
+    _1 = from_str_nonconst<'1>(const ("internal error: entered unreachable code: can't reach this"))
     panic(core::panicking::panic_fmt)
 }
 
@@ -117,7 +117,7 @@ fn panic8()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
@@ -126,7 +126,7 @@ fn panic9()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     panic(std::panicking::begin_panic)
 }
 

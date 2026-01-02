@@ -8,7 +8,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -41,7 +41,7 @@ fn {impl Ops for Portable}::ZERO() -> Portable
 {
     let _0: Portable; // return
 
-    _0 := Portable {  }
+    _0 = Portable {  }
     return
 }
 
@@ -49,7 +49,7 @@ fn test_crate::ntt_multiply() -> Portable
 {
     let _0: Portable; // return
 
-    _0 := {impl Ops for Portable}::ZERO()
+    _0 = {impl Ops for Portable}::ZERO()
     return
 }
 
@@ -58,7 +58,7 @@ fn {impl Ops for Portable}::ntt_multiply() -> Portable
 {
     let _0: Portable; // return
 
-    _0 := test_crate::ntt_multiply()
+    _0 = test_crate::ntt_multiply()
     return
 }
 

@@ -66,8 +66,8 @@ fn foo::<u32><'_0>(@1: &'_0 u32)
     let _0: (); // return
     let x_1: &'0 u32; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -146,7 +146,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -158,8 +158,8 @@ fn foo::<u8><'_0>(@1: &'_0 u8)
     let _0: (); // return
     let x_1: &'0 u8; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -169,8 +169,8 @@ fn foo::<char><'_0>(@1: &'_0 char)
     let _0: (); // return
     let x_1: &'0 char; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -189,20 +189,20 @@ fn takes_closure::<for<'_0_1> foo::<u32><'_0_1>>(@1: for<'_0_1> foo::<u32><'_0_1
 
     storage_live(_7)
     storage_live(_8)
-    _8 := const (13 : u32)
-    _7 := &_8
+    _8 = const (13 : u32)
+    _7 = &_8
     storage_live(_6)
-    _0 := ()
+    _0 = ()
     storage_live(_2)
-    _2 := &c_1
+    _2 = &c_1
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _6 := move (_7)
-    _5 := &*(_6)
-    _4 := &*(_5)
-    _3 := (move (_4))
-    _0 := {built_in impl Fn::<for<'_0_1> foo::<u32><'_0_1>, (&'_ u32)>}::call<'_>(move (_2), move (_3))
+    _6 = move (_7)
+    _5 = &*(_6)
+    _4 = &*(_5)
+    _3 = (move (_4))
+    _0 = {built_in impl Fn::<for<'_0_1> foo::<u32><'_0_1>, (&'_ u32)>}::call<'_>(move (_2), move (_3))
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
@@ -245,86 +245,86 @@ fn main()
     let _29: char; // anonymous local
 
     storage_live(_27)
-    _0 := ()
+    _0 = ()
     storage_live(fooint1_1)
-    fooint1_1 := cast<for<'_0_1> foo::<u8><'_0_1>, fn<'_0_1>(&'_0_1 u8)>(const (foo::<u8><'_>))
+    fooint1_1 = cast<for<'_0_1> foo::<u8><'_0_1>, fn<'_0_1>(&'_0_1 u8)>(const (foo::<u8><'_>))
     storage_live(fooint2_2)
-    fooint2_2 := cast<for<'_0_1> foo::<u8><'_0_1>, fn<'_0_1>(&'_0_1 u8)>(const (foo::<u8><'_>))
+    fooint2_2 = cast<for<'_0_1> foo::<u8><'_0_1>, fn<'_0_1>(&'_0_1 u8)>(const (foo::<u8><'_>))
     storage_live(foochar_3)
-    foochar_3 := cast<for<'_0_1> foo::<char><'_0_1>, fn<'_0_1>(&'_0_1 char)>(const (foo::<char><'_>))
+    foochar_3 = cast<for<'_0_1> foo::<char><'_0_1>, fn<'_0_1>(&'_0_1 char)>(const (foo::<char><'_>))
     storage_live(a_4)
-    a_4 := const (11 : u8)
+    a_4 = const (11 : u8)
     storage_live(_5)
     storage_live(_6)
-    _6 := copy (fooint1_1)
+    _6 = copy (fooint1_1)
     storage_live(_7)
     storage_live(_8)
-    _8 := &a_4
-    _7 := &*(_8)
-    _5 := (move (_6))(move (_7))
+    _8 = &a_4
+    _7 = &*(_8)
+    _5 = (move (_6))(move (_7))
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_8)
     storage_dead(_5)
     storage_live(b_9)
-    b_9 := const (12 : u8)
+    b_9 = const (12 : u8)
     storage_live(_10)
     storage_live(_11)
-    _11 := copy (fooint1_1)
+    _11 = copy (fooint1_1)
     storage_live(_12)
     storage_live(_13)
-    _13 := &a_4
-    _12 := &*(_13)
-    _10 := (move (_11))(move (_12))
+    _13 = &a_4
+    _12 = &*(_13)
+    _10 = (move (_11))(move (_12))
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_13)
     storage_dead(_10)
     storage_live(_14)
     storage_live(_15)
-    _15 := copy (fooint1_1)
+    _15 = copy (fooint1_1)
     storage_live(_16)
     storage_live(_17)
-    _17 := &b_9
-    _16 := &*(_17)
-    _14 := (move (_15))(move (_16))
+    _17 = &b_9
+    _16 = &*(_17)
+    _14 = (move (_15))(move (_16))
     storage_dead(_16)
     storage_dead(_15)
     storage_dead(_17)
     storage_dead(_14)
     storage_live(_18)
     storage_live(_19)
-    _19 := copy (fooint2_2)
+    _19 = copy (fooint2_2)
     storage_live(_20)
     storage_live(_21)
-    _21 := &b_9
-    _20 := &*(_21)
-    _18 := (move (_19))(move (_20))
+    _21 = &b_9
+    _20 = &*(_21)
+    _18 = (move (_19))(move (_20))
     storage_live(_28)
     storage_live(_29)
-    _29 := const (x)
-    _28 := &_29
+    _29 = const (x)
+    _28 = &_29
     storage_dead(_20)
     storage_dead(_19)
     storage_dead(_21)
     storage_dead(_18)
     storage_live(_22)
     storage_live(_23)
-    _23 := copy (foochar_3)
+    _23 = copy (foochar_3)
     storage_live(_24)
     storage_live(_25)
-    _27 := move (_28)
-    _25 := &*(_27)
-    _24 := &*(_25)
-    _22 := (move (_23))(move (_24))
+    _27 = move (_28)
+    _25 = &*(_27)
+    _24 = &*(_25)
+    _22 = (move (_23))(move (_24))
     storage_dead(_24)
     storage_dead(_23)
     storage_dead(_25)
     storage_dead(_22)
     storage_live(_26)
-    _26 := takes_closure::<for<'_0_1> foo::<u32><'_0_1>>(const (foo::<u32><'_>))
+    _26 = takes_closure::<for<'_0_1> foo::<u32><'_0_1>>(const (foo::<u32><'_>))
     storage_dead(_26)
-    _0 := ()
+    _0 = ()
     storage_dead(b_9)
     storage_dead(a_4)
     storage_dead(foochar_3)

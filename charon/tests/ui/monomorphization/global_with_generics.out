@@ -28,7 +28,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -49,7 +49,7 @@ fn FooInt() -> Foo::<i32>
 {
     let _0: Foo::<i32>; // return
 
-    _0 := Foo::<i32> { value: const (0 : i32) }
+    _0 = Foo::<i32> { value: const (0 : i32) }
     return
 }
 
@@ -61,7 +61,7 @@ fn FooBool() -> Foo::<bool>
 {
     let _0: Foo::<bool>; // return
 
-    _0 := Foo::<bool> { value: const (false) }
+    _0 = Foo::<bool> { value: const (false) }
     return
 }
 
@@ -76,15 +76,15 @@ fn main()
     let _2: &'0 Foo::<bool>; // anonymous local
     let _3: &'0 Foo::<bool>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_b_1)
     storage_live(_2)
     storage_live(_3)
-    _3 := &FooBool
-    _2 := move (_3)
-    _b_1 := copy ((*(_2)).value)
+    _3 = &FooBool
+    _2 = move (_3)
+    _b_1 = copy ((*(_2)).value)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_dead(_b_1)
     return
 }

@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -26,11 +26,11 @@ fn main()
     let _0: (); // return
     let _1: usize; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (0 : usize)
+    _1 = const (0 : usize)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

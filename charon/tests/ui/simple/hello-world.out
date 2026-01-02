@@ -112,7 +112,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -126,16 +126,16 @@ fn main()
     let _2: &'0 Str; // anonymous local
     let _3: &'0 Str; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(a_1)
     storage_live(_2)
     storage_live(_3)
-    _3 := const ("Hello, world!")
-    _2 := &*(_3) with_metadata(copy (_3.metadata))
-    a_1 := {impl ToString::<Str>}::to_string::<Str><'_>(move (_2))
+    _3 = const ("Hello, world!")
+    _2 = &*(_3) with_metadata(copy (_3.metadata))
+    a_1 = {impl ToString::<Str>}::to_string::<Str><'_>(move (_2))
     storage_dead(_2)
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     conditional_drop[{impl Destruct::<String>}] a_1
     storage_dead(a_1)
     return

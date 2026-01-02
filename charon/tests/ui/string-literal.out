@@ -111,7 +111,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -122,7 +122,7 @@ fn FOO() -> &'static Str
 {
     let _0: &'0 Str; // return
 
-    _0 := const ("hello")
+    _0 = const ("hello")
     return
 }
 
@@ -141,12 +141,12 @@ fn BAR() -> &'static [u8]
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _3 := [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
+    _3 = [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
     storage_live(_4)
-    _4 := &_3
-    _2 := move (_4)
-    _1 := &*(_2)
-    _0 := @ArrayToSliceShared<'_, u8, 5 : usize>(move (_1))
+    _4 = &_3
+    _2 = move (_4)
+    _1 = &*(_2)
+    _0 = @ArrayToSliceShared<'_, u8, 5 : usize>(move (_1))
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -163,16 +163,16 @@ fn main()
     let _2: &'0 Str; // anonymous local
     let _3: &'0 Str; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_s_1)
     storage_live(_2)
     storage_live(_3)
-    _3 := const ("Hello")
-    _2 := &*(_3) with_metadata(copy (_3.metadata))
-    _s_1 := {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move (_2))
+    _3 = const ("Hello")
+    _2 = &*(_3) with_metadata(copy (_3.metadata))
+    _s_1 = {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move (_2))
     storage_dead(_2)
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     conditional_drop[{impl Destruct for String}] _s_1
     storage_dead(_s_1)
     return

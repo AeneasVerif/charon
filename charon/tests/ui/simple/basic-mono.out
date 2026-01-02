@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -27,8 +27,8 @@ fn foo::<10 : usize>()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -37,8 +37,8 @@ fn bar::<u32>()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -49,14 +49,14 @@ fn main()
     let _1: (); // anonymous local
     let _2: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := foo::<10 : usize>()
+    _1 = foo::<10 : usize>()
     storage_dead(_1)
     storage_live(_2)
-    _2 := bar::<u32>()
+    _2 = bar::<u32>()
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 

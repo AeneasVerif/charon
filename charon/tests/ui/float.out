@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -16,7 +16,7 @@ fn test_float(@1: f64) -> f64
     let _0: f64; // return
     let x_1: f64; // arg #1
 
-    _0 := copy (x_1)
+    _0 = copy (x_1)
     return
 }
 
@@ -30,10 +30,10 @@ fn sum_float(@1: f64, @2: f64) -> f64
     let _4: f64; // anonymous local
 
     storage_live(_3)
-    _3 := copy (x_1)
+    _3 = copy (x_1)
     storage_live(_4)
-    _4 := copy (y_2)
-    _0 := move (_3) wrap.+ move (_4)
+    _4 = copy (y_2)
+    _0 = move (_3) wrap.+ move (_4)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -49,14 +49,14 @@ fn literal_float() -> f64
     let _4: f64; // anonymous local
 
     storage_live(x_1)
-    x_1 := const (1 : f64)
+    x_1 = const (1 : f64)
     storage_live(y_2)
-    y_2 := const (1.5 : f64)
+    y_2 = const (1.5 : f64)
     storage_live(_3)
-    _3 := copy (x_1)
+    _3 = copy (x_1)
     storage_live(_4)
-    _4 := copy (y_2)
-    _0 := move (_3) wrap.+ move (_4)
+    _4 = copy (y_2)
+    _0 = move (_3) wrap.+ move (_4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(y_2)

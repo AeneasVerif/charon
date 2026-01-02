@@ -91,7 +91,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -125,13 +125,13 @@ pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 ()) -> &'_0 u32
 
     storage_live(_4)
     storage_live(_5)
-    _5 := const (42 : u32)
-    _4 := &_5
+    _5 = const (42 : u32)
+    _4 = &_5
     storage_live(_3)
     storage_live(_2)
-    _3 := move (_4)
-    _2 := &*(_3)
-    _0 := &*(_2)
+    _3 = move (_4)
+    _2 = &*(_3)
+    _0 = &*(_2)
     storage_dead(_2)
     return
 }
@@ -151,8 +151,8 @@ fn mk_foo()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -166,22 +166,22 @@ fn use_foo()
     let _4: &'0 u32; // anonymous local
     let _5: &'1 (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(foo_1)
-    foo_1 := mk_foo()
+    foo_1 = mk_foo()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 := &foo_1
-    _4 := {impl Foo for ()}::get_ty<'_>(move (_5))
-    _3 := &*(_4)
+    _5 = &foo_1
+    _4 = {impl Foo for ()}::get_ty<'_>(move (_5))
+    _3 = &*(_4)
     storage_dead(_5)
-    _2 := {impl Clone for u32}::clone<'_>(move (_3))
+    _2 = {impl Clone for u32}::clone<'_>(move (_3))
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_dead(foo_1)
     return
 }
@@ -203,8 +203,8 @@ where
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -213,8 +213,8 @@ pub fn {impl RPITIT for ()}::make_foo()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -241,23 +241,23 @@ where
     let _4: &'0 @TraitClause1::parent_clause2::Type; // anonymous local
     let _5: &'1 @TraitClause1::; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(foo_1)
-    foo_1 := @TraitClause1::make_foo()
+    foo_1 = @TraitClause1::make_foo()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 := &foo_1
-    _4 := @TraitClause1::parent_clause2::get_ty<'_>(move (_5))
-    _3 := &*(_4) with_metadata(copy (_4.metadata))
+    _5 = &foo_1
+    _4 = @TraitClause1::parent_clause2::get_ty<'_>(move (_5))
+    _3 = &*(_4) with_metadata(copy (_4.metadata))
     storage_dead(_5)
-    _2 := @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (_3))
+    _2 = @TraitClause1::parent_clause2::parent_clause2::clone<'_>(move (_3))
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for @TraitClause1::parent_clause2::Type}] _2
     storage_dead(_4)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for @TraitClause1::}] foo_1
     storage_dead(foo_1)
     return
@@ -285,7 +285,7 @@ where
 {
     let _0: closure<U>[@TraitClause0]; // return
 
-    _0 := closure {  }
+    _0 = closure {  }
     return
 }
 
@@ -301,10 +301,10 @@ where
     let _4: &'_ U; // anonymous local
 
     storage_live(x_3)
-    x_3 := move ((tupled_args_2).0)
+    x_3 = move ((tupled_args_2).0)
     storage_live(_4)
-    _4 := &*(x_3)
-    _0 := WrapClone { 0: move (_4) }
+    _4 = &*(x_3)
+    _0 = WrapClone { 0: move (_4) }
     storage_dead(_4)
     return
 }
@@ -353,30 +353,30 @@ pub fn use_wrap()
     let _9: u32; // anonymous local
 
     storage_live(_7)
-    _0 := ()
+    _0 = ()
     storage_live(f_1)
-    f_1 := wrap<u32>[{built_in impl Sized for u32}]()
+    f_1 = wrap<u32>[{built_in impl Sized for u32}]()
     storage_live(_8)
     storage_live(_9)
-    _9 := const (42 : u32)
-    _8 := &_9
+    _9 = const (42 : u32)
+    _8 = &_9
     storage_live(_2)
     storage_live(_3)
-    _3 := move (f_1)
+    _3 = move (f_1)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _7 := move (_8)
-    _6 := &*(_7)
-    _5 := &*(_6)
-    _4 := (move (_5))
-    _2 := {impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}::call_once<'_, u32>[{built_in impl Sized for u32}](move (_3), move (_4))
+    _7 = move (_8)
+    _6 = &*(_7)
+    _5 = &*(_6)
+    _4 = (move (_5))
+    _2 = {impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}::call_once<'_, u32>[{built_in impl Sized for u32}](move (_3), move (_4))
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_6)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     conditional_drop[{impl Destruct for closure<U>[@TraitClause0]}<u32>[{built_in impl Sized for u32}]] f_1
     storage_dead(f_1)
     return

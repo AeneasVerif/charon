@@ -70,7 +70,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -89,10 +89,10 @@ where
     let _3: (u8); // anonymous local
 
     storage_live(_2)
-    _2 := &mut f_1
+    _2 = &mut f_1
     storage_live(_3)
-    _3 := (const (0 : u8))
-    _0 := @TraitClause1::call_mut<'_>(move (_2), move (_3))
+    _3 = (const (0 : u8))
+    _0 = @TraitClause1::call_mut<'_>(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for impl FnMut(u8) -> u8}] f_1
@@ -119,15 +119,15 @@ fn {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut closure<
     storage_live(x_3)
     storage_live(_4)
     storage_live(_7)
-    x_3 := move ((tupled_args_2).0)
-    _4 := copy (*((*(_1)).0)) panic.+ const (1 : u8)
-    *((*(_1)).0) := move (_4)
+    x_3 = move ((tupled_args_2).0)
+    _4 = copy (*((*(_1)).0)) panic.+ const (1 : u8)
+    *((*(_1)).0) = move (_4)
     storage_live(_5)
-    _5 := copy (x_3)
+    _5 = copy (x_3)
     storage_live(_6)
-    _6 := copy (*((*(_1)).0))
-    _7 := copy (_5) panic.+ copy (_6)
-    _0 := move (_7)
+    _6 = copy (*((*(_1)).0))
+    _7 = copy (_5) panic.+ copy (_6)
+    _0 = move (_7)
     storage_dead(_6)
     storage_dead(_5)
     return
@@ -152,8 +152,8 @@ fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u
     let _3: &'0 mut closure<'_0>; // anonymous local
 
     storage_live(_3)
-    _3 := &mut _1
-    _0 := {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_>(move (_3), move (_2))
+    _3 = &mut _1
+    _0 = {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_>(move (_3), move (_2))
     drop[{impl Destruct for closure<'_0>}<'_>] _1
     return
 }
@@ -188,19 +188,19 @@ fn main()
     let _3: closure<'_>; // anonymous local
     let _4: &'0 mut u8; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(z_1)
-    z_1 := const (3 : u8)
+    z_1 = const (3 : u8)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 := &mut z_1
-    _3 := closure { 0: move (_4) }
+    _4 = &mut z_1
+    _3 = closure { 0: move (_4) }
     storage_dead(_4)
-    _2 := apply_to_zero_mut<closure<'_>>[{built_in impl Sized for closure<'_>}, {impl FnMut<(u8)> for closure<'_0>}<'_>](move (_3))
+    _2 = apply_to_zero_mut<closure<'_>>[{built_in impl Sized for closure<'_>}, {impl FnMut<(u8)> for closure<'_0>}<'_>](move (_3))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_dead(z_1)
     return
 }

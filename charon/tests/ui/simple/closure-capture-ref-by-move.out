@@ -70,7 +70,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -90,10 +90,10 @@ fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut closure<'_
     let _3: i32; // anonymous local
 
     storage_live(_3)
-    _0 := ()
-    _3 := copy (*((*(_1)).0)) panic.+ const (1 : i32)
-    *((*(_1)).0) := move (_3)
-    _0 := ()
+    _0 = ()
+    _3 = copy (*((*(_1)).0)) panic.+ const (1 : i32)
+    *((*(_1)).0) = move (_3)
+    _0 = ()
     return
 }
 
@@ -108,23 +108,23 @@ fn foo()
     let _5: &'1 mut closure<'_>; // anonymous local
     let _6: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(x_1)
-    x_1 := const (0 : i32)
+    x_1 = const (0 : i32)
     storage_live(rx_2)
-    rx_2 := &mut x_1
+    rx_2 = &mut x_1
     storage_live(closure_3)
-    closure_3 := closure { 0: move (rx_2) }
+    closure_3 = closure { 0: move (rx_2) }
     storage_live(_4)
     storage_live(_5)
-    _5 := &mut closure_3
+    _5 = &mut closure_3
     storage_live(_6)
-    _6 := ()
-    _4 := {impl FnMut<()> for closure<'_0>}::call_mut<'_, '_>(move (_5), move (_6))
+    _6 = ()
+    _4 = {impl FnMut<()> for closure<'_0>}::call_mut<'_, '_>(move (_5), move (_6))
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
-    _0 := ()
+    _0 = ()
     storage_dead(closure_3)
     storage_dead(rx_2)
     storage_dead(x_1)
@@ -150,9 +150,9 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
     let _3: &'0 mut closure<'_0>; // anonymous local
 
     storage_live(_3)
-    _0 := ()
-    _3 := &mut _1
-    _0 := {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move (_3), move (_2))
+    _0 = ()
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move (_3), move (_2))
     drop[{impl Destruct for closure<'_0>}<'_>] _1
     return
 }

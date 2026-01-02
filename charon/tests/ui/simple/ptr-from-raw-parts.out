@@ -271,7 +271,7 @@ where
     let data_pointer_1: *const impl Thin; // arg #1
     let metadata_2: {built_in impl Pointee for T}::Metadata; // arg #2
 
-    _0 := @PtrFromPartsShared<'_, T>(copy (data_pointer_1), copy (metadata_2))
+    _0 = @PtrFromPartsShared<'_, T>(copy (data_pointer_1), copy (metadata_2))
     return
 }
 
@@ -279,7 +279,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -293,16 +293,16 @@ fn main()
     let _2: *const [u32]; // anonymous local
     let _3: *const [u32; 2 : usize]; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(a_1)
-    a_1 := @ArrayRepeat<'_, u32, 2 : usize>(const (1 : u32))
+    a_1 = @ArrayRepeat<'_, u32, 2 : usize>(const (1 : u32))
     storage_live(_2)
     storage_live(_3)
-    _3 := &raw const a_1
-    _2 := from_raw_parts<[u32], [u32; 2 : usize]>[{built_in impl Sized for [u32; 2 : usize]}, {impl#0}<[u32; 2 : usize]>[{built_in impl Pointee for [u32; 2 : usize] where Metadata  = ()}]](move (_3), const (2 : usize))
+    _3 = &raw const a_1
+    _2 = from_raw_parts<[u32], [u32; 2 : usize]>[{built_in impl Sized for [u32; 2 : usize]}, {impl#0}<[u32; 2 : usize]>[{built_in impl Pointee for [u32; 2 : usize] where Metadata  = ()}]](move (_3), const (2 : usize))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     storage_dead(a_1)
     return
 }

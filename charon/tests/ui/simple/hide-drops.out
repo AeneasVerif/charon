@@ -34,7 +34,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -46,8 +46,8 @@ fn use_string(@1: String)
     let _0: (); // return
     let _1: String; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{impl Destruct for String}] _1
     return
 }
@@ -58,10 +58,10 @@ fn main()
     let _0: (); // return
     let _s_1: String; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(_s_1)
-    _s_1 := new()
-    _0 := ()
+    _s_1 = new()
+    _0 = ()
     conditional_drop[{impl Destruct for String}] _s_1
     storage_dead(_s_1)
     return

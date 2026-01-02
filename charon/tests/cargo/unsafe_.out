@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -29,14 +29,14 @@ fn main()
     let _1: (); // anonymous local
     let _2: Arguments<'0>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 := from_str<'1>(const ("Hello, world!\n"))
-    _1 := _print<'_>(move (_2))
+    _2 = from_str<'1>(const ("Hello, world!\n"))
+    _1 = _print<'_>(move (_2))
     storage_dead(_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

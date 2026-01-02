@@ -21,7 +21,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -59,18 +59,18 @@ where
     storage_live(_2)
     storage_live(_5)
     storage_live(_3)
-    _3 := offset_of(A<T>[@TraitClause0].x)<usize>
+    _3 = offset_of(A<T>[@TraitClause0].x)<usize>
     storage_live(_4)
-    _4 := offset_of(B<T>[@TraitClause0].y)<usize>
-    _5 := copy (_3) panic.+ copy (_4)
-    _2 := move (_5)
+    _4 = offset_of(B<T>[@TraitClause0].y)<usize>
+    _5 = copy (_3) panic.+ copy (_4)
+    _2 = move (_5)
     storage_dead(_4)
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := move (_2)
+    _1 = move (_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

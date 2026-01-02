@@ -48,7 +48,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -78,30 +78,30 @@ fn six() -> u32
     storage_live(_7)
     storage_live(_8)
     storage_live(x_1)
-    _2 := const (0 : u32) panic.+ const (1 : u32)
+    _2 = const (0 : u32) panic.+ const (1 : u32)
     storage_live(_9)
     storage_live(_10)
     storage_live(_11)
-    _11 := const (0 : u32) wrap.+ const (1 : u32)
-    _10 := move (_11)
-    _9 := &_10
-    _8 := move (_9)
-    x_1 := &*(_8)
+    _11 = const (0 : u32) wrap.+ const (1 : u32)
+    _10 = move (_11)
+    _9 = &_10
+    _8 = move (_9)
+    x_1 = &*(_8)
     storage_live(y_3)
-    _4 := const (2 : u32) panic.+ const (3 : u32)
+    _4 = const (2 : u32) panic.+ const (3 : u32)
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    _14 := const (2 : u32) wrap.+ const (3 : u32)
-    _13 := move (_14)
-    _12 := &_13
-    _7 := move (_12)
-    y_3 := &*(_7)
+    _14 = const (2 : u32) wrap.+ const (3 : u32)
+    _13 = move (_14)
+    _12 = &_13
+    _7 = move (_12)
+    y_3 = &*(_7)
     storage_live(_5)
-    _5 := copy (x_1)
+    _5 = copy (x_1)
     storage_live(_6)
-    _6 := copy (y_3)
-    _0 := {impl Add<&'_0 u32> for &'_1 u32}::add<'1, '2>(move (_5), move (_6))
+    _6 = copy (y_3)
+    _0 = {impl Add<&'_0 u32> for &'_1 u32}::add<'1, '2>(move (_5), move (_6))
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(y_3)

@@ -61,7 +61,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -79,7 +79,7 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 Foo) -> Foo
     let _0: Foo; // return
     let self_1: &'0 Foo; // arg #1
 
-    _0 := copy (*(self_1))
+    _0 = copy (*(self_1))
     return
 }
 
@@ -130,33 +130,33 @@ fn main()
     storage_live(_4)
     storage_live(_7)
     storage_live(_11)
-    _0 := ()
+    _0 = ()
     storage_live(x_1)
-    x_1 := Foo::A {  }
+    x_1 = Foo::A {  }
     storage_live(_2)
     storage_live(_3)
-    _3 := copy (x_1)
-    _4 := @discriminant(_3)
-    _2 := cast<isize, isize>(move (_4))
+    _3 = copy (x_1)
+    _4 = @discriminant(_3)
+    _2 = cast<isize, isize>(move (_4))
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_5)
     storage_live(_6)
-    _6 := copy (x_1)
-    _7 := @discriminant(_6)
-    _5 := cast<isize, u8>(move (_7))
+    _6 = copy (x_1)
+    _7 = @discriminant(_6)
+    _5 = cast<isize, u8>(move (_7))
     storage_dead(_6)
     storage_dead(_5)
     storage_live(x_8)
-    x_8 := Ordering::Greater {  }
+    x_8 = Ordering::Greater {  }
     storage_live(_9)
     storage_live(_10)
-    _10 := move (x_8)
-    _11 := @discriminant(_10)
-    _9 := cast<isize, isize>(move (_11))
+    _10 = move (x_8)
+    _11 = @discriminant(_10)
+    _9 = cast<isize, isize>(move (_11))
     storage_dead(_10)
     storage_dead(_9)
-    _0 := ()
+    _0 = ()
     storage_dead(x_8)
     storage_dead(x_1)
     return

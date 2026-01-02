@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -41,8 +41,8 @@ fn {impl Trait for ()}::method()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -58,8 +58,8 @@ pub fn main()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := {impl Trait for ()}::method()
+    _0 = ()
+    _0 = {impl Trait for ()}::method()
     return
 }
 

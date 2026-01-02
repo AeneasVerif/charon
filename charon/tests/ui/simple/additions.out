@@ -46,11 +46,11 @@ where
     let source_2: &'1 Self; // arg #2
     let _3: Self; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_3)
-    _3 := @TraitClause0::clone<'_>(move (source_2))
+    _3 = @TraitClause0::clone<'_>(move (source_2))
     drop[@TraitClause1] *(self_1)
-    *(self_1) := move (_3)
+    *(self_1) = move (_3)
     storage_dead(_3)
     return
 }
@@ -61,7 +61,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
     let _0: u8; // return
     let self_1: &'0 u8; // arg #1
 
-    _0 := copy (*(self_1))
+    _0 = copy (*(self_1))
     return
 }
 
@@ -75,11 +75,11 @@ where
     let source_2: &'1 u8; // arg #2
     let _3: u8; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_3)
-    _3 := {impl Clone for u8}::clone<'_>(move (source_2))
+    _3 = {impl Clone for u8}::clone<'_>(move (source_2))
     drop[@TraitClause0] *(self_1)
-    *(self_1) := move (_3)
+    *(self_1) = move (_3)
     storage_dead(_3)
     return
 }
@@ -130,7 +130,7 @@ pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 := core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, {impl Copy for u8}](move (self_1), move (rhs_2))
+    _0 = core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, {impl Copy for u8}](move (self_1), move (rhs_2))
     return
 }
 
@@ -141,7 +141,7 @@ pub fn wrapping_add(@1: u8, @2: u8) -> u8
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 := copy (self_1) wrap.+ copy (rhs_2)
+    _0 = copy (self_1) wrap.+ copy (rhs_2)
     return
 }
 
@@ -152,7 +152,7 @@ pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 := copy (self_1) checked.+ copy (rhs_2)
+    _0 = copy (self_1) checked.+ copy (rhs_2)
     return
 }
 
@@ -160,7 +160,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -174,18 +174,18 @@ fn main()
     let _2: (u8, bool); // anonymous local
     let _3: u8; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := wrapping_add(const (255 : u8), const (1 : u8))
+    _1 = wrapping_add(const (255 : u8), const (1 : u8))
     storage_dead(_1)
     storage_live(_2)
-    _2 := overflowing_add(const (255 : u8), const (1 : u8))
+    _2 = overflowing_add(const (255 : u8), const (1 : u8))
     storage_dead(_2)
     storage_live(_3)
     // This one is meant to be implemented by codegen backends, hence has no useful MIR.
-    _3 := core::num::{u8}::saturating_add(const (255 : u8), const (1 : u8))
+    _3 = core::num::{u8}::saturating_add(const (255 : u8), const (1 : u8))
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     // FIXME(#543): this causes a panic in hax
     // unsafe {
     //     let _ = 255u8.unchecked_add(1);

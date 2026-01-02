@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -16,15 +16,15 @@ fn main()
     let _0: (); // return
     let _1: char; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := const (x)
+    _1 = const (x)
     switch copy (_1) {
         a => {
-            _0 := ()
+            _0 = ()
         },
         _ => {
-            _0 := ()
+            _0 = ()
         },
     }
     storage_dead(_1)

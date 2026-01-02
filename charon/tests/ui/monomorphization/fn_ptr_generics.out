@@ -23,7 +23,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -40,22 +40,22 @@ fn init_option()
     let _5: &'_ [Option::<u8>; 6 : usize]; // anonymous local
     let _6: &'_ Option::<u8>; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(a_1)
     storage_live(_2)
-    _2 := Option::<u8>::Some { 0: const (4 : u8) }
-    a_1 := @ArrayRepeat<'_, Option::<u8>, 6 : usize>(move (_2))
+    _2 = Option::<u8>::Some { 0: const (4 : u8) }
+    a_1 = @ArrayRepeat<'_, Option::<u8>, 6 : usize>(move (_2))
     storage_dead(_2)
     storage_live(b_3)
     storage_live(_4)
-    _4 := const (0 : usize)
+    _4 = const (0 : usize)
     storage_live(_5)
-    _5 := &a_1
+    _5 = &a_1
     storage_live(_6)
-    _6 := @ArrayIndexShared<'_, Option::<u8>, 6 : usize>(move (_5), copy (_4))
-    b_3 := copy (*(_6))
+    _6 = @ArrayIndexShared<'_, Option::<u8>, 6 : usize>(move (_5), copy (_4))
+    b_3 = copy (*(_6))
     storage_dead(_4)
-    _0 := ()
+    _0 = ()
     storage_dead(b_3)
     storage_dead(a_1)
     return

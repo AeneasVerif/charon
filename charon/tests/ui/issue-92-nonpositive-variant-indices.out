@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -23,18 +23,18 @@ fn main()
     let _0: (); // return
     let _1: Ordering; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := Ordering::Less {  }
+    _1 = Ordering::Less {  }
     match _1 {
         Ordering::Less => {
-            _0 := ()
+            _0 = ()
         },
         Ordering::Equal => {
-            _0 := ()
+            _0 = ()
         },
         Ordering::Greater => {
-            _0 := ()
+            _0 = ()
         },
     }
     storage_dead(_1)

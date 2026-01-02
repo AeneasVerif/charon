@@ -53,7 +53,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -77,7 +77,7 @@ pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 Struct) -> Struct
     let _0: Struct; // return
     let self_1: &'0 Struct; // arg #1
 
-    _0 := Struct {  }
+    _0 = Struct {  }
     return
 }
 
@@ -135,15 +135,15 @@ where
     let _2: T; // anonymous local
     let _3: &'0 T; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := &x_1
-    _2 := @TraitClause1::parent_clause2::clone<'_>(move (_3))
+    _3 = &x_1
+    _2 = @TraitClause1::parent_clause2::clone<'_>(move (_3))
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for T}] _2
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }
@@ -155,14 +155,14 @@ fn use_alias()
     let _1: (); // anonymous local
     let _2: Struct; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 := Struct {  }
-    _1 := takes_alias<Struct>[{built_in impl Sized for Struct}, {impl Alias<U> for Self}<Struct, ()>[{built_in impl MetaSized for Struct}, {impl Trait<T, u32> for Struct}<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], {impl Clone for Struct}, {built_in impl Sized for ()}]](move (_2))
+    _2 = Struct {  }
+    _1 = takes_alias<Struct>[{built_in impl Sized for Struct}, {impl Alias<U> for Self}<Struct, ()>[{built_in impl MetaSized for Struct}, {impl Trait<T, u32> for Struct}<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], {impl Clone for Struct}, {built_in impl Sized for ()}]](move (_2))
     storage_dead(_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

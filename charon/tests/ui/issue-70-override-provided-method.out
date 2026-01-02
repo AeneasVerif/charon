@@ -119,7 +119,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -141,27 +141,27 @@ fn main()
 
     storage_live(_6)
     storage_live(_7)
-    _7 := Option::Some { 0: const (1 : i32) }
-    _6 := &_7
+    _7 = Option::Some { 0: const (1 : i32) }
+    _6 = &_7
     storage_live(_8)
     storage_live(_9)
-    _9 := Option::Some { 0: const (1 : i32) }
-    _8 := &_9
+    _9 = Option::Some { 0: const (1 : i32) }
+    _8 = &_9
     storage_live(_4)
     storage_live(_5)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _5 := move (_6)
-    _2 := &*(_5)
+    _5 = move (_6)
+    _2 = &*(_5)
     storage_live(_3)
-    _4 := move (_8)
-    _3 := &*(_4)
-    _1 := {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_, '_, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move (_2), move (_3))
+    _4 = move (_8)
+    _3 = &*(_4)
+    _1 = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_, '_, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -186,10 +186,10 @@ pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -
     let _4: u32; // anonymous local
 
     storage_live(_3)
-    _3 := copy ((*(self_1)).0)
+    _3 = copy ((*(self_1)).0)
     storage_live(_4)
-    _4 := copy ((*(other_2)).0)
-    _0 := move (_3) == move (_4)
+    _4 = copy ((*(other_2)).0)
+    _0 = move (_3) == move (_4)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -214,13 +214,13 @@ pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 Foo, @2: &
 
     storage_live(_3)
     storage_live(_4)
-    _4 := &(*(self_1)).0
-    _3 := &*(_4)
+    _4 = &(*(self_1)).0
+    _3 = &*(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 := &(*(other_2)).0
-    _5 := &*(_6)
-    _0 := {impl PartialOrd<u32> for u32}::partial_cmp<'_, '_>(move (_3), move (_5))
+    _6 = &(*(other_2)).0
+    _5 = &*(_6)
+    _0 = {impl PartialOrd<u32> for u32}::partial_cmp<'_, '_>(move (_3), move (_5))
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)

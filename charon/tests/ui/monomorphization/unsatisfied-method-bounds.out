@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -49,8 +49,8 @@ fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
     let _0: (); // return
     let self_1: &'0 A; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -59,8 +59,8 @@ fn test_crate::MyIterator::method::<A><'_0>(@1: &'_0 A)
     let _0: (); // return
     let self_1: &'0 A; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -69,8 +69,8 @@ fn test_crate::MyIterator::method::<B><'_0>(@1: &'_0 B)
     let _0: (); // return
     let self_1: &'0 B; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -80,8 +80,8 @@ fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
     let _0: (); // return
     let self_1: &'0 A; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -98,8 +98,8 @@ fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 B)
     let _0: (); // return
     let self_1: &'0 B; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -127,30 +127,30 @@ fn main()
 
     storage_live(_7)
     storage_live(_8)
-    _8 := A {  }
-    _7 := &_8
+    _8 = A {  }
+    _7 = &_8
     storage_live(_5)
     storage_live(_6)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _6 := move (_7)
-    _2 := &*(_6)
-    _1 := {impl MyIterator::<A>}::method<'_>(move (_2))
+    _6 = move (_7)
+    _2 = &*(_6)
+    _1 = {impl MyIterator::<A>}::method<'_>(move (_2))
     storage_live(_9)
     storage_live(_10)
-    _10 := B {  }
-    _9 := &_10
+    _10 = B {  }
+    _9 = &_10
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
     storage_live(_4)
-    _5 := move (_9)
-    _4 := &*(_5)
-    _3 := {impl MyIterator::<B>}::method<'_>(move (_4))
+    _5 = move (_9)
+    _4 = &*(_5)
+    _3 = {impl MyIterator::<B>}::method<'_>(move (_4))
     storage_dead(_4)
     storage_dead(_3)
-    _0 := ()
+    _0 = ()
     return
 }
 

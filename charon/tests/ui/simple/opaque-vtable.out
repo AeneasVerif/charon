@@ -8,7 +8,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -53,8 +53,8 @@ fn use_debug<'_0>(@1: &'_0 (dyn Trait + '_0))
     let _0: (); // return
     let _d_1: &'0 (dyn Trait + '1); // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -72,24 +72,24 @@ fn main()
 
     storage_live(_6)
     storage_live(_7)
-    _7 := ()
-    _6 := &_7
+    _7 = ()
+    _6 = &_7
     storage_live(_5)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _5 := move (_6)
-    _4 := &*(_5)
-    _3 := &*(_4)
-    _2 := unsize_cast<&'2 (), &'0 (dyn Trait + '1), {impl Trait for ()} with {impl Trait for ()}::{vtable}>(move (_3))
+    _5 = move (_6)
+    _4 = &*(_5)
+    _3 = &*(_4)
+    _2 = unsize_cast<&'2 (), &'0 (dyn Trait + '1), {impl Trait for ()} with {impl Trait for ()}::{vtable}>(move (_3))
     storage_dead(_3)
-    _1 := use_debug<'_>(move (_2))
+    _1 = use_debug<'_>(move (_2))
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

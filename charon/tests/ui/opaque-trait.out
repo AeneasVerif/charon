@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -40,7 +40,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const (0 : usize)
+    _0 = const (0 : usize)
     return
 }
 
@@ -55,7 +55,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const (0 : usize)
+    _0 = const (0 : usize)
     return
 }
 
@@ -70,7 +70,7 @@ where
 {
     let _0: usize; // return
 
-    _0 := const (0 : usize)
+    _0 = const (0 : usize)
     return
 }
 
@@ -85,8 +85,8 @@ where
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -96,8 +96,8 @@ where
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -106,7 +106,7 @@ fn {impl Trait for ()}::CONST1() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (1 : usize)
+    _0 = const (1 : usize)
     return
 }
 
@@ -118,7 +118,7 @@ fn {impl Trait for ()}::CONST2() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (1 : usize)
+    _0 = const (1 : usize)
     return
 }
 
@@ -130,7 +130,7 @@ fn {impl Trait for ()}::CONST3() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (1 : usize)
+    _0 = const (1 : usize)
     return
 }
 
@@ -142,8 +142,8 @@ fn {impl Trait for ()}::method1()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -152,8 +152,8 @@ fn {impl Trait for ()}::method2()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -173,7 +173,7 @@ fn {impl Trait for u8}::CONST2() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (2 : usize)
+    _0 = const (2 : usize)
     return
 }
 
@@ -185,8 +185,8 @@ fn {impl Trait for u8}::method1()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -195,8 +195,8 @@ fn {impl Trait for u8}::method2()
 {
     let _0: (); // return
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -221,14 +221,14 @@ where
     let _1: (); // anonymous local
     let _2: usize; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := @TraitClause1::method1()
+    _1 = @TraitClause1::method1()
     storage_dead(_1)
     storage_live(_2)
-    _2 := const (@TraitClause1::CONST1)
+    _2 = const (@TraitClause1::CONST1)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 

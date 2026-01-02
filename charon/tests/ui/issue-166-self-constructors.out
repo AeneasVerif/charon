@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -21,7 +21,7 @@ pub fn b() -> Foo
 {
     let _0: Foo; // return
 
-    _0 := Foo::B { 0: const (0 : usize) }
+    _0 = Foo::B { 0: const (0 : usize) }
     return
 }
 
@@ -38,8 +38,8 @@ fn new<'a>(@1: &'a i32) -> Bar<'a>
     let _2: &'1 i32; // anonymous local
 
     storage_live(_2)
-    _2 := copy (r_1)
-    _0 := Bar { r: move (_2) }
+    _2 = copy (r_1)
+    _0 = Bar { r: move (_2) }
     storage_dead(_2)
     return
 }

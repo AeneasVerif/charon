@@ -122,7 +122,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -134,12 +134,12 @@ fn main()
     let _0: (); // return
     let _1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := new<i32>[{built_in impl Sized for i32}](const (42 : i32))
+    _1 = new<i32>[{built_in impl Sized for i32}](const (42 : i32))
     drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]] _1
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

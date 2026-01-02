@@ -41,7 +41,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -72,8 +72,8 @@ fn foo(@1: PortableHash<42 : usize>)
     let _0: (); // return
     let _1: PortableHash<42 : usize>; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     drop[{impl Destruct for PortableHash<K>}<42 : usize>] _1
     return
 }

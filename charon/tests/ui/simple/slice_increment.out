@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -23,21 +23,21 @@ pub fn incr<'_0>(@1: &'_0 mut [u32])
     let _7: &'_ mut u32; // anonymous local
 
     storage_live(_3)
-    _0 := ()
+    _0 = ()
     storage_live(_2)
-    _2 := const (0 : usize)
+    _2 = const (0 : usize)
     storage_live(_4)
-    _4 := &*(s_1) with_metadata(copy (s_1.metadata))
+    _4 = &*(s_1) with_metadata(copy (s_1.metadata))
     storage_live(_5)
-    _5 := @SliceIndexShared<'_, u32>(move (_4), copy (_2))
-    _3 := copy (*(_5)) panic.+ const (1 : u32)
+    _5 = @SliceIndexShared<'_, u32>(move (_4), copy (_2))
+    _3 = copy (*(_5)) panic.+ const (1 : u32)
     storage_live(_6)
-    _6 := &mut *(s_1) with_metadata(copy (s_1.metadata))
+    _6 = &mut *(s_1) with_metadata(copy (s_1.metadata))
     storage_live(_7)
-    _7 := @SliceIndexMut<'_, u32>(move (_6), copy (_2))
-    *(_7) := move (_3)
+    _7 = @SliceIndexMut<'_, u32>(move (_6), copy (_2))
+    *(_7) = move (_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 

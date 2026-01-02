@@ -8,7 +8,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -35,15 +35,15 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 := const (42 : i32)
-    _3 := &_4
+    _4 = const (42 : i32)
+    _3 = &_4
     storage_live(_2)
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _2 := move (_3)
-    _1 := &*(_2)
+    _2 = move (_3)
+    _1 = &*(_2)
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

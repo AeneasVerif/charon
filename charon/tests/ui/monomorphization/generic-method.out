@@ -20,7 +20,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -44,7 +44,7 @@ fn bar::<bool>() -> u64
 {
     let _0: u64; // return
 
-    _0 := const (0 : u64)
+    _0 = const (0 : u64)
     return
 }
 
@@ -54,11 +54,11 @@ fn main()
     let _0: (); // return
     let _1: u64; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := bar::<bool>()
+    _1 = bar::<bool>()
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

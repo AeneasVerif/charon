@@ -39,7 +39,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -60,11 +60,11 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 := &*(x_1)
-    _3 := unsize_cast<&'2 T, &'0 (dyn Any + '1), @TraitClause1 with ?>(move (_4))
+    _4 = &*(x_1)
+    _3 = unsize_cast<&'2 T, &'0 (dyn Any + '1), @TraitClause1 with ?>(move (_4))
     storage_dead(_4)
-    _2 := &*(_3) with_metadata(copy (_3.metadata))
-    _0 := unsize_cast<&'0 (dyn Any + '1), &'0 (dyn Any + '1),  at []>(move (_2))
+    _2 = &*(_3) with_metadata(copy (_3.metadata))
+    _0 = unsize_cast<&'0 (dyn Any + '1), &'0 (dyn Any + '1),  at []>(move (_2))
     storage_dead(_3)
     storage_dead(_2)
     return

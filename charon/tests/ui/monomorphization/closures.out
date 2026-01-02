@@ -232,7 +232,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -246,8 +246,8 @@ unsafe fn {impl Destruct::<Thing>}::drop_in_place(@1: *mut Thing)
     let _2: &'0 mut Thing; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -270,13 +270,13 @@ fn {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '_1>(@1: &'_1 tes
 
     storage_live(x_3)
     storage_live(_6)
-    x_3 := move ((tupled_args_2).0)
+    x_3 = move ((tupled_args_2).0)
     storage_live(_4)
-    _4 := copy (x_3)
+    _4 = copy (x_3)
     storage_live(_5)
-    _5 := copy (*((*(_1)).0))
-    _6 := copy (_4) panic.+ copy (_5)
-    _0 := move (_6)
+    _5 = copy (*((*(_1)).0))
+    _6 = copy (_4) panic.+ copy (_5)
+    _0 = move (_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -290,8 +290,8 @@ unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(@
     let _2: &'0 mut test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -310,10 +310,10 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
     let _3: (u8); // anonymous local
 
     storage_live(_2)
-    _2 := &f_1
+    _2 = &f_1
     storage_live(_3)
-    _3 := (const (0 : u8))
-    _0 := {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_, '_>(move (_2), move (_3))
+    _3 = (const (0 : u8))
+    _0 = {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_, '_>(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_>] f_1
@@ -335,15 +335,15 @@ fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_1>(@1:
     storage_live(x_3)
     storage_live(_4)
     storage_live(_7)
-    x_3 := move ((tupled_args_2).0)
-    _4 := copy (*((*(_1)).0)) panic.+ const (1 : u8)
-    *((*(_1)).0) := move (_4)
+    x_3 = move ((tupled_args_2).0)
+    _4 = copy (*((*(_1)).0)) panic.+ const (1 : u8)
+    *((*(_1)).0) = move (_4)
     storage_live(_5)
-    _5 := copy (x_3)
+    _5 = copy (x_3)
     storage_live(_6)
-    _6 := copy (*((*(_1)).0))
-    _7 := copy (_5) panic.+ copy (_6)
-    _0 := move (_7)
+    _6 = copy (*((*(_1)).0))
+    _7 = copy (_5) panic.+ copy (_6)
+    _0 = move (_7)
     storage_dead(_6)
     storage_dead(_5)
     return
@@ -357,8 +357,8 @@ unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>
     let _2: &'0 mut test_crate::main::closure#1<'_0>; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -377,10 +377,10 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
     let _3: (u8); // anonymous local
 
     storage_live(_2)
-    _2 := &mut f_1
+    _2 = &mut f_1
     storage_live(_3)
-    _3 := (const (0 : u8))
-    _0 := {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_, '_>(move (_2), move (_3))
+    _3 = (const (0 : u8))
+    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_, '_>(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_>] f_1
@@ -401,17 +401,17 @@ fn {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(@1: test_crate:
 
     storage_live(x_3)
     storage_live(_7)
-    x_3 := move ((tupled_args_2).0)
+    x_3 = move ((tupled_args_2).0)
     storage_live(_4)
     storage_live(_5)
-    _5 := move ((_1).0)
-    _4 := drop::<Thing>(move (_5))
+    _5 = move ((_1).0)
+    _4 = drop::<Thing>(move (_5))
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
-    _6 := copy (x_3)
-    _7 := copy (_6) panic.+ const (1 : u8)
-    _0 := move (_7)
+    _6 = copy (x_3)
+    _7 = copy (_6) panic.+ const (1 : u8)
+    _0 = move (_7)
     storage_dead(_6)
     return
 }
@@ -424,8 +424,8 @@ unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(@1: *mut
     let _2: &'0 mut test_crate::main::closure#2; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     return
 }
 
@@ -444,10 +444,10 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate::main::closu
     let _3: (u8); // anonymous local
 
     storage_live(_2)
-    _2 := move (f_1)
+    _2 = move (f_1)
     storage_live(_3)
-    _3 := (const (0 : u8))
-    _0 := {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(move (_2), move (_3))
+    _3 = (const (0 : u8))
+    _0 = {impl FnOnce::<test_crate::main::closure#2, (u8)>}::call_once(move (_2), move (_3))
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{impl Destruct::<test_crate::main::closure#2>}] f_1
@@ -470,38 +470,38 @@ fn main()
     let _10: u8; // anonymous local
     let _11: test_crate::main::closure#2; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(z_1)
-    z_1 := const (1 : u8)
+    z_1 = const (1 : u8)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 := &z_1
-    _3 := test_crate::main::closure { 0: move (_4) }
+    _4 = &z_1
+    _3 = test_crate::main::closure { 0: move (_4) }
     storage_dead(_4)
-    _2 := apply_to_zero::<test_crate::main::closure<'_>>(move (_3))
+    _2 = apply_to_zero::<test_crate::main::closure<'_>>(move (_3))
     storage_dead(_3)
     storage_dead(_2)
     storage_live(z_5)
-    z_5 := const (3 : u8)
+    z_5 = const (3 : u8)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 := &mut z_5
-    _7 := test_crate::main::closure#1 { 0: move (_8) }
+    _8 = &mut z_5
+    _7 = test_crate::main::closure#1 { 0: move (_8) }
     storage_dead(_8)
-    _6 := apply_to_zero_mut::<test_crate::main::closure#1<'_>>(move (_7))
+    _6 = apply_to_zero_mut::<test_crate::main::closure#1<'_>>(move (_7))
     storage_dead(_7)
     storage_dead(_6)
     storage_live(z_9)
-    z_9 := Thing {  }
+    z_9 = Thing {  }
     storage_live(_10)
     storage_live(_11)
-    _11 := test_crate::main::closure#2 { 0: move (z_9) }
-    _10 := apply_to_zero_once::<test_crate::main::closure#2>(move (_11))
+    _11 = test_crate::main::closure#2 { 0: move (z_9) }
+    _10 = apply_to_zero_once::<test_crate::main::closure#2>(move (_11))
     storage_dead(_11)
     storage_dead(_10)
-    _0 := ()
+    _0 = ()
     storage_dead(z_9)
     storage_dead(z_5)
     storage_dead(z_1)
@@ -517,8 +517,8 @@ fn {impl FnMut::<test_crate::main::closure<'_>, (u8)>}::call_mut<'_0, '_1>(@1: &
     let _3: &'0 test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_3)
-    _3 := &*(state_1)
-    _0 := {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '2>(move (_3), move (args_2))
+    _3 = &*(state_1)
+    _0 = {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '2>(move (_3), move (args_2))
     return
 }
 
@@ -531,8 +531,8 @@ fn {impl FnOnce::<test_crate::main::closure<'_>, (u8)>}::call_once<'_0>(@1: test
     let _3: &'0 mut test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_3)
-    _3 := &mut _1
-    _0 := {impl FnMut::<test_crate::main::closure<'_>, (u8)>}::call_mut<'_0, '_>(move (_3), move (_2))
+    _3 = &mut _1
+    _0 = {impl FnMut::<test_crate::main::closure<'_>, (u8)>}::call_mut<'_0, '_>(move (_3), move (_2))
     drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_>] _1
     return
 }
@@ -575,8 +575,8 @@ fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8)>}::call_once<'_0>(@1: te
     let _3: &'0 mut test_crate::main::closure#1<'_0>; // anonymous local
 
     storage_live(_3)
-    _3 := &mut _1
-    _0 := {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_>(move (_3), move (_2))
+    _3 = &mut _1
+    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_>(move (_3), move (_2))
     drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_>] _1
     return
 }

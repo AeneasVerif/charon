@@ -308,7 +308,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -320,11 +320,11 @@ fn main()
     let _0: (); // return
     let _1: *const u8; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_1)
-    _1 := null<u8>[{impl Thin for Self}<u8>[{built_in impl Pointee for u8 where Metadata  = ()}]]()
+    _1 = null<u8>[{impl Thin for Self}<u8>[{built_in impl Pointee for u8 where Metadata  = ()}]]()
     storage_dead(_1)
-    _0 := ()
+    _0 = ()
     return
 }
 

@@ -61,7 +61,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -76,7 +76,7 @@ pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 Foo) -> Foo
     let _0: Foo; // return
     let self_1: &'0 Foo; // arg #1
 
-    _0 := copy (*(self_1))
+    _0 = copy (*(self_1))
     return
 }
 
@@ -109,12 +109,12 @@ fn copy_foo(@1: Foo)
     let y_2: Foo; // local
     let z_3: Foo; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(y_2)
-    y_2 := copy (x_1)
+    y_2 = copy (x_1)
     storage_live(z_3)
-    z_3 := copy (x_1)
-    _0 := ()
+    z_3 = copy (x_1)
+    _0 = ()
     storage_dead(z_3)
     storage_dead(y_2)
     return
@@ -131,12 +131,12 @@ where
     let y_2: T; // local
     let z_3: T; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(y_2)
-    y_2 := copy (x_1)
+    y_2 = copy (x_1)
     storage_live(z_3)
-    z_3 := copy (x_1)
-    _0 := ()
+    z_3 = copy (x_1)
+    _0 = ()
     storage_dead(z_3)
     storage_dead(y_2)
     return
@@ -163,12 +163,12 @@ where
     let y_2: @TraitClause1::Ty; // local
     let z_3: @TraitClause1::Ty; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(y_2)
-    y_2 := copy (x_1)
+    y_2 = copy (x_1)
     storage_live(z_3)
-    z_3 := copy (x_1)
-    _0 := ()
+    z_3 = copy (x_1)
+    _0 = ()
     storage_dead(z_3)
     storage_dead(y_2)
     return

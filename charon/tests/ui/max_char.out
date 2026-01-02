@@ -5,7 +5,7 @@ pub fn MAX() -> char
 {
     let _0: char; // return
 
-    _0 := const (􏿿)
+    _0 = const (􏿿)
     return
 }
 
@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -28,10 +28,10 @@ fn main()
     let _0: (); // return
     let _max_char_1: char; // local
 
-    _0 := ()
+    _0 = ()
     storage_live(_max_char_1)
-    _max_char_1 := copy (MAX)
-    _0 := ()
+    _max_char_1 = copy (MAX)
+    _0 = ()
     storage_dead(_max_char_1)
     return
 }

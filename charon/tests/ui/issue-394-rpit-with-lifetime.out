@@ -94,7 +94,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -110,7 +110,7 @@ fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(@1: &'_1 mut closure<'a>,
     let _1: &'0 mut closure<'a>; // arg #1
     let tupled_args_2: (); // arg #2
 
-    _0 := Option::None {  }
+    _0 = Option::None {  }
     return
 }
 
@@ -133,8 +133,8 @@ fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(@1: closure<'a>, @2: ()) -> 
     let _3: &'0 mut closure<'a>; // anonymous local
 
     storage_live(_3)
-    _3 := &mut _1
-    _0 := {impl FnMut<()> for closure<'a>}::call_mut<'a, '_>(move (_3), move (_2))
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '_>(move (_3), move (_2))
     drop[{impl Destruct for closure<'a>}<'4>] _1
     return
 }
@@ -167,8 +167,8 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
     let _1: closure<'0>; // anonymous local
 
     storage_live(_1)
-    _1 := closure {  }
-    _0 := from_fn<u8, closure<'0>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'0>}, {impl FnMut<()> for closure<'a>}<'0>](move (_1))
+    _1 = closure {  }
+    _0 = from_fn<u8, closure<'0>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'0>}, {impl FnMut<()> for closure<'a>}<'0>](move (_1))
     storage_dead(_1)
     return
 }

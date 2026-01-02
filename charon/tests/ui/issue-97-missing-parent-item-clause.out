@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -46,7 +46,7 @@ where
     let _0: (); // return
     let self_1: &'0 mut AVLTree<T>[@TraitClause0]; // arg #1
 
-    _0 := ()
+    _0 = ()
     panic(core::panicking::panic)
 }
 
@@ -64,14 +64,14 @@ pub fn test(@1: AVLTree<u32>[{built_in impl Sized for u32}])
     let _2: (); // anonymous local
     let _3: &'0 mut AVLTree<u32>[{built_in impl Sized for u32}]; // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := &two-phase-mut tree_1
-    _2 := insert<'_, u32>[{built_in impl Sized for u32}, {impl Ord for u32}](move (_3))
+    _3 = &two-phase-mut tree_1
+    _2 = insert<'_, u32>[{built_in impl Sized for u32}, {impl Ord for u32}](move (_3))
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 

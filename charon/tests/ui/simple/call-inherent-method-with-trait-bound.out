@@ -27,7 +27,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -82,8 +82,8 @@ where
     let _x_1: HashMap<S>[@TraitClause0]; // arg #1
     let _k_2: Q; // arg #2
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for Q}] _k_2
     conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x_1
     return
@@ -100,8 +100,8 @@ where
     let _x_1: HashMap<S>[@TraitClause0]; // arg #1
     let _k_2: Q; // arg #2
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     conditional_drop[{built_in impl Destruct for Q}] _k_2
     conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x_1
     return
@@ -116,17 +116,17 @@ pub fn test1(@1: HashMap<()>[{built_in impl Sized for ()}])
     let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
     let _4: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := move (map_1)
+    _3 = move (map_1)
     storage_live(_4)
-    _4 := ()
-    _2 := top_level_get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {impl Trait<()> for ()}](move (_3), move (_4))
+    _4 = ()
+    _2 = top_level_get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {impl Trait<()> for ()}](move (_3), move (_4))
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -139,17 +139,17 @@ pub fn test2(@1: HashMap<()>[{built_in impl Sized for ()}])
     let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
     let _4: (); // anonymous local
 
-    _0 := ()
+    _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 := move (map_1)
+    _3 = move (map_1)
     storage_live(_4)
-    _4 := ()
-    _2 := get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {impl Trait<()> for ()}](move (_3), move (_4))
+    _4 = ()
+    _2 = get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {impl Trait<()> for ()}](move (_3), move (_4))
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
-    _0 := ()
+    _0 = ()
     return
 }
 

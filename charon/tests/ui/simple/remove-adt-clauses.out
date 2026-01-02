@@ -16,7 +16,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -48,8 +48,8 @@ fn foo(@1: Foo<u32, bool>)
     let _0: (); // return
     let _x_1: Foo<u32, bool>; // arg #1
 
-    _0 := ()
-    _0 := ()
+    _0 = ()
+    _0 = ()
     return
 }
 

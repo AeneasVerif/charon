@@ -62,7 +62,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -73,7 +73,7 @@ fn F() -> fn(u8) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: fn(u8) -> Option<u8>[{built_in impl Sized for u8}]; // return
 
-    _0 := cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(const (Some<u8>[{built_in impl Sized for u8}]))
+    _0 = cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(const (Some<u8>[{built_in impl Sized for u8}]))
     return
 }
 
@@ -94,8 +94,8 @@ unsafe fn {impl Destruct for Foo}::drop_in_place(@1: *mut Foo)
     let _2: &'0 mut Foo; // anonymous local
 
     storage_live(_2)
-    _0 := ()
-    _2 := &mut *(_1)
+    _0 = ()
+    _2 = &mut *(_1)
     drop[{impl Destruct for String}] (*(_2)).1
     return
 }
@@ -113,7 +113,7 @@ fn Foo(@1: u32, @2: String) -> Foo
     let _1: u32; // arg #1
     let _2: String; // arg #2
 
-    _0 := Foo { 0: move (_1), 1: move (_2) }
+    _0 = Foo { 0: move (_1), 1: move (_2) }
     return
 }
 
@@ -135,7 +135,7 @@ where
     let _0: Bar<'a, T>[@TraitClause0]; // return
     let _1: &'a T; // arg #1
 
-    _0 := Bar::Variant { 0: move (_1) }
+    _0 = Bar::Variant { 0: move (_1) }
     return
 }
 
@@ -164,58 +164,58 @@ fn main()
     let _19: i32; // anonymous local
 
     storage_live(_17)
-    _0 := ()
+    _0 = ()
     storage_live(f_1)
-    f_1 := const (Some<u8>[{built_in impl Sized for u8}])
+    f_1 = const (Some<u8>[{built_in impl Sized for u8}])
     storage_live(_2)
     storage_live(_3)
-    _3 := copy (f_1)
-    _2 := Some<u8>[{built_in impl Sized for u8}](const (42 : u8))
+    _3 = copy (f_1)
+    _2 = Some<u8>[{built_in impl Sized for u8}](const (42 : u8))
     storage_dead(_3)
     storage_dead(_2)
     storage_live(f_4)
     storage_live(_5)
-    _5 := copy (f_1)
-    f_4 := cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(move (_5))
+    _5 = copy (f_1)
+    f_4 = cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(move (_5))
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 := copy (f_4)
-    _6 := (move (_7))(const (42 : u8))
+    _7 = copy (f_4)
+    _6 = (move (_7))(const (42 : u8))
     storage_dead(_7)
     storage_dead(_6)
     storage_live(f_8)
-    f_8 := const (Foo)
+    f_8 = const (Foo)
     storage_live(_9)
     storage_live(_10)
-    _10 := copy (f_8)
+    _10 = copy (f_8)
     storage_live(_11)
-    _11 := new()
-    _9 := Foo(const (42 : u32), move (_11))
+    _11 = new()
+    _9 = Foo(const (42 : u32), move (_11))
     storage_dead(_11)
     storage_dead(_10)
     conditional_drop[{impl Destruct for Foo}] _9
     storage_live(_18)
     storage_live(_19)
-    _19 := const (42 : i32)
-    _18 := &_19
+    _19 = const (42 : i32)
+    _18 = &_19
     storage_dead(_9)
     storage_live(f_12)
-    f_12 := const (Variant<'3, i32>[{built_in impl Sized for i32}])
+    f_12 = const (Variant<'3, i32>[{built_in impl Sized for i32}])
     storage_live(_13)
     storage_live(_14)
-    _14 := copy (f_12)
+    _14 = copy (f_12)
     storage_live(_15)
     storage_live(_16)
-    _17 := move (_18)
-    _16 := &*(_17)
-    _15 := &*(_16)
-    _13 := Variant<'4, i32>[{built_in impl Sized for i32}](move (_15))
+    _17 = move (_18)
+    _16 = &*(_17)
+    _15 = &*(_16)
+    _13 = Variant<'4, i32>[{built_in impl Sized for i32}](move (_15))
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_16)
     storage_dead(_13)
-    _0 := ()
+    _0 = ()
     storage_dead(f_12)
     storage_dead(f_8)
     storage_dead(f_4)

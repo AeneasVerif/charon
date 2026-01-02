@@ -4,7 +4,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -17,8 +17,8 @@ fn SLICE() -> [(); 4 : usize]
     let _1: (); // anonymous local
 
     storage_live(_1)
-    _1 := ()
-    _0 := @ArrayRepeat<'_, (), 4 : usize>(move (_1))
+    _1 = ()
+    _0 = @ArrayRepeat<'_, (), 4 : usize>(move (_1))
     storage_dead(_1)
     return
 }
@@ -33,8 +33,8 @@ fn four() -> usize
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 := const (2 : usize) panic.+ const (2 : usize)
-    _0 := move (_1)
+    _1 = const (2 : usize) panic.+ const (2 : usize)
+    _0 = move (_1)
     return
 }
 
@@ -45,8 +45,8 @@ fn BAR() -> [(); 42 : usize]
     let _1: (); // anonymous local
 
     storage_live(_1)
-    _1 := ()
-    _0 := @ArrayRepeat<'_, (), 42 : usize>(move (_1))
+    _1 = ()
+    _0 = @ArrayRepeat<'_, (), 42 : usize>(move (_1))
     storage_dead(_1)
     return
 }
@@ -59,7 +59,7 @@ fn FOO() -> usize
 {
     let _0: usize; // return
 
-    _0 := const (42 : usize)
+    _0 = const (42 : usize)
     return
 }
 

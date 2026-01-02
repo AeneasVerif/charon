@@ -307,8 +307,8 @@ where
     let _1: *const T; // anonymous local
 
     storage_live(_1)
-    _1 := cast<usize, *const T>(const (0 : usize))
-    _0 := move (_1)
+    _1 = cast<usize, *const T>(const (0 : usize))
+    _0 = move (_1)
     return
 }
 
@@ -316,7 +316,7 @@ fn UNIT_METADATA()
 {
     let _0: (); // return
 
-    _0 := ()
+    _0 = ()
     return
 }
 
@@ -328,10 +328,10 @@ fn main()
     let _0: (); // return
     let ptr_1: *const (); // local
 
-    _0 := ()
+    _0 = ()
     storage_live(ptr_1)
-    ptr_1 := null<()>[{impl Thin for Self}<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
-    _0 := ()
+    ptr_1 = null<()>[{impl Thin for Self}<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
+    _0 = ()
     storage_dead(ptr_1)
     return
 }
