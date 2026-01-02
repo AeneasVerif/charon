@@ -125,9 +125,9 @@ pub opaque type String
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -147,15 +147,15 @@ unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
 where
     [@TraitClause0]: Sized<A>,
 {
-    let @0: (); // return
-    let @1: *mut (A, B); // arg #1
-    let @2: &'0 mut (A, B); // anonymous local
+    let _0: (); // return
+    let _1: *mut (A, B); // arg #1
+    let _2: &'0 mut (A, B); // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    @2 := &mut *(@1) with_metadata(copy (@1.metadata))
-    drop[{built_in impl Destruct for A}] (*(@2)).0
-    drop[{built_in impl Destruct for B}] (*(@2)).1
+    storage_live(_2)
+    _0 := ()
+    _2 := &mut *(_1) with_metadata(copy (_1.metadata))
+    drop[{built_in impl Destruct for A}] (*(_2)).0
+    drop[{built_in impl Destruct for B}] (*(_2)).1
     return
 }
 
@@ -177,30 +177,30 @@ pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 Self) -> bool
 where
     [@TraitClause0]: BoolTrait<Self>,
 {
-    let @0: bool; // return
-    let self@1: &'0 Self; // arg #1
+    let _0: bool; // return
+    let self_1: &'0 Self; // arg #1
 
-    @0 := const (true)
+    _0 := const (true)
     return
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 {
-    let @0: bool; // return
-    let self@1: &'0 bool; // arg #1
+    let _0: bool; // return
+    let self_1: &'0 bool; // arg #1
 
-    @0 := copy (*(self@1))
+    _0 := copy (*(self_1))
     return
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::ret_true
 pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
 {
-    let @0: bool; // return
-    let self@1: &'0 bool; // arg #1
+    let _0: bool; // return
+    let self_1: &'0 bool; // arg #1
 
-    @0 := const (true)
+    _0 := const (true)
     return
 }
 
@@ -215,27 +215,27 @@ impl BoolTrait for bool {
 // Full name: test_crate::test_bool_trait_bool
 pub fn test_bool_trait_bool(@1: bool) -> bool
 {
-    let @0: bool; // return
-    let x@1: bool; // arg #1
-    let @2: bool; // anonymous local
-    let @3: &'0 bool; // anonymous local
-    let @4: &'0 bool; // anonymous local
+    let _0: bool; // return
+    let x_1: bool; // arg #1
+    let _2: bool; // anonymous local
+    let _3: &'0 bool; // anonymous local
+    let _4: &'0 bool; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    @3 := &x@1
-    @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
-    if move (@2) {
-        storage_dead(@3)
-        storage_live(@4)
-        @4 := &x@1
-        @0 := {impl BoolTrait for bool}::ret_true<'_>(move (@4))
-        storage_dead(@4)
+    storage_live(_2)
+    storage_live(_3)
+    _3 := &x_1
+    _2 := {impl BoolTrait for bool}::get_bool<'_>(move (_3))
+    if move (_2) {
+        storage_dead(_3)
+        storage_live(_4)
+        _4 := &x_1
+        _0 := {impl BoolTrait for bool}::ret_true<'_>(move (_4))
+        storage_dead(_4)
     } else {
-        storage_dead(@3)
-        @0 := const (false)
+        storage_dead(_3)
+        _0 := const (false)
     }
-    storage_dead(@2)
+    storage_dead(_2)
     return
 }
 
@@ -244,18 +244,18 @@ pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: bool; // return
-    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let _0: bool; // return
+    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
 
-    match *(self@1) {
+    match *(self_1) {
         Option::None => {
         },
         Option::Some => {
-            @0 := const (true)
+            _0 := const (true)
             return
         },
     }
-    @0 := const (false)
+    _0 := const (false)
     return
 }
 
@@ -264,10 +264,10 @@ pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: bool; // return
-    let self@1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let _0: bool; // return
+    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
 
-    @0 := const (true)
+    _0 := const (true)
     return
 }
 
@@ -287,28 +287,28 @@ pub fn test_bool_trait_option<T>(@1: Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: bool; // return
-    let x@1: Option<T>[@TraitClause0]; // arg #1
-    let @2: bool; // anonymous local
-    let @3: &'0 Option<T>[@TraitClause0]; // anonymous local
-    let @4: &'0 Option<T>[@TraitClause0]; // anonymous local
+    let _0: bool; // return
+    let x_1: Option<T>[@TraitClause0]; // arg #1
+    let _2: bool; // anonymous local
+    let _3: &'0 Option<T>[@TraitClause0]; // anonymous local
+    let _4: &'0 Option<T>[@TraitClause0]; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    @3 := &x@1
-    @2 := {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (@3))
-    if move (@2) {
-        storage_dead(@3)
-        storage_live(@4)
-        @4 := &x@1
-        @0 := {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (@4))
-        storage_dead(@4)
+    storage_live(_2)
+    storage_live(_3)
+    _3 := &x_1
+    _2 := {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move (_3))
+    if move (_2) {
+        storage_dead(_3)
+        storage_live(_4)
+        _4 := &x_1
+        _0 := {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move (_4))
+        storage_dead(_4)
     } else {
-        storage_dead(@3)
-        @0 := const (false)
+        storage_dead(_3)
+        _0 := const (false)
     }
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x_1
     return
 }
 
@@ -318,15 +318,15 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: BoolTrait<T>,
 {
-    let @0: bool; // return
-    let x@1: T; // arg #1
-    let @2: &'0 T; // anonymous local
+    let _0: bool; // return
+    let x_1: T; // arg #1
+    let _2: &'0 T; // anonymous local
 
-    storage_live(@2)
-    @2 := &x@1
-    @0 := @TraitClause1::get_bool<'_>(move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for T}] x@1
+    storage_live(_2)
+    _2 := &x_1
+    _0 := @TraitClause1::get_bool<'_>(move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }
 
@@ -346,10 +346,10 @@ where
 // Full name: test_crate::{impl ToU64 for u64}::to_u64
 pub fn {impl ToU64 for u64}::to_u64(@1: u64) -> u64
 {
-    let @0: u64; // return
-    let self@1: u64; // arg #1
+    let _0: u64; // return
+    let self_1: u64; // arg #1
 
-    @0 := copy (self@1)
+    _0 := copy (self_1)
     return
 }
 
@@ -366,30 +366,30 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: ToU64<A>,
 {
-    let @0: u64; // return
-    let self@1: (A, A); // arg #1
-    let @2: u64; // anonymous local
-    let @3: A; // anonymous local
-    let @4: u64; // anonymous local
-    let @5: A; // anonymous local
-    let @6: u64; // anonymous local
+    let _0: u64; // return
+    let self_1: (A, A); // arg #1
+    let _2: u64; // anonymous local
+    let _3: A; // anonymous local
+    let _4: u64; // anonymous local
+    let _5: A; // anonymous local
+    let _6: u64; // anonymous local
 
-    storage_live(@6)
-    storage_live(@2)
-    storage_live(@3)
-    @3 := move ((self@1).0)
-    @2 := @TraitClause1::to_u64(move (@3))
-    storage_dead(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := move ((self@1).1)
-    @4 := @TraitClause1::to_u64(move (@5))
-    storage_dead(@5)
-    @6 := copy (@2) panic.+ copy (@4)
-    @0 := move (@6)
-    storage_dead(@4)
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self@1
+    storage_live(_6)
+    storage_live(_2)
+    storage_live(_3)
+    _3 := move ((self_1).0)
+    _2 := @TraitClause1::to_u64(move (_3))
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 := move ((self_1).1)
+    _4 := @TraitClause1::to_u64(move (_5))
+    storage_dead(_5)
+    _6 := copy (_2) panic.+ copy (_4)
+    _0 := move (_6)
+    storage_dead(_4)
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for (A, B)}<A, A>[@TraitClause0]] self_1
     return
 }
 
@@ -409,15 +409,15 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    let @0: u64; // return
-    let x@1: (T, T); // arg #1
-    let @2: (T, T); // anonymous local
+    let _0: u64; // return
+    let x_1: (T, T); // arg #1
+    let _2: (T, T); // anonymous local
 
-    storage_live(@2)
-    @2 := move (x@1)
-    @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
+    storage_live(_2)
+    _2 := move (x_1)
+    _0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (_2))
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x_1
     return
 }
 
@@ -427,29 +427,29 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<(T, T)>,
 {
-    let @0: u64; // return
-    let x@1: (T, T); // arg #1
-    let @2: (T, T); // anonymous local
+    let _0: u64; // return
+    let x_1: (T, T); // arg #1
+    let _2: (T, T); // anonymous local
 
-    storage_live(@2)
-    @2 := move (x@1)
-    @0 := @TraitClause1::to_u64(move (@2))
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x@1
+    storage_live(_2)
+    _2 := move (x_1)
+    _0 := @TraitClause1::to_u64(move (_2))
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for (A, B)}<T, T>[@TraitClause0]] x_1
     return
 }
 
 // Full name: test_crate::h0
 pub fn h0(@1: u64) -> u64
 {
-    let @0: u64; // return
-    let x@1: u64; // arg #1
-    let @2: u64; // anonymous local
+    let _0: u64; // return
+    let x_1: u64; // arg #1
+    let _2: u64; // anonymous local
 
-    storage_live(@2)
-    @2 := copy (x@1)
-    @0 := {impl ToU64 for u64}::to_u64(move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := copy (x_1)
+    _0 := {impl ToU64 for u64}::to_u64(move (_2))
+    storage_dead(_2)
     return
 }
 
@@ -482,15 +482,15 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    let @0: u64; // return
-    let self@1: Wrapper<T>[@TraitClause0]; // arg #1
-    let @2: T; // anonymous local
+    let _0: u64; // return
+    let self_1: Wrapper<T>[@TraitClause0]; // arg #1
+    let _2: T; // anonymous local
 
-    storage_live(@2)
-    @2 := move ((self@1).x)
-    @0 := @TraitClause1::to_u64(move (@2))
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
+    storage_live(_2)
+    _2 := move ((self_1).x)
+    _0 := @TraitClause1::to_u64(move (_2))
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self_1
     return
 }
 
@@ -508,14 +508,14 @@ where
 // Full name: test_crate::h1
 pub fn h1(@1: Wrapper<u64>[{built_in impl Sized for u64}]) -> u64
 {
-    let @0: u64; // return
-    let x@1: Wrapper<u64>[{built_in impl Sized for u64}]; // arg #1
-    let @2: Wrapper<u64>[{built_in impl Sized for u64}]; // anonymous local
+    let _0: u64; // return
+    let x_1: Wrapper<u64>[{built_in impl Sized for u64}]; // arg #1
+    let _2: Wrapper<u64>[{built_in impl Sized for u64}]; // anonymous local
 
-    storage_live(@2)
-    @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[{built_in impl Sized for u64}, {impl ToU64 for u64}](move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := move (x_1)
+    _0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<u64>[{built_in impl Sized for u64}, {impl ToU64 for u64}](move (_2))
+    storage_dead(_2)
     return
 }
 
@@ -525,15 +525,15 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    let @0: u64; // return
-    let x@1: Wrapper<T>[@TraitClause0]; // arg #1
-    let @2: Wrapper<T>[@TraitClause0]; // anonymous local
+    let _0: u64; // return
+    let x_1: Wrapper<T>[@TraitClause0]; // arg #1
+    let _2: Wrapper<T>[@TraitClause0]; // anonymous local
 
-    storage_live(@2)
-    @2 := move (x@1)
-    @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
-    storage_dead(@2)
-    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
+    storage_live(_2)
+    _2 := move (x_1)
+    _0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (_2))
+    storage_dead(_2)
+    conditional_drop[{impl Destruct for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x_1
     return
 }
 
@@ -554,14 +554,14 @@ where
 // Full name: test_crate::{impl ToType<bool> for u64}::to_type
 pub fn {impl ToType<bool> for u64}::to_type(@1: u64) -> bool
 {
-    let @0: bool; // return
-    let self@1: u64; // arg #1
-    let @2: u64; // anonymous local
+    let _0: bool; // return
+    let self_1: u64; // arg #1
+    let _2: u64; // anonymous local
 
-    storage_live(@2)
-    @2 := copy (self@1)
-    @0 := move (@2) > const (0 : u64)
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := copy (self_1)
+    _0 := move (_2) > const (0 : u64)
+    storage_dead(_2)
     return
 }
 
@@ -597,15 +597,15 @@ where
     [@TraitClause2]: OfType<T1>,
     [@TraitClause3]: ToType<T2, T1>,
 {
-    let @0: T1; // return
-    let y@1: T2; // arg #1
-    let @2: T2; // anonymous local
+    let _0: T1; // return
+    let y_1: T2; // arg #1
+    let _2: T2; // anonymous local
 
-    storage_live(@2)
-    @2 := move (y@1)
-    @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for T2}] y@1
+    storage_live(_2)
+    _2 := move (y_1)
+    _0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for T2}] y_1
     return
 }
 
@@ -634,15 +634,15 @@ where
     [@TraitClause2]: OfTypeBis<T1, T2>,
     [@TraitClause3]: ToType<T2, T1>,
 {
-    let @0: T1; // return
-    let y@1: T2; // arg #1
-    let @2: T2; // anonymous local
+    let _0: T1; // return
+    let y_1: T2; // arg #1
+    let _2: T2; // anonymous local
 
-    storage_live(@2)
-    @2 := move (y@1)
-    @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for T2}] y@1
+    storage_live(_2)
+    _2 := move (y_1)
+    _0 := @TraitClause2::of_type[@TraitClause0](move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for T2}] y_1
     return
 }
 
@@ -662,14 +662,14 @@ struct TestType1 {
 // Full name: test_crate::{TestType<T>[@TraitClause0]}::test::{impl TestTrait for TestType1}::test
 fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 TestType1) -> bool
 {
-    let @0: bool; // return
-    let self@1: &'0 TestType1; // arg #1
-    let @2: u64; // anonymous local
+    let _0: bool; // return
+    let self_1: &'0 TestType1; // arg #1
+    let _2: u64; // anonymous local
 
-    storage_live(@2)
-    @2 := copy ((*(self@1)).0)
-    @0 := move (@2) > const (1 : u64)
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := copy ((*(self_1)).0)
+    _0 := move (_2) > const (1 : u64)
+    storage_dead(_2)
     return
 }
 
@@ -678,46 +678,46 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToU64<T>,
 {
-    let @0: bool; // return
-    let self@1: &'0 TestType<T>[@TraitClause0]; // arg #1
-    let x@2: T; // arg #2
-    let x@3: u64; // local
-    let @4: T; // anonymous local
-    let y@5: TestType1; // local
-    let @6: bool; // anonymous local
-    let @7: u64; // anonymous local
-    let @8: &'1 TestType1; // anonymous local
+    let _0: bool; // return
+    let self_1: &'0 TestType<T>[@TraitClause0]; // arg #1
+    let x_2: T; // arg #2
+    let x_3: u64; // local
+    let _4: T; // anonymous local
+    let y_5: TestType1; // local
+    let _6: bool; // anonymous local
+    let _7: u64; // anonymous local
+    let _8: &'1 TestType1; // anonymous local
 
-    storage_live(x@3)
-    storage_live(@4)
+    storage_live(x_3)
+    storage_live(_4)
     // Remark: we can't write: impl TestTrait for TestType<T>,
     // we have to use a *local* parameter (can't use the outer T).
     // In other words: the parameters used in the items inside
     // an impl must be bound by the impl block (can't come from outer
     // blocks).
-    @4 := move (x@2)
-    x@3 := @TraitClause1::to_u64(move (@4))
-    storage_dead(@4)
-    storage_live(y@5)
-    y@5 := TestType1 { 0: const (0 : u64) }
-    storage_live(@6)
-    storage_live(@7)
-    @7 := copy (x@3)
-    @6 := move (@7) > const (0 : u64)
-    if move (@6) {
-        storage_dead(@7)
-        storage_live(@8)
-        @8 := &y@5
-        @0 := {impl TestTrait for TestType1}::test<'_>(move (@8))
-        storage_dead(@8)
+    _4 := move (x_2)
+    x_3 := @TraitClause1::to_u64(move (_4))
+    storage_dead(_4)
+    storage_live(y_5)
+    y_5 := TestType1 { 0: const (0 : u64) }
+    storage_live(_6)
+    storage_live(_7)
+    _7 := copy (x_3)
+    _6 := move (_7) > const (0 : u64)
+    if move (_6) {
+        storage_dead(_7)
+        storage_live(_8)
+        _8 := &y_5
+        _0 := {impl TestTrait for TestType1}::test<'_>(move (_8))
+        storage_dead(_8)
     } else {
-        storage_dead(@7)
-        @0 := const (false)
+        storage_dead(_7)
+        _0 := const (false)
     }
-    storage_dead(@6)
-    storage_dead(y@5)
-    storage_dead(x@3)
-    conditional_drop[{built_in impl Destruct for T}] x@2
+    storage_dead(_6)
+    storage_dead(y_5)
+    storage_dead(x_3)
+    conditional_drop[{built_in impl Destruct for T}] x_2
     return
 }
 
@@ -752,14 +752,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ToType<bool, T>,
 {
-    let @0: T; // return
-    let self@1: BoolWrapper; // arg #1
-    let @2: bool; // anonymous local
+    let _0: T; // return
+    let self_1: BoolWrapper; // arg #1
+    let _2: bool; // anonymous local
 
-    storage_live(@2)
-    @2 := copy ((self@1).0)
-    @0 := @TraitClause1::to_type(move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := copy ((self_1).0)
+    _0 := @TraitClause1::to_type(move (_2))
+    storage_dead(_2)
     return
 }
 
@@ -795,9 +795,9 @@ pub fn LEN2<Self, const LEN : usize>() -> usize
 where
     [@TraitClause0]: WithConstTy<Self, LEN>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (32 : usize)
+    _0 := const (32 : usize)
     return
 }
 
@@ -815,9 +815,9 @@ where
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
 pub fn LEN1() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (12 : usize)
+    _0 := const (12 : usize)
     return
 }
 
@@ -827,12 +827,12 @@ pub const LEN1: usize = LEN1()
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
 pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut u64, @2: &'_1 [u8; 32 : usize])
 {
-    let @0: (); // return
-    let @1: &'0 mut u64; // arg #1
-    let @2: &'1 [u8; 32 : usize]; // arg #2
+    let _0: (); // return
+    let _1: &'0 mut u64; // arg #1
+    let _2: &'1 [u8; 32 : usize]; // arg #2
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -856,9 +856,9 @@ where
     [@TraitClause0]: Sized<H>,
     [@TraitClause1]: WithConstTy<H, LEN>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (@TraitClause1::LEN1)
+    _0 := const (@TraitClause1::LEN1)
     return
 }
 
@@ -868,12 +868,12 @@ where
     [@TraitClause0]: Sized<H>,
     [@TraitClause1]: WithConstTy<H, LEN>,
 {
-    let @0: (); // return
-    let @1: @TraitClause1::W; // arg #1
+    let _0: (); // return
+    let _1: @TraitClause1::W; // arg #1
 
-    @0 := ()
-    @0 := ()
-    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] @1
+    _0 := ()
+    _0 := ()
+    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] _1
     return
 }
 
@@ -883,15 +883,15 @@ where
     [@TraitClause0]: Sized<H>,
     [@TraitClause1]: WithConstTy<H, LEN>,
 {
-    let @0: u64; // return
-    let x@1: @TraitClause1::W; // arg #1
-    let @2: @TraitClause1::W; // anonymous local
+    let _0: u64; // return
+    let x_1: @TraitClause1::W; // arg #1
+    let _2: @TraitClause1::W; // anonymous local
 
-    storage_live(@2)
-    @2 := move (x@1)
-    @0 := @TraitClause1::parent_clause3::to_u64(move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] x@1
+    storage_live(_2)
+    _2 := move (x_1)
+    _0 := @TraitClause1::parent_clause3::to_u64(move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for @TraitClause1::W}] x_1
     return
 }
 
@@ -901,11 +901,11 @@ where
     [@TraitClause0]: Sized<T>,
     T : 'a,
 {
-    let @0: (); // return
-    let _x@1: &'0 T; // arg #1
+    let _0: (); // return
+    let _x_1: &'0 T; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -916,11 +916,11 @@ where
     [@TraitClause1]: WithConstTy<T, 32 : usize>,
     @TraitClause1::V = u32,
 {
-    let @0: (); // return
-    let _x@1: u32; // arg #1
+    let _0: (); // return
+    let _x_1: u32; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -968,14 +968,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ChildTrait<T>,
 {
-    let @0: String; // return
-    let x@1: &'0 T; // arg #1
-    let @2: &'0 T; // anonymous local
+    let _0: String; // return
+    let x_1: &'0 T; // arg #1
+    let _2: &'0 T; // anonymous local
 
-    storage_live(@2)
-    @2 := &*(x@1)
-    @0 := @TraitClause1::parent_clause1::get_name<'_>(move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := &*(x_1)
+    _0 := @TraitClause1::parent_clause1::get_name<'_>(move (_2))
+    storage_dead(_2)
     return
 }
 
@@ -985,14 +985,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ChildTrait<T>,
 {
-    let @0: @TraitClause1::parent_clause1::W; // return
-    let x@1: &'0 T; // arg #1
-    let @2: &'0 T; // anonymous local
+    let _0: @TraitClause1::parent_clause1::W; // return
+    let x_1: &'0 T; // arg #1
+    let _2: &'0 T; // anonymous local
 
-    storage_live(@2)
-    @2 := &*(x@1)
-    @0 := @TraitClause1::parent_clause1::get_w<'_>(move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := &*(x_1)
+    _0 := @TraitClause1::parent_clause1::get_w<'_>(move (_2))
+    storage_dead(_2)
     return
 }
 
@@ -1005,10 +1005,10 @@ where
     [@TraitClause3]: ParentTrait0<U>,
     @TraitClause2::W = @TraitClause3::W,
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -1134,10 +1134,10 @@ impl ParentTrait2 for u32 {
 // Full name: test_crate::{impl ChildTrait2 for u32}::convert
 pub fn {impl ChildTrait2 for u32}::convert(@1: u32) -> u32
 {
-    let @0: u32; // return
-    let x@1: u32; // arg #1
+    let _0: u32; // return
+    let x_1: u32; // arg #1
 
-    @0 := copy (x@1)
+    _0 := copy (x_1)
     return
 }
 
@@ -1216,14 +1216,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: GetTrait<T>,
 {
-    let @0: @TraitClause1::W; // return
-    let x@1: &'0 T; // arg #1
-    let @2: &'0 T; // anonymous local
+    let _0: @TraitClause1::W; // return
+    let x_1: &'0 T; // arg #1
+    let _2: &'0 T; // anonymous local
 
-    storage_live(@2)
-    @2 := &*(x@1)
-    @0 := @TraitClause1::get_w<'_>(move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := &*(x_1)
+    _0 := @TraitClause1::get_w<'_>(move (_2))
+    storage_dead(_2)
     return
 }
 
@@ -1240,9 +1240,9 @@ pub fn {impl Trait for [T; N]}::LEN<T, const N : usize>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (N)
+    _0 := const (N)
     return
 }
 
@@ -1268,9 +1268,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (0 : usize)
+    _0 := const (0 : usize)
     return
 }
 
@@ -1298,9 +1298,9 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := copy ({impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1])
+    _0 := copy ({impl Trait for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1])
     return
 }
 
@@ -1321,9 +1321,9 @@ where
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<T>,
 {
-    let @0: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]; // return
+    let _0: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]; // return
 
-    @0 := Result::Err { 0: const (0 : i32) }
+    _0 := Result::Err { 0: const (0 : i32) }
     return
 }
 
@@ -1342,9 +1342,9 @@ where
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<T>,
 {
-    let @0: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]; // return
+    let _0: Result<T, i32>[@TraitClause0, {built_in impl Sized for i32}]; // return
 
-    @0 := copy (FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2])
+    _0 := copy (FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2])
     return
 }
 
@@ -1355,9 +1355,9 @@ where
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Trait<U>,
 {
-    let @0: Result<U, i32>[@TraitClause1, {built_in impl Sized for i32}]; // return
+    let _0: Result<U, i32>[@TraitClause1, {built_in impl Sized for i32}]; // return
 
-    @0 := copy (FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2])
+    _0 := copy (FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2])
     return
 }
 
@@ -1383,8 +1383,8 @@ impl RecursiveImpl for () {
 // Full name: test_crate::flabada
 pub fn flabada<'a>(@1: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let @0: Wrapper<(bool, &'0 ())>[{built_in impl Sized for (bool, &'0 ())}]; // return
-    let _x@1: &'0 (); // arg #1
+    let _0: Wrapper<(bool, &'0 ())>[{built_in impl Sized for (bool, &'0 ())}]; // return
+    let _x_1: &'0 (); // arg #1
 
     panic(core::panicking::panic)
 }
@@ -1395,26 +1395,26 @@ where
     [@TraitClause1]: Fn<F, (&'a ())>,
     @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'_ ())}],
 {
-    let @0: (); // return
-    let @1: F; // arg #1
+    let _0: (); // return
+    let _1: F; // arg #1
 
-    @0 := ()
-    @0 := ()
-    conditional_drop[{built_in impl Destruct for F}] @1
+    _0 := ()
+    _0 := ()
+    conditional_drop[{built_in impl Destruct for F}] _1
     return
 }
 
 // Full name: test_crate::flibidi
 pub fn flibidi()
 {
-    let @0: (); // return
-    let @1: (); // anonymous local
+    let _0: (); // return
+    let _1: (); // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ())> for for<'a> flabada<'a>}](const (flabada<'_>))
-    storage_dead(@1)
-    @0 := ()
+    _0 := ()
+    storage_live(_1)
+    _1 := test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ())> for for<'a> flabada<'a>}](const (flabada<'_>))
+    storage_dead(_1)
+    _0 := ()
     return
 }
 
@@ -1433,7 +1433,7 @@ where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: SliceIndex<I>,
 {
-    let @0: @TraitClause1::Output; // return
+    let _0: @TraitClause1::Output; // return
 
     panic(core::panicking::panic)
 }

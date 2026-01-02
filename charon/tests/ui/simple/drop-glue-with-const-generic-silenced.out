@@ -39,9 +39,9 @@ impl Destruct for Global {
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -69,12 +69,12 @@ impl<const K : usize> Destruct for PortableHash<K> {
 // Full name: test_crate::foo
 fn foo(@1: PortableHash<42 : usize>)
 {
-    let @0: (); // return
-    let @1: PortableHash<42 : usize>; // arg #1
+    let _0: (); // return
+    let _1: PortableHash<42 : usize>; // arg #1
 
-    @0 := ()
-    @0 := ()
-    drop[{impl Destruct for PortableHash<K>}<42 : usize>] @1
+    _0 := ()
+    _0 := ()
+    drop[{impl Destruct for PortableHash<K>}<42 : usize>] _1
     return
 }
 

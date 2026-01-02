@@ -62,10 +62,10 @@ unsafe fn drop_in_place::<bool>(@1: *mut bool)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
     bb0: {
-        @0 := ();
+        _0 := ();
         return;
     }
 }
@@ -75,25 +75,25 @@ const UNIT_METADATA: () = @Fun1()
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(@1: bool, @2: bool)
 {
-    let @0: (); // return
-    let init@1: bool; // arg #1
-    let expected@2: bool; // arg #2
-    let @3: bool; // anonymous local
-    let @4: &'0 bool; // anonymous local
-    let @5: &'0 bool; // anonymous local
+    let _0: (); // return
+    let init_1: bool; // arg #1
+    let expected_2: bool; // arg #2
+    let _3: bool; // anonymous local
+    let _4: &'0 bool; // anonymous local
+    let _5: &'0 bool; // anonymous local
 
     bb0: {
-        @0 := ();
-        storage_live(@3);
-        storage_live(@4);
-        @4 := &expected@2;
-        storage_live(@5);
-        @5 := &init@1;
-        @3 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (@4), move (@5)) -> bb1 (unwind: bb2);
+        _0 := ();
+        storage_live(_3);
+        storage_live(_4);
+        _4 := &expected_2;
+        storage_live(_5);
+        _5 := &init_1;
+        _3 := {impl PartialEq::<bool, bool>}::eq<'_, '_>(move (_4), move (_5)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
-        if move (@3) -> bb3 else -> bb4;
+        if move (_3) -> bb3 else -> bb4;
     }
 
     bb2: {
@@ -101,16 +101,16 @@ fn do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb3: {
-        storage_dead(@5);
-        storage_dead(@4);
-        storage_dead(@3);
-        @0 := ();
+        storage_dead(_5);
+        storage_dead(_4);
+        storage_dead(_3);
+        _0 := ();
         return;
     }
 
     bb4: {
-        storage_dead(@5);
-        storage_dead(@4);
+        storage_dead(_5);
+        storage_dead(_4);
         panic(core::panicking::panic);
     }
 }
@@ -118,18 +118,18 @@ fn do_test::<bool>(@1: bool, @2: bool)
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: (); // anonymous local
+    let _0: (); // return
+    let _1: (); // anonymous local
 
     bb0: {
-        @0 := ();
-        storage_live(@1);
-        @1 := do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
+        _0 := ();
+        storage_live(_1);
+        _1 := do_test::<bool>(const (true), const (true)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
-        storage_dead(@1);
-        @0 := ();
+        storage_dead(_1);
+        _0 := ();
         return;
     }
 

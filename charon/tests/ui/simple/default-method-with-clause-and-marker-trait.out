@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -29,7 +29,7 @@ where
     [@TraitClause0]: Trait<Self>,
     [@TraitClause1]: HasAssoc<T>,
 {
-    let @0: @TraitClause1::Assoc; // return
+    let _0: @TraitClause1::Assoc; // return
 
     panic(core::panicking::panic)
 }
@@ -39,7 +39,7 @@ fn {impl Trait for T}::default_method<T, T>() -> @TraitClause0::Assoc
 where
     [@TraitClause0]: HasAssoc<T>,
 {
-    let @0: @TraitClause0::Assoc; // return
+    let _0: @TraitClause0::Assoc; // return
 
     panic(core::panicking::panic)
 }
@@ -53,10 +53,10 @@ impl<T> Trait for T {
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 

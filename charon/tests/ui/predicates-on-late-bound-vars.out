@@ -107,9 +107,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -118,14 +118,14 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::wrap
 fn wrap<'a>(@1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {
-    let @0: Option<&'0 u32>[{built_in impl Sized for &'0 u32}]; // return
-    let x@1: &'0 u32; // arg #1
-    let @2: &'0 u32; // anonymous local
+    let _0: Option<&'0 u32>[{built_in impl Sized for &'0 u32}]; // return
+    let x_1: &'0 u32; // arg #1
+    let _2: &'0 u32; // anonymous local
 
-    storage_live(@2)
-    @2 := &*(x@1)
-    @0 := Option::Some { 0: move (@2) }
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := &*(x_1)
+    _0 := Option::Some { 0: move (_2) }
+    storage_dead(_2)
     return
 }
 
@@ -134,38 +134,38 @@ fn wrap2<'a>(@1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'_ u32}]
 where
     [@TraitClause0]: Clone<&'a ()>,
 {
-    let @0: Option<&'0 u32>[{built_in impl Sized for &'0 u32}]; // return
-    let x@1: &'0 u32; // arg #1
-    let @2: &'0 u32; // anonymous local
+    let _0: Option<&'0 u32>[{built_in impl Sized for &'0 u32}]; // return
+    let x_1: &'0 u32; // arg #1
+    let _2: &'0 u32; // anonymous local
 
-    storage_live(@2)
-    @2 := &*(x@1)
-    @0 := Option::Some { 0: move (@2) }
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := &*(x_1)
+    _0 := Option::Some { 0: move (_2) }
+    storage_dead(_2)
     return
 }
 
 // Full name: test_crate::foo
 fn foo()
 {
-    let @0: (); // return
-    let ref_b@1: RefCell<bool>[{built_in impl MetaSized for bool}]; // local
-    let @2: Result<Ref<'0, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'0, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
-    let @3: &'3 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
+    let _0: (); // return
+    let ref_b_1: RefCell<bool>[{built_in impl MetaSized for bool}]; // local
+    let _2: Result<Ref<'0, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'0, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
+    let _3: &'3 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
 
-    @0 := ()
-    storage_live(ref_b@1)
-    ref_b@1 := new<bool>[{built_in impl Sized for bool}](const (false))
-    storage_live(@2)
-    storage_live(@3)
+    _0 := ()
+    storage_live(ref_b_1)
+    ref_b_1 := new<bool>[{built_in impl Sized for bool}](const (false))
+    storage_live(_2)
+    storage_live(_3)
     // `try_borrow` has a type that includes predicates on late bound regions.
-    @3 := &ref_b@1
-    @2 := try_borrow<'_, bool>[{built_in impl MetaSized for bool}](move (@3))
-    storage_dead(@3)
-    conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'0, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'0, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] @2
-    storage_dead(@2)
-    @0 := ()
-    storage_dead(ref_b@1)
+    _3 := &ref_b_1
+    _2 := try_borrow<'_, bool>[{built_in impl MetaSized for bool}](move (_3))
+    storage_dead(_3)
+    conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'0, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'0, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
+    storage_dead(_2)
+    _0 := ()
+    storage_dead(ref_b_1)
     return
 }
 
@@ -187,7 +187,7 @@ where
     [@TraitClause3]: Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
-    let @0: Option<@TraitClause3::S>[@TraitClause3::parent_clause1]; // return
+    let _0: Option<@TraitClause3::S>[@TraitClause3::parent_clause1]; // return
 
     panic(core::panicking::panic)
 }

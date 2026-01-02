@@ -1038,7 +1038,7 @@ impl Display for Local {
         if let Some(name) = &self.name {
             write!(f, "{name}")?
         }
-        write!(f, "{}", self.index.to_pretty_string())?;
+        write!(f, "_{}", self.index)?;
         Ok(())
     }
 }

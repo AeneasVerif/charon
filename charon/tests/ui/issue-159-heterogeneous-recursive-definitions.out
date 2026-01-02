@@ -6,9 +6,9 @@ pub trait MetaSized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -39,26 +39,26 @@ struct Portable {}
 // Full name: test_crate::{impl Ops for Portable}::ZERO
 fn {impl Ops for Portable}::ZERO() -> Portable
 {
-    let @0: Portable; // return
+    let _0: Portable; // return
 
-    @0 := Portable {  }
+    _0 := Portable {  }
     return
 }
 
 fn test_crate::ntt_multiply() -> Portable
 {
-    let @0: Portable; // return
+    let _0: Portable; // return
 
-    @0 := {impl Ops for Portable}::ZERO()
+    _0 := {impl Ops for Portable}::ZERO()
     return
 }
 
 // Full name: test_crate::{impl Ops for Portable}::ntt_multiply
 fn {impl Ops for Portable}::ntt_multiply() -> Portable
 {
-    let @0: Portable; // return
+    let _0: Portable; // return
 
-    @0 := test_crate::ntt_multiply()
+    _0 := test_crate::ntt_multiply()
     return
 }
 

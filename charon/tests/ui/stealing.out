@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -13,13 +13,13 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::SLICE
 fn SLICE() -> [(); 4 : usize]
 {
-    let @0: [(); 4 : usize]; // return
-    let @1: (); // anonymous local
+    let _0: [(); 4 : usize]; // return
+    let _1: (); // anonymous local
 
-    storage_live(@1)
-    @1 := ()
-    @0 := @ArrayRepeat<'_, (), 4 : usize>(move (@1))
-    storage_dead(@1)
+    storage_live(_1)
+    _1 := ()
+    _0 := @ArrayRepeat<'_, (), 4 : usize>(move (_1))
+    storage_dead(_1)
     return
 }
 
@@ -29,25 +29,25 @@ static SLICE: [(); 4 : usize] = SLICE()
 // Full name: test_crate::four
 fn four() -> usize
 {
-    let @0: usize; // return
-    let @1: usize; // anonymous local
+    let _0: usize; // return
+    let _1: usize; // anonymous local
 
-    storage_live(@1)
-    @1 := const (2 : usize) panic.+ const (2 : usize)
-    @0 := move (@1)
+    storage_live(_1)
+    _1 := const (2 : usize) panic.+ const (2 : usize)
+    _0 := move (_1)
     return
 }
 
 // Full name: test_crate::BAR
 fn BAR() -> [(); 42 : usize]
 {
-    let @0: [(); 42 : usize]; // return
-    let @1: (); // anonymous local
+    let _0: [(); 42 : usize]; // return
+    let _1: (); // anonymous local
 
-    storage_live(@1)
-    @1 := ()
-    @0 := @ArrayRepeat<'_, (), 42 : usize>(move (@1))
-    storage_dead(@1)
+    storage_live(_1)
+    _1 := ()
+    _0 := @ArrayRepeat<'_, (), 42 : usize>(move (_1))
+    storage_dead(_1)
     return
 }
 
@@ -57,9 +57,9 @@ const BAR: [(); 42 : usize] = BAR()
 // Full name: test_crate::FOO
 fn FOO() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (42 : usize)
+    _0 := const (42 : usize)
     return
 }
 

@@ -555,9 +555,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -569,14 +569,14 @@ struct closure {}
 // Full name: test_crate::map::{impl FnMut<(i32)> for closure}::call_mut
 fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32)) -> i32
 {
-    let @0: i32; // return
-    let @1: &'0 mut closure; // arg #1
-    let tupled_args@2: (i32); // arg #2
-    let v@3: i32; // local
+    let _0: i32; // return
+    let _1: &'0 mut closure; // arg #1
+    let tupled_args_2: (i32); // arg #2
+    let v_3: i32; // local
 
-    storage_live(v@3)
-    v@3 := move ((tupled_args@2).0)
-    @0 := copy (v@3)
+    storage_live(v_3)
+    v_3 := move ((tupled_args_2).0)
+    _0 := copy (v_3)
     return
 }
 
@@ -593,15 +593,15 @@ impl Destruct for closure {
 // Full name: test_crate::map::{impl FnOnce<(i32)> for closure}::call_once
 fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
 {
-    let @0: i32; // return
-    let @1: closure; // arg #1
-    let @2: (i32); // arg #2
-    let @3: &'0 mut closure; // anonymous local
+    let _0: i32; // return
+    let _1: closure; // arg #1
+    let _2: (i32); // arg #2
+    let _3: &'0 mut closure; // anonymous local
 
-    storage_live(@3)
-    @3 := &mut @1
-    @0 := {impl FnMut<(i32)> for closure}::call_mut<'_>(move (@3), move (@2))
-    drop[{impl Destruct for closure}] @1
+    storage_live(_3)
+    _3 := &mut _1
+    _0 := {impl FnMut<(i32)> for closure}::call_mut<'_>(move (_3), move (_2))
+    drop[{impl Destruct for closure}] _1
     return
 }
 
@@ -628,187 +628,187 @@ impl FnMut<(i32)> for closure {
 
 pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
 {
-    let @0: [i32; 256 : usize]; // return
-    let x@1: [i32; 256 : usize]; // arg #1
-    let @2: [i32; 256 : usize]; // anonymous local
-    let @3: closure; // anonymous local
+    let _0: [i32; 256 : usize]; // return
+    let x_1: [i32; 256 : usize]; // arg #1
+    let _2: [i32; 256 : usize]; // anonymous local
+    let _3: closure; // anonymous local
 
-    storage_live(@2)
-    @2 := copy (x@1)
-    storage_live(@3)
-    @3 := closure {  }
-    @0 := core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (@2), move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := copy (x_1)
+    storage_live(_3)
+    _3 := closure {  }
+    _0 := core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move (_2), move (_3))
+    storage_dead(_3)
+    storage_dead(_2)
     return
 }
 
 // Full name: test_crate::array
 pub fn array<const LEN : usize>() -> [u8; LEN]
 {
-    let @0: [u8; LEN]; // return
+    let _0: [u8; LEN]; // return
 
-    @0 := @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
+    _0 := @ArrayRepeat<'_, u8, LEN>(const (0 : u8))
     return
 }
 
 // Full name: test_crate::cbd
 fn cbd(@1: [u8; 33 : usize])
 {
-    let @0: (); // return
-    let prf_input@1: [u8; 33 : usize]; // arg #1
-    let @2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let iter@4: Range<u8>[{built_in impl Sized for u8}]; // local
-    let @5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @6: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let @7: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let i@8: u8; // local
-    let @9: u8; // anonymous local
-    let @10: usize; // anonymous local
-    let @11: &'_ mut [u8; 33 : usize]; // anonymous local
-    let @12: &'_ mut u8; // anonymous local
+    let _0: (); // return
+    let prf_input_1: [u8; 33 : usize]; // arg #1
+    let _2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let _3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let iter_4: Range<u8>[{built_in impl Sized for u8}]; // local
+    let _5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let _6: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let _7: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let i_8: u8; // local
+    let _9: u8; // anonymous local
+    let _10: usize; // anonymous local
+    let _11: &'_ mut [u8; 33 : usize]; // anonymous local
+    let _12: &'_ mut u8; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    storage_live(@3)
-    @3 := Range { start: const (0 : u8), end: const (3 : u8) }
-    @2 := {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move (@3))
-    storage_dead(@3)
-    storage_live(iter@4)
-    iter@4 := move (@2)
+    _0 := ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 := Range { start: const (0 : u8), end: const (3 : u8) }
+    _2 := {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move (_3))
+    storage_dead(_3)
+    storage_live(iter_4)
+    iter_4 := move (_2)
     loop {
-        storage_live(@5)
-        storage_live(@6)
-        storage_live(@7)
-        @7 := &mut iter@4
-        @6 := &two-phase-mut *(@7)
-        @5 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move (@6))
-        storage_dead(@6)
-        match @5 {
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        _7 := &mut iter_4
+        _6 := &two-phase-mut *(_7)
+        _5 := {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move (_6))
+        storage_dead(_6)
+        match _5 {
             Option::None => {
                 break 0
             },
             Option::Some => {
-                storage_live(i@8)
-                i@8 := copy ((@5 as variant Option::Some).0)
-                storage_live(@9)
-                @9 := copy (i@8)
-                storage_live(@10)
-                @10 := const (0 : usize)
-                storage_live(@11)
-                @11 := &mut prf_input@1
-                storage_live(@12)
-                @12 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@11), copy (@10))
-                *(@12) := move (@9)
-                storage_dead(@9)
-                storage_dead(@10)
-                storage_dead(i@8)
-                storage_dead(@7)
-                storage_dead(@5)
+                storage_live(i_8)
+                i_8 := copy ((_5 as variant Option::Some).0)
+                storage_live(_9)
+                _9 := copy (i_8)
+                storage_live(_10)
+                _10 := const (0 : usize)
+                storage_live(_11)
+                _11 := &mut prf_input_1
+                storage_live(_12)
+                _12 := @ArrayIndexMut<'_, u8, 33 : usize>(move (_11), copy (_10))
+                *(_12) := move (_9)
+                storage_dead(_9)
+                storage_dead(_10)
+                storage_dead(i_8)
+                storage_dead(_7)
+                storage_dead(_5)
                 continue 0
             },
         }
     }
-    @0 := ()
-    storage_dead(@7)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
+    _0 := ()
+    storage_dead(_7)
+    storage_dead(_5)
+    storage_dead(iter_4)
+    storage_dead(_2)
     return
 }
 
 // Full name: test_crate::select
 fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
 {
-    let @0: (); // return
-    let lhs@1: &'0 [u8]; // arg #1
-    let rhs@2: &'0 [u8]; // arg #2
-    let @3: bool; // anonymous local
-    let @4: (&'1 usize, &'1 usize); // anonymous local
-    let @5: &'1 usize; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: &'0 [u8]; // anonymous local
-    let @8: &'1 usize; // anonymous local
-    let @9: usize; // anonymous local
-    let @10: &'0 [u8]; // anonymous local
-    let left_val@11: &'1 usize; // local
-    let right_val@12: &'1 usize; // local
-    let @13: bool; // anonymous local
-    let @14: usize; // anonymous local
-    let @15: usize; // anonymous local
-    let kind@16: AssertKind; // local
-    let @17: AssertKind; // anonymous local
-    let @18: &'1 usize; // anonymous local
-    let @19: &'1 usize; // anonymous local
-    let @20: &'1 usize; // anonymous local
-    let @21: &'1 usize; // anonymous local
-    let @22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
+    let _0: (); // return
+    let lhs_1: &'0 [u8]; // arg #1
+    let rhs_2: &'0 [u8]; // arg #2
+    let _3: bool; // anonymous local
+    let _4: (&'1 usize, &'1 usize); // anonymous local
+    let _5: &'1 usize; // anonymous local
+    let _6: usize; // anonymous local
+    let _7: &'0 [u8]; // anonymous local
+    let _8: &'1 usize; // anonymous local
+    let _9: usize; // anonymous local
+    let _10: &'0 [u8]; // anonymous local
+    let left_val_11: &'1 usize; // local
+    let right_val_12: &'1 usize; // local
+    let _13: bool; // anonymous local
+    let _14: usize; // anonymous local
+    let _15: usize; // anonymous local
+    let kind_16: AssertKind; // local
+    let _17: AssertKind; // anonymous local
+    let _18: &'1 usize; // anonymous local
+    let _19: &'1 usize; // anonymous local
+    let _20: &'1 usize; // anonymous local
+    let _21: &'1 usize; // anonymous local
+    let _22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
 
-    @0 := ()
-    storage_live(@3)
-    @3 := const (true)
-    if move (@3) {
-        storage_live(@4)
-        storage_live(@5)
-        storage_live(@6)
-        storage_live(@7)
-        @7 := &*(lhs@1) with_metadata(copy (lhs@1.metadata))
-        @6 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (@7))
-        storage_dead(@7)
-        @5 := &@6
-        storage_live(@8)
-        storage_live(@9)
-        storage_live(@10)
-        @10 := &*(rhs@2) with_metadata(copy (rhs@2.metadata))
-        @9 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (@10))
-        storage_dead(@10)
-        @8 := &@9
-        @4 := (move (@5), move (@8))
-        storage_dead(@8)
-        storage_dead(@5)
-        storage_live(left_val@11)
-        left_val@11 := copy ((@4).0)
-        storage_live(right_val@12)
-        right_val@12 := copy ((@4).1)
-        storage_live(@13)
-        storage_live(@14)
-        @14 := copy (*(left_val@11))
-        storage_live(@15)
-        @15 := copy (*(right_val@12))
-        @13 := move (@14) == move (@15)
-        if move (@13) {
+    _0 := ()
+    storage_live(_3)
+    _3 := const (true)
+    if move (_3) {
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        _7 := &*(lhs_1) with_metadata(copy (lhs_1.metadata))
+        _6 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (_7))
+        storage_dead(_7)
+        _5 := &_6
+        storage_live(_8)
+        storage_live(_9)
+        storage_live(_10)
+        _10 := &*(rhs_2) with_metadata(copy (rhs_2.metadata))
+        _9 := core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move (_10))
+        storage_dead(_10)
+        _8 := &_9
+        _4 := (move (_5), move (_8))
+        storage_dead(_8)
+        storage_dead(_5)
+        storage_live(left_val_11)
+        left_val_11 := copy ((_4).0)
+        storage_live(right_val_12)
+        right_val_12 := copy ((_4).1)
+        storage_live(_13)
+        storage_live(_14)
+        _14 := copy (*(left_val_11))
+        storage_live(_15)
+        _15 := copy (*(right_val_12))
+        _13 := move (_14) == move (_15)
+        if move (_13) {
         } else {
-            storage_dead(@15)
-            storage_dead(@14)
-            storage_live(kind@16)
-            kind@16 := AssertKind::Eq {  }
-            storage_live(@17)
-            @17 := move (kind@16)
-            storage_live(@18)
-            storage_live(@19)
-            @19 := &*(left_val@11)
-            @18 := &*(@19)
-            storage_live(@20)
-            storage_live(@21)
-            @21 := &*(right_val@12)
-            @20 := &*(@21)
-            storage_live(@22)
-            @22 := Option::None {  }
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_live(kind_16)
+            kind_16 := AssertKind::Eq {  }
+            storage_live(_17)
+            _17 := move (kind_16)
+            storage_live(_18)
+            storage_live(_19)
+            _19 := &*(left_val_11)
+            _18 := &*(_19)
+            storage_live(_20)
+            storage_live(_21)
+            _21 := &*(right_val_12)
+            _20 := &*(_21)
+            storage_live(_22)
+            _22 := Option::None {  }
             panic(core::panicking::assert_failed)
         }
-        storage_dead(@15)
-        storage_dead(@14)
-        storage_dead(@13)
-        storage_dead(right_val@12)
-        storage_dead(left_val@11)
-        storage_dead(@9)
-        storage_dead(@6)
-        storage_dead(@4)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(right_val_12)
+        storage_dead(left_val_11)
+        storage_dead(_9)
+        storage_dead(_6)
+        storage_dead(_4)
     } else {
     }
-    storage_dead(@3)
-    @0 := ()
+    storage_dead(_3)
+    _0 := ()
     return
 }
 

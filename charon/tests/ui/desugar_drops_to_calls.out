@@ -131,9 +131,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -142,34 +142,34 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::use_string
 fn use_string(@1: String)
 {
-    let @0: (); // return
-    let @1: String; // arg #1
-    let drop_arg@2: *mut String; // local
-    let drop_ret@3: (); // local
+    let _0: (); // return
+    let _1: String; // arg #1
+    let drop_arg_2: *mut String; // local
+    let drop_ret_3: (); // local
 
-    @0 := ()
-    @0 := ()
-    storage_live(drop_arg@2)
-    drop_arg@2 := &raw mut @1
-    storage_live(drop_ret@3)
-    drop_ret@3 := {impl Destruct for String}::drop_in_place(move (drop_arg@2))
+    _0 := ()
+    _0 := ()
+    storage_live(drop_arg_2)
+    drop_arg_2 := &raw mut _1
+    storage_live(drop_ret_3)
+    drop_ret_3 := {impl Destruct for String}::drop_in_place(move (drop_arg_2))
     return
 }
 
 // Full name: test_crate::use_vec
 fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}])
 {
-    let @0: (); // return
-    let @1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // arg #1
-    let drop_arg@2: *mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
-    let drop_ret@3: (); // local
+    let _0: (); // return
+    let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // arg #1
+    let drop_arg_2: *mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let drop_ret_3: (); // local
 
-    @0 := ()
-    @0 := ()
-    storage_live(drop_arg@2)
-    drop_arg@2 := &raw mut @1
-    storage_live(drop_ret@3)
-    drop_ret@3 := {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@2))
+    _0 := ()
+    _0 := ()
+    storage_live(drop_arg_2)
+    drop_arg_2 := &raw mut _1
+    storage_live(drop_ret_3)
+    drop_ret_3 := {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_2))
     return
 }
 
@@ -179,28 +179,28 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
 {
-    let @0: (); // return
-    let @1: T; // arg #1
-    let drop_arg@2: *mut T; // local
-    let drop_ret@3: (); // local
+    let _0: (); // return
+    let _1: T; // arg #1
+    let drop_arg_2: *mut T; // local
+    let drop_ret_3: (); // local
 
-    @0 := ()
-    @0 := ()
-    storage_live(drop_arg@2)
-    drop_arg@2 := &raw mut @1
-    storage_live(drop_ret@3)
-    drop_ret@3 := @TraitClause1::drop_in_place(move (drop_arg@2))
+    _0 := ()
+    _0 := ()
+    storage_live(drop_arg_2)
+    drop_arg_2 := &raw mut _1
+    storage_live(drop_ret_3)
+    drop_ret_3 := @TraitClause1::drop_in_place(move (drop_arg_2))
     return
 }
 
 // Full name: test_crate::skip_drop_scalar
 fn skip_drop_scalar(@1: i32)
 {
-    let @0: (); // return
-    let @1: i32; // arg #1
+    let _0: (); // return
+    let _1: i32; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -213,50 +213,50 @@ struct Point {
 // Full name: test_crate::{impl Drop for Point}::drop
 pub fn {impl Drop for Point}::drop<'_0>(@1: &'_0 mut Point)
 {
-    let @0: (); // return
-    let self@1: &'0 mut Point; // arg #1
-    let @2: (); // anonymous local
-    let @3: Arguments<'1>; // anonymous local
+    let _0: (); // return
+    let self_1: &'0 mut Point; // arg #1
+    let _2: (); // anonymous local
+    let _3: Arguments<'1>; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    storage_live(@3)
-    @3 := from_str<'2>(const ("Dropping Point\n"))
-    @2 := _print<'_>(move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
-    @0 := ()
+    _0 := ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 := from_str<'2>(const ("Dropping Point\n"))
+    _2 := _print<'_>(move (_3))
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 := ()
     return
 }
 
 // Full name: test_crate::Point::{impl Destruct for Point}::drop_in_place
 unsafe fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
 {
-    let @0: (); // return
-    let @1: *mut Point; // arg #1
-    let @2: &'0 mut Point; // anonymous local
-    let @3: &'0 mut Point; // anonymous local
-    let @4: (); // anonymous local
-    let drop_arg@5: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
-    let drop_ret@6: (); // local
-    let drop_arg@7: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
-    let drop_ret@8: (); // local
+    let _0: (); // return
+    let _1: *mut Point; // arg #1
+    let _2: &'0 mut Point; // anonymous local
+    let _3: &'0 mut Point; // anonymous local
+    let _4: (); // anonymous local
+    let drop_arg_5: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let drop_ret_6: (); // local
+    let drop_arg_7: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let drop_ret_8: (); // local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    @0 := ()
-    @2 := &mut *(@1)
-    @3 := &mut *(@2)
-    @4 := {impl Drop for Point}::drop<'_>(move (@3))
-    storage_live(drop_arg@5)
-    drop_arg@5 := &raw mut (*(@2)).x
-    storage_live(drop_ret@6)
-    drop_ret@6 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@5))
-    storage_live(drop_arg@7)
-    drop_arg@7 := &raw mut (*(@2)).y
-    storage_live(drop_ret@8)
-    drop_ret@8 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg@7))
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _0 := ()
+    _2 := &mut *(_1)
+    _3 := &mut *(_2)
+    _4 := {impl Drop for Point}::drop<'_>(move (_3))
+    storage_live(drop_arg_5)
+    drop_arg_5 := &raw mut (*(_2)).x
+    storage_live(drop_ret_6)
+    drop_ret_6 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_5))
+    storage_live(drop_arg_7)
+    drop_arg_7 := &raw mut (*(_2)).y
+    storage_live(drop_ret_8)
+    drop_ret_8 := {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move (drop_arg_7))
     return
 }
 
@@ -277,28 +277,28 @@ impl Drop for Point {
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let p@1: Point; // local
-    let @2: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let @3: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let drop_arg@4: *mut Point; // local
-    let drop_ret@5: (); // local
+    let _0: (); // return
+    let p_1: Point; // local
+    let _2: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let _3: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let drop_arg_4: *mut Point; // local
+    let drop_ret_5: (); // local
 
-    @0 := ()
-    storage_live(p@1)
-    storage_live(@2)
-    @2 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (1 : i32))
-    storage_live(@3)
-    @3 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (2 : i32))
-    p@1 := Point { x: move (@2), y: move (@3) }
-    storage_dead(@3)
-    storage_dead(@2)
-    @0 := ()
-    storage_live(drop_arg@4)
-    drop_arg@4 := &raw mut p@1
-    storage_live(drop_ret@5)
-    drop_ret@5 := {impl Destruct for Point}::drop_in_place(move (drop_arg@4))
-    storage_dead(p@1)
+    _0 := ()
+    storage_live(p_1)
+    storage_live(_2)
+    _2 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (1 : i32))
+    storage_live(_3)
+    _3 := @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const (2 : i32))
+    p_1 := Point { x: move (_2), y: move (_3) }
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 := ()
+    storage_live(drop_arg_4)
+    drop_arg_4 := &raw mut p_1
+    storage_live(drop_ret_5)
+    drop_ret_5 := {impl Destruct for Point}::drop_in_place(move (drop_arg_4))
+    storage_dead(p_1)
     return
 }
 

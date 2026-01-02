@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -57,9 +57,9 @@ pub fn foo<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const ({impl Trait for T}<T>[@TraitClause0]::FOO)
+    _0 := const ({impl Trait for T}<T>[@TraitClause0]::FOO)
     return
 }
 
@@ -68,14 +68,14 @@ fn bar<T>()
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: (); // return
-    let @1: usize; // anonymous local
+    let _0: (); // return
+    let _1: usize; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := foo<T>[@TraitClause0]()
-    storage_dead(@1)
-    @0 := ()
+    _0 := ()
+    storage_live(_1)
+    _1 := foo<T>[@TraitClause0]()
+    storage_dead(_1)
+    _0 := ()
     return
 }
 

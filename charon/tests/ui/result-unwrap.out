@@ -13,9 +13,9 @@ pub struct FormattingOptions {
 // Full name: core::fmt::flags::DEBUG_LOWER_HEX_FLAG
 fn DEBUG_LOWER_HEX_FLAG() -> u32
 {
-    let @0: u32; // return
+    let _0: u32; // return
 
-    @0 := const (1 : u32) panic.<< const (25 : i32)
+    _0 := const (1 : u32) panic.<< const (25 : i32)
     return
 }
 
@@ -25,9 +25,9 @@ const DEBUG_LOWER_HEX_FLAG: u32 = DEBUG_LOWER_HEX_FLAG()
 // Full name: core::fmt::flags::DEBUG_UPPER_HEX_FLAG
 fn DEBUG_UPPER_HEX_FLAG() -> u32
 {
-    let @0: u32; // return
+    let _0: u32; // return
 
-    @0 := const (1 : u32) panic.<< const (26 : i32)
+    _0 := const (1 : u32) panic.<< const (26 : i32)
     return
 }
 
@@ -141,42 +141,42 @@ pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut For
 // Full name: core::fmt::num::{impl Debug for u32}::fmt
 pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
-    let @0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
-    let self@1: &'0 u32; // arg #1
-    let f@2: &'1 mut Formatter<'2>; // arg #2
-    let @3: u32; // anonymous local
-    let @4: u32; // anonymous local
-    let @5: u32; // anonymous local
-    let @6: u32; // anonymous local
+    let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
+    let self_1: &'0 u32; // arg #1
+    let f_2: &'1 mut Formatter<'2>; // arg #2
+    let _3: u32; // anonymous local
+    let _4: u32; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: u32; // anonymous local
 
-    storage_live(@3)
-    storage_live(@4)
-    @4 := copy (((*(f@2)).0).flags)
-    @3 := move (@4) & copy (DEBUG_LOWER_HEX_FLAG)
-    storage_dead(@4)
-    switch move (@3) {
+    storage_live(_3)
+    storage_live(_4)
+    _4 := copy (((*(f_2)).0).flags)
+    _3 := move (_4) & copy (DEBUG_LOWER_HEX_FLAG)
+    storage_dead(_4)
+    switch move (_3) {
         0 : u32 => {
         },
         _ => {
-            storage_dead(@3)
-            @0 := {impl LowerHex for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
+            storage_dead(_3)
+            _0 := {impl LowerHex for u32}::fmt<'_, '_, '_>(move (self_1), move (f_2))
             return
         },
     }
-    storage_dead(@3)
-    storage_live(@5)
-    storage_live(@6)
-    @6 := copy (((*(f@2)).0).flags)
-    @5 := move (@6) & copy (DEBUG_UPPER_HEX_FLAG)
-    storage_dead(@6)
-    switch move (@5) {
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 := copy (((*(f_2)).0).flags)
+    _5 := move (_6) & copy (DEBUG_UPPER_HEX_FLAG)
+    storage_dead(_6)
+    switch move (_5) {
         0 : u32 => {
-            storage_dead(@5)
-            @0 := {impl Display for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
+            storage_dead(_5)
+            _0 := {impl Display for u32}::fmt<'_, '_, '_>(move (self_1), move (f_2))
         },
         _ => {
-            storage_dead(@5)
-            @0 := {impl UpperHex for u32}::fmt<'_, '_, '_>(move (self@1), move (f@2))
+            storage_dead(_5)
+            _0 := {impl UpperHex for u32}::fmt<'_, '_, '_>(move (self_1), move (f_2))
         },
     }
     return
@@ -208,9 +208,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -226,41 +226,41 @@ where
     [@TraitClause1]: Sized<E>,
     [@TraitClause2]: Debug<E>,
 {
-    let t@0: T; // return
-    let self@1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
-    let e@2: E; // local
-    let @3: !; // anonymous local
-    let @4: &'0 (dyn Debug + '1); // anonymous local
-    let @5: &'2 E; // anonymous local
+    let t_0: T; // return
+    let self_1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
+    let e_2: E; // local
+    let _3: !; // anonymous local
+    let _4: &'0 (dyn Debug + '1); // anonymous local
+    let _5: &'2 E; // anonymous local
 
-    storage_live(@3)
-    storage_live(@5)
-    match self@1 {
+    storage_live(_3)
+    storage_live(_5)
+    match self_1 {
         Result::Ok => {
         },
         Result::Err => {
-            storage_live(e@2)
-            e@2 := move ((self@1 as variant Result::Err).0)
-            storage_live(@4)
-            @5 := &e@2
-            @4 := unsize_cast<&'2 E, &'0 (dyn Debug + '1), @TraitClause2 with ?>(copy (@5))
-            @3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
+            storage_live(e_2)
+            e_2 := move ((self_1 as variant Result::Err).0)
+            storage_live(_4)
+            _5 := &e_2
+            _4 := unsize_cast<&'2 E, &'0 (dyn Debug + '1), @TraitClause2 with ?>(copy (_5))
+            _3 := unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (_4))
         },
     }
-    t@0 := move ((self@1 as variant Result::Ok).0)
+    t_0 := move ((self_1 as variant Result::Ok).0)
     return
 }
 
 fn test_crate::unwrap(@1: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]) -> u32
 {
-    let @0: u32; // return
-    let res@1: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
-    let @2: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
+    let _0: u32; // return
+    let res_1: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
+    let _2: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
 
-    storage_live(@2)
-    @2 := copy (res@1)
-    @0 := core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl Debug for u32}](move (@2))
-    storage_dead(@2)
+    storage_live(_2)
+    _2 := copy (res_1)
+    _0 := core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl Debug for u32}](move (_2))
+    storage_dead(_2)
     return
 }
 

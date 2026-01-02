@@ -30,9 +30,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -44,30 +44,30 @@ where
     [@TraitClause0]: Sized<M>,
     [@TraitClause1]: Send<M>,
 {
-    let @0: (); // return
-    let _msg@1: M; // arg #1
+    let _0: (); // return
+    let _msg_1: M; // arg #1
 
-    @0 := ()
-    @0 := ()
-    conditional_drop[{built_in impl Destruct for M}] _msg@1
+    _0 := ()
+    _0 := ()
+    conditional_drop[{built_in impl Destruct for M}] _msg_1
     return
 }
 
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: (); // anonymous local
-    let @2: (); // anonymous local
+    let _0: (); // return
+    let _1: (); // anonymous local
+    let _2: (); // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    @2 := ()
-    @1 := foo<()>[{built_in impl Sized for ()}, {built_in impl Send for ()}](move (@2))
-    storage_dead(@2)
-    storage_dead(@1)
-    @0 := ()
+    _0 := ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 := ()
+    _1 := foo<()>[{built_in impl Sized for ()}, {built_in impl Send for ()}](move (_2))
+    storage_dead(_2)
+    storage_dead(_1)
+    _0 := ()
     return
 }
 

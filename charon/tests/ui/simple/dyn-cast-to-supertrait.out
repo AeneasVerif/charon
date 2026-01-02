@@ -19,9 +19,9 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -100,13 +100,13 @@ struct HouseCat {}
 // Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_in_place
 unsafe fn {impl Destruct for HouseCat}::drop_in_place(@1: *mut HouseCat)
 {
-    let @0: (); // return
-    let @1: *mut HouseCat; // arg #1
-    let @2: &'0 mut HouseCat; // anonymous local
+    let _0: (); // return
+    let _1: *mut HouseCat; // arg #1
+    let _2: &'0 mut HouseCat; // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    @2 := &mut *(@1)
+    storage_live(_2)
+    _0 := ()
+    _2 := &mut *(_1)
     return
 }
 
@@ -119,54 +119,54 @@ impl Destruct for HouseCat {
 // Full name: test_crate::{impl Feline for HouseCat}::hunt
 fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 HouseCat)
 {
-    let @0: (); // return
-    let self@1: &'0 HouseCat; // arg #1
+    let _0: (); // return
+    let self_1: &'0 HouseCat; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable_drop_shim}
 unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Feline))
 {
-    let ret@0: (); // return
-    let dyn_self@1: *mut (dyn Feline + '0); // arg #1
-    let target_self@2: *mut HouseCat; // local
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Feline + '0); // arg #1
+    let target_self_2: *mut HouseCat; // local
 
-    ret@0 := ()
-    storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn Feline + '1), *mut HouseCat>(move (dyn_self@1))
-    drop[{impl Destruct for HouseCat}] *(target_self@2)
+    ret_0 := ()
+    storage_live(target_self_2)
+    target_self_2 := concretize<*mut (dyn Feline + '1), *mut HouseCat>(move (dyn_self_1))
+    drop[{impl Destruct for HouseCat}] *(target_self_2)
     return
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::hunt::{vtable_method}
 fn {impl Feline for HouseCat}::hunt::{vtable_method}<'_0>(@1: &'_0 (dyn Feline))
 {
-    let @0: (); // return
-    let @1: &'_0 (dyn Feline + '0); // arg #1
-    let @2: &'_0 HouseCat; // anonymous local
+    let _0: (); // return
+    let _1: &'_0 (dyn Feline + '0); // arg #1
+    let _2: &'_0 HouseCat; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    @2 := concretize<&'_0 (dyn Feline + '1), &'_0 HouseCat>(move (@1))
-    @0 := {impl Feline for HouseCat}::hunt<'_0>(move (@2))
+    _0 := ()
+    storage_live(_2)
+    _2 := concretize<&'_0 (dyn Feline + '1), &'_0 HouseCat>(move (_1))
+    _0 := {impl Feline for HouseCat}::hunt<'_0>(move (_2))
     return
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable}
 fn {impl Feline for HouseCat}::{vtable}() -> test_crate::Feline::{vtable}
 {
-    let ret@0: test_crate::Feline::{vtable}; // return
-    let size@1: usize; // local
-    let align@2: usize; // local
+    let ret_0: test_crate::Feline::{vtable}; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
 
-    storage_live(size@1)
-    size@1 := size_of<HouseCat>
-    storage_live(align@2)
-    align@2 := align_of<HouseCat>
-    ret@0 := test_crate::Feline::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Feline for HouseCat}::{vtable_drop_shim}), method_hunt: const ({impl Feline for HouseCat}::hunt::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(size_1)
+    size_1 := size_of<HouseCat>
+    storage_live(align_2)
+    align_2 := align_of<HouseCat>
+    ret_0 := test_crate::Feline::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Feline for HouseCat}::{vtable_drop_shim}), method_hunt: const ({impl Feline for HouseCat}::hunt::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -183,54 +183,54 @@ impl Feline for HouseCat {
 // Full name: test_crate::{impl Pettable for HouseCat}::pet
 fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 HouseCat)
 {
-    let @0: (); // return
-    let self@1: &'0 HouseCat; // arg #1
+    let _0: (); // return
+    let self_1: &'0 HouseCat; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable_drop_shim}
 unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Pettable))
 {
-    let ret@0: (); // return
-    let dyn_self@1: *mut (dyn Pettable + '0); // arg #1
-    let target_self@2: *mut HouseCat; // local
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Pettable + '0); // arg #1
+    let target_self_2: *mut HouseCat; // local
 
-    ret@0 := ()
-    storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn Pettable + '1), *mut HouseCat>(move (dyn_self@1))
-    drop[{impl Destruct for HouseCat}] *(target_self@2)
+    ret_0 := ()
+    storage_live(target_self_2)
+    target_self_2 := concretize<*mut (dyn Pettable + '1), *mut HouseCat>(move (dyn_self_1))
+    drop[{impl Destruct for HouseCat}] *(target_self_2)
     return
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::pet::{vtable_method}
 fn {impl Pettable for HouseCat}::pet::{vtable_method}<'_0>(@1: &'_0 (dyn Pettable))
 {
-    let @0: (); // return
-    let @1: &'_0 (dyn Pettable + '0); // arg #1
-    let @2: &'_0 HouseCat; // anonymous local
+    let _0: (); // return
+    let _1: &'_0 (dyn Pettable + '0); // arg #1
+    let _2: &'_0 HouseCat; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    @2 := concretize<&'_0 (dyn Pettable + '1), &'_0 HouseCat>(move (@1))
-    @0 := {impl Pettable for HouseCat}::pet<'_0>(move (@2))
+    _0 := ()
+    storage_live(_2)
+    _2 := concretize<&'_0 (dyn Pettable + '1), &'_0 HouseCat>(move (_1))
+    _0 := {impl Pettable for HouseCat}::pet<'_0>(move (_2))
     return
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable}
 fn {impl Pettable for HouseCat}::{vtable}() -> test_crate::Pettable::{vtable}
 {
-    let ret@0: test_crate::Pettable::{vtable}; // return
-    let size@1: usize; // local
-    let align@2: usize; // local
+    let ret_0: test_crate::Pettable::{vtable}; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
 
-    storage_live(size@1)
-    size@1 := size_of<HouseCat>
-    storage_live(align@2)
-    align@2 := align_of<HouseCat>
-    ret@0 := test_crate::Pettable::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Pettable for HouseCat}::{vtable_drop_shim}), method_pet: const ({impl Pettable for HouseCat}::pet::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)) }
+    storage_live(size_1)
+    size_1 := size_of<HouseCat>
+    storage_live(align_2)
+    align_2 := align_of<HouseCat>
+    ret_0 := test_crate::Pettable::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Pettable for HouseCat}::{vtable_drop_shim}), method_pet: const ({impl Pettable for HouseCat}::pet::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)) }
     return
 }
 
@@ -247,60 +247,60 @@ impl Pettable for HouseCat {
 // Full name: test_crate::{impl Cat for HouseCat}::meow
 fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 HouseCat)
 {
-    let @0: (); // return
-    let self@1: &'0 HouseCat; // arg #1
+    let _0: (); // return
+    let self_1: &'0 HouseCat; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable_drop_shim}
 unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Cat))
 {
-    let ret@0: (); // return
-    let dyn_self@1: *mut (dyn Cat + '0); // arg #1
-    let target_self@2: *mut HouseCat; // local
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Cat + '0); // arg #1
+    let target_self_2: *mut HouseCat; // local
 
-    ret@0 := ()
-    storage_live(target_self@2)
-    target_self@2 := concretize<*mut (dyn Cat + '1), *mut HouseCat>(move (dyn_self@1))
-    drop[{impl Destruct for HouseCat}] *(target_self@2)
+    ret_0 := ()
+    storage_live(target_self_2)
+    target_self_2 := concretize<*mut (dyn Cat + '1), *mut HouseCat>(move (dyn_self_1))
+    drop[{impl Destruct for HouseCat}] *(target_self_2)
     return
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::meow::{vtable_method}
 fn {impl Cat for HouseCat}::meow::{vtable_method}<'_0>(@1: &'_0 (dyn Cat))
 {
-    let @0: (); // return
-    let @1: &'_0 (dyn Cat + '0); // arg #1
-    let @2: &'_0 HouseCat; // anonymous local
+    let _0: (); // return
+    let _1: &'_0 (dyn Cat + '0); // arg #1
+    let _2: &'_0 HouseCat; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    @2 := concretize<&'_0 (dyn Cat + '1), &'_0 HouseCat>(move (@1))
-    @0 := {impl Cat for HouseCat}::meow<'_0>(move (@2))
+    _0 := ()
+    storage_live(_2)
+    _2 := concretize<&'_0 (dyn Cat + '1), &'_0 HouseCat>(move (_1))
+    _0 := {impl Cat for HouseCat}::meow<'_0>(move (_2))
     return
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable}
 fn {impl Cat for HouseCat}::{vtable}() -> test_crate::Cat::{vtable}
 {
-    let ret@0: test_crate::Cat::{vtable}; // return
-    let size@1: usize; // local
-    let align@2: usize; // local
-    let @3: &'static test_crate::Feline::{vtable}; // anonymous local
-    let @4: &'static test_crate::Pettable::{vtable}; // anonymous local
+    let ret_0: test_crate::Cat::{vtable}; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
+    let _3: &'static test_crate::Feline::{vtable}; // anonymous local
+    let _4: &'static test_crate::Pettable::{vtable}; // anonymous local
 
-    storage_live(size@1)
-    size@1 := size_of<HouseCat>
-    storage_live(align@2)
-    align@2 := align_of<HouseCat>
-    storage_live(@3)
-    @3 := &{impl Feline for HouseCat}::{vtable}
-    storage_live(@4)
-    @4 := &{impl Pettable for HouseCat}::{vtable}
-    ret@0 := test_crate::Cat::{vtable} { size: move (size@1), align: move (align@2), drop: const ({impl Cat for HouseCat}::{vtable_drop_shim}), method_meow: const ({impl Cat for HouseCat}::meow::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (@3), super_trait_2: move (@4) }
+    storage_live(size_1)
+    size_1 := size_of<HouseCat>
+    storage_live(align_2)
+    align_2 := align_of<HouseCat>
+    storage_live(_3)
+    _3 := &{impl Feline for HouseCat}::{vtable}
+    storage_live(_4)
+    _4 := &{impl Pettable for HouseCat}::{vtable}
+    ret_0 := test_crate::Cat::{vtable} { size: move (size_1), align: move (align_2), drop: const ({impl Cat for HouseCat}::{vtable_drop_shim}), method_meow: const ({impl Cat for HouseCat}::meow::{vtable_method}<'1>), super_trait_0: const (Opaque(missing supertrait vtable)), super_trait_1: move (_3), super_trait_2: move (_4) }
     return
 }
 
@@ -319,42 +319,42 @@ impl Cat for HouseCat {
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let cat@1: HouseCat; // local
-    let dyn_cat@2: &'0 (dyn Cat + '1); // local
-    let @3: &'2 HouseCat; // anonymous local
-    let @4: &'2 HouseCat; // anonymous local
-    let dyn_feline@5: &'3 (dyn Feline + '4); // local
-    let @6: &'0 (dyn Cat + '1); // anonymous local
-    let dyn_pettable@7: &'5 (dyn Pettable + '6); // local
-    let @8: &'0 (dyn Cat + '1); // anonymous local
+    let _0: (); // return
+    let cat_1: HouseCat; // local
+    let dyn_cat_2: &'0 (dyn Cat + '1); // local
+    let _3: &'2 HouseCat; // anonymous local
+    let _4: &'2 HouseCat; // anonymous local
+    let dyn_feline_5: &'3 (dyn Feline + '4); // local
+    let _6: &'0 (dyn Cat + '1); // anonymous local
+    let dyn_pettable_7: &'5 (dyn Pettable + '6); // local
+    let _8: &'0 (dyn Cat + '1); // anonymous local
 
-    @0 := ()
-    storage_live(cat@1)
-    cat@1 := HouseCat {  }
-    storage_live(dyn_cat@2)
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &cat@1
-    @3 := &*(@4)
-    dyn_cat@2 := unsize_cast<&'2 HouseCat, &'0 (dyn Cat + '1), {impl Cat for HouseCat} with {impl Cat for HouseCat}::{vtable}>(move (@3))
-    storage_dead(@3)
-    storage_dead(@4)
-    storage_live(dyn_feline@5)
-    storage_live(@6)
-    @6 := &*(dyn_cat@2) with_metadata(copy (dyn_cat@2.metadata))
-    dyn_feline@5 := unsize_cast<&'0 (dyn Cat + '1), &'3 (dyn Feline + '4),  at [5]>(move (@6))
-    storage_dead(@6)
-    storage_live(dyn_pettable@7)
-    storage_live(@8)
-    @8 := &*(dyn_cat@2) with_metadata(copy (dyn_cat@2.metadata))
-    dyn_pettable@7 := unsize_cast<&'0 (dyn Cat + '1), &'5 (dyn Pettable + '6),  at [6]>(move (@8))
-    storage_dead(@8)
-    @0 := ()
-    storage_dead(dyn_pettable@7)
-    storage_dead(dyn_feline@5)
-    storage_dead(dyn_cat@2)
-    storage_dead(cat@1)
+    _0 := ()
+    storage_live(cat_1)
+    cat_1 := HouseCat {  }
+    storage_live(dyn_cat_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 := &cat_1
+    _3 := &*(_4)
+    dyn_cat_2 := unsize_cast<&'2 HouseCat, &'0 (dyn Cat + '1), {impl Cat for HouseCat} with {impl Cat for HouseCat}::{vtable}>(move (_3))
+    storage_dead(_3)
+    storage_dead(_4)
+    storage_live(dyn_feline_5)
+    storage_live(_6)
+    _6 := &*(dyn_cat_2) with_metadata(copy (dyn_cat_2.metadata))
+    dyn_feline_5 := unsize_cast<&'0 (dyn Cat + '1), &'3 (dyn Feline + '4),  at [5]>(move (_6))
+    storage_dead(_6)
+    storage_live(dyn_pettable_7)
+    storage_live(_8)
+    _8 := &*(dyn_cat_2) with_metadata(copy (dyn_cat_2.metadata))
+    dyn_pettable_7 := unsize_cast<&'0 (dyn Cat + '1), &'5 (dyn Pettable + '6),  at [6]>(move (_8))
+    storage_dead(_8)
+    _0 := ()
+    storage_dead(dyn_pettable_7)
+    storage_dead(dyn_feline_5)
+    storage_dead(dyn_cat_2)
+    storage_dead(cat_1)
     return
 }
 

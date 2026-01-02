@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -32,12 +32,12 @@ where
 // Full name: test_crate::foo
 fn foo<T>(@1: T)
 {
-    let @0: (); // return
-    let _x@1: T; // arg #1
+    let _0: (); // return
+    let _x_1: T; // arg #1
 
-    @0 := ()
-    @0 := ()
-    conditional_drop[{built_in impl Destruct for T}] _x@1
+    _0 := ()
+    _0 := ()
+    conditional_drop[{built_in impl Destruct for T}] _x_1
     return
 }
 

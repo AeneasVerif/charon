@@ -11,9 +11,9 @@ pub struct Global {}
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -29,22 +29,22 @@ struct Foo {
 // Full name: test_crate::foo
 fn foo(@1: Foo)
 {
-    let @0: (); // return
-    let f@1: Foo; // arg #1
-    let @2: (); // anonymous local
-    let @3: alloc::boxed::Box<u32>; // anonymous local
+    let _0: (); // return
+    let f_1: Foo; // arg #1
+    let _2: (); // anonymous local
+    let _3: alloc::boxed::Box<u32>; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    storage_live(@3)
-    @3 := move ((f@1).x)
-    @2 := drop<alloc::boxed::Box<u32>>(move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
-    @0 := ()
+    _0 := ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 := move ((f_1).x)
+    _2 := drop<alloc::boxed::Box<u32>>(move (_3))
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 := ()
     // Only `y` and `z` should be dropped here
-    drop[{impl#2}<u32, Global>] (f@1).y
-    drop[{impl#2}<u32, Global>] (f@1).z
+    drop[{impl#2}<u32, Global>] (f_1).y
+    drop[{impl#2}<u32, Global>] (f_1).z
     return
 }
 

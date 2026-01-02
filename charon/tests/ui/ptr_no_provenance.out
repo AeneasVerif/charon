@@ -303,20 +303,20 @@ pub fn null<T>() -> *const T
 where
     [@TraitClause0]: Thin<T>,
 {
-    let @0: *const T; // return
-    let @1: *const T; // anonymous local
+    let _0: *const T; // return
+    let _1: *const T; // anonymous local
 
-    storage_live(@1)
-    @1 := cast<usize, *const T>(const (0 : usize))
-    @0 := move (@1)
+    storage_live(_1)
+    _1 := cast<usize, *const T>(const (0 : usize))
+    _0 := move (_1)
     return
 }
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -325,14 +325,14 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let ptr@1: *const (); // local
+    let _0: (); // return
+    let ptr_1: *const (); // local
 
-    @0 := ()
-    storage_live(ptr@1)
-    ptr@1 := null<()>[{impl Thin for Self}<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
-    @0 := ()
-    storage_dead(ptr@1)
+    _0 := ()
+    storage_live(ptr_1)
+    ptr_1 := null<()>[{impl Thin for Self}<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
+    _0 := ()
+    storage_dead(ptr_1)
     return
 }
 

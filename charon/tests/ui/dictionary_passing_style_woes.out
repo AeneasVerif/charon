@@ -51,9 +51,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -96,11 +96,11 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Iterator<T, Clause1_Item>,
 {
-    let @0: Clause1_Item; // return
-    let t@1: Clause1_Item; // arg #1
+    let _0: Clause1_Item; // return
+    let t_1: Clause1_Item; // arg #1
 
-    @0 := move (t@1)
-    conditional_drop[{built_in impl Destruct for Clause1_Item}] t@1
+    _0 := move (t_1)
+    conditional_drop[{built_in impl Destruct for Clause1_Item}] t_1
     return
 }
 
@@ -111,15 +111,15 @@ where
     [@TraitClause1]: Iterator<T, Clause1_Item>,
     [@TraitClause2]: IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
 {
-    let @0: Clause2_Item; // return
-    let t@1: Clause1_Item; // arg #1
-    let @2: Clause1_Item; // anonymous local
+    let _0: Clause2_Item; // return
+    let t_1: Clause1_Item; // arg #1
+    let _2: Clause1_Item; // anonymous local
 
-    storage_live(@2)
-    @2 := move (t@1)
-    @0 := callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for Clause1_Item}] t@1
+    storage_live(_2)
+    _2 := move (t_1)
+    _0 := callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for Clause1_Item}] t_1
     return
 }
 
@@ -160,15 +160,15 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,
 {
-    let @0: Clause1_Clause1_Assoc; // return
-    let x@1: T; // arg #1
-    let @2: &'0 T; // anonymous local
+    let _0: Clause1_Clause1_Assoc; // return
+    let x_1: T; // arg #1
+    let _2: &'0 T; // anonymous local
 
-    storage_live(@2)
-    @2 := &x@1
-    @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for T}] x@1
+    storage_live(_2)
+    _2 := &x_1
+    _0 := @TraitClause1::parent_clause1::method<'_>(move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }
 
@@ -178,15 +178,15 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: B<T, Clause1_Clause1_Assoc>,
 {
-    let @0: Clause1_Clause1_Assoc; // return
-    let x@1: T; // arg #1
-    let @2: &'0 T; // anonymous local
+    let _0: Clause1_Clause1_Assoc; // return
+    let x_1: T; // arg #1
+    let _2: &'0 T; // anonymous local
 
-    storage_live(@2)
-    @2 := &x@1
-    @0 := @TraitClause1::parent_clause1::method<'_>(move (@2))
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for T}] x@1
+    storage_live(_2)
+    _2 := &x_1
+    _0 := @TraitClause1::parent_clause1::method<'_>(move (_2))
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }
 
@@ -198,28 +198,28 @@ where
     [@TraitClause2]: B<T, Clause2_Clause1_Assoc>,
     [@TraitClause3]: Copy<T>,
 {
-    let @0: (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc); // return
-    let x@1: T; // arg #1
-    let @2: Clause1_Clause1_Assoc; // anonymous local
-    let @3: T; // anonymous local
-    let @4: Clause1_Clause1_Assoc; // anonymous local
-    let @5: T; // anonymous local
+    let _0: (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc); // return
+    let x_1: T; // arg #1
+    let _2: Clause1_Clause1_Assoc; // anonymous local
+    let _3: T; // anonymous local
+    let _4: Clause1_Clause1_Assoc; // anonymous local
+    let _5: T; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    @3 := copy (x@1)
-    @2 := a<T, Clause1_Clause1_Assoc>[@TraitClause0, @TraitClause1](move (@3))
-    storage_dead(@3)
-    storage_live(@4)
-    storage_live(@5)
-    @5 := copy (x@1)
-    @4 := b<T, Clause2_Clause1_Assoc>[@TraitClause0, @TraitClause2](move (@5))
-    storage_dead(@5)
-    @0 := (move (@2), move (@4))
-    conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}] @4
-    storage_dead(@4)
-    conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}] @2
-    storage_dead(@2)
+    storage_live(_2)
+    storage_live(_3)
+    _3 := copy (x_1)
+    _2 := a<T, Clause1_Clause1_Assoc>[@TraitClause0, @TraitClause1](move (_3))
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 := copy (x_1)
+    _4 := b<T, Clause2_Clause1_Assoc>[@TraitClause0, @TraitClause2](move (_5))
+    storage_dead(_5)
+    _0 := (move (_2), move (_4))
+    conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}] _4
+    storage_dead(_4)
+    conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}] _2
+    storage_dead(_2)
     return
 }
 

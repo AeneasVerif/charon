@@ -26,9 +26,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -68,11 +68,11 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: OtherTrait<T>,
 {
-    let @0: (); // return
-    let self@1: &'0 T; // arg #1
+    let _0: (); // return
+    let self_1: &'0 T; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -93,20 +93,20 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ImpliesOtherTrait<T>,
 {
-    let @0: (); // return
-    let x@1: T; // arg #1
-    let @2: (); // anonymous local
-    let @3: &'0 T; // anonymous local
+    let _0: (); // return
+    let x_1: T; // arg #1
+    let _2: (); // anonymous local
+    let _3: &'0 T; // anonymous local
 
-    @0 := ()
-    storage_live(@2)
-    storage_live(@3)
-    @3 := &x@1
-    @2 := {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause1](move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
-    @0 := ()
-    conditional_drop[{built_in impl Destruct for T}] x@1
+    _0 := ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 := &x_1
+    _2 := {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause1](move (_3))
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 := ()
+    conditional_drop[{built_in impl Destruct for T}] x_1
     return
 }
 

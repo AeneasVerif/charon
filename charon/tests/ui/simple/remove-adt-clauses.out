@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -45,11 +45,11 @@ struct Foo<T, Clause1_Type> {
 // Full name: test_crate::foo
 fn foo(@1: Foo<u32, bool>)
 {
-    let @0: (); // return
-    let _x@1: Foo<u32, bool>; // arg #1
+    let _0: (); // return
+    let _x_1: Foo<u32, bool>; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 

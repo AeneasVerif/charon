@@ -46,9 +46,9 @@ pub trait Sized::<E2>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -57,54 +57,54 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: isize; // anonymous local
-    let @2: &'0 E1; // anonymous local
-    let @3: &'0 E1; // anonymous local
-    let @4: isize; // anonymous local
-    let @5: &'1 E2; // anonymous local
-    let @6: &'1 E2; // anonymous local
-    let @7: &'1 E2; // anonymous local
-    let @8: &'0 E1; // anonymous local
-    let @9: &'_ E1; // anonymous local
-    let @10: E1; // anonymous local
-    let @11: &'_ E2; // anonymous local
-    let @12: E2; // anonymous local
+    let _0: (); // return
+    let _1: isize; // anonymous local
+    let _2: &'0 E1; // anonymous local
+    let _3: &'0 E1; // anonymous local
+    let _4: isize; // anonymous local
+    let _5: &'1 E2; // anonymous local
+    let _6: &'1 E2; // anonymous local
+    let _7: &'1 E2; // anonymous local
+    let _8: &'0 E1; // anonymous local
+    let _9: &'_ E1; // anonymous local
+    let _10: E1; // anonymous local
+    let _11: &'_ E2; // anonymous local
+    let _12: E2; // anonymous local
 
-    storage_live(@9)
-    storage_live(@10)
+    storage_live(_9)
+    storage_live(_10)
     // We detect these in a pass; this test makes sure we don't mess up the generics in `--mono`
     // mode.
-    @10 := E1::A {  }
-    @9 := &@10
-    storage_live(@7)
-    storage_live(@8)
-    @0 := ()
-    storage_live(@1)
-    storage_live(@2)
-    storage_live(@3)
-    @8 := move (@9)
-    @3 := &*(@8)
-    @2 := &*(@3)
-    @1 := @discriminant(*(@2))
-    storage_live(@11)
-    storage_live(@12)
-    @12 := E2::A {  }
-    @11 := &@12
-    storage_dead(@2)
-    storage_dead(@3)
-    storage_dead(@1)
-    storage_live(@4)
-    storage_live(@5)
-    storage_live(@6)
-    @7 := move (@11)
-    @6 := &*(@7)
-    @5 := &*(@6)
-    @4 := @discriminant(*(@5))
-    storage_dead(@5)
-    storage_dead(@6)
-    storage_dead(@4)
-    @0 := ()
+    _10 := E1::A {  }
+    _9 := &_10
+    storage_live(_7)
+    storage_live(_8)
+    _0 := ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _8 := move (_9)
+    _3 := &*(_8)
+    _2 := &*(_3)
+    _1 := @discriminant(*(_2))
+    storage_live(_11)
+    storage_live(_12)
+    _12 := E2::A {  }
+    _11 := &_12
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(_1)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _7 := move (_11)
+    _6 := &*(_7)
+    _5 := &*(_6)
+    _4 := @discriminant(*(_5))
+    storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(_4)
+    _0 := ()
     return
 }
 

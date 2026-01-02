@@ -19,9 +19,9 @@ pub fn size_of::<()>() -> usize
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -38,13 +38,13 @@ pub trait SizedTypeProperties::<()>
 // Full name: test_crate::SizedTypeProperties::IS_ZST
 pub fn IS_ZST() -> bool
 {
-    let @0: bool; // return
-    let @1: usize; // anonymous local
+    let _0: bool; // return
+    let _1: usize; // anonymous local
 
-    storage_live(@1)
-    @1 := size_of::<()>()
-    @0 := move (@1) == const (0 : usize)
-    storage_dead(@1)
+    storage_live(_1)
+    _1 := size_of::<()>()
+    _0 := move (_1) == const (0 : usize)
+    storage_dead(_1)
     return
 }
 
@@ -64,14 +64,14 @@ impl SizedTypeProperties::<()> {
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: bool; // anonymous local
+    let _0: (); // return
+    let _1: bool; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const ({impl SizedTypeProperties::<()>}::<()>::IS_ZST)
-    storage_dead(@1)
-    @0 := ()
+    _0 := ()
+    storage_live(_1)
+    _1 := const ({impl SizedTypeProperties::<()>}::<()>::IS_ZST)
+    storage_dead(_1)
+    _0 := ()
     return
 }
 

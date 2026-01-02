@@ -296,9 +296,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -307,40 +307,40 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::call_unsafe_fn
 fn call_unsafe_fn()
 {
-    let @0: (); // return
-    let x@1: *const u32; // local
-    let @2: u32; // anonymous local
-    let @3: *const u32; // anonymous local
+    let _0: (); // return
+    let x_1: *const u32; // local
+    let _2: u32; // anonymous local
+    let _3: *const u32; // anonymous local
 
-    @0 := ()
-    storage_live(x@1)
-    x@1 := null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
-    storage_live(@2)
-    storage_live(@3)
-    @3 := copy (x@1)
-    @2 := read<u32>[{built_in impl Sized for u32}](move (@3))
-    storage_dead(@3)
-    storage_dead(@2)
-    @0 := ()
-    storage_dead(x@1)
+    _0 := ()
+    storage_live(x_1)
+    x_1 := null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
+    storage_live(_2)
+    storage_live(_3)
+    _3 := copy (x_1)
+    _2 := read<u32>[{built_in impl Sized for u32}](move (_3))
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 := ()
+    storage_dead(x_1)
     return
 }
 
 // Full name: test_crate::deref_raw_ptr
 fn deref_raw_ptr()
 {
-    let @0: (); // return
-    let x@1: *const u32; // local
-    let @2: u32; // anonymous local
+    let _0: (); // return
+    let x_1: *const u32; // local
+    let _2: u32; // anonymous local
 
-    @0 := ()
-    storage_live(x@1)
-    x@1 := null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
-    storage_live(@2)
-    @2 := copy (*(x@1))
-    storage_dead(@2)
-    @0 := ()
-    storage_dead(x@1)
+    _0 := ()
+    storage_live(x_1)
+    x_1 := null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
+    storage_live(_2)
+    _2 := copy (*(x_1))
+    storage_dead(_2)
+    _0 := ()
+    storage_dead(x_1)
     return
 }
 
@@ -360,9 +360,9 @@ impl Trait for () {
 // Full name: test_crate::COUNTER
 fn COUNTER() -> usize
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (0 : usize)
+    _0 := const (0 : usize)
     return
 }
 
@@ -372,21 +372,21 @@ static COUNTER: usize = COUNTER()
 // Full name: test_crate::access_mutable_static
 fn access_mutable_static()
 {
-    let @0: (); // return
-    let @1: *mut usize; // anonymous local
-    let @2: usize; // anonymous local
-    let @3: *mut usize; // anonymous local
+    let _0: (); // return
+    let _1: *mut usize; // anonymous local
+    let _2: usize; // anonymous local
+    let _3: *mut usize; // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    storage_live(@1)
-    storage_live(@3)
-    @3 := &raw mut COUNTER
-    @1 := move (@3)
-    @2 := copy (*(@1)) panic.+ const (1 : usize)
-    *(@1) := move (@2)
-    storage_dead(@1)
-    @0 := ()
+    storage_live(_2)
+    _0 := ()
+    storage_live(_1)
+    storage_live(_3)
+    _3 := &raw mut COUNTER
+    _1 := move (_3)
+    _2 := copy (*(_1)) panic.+ const (1 : usize)
+    *(_1) := move (_2)
+    storage_dead(_1)
+    _0 := ()
     return
 }
 
@@ -399,27 +399,27 @@ union Foo {
 // Full name: test_crate::access_union_field
 fn access_union_field()
 {
-    let @0: (); // return
-    let one@1: Foo; // local
-    let _two@2: [u32; 2 : usize]; // local
+    let _0: (); // return
+    let one_1: Foo; // local
+    let _two_2: [u32; 2 : usize]; // local
 
-    @0 := ()
-    storage_live(one@1)
-    one@1 := Foo { one: const (42 : u64) }
-    storage_live(_two@2)
-    _two@2 := copy ((one@1).two)
-    @0 := ()
-    storage_dead(_two@2)
-    storage_dead(one@1)
+    _0 := ()
+    storage_live(one_1)
+    one_1 := Foo { one: const (42 : u64) }
+    storage_live(_two_2)
+    _two_2 := copy ((one_1).two)
+    _0 := ()
+    storage_dead(_two_2)
+    storage_dead(one_1)
     return
 }
 
 fn test_crate::assume()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := core::intrinsics::assume(const (true))
+    _0 := ()
+    _0 := core::intrinsics::assume(const (true))
     return
 }
 

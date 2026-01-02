@@ -14,9 +14,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -35,9 +35,9 @@ fn FOO<Self>() -> usize
 where
     [@TraitClause0]: Trait<Self>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const (42 : usize)
+    _0 := const (42 : usize)
     return
 }
 
@@ -62,9 +62,9 @@ pub fn foo<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: usize; // return
+    let _0: usize; // return
 
-    @0 := const ({impl Trait for T}<T>[@TraitClause0]::FOO)
+    _0 := const ({impl Trait for T}<T>[@TraitClause0]::FOO)
     return
 }
 

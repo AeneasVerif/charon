@@ -59,9 +59,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -83,10 +83,10 @@ where
     [@TraitClause2]: for<'_0_1> FnMut<F, (&'_0_1 u32)>,
     for<'_0_1> @TraitClause2::parent_clause1::Output = (),
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -98,10 +98,10 @@ where
     [@TraitClause2]: for<'b> FnMut<F, (&'b u32)>,
     for<'b> @TraitClause2::parent_clause1::Output = (),
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
@@ -114,10 +114,10 @@ where
     [@TraitClause1]: for<'_0_1> FnMut<F, (&'_0_1 u32)>,
     for<'_0_1> @TraitClause1::parent_clause1::Output = (),
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 

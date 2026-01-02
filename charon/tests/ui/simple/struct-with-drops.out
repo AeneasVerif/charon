@@ -75,9 +75,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -98,32 +98,32 @@ struct A {
 // Full name: test_crate::{impl Drop for B}::drop
 pub fn {impl Drop for B}::drop<'_0>(@1: &'_0 mut B)
 {
-    let @0: (); // return
-    let self@1: &'0 mut B; // arg #1
+    let _0: (); // return
+    let self_1: &'0 mut B; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
 // Full name: test_crate::B::{impl Destruct for B}::drop_in_place
 unsafe fn {impl Destruct for B}::drop_in_place(@1: *mut B)
 {
-    let @0: (); // return
-    let @1: *mut B; // arg #1
-    let @2: &'0 mut B; // anonymous local
-    let @3: &'0 mut B; // anonymous local
-    let @4: (); // anonymous local
+    let _0: (); // return
+    let _1: *mut B; // arg #1
+    let _2: &'0 mut B; // anonymous local
+    let _3: &'0 mut B; // anonymous local
+    let _4: (); // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    storage_live(@4)
-    @0 := ()
-    @2 := &mut *(@1)
-    @3 := &mut *(@2)
-    @4 := {impl Drop for B}::drop<'_>(move (@3))
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] (*(@2)).x
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] (*(@2)).y
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _0 := ()
+    _2 := &mut *(_1)
+    _3 := &mut *(_2)
+    _4 := {impl Drop for B}::drop<'_>(move (_3))
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] (*(_2)).x
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] (*(_2)).y
     return
 }
 
@@ -136,15 +136,15 @@ impl Destruct for B {
 // Full name: test_crate::A::{impl Destruct for A}::drop_in_place
 unsafe fn {impl Destruct for A}::drop_in_place(@1: *mut A)
 {
-    let @0: (); // return
-    let @1: *mut A; // arg #1
-    let @2: &'0 mut A; // anonymous local
+    let _0: (); // return
+    let _1: *mut A; // arg #1
+    let _2: &'0 mut A; // anonymous local
 
-    storage_live(@2)
-    @0 := ()
-    @2 := &mut *(@1)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] (*(@2)).x
-    drop[{impl Destruct for B}] (*(@2)).b
+    storage_live(_2)
+    _0 := ()
+    _2 := &mut *(_1)
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] (*(_2)).x
+    drop[{impl Destruct for B}] (*(_2)).b
     return
 }
 
@@ -157,12 +157,12 @@ impl Destruct for A {
 // Full name: test_crate::takes_a
 fn takes_a(@1: A)
 {
-    let @0: (); // return
-    let @1: A; // arg #1
+    let _0: (); // return
+    let _1: A; // arg #1
 
-    @0 := ()
-    @0 := ()
-    drop[{impl Destruct for A}] @1
+    _0 := ()
+    _0 := ()
+    drop[{impl Destruct for A}] _1
     return
 }
 

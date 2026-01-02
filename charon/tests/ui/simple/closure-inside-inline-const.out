@@ -92,9 +92,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -111,16 +111,16 @@ pub fn foo<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: usize; // return
-    let @1: usize; // anonymous local
-    let _f@2: closure<T>[@TraitClause0]; // local
+    let _0: usize; // return
+    let _1: usize; // anonymous local
+    let _f_2: closure<T>[@TraitClause0]; // local
 
-    storage_live(@1)
-    storage_live(_f@2)
-    _f@2 := closure {  }
-    @1 := size_of<T>[@TraitClause0]()
-    storage_dead(_f@2)
-    @0 := move (@1)
+    storage_live(_1)
+    storage_live(_f_2)
+    _f_2 := closure {  }
+    _1 := size_of<T>[@TraitClause0]()
+    storage_dead(_f_2)
+    _0 := move (_1)
     return
 }
 
@@ -129,11 +129,11 @@ fn {impl Fn<()> for closure<T>[@TraitClause0]}::call<'_0, T>(@1: &'_0 closure<T>
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: i32; // return
-    let @1: &'0 closure<T>[@TraitClause0]; // arg #1
-    let tupled_args@2: (); // arg #2
+    let _0: i32; // return
+    let _1: &'0 closure<T>[@TraitClause0]; // arg #1
+    let tupled_args_2: (); // arg #2
 
-    @0 := const (42 : i32)
+    _0 := const (42 : i32)
     return
 }
 
@@ -142,14 +142,14 @@ fn {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_0, T>(@1: &'_0 mut
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: i32; // return
-    let state@1: &'_0 mut closure<T>[@TraitClause0]; // arg #1
-    let args@2: (); // arg #2
-    let @3: &'0 closure<T>[@TraitClause0]; // anonymous local
+    let _0: i32; // return
+    let state_1: &'_0 mut closure<T>[@TraitClause0]; // arg #1
+    let args_2: (); // arg #2
+    let _3: &'0 closure<T>[@TraitClause0]; // anonymous local
 
-    storage_live(@3)
-    @3 := &*(state@1)
-    @0 := {impl Fn<()> for closure<T>[@TraitClause0]}::call<'2, T>[@TraitClause0](move (@3), move (args@2))
+    storage_live(_3)
+    _3 := &*(state_1)
+    _0 := {impl Fn<()> for closure<T>[@TraitClause0]}::call<'2, T>[@TraitClause0](move (_3), move (args_2))
     return
 }
 
@@ -173,15 +173,15 @@ fn {impl FnOnce<()> for closure<T>[@TraitClause0]}::call_once<T>(@1: closure<T>[
 where
     [@TraitClause0]: Sized<T>,
 {
-    let @0: i32; // return
-    let @1: closure<T>[@TraitClause0]; // arg #1
-    let @2: (); // arg #2
-    let @3: &'0 mut closure<T>[@TraitClause0]; // anonymous local
+    let _0: i32; // return
+    let _1: closure<T>[@TraitClause0]; // arg #1
+    let _2: (); // arg #2
+    let _3: &'0 mut closure<T>[@TraitClause0]; // anonymous local
 
-    storage_live(@3)
-    @3 := &mut @1
-    @0 := {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_, T>[@TraitClause0](move (@3), move (@2))
-    drop[{impl Destruct for closure<T>[@TraitClause0]}<T>[@TraitClause0]] @1
+    storage_live(_3)
+    _3 := &mut _1
+    _0 := {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_, T>[@TraitClause0](move (_3), move (_2))
+    drop[{impl Destruct for closure<T>[@TraitClause0]}<T>[@TraitClause0]] _1
     return
 }
 

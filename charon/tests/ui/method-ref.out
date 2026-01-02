@@ -22,9 +22,9 @@ pub trait Sized<Self>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -50,14 +50,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ord<T>,
 {
-    let @0: (); // return
-    let @1: for<'_0_1, '_1_1> @TraitClause1::cmp<'_0_1, '_1_1>; // anonymous local
+    let _0: (); // return
+    let _1: for<'_0_1, '_1_1> @TraitClause1::cmp<'_0_1, '_1_1>; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const (@TraitClause1::cmp<'_, '_>)
-    storage_dead(@1)
-    @0 := ()
+    _0 := ()
+    storage_live(_1)
+    _1 := const (@TraitClause1::cmp<'_, '_>)
+    storage_dead(_1)
+    _0 := ()
     return
 }
 

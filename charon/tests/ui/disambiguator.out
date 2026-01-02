@@ -2,9 +2,9 @@
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -12,37 +12,37 @@ const UNIT_METADATA: () = @Fun0()
 
 fn test_crate::nonzero_disambiguator::my_function()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
 fn test_crate::nonzero_disambiguator::my_function#1()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 
 // Full name: test_crate::nonzero_disambiguator
 fn nonzero_disambiguator()
 {
-    let @0: (); // return
-    let @1: bool; // anonymous local
+    let _0: (); // return
+    let _1: bool; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := const (true)
-    if move (@1) {
-        @0 := test_crate::nonzero_disambiguator::my_function()
+    _0 := ()
+    storage_live(_1)
+    _1 := const (true)
+    if move (_1) {
+        _0 := test_crate::nonzero_disambiguator::my_function()
     } else {
-        @0 := test_crate::nonzero_disambiguator::my_function#1()
+        _0 := test_crate::nonzero_disambiguator::my_function#1()
     }
-    storage_dead(@1)
+    storage_dead(_1)
     return
 }
 

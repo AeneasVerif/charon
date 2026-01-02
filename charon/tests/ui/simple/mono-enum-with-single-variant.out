@@ -26,9 +26,9 @@ pub trait Sized::<u8>
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -47,11 +47,11 @@ enum MyResult::<Never, u8> {
 // Full name: test_crate::use_result
 fn use_result(@1: MyResult::<Never, u8>)
 {
-    let @0: (); // return
-    let @1: MyResult::<Never, u8>; // arg #1
+    let _0: (); // return
+    let _1: MyResult::<Never, u8>; // arg #1
 
-    @0 := ()
-    @0 := ()
+    _0 := ()
+    _0 := ()
     return
 }
 

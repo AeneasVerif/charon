@@ -195,9 +195,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -206,23 +206,23 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::trait_error
 pub fn trait_error<'_0>(@1: &'_0 [u8])
 {
-    let @0: (); // return
-    let s@1: &'0 [u8]; // arg #1
-    let _array@2: [u8; 4 : usize]; // local
-    let @3: Result<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}]; // anonymous local
-    let @4: &'0 [u8]; // anonymous local
+    let _0: (); // return
+    let s_1: &'0 [u8]; // arg #1
+    let _array_2: [u8; 4 : usize]; // local
+    let _3: Result<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}]; // anonymous local
+    let _4: &'0 [u8]; // anonymous local
 
-    @0 := ()
-    storage_live(_array@2)
-    storage_live(@3)
-    storage_live(@4)
-    @4 := &*(s@1) with_metadata(copy (s@1.metadata))
-    @3 := {impl TryInto<U> for T}::try_into<&'0 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'0 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, {impl TryFrom<&'_0 [T]> for [T; N]}<'0, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move (@4))
-    storage_dead(@4)
-    _array@2 := unwrap<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}, {impl Debug for TryFromSliceError}](move (@3))
-    storage_dead(@3)
-    @0 := ()
-    storage_dead(_array@2)
+    _0 := ()
+    storage_live(_array_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 := &*(s_1) with_metadata(copy (s_1.metadata))
+    _3 := {impl TryInto<U> for T}::try_into<&'0 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'0 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, {impl TryFrom<&'_0 [T]> for [T; N]}<'0, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move (_4))
+    storage_dead(_4)
+    _array_2 := unwrap<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}, {impl Debug for TryFromSliceError}](move (_3))
+    storage_dead(_3)
+    _0 := ()
+    storage_dead(_array_2)
     return
 }
 

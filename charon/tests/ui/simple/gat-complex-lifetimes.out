@@ -26,9 +26,9 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -67,19 +67,19 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Bar<'x, T>,
 {
-    let @0: &'0 &'1 &'2 (); // return
-    let x@1: @TraitClause1::Type; // arg #1
-    let @2: &'0 &'1 &'2 (); // anonymous local
-    let @3: @TraitClause1::Type; // anonymous local
+    let _0: &'0 &'1 &'2 (); // return
+    let x_1: @TraitClause1::Type; // arg #1
+    let _2: &'0 &'1 &'2 (); // anonymous local
+    let _3: @TraitClause1::Type; // anonymous local
 
-    storage_live(@2)
-    storage_live(@3)
-    @3 := move (x@1)
-    @2 := (@TraitClause1::Type::[@TraitClause1])::foo(move (@3))
-    @0 := &*(@2)
-    storage_dead(@3)
-    storage_dead(@2)
-    conditional_drop[{built_in impl Destruct for @TraitClause1::Type}] x@1
+    storage_live(_2)
+    storage_live(_3)
+    _3 := move (x_1)
+    _2 := (@TraitClause1::Type::[@TraitClause1])::foo(move (_3))
+    _0 := &*(_2)
+    storage_dead(_3)
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for @TraitClause1::Type}] x_1
     return
 }
 

@@ -120,9 +120,9 @@ where
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -131,15 +131,15 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::main
 fn main()
 {
-    let @0: (); // return
-    let @1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
+    let _0: (); // return
+    let _1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
 
-    @0 := ()
-    storage_live(@1)
-    @1 := new<i32>[{built_in impl Sized for i32}](const (42 : i32))
-    drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]] @1
-    storage_dead(@1)
-    @0 := ()
+    _0 := ()
+    storage_live(_1)
+    _1 := new<i32>[{built_in impl Sized for i32}](const (42 : i32))
+    drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]] _1
+    storage_dead(_1)
+    _0 := ()
     return
 }
 

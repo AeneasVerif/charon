@@ -284,9 +284,9 @@ impl BuildHasher for RandomState {
 
 fn UNIT_METADATA()
 {
-    let @0: (); // return
+    let _0: (); // return
 
-    @0 := ()
+    _0 := ()
     return
 }
 
@@ -295,83 +295,83 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::get_or_insert
 pub fn get_or_insert<'_0>(@1: &'_0 mut HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]) -> &'_0 u32
 {
-    let @0: &'0 u32; // return
-    let map@1: &'1 mut HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // arg #1
-    let @2: Option<&'0 u32>[{built_in impl Sized for &'0 u32}]; // anonymous local
-    let @3: &'4 HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // anonymous local
-    let @4: &'0 u32; // anonymous local
-    let @5: &'0 u32; // anonymous local
-    let v@6: &'0 u32; // local
-    let @7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let @8: &'1 mut HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // anonymous local
-    let @9: &'0 u32; // anonymous local
-    let @10: &'0 u32; // anonymous local
-    let @11: &'4 HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // anonymous local
-    let @12: &'0 u32; // anonymous local
-    let @13: &'0 u32; // anonymous local
-    let @14: &'0 u32; // anonymous local
-    let @15: &'0 u32; // anonymous local
-    let @16: &'_ u32; // anonymous local
-    let @17: u32; // anonymous local
-    let @18: &'_ u32; // anonymous local
-    let @19: u32; // anonymous local
+    let _0: &'0 u32; // return
+    let map_1: &'1 mut HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // arg #1
+    let _2: Option<&'0 u32>[{built_in impl Sized for &'0 u32}]; // anonymous local
+    let _3: &'4 HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // anonymous local
+    let _4: &'0 u32; // anonymous local
+    let _5: &'0 u32; // anonymous local
+    let v_6: &'0 u32; // local
+    let _7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _8: &'1 mut HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // anonymous local
+    let _9: &'0 u32; // anonymous local
+    let _10: &'0 u32; // anonymous local
+    let _11: &'4 HashMap<u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}]; // anonymous local
+    let _12: &'0 u32; // anonymous local
+    let _13: &'0 u32; // anonymous local
+    let _14: &'0 u32; // anonymous local
+    let _15: &'0 u32; // anonymous local
+    let _16: &'_ u32; // anonymous local
+    let _17: u32; // anonymous local
+    let _18: &'_ u32; // anonymous local
+    let _19: u32; // anonymous local
 
-    storage_live(@16)
-    storage_live(@17)
-    @17 := const (22 : u32)
-    @16 := &@17
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@2)
-    storage_live(@3)
-    @3 := &*(map@1)
-    storage_live(@4)
-    storage_live(@5)
-    @15 := move (@16)
-    @5 := &*(@15)
-    @4 := &*(@5)
-    @2 := get<'_, '_, u32, u32, RandomState, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {built_in impl MetaSized for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Hash for u32}, {impl Eq for u32}](move (@3), move (@4))
-    storage_dead(@4)
-    storage_dead(@3)
-    match @2 {
+    storage_live(_16)
+    storage_live(_17)
+    _17 := const (22 : u32)
+    _16 := &_17
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(_2)
+    storage_live(_3)
+    _3 := &*(map_1)
+    storage_live(_4)
+    storage_live(_5)
+    _15 := move (_16)
+    _5 := &*(_15)
+    _4 := &*(_5)
+    _2 := get<'_, '_, u32, u32, RandomState, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {built_in impl MetaSized for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Hash for u32}, {impl Eq for u32}](move (_3), move (_4))
+    storage_dead(_4)
+    storage_dead(_3)
+    match _2 {
         Option::None => {
-            storage_live(@7)
-            storage_live(@8)
-            @8 := &two-phase-mut *(map@1)
-            @7 := insert<'_, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@8), const (22 : u32), const (33 : u32))
-            storage_live(@18)
-            storage_live(@19)
-            @19 := const (22 : u32)
-            @18 := &@19
-            storage_dead(@8)
-            storage_dead(@7)
-            storage_live(@9)
-            storage_live(@10)
-            storage_live(@11)
-            @11 := &*(map@1)
-            storage_live(@12)
-            storage_live(@13)
-            @14 := move (@18)
-            @13 := &*(@14)
-            @12 := &*(@13)
-            @10 := {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'5, '_, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (@11), move (@12))
-            storage_dead(@12)
-            storage_dead(@11)
-            @9 := &*(@10)
-            @0 := &*(@9)
-            storage_dead(@13)
-            storage_dead(@10)
-            storage_dead(@9)
+            storage_live(_7)
+            storage_live(_8)
+            _8 := &two-phase-mut *(map_1)
+            _7 := insert<'_, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (_8), const (22 : u32), const (33 : u32))
+            storage_live(_18)
+            storage_live(_19)
+            _19 := const (22 : u32)
+            _18 := &_19
+            storage_dead(_8)
+            storage_dead(_7)
+            storage_live(_9)
+            storage_live(_10)
+            storage_live(_11)
+            _11 := &*(map_1)
+            storage_live(_12)
+            storage_live(_13)
+            _14 := move (_18)
+            _13 := &*(_14)
+            _12 := &*(_13)
+            _10 := {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'5, '_, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move (_11), move (_12))
+            storage_dead(_12)
+            storage_dead(_11)
+            _9 := &*(_10)
+            _0 := &*(_9)
+            storage_dead(_13)
+            storage_dead(_10)
+            storage_dead(_9)
         },
         Option::Some => {
-            storage_live(v@6)
-            v@6 := copy ((@2 as variant Option::Some).0)
-            @0 := &*(v@6)
-            storage_dead(v@6)
+            storage_live(v_6)
+            v_6 := copy ((_2 as variant Option::Some).0)
+            _0 := &*(v_6)
+            storage_dead(v_6)
         },
     }
-    storage_dead(@5)
-    storage_dead(@2)
+    storage_dead(_5)
+    storage_dead(_2)
     return
 }
 
