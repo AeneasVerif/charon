@@ -256,6 +256,7 @@ dependencies = [
  "serde_json",
  "serde_stacker",
  "serde_state",
+ "smallvec",
  "snapbox",
  "stacker",
  "strip-ansi-escapes",

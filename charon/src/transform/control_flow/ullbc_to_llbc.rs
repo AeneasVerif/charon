@@ -25,6 +25,7 @@ use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
+use smallvec::SmallVec;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::mem;
 
@@ -68,8 +69,19 @@ struct CfgInfo<'a> {
 struct BlockData<'a> {
     pub id: BlockId,
     pub contents: &'a src::BlockData,
+    /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
+    pub is_loop_header: bool,
+    /// Blocks that have multiple incoming control-flow edges.
+    pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
+    /// Block that immediately dominates this one. `None` for the root and unreachable nodes.
+    pub dominator: Option<BlockId>,
+    /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
+    /// id first.
+    pub immediately_dominates: SmallVec<[BlockId; 2]>,
+    /// Like `immediately_dominates`, but restricted to nodes that are merge targets.
+    pub immediately_dominated_merge_targets: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: bool,
     /// List of reachable nodes, with the length of shortest path to them. Includes the current
@@ -145,6 +157,23 @@ impl<'a> CfgInfo<'a> {
     fn build(body: &'a src::BodyContents) -> Result<Self, Irreducible> {
         let start_block = BlockId::ZERO;
 
+        let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
+        let mut block_data: IndexVec<BlockId, BlockData> =
+            body.map_ref_indexed(|id, contents| BlockData {
+                id,
+                contents,
+                is_loop_header: false,
+                is_merge_target: false,
+                reverse_postorder: None,
+                dominator: None,
+                immediately_dominates: Default::default(),
+                immediately_dominated_merge_targets: Default::default(),
+                only_reach_error: false,
+                shortest_paths: Default::default(),
+                flow: empty_flow.clone(),
+                exit_info: Default::default(),
+            });
+
         // Build the node graph (we ignore unwind paths for now).
         let mut cfg = Cfg::new();
         for (block_id, block) in body.iter_indexed() {
@@ -154,27 +183,28 @@ impl<'a> CfgInfo<'a> {
             }
         }
 
-        let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-        let mut block_data: IndexVec<BlockId, BlockData> =
-            body.map_ref_indexed(|id, contents| BlockData {
-                id,
-                contents,
-                // Default values will stay for unreachable nodes, which are irrelevant.
-                reverse_postorder: None,
-                only_reach_error: false,
-                shortest_paths: Default::default(),
-                flow: empty_flow.clone(),
-                exit_info: Default::default(),
-            });
-
         // Compute the dominator tree.
         let dominator_tree = simple_fast(&cfg, start_block);
 
         // Compute reverse postorder numbering.
         for (i, block_id) in DfsPostOrder::new(&cfg, start_block).iter(&cfg).enumerate() {
             let rev_post_id = body.len() - i;
-            assert!(rev_post_id <= u32::MAX as usize);
-            block_data[block_id].reverse_postorder = Some(rev_post_id as u32);
+            block_data[block_id].reverse_postorder = Some(rev_post_id.try_into().unwrap());
+
+            // Store the dominator tree in `block_data`.
+            if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
+                block_data[block_id].dominator = Some(dominator);
+                block_data[dominator].immediately_dominates.push(block_id);
+            }
+
+            // Detect merge targets.
+            if cfg
+                .neighbors_directed(block_id, petgraph::Direction::Incoming)
+                .count()
+                >= 2
+            {
+                block_data[block_id].is_merge_target = true;
+            }
         }
 
         // Compute the forward graph (without backward edges).
@@ -187,14 +217,17 @@ impl<'a> CfgInfo<'a> {
                 continue;
             }
             fwd_cfg.add_node(src);
+
             if body[src].terminator.kind.is_switch() {
                 switch_blocks.insert(src);
             }
+
             for tgt in cfg.neighbors(src) {
                 // Check if the edge is a backward edge.
                 if block_data[src].reverse_postorder >= block_data[tgt].reverse_postorder {
                     // This is a backward edge
                     loop_entries.insert(tgt);
+                    block_data[tgt].is_loop_header = true;
                     // A cfg is reducible iff the target of every back edge dominates the
                     // edge's source.
                     if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
@@ -251,6 +284,18 @@ impl<'a> CfgInfo<'a> {
 
             // Compute shortest paths to all reachable nodes in the forward graph.
             block_data[block_id].shortest_paths = dijkstra(&fwd_cfg, block_id, None, |_| 1usize);
+
+            // Fill in the rest of the domination data.
+            let mut dominatees = mem::take(&mut block_data[block_id].immediately_dominates);
+            dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
+            dominatees.reverse();
+            block_data[block_id].immediately_dominates = dominatees;
+            block_data[block_id].immediately_dominated_merge_targets = block_data[block_id]
+                .immediately_dominates
+                .iter()
+                .copied()
+                .filter(|&child| block_data[child].is_merge_target)
+                .collect();
         }
 
         Ok(CfgInfo {
