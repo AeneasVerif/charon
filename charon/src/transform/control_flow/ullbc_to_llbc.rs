@@ -47,7 +47,7 @@ type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Information precomputed about a function's CFG.
 #[derive(Debug)]
-struct CfgInfo {
+struct CfgInfo<'a> {
     /// The CFG
     pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed. Aka "forward CFG".
@@ -61,12 +61,13 @@ struct CfgInfo {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: IndexVec<BlockId, BlockData>,
+    pub block_data: IndexVec<BlockId, BlockData<'a>>,
 }
 
 #[derive(Debug)]
-struct BlockData {
+struct BlockData<'a> {
     pub id: BlockId,
+    pub contents: &'a src::BlockData,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
     /// Node from where we can only reach error nodes (panic, etc.)
@@ -84,6 +85,44 @@ struct BlockData {
     /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
     pub flow: IndexVec<BlockId, BigRational>,
+    /// Reconstructed information about loops and switches.
+    pub exit_info: ExitInfo,
+}
+
+#[derive(Debug, Default, Clone)]
+struct ExitInfo {
+    is_loop_entry: bool,
+    is_switch_entry: bool,
+    /// The loop exit
+    loop_exit: Option<src::BlockId>,
+    /// Some loop exits actually belong to outer switches. We still need
+    /// to track them in the loop exits, in order to know when we should
+    /// insert a break. However, we need to make sure we don't add the
+    /// corresponding block in a sequence, after having translated the
+    /// loop, like so:
+    /// ```text
+    /// loop {
+    ///   loop_body
+    /// };
+    /// exit_blocks // OK if the exit "belongs" to the loop
+    /// ```
+    ///
+    /// In case the exit doesn't belong to the loop:
+    /// ```text
+    /// if b {
+    ///   loop {
+    ///     loop_body
+    ///   } // no exit blocks after the loop
+    /// }
+    /// else {
+    ///   ...
+    /// };
+    /// exit_blocks // the exit blocks are here
+    /// ```
+    owned_loop_exit: Option<src::BlockId>,
+    /// The switch exit.
+    /// Note that the switch exits are always owned.
+    owned_switch_exit: Option<src::BlockId>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -100,10 +139,10 @@ type OrdBlockId = BlockWithRank<u32>;
 /// block involved in an irreducible subgraph.
 struct Irreducible(BlockId);
 
-impl CfgInfo {
+impl<'a> CfgInfo<'a> {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
     /// compute some information like the loop entries and the switch blocks.
-    fn build(body: &src::BodyContents) -> Result<Self, Irreducible> {
+    fn build(body: &'a src::BodyContents) -> Result<Self, Irreducible> {
         let start_block = BlockId::ZERO;
 
         // Build the node graph (we ignore unwind paths for now).
@@ -117,13 +156,15 @@ impl CfgInfo {
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
         let mut block_data: IndexVec<BlockId, BlockData> =
-            body.map_ref_indexed(|id, _| BlockData {
+            body.map_ref_indexed(|id, contents| BlockData {
                 id,
+                contents,
                 // Default values will stay for unreachable nodes, which are irrelevant.
                 reverse_postorder: None,
                 only_reach_error: false,
                 shortest_paths: Default::default(),
                 flow: empty_flow.clone(),
+                exit_info: Default::default(),
             });
 
         // Compute the dominator tree.
@@ -222,7 +263,7 @@ impl CfgInfo {
         })
     }
 
-    fn block_data(&self, block_id: BlockId) -> &BlockData {
+    fn block_data(&self, block_id: BlockId) -> &BlockData<'a> {
         &self.block_data[block_id]
     }
     // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
@@ -245,7 +286,7 @@ impl CfgInfo {
     }
 }
 
-impl BlockData {
+impl BlockData<'_> {
     fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
         self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
     }
@@ -296,49 +337,7 @@ struct FilteredLoopParents {
     removed_parents: Vec<(src::BlockId, usize)>,
 }
 
-#[derive(Debug, Default, Clone)]
-struct ExitInfo {
-    is_loop_entry: bool,
-    is_switch_entry: bool,
-    /// The loop exit
-    loop_exit: Option<src::BlockId>,
-    /// Some loop exits actually belong to outer switches. We still need
-    /// to track them in the loop exits, in order to know when we should
-    /// insert a break. However, we need to make sure we don't add the
-    /// corresponding block in a sequence, after having translated the
-    /// loop, like so:
-    /// ```text
-    /// loop {
-    ///   loop_body
-    /// };
-    /// exit_blocks // OK if the exit "belongs" to the loop
-    /// ```
-    ///
-    /// In case the exit doesn't belong to the loop:
-    /// ```text
-    /// if b {
-    ///   loop {
-    ///     loop_body
-    ///   } // no exit blocks after the loop
-    /// }
-    /// else {
-    ///   ...
-    /// };
-    /// exit_blocks // the exit blocks are here
-    /// ```
-    owned_loop_exit: Option<src::BlockId>,
-    /// The switch exit.
-    /// Note that the switch exits are always owned.
-    owned_switch_exit: Option<src::BlockId>,
-}
-
-/// The exits of a graph
-#[derive(Debug, Clone)]
-struct ExitsInfo {
-    exits: IndexVec<BlockId, ExitInfo>,
-}
-
-impl ExitsInfo {
+impl ExitInfo {
     /// Check if a loop entry is reachable from a node, in a graph where we remove
     /// the backward edges going directly to the loop entry.
     ///
@@ -706,8 +705,7 @@ impl ExitsInfo {
     /// }
     /// ```
     fn compute_loop_exits(
-        ctx: &mut TransformCtx,
-        body: &src::ExprBody,
+        ctx: &TransformCtx,
         cfg: &CfgInfo,
     ) -> HashMap<src::BlockId, Option<src::BlockId>> {
         let mut explored = HashSet::new();
@@ -860,7 +858,7 @@ impl ExitsInfo {
                     //
                     // Adding this sanity check so that we can see when there are
                     // several candidates.
-                    let span = body.body[loop_id].terminator.span; // Taking *a* span from the block
+                    let span = cfg.block_data[loop_id].contents.terminator.span; // Taking *a* span from the block
                     sanity_check!(ctx, span, candidates.is_empty());
                     trace!(
                         "Loop {loop_id}: did not select an exit candidate because they all lead to panics"
@@ -1142,19 +1140,14 @@ impl ExitsInfo {
     ///
     /// The following function thus computes the "exits" for loops and switches, which
     /// are basically the points where control-flow joins.
-    fn compute(ctx: &mut TransformCtx, body: &src::ExprBody, cfg_info: &CfgInfo) -> Self {
+    fn compute(ctx: &TransformCtx, cfg_info: &mut CfgInfo) {
         // Compute the loop exits
-        let loop_exits = Self::compute_loop_exits(ctx, body, cfg_info);
+        let loop_exits = Self::compute_loop_exits(ctx, cfg_info);
         trace!("loop_exits:\n{:?}", loop_exits);
 
         // Compute the switch exits
         let switch_exits = Self::compute_switch_exits(cfg_info);
         trace!("switch_exits:\n{:?}", switch_exits);
-
-        // Compute the exit info
-        let mut exits_info = ExitsInfo {
-            exits: body.body.map_ref(|_| Default::default()),
-        };
 
         // We need to give precedence to the outer switches and loops: we thus iterate
         // over the blocks in topological order.
@@ -1174,7 +1167,7 @@ impl ExitsInfo {
         for bid in sorted_blocks {
             let bid = bid.id;
             // Check if loop or switch block
-            let exit_info = &mut exits_info.exits[bid];
+            let exit_info = &mut cfg_info.block_data[bid].exit_info;
             if cfg_info.loop_entries.contains(&bid) {
                 exit_info.is_loop_entry = true;
                 // This is a loop.
@@ -1204,8 +1197,6 @@ impl ExitsInfo {
                 exit_info.owned_switch_exit = exit_id;
             }
         }
-
-        exits_info
     }
 }
 
@@ -1217,28 +1208,26 @@ enum GotoKind {
 }
 
 struct ReconstructCtx<'a> {
-    body: &'a src::ExprBody,
-    exits_info: ExitsInfo,
+    cfg: CfgInfo<'a>,
     explored: HashSet<src::BlockId>,
     parent_loops: Vec<src::BlockId>,
     switch_exit_blocks: HashSet<src::BlockId>,
 }
 
 impl<'a> ReconstructCtx<'a> {
-    fn build(ctx: &mut TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
+    fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Explore the function body to create the control-flow graph without backward
         // edges, and identify the loop entries (which are destinations of backward edges).
-        let cfg_info = CfgInfo::build(&src_body.body)?;
+        let mut cfg = CfgInfo::build(&src_body.body)?;
 
         // Find the exit block for all the loops and switches, if such an exit point exists.
-        let exits_info = ExitsInfo::compute(ctx, src_body, &cfg_info);
+        ExitInfo::compute(ctx, &mut cfg);
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
         // Note that we shouldn't get `None`.
         Ok(ReconstructCtx {
-            body: src_body,
-            exits_info: exits_info,
+            cfg,
             explored: HashSet::new(),
             parent_loops: Vec::new(),
             switch_exit_blocks: HashSet::new(),
@@ -1253,7 +1242,7 @@ impl<'a> ReconstructCtx<'a> {
                 return GotoKind::Continue(i);
             } else {
                 // If we goto a loop exit node: this is a 'break'
-                if let Some(exit_id) = self.exits_info.exits[loop_id].loop_exit {
+                if let Some(exit_id) = self.cfg.block_data[loop_id].exit_info.loop_exit {
                     if next_block_id == exit_id {
                         return GotoKind::Break(i);
                     }
@@ -1440,9 +1429,10 @@ impl<'a> ReconstructCtx<'a> {
         // this block, and insert the block id in the set of already translated blocks.
         self.explored.insert(block_id);
 
-        let block = &self.body.body[block_id];
+        let block_data = &self.cfg.block_data[block_id];
+        let block = block_data.contents;
+        let exit_info = &block_data.exit_info;
 
-        let exit_info = &self.exits_info.exits[block_id];
         // Check if we enter a loop: if so, update parent_loops and the current_exit_block
         let is_loop = exit_info.is_loop_entry;
         // If we enter a switch or a loop, we need to check if we own the exit
