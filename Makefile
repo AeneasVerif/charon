@@ -82,6 +82,10 @@ generate-ml:
 generate-ml-keep-llbc:
 	CHARON_ML_REUSE_LLBC=1 $(MAKE) generate-ml
 
+.PHONY: toolchain-commit
+toolchain-commit:
+	@rustc -vV | awk '/^commit-hash/ { print $$2 }'
+
 # Run Charon on rustc's ui test suite
 .PHONY: rustc-tests
 rustc-tests:
