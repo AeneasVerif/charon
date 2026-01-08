@@ -1279,57 +1279,7 @@ impl<'a> ReconstructCtx<'a> {
         })
     }
 
-    fn get_goto_kind(&self, next_block_id: src::BlockId) -> GotoKind {
-        // First explore the parent loops in revert order
-        for (i, &loop_id) in self.parent_loops.iter().rev().enumerate() {
-            // If we goto a loop entry node: this is a 'continue'
-            if next_block_id == loop_id {
-                return GotoKind::Continue(i);
-            } else {
-                // If we goto a loop exit node: this is a 'break'
-                if let Some(exit_id) = self.cfg.block_data[loop_id].exit_info.loop_exit {
-                    if next_block_id == exit_id {
-                        return GotoKind::Break(i);
-                    }
-                }
-            }
-        }
-
-        // Check if the goto exits the current block
-        if self.switch_exit_blocks.contains(&next_block_id) {
-            return GotoKind::ExitBlock;
-        }
-
-        // Default
-        GotoKind::Goto
-    }
-
-    /// `parent_span`: we need some span data for the new statement.
-    /// We use the one for the parent terminator.
-    fn translate_child_block(&mut self, parent_span: Span, child_id: src::BlockId) -> tgt::Block {
-        // Check if this is a backward call
-        match self.get_goto_kind(child_id) {
-            GotoKind::Break(index) => {
-                let st = tgt::StatementKind::Break(index);
-                tgt::Statement::new(parent_span, st).into_block()
-            }
-            GotoKind::Continue(index) => {
-                let st = tgt::StatementKind::Continue(index);
-                tgt::Statement::new(parent_span, st).into_block()
-            }
-            // If we are going to an exit block we simply ignore the goto
-            GotoKind::ExitBlock => {
-                let st = tgt::StatementKind::Nop;
-                tgt::Statement::new(parent_span, st).into_block()
-            }
-            GotoKind::Goto => {
-                // "Standard" goto: just recursively translate
-                ensure_sufficient_stack(|| self.translate_block(child_id))
-            }
-        }
-    }
-
-    fn translate_statement(&self, st: &src::Statement) -> Option<tgt::Statement> {
+    fn translate_statement(&self, st: &src::Statement) -> tgt::Statement {
         let src_span = st.span;
         let st = match st.kind.clone() {
             src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
@@ -1345,7 +1295,57 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
-        Some(tgt::Statement::new(src_span, st))
+        tgt::Statement::new(src_span, st)
+    }
+
+    fn get_goto_kind(&self, target_block: src::BlockId) -> GotoKind {
+        // First explore the parent loops in revert order
+        for (i, &loop_id) in self.parent_loops.iter().rev().enumerate() {
+            // If we goto a loop entry node: this is a 'continue'
+            if target_block == loop_id {
+                return GotoKind::Continue(i);
+            } else {
+                // If we goto a loop exit node: this is a 'break'
+                if let Some(exit_id) = self.cfg.block_data[loop_id].exit_info.loop_exit {
+                    if target_block == exit_id {
+                        return GotoKind::Break(i);
+                    }
+                }
+            }
+        }
+
+        // Check if the goto exits the current block
+        if self.switch_exit_blocks.contains(&target_block) {
+            return GotoKind::ExitBlock;
+        }
+
+        // Default
+        GotoKind::Goto
+    }
+
+    /// `parent_span`: we need some span data for the new statement.
+    /// We use the one for the parent terminator.
+    fn translate_jump(&mut self, parent_span: Span, target_block: src::BlockId) -> tgt::Block {
+        // Check if this is a backward call
+        match self.get_goto_kind(target_block) {
+            GotoKind::Break(index) => {
+                let st = tgt::StatementKind::Break(index);
+                tgt::Statement::new(parent_span, st).into_block()
+            }
+            GotoKind::Continue(index) => {
+                let st = tgt::StatementKind::Continue(index);
+                tgt::Statement::new(parent_span, st).into_block()
+            }
+            // If we are going to an exit block we simply ignore the goto
+            GotoKind::ExitBlock => {
+                let st = tgt::StatementKind::Nop;
+                tgt::Statement::new(parent_span, st).into_block()
+            }
+            GotoKind::Goto => {
+                // "Standard" goto: just recursively translate
+                self.translate_block(target_block)
+            }
+        }
     }
 
     fn translate_terminator(&mut self, terminator: &src::Terminator) -> tgt::Block {
@@ -1369,7 +1369,7 @@ impl<'a> ReconstructCtx<'a> {
             } => {
                 // TODO: Have unwinds in the LLBC
                 let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
-                let mut block = self.translate_child_block(terminator.span, *target);
+                let mut block = self.translate_jump(terminator.span, *target);
                 block.statements.insert(0, st);
                 block
             }
@@ -1385,19 +1385,17 @@ impl<'a> ReconstructCtx<'a> {
                     src_span,
                     tgt::StatementKind::Drop(place.clone(), tref.clone(), kind.clone()),
                 );
-                let mut block = self.translate_child_block(terminator.span, *target);
+                let mut block = self.translate_jump(terminator.span, *target);
                 block.statements.insert(0, st);
                 block
             }
-            src::TerminatorKind::Goto { target } => {
-                self.translate_child_block(terminator.span, *target)
-            }
+            src::TerminatorKind::Goto { target } => self.translate_jump(terminator.span, *target),
             src::TerminatorKind::Switch { discr, targets } => {
                 // Translate the target expressions
                 let switch = match &targets {
                     src::SwitchTargets::If(then_tgt, else_tgt) => {
-                        let then_block = self.translate_child_block(terminator.span, *then_tgt);
-                        let else_block = self.translate_child_block(terminator.span, *else_tgt);
+                        let then_block = self.translate_jump(terminator.span, *then_tgt);
+                        let else_block = self.translate_jump(terminator.span, *else_tgt);
                         tgt::Switch::If(discr.clone(), then_block, else_block)
                     }
                     src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
@@ -1434,7 +1432,7 @@ impl<'a> ReconstructCtx<'a> {
                                 branch.0.push(v.clone());
                             } else {
                                 // Not translated: translate it
-                                let block = self.translate_child_block(terminator.span, *bid);
+                                let block = self.translate_jump(terminator.span, *bid);
                                 // We use the terminator span information in case then
                                 // then statement is `None`
                                 branches.insert(*bid, (vec![v.clone()], block));
@@ -1443,8 +1441,7 @@ impl<'a> ReconstructCtx<'a> {
                         let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> =
                             branches.into_iter().map(|(_, x)| x).collect();
 
-                        let otherwise_block =
-                            self.translate_child_block(terminator.span, *otherwise);
+                        let otherwise_block = self.translate_jump(terminator.span, *otherwise);
 
                         // Translate
                         tgt::Switch::SwitchInt(
@@ -1465,18 +1462,35 @@ impl<'a> ReconstructCtx<'a> {
         }
     }
 
-    /// Remark: some values are boxed (here, the returned statement) so that they
-    /// are allocated on the heap. This reduces stack usage (we had problems with
-    /// stack overflows in the past). A more efficient solution would be to use loops
-    /// to make this code constant space, but that would require a serious rewriting.
+    /// Translate just the block statements and terminator.
+    fn translate_block_itself(&mut self, block_id: src::BlockId) -> tgt::Block {
+        let block = self.cfg.block_data[block_id].contents;
+        // Translate the statements inside the block
+        let statements = block
+            .statements
+            .iter()
+            .map(|st| self.translate_statement(st))
+            .collect_vec();
+        // Translate the terminator.
+        let terminator = self.translate_terminator(&block.terminator);
+        // Prepend the statements to the terminator.
+        if let Some(st) = tgt::Block::from_seq(statements) {
+            st.merge(terminator)
+        } else {
+            terminator
+        }
+    }
+
+    /// Translate a block including surrounding control-flow like looping.
     fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
+        ensure_sufficient_stack(|| self.translate_block_inner(block_id))
+    }
+    fn translate_block_inner(&mut self, block_id: src::BlockId) -> tgt::Block {
         // If the user activated this check: check that we didn't already translate
         // this block, and insert the block id in the set of already translated blocks.
         self.explored.insert(block_id);
 
-        let block_data = &self.cfg.block_data[block_id];
-        let block = block_data.contents;
-        let exit_info = &block_data.exit_info;
+        let exit_info = &self.cfg.block_data[block_id].exit_info;
 
         // Check if we enter a loop: if so, update parent_loops and the current_exit_block
         let is_loop = exit_info.is_loop_entry;
@@ -1492,44 +1506,24 @@ impl<'a> ReconstructCtx<'a> {
             None
         };
 
-        let terminator = {
-            if is_loop {
-                self.parent_loops.push(block_id);
-            }
-            // If we enter a switch, add the exit block to the set of outer exit blocks.
-            if is_switch && let Some(bid) = next_block {
-                assert!(!self.switch_exit_blocks.contains(&bid));
-                self.switch_exit_blocks.insert(bid);
-            }
+        if is_loop {
+            self.parent_loops.push(block_id);
+        }
+        // If we enter a switch, add the exit block to the set of outer exit blocks.
+        if is_switch && let Some(bid) = next_block {
+            assert!(!self.switch_exit_blocks.contains(&bid));
+            self.switch_exit_blocks.insert(bid);
+        }
 
-            // Translate the terminator and the subsequent blocks.
-            // Note that this terminator is an option: we might ignore it
-            // (if it is an exit).
-            let terminator = self.translate_terminator(&block.terminator);
+        let mut block = self.translate_block_itself(block_id);
 
-            // Reset the state to what it was previously.
-            if is_loop {
-                self.parent_loops.pop();
-            }
-            if is_switch && let Some(bid) = next_block {
-                self.switch_exit_blocks.remove(&bid);
-            }
-            terminator
-        };
-
-        // Translate the statements inside the block
-        let statements = block
-            .statements
-            .iter()
-            .filter_map(|st| self.translate_statement(st))
-            .collect_vec();
-
-        // Prepend the statements to the terminator.
-        let mut block = if let Some(st) = tgt::Block::from_seq(statements) {
-            st.merge(terminator)
-        } else {
-            terminator
-        };
+        // Reset the state to what it was previously.
+        if is_loop {
+            self.parent_loops.pop();
+        }
+        if is_switch && let Some(bid) = next_block {
+            self.switch_exit_blocks.remove(&bid);
+        }
 
         if is_loop {
             // Put the loop body inside a `Loop`.
@@ -1540,7 +1534,7 @@ impl<'a> ReconstructCtx<'a> {
 
         // Concatenate the exit expression, if needs be
         if let Some(exit_block_id) = next_block {
-            let next_block = ensure_sufficient_stack(|| self.translate_block(exit_block_id));
+            let next_block = self.translate_block(exit_block_id);
             block = block.merge(next_block);
         }
         block
