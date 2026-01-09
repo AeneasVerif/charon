@@ -245,3 +245,29 @@ pub fn list_nth_mut_loop_with_id<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T 
     }
     panic!()
 }
+
+pub fn loop_break_1() {
+    let mut x = 0;
+    loop {
+        x = 1;
+        if true {
+            x = 2;
+            break;
+        }
+        x = 3;
+    }
+    x = 4;
+}
+
+pub fn loop_break_2() {
+    let mut x = 0;
+    loop {
+        x = 1;
+        if true {
+            break;
+        }
+        x = 3;
+    }
+    x = 2;
+    x = 4;
+}

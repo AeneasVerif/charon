@@ -87,7 +87,7 @@
       {
         packages = {
           inherit charon charon-ml rustToolchain;
-          inherit (rustc-tests) toolchain_commit rustc-tests;
+          inherit (rustc-tests) rustc-tests;
           default = charon;
         };
         devShells.default = pkgs.mkShell {

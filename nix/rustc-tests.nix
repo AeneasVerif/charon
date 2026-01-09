@@ -24,15 +24,6 @@ let
     sha256 = tests_hash;
   };
 
-  # The commit that corresponds to our nightly pin, for when we want to update the pinned commit.
-  toolchain_commit = runCommand "get-rustc-commit" { } ''
-    # This is sad but I don't know a better way.
-    cat ${rustToolchain}/share/doc/rust/html/version_info.html \
-      | grep 'github.com' \
-      | sed 's#.*"https://github.com/rust-lang/rust/commit/\([^"]*\)".*#\1#' \
-      > $out
-  '';
-
   test_parsing_helpers = ''
     has_magic_comment() {
       # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
@@ -239,6 +230,6 @@ let
 
 in
 {
-  inherit toolchain_commit rustc-test-suite;
+  inherit rustc-test-suite;
   rustc-tests = analyze_test_outputs;
 }

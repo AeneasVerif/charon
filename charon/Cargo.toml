@@ -75,6 +75,7 @@ rustc_version = "0.4"
 serde_json = { version = "1.0.91", features = ["unbounded_depth"] }
 serde_stacker = "0.1.11"
 serde = { version = "1.0.152", features = ["derive", "rc"] }
+smallvec = "1.15.1"
 stacker = "0.1"
 strip-ansi-escapes = "0.2.1"
 take_mut = "0.2.2"
