@@ -24,7 +24,9 @@ use itertools::Itertools;
 use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::graphmap::DiGraphMap;
-use petgraph::visit::{Dfs, DfsPostOrder, GraphBase, IntoNeighbors, Visitable, Walker};
+use petgraph::visit::{
+    Dfs, DfsPostOrder, GraphBase, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
+};
 use smallvec::SmallVec;
 use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
@@ -39,6 +41,64 @@ use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::{self as src, BlockId};
 use crate::{ast::*, register_error};
+
+pub enum StackAction<N> {
+    PopPath,
+    Explore(N),
+}
+pub struct DfsWithPath<N, VM> {
+    /// The stack of nodes to visit
+    pub stack: Vec<StackAction<N>>,
+    /// The map of discovered nodes
+    pub discovered: VM,
+    /// The path from start node to current node.
+    pub path: Vec<N>,
+}
+impl<N, VM> DfsWithPath<N, VM>
+where
+    N: Copy + PartialEq,
+    VM: VisitMap<N>,
+{
+    /// Create a new **DfsWithPath**, using the graph's visitor map, and put **start** in the stack
+    /// of nodes to visit.
+    pub fn new<G>(graph: G, start: N) -> Self
+    where
+        G: GraphRef + Visitable<NodeId = N, Map = VM>,
+    {
+        Self {
+            stack: vec![StackAction::Explore(start)],
+            discovered: graph.visit_map(),
+            path: vec![],
+        }
+    }
+
+    /// Return the next node in the dfs, or **None** if the traversal is done.
+    pub fn next<G>(&mut self, graph: G) -> Option<N>
+    where
+        G: IntoNeighbors<NodeId = N>,
+    {
+        while let Some(action) = self.stack.pop() {
+            match action {
+                StackAction::Explore(node) => {
+                    if self.discovered.visit(node) {
+                        self.path.push(node);
+                        self.stack.push(StackAction::PopPath);
+                        for succ in graph.neighbors(node) {
+                            if !self.discovered.is_visited(&succ) {
+                                self.stack.push(StackAction::Explore(succ));
+                            }
+                        }
+                        return Some(node);
+                    }
+                }
+                StackAction::PopPath => {
+                    self.path.pop();
+                }
+            }
+        }
+        None
+    }
+}
 
 /// Arbitrary-precision numbers
 type BigUint = fraction::DynaInt<u64, fraction::BigUint>;
@@ -431,80 +491,46 @@ impl ExitInfo {
             .any(|bid| target_set.contains(&bid))
     }
 
-    /// Compute the loop exit candidates.
+    /// Compute the loop exit candidates for the given loop header.
     ///
     /// There may be several candidates with the same "optimality" (same number of
     /// occurrences, etc.), in which case we choose the first one which was registered
     /// (the order in which we explore the graph is deterministic): this is why we
-    /// store the candidates in a stable-order hash map.
+    /// store the candidates in an insertion-ordered hash map.
     fn compute_loop_exit_candidates(
         cfg: &CfgInfo,
-        explored: &mut HashSet<src::BlockId>,
-        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitRank>>,
-        // List of parent loops, with the distance to the entry of the loop (the distance
-        // is the distance between the current node and the loop entry for the last parent,
-        // and the distance between the parents for the others).
-        mut parent_loops: Vec<(src::BlockId, usize)>,
-        block_id: src::BlockId,
-    ) {
-        if !explored.insert(block_id) {
-            return;
-        }
-
-        // Check if we enter a loop - add the corresponding node if necessary
-        if cfg.block_data[block_id].is_loop_header {
-            parent_loops.push((block_id, 1)); // TODO: why not `0`?
-        } else {
-            // Increase the distance to the parent loop
-            if !parent_loops.is_empty() {
-                parent_loops.last_mut().unwrap().1 += 1;
-            }
-        };
-
-        // Retrieve the children - note that we ignore back edges.
-        for child in cfg.fwd_cfg.neighbors(block_id) {
-            // We'll truncate the `parent_loops` stack to where it is after jumping to `child`.
-            let mut parent_loops = parent_loops.clone();
-            // We start the distance at 1 to account for the `block_id -> child` edge we just
-            // took.
-            let mut base_dist = 1;
-
-            // Pop parent loops that the child is not a part of.
-            while let Some((loop_id, loop_dist)) =
-                parent_loops.pop_if(|(loop_id, _)| !Self::is_within_loop(cfg, *loop_id, child))
-            {
-                // This child and its children are loop exit candidates for the removed loop: we
-                // must thus register them.
-                // Note that we register the child *and* its children: the reason is that we might
-                // do something *then* actually jump to the exit.
-                // For instance, the following block of code:
-                // ```
-                // if cond { break; } else { ... }
-                // ```
-                //
-                // Gets translated in MIR to something like this:
-                // ```
-                // bb1: {
-                //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
-                // }
-                //
-                // bb2: {
-                //   goto bb4; // bb4 is the real exit
-                // }
-                // ```
-                base_dist += loop_dist;
-                let candidates = loop_exits.get_mut(&loop_id).unwrap();
-                for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
-                    let exit_rank = candidates.entry(bid).or_default();
-                    exit_rank.path_count += 1;
-                    exit_rank.summed_distance.0 += base_dist + dist;
+        loop_header: src::BlockId,
+    ) -> SeqHashMap<src::BlockId, LoopExitRank> {
+        let start_block = src::BlockId::ZERO;
+        let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
+        // Explore until we find the loop header.
+        let mut dfs = Dfs::new(&cfg.fwd_cfg, start_block);
+        if (&mut dfs).iter(&cfg.fwd_cfg).contains(&loop_header) {
+            // Continue the dfs exploration from the loop header while keeping track of the path
+            // from the loop header to the current node.
+            dfs.discovered.remove(&loop_header);
+            let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
+            path_dfs.discovered = dfs.discovered;
+            while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
+                for child in cfg.fwd_cfg.neighbors(block_id) {
+                    // If we've exited all the loops after and including the target one, this node is an
+                    // exit node for the target loop.
+                    if !path_dfs.path.iter().any(|&loop_id| {
+                        cfg.block_data[loop_id].is_loop_header
+                            && Self::is_within_loop(cfg, loop_id, child)
+                    }) {
+                        for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
+                            let exit_rank = loop_exits.entry(bid).or_default();
+                            exit_rank.path_count += 1;
+                            exit_rank.summed_distance.0 += path_dfs.path.len() + 1 + dist;
+                        }
+                        // Don't explore this child any more.
+                        path_dfs.discovered.insert(child);
+                    }
                 }
             }
-            ensure_sufficient_stack(|| {
-                // Explore, with the filtered parents
-                Self::compute_loop_exit_candidates(cfg, explored, loop_exits, parent_loops, child);
-            })
         }
+        loop_exits
     }
 
     /// See [`compute_loop_switch_exits`] for
@@ -642,39 +668,17 @@ impl ExitInfo {
         ctx: &TransformCtx,
         cfg: &CfgInfo,
     ) -> HashMap<src::BlockId, src::BlockId> {
-        // Initialize the loop exits candidates
-        let mut loop_exits: HashMap<_, _> = cfg
-            .loop_entries
-            .iter()
-            .map(|&loop_id| (loop_id, SeqHashMap::new()))
-            .collect();
-
-        // Compute the candidates
-        Self::compute_loop_exit_candidates(
-            cfg,
-            &mut HashSet::new(),
-            &mut loop_exits,
-            Vec::new(),
-            src::BlockId::ZERO,
-        );
-
-        {
-            // Debugging
-            let candidates: Vec<String> = loop_exits
-                .iter()
-                .map(|(loop_id, candidates)| format!("{loop_id} -> {candidates:?}"))
-                .collect();
-            trace!("Loop exit candidates:\n{}", candidates.join("\n"));
-        }
-
-        // Choose one candidate among the potential candidates.
         let mut exits: HashSet<src::BlockId> = HashSet::new();
         let mut chosen_loop_exits: HashMap<src::BlockId, src::BlockId> = HashMap::new();
         // For every loop in topological order.
-        for (loop_id, loop_exits) in loop_exits
-            .into_iter()
-            .sorted_by_key(|&(id, _)| cfg.topo_rank(id))
+        for loop_id in cfg
+            .loop_entries
+            .iter()
+            .copied()
+            .sorted_by_key(|&id| cfg.topo_rank(id))
         {
+            // Compute the candidates.
+            let loop_exits = Self::compute_loop_exit_candidates(cfg, loop_id);
             // Check the candidates.
             // Ignore the candidates which have already been chosen as exits for other
             // loops (which should be outer loops).
