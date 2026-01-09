@@ -350,30 +350,32 @@ struct LoopExitCandidateInfo {
 }
 
 impl ExitInfo {
-    /// Check if a loop entry is reachable from a node, in a graph where we remove
-    /// the backward edges going directly to the loop entry.
-    ///
-    /// If the loop entry is not reachable, it means that:
-    /// - the loop entry is not reachable at all
-    /// - or it is only reachable through an outer loop
-    ///
-    /// The starting node should be a (transitive) child of the loop entry.
-    /// We use this to find candidates for loop exits.
-    fn loop_entry_is_reachable_from_inner(
-        cfg: &CfgInfo,
-        loop_entry: src::BlockId,
-        block_id: src::BlockId,
-    ) -> bool {
-        // It is reachable in the complete graph. Check if it is reachable by not
-        // going through backward edges which go to outer loops. In practice, we
-        // just need to forbid the use of any backward edges at the exception of
-        // those which go directly to the current loop's entry. This means that we
-        // ignore backward edges to outer loops of course, but also backward edges
-        // to inner loops because we shouldn't need to follow those (there should be
-        // more direct paths).
+    /// Check if the node is within the given loop. The starting node should be reachable from the
+    /// loop header.
+    fn is_within_loop(cfg: &CfgInfo, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
+        // The node is reachable from the loop header. The criterion for being part of the loop is
+        // not whether the loop header is reachable from the node, because this would consider all
+        // the other inner loops present in this one.
+        // Instead, the criterion is whether the loop header is reachable by going through the
+        // forward graph then taking a single backward edge.
+        //
+        // A fun example is an interleaving such as the following. The interesting node is
+        // considered part of the outer loop only.
+        //   loop {
+        //     loop {
+        //       if foo() {
+        //          continue 1
+        //       }
+        //       interesting_node();
+        //       if bar() {
+        //          continue 0
+        //       }
+        //       break 1
+        //     }
+        //   }
         Dfs::new(&cfg.fwd_cfg, block_id)
             .iter(&cfg.fwd_cfg)
-            .any(|bid| cfg.is_backward_edge(bid, loop_entry))
+            .any(|bid| cfg.is_backward_edge(bid, loop_header))
     }
 
     /// Auxiliary helper
@@ -469,11 +471,9 @@ impl ExitInfo {
             // took.
             let mut base_dist = 1;
 
-            // If the parent loop entry is not reachable from the child without going through a
-            // backward edge which goes directly to the loop entry, consider this node a potential
-            // exit.
+            // Pop parent loops that the child is not a part of.
             while let Some(&(loop_id, loop_dist)) = parent_loops.last() {
-                if Self::loop_entry_is_reachable_from_inner(cfg, loop_id, child) {
+                if Self::is_within_loop(cfg, loop_id, child) {
                     break;
                 }
                 // Remove this parent loop.
