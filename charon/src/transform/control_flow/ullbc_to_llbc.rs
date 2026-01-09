@@ -71,17 +71,15 @@ struct BlockData<'a> {
     pub contents: &'a src::BlockData,
     /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
     pub is_loop_header: bool,
+    /// Whether this block is a switch.
+    pub is_switch: bool,
     /// Blocks that have multiple incoming control-flow edges.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
-    /// Block that immediately dominates this one. `None` for the root and unreachable nodes.
-    pub dominator: Option<BlockId>,
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
     /// id first.
     pub immediately_dominates: SmallVec<[BlockId; 2]>,
-    /// Like `immediately_dominates`, but restricted to nodes that are merge targets.
-    pub immediately_dominated_merge_targets: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: bool,
     /// List of reachable nodes, with the length of shortest path to them. Includes the current
@@ -103,10 +101,6 @@ struct BlockData<'a> {
 
 #[derive(Debug, Default, Clone)]
 struct ExitInfo {
-    /// Whether this is the start of a loop.
-    is_loop_entry: bool,
-    /// Whether this is the start of a switch that isn't also the start of a loop.
-    is_switch_entry_only: bool,
     /// The loop exit
     loop_exit: Option<src::BlockId>,
     /// Some loop exits actually belong to outer switches. We still need
@@ -165,11 +159,10 @@ impl<'a> CfgInfo<'a> {
                 id,
                 contents,
                 is_loop_header: false,
+                is_switch: false,
                 is_merge_target: false,
                 reverse_postorder: None,
-                dominator: None,
                 immediately_dominates: Default::default(),
-                immediately_dominated_merge_targets: Default::default(),
                 only_reach_error: false,
                 shortest_paths: Default::default(),
                 flow: empty_flow.clone(),
@@ -195,7 +188,6 @@ impl<'a> CfgInfo<'a> {
 
             // Store the dominator tree in `block_data`.
             if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
-                block_data[block_id].dominator = Some(dominator);
                 block_data[dominator].immediately_dominates.push(block_id);
             }
 
@@ -222,14 +214,15 @@ impl<'a> CfgInfo<'a> {
 
             if body[src].terminator.kind.is_switch() {
                 switch_blocks.insert(src);
+                block_data[src].is_switch = true;
             }
 
             for tgt in cfg.neighbors(src) {
                 // Check if the edge is a backward edge.
                 if block_data[src].reverse_postorder >= block_data[tgt].reverse_postorder {
                     // This is a backward edge
-                    loop_entries.insert(tgt);
                     block_data[tgt].is_loop_header = true;
+                    loop_entries.insert(tgt);
                     // A cfg is reducible iff the target of every back edge dominates the
                     // edge's source.
                     if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
@@ -292,12 +285,6 @@ impl<'a> CfgInfo<'a> {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
-            block_data[block_id].immediately_dominated_merge_targets = block_data[block_id]
-                .immediately_dominates
-                .iter()
-                .copied()
-                .filter(|&child| block_data[child].is_merge_target)
-                .collect();
         }
 
         Ok(CfgInfo {
@@ -559,7 +546,7 @@ impl ExitInfo {
         explored.insert(block_id);
 
         // Check if we enter a loop - add the corresponding node if necessary
-        if cfg.loop_entries.contains(&block_id) {
+        if cfg.block_data[block_id].is_loop_header {
             parent_loops.push((block_id, 1));
             ordered_loops.push(block_id);
         } else {
@@ -1214,9 +1201,9 @@ impl ExitInfo {
         for bid in sorted_blocks {
             let bid = bid.id;
             // Check if loop or switch block
-            let exit_info = &mut cfg_info.block_data[bid].exit_info;
-            if cfg_info.loop_entries.contains(&bid) {
-                exit_info.is_loop_entry = true;
+            let block_data = &mut cfg_info.block_data[bid];
+            let exit_info = &mut block_data.exit_info;
+            if block_data.is_loop_header {
                 // This is a loop.
                 //
                 // For loops, we always register the exit (if there is one).
@@ -1232,7 +1219,6 @@ impl ExitInfo {
                     exit_info.owns_loop_exit = true;
                 }
             } else {
-                exit_info.is_switch_entry_only = true;
                 // For switches: check that the exit was not already given to a
                 // loop
                 let exit_id = *switch_exits.get(&bid).unwrap();
@@ -1527,7 +1513,7 @@ impl<'a> ReconstructCtx<'a> {
             ReconstructMode::Flow => {
                 let exit_info = &block_data.exit_info;
 
-                if exit_info.is_loop_entry {
+                if block_data.is_loop_header {
                     self.break_context_depth += 1;
                     if let Some(exit_id) = exit_info.loop_exit {
                         self.special_jump_stack.push((
@@ -1543,12 +1529,8 @@ impl<'a> ReconstructCtx<'a> {
                         block_id,
                         SpecialJump::LoopContinue(self.break_context_depth),
                     ));
-                }
-
-                // If we enter a switch, add the exit block to the set of outer exit blocks.
-                if exit_info.is_switch_entry_only
-                    && let Some(bid) = exit_info.owned_switch_exit
-                {
+                } else if let Some(bid) = exit_info.owned_switch_exit {
+                    // If we enter a switch, add the exit block to the set of outer exit blocks.
                     // Put the next block at the top of the stack.
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
@@ -1567,8 +1549,12 @@ impl<'a> ReconstructCtx<'a> {
                 // Catch jumps to a merge node. The merge nodes are translated after this node, and we can
                 // jump to them using `break`. The child with highest postorder numbering is nested
                 // outermost in this scheme.
-                let merge_children = &block_data.immediately_dominated_merge_targets;
-                for &child in merge_children.iter().rev() {
+                let merge_children = block_data
+                    .immediately_dominates
+                    .iter()
+                    .copied()
+                    .filter(|&child| self.cfg.block_data[child].is_merge_target);
+                for child in merge_children.rev() {
                     self.break_context_depth += 1;
                     self.special_jump_stack
                         .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
