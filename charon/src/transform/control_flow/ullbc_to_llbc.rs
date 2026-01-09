@@ -320,33 +320,34 @@ impl BlockData<'_> {
     }
 }
 
-#[derive(Debug, Default)]
-struct LoopExitCandidateInfo {
-    /// The occurrences going to this exit.
-    /// For every occurrence, we register the distance between the loop entry
-    /// and the node from which the edge going to the exit starts.
-    /// If later we have to choose between candidates with the same number
-    /// of occurrences, we choose the one with the smallest distances.
-    ///
-    /// Note that it *may* happen that we have several exit candidates referenced
-    /// more than once for one loop. This comes from the fact that whenever we
-    /// reach a node from which the loop entry is not reachable (without using a
-    /// backward edge leading to an outer loop entry), we register this node
-    /// as well as all its children as exit candidates.
-    /// Consider the following example:
-    /// ```text
-    /// while i < max {
-    ///     if cond {
-    ///         break;
-    ///     }
-    ///     s += i;
-    ///     i += 1
-    /// }
-    /// // All the below nodes are exit candidates (each of them is referenced twice)
-    /// s += 1;
-    /// return s;
-    /// ```
-    pub occurrences: Vec<usize>,
+/// For every path we find leading to this exit node candidate, we register the distance between
+/// the loop entry and the exit node.
+/// If later we have to choose between candidates with the same number of occurrences, we choose
+/// the one with the smallest distances.
+///
+/// Note that it *may* happen that we have several exit candidates referenced more than once for
+/// one loop. This comes from the fact that whenever we reach a node outside the current loop, we
+/// register this node as well as all its children as exit candidates.
+/// Consider the following example:
+/// ```text
+/// while i < max {
+///     if cond {
+///         break;
+///     }
+///     s += i;
+///     i += 1
+/// }
+/// // All the below nodes are exit candidates (each of them is referenced twice)
+/// s += 1;
+/// return s;
+/// ```
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct LoopExitRank {
+    /// Number of paths we found going to this exit.
+    path_count: usize,
+    /// Sum of the loop_header->exit_node distances for each of the paths leading to this exit.
+    /// Sorted with largest distance first.
+    summed_distance: Reverse<usize>,
 }
 
 impl ExitInfo {
@@ -436,12 +437,12 @@ impl ExitInfo {
     /// There may be several candidates with the same "optimality" (same number of
     /// occurrences, etc.), in which case we choose the first one which was registered
     /// (the order in which we explore the graph is deterministic): this is why we
-    /// store the candidates in a linked hash map.
+    /// store the candidates in a stable-order hash map.
     fn compute_loop_exit_candidates(
         cfg: &CfgInfo,
         explored: &mut HashSet<src::BlockId>,
         ordered_loops: &mut Vec<src::BlockId>,
-        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitCandidateInfo>>,
+        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitRank>>,
         // List of parent loops, with the distance to the entry of the loop (the distance
         // is the distance between the current node and the loop entry for the last parent,
         // and the distance between the parents for the others).
@@ -454,10 +455,10 @@ impl ExitInfo {
 
         // Check if we enter a loop - add the corresponding node if necessary
         if cfg.block_data[block_id].is_loop_header {
-            parent_loops.push((block_id, 1));
+            parent_loops.push((block_id, 1)); // TODO: why not `0`?
             ordered_loops.push(block_id);
         } else {
-            // Increase the distance with the parent loop
+            // Increase the distance to the parent loop
             if !parent_loops.is_empty() {
                 parent_loops.last_mut().unwrap().1 += 1;
             }
@@ -472,13 +473,9 @@ impl ExitInfo {
             let mut base_dist = 1;
 
             // Pop parent loops that the child is not a part of.
-            while let Some(&(loop_id, loop_dist)) = parent_loops.last() {
-                if Self::is_within_loop(cfg, loop_id, child) {
-                    break;
-                }
-                // Remove this parent loop.
-                parent_loops.pop();
-
+            while let Some((loop_id, loop_dist)) =
+                parent_loops.pop_if(|(loop_id, _)| !Self::is_within_loop(cfg, *loop_id, child))
+            {
                 // This child and its children are loop exit candidates for the removed loop: we
                 // must thus register them.
                 // Note that we register the child *and* its children: the reason is that we might
@@ -501,11 +498,9 @@ impl ExitInfo {
                 base_dist += loop_dist;
                 let candidates = loop_exits.get_mut(&loop_id).unwrap();
                 for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
-                    candidates
-                        .entry(bid)
-                        .or_default()
-                        .occurrences
-                        .push(base_dist + dist);
+                    let exit_rank = candidates.entry(bid).or_default();
+                    exit_rank.path_count += 1;
+                    exit_rank.summed_distance.0 += base_dist + dist;
                 }
             }
             ensure_sufficient_stack(|| {
@@ -699,32 +694,20 @@ impl ExitInfo {
             // - the least total distance (if there are several possibilities)
             // - doesn't necessarily lead to an error (panic, unreachable)
 
-            // First:
-            // - filter the candidates
-            // - compute the number of occurrences
-            // - compute the sum of distances
-            type OccurrenceCount = usize;
-            type Dist = usize;
-            type Rank = (OccurrenceCount, Reverse<Dist>);
             // We find the exits with the highest occurrence and the smallest combined distance
             // from the entry of the loop (note that we take care of listing the exit
             // candidates in a deterministic order).
-            let best_exits: Vec<(BlockId, Rank)> = loop_exits[&loop_id]
+            let best_exits: Vec<(&BlockId, &LoopExitRank)> = loop_exits[&loop_id]
                 .iter()
                 // If candidate already selected for another loop: ignore
                 .filter(|(candidate_id, _)| !exits.contains(candidate_id))
-                .map(|(&candidate_id, candidate_info)| {
-                    let num_occurrences = candidate_info.occurrences.len();
-                    let dist_sum = candidate_info.occurrences.iter().sum();
-                    (candidate_id, (num_occurrences, Reverse(dist_sum)))
-                })
-                .max_set_by_key(|&(_, rank)| rank);
+                .max_set_by_key(|&(_, &rank)| rank);
             let chosen_exit = if best_exits.is_empty() {
                 None
             } else {
                 // If there is exactly one best candidate, use it. Otherwise we need to split
                 // further.
-                let best_exits = best_exits.into_iter().map(|(bid, _)| bid);
+                let best_exits = best_exits.into_iter().map(|(&bid, _)| bid);
                 match best_exits.exactly_one() {
                     Ok(best_exit) => Some(best_exit),
                     Err(best_exits) => {
