@@ -1509,46 +1509,39 @@ impl<'a> ReconstructCtx<'a> {
         // function we restore the stack to its previous state.
         let old_context_depth = self.special_jump_stack.len();
         let block_data = &self.cfg.block_data[block_id];
+
+        // Catch jumps to the loop header or loop exit.
+        if block_data.is_loop_header {
+            self.break_context_depth += 1;
+            if let ReconstructMode::Flow = self.mode
+                && let Some(exit_id) = block_data.exit_info.loop_exit
+            {
+                self.special_jump_stack.push((
+                    exit_id,
+                    SpecialJump::LoopBreak(
+                        self.break_context_depth,
+                        block_data.exit_info.owns_loop_exit,
+                    ),
+                ));
+            }
+            // Put the next block at the top of the stack.
+            self.special_jump_stack.push((
+                block_id,
+                SpecialJump::LoopContinue(self.break_context_depth),
+            ));
+        }
+
+        // Catch jumps to a merge node.
         match self.mode {
             ReconstructMode::Flow => {
-                let exit_info = &block_data.exit_info;
-
-                if block_data.is_loop_header {
-                    self.break_context_depth += 1;
-                    if let Some(exit_id) = exit_info.loop_exit {
-                        self.special_jump_stack.push((
-                            exit_id,
-                            SpecialJump::LoopBreak(
-                                self.break_context_depth,
-                                exit_info.owns_loop_exit,
-                            ),
-                        ));
-                    }
-                    // Put the next block at the top of the stack.
-                    self.special_jump_stack.push((
-                        block_id,
-                        SpecialJump::LoopContinue(self.break_context_depth),
-                    ));
-                } else if let Some(bid) = exit_info.owned_switch_exit {
-                    // If we enter a switch, add the exit block to the set of outer exit blocks.
-                    // Put the next block at the top of the stack.
+                // We only support next-block jumps to merge nodes.
+                if let Some(bid) = block_data.exit_info.owned_switch_exit {
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
             }
-            // Translate this block and all the blocks it dominates, recursively over the dominator tree.
             ReconstructMode::Reloop => {
-                // Catch jumps to the loop header.
-                if block_data.is_loop_header {
-                    self.break_context_depth += 1;
-                    self.special_jump_stack.push((
-                        block_id,
-                        SpecialJump::LoopContinue(self.break_context_depth),
-                    ));
-                }
-
-                // Catch jumps to a merge node. The merge nodes are translated after this node, and we can
-                // jump to them using `break`. The child with highest postorder numbering is nested
-                // outermost in this scheme.
+                // We support forward-jumps using `break`
+                // The child with highest postorder numbering is nested outermost in this scheme.
                 let merge_children = block_data
                     .immediately_dominates
                     .iter()
