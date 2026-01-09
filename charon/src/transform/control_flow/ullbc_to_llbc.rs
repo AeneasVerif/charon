@@ -379,10 +379,9 @@ impl ExitInfo {
             .any(|bid| cfg.is_backward_edge(bid, loop_header))
     }
 
-    /// Auxiliary helper
-    ///
     /// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
-    /// through the `exit_candidate`. We use the forward graph.
+    /// through the `exit_candidate`. We use the forward graph. This doesn't count the case where
+    /// `start_bid` is already in `outer_exits`.
     fn can_reach_outer_exit(
         cfg: &CfgInfo,
         outer_exits: &HashSet<src::BlockId>,
@@ -429,6 +428,7 @@ impl ExitInfo {
         };
         Dfs::new(&graph, start_bid)
             .iter(&graph)
+            .skip(1) // skip start_bid
             .any(|bid| outer_exits.contains(&bid))
     }
 
