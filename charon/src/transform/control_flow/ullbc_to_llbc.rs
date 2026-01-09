@@ -103,8 +103,10 @@ struct BlockData<'a> {
 
 #[derive(Debug, Default, Clone)]
 struct ExitInfo {
+    /// Whether this is the start of a loop.
     is_loop_entry: bool,
-    is_switch_entry: bool,
+    /// Whether this is the start of a switch that isn't also the start of a loop.
+    is_switch_entry_only: bool,
     /// The loop exit
     loop_exit: Option<src::BlockId>,
     /// Some loop exits actually belong to outer switches. We still need
@@ -131,7 +133,7 @@ struct ExitInfo {
     /// };
     /// exit_blocks // the exit blocks are here
     /// ```
-    owned_loop_exit: Option<src::BlockId>,
+    owns_loop_exit: bool,
     /// The switch exit.
     /// Note that the switch exits are always owned.
     owned_switch_exit: Option<src::BlockId>,
@@ -1221,25 +1223,25 @@ impl ExitInfo {
                 // However, the exit may be owned by an outer switch (note
                 // that we already took care of spreading the exits between
                 // the inner/outer loops)
-                let exit_id = loop_exits.get(&bid).unwrap();
-                exit_info.loop_exit = *exit_id;
+                let exit_id = *loop_exits.get(&bid).unwrap();
+                exit_info.loop_exit = exit_id;
                 // Check if we "own" the exit
-                let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
-                if let Some(exit_id) = exit_id {
-                    all_exits.insert(exit_id);
+                if let Some(exit_id) = exit_id
+                    && all_exits.insert(exit_id)
+                {
+                    exit_info.owns_loop_exit = true;
                 }
-                exit_info.owned_loop_exit = exit_id;
             } else {
-                exit_info.is_switch_entry = true;
+                exit_info.is_switch_entry_only = true;
                 // For switches: check that the exit was not already given to a
                 // loop
-                let exit_id = switch_exits.get(&bid).unwrap();
+                let exit_id = *switch_exits.get(&bid).unwrap();
                 // Check if we "own" the exit
-                let exit_id = exit_id.filter(|exit_id| !all_exits.contains(exit_id));
-                if let Some(exit_id) = exit_id {
-                    all_exits.insert(exit_id);
+                if let Some(exit_id) = exit_id
+                    && all_exits.insert(exit_id)
+                {
+                    exit_info.owned_switch_exit = Some(exit_id);
                 }
-                exit_info.owned_switch_exit = exit_id;
             }
         }
     }
@@ -1248,7 +1250,7 @@ impl ExitInfo {
 enum GotoKind {
     Break(usize),
     Continue(usize),
-    ExitBlock,
+    NextBlock,
     Goto,
 }
 
@@ -1259,7 +1261,9 @@ enum SpecialJump {
     /// When encountering this block, `continue` to the given depth.
     LoopContinue(Depth),
     /// When encountering this block, `break` to the given depth. This comes from a loop.
-    LoopBreak(Depth),
+    /// The boolean indicates whether we "own" the exit block, i.e. whether we're responsible for
+    /// translating it after the break.
+    LoopBreak(Depth, bool),
     /// When encountering this block, `break` to the given depth. This is a `loop` context
     /// introduced only for forward jumps.
     ForwardBreak(Depth),
@@ -1346,44 +1350,31 @@ impl<'a> ReconstructCtx<'a> {
                 SpecialJump::LoopContinue(_) | SpecialJump::ForwardBreak(_)
                     if i == 0 && matches!(self.mode, ReconstructMode::Reloop) =>
                 {
-                    GotoKind::ExitBlock
+                    GotoKind::NextBlock
                 }
                 SpecialJump::LoopContinue(depth) => {
                     GotoKind::Continue(self.break_context_depth - depth)
                 }
-                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth) => {
+                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth, _) => {
                     GotoKind::Break(self.break_context_depth - depth)
                 }
-                SpecialJump::NextBlock => GotoKind::ExitBlock,
+                SpecialJump::NextBlock => GotoKind::NextBlock,
             },
-            // Default
+            // Translate the block without a jump.
             None => GotoKind::Goto,
         }
     }
 
-    /// Translate a jump to the given block.
-    /// `parent_span`: we need some span data for the new statement. We use the one for the parent terminator.
-    fn translate_jump(&mut self, parent_span: Span, target_block: src::BlockId) -> tgt::Block {
-        // Check if this is a backward call
-        match self.get_goto_kind(target_block) {
-            GotoKind::Break(index) => {
-                let st = tgt::StatementKind::Break(index);
-                tgt::Statement::new(parent_span, st).into_block()
-            }
-            GotoKind::Continue(index) => {
-                let st = tgt::StatementKind::Continue(index);
-                tgt::Statement::new(parent_span, st).into_block()
-            }
-            // If we are going to an exit block we simply ignore the goto
-            GotoKind::ExitBlock => {
-                let st = tgt::StatementKind::Nop;
-                tgt::Statement::new(parent_span, st).into_block()
-            }
-            GotoKind::Goto => {
-                // "Standard" goto: just recursively translate
-                self.translate_block(target_block)
-            }
-        }
+    /// Translate a jump to the given block. The span is used to create the jump statement, if any.
+    fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
+        let st = match self.get_goto_kind(target_block) {
+            GotoKind::Break(index) => tgt::StatementKind::Break(index),
+            GotoKind::Continue(index) => tgt::StatementKind::Continue(index),
+            GotoKind::NextBlock => tgt::StatementKind::Nop,
+            // "Standard" goto: we recursively translate the block.
+            GotoKind::Goto => return self.translate_block(target_block),
+        };
+        tgt::Statement::new(span, st).into_block()
     }
 
     fn translate_terminator(&mut self, terminator: &src::Terminator) -> tgt::Block {
@@ -1524,29 +1515,28 @@ impl<'a> ReconstructCtx<'a> {
         ensure_sufficient_stack(|| self.translate_block_inner(block_id))
     }
     fn translate_block_inner(&mut self, block_id: src::BlockId) -> tgt::Block {
+        // Some of the blocks we might jump to inside this tree can't be translated as normal
+        // blocks: the loop backward edges must become `continue`s and the merge nodes may need
+        // some care if we're jumping to them from distant locations.
+        // For this purpose, we push to the `special_jump_stack` the block ids that must be
+        // translated specially. In `translate_jump` we check the stack. At the end of this
+        // function we restore the stack to its previous state.
+        let old_context_depth = self.special_jump_stack.len();
+        let block_data = &self.cfg.block_data[block_id];
         match self.mode {
             ReconstructMode::Flow => {
-                let exit_info = &self.cfg.block_data[block_id].exit_info;
+                let exit_info = &block_data.exit_info;
 
-                // Check if we enter a loop: if so, update parent_loops and the current_exit_block
-                let is_loop = exit_info.is_loop_entry;
-                // If we enter a switch or a loop, we need to check if we own the exit
-                // block, in which case we need to append it to the loop/switch body
-                // in a sequence
-                let is_switch = exit_info.is_switch_entry;
-                let next_block = if is_loop {
-                    exit_info.owned_loop_exit
-                } else if is_switch {
-                    exit_info.owned_switch_exit
-                } else {
-                    None
-                };
-
-                if is_loop {
+                if exit_info.is_loop_entry {
                     self.break_context_depth += 1;
                     if let Some(exit_id) = exit_info.loop_exit {
-                        self.special_jump_stack
-                            .push((exit_id, SpecialJump::LoopBreak(self.break_context_depth)));
+                        self.special_jump_stack.push((
+                            exit_id,
+                            SpecialJump::LoopBreak(
+                                self.break_context_depth,
+                                exit_info.owns_loop_exit,
+                            ),
+                        ));
                     }
                     // Put the next block at the top of the stack.
                     self.special_jump_stack.push((
@@ -1554,52 +1544,19 @@ impl<'a> ReconstructCtx<'a> {
                         SpecialJump::LoopContinue(self.break_context_depth),
                     ));
                 }
+
                 // If we enter a switch, add the exit block to the set of outer exit blocks.
-                if is_switch && let Some(bid) = next_block {
+                if exit_info.is_switch_entry_only
+                    && let Some(bid) = exit_info.owned_switch_exit
+                {
                     // Put the next block at the top of the stack.
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
-
-                let mut block = self.translate_block_itself(block_id);
-
-                // Reset the state to what it was previously.
-                if is_loop {
-                    self.break_context_depth -= 1;
-                    self.special_jump_stack.pop();
-                    if let Some(_) = self.cfg.block_data[block_id].exit_info.loop_exit {
-                        self.special_jump_stack.pop();
-                    }
-                }
-                if is_switch && let Some(_) = next_block {
-                    self.special_jump_stack.pop();
-                }
-
-                if is_loop {
-                    // Put the loop body inside a `Loop`.
-                    block = tgt::Statement::new(block.span, tgt::StatementKind::Loop(block))
-                        .into_block()
-                } else if !is_switch {
-                    assert!(next_block.is_none());
-                }
-
-                // Concatenate the exit expression, if needs be
-                if let Some(exit_block_id) = next_block {
-                    let next_block = self.translate_block(exit_block_id);
-                    block = block.merge(next_block);
-                }
-                block
             }
             // Translate this block and all the blocks it dominates, recursively over the dominator tree.
             ReconstructMode::Reloop => {
-                // Some of the blocks we might jump to inside this tree can't be translated as normal
-                // blocks: the loop backward edges must become `continue`s and the merge nodes may need
-                // some care if we're jumping to them from distant locations.
-                // For this purpose, we push to the `context_stack` the block ids that must be translated
-                // spoecially. In `translate_jump` we check the stack.
-                let old_context_depth = self.special_jump_stack.len();
-
                 // Catch jumps to the loop header.
-                if self.cfg.block_data[block_id].is_loop_header {
+                if block_data.is_loop_header {
                     self.break_context_depth += 1;
                     self.special_jump_stack.push((
                         block_id,
@@ -1610,53 +1567,45 @@ impl<'a> ReconstructCtx<'a> {
                 // Catch jumps to a merge node. The merge nodes are translated after this node, and we can
                 // jump to them using `break`. The child with highest postorder numbering is nested
                 // outermost in this scheme.
-                let merge_children =
-                    &self.cfg.block_data[block_id].immediately_dominated_merge_targets;
+                let merge_children = &block_data.immediately_dominated_merge_targets;
                 for &child in merge_children.iter().rev() {
                     self.break_context_depth += 1;
                     self.special_jump_stack
                         .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
                 }
-
-                // Translate this block. Any jumps to the loop header or a merge node will be replaced with
-                // `continue`/`break`.
-                let mut block = self.translate_block_itself(block_id);
-
-                // Pop the contexts and translate what remains.
-                while self.special_jump_stack.len() > old_context_depth {
-                    match self.special_jump_stack.pop().unwrap() {
-                        (_loop_header, SpecialJump::LoopContinue(_)) => {
-                            self.break_context_depth -= 1;
-                            block =
-                                tgt::Statement::new(block.span, tgt::StatementKind::Loop(block))
-                                    .into_block();
-                        }
-                        (_followed_by, SpecialJump::LoopBreak(_)) => {
-                            unreachable!()
-                        }
-                        (followed_by, SpecialJump::ForwardBreak(_)) => {
-                            self.break_context_depth -= 1;
-                            // We add a `loop { ...; break }` so that we can use `break` to jump forward.
-                            let span = block.span;
-                            block = block.merge(
-                                tgt::Statement::new(span, tgt::StatementKind::Break(0))
-                                    .into_block(),
-                            );
-                            block = tgt::Statement::new(span, tgt::StatementKind::Loop(block))
-                                .into_block();
-                            // We must translate the merge nodes after the block used for forward jumps to
-                            // them.
-                            let followed_by = self.translate_block(followed_by);
-                            block = block.merge(followed_by);
-                        }
-                        (_followed_by, SpecialJump::NextBlock) => {
-                            unreachable!()
-                        }
-                    }
-                }
-                block
             }
         }
+
+        // Translate this block. Any jumps to a loop header or a merge node will be replaced with
+        // `continue`/`break`.
+        let mut block = self.translate_block_itself(block_id);
+
+        // Reset the state to what it was previously, and translate what remains.
+        let new_block = move |kind| tgt::Statement::new(block.span, kind).into_block();
+        while self.special_jump_stack.len() > old_context_depth {
+            match self.special_jump_stack.pop().unwrap() {
+                (_loop_header, SpecialJump::LoopContinue(_)) => {
+                    self.break_context_depth -= 1;
+                    block = new_block(tgt::StatementKind::Loop(block));
+                }
+                (next_block, SpecialJump::ForwardBreak(_)) => {
+                    self.break_context_depth -= 1;
+                    // We add a `loop { ...; break }` so that we can use `break` to jump forward.
+                    block = block.merge(new_block(tgt::StatementKind::Break(0)));
+                    block = new_block(tgt::StatementKind::Loop(block));
+                    // We must translate the merge nodes after the block used for forward jumps to
+                    // them.
+                    let next_block = self.translate_block(next_block);
+                    block = block.merge(next_block);
+                }
+                (next_block, SpecialJump::NextBlock | SpecialJump::LoopBreak(_, true)) => {
+                    let next_block = self.translate_block(next_block);
+                    block = block.merge(next_block);
+                }
+                (_, SpecialJump::LoopBreak(_, false)) => {}
+            }
+        }
+        block
     }
 }
 
