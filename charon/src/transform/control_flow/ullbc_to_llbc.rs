@@ -441,7 +441,6 @@ impl ExitInfo {
     fn compute_loop_exit_candidates(
         cfg: &CfgInfo,
         explored: &mut HashSet<src::BlockId>,
-        ordered_loops: &mut Vec<src::BlockId>,
         loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitRank>>,
         // List of parent loops, with the distance to the entry of the loop (the distance
         // is the distance between the current node and the loop entry for the last parent,
@@ -456,7 +455,6 @@ impl ExitInfo {
         // Check if we enter a loop - add the corresponding node if necessary
         if cfg.block_data[block_id].is_loop_header {
             parent_loops.push((block_id, 1)); // TODO: why not `0`?
-            ordered_loops.push(block_id);
         } else {
             // Increase the distance to the parent loop
             if !parent_loops.is_empty() {
@@ -505,14 +503,7 @@ impl ExitInfo {
             }
             ensure_sufficient_stack(|| {
                 // Explore, with the filtered parents
-                Self::compute_loop_exit_candidates(
-                    cfg,
-                    explored,
-                    ordered_loops,
-                    loop_exits,
-                    parent_loops,
-                    child,
-                );
+                Self::compute_loop_exit_candidates(cfg, explored, loop_exits, parent_loops, child);
             })
         }
     }
@@ -652,9 +643,6 @@ impl ExitInfo {
         ctx: &TransformCtx,
         cfg: &CfgInfo,
     ) -> HashMap<src::BlockId, Option<src::BlockId>> {
-        let mut explored = HashSet::new();
-        let mut ordered_loops = Vec::new();
-
         // Initialize the loop exits candidates
         let mut loop_exits: HashMap<_, _> = cfg
             .loop_entries
@@ -665,8 +653,7 @@ impl ExitInfo {
         // Compute the candidates
         Self::compute_loop_exit_candidates(
             cfg,
-            &mut explored,
-            &mut ordered_loops,
+            &mut HashSet::new(),
             &mut loop_exits,
             Vec::new(),
             src::BlockId::ZERO,
@@ -684,8 +671,11 @@ impl ExitInfo {
         // Choose one candidate among the potential candidates.
         let mut exits: HashSet<src::BlockId> = HashSet::new();
         let mut chosen_loop_exits: HashMap<src::BlockId, Option<src::BlockId>> = HashMap::new();
-        // For every loop
-        for loop_id in ordered_loops {
+        // For every loop in topological order.
+        for (loop_id, loop_exits) in loop_exits
+            .into_iter()
+            .sorted_by_key(|&(id, _)| cfg.topo_rank(id))
+        {
             // Check the candidates.
             // Ignore the candidates which have already been chosen as exits for other
             // loops (which should be outer loops).
@@ -697,17 +687,17 @@ impl ExitInfo {
             // We find the exits with the highest occurrence and the smallest combined distance
             // from the entry of the loop (note that we take care of listing the exit
             // candidates in a deterministic order).
-            let best_exits: Vec<(&BlockId, &LoopExitRank)> = loop_exits[&loop_id]
-                .iter()
+            let best_exits: Vec<(BlockId, LoopExitRank)> = loop_exits
+                .into_iter()
                 // If candidate already selected for another loop: ignore
                 .filter(|(candidate_id, _)| !exits.contains(candidate_id))
-                .max_set_by_key(|&(_, &rank)| rank);
+                .max_set_by_key(|&(_, rank)| rank);
             let chosen_exit = if best_exits.is_empty() {
                 None
             } else {
                 // If there is exactly one best candidate, use it. Otherwise we need to split
                 // further.
-                let best_exits = best_exits.into_iter().map(|(&bid, _)| bid);
+                let best_exits = best_exits.into_iter().map(|(bid, _)| bid);
                 match best_exits.exactly_one() {
                     Ok(best_exit) => Some(best_exit),
                     Err(best_exits) => {
