@@ -349,11 +349,6 @@ struct LoopExitCandidateInfo {
     pub occurrences: Vec<usize>,
 }
 
-struct FilteredLoopParents {
-    remaining_parents: Vec<(src::BlockId, usize)>,
-    removed_parents: Vec<(src::BlockId, usize)>,
-}
-
 impl ExitInfo {
     /// Check if a loop entry is reachable from a node, in a graph where we remove
     /// the backward edges going directly to the loop entry.
@@ -379,41 +374,6 @@ impl ExitInfo {
         Dfs::new(&cfg.fwd_cfg, block_id)
             .iter(&cfg.fwd_cfg)
             .any(|bid| cfg.is_backward_edge(bid, loop_entry))
-    }
-
-    fn filter_loop_parents(
-        cfg: &CfgInfo,
-        parent_loops: &Vec<(src::BlockId, usize)>,
-        block_id: src::BlockId,
-    ) -> Option<FilteredLoopParents> {
-        let mut eliminate: usize = 0;
-        for (i, (loop_id, _)) in parent_loops.iter().enumerate().rev() {
-            if Self::loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
-                eliminate = i + 1;
-                break;
-            }
-        }
-
-        // Split the vector of parents
-        let (remaining_parents, removed_parents) = parent_loops.split_at(eliminate);
-        if !removed_parents.is_empty() {
-            let (mut remaining_parents, removed_parents) =
-                (remaining_parents.to_vec(), removed_parents.to_vec());
-
-            // Update the distance to the last loop - we just increment the distance
-            // by 1, because from the point of view of the parent loop, we just exited
-            // a block and go to the next sequence of instructions.
-            if !remaining_parents.is_empty() {
-                remaining_parents.last_mut().unwrap().1 += 1;
-            }
-
-            Some(FilteredLoopParents {
-                remaining_parents,
-                removed_parents,
-            })
-        } else {
-            None
-        }
     }
 
     /// Auxiliary helper
@@ -468,35 +428,6 @@ impl ExitInfo {
             .iter(&graph)
             .any(|bid| outer_exits.contains(&bid))
     }
-    /// Register a node and its children as exit candidates for a list of
-    /// parent loops.
-    fn register_children_as_loop_exit_candidates(
-        cfg: &CfgInfo,
-        loop_exits: &mut HashMap<src::BlockId, SeqHashMap<src::BlockId, LoopExitCandidateInfo>>,
-        removed_parent_loops: &Vec<(src::BlockId, usize)>,
-        block_id: src::BlockId,
-    ) {
-        let mut base_dist = 0;
-        // For every parent loop, in reverse order (we go from last to first in
-        // order to correctly compute the distances)
-        for (loop_id, loop_dist) in removed_parent_loops.iter().rev() {
-            // Update the distance to the loop entry
-            base_dist += *loop_dist;
-
-            // Retrieve the candidates
-            let candidates = loop_exits.get_mut(loop_id).unwrap();
-
-            // Update them
-            for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
-                let distance = base_dist + dist;
-                candidates
-                    .entry(bid)
-                    .or_default()
-                    .occurrences
-                    .push(distance);
-            }
-        }
-    }
 
     /// Compute the loop exit candidates.
     ///
@@ -530,51 +461,61 @@ impl ExitInfo {
             }
         };
 
-        // Retrieve the children - note that we ignore the back edges
+        // Retrieve the children - note that we ignore back edges.
         for child in cfg.fwd_cfg.neighbors(block_id) {
-            // If the parent loop entry is not reachable from the child without going
-            // through a backward edge which goes directly to the loop entry, consider
-            // this node a potential exit.
+            // We'll truncate the `parent_loops` stack to where it is after jumping to `child`.
+            let mut parent_loops = parent_loops.clone();
+            // We start the distance at 1 to account for the `block_id -> child` edge we just
+            // took.
+            let mut base_dist = 1;
+
+            // If the parent loop entry is not reachable from the child without going through a
+            // backward edge which goes directly to the loop entry, consider this node a potential
+            // exit.
+            while let Some(&(loop_id, loop_dist)) = parent_loops.last() {
+                if Self::loop_entry_is_reachable_from_inner(cfg, loop_id, child) {
+                    break;
+                }
+                // Remove this parent loop.
+                parent_loops.pop();
+
+                // This child and its children are loop exit candidates for the removed loop: we
+                // must thus register them.
+                // Note that we register the child *and* its children: the reason is that we might
+                // do something *then* actually jump to the exit.
+                // For instance, the following block of code:
+                // ```
+                // if cond { break; } else { ... }
+                // ```
+                //
+                // Gets translated in MIR to something like this:
+                // ```
+                // bb1: {
+                //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
+                // }
+                //
+                // bb2: {
+                //   goto bb4; // bb4 is the real exit
+                // }
+                // ```
+                base_dist += loop_dist;
+                let candidates = loop_exits.get_mut(&loop_id).unwrap();
+                for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
+                    candidates
+                        .entry(bid)
+                        .or_default()
+                        .occurrences
+                        .push(base_dist + dist);
+                }
+            }
             ensure_sufficient_stack(|| {
-                let new_parent_loops = match Self::filter_loop_parents(cfg, &parent_loops, child) {
-                    None => parent_loops.clone(),
-                    Some(fparent_loops) => {
-                        // We filtered some parent loops: it means this child and its
-                        // children are loop exit candidates for all those loops: we must
-                        // thus register them.
-                        // Note that we register the child *and* its children: the reason
-                        // is that we might do something *then* actually jump to the exit.
-                        // For instance, the following block of code:
-                        // ```
-                        // if cond { break; } else { ... }
-                        // ```
-                        //
-                        // Gets translated in MIR to something like this:
-                        // ```
-                        // bb1: {
-                        //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
-                        // }
-                        //
-                        // bb2: {
-                        //   goto bb4; // bb4 is the real exit
-                        // }
-                        // ```
-                        Self::register_children_as_loop_exit_candidates(
-                            cfg,
-                            loop_exits,
-                            &fparent_loops.removed_parents,
-                            child,
-                        );
-                        fparent_loops.remaining_parents
-                    }
-                };
                 // Explore, with the filtered parents
                 Self::compute_loop_exit_candidates(
                     cfg,
                     explored,
                     ordered_loops,
                     loop_exits,
-                    new_parent_loops,
+                    parent_loops,
                     child,
                 );
             })
