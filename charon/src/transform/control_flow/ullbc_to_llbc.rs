@@ -641,7 +641,7 @@ impl ExitInfo {
     fn compute_loop_exits(
         ctx: &TransformCtx,
         cfg: &CfgInfo,
-    ) -> HashMap<src::BlockId, Option<src::BlockId>> {
+    ) -> HashMap<src::BlockId, src::BlockId> {
         // Initialize the loop exits candidates
         let mut loop_exits: HashMap<_, _> = cfg
             .loop_entries
@@ -669,7 +669,7 @@ impl ExitInfo {
 
         // Choose one candidate among the potential candidates.
         let mut exits: HashSet<src::BlockId> = HashSet::new();
-        let mut chosen_loop_exits: HashMap<src::BlockId, Option<src::BlockId>> = HashMap::new();
+        let mut chosen_loop_exits: HashMap<src::BlockId, src::BlockId> = HashMap::new();
         // For every loop in topological order.
         for (loop_id, loop_exits) in loop_exits
             .into_iter()
@@ -745,8 +745,8 @@ impl ExitInfo {
             };
             if let Some(exit_id) = chosen_exit {
                 exits.insert(exit_id);
+                chosen_loop_exits.insert(loop_id, exit_id);
             }
-            chosen_loop_exits.insert(loop_id, chosen_exit);
         }
 
         // Return the chosen exits
@@ -776,7 +776,7 @@ impl ExitInfo {
     /// Note that with nested switches, the branches of the inner switches might
     /// goto the exits of the outer switches: for this reason, we give precedence
     /// to the outer switches.
-    fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
+    fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, src::BlockId> {
         // Compute the successors info map, starting at the root node
         trace!(
             "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
@@ -846,7 +846,7 @@ impl ExitInfo {
                 });
             let exit_candidate: Option<_> =
                 best_exit.filter(|exit_id| !exits_set.contains(exit_id));
-            let exit = if let Some(exit_id) = exit_candidate {
+            if let Some(exit_id) = exit_candidate {
                 // We have an exit candidate: check that it was not already
                 // taken by an external switch
                 trace!("{bid:?} has an exit candidate: {exit_id:?}");
@@ -885,19 +885,15 @@ impl ExitInfo {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit_id);
-                    Some(exit_id)
+                    exits.insert(bid, exit_id);
                 } else {
                     trace!(
                         "Ignoring the exit candidate because of an intersection with external switches"
                     );
-                    None
                 }
             } else {
                 trace!("{bid:?} has no successors");
-                None
             };
-
-            exits.insert(bid, exit);
         }
 
         exits
@@ -996,11 +992,11 @@ impl ExitInfo {
     /// are basically the points where control-flow joins.
     fn compute(ctx: &TransformCtx, cfg_info: &mut CfgInfo) {
         // Compute the loop exits
-        let loop_exits = Self::compute_loop_exits(ctx, cfg_info);
+        let loop_exits: HashMap<BlockId, BlockId> = Self::compute_loop_exits(ctx, cfg_info);
         trace!("loop_exits:\n{:?}", loop_exits);
 
         // Compute the switch exits
-        let switch_exits = Self::compute_switch_exits(cfg_info);
+        let switch_exits: HashMap<BlockId, BlockId> = Self::compute_switch_exits(cfg_info);
         trace!("switch_exits:\n{:?}", switch_exits);
 
         // Keep track of the exits which were already attributed
@@ -1015,30 +1011,21 @@ impl ExitInfo {
             .copied()
             .sorted_unstable_by_key(|&bid| (cfg_info.topo_rank(bid), bid));
         for bid in sorted_blocks {
-            // Check if loop or switch block
             let block_data = &mut cfg_info.block_data[bid];
             let exit_info = &mut block_data.exit_info;
             if block_data.is_loop_header {
-                // This is a loop.
-                //
                 // For loops, we always register the exit (if there is one).
-                // However, the exit may be owned by an outer switch (note
-                // that we already took care of spreading the exits between
-                // the inner/outer loops)
-                let exit_id = *loop_exits.get(&bid).unwrap();
-                exit_info.loop_exit = exit_id;
-                // Check if we "own" the exit
-                if let Some(exit_id) = exit_id
-                    && all_exits.insert(exit_id)
-                {
-                    exit_info.owns_loop_exit = true;
+                // However, the exit may be owned by an outer switch (note that we already took
+                // care of spreading the exits between the inner/outer loops)
+                if let Some(&exit_id) = loop_exits.get(&bid) {
+                    exit_info.loop_exit = Some(exit_id);
+                    if all_exits.insert(exit_id) {
+                        exit_info.owns_loop_exit = true;
+                    }
                 }
             } else {
-                // For switches: check that the exit was not already given to a
-                // loop
-                let exit_id = *switch_exits.get(&bid).unwrap();
-                // Check if we "own" the exit
-                if let Some(exit_id) = exit_id
+                // For switches: check that the exit was not already given to a loop
+                if let Some(&exit_id) = switch_exits.get(&bid)
                     && all_exits.insert(exit_id)
                 {
                     exit_info.owned_switch_exit = Some(exit_id);
