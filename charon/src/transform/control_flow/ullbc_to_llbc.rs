@@ -379,14 +379,13 @@ impl ExitInfo {
             .any(|bid| cfg.is_backward_edge(bid, loop_header))
     }
 
-    /// Check if it is possible to reach the exit of an outer switch from `start_bid` without going
-    /// through the `exit_candidate`. We use the forward graph. This doesn't count the case where
-    /// `start_bid` is already in `outer_exits`.
-    fn can_reach_outer_exit(
+    /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
+    /// is already in `target_set`, we ignore that empty path.
+    fn all_paths_go_through(
         cfg: &CfgInfo,
-        outer_exits: &HashSet<src::BlockId>,
-        start_bid: src::BlockId,
-        exit_candidate: src::BlockId,
+        src: src::BlockId,
+        through_node: src::BlockId,
+        target_set: &HashSet<src::BlockId>,
     ) -> bool {
         /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
         struct GraphWithoutEdgesFrom<'a> {
@@ -419,17 +418,17 @@ impl ExitInfo {
             }
         }
 
-        // Do a DFS over the forward graph where we pretend that the exit candidate has no outgoing
-        // edges. If we reach an outer exit candidate in that graph then the exit candidate does not
-        // dominate the outer exit candidates in the forward graph starting from `start_bid`.
+        // Do a DFS over the forward graph where we pretend that the through node has no outgoing
+        // edges. If we reach a target node in that graph then `through_node` does not dominate the
+        // target nodes in the forward graph starting from `src`.
         let graph = GraphWithoutEdgesFrom {
             graph: &cfg.fwd_cfg,
-            special_node: exit_candidate,
+            special_node: through_node,
         };
-        Dfs::new(&graph, start_bid)
+        !Dfs::new(&graph, src)
             .iter(&graph)
-            .skip(1) // skip start_bid
-            .any(|bid| outer_exits.contains(&bid))
+            .skip(1) // skip src
+            .any(|bid| target_set.contains(&bid))
     }
 
     /// Compute the loop exit candidates.
@@ -853,12 +852,11 @@ impl ExitInfo {
                 trace!("{bid:?} has an exit candidate: {exit_id:?}");
                 // It was not taken by an external switch.
                 //
-                // We must check that we can't reach the exit of an external
-                // switch from one of the branches, without going through the
-                // exit candidate.
-                // We do this by simply checking that we can't reach any exits
-                // (and use the fact that we explore the switch by using a
-                // topological order to not discard valid exit candidates).
+                // We must check that we can't reach the exit of an external switch from one of the
+                // branches, without going through the exit candidate.
+                // We do this by simply checking that we can't reach any exits (and use the fact
+                // that we explore the switch by using a topological order to not discard valid
+                // exit candidates).
                 //
                 // The reason is that it can lead to code like the following:
                 // ```
@@ -883,19 +881,16 @@ impl ExitInfo {
                 //   ...
                 // }
                 // ```
-
-                // Check if this is a real exit, i.e. whether all path to `exits_set` go through
-                // `exit_id`.
-                if Self::can_reach_outer_exit(cfg, &exits_set, bid, exit_id) {
-                    trace!(
-                        "Ignoring the exit candidate because of an intersection with external switches"
-                    );
-                    None
-                } else {
+                if Self::all_paths_go_through(cfg, bid, exit_id, &exits_set) {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit_id);
                     Some(exit_id)
+                } else {
+                    trace!(
+                        "Ignoring the exit candidate because of an intersection with external switches"
+                    );
+                    None
                 }
             } else {
                 trace!("{bid:?} has no successors");
