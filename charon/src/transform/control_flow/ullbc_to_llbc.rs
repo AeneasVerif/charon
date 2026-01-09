@@ -884,14 +884,9 @@ impl ExitInfo {
                 // }
                 // ```
 
-                // First: we do a quick check (does the set of all successors
-                // intersect the set of exits for outer blocks?). If yes, we do
-                // a more precise analysis: we check if we can reach the exit
-                // *without going through* the exit candidate.
-                let can_reach_exit = block_data
-                    .reachable_excluding_self()
-                    .any(|bid| exits_set.contains(&bid));
-                if can_reach_exit && Self::can_reach_outer_exit(cfg, &exits_set, bid, exit_id) {
+                // Check if this is a real exit, i.e. whether all path to `exits_set` go through
+                // `exit_id`.
+                if Self::can_reach_outer_exit(cfg, &exits_set, bid, exit_id) {
                     trace!(
                         "Ignoring the exit candidate because of an intersection with external switches"
                     );
