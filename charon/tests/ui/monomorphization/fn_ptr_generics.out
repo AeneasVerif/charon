@@ -44,7 +44,7 @@ fn init_option()
     storage_live(a_1)
     storage_live(_2)
     _2 = Option::<u8>::Some { 0: const 4 : u8 }
-    a_1 = @ArrayRepeat<'_, Option::<u8>, 6 : usize>(move _2)
+    a_1 = @ArrayRepeat<Option::<u8>, 6 : usize>(move _2)
     storage_dead(_2)
     storage_live(b_3)
     storage_live(_4)

@@ -55,7 +55,7 @@ fn transform_st(s: &mut Statement) {
             let id = BuiltinFunId::ArrayRepeat;
             let func = FnPtrKind::mk_builtin(id);
             let generics = GenericArgs::new(
-                [Region::Erased].into(),
+                [].into(),
                 [ty.clone()].into(),
                 [cg.clone()].into(),
                 [].into(),

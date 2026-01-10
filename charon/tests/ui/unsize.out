@@ -202,7 +202,7 @@ fn foo()
 
     _0 = ()
     storage_live(array_1)
-    array_1 = @ArrayRepeat<'_, i32, 2 : usize>(const 0 : i32)
+    array_1 = @ArrayRepeat<i32, 2 : usize>(const 0 : i32)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)

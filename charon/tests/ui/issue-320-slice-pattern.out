@@ -27,7 +27,7 @@ fn slice_pat1()
 
     _0 = ()
     storage_live(array_1)
-    array_1 = @ArrayRepeat<'_, i32, 4 : usize>(const 0 : i32)
+    array_1 = @ArrayRepeat<i32, 4 : usize>(const 0 : i32)
     storage_live(_a_2)
     storage_live(_5)
     _5 = &array_1
@@ -75,7 +75,7 @@ fn slice_pat2()
 
     storage_live(_7)
     storage_live(_8)
-    _8 = @ArrayRepeat<'_, i32, 4 : usize>(const 0 : i32)
+    _8 = @ArrayRepeat<i32, 4 : usize>(const 0 : i32)
     _7 = &_8
     storage_live(_6)
     _0 = ()
@@ -144,7 +144,7 @@ fn slice_pat3()
 
     storage_live(_15)
     storage_live(_16)
-    _16 = @ArrayRepeat<'_, i32, 4 : usize>(const 0 : i32)
+    _16 = @ArrayRepeat<i32, 4 : usize>(const 0 : i32)
     _15 = &_16
     storage_live(_7)
     storage_live(_8)

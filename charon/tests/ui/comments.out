@@ -397,7 +397,7 @@ fn foo()
     storage_dead(_11)
     storage_live(a_15)
     // Build an array
-    a_15 = @ArrayRepeat<'_, u32, 10 : usize>(const 0 : u32)
+    a_15 = @ArrayRepeat<u32, 10 : usize>(const 0 : u32)
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
