@@ -491,12 +491,8 @@ impl ExitInfo {
             .any(|bid| target_set.contains(&bid))
     }
 
-    /// Compute the nodes that exit the given loop header. Returns the list of nodes along with
-    /// their distance from the loop header (not shortest distance, just first found distance).
-    fn compute_loop_exit_candidates(
-        cfg: &CfgInfo,
-        loop_header: src::BlockId,
-    ) -> Vec<(src::BlockId, usize)> {
+    /// Compute the nodes that exit the given loop header.
+    fn compute_loop_exit_candidates(cfg: &CfgInfo, loop_header: src::BlockId) -> Vec<src::BlockId> {
         let mut loop_exits = Vec::new();
         // Do a dfs from the loop header while keeping track of the path from the loop header to
         // the current node.
@@ -508,7 +504,7 @@ impl ExitInfo {
                 cfg.block_data[loop_id].is_loop_header
                     && Self::is_within_loop(cfg, loop_id, block_id)
             }) {
-                loop_exits.push((block_id, path_dfs.path.len()));
+                loop_exits.push(block_id);
                 // Don't explore any more paths from this node.
                 path_dfs.discovered.extend(cfg.fwd_cfg.neighbors(block_id));
             }
@@ -527,11 +523,12 @@ impl ExitInfo {
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
-        for (block_id, dist_from_header) in Self::compute_loop_exit_candidates(cfg, loop_header) {
+        for block_id in Self::compute_loop_exit_candidates(cfg, loop_header) {
             for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
                 let exit_rank = loop_exits.entry(bid).or_default();
                 exit_rank.path_count += 1;
-                exit_rank.summed_distance.0 += dist_from_header + dist;
+                exit_rank.summed_distance.0 +=
+                    cfg.block_data[loop_header].shortest_paths[&block_id] + dist;
             }
         }
         loop_exits
