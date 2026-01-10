@@ -501,32 +501,25 @@ impl ExitInfo {
         cfg: &CfgInfo,
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
-        let start_block = src::BlockId::ZERO;
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
-        // Explore until we find the loop header.
-        let mut dfs = Dfs::new(&cfg.fwd_cfg, start_block);
-        if (&mut dfs).iter(&cfg.fwd_cfg).contains(&loop_header) {
-            // Continue the dfs exploration from the loop header while keeping track of the path
-            // from the loop header to the current node.
-            dfs.discovered.remove(&loop_header);
-            let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
-            path_dfs.discovered = dfs.discovered;
-            while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
-                for child in cfg.fwd_cfg.neighbors(block_id) {
-                    // If we've exited all the loops after and including the target one, this node is an
-                    // exit node for the target loop.
-                    if !path_dfs.path.iter().any(|&loop_id| {
-                        cfg.block_data[loop_id].is_loop_header
-                            && Self::is_within_loop(cfg, loop_id, child)
-                    }) {
-                        for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
-                            let exit_rank = loop_exits.entry(bid).or_default();
-                            exit_rank.path_count += 1;
-                            exit_rank.summed_distance.0 += path_dfs.path.len() + 1 + dist;
-                        }
-                        // Don't explore this child any more.
-                        path_dfs.discovered.insert(child);
+        // Do a dfs from the loop header while keeping track of the path from the loop header to
+        // the current node.
+        let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
+        while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
+            for child in cfg.fwd_cfg.neighbors(block_id) {
+                // If we've exited all the loops after and including the target one, this node is an
+                // exit node for the target loop.
+                if !path_dfs.path.iter().any(|&loop_id| {
+                    cfg.block_data[loop_id].is_loop_header
+                        && Self::is_within_loop(cfg, loop_id, child)
+                }) {
+                    for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
+                        let exit_rank = loop_exits.entry(bid).or_default();
+                        exit_rank.path_count += 1;
+                        exit_rank.summed_distance.0 += path_dfs.path.len() + 1 + dist;
                     }
+                    // Don't explore this child any more.
+                    path_dfs.discovered.insert(child);
                 }
             }
         }
