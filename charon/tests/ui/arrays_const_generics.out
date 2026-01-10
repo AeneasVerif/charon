@@ -64,7 +64,7 @@ pub fn init_array_variable_len<const LEN : usize>() -> [u8; LEN]
 {
     let _0: [u8; LEN]; // return
 
-    _0 = @ArrayRepeat<'_, u8, LEN>(const 0 : u8)
+    _0 = @ArrayRepeat<u8, LEN>(const 0 : u8)
     return
 }
 

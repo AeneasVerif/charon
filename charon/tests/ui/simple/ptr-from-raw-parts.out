@@ -295,7 +295,7 @@ fn main()
 
     _0 = ()
     storage_live(a_1)
-    a_1 = @ArrayRepeat<'_, u32, 2 : usize>(const 1 : u32)
+    a_1 = @ArrayRepeat<u32, 2 : usize>(const 1 : u32)
     storage_live(_2)
     storage_live(_3)
     _3 = &raw const a_1

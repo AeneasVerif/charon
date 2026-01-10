@@ -341,7 +341,7 @@ fn ptr_casts()
 
     storage_live(_18)
     storage_live(_19)
-    _19 = @ArrayRepeat<'_, u32, 64 : usize>(const 0 : u32)
+    _19 = @ArrayRepeat<u32, 64 : usize>(const 0 : u32)
     _18 = &_19
     storage_live(_17)
     _0 = ()
@@ -590,7 +590,7 @@ fn STEAL() -> [(); 1 : usize]
 
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<'_, (), 1 : usize>(move _1)
+    _0 = @ArrayRepeat<(), 1 : usize>(move _1)
     storage_dead(_1)
     return
 }
@@ -621,7 +621,7 @@ fn STEAL2() -> [(); 13 : usize]
 
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<'_, (), 13 : usize>(move _1)
+    _0 = @ArrayRepeat<(), 13 : usize>(move _1)
     storage_dead(_1)
     return
 }
