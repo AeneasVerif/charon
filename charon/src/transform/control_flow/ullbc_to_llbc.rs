@@ -491,36 +491,47 @@ impl ExitInfo {
             .any(|bid| target_set.contains(&bid))
     }
 
-    /// Compute the loop exit candidates for the given loop header.
+    /// Compute the nodes that exit the given loop header. Returns the list of nodes along with
+    /// their distance from the loop header (not shortest distance, just first found distance).
+    fn compute_loop_exit_candidates(
+        cfg: &CfgInfo,
+        loop_header: src::BlockId,
+    ) -> Vec<(src::BlockId, usize)> {
+        let mut loop_exits = Vec::new();
+        // Do a dfs from the loop header while keeping track of the path from the loop header to
+        // the current node.
+        let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
+        while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
+            // If we've exited all the loops after and including the target one, this node is an
+            // exit node for the target loop.
+            if !path_dfs.path.iter().any(|&loop_id| {
+                cfg.block_data[loop_id].is_loop_header
+                    && Self::is_within_loop(cfg, loop_id, block_id)
+            }) {
+                loop_exits.push((block_id, path_dfs.path.len()));
+                // Don't explore any more paths from this node.
+                path_dfs.discovered.extend(cfg.fwd_cfg.neighbors(block_id));
+            }
+        }
+        loop_exits
+    }
+
+    /// Compute the loop exit candidates along with a rank.
     ///
     /// There may be several candidates with the same "optimality" (same number of
     /// occurrences, etc.), in which case we choose the first one which was registered
     /// (the order in which we explore the graph is deterministic): this is why we
     /// store the candidates in an insertion-ordered hash map.
-    fn compute_loop_exit_candidates(
+    fn compute_loop_exit_ranks(
         cfg: &CfgInfo,
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
-        // Do a dfs from the loop header while keeping track of the path from the loop header to
-        // the current node.
-        let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
-        while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
-            for child in cfg.fwd_cfg.neighbors(block_id) {
-                // If we've exited all the loops after and including the target one, this node is an
-                // exit node for the target loop.
-                if !path_dfs.path.iter().any(|&loop_id| {
-                    cfg.block_data[loop_id].is_loop_header
-                        && Self::is_within_loop(cfg, loop_id, child)
-                }) {
-                    for (bid, dist) in cfg.block_data(child).shortest_paths_including_self() {
-                        let exit_rank = loop_exits.entry(bid).or_default();
-                        exit_rank.path_count += 1;
-                        exit_rank.summed_distance.0 += path_dfs.path.len() + 1 + dist;
-                    }
-                    // Don't explore this child any more.
-                    path_dfs.discovered.insert(child);
-                }
+        for (block_id, dist_from_header) in Self::compute_loop_exit_candidates(cfg, loop_header) {
+            for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
+                let exit_rank = loop_exits.entry(bid).or_default();
+                exit_rank.path_count += 1;
+                exit_rank.summed_distance.0 += dist_from_header + dist;
             }
         }
         loop_exits
@@ -671,7 +682,7 @@ impl ExitInfo {
             .sorted_by_key(|&id| cfg.topo_rank(id))
         {
             // Compute the candidates.
-            let loop_exits = Self::compute_loop_exit_candidates(cfg, loop_id);
+            let loop_exits = Self::compute_loop_exit_ranks(cfg, loop_id);
             // Check the candidates.
             // Ignore the candidates which have already been chosen as exits for other
             // loops (which should be outer loops).
