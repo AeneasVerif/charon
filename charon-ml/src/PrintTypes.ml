@@ -151,7 +151,7 @@ let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
-  | RBody id -> "'" ^ RegionId.to_string id
+  | RBody id -> "°" ^ RegionId.to_string id
   | RVar var -> region_db_var_to_string env var
 
 let region_binder_to_string (value_to_string : 'a fmt_env -> 'c -> string)
