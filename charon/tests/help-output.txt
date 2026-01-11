@@ -119,9 +119,6 @@ Options:
       --unbind-item-vars
           Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects that don't intend to manipulate them too much
 
-      --no-erase-body-regions
-          Disable the aeneas-only erasure of `Body` regions. Temporary flag to help migration
-
       --print-original-ullbc
           Pretty-print the ULLBC immediately after extraction from MIR
 
