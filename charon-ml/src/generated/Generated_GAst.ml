@@ -445,9 +445,6 @@ type cli_options = {
           instead of [DeBruijnVar::Bound] everywhere. This simplifies the
           management of generics for projects that don't intend to manipulate
           them too much. *)
-  no_erase_body_regions : bool;
-      (** Disable the aeneas-only erasure of [Body] regions. Temporary flag to
-          help migration. *)
   print_original_ullbc : bool;
       (** Pretty-print the ULLBC immediately after extraction from MIR. *)
   print_ullbc : bool;
