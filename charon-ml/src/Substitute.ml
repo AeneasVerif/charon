@@ -338,7 +338,7 @@ let make_trait_subst_from_clauses (clauses : trait_param list)
     (List.map (fun (x : trait_ref) -> x.kind) trs)
 
 let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
-    : single_binder_subst =
+    (tr_self : trait_ref_kind) : single_binder_subst =
   let r_sb_subst = make_region_subst_from_vars params.regions args.regions in
   let ty_sb_subst = make_type_subst_from_vars params.types args.types in
   let cg_sb_subst =
@@ -347,23 +347,23 @@ let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
   let tr_sb_subst =
     make_trait_subst_from_clauses params.trait_clauses args.trait_refs
   in
-  { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self = Self }
+  { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self = tr_self }
 
-let make_subst_from_generics (params : generic_params) (args : generic_args) :
-    subst =
-  subst_free_vars (make_sb_subst_from_generics params args)
+let make_subst_from_generics (params : generic_params) (args : generic_args)
+    (tr_self : trait_ref_kind) : subst =
+  subst_free_vars (make_sb_subst_from_generics params args tr_self)
 
 let make_subst_from_generics_erase_regions (params : generic_params)
-    (generics : generic_args) : subst =
+    (generics : generic_args) (tr_self : trait_ref_kind) : subst =
   let generics = generic_args_erase_regions generics in
-  let subst = make_subst_from_generics params generics in
+  let subst = make_subst_from_generics params generics tr_self in
   { subst with r_subst = (fun _ -> RErased) }
 
 (** Instantiate the type variables in an ADT definition, and return, for every
     variant, the list of the types of its fields. *)
 let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     (generics : generic_args) : (VariantId.id option * ty list) list =
-  let subst = make_subst_from_generics def.generics generics in
+  let subst = make_subst_from_generics def.generics generics Self in
   let (variants_fields : (VariantId.id option * field list) list) =
     match def.kind with
     | Enum variants ->
@@ -387,7 +387,7 @@ let type_decl_get_instantiated_field_types (def : type_decl)
   (* Check that there are no clauses - otherwise we might need
      to normalize the types *)
   assert (def.generics.trait_clauses = []);
-  let subst = make_subst_from_generics def.generics generics in
+  let subst = make_subst_from_generics def.generics generics Self in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
 
@@ -465,7 +465,7 @@ let apply_args_to_binder (args : generic_args) (substitutor : subst -> 'a -> 'a)
     (binder : 'a binder) : 'a =
   substitutor
     (subst_remove_binder_zero
-       (make_sb_subst_from_generics binder.binder_params args))
+       (make_sb_subst_from_generics binder.binder_params args Self))
     binder.binder_value
 
 (** Remove this binder by substituting the provided arguments for each bound
@@ -473,8 +473,9 @@ let apply_args_to_binder (args : generic_args) (substitutor : subst -> 'a -> 'a)
     `st_substitute_visitor` method. *)
 let apply_args_to_item_binder (tr_self : trait_ref_kind) (args : generic_args)
     (substitutor : subst -> 'a -> 'a) (binder : 'a item_binder) : 'a =
-  let subst = make_sb_subst_from_generics binder.item_binder_params args in
-  let subst = { subst with tr_sb_self = tr_self } in
+  let subst =
+    make_sb_subst_from_generics binder.item_binder_params args tr_self
+  in
   substitutor (subst_free_vars subst) binder.item_binder_value
 
 (** Merge two levels of binders into a single one that binds the concatenated
@@ -616,7 +617,7 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
   let signature =
     st_substitute_visitor#visit_fun_sig
       (make_subst_from_generics method_decl.generics
-         bound_method.binder_value.generics)
+         bound_method.binder_value.generics Self)
       method_decl.signature
   in
   (* Rebind everything *)
@@ -645,7 +646,7 @@ let lookup_fndef_sig (crate : 'a gcrate) (fn_ptr : fn_ptr region_binder) :
       let fn_sig =
         st_substitute_visitor#visit_fun_sig
           (make_subst_from_generics fun_decl.generics
-             fn_ptr.binder_value.generics)
+             fn_ptr.binder_value.generics Self)
           fun_decl.signature
       in
       (* Rebind everything *)
