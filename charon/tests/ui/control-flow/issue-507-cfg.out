@@ -30,22 +30,28 @@ fn f0()
     let _2: bool; // anonymous local
     let x_3: u8; // local
 
-    _0 = ()
-    storage_live(_1)
-    _1 = const 0 : i32 < const 1 : i32
-    if move _1 {
-        storage_live(_2)
-        _2 = const 0 : i32 < const 1 : i32
-        if move _2 {
+    loop {
+        _0 = ()
+        storage_live(_1)
+        _1 = const 0 : i32 < const 1 : i32
+        if move _1 {
+            loop {
+                storage_live(_2)
+                _2 = const 0 : i32 < const 1 : i32
+                if move _2 {
+                } else {
+                }
+                break 0
+            }
+            storage_dead(_2)
+            storage_live(x_3)
+            x_3 = copy CONST
+            _0 = ()
+            storage_dead(x_3)
         } else {
+            _0 = ()
         }
-        storage_dead(_2)
-        storage_live(x_3)
-        x_3 = copy CONST
-        _0 = ()
-        storage_dead(x_3)
-    } else {
-        _0 = ()
+        break 0
     }
     storage_dead(_1)
     return
@@ -67,32 +73,45 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
     let _10: i32; // anonymous local
     let x_11: u8; // local
 
-    _0 = ()
-    storage_live(previous_true_hints_seen_2)
-    previous_true_hints_seen_2 = const 0 : usize
-    storage_live(i_3)
-    i_3 = const 0 : i32
+    loop {
+        _0 = ()
+        storage_live(previous_true_hints_seen_2)
+        previous_true_hints_seen_2 = const 0 : usize
+        storage_live(i_3)
+        i_3 = const 0 : i32
+        break 0
+    }
     loop {
         storage_live(_4)
         storage_live(_5)
         _5 = copy i_3
         _4 = move _5 < const 1 : i32
         if move _4 {
-            storage_dead(_5)
-            storage_live(_6)
-            _6 = const 0 : i32 < const 1 : i32
-            if move _6 {
-            } else {
-                storage_live(_7)
-                _7 = const 1 : i32 > const 1 : i32
-                if move _7 {
-                } else {
+            loop {
+                loop {
+                    storage_dead(_5)
+                    storage_live(_6)
+                    _6 = const 0 : i32 < const 1 : i32
+                    if move _6 {
+                    } else {
+                        storage_live(_7)
+                        _7 = const 1 : i32 > const 1 : i32
+                        if move _7 {
+                        } else {
+                            break 1
+                        }
+                    }
+                    break 0
                 }
+                break 0
             }
-            storage_dead(_7)
-            storage_dead(_6)
-            storage_live(j_8)
-            j_8 = const 0 : i32
+            loop {
+                storage_dead(_7)
+                storage_dead(_6)
+                storage_live(j_8)
+                j_8 = const 0 : i32
+                break 0
+            }
             loop {
                 storage_live(_9)
                 storage_live(_10)
@@ -104,26 +123,23 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
                     x_11 = copy CONST
                     storage_dead(x_11)
                     storage_dead(_9)
-                    continue 0
                 } else {
-                    break 0
+                    storage_dead(_10)
+                    storage_dead(_9)
+                    storage_dead(j_8)
+                    storage_dead(_4)
+                    continue 1
                 }
             }
-            storage_dead(_10)
-            storage_dead(_9)
-            storage_dead(j_8)
-            storage_dead(_4)
-            continue 0
         } else {
-            break 0
+            storage_dead(_5)
+            _0 = ()
+            storage_dead(_4)
+            storage_dead(i_3)
+            storage_dead(previous_true_hints_seen_2)
+            return
         }
     }
-    storage_dead(_5)
-    _0 = ()
-    storage_dead(_4)
-    storage_dead(i_3)
-    storage_dead(previous_true_hints_seen_2)
-    return
 }
 
 

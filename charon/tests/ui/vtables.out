@@ -411,14 +411,14 @@ fn {impl NoParam for i32}::dummy<'_0>(@1: &'_0 i32)
     _3 = copy (*self_1)
     _2 = move _3 > const 0 : i32
     if move _2 {
+        storage_dead(_3)
+        storage_dead(_2)
+        _0 = ()
+        return
     } else {
         storage_dead(_3)
         panic(core::panicking::panic)
     }
-    storage_dead(_3)
-    storage_dead(_2)
-    _0 = ()
-    return
 }
 
 // Full name: test_crate::{impl NoParam for i32}
@@ -702,16 +702,16 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32)
     _5 = copy (*t_2)
     _3 = move _4 > move _5
     if move _3 {
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        _0 = ()
+        return
     } else {
         storage_dead(_5)
         storage_dead(_4)
         panic(core::panicking::panic)
     }
-    storage_dead(_5)
-    storage_dead(_4)
-    storage_dead(_3)
-    _0 = ()
-    return
 }
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable_drop_shim}
@@ -790,16 +790,16 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i64)
     _6 = copy (*t_2)
     _3 = move _4 > move _6
     if move _3 {
+        storage_dead(_6)
+        storage_dead(_4)
+        storage_dead(_3)
+        _0 = ()
+        return
     } else {
         storage_dead(_6)
         storage_dead(_4)
         panic(core::panicking::panic)
     }
-    storage_dead(_6)
-    storage_dead(_4)
-    storage_dead(_3)
-    _0 = ()
-    return
 }
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable_drop_shim}
@@ -987,16 +987,16 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 i32, @2: &'a 
     _5 = copy (*arg_2)
     _3 = move _4 > move _5
     if move _3 {
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        _0 = copy arg_2
+        return
     } else {
         storage_dead(_5)
         storage_dead(_4)
         panic(core::panicking::panic)
     }
-    storage_dead(_5)
-    storage_dead(_4)
-    storage_dead(_3)
-    _0 = copy arg_2
-    return
 }
 
 // Full name: test_crate::{impl LifetimeTrait for i32}::{vtable_drop_shim}
@@ -1265,279 +1265,279 @@ fn main()
     _5 = &(*x_1) with_metadata(copy x_1.metadata)
     _4 = (copy ((*_5.metadata)).method_check)(move _5)
     if move _4 {
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_live(y_6)
+        storage_live(_7)
+        storage_live(_8)
+        storage_live(_9)
+        _9 = const 99 : i32
+        _8 = &mut _9
+        _7 = &mut (*_8)
+        y_6 = unsize_cast<&'5 mut i32, &'3 mut (dyn Modifiable<i32> + '4), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}] with {impl Modifiable<T> for i32}::{vtable}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move _7)
+        storage_dead(_7)
+        storage_dead(_8)
+        storage_live(_10)
+        storage_live(_11)
+        storage_live(_12)
+        storage_live(_13)
+        storage_live(_14)
+        storage_live(_15)
+        storage_live(_16)
+        storage_live(_17)
+        _17 = const "Hello"
+        _16 = &(*_17) with_metadata(copy _17.metadata)
+        _15 = {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
+        storage_dead(_16)
+        _14 = &_15
+        _13 = &(*_14)
+        _12 = modify_trait_object<'_, String>[{built_in impl Sized for String}, {impl Clone for String}](move _13)
+        _11 = &_12
+        storage_dead(_13)
+        _10 = is_empty<'_>(move _11)
+        if move _10 {
+            storage_dead(_11)
+            conditional_drop[{impl Destruct for String}] _12
+            conditional_drop[{impl Destruct for String}] _15
+            storage_dead(_17)
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_12)
+            panic(core::panicking::panic)
+        } else {
+            storage_dead(_11)
+            conditional_drop[{impl Destruct for String}] _12
+            conditional_drop[{impl Destruct for String}] _15
+            storage_dead(_17)
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_12)
+            storage_dead(_10)
+            storage_live(_18)
+            storage_live(_19)
+            storage_live(_20)
+            storage_live(_21)
+            _21 = &two-phase-mut (*y_6) with_metadata(copy y_6.metadata)
+            storage_live(_22)
+            storage_live(_23)
+            storage_live(_24)
+            _24 = const 100 : i32
+            _23 = &mut _24
+            _22 = &(*_23)
+            _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
+            storage_live(_88)
+            storage_live(_89)
+            _89 = const 100 : i32
+            _88 = &_89
+            storage_dead(_22)
+            storage_dead(_21)
+            _19 = &_20
+            storage_live(_25)
+            _84 = move _88
+            _25 = &(*_84)
+            _18 = (move _19, move _25)
+            storage_dead(_25)
+            storage_dead(_19)
+            storage_live(left_val_26)
+            left_val_26 = copy _18.0
+            storage_live(right_val_27)
+            right_val_27 = copy _18.1
+            storage_live(_28)
+            storage_live(_29)
+            _29 = copy (*left_val_26)
+            storage_live(_30)
+            _30 = copy (*right_val_27)
+            _28 = move _29 == move _30
+            if move _28 {
+                storage_live(_90)
+                storage_live(_91)
+                _91 = const 42 : i32
+                _90 = &_91
+                storage_dead(_30)
+                storage_dead(_29)
+                storage_dead(_28)
+                storage_dead(right_val_27)
+                storage_dead(left_val_26)
+                storage_dead(_24)
+                storage_dead(_23)
+                storage_dead(_20)
+                storage_dead(_18)
+                storage_live(z_38)
+                storage_live(_39)
+                storage_live(_40)
+                storage_live(_41)
+                storage_live(_42)
+                _83 = move _90
+                _42 = &(*_83)
+                _41 = &(*_42)
+                _40 = to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move _41)
+                _39 = &(*_40) with_metadata(copy _40.metadata)
+                z_38 = unsize_cast<&'11 (dyn NoParam + '12), &'11 (dyn NoParam + '12),  at []>(move _39)
+                storage_dead(_41)
+                storage_dead(_39)
+                storage_dead(_42)
+                storage_dead(_40)
+                storage_live(_43)
+                storage_live(_44)
+                _44 = &(*z_38) with_metadata(copy z_38.metadata)
+                _43 = (copy ((*_44.metadata)).method_dummy)(move _44)
+                storage_live(_92)
+                storage_live(_93)
+                _93 = const 42 : i32
+                _92 = &_93
+                storage_live(_94)
+                storage_live(_95)
+                _95 = const 100 : i32
+                _94 = &_95
+                storage_live(_96)
+                storage_live(_97)
+                _97 = const 200 : i64
+                _96 = &_97
+                storage_dead(_44)
+                storage_dead(_43)
+                storage_live(a_45)
+                storage_live(_46)
+                storage_live(_47)
+                _82 = move _92
+                _47 = &(*_82)
+                _46 = &(*_47)
+                a_45 = unsize_cast<&'2 i32, &'13 (dyn Both32And64 + '14), {impl Both32And64 for i32} with {impl Both32And64 for i32}::{vtable}>(move _46)
+                storage_dead(_46)
+                storage_dead(_47)
+                storage_live(_48)
+                storage_live(_49)
+                _49 = &(*a_45) with_metadata(copy a_45.metadata)
+                storage_live(_50)
+                storage_live(_51)
+                _81 = move _94
+                _51 = &(*_81)
+                _50 = &(*_51)
+                storage_live(_52)
+                storage_live(_53)
+                _80 = move _96
+                _53 = &(*_80)
+                _52 = &(*_53)
+                _48 = (copy ((*_49.metadata)).method_both_operate)(move _49, move _50, move _52)
+                storage_live(_98)
+                storage_live(_99)
+                _99 = const 42 : i32
+                _98 = &_99
+                storage_live(_100)
+                storage_live(_101)
+                _101 = const 10 : i32
+                _100 = &_101
+                storage_dead(_52)
+                storage_dead(_50)
+                storage_dead(_49)
+                storage_dead(_53)
+                storage_dead(_51)
+                storage_dead(_48)
+                storage_live(b_54)
+                storage_live(_55)
+                storage_live(_56)
+                _79 = move _98
+                _56 = &(*_79)
+                _55 = &(*_56)
+                b_54 = unsize_cast<&'2 i32, &'16 (dyn LifetimeTrait<Ty = i32> + '17), {impl LifetimeTrait for i32} with {impl LifetimeTrait for i32}::{vtable}>(move _55)
+                storage_dead(_55)
+                storage_dead(_56)
+                storage_live(_57)
+                storage_live(_58)
+                storage_live(_59)
+                storage_live(_60)
+                storage_live(_61)
+                _61 = &(*b_54) with_metadata(copy b_54.metadata)
+                _60 = unsize_cast<&'16 (dyn LifetimeTrait<Ty = i32> + '17), &'16 (dyn LifetimeTrait<Ty = i32> + '17),  at []>(move _61)
+                storage_dead(_61)
+                storage_live(_62)
+                storage_live(_63)
+                _78 = move _100
+                _63 = &(*_78)
+                _62 = &(*_63)
+                _59 = use_lifetime_trait<'_, '_>(move _60, move _62)
+                storage_live(_102)
+                storage_live(_103)
+                _103 = const 10 : i32
+                _102 = &_103
+                storage_dead(_62)
+                storage_dead(_60)
+                _58 = &(*_59)
+                storage_live(_64)
+                _77 = move _102
+                _64 = &(*_77)
+                _57 = (move _58, move _64)
+                storage_dead(_64)
+                storage_dead(_58)
+                storage_live(left_val_65)
+                left_val_65 = copy _57.0
+                storage_live(right_val_66)
+                right_val_66 = copy _57.1
+                storage_live(_67)
+                storage_live(_68)
+                _68 = copy (*left_val_65)
+                storage_live(_69)
+                _69 = copy (*right_val_66)
+                _67 = move _68 == move _69
+                if move _67 {
+                    storage_dead(_69)
+                    storage_dead(_68)
+                    storage_dead(_67)
+                    storage_dead(right_val_66)
+                    storage_dead(left_val_65)
+                    storage_dead(_63)
+                    storage_dead(_59)
+                    storage_dead(_57)
+                    _0 = ()
+                    storage_dead(b_54)
+                    storage_dead(a_45)
+                    storage_dead(z_38)
+                    storage_dead(_9)
+                    storage_dead(y_6)
+                    storage_dead(x_1)
+                    return
+                } else {
+                    storage_dead(_69)
+                    storage_dead(_68)
+                    storage_live(kind_70)
+                    kind_70 = AssertKind::Eq {  }
+                    storage_live(_71)
+                    _71 = move kind_70
+                    storage_live(_72)
+                    storage_live(_73)
+                    _73 = &(*left_val_65)
+                    _72 = &(*_73)
+                    storage_live(_74)
+                    storage_live(_75)
+                    _75 = &(*right_val_66)
+                    _74 = &(*_75)
+                    storage_live(_76)
+                    _76 = Option::None {  }
+                    panic(core::panicking::assert_failed)
+                }
+            } else {
+                storage_dead(_30)
+                storage_dead(_29)
+                storage_live(kind_31)
+                kind_31 = AssertKind::Eq {  }
+                storage_live(_32)
+                _32 = move kind_31
+                storage_live(_33)
+                storage_live(_34)
+                _34 = &(*left_val_26)
+                _33 = &(*_34)
+                storage_live(_35)
+                storage_live(_36)
+                _36 = &(*right_val_27)
+                _35 = &(*_36)
+                storage_live(_37)
+                _37 = Option::None {  }
+                panic(core::panicking::assert_failed)
+            }
+        }
     } else {
         storage_dead(_5)
         panic(core::panicking::panic)
     }
-    storage_dead(_5)
-    storage_dead(_4)
-    storage_live(y_6)
-    storage_live(_7)
-    storage_live(_8)
-    storage_live(_9)
-    _9 = const 99 : i32
-    _8 = &mut _9
-    _7 = &mut (*_8)
-    y_6 = unsize_cast<&'5 mut i32, &'3 mut (dyn Modifiable<i32> + '4), {impl Modifiable<T> for i32}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}] with {impl Modifiable<T> for i32}::{vtable}<i32>[{built_in impl Sized for i32}, {impl Clone for i32}]>(move _7)
-    storage_dead(_7)
-    storage_dead(_8)
-    storage_live(_10)
-    storage_live(_11)
-    storage_live(_12)
-    storage_live(_13)
-    storage_live(_14)
-    storage_live(_15)
-    storage_live(_16)
-    storage_live(_17)
-    _17 = const "Hello"
-    _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
-    storage_dead(_16)
-    _14 = &_15
-    _13 = &(*_14)
-    _12 = modify_trait_object<'_, String>[{built_in impl Sized for String}, {impl Clone for String}](move _13)
-    _11 = &_12
-    storage_dead(_13)
-    _10 = is_empty<'_>(move _11)
-    if move _10 {
-    } else {
-        storage_dead(_11)
-        conditional_drop[{impl Destruct for String}] _12
-        conditional_drop[{impl Destruct for String}] _15
-        storage_dead(_17)
-        storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_12)
-        storage_dead(_10)
-        storage_live(_18)
-        storage_live(_19)
-        storage_live(_20)
-        storage_live(_21)
-        _21 = &two-phase-mut (*y_6) with_metadata(copy y_6.metadata)
-        storage_live(_22)
-        storage_live(_23)
-        storage_live(_24)
-        _24 = const 100 : i32
-        _23 = &mut _24
-        _22 = &(*_23)
-        _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
-        storage_live(_88)
-        storage_live(_89)
-        _89 = const 100 : i32
-        _88 = &_89
-        storage_dead(_22)
-        storage_dead(_21)
-        _19 = &_20
-        storage_live(_25)
-        _84 = move _88
-        _25 = &(*_84)
-        _18 = (move _19, move _25)
-        storage_dead(_25)
-        storage_dead(_19)
-        storage_live(left_val_26)
-        left_val_26 = copy _18.0
-        storage_live(right_val_27)
-        right_val_27 = copy _18.1
-        storage_live(_28)
-        storage_live(_29)
-        _29 = copy (*left_val_26)
-        storage_live(_30)
-        _30 = copy (*right_val_27)
-        _28 = move _29 == move _30
-        if move _28 {
-        } else {
-            storage_dead(_30)
-            storage_dead(_29)
-            storage_live(kind_31)
-            kind_31 = AssertKind::Eq {  }
-            storage_live(_32)
-            _32 = move kind_31
-            storage_live(_33)
-            storage_live(_34)
-            _34 = &(*left_val_26)
-            _33 = &(*_34)
-            storage_live(_35)
-            storage_live(_36)
-            _36 = &(*right_val_27)
-            _35 = &(*_36)
-            storage_live(_37)
-            _37 = Option::None {  }
-            panic(core::panicking::assert_failed)
-        }
-        storage_live(_90)
-        storage_live(_91)
-        _91 = const 42 : i32
-        _90 = &_91
-        storage_dead(_30)
-        storage_dead(_29)
-        storage_dead(_28)
-        storage_dead(right_val_27)
-        storage_dead(left_val_26)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_20)
-        storage_dead(_18)
-        storage_live(z_38)
-        storage_live(_39)
-        storage_live(_40)
-        storage_live(_41)
-        storage_live(_42)
-        _83 = move _90
-        _42 = &(*_83)
-        _41 = &(*_42)
-        _40 = to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move _41)
-        _39 = &(*_40) with_metadata(copy _40.metadata)
-        z_38 = unsize_cast<&'11 (dyn NoParam + '12), &'11 (dyn NoParam + '12),  at []>(move _39)
-        storage_dead(_41)
-        storage_dead(_39)
-        storage_dead(_42)
-        storage_dead(_40)
-        storage_live(_43)
-        storage_live(_44)
-        _44 = &(*z_38) with_metadata(copy z_38.metadata)
-        _43 = (copy ((*_44.metadata)).method_dummy)(move _44)
-        storage_live(_92)
-        storage_live(_93)
-        _93 = const 42 : i32
-        _92 = &_93
-        storage_live(_94)
-        storage_live(_95)
-        _95 = const 100 : i32
-        _94 = &_95
-        storage_live(_96)
-        storage_live(_97)
-        _97 = const 200 : i64
-        _96 = &_97
-        storage_dead(_44)
-        storage_dead(_43)
-        storage_live(a_45)
-        storage_live(_46)
-        storage_live(_47)
-        _82 = move _92
-        _47 = &(*_82)
-        _46 = &(*_47)
-        a_45 = unsize_cast<&'2 i32, &'13 (dyn Both32And64 + '14), {impl Both32And64 for i32} with {impl Both32And64 for i32}::{vtable}>(move _46)
-        storage_dead(_46)
-        storage_dead(_47)
-        storage_live(_48)
-        storage_live(_49)
-        _49 = &(*a_45) with_metadata(copy a_45.metadata)
-        storage_live(_50)
-        storage_live(_51)
-        _81 = move _94
-        _51 = &(*_81)
-        _50 = &(*_51)
-        storage_live(_52)
-        storage_live(_53)
-        _80 = move _96
-        _53 = &(*_80)
-        _52 = &(*_53)
-        _48 = (copy ((*_49.metadata)).method_both_operate)(move _49, move _50, move _52)
-        storage_live(_98)
-        storage_live(_99)
-        _99 = const 42 : i32
-        _98 = &_99
-        storage_live(_100)
-        storage_live(_101)
-        _101 = const 10 : i32
-        _100 = &_101
-        storage_dead(_52)
-        storage_dead(_50)
-        storage_dead(_49)
-        storage_dead(_53)
-        storage_dead(_51)
-        storage_dead(_48)
-        storage_live(b_54)
-        storage_live(_55)
-        storage_live(_56)
-        _79 = move _98
-        _56 = &(*_79)
-        _55 = &(*_56)
-        b_54 = unsize_cast<&'2 i32, &'16 (dyn LifetimeTrait<Ty = i32> + '17), {impl LifetimeTrait for i32} with {impl LifetimeTrait for i32}::{vtable}>(move _55)
-        storage_dead(_55)
-        storage_dead(_56)
-        storage_live(_57)
-        storage_live(_58)
-        storage_live(_59)
-        storage_live(_60)
-        storage_live(_61)
-        _61 = &(*b_54) with_metadata(copy b_54.metadata)
-        _60 = unsize_cast<&'16 (dyn LifetimeTrait<Ty = i32> + '17), &'16 (dyn LifetimeTrait<Ty = i32> + '17),  at []>(move _61)
-        storage_dead(_61)
-        storage_live(_62)
-        storage_live(_63)
-        _78 = move _100
-        _63 = &(*_78)
-        _62 = &(*_63)
-        _59 = use_lifetime_trait<'_, '_>(move _60, move _62)
-        storage_live(_102)
-        storage_live(_103)
-        _103 = const 10 : i32
-        _102 = &_103
-        storage_dead(_62)
-        storage_dead(_60)
-        _58 = &(*_59)
-        storage_live(_64)
-        _77 = move _102
-        _64 = &(*_77)
-        _57 = (move _58, move _64)
-        storage_dead(_64)
-        storage_dead(_58)
-        storage_live(left_val_65)
-        left_val_65 = copy _57.0
-        storage_live(right_val_66)
-        right_val_66 = copy _57.1
-        storage_live(_67)
-        storage_live(_68)
-        _68 = copy (*left_val_65)
-        storage_live(_69)
-        _69 = copy (*right_val_66)
-        _67 = move _68 == move _69
-        if move _67 {
-        } else {
-            storage_dead(_69)
-            storage_dead(_68)
-            storage_live(kind_70)
-            kind_70 = AssertKind::Eq {  }
-            storage_live(_71)
-            _71 = move kind_70
-            storage_live(_72)
-            storage_live(_73)
-            _73 = &(*left_val_65)
-            _72 = &(*_73)
-            storage_live(_74)
-            storage_live(_75)
-            _75 = &(*right_val_66)
-            _74 = &(*_75)
-            storage_live(_76)
-            _76 = Option::None {  }
-            panic(core::panicking::assert_failed)
-        }
-        storage_dead(_69)
-        storage_dead(_68)
-        storage_dead(_67)
-        storage_dead(right_val_66)
-        storage_dead(left_val_65)
-        storage_dead(_63)
-        storage_dead(_59)
-        storage_dead(_57)
-        _0 = ()
-        storage_dead(b_54)
-        storage_dead(a_45)
-        storage_dead(z_38)
-        storage_dead(_9)
-        storage_dead(y_6)
-        storage_dead(x_1)
-        return
-    }
-    storage_dead(_11)
-    conditional_drop[{impl Destruct for String}] _12
-    conditional_drop[{impl Destruct for String}] _15
-    storage_dead(_17)
-    storage_dead(_15)
-    storage_dead(_14)
-    storage_dead(_12)
-    panic(core::panicking::panic)
 }
 
 

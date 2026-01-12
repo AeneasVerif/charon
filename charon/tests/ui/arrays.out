@@ -311,23 +311,26 @@ where
     let _9: &'_ mut [T]; // anonymous local
     let _10: &'_ mut T; // anonymous local
 
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    _0 = ()
-    _2 = &mut (*_1)
-    _3 = &raw mut (*_2)
-    _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
-    _5 = copy _4.metadata
-    _6 = const 0 : usize
+    loop {
+        storage_live(_2)
+        storage_live(_3)
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        storage_live(_8)
+        _0 = ()
+        _2 = &mut (*_1)
+        _3 = &raw mut (*_2)
+        _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
+        _5 = copy _4.metadata
+        _6 = const 0 : usize
+        break 0
+    }
     loop {
         _8 = copy _6 == copy _5
         if move _8 {
-            break 0
+            return
         } else {
             storage_live(_9)
             _9 = &mut (*_4) with_metadata(copy _4.metadata)
@@ -336,10 +339,8 @@ where
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
             drop[{built_in impl Destruct for T}] (*_7)
-            continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}
@@ -1275,22 +1276,25 @@ pub fn index_all() -> u32
     let _25: &'3 mut [u32; 2 : usize]; // anonymous local
     let _26: u32; // anonymous local
 
-    storage_live(_12)
-    storage_live(_16)
-    storage_live(_21)
-    storage_live(_26)
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-    storage_live(_2)
-    _2 = const true
-    if move _2 {
-        storage_live(_y_3)
-        _y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-        storage_dead(_y_3)
-    } else {
-        storage_live(_z_4)
-        _z_4 = [const 0 : u32]
-        storage_dead(_z_4)
+    loop {
+        storage_live(_12)
+        storage_live(_16)
+        storage_live(_21)
+        storage_live(_26)
+        storage_live(x_1)
+        x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+        storage_live(_2)
+        _2 = const true
+        if move _2 {
+            storage_live(_y_3)
+            _y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+            storage_dead(_y_3)
+        } else {
+            storage_live(_z_4)
+            _z_4 = [const 0 : u32]
+            storage_dead(_z_4)
+        }
+        break 0
     }
     storage_dead(_2)
     storage_live(_5)
@@ -1630,12 +1634,15 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
     let _12: &'_ [u32]; // anonymous local
     let _13: &'_ u32; // anonymous local
 
-    storage_live(_10)
-    storage_live(_11)
-    storage_live(sum_2)
-    sum_2 = const 0 : u32
-    storage_live(i_3)
-    i_3 = const 0 : usize
+    loop {
+        storage_live(_10)
+        storage_live(_11)
+        storage_live(sum_2)
+        sum_2 = const 0 : u32
+        storage_live(i_3)
+        i_3 = const 0 : usize
+        break 0
+    }
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -1647,35 +1654,33 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
         storage_dead(_7)
         _4 = move _5 < move _6
         if move _4 {
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_live(_8)
+            storage_live(_9)
+            _9 = copy i_3
+            storage_live(_12)
+            _12 = &(*s_1) with_metadata(copy s_1.metadata)
+            storage_live(_13)
+            _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
+            _8 = copy (*_13)
+            _10 = copy sum_2 panic.+ copy _8
+            sum_2 = move _10
+            storage_dead(_8)
+            storage_dead(_9)
+            _11 = copy i_3 panic.+ const 1 : usize
+            i_3 = move _11
+            storage_dead(_4)
         } else {
-            break 0
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_dead(_4)
+            _0 = copy sum_2
+            storage_dead(i_3)
+            storage_dead(sum_2)
+            return
         }
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_live(_8)
-        storage_live(_9)
-        _9 = copy i_3
-        storage_live(_12)
-        _12 = &(*s_1) with_metadata(copy s_1.metadata)
-        storage_live(_13)
-        _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
-        _8 = copy (*_13)
-        _10 = copy sum_2 panic.+ copy _8
-        sum_2 = move _10
-        storage_dead(_8)
-        storage_dead(_9)
-        _11 = copy i_3 panic.+ const 1 : usize
-        i_3 = move _11
-        storage_dead(_4)
-        continue 0
     }
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_dead(_4)
-    _0 = copy sum_2
-    storage_dead(i_3)
-    storage_dead(sum_2)
-    return
 }
 
 // Full name: test_crate::sum2
@@ -1726,70 +1731,71 @@ pub fn sum2<'_0, '_1>(@1: &'_0 [u32], @2: &'_1 [u32]) -> u32
     storage_dead(_8)
     _4 = move _5 == move _7
     if move _4 {
+        loop {
+            storage_dead(_7)
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_live(i_9)
+            i_9 = const 0 : usize
+            break 0
+        }
+        loop {
+            storage_live(_10)
+            storage_live(_11)
+            _11 = copy i_9
+            storage_live(_12)
+            storage_live(_13)
+            _13 = &(*s_1) with_metadata(copy s_1.metadata)
+            _12 = len<'_, u32>[{built_in impl Sized for u32}](move _13)
+            storage_dead(_13)
+            _10 = move _11 < move _12
+            if move _10 {
+                storage_dead(_12)
+                storage_dead(_11)
+                storage_live(_14)
+                storage_live(_15)
+                storage_live(_16)
+                _16 = copy i_9
+                storage_live(_22)
+                _22 = &(*s_1) with_metadata(copy s_1.metadata)
+                storage_live(_23)
+                _23 = @SliceIndexShared<'_, u32>(move _22, copy _16)
+                _15 = copy (*_23)
+                storage_live(_17)
+                storage_live(_18)
+                _18 = copy i_9
+                storage_live(_24)
+                _24 = &(*s2_2) with_metadata(copy s2_2.metadata)
+                storage_live(_25)
+                _25 = @SliceIndexShared<'_, u32>(move _24, copy _18)
+                _17 = copy (*_25)
+                _19 = copy _15 panic.+ copy _17
+                _14 = move _19
+                storage_dead(_17)
+                storage_dead(_15)
+                _20 = copy sum_3 panic.+ copy _14
+                sum_3 = move _20
+                storage_dead(_14)
+                storage_dead(_18)
+                storage_dead(_16)
+                _21 = copy i_9 panic.+ const 1 : usize
+                i_9 = move _21
+                storage_dead(_10)
+            } else {
+                storage_dead(_12)
+                storage_dead(_11)
+                storage_dead(_10)
+                _0 = copy sum_3
+                storage_dead(i_9)
+                storage_dead(sum_3)
+                return
+            }
+        }
     } else {
         storage_dead(_7)
         storage_dead(_5)
         panic(core::panicking::panic)
     }
-    storage_dead(_7)
-    storage_dead(_5)
-    storage_dead(_4)
-    storage_live(i_9)
-    i_9 = const 0 : usize
-    loop {
-        storage_live(_10)
-        storage_live(_11)
-        _11 = copy i_9
-        storage_live(_12)
-        storage_live(_13)
-        _13 = &(*s_1) with_metadata(copy s_1.metadata)
-        _12 = len<'_, u32>[{built_in impl Sized for u32}](move _13)
-        storage_dead(_13)
-        _10 = move _11 < move _12
-        if move _10 {
-        } else {
-            break 0
-        }
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_live(_14)
-        storage_live(_15)
-        storage_live(_16)
-        _16 = copy i_9
-        storage_live(_22)
-        _22 = &(*s_1) with_metadata(copy s_1.metadata)
-        storage_live(_23)
-        _23 = @SliceIndexShared<'_, u32>(move _22, copy _16)
-        _15 = copy (*_23)
-        storage_live(_17)
-        storage_live(_18)
-        _18 = copy i_9
-        storage_live(_24)
-        _24 = &(*s2_2) with_metadata(copy s2_2.metadata)
-        storage_live(_25)
-        _25 = @SliceIndexShared<'_, u32>(move _24, copy _18)
-        _17 = copy (*_25)
-        _19 = copy _15 panic.+ copy _17
-        _14 = move _19
-        storage_dead(_17)
-        storage_dead(_15)
-        _20 = copy sum_3 panic.+ copy _14
-        sum_3 = move _20
-        storage_dead(_14)
-        storage_dead(_18)
-        storage_dead(_16)
-        _21 = copy i_9 panic.+ const 1 : usize
-        i_9 = move _21
-        storage_dead(_10)
-        continue 0
-    }
-    storage_dead(_12)
-    storage_dead(_11)
-    storage_dead(_10)
-    _0 = copy sum_3
-    storage_dead(i_9)
-    storage_dead(sum_3)
-    return
 }
 
 // Full name: test_crate::f0
@@ -2012,42 +2018,45 @@ pub fn ite()
     let _10: &'1 mut [u32; 2 : usize]; // anonymous local
     let _11: &'1 mut [u32; 2 : usize]; // anonymous local
 
-    _0 = ()
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-    storage_live(_2)
-    _2 = const true
-    if move _2 {
-        storage_live(y_3)
-        y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        storage_live(_7)
-        _7 = &mut x_1
-        _6 = &mut (*_7)
-        _5 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _6)
-        storage_dead(_6)
-        _4 = index_mut_slice_u32_0<'_>(move _5)
-        storage_dead(_5)
-        storage_dead(_7)
-        storage_dead(_4)
-        storage_live(_8)
-        storage_live(_9)
-        storage_live(_10)
-        storage_live(_11)
-        _11 = &mut y_3
-        _10 = &mut (*_11)
-        _9 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _10)
-        storage_dead(_10)
-        _8 = index_mut_slice_u32_0<'_>(move _9)
-        storage_dead(_9)
-        storage_dead(_11)
-        storage_dead(_8)
+    loop {
         _0 = ()
-        storage_dead(y_3)
-    } else {
-        _0 = ()
+        storage_live(x_1)
+        x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+        storage_live(_2)
+        _2 = const true
+        if move _2 {
+            storage_live(y_3)
+            y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+            storage_live(_4)
+            storage_live(_5)
+            storage_live(_6)
+            storage_live(_7)
+            _7 = &mut x_1
+            _6 = &mut (*_7)
+            _5 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _6)
+            storage_dead(_6)
+            _4 = index_mut_slice_u32_0<'_>(move _5)
+            storage_dead(_5)
+            storage_dead(_7)
+            storage_dead(_4)
+            storage_live(_8)
+            storage_live(_9)
+            storage_live(_10)
+            storage_live(_11)
+            _11 = &mut y_3
+            _10 = &mut (*_11)
+            _9 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _10)
+            storage_dead(_10)
+            _8 = index_mut_slice_u32_0<'_>(move _9)
+            storage_dead(_9)
+            storage_dead(_11)
+            storage_dead(_8)
+            _0 = ()
+            storage_dead(y_3)
+        } else {
+            _0 = ()
+        }
+        break 0
     }
     storage_dead(_2)
     storage_dead(x_1)
@@ -2078,7 +2087,10 @@ pub fn zero_slice<'_0>(@1: &'_0 mut [u8])
     storage_live(_4)
     _4 = &(*a_1) with_metadata(copy a_1.metadata)
     len_3 = len<'_, u8>[{built_in impl Sized for u8}](move _4)
-    storage_dead(_4)
+    loop {
+        storage_dead(_4)
+        break 0
+    }
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -2100,18 +2112,16 @@ pub fn zero_slice<'_0>(@1: &'_0 mut [u8])
             _9 = copy i_2 panic.+ const 1 : usize
             i_2 = move _9
             storage_dead(_5)
-            continue 0
         } else {
-            break 0
+            storage_dead(_7)
+            storage_dead(_6)
+            _0 = ()
+            storage_dead(_5)
+            storage_dead(len_3)
+            storage_dead(i_2)
+            return
         }
     }
-    storage_dead(_7)
-    storage_dead(_6)
-    _0 = ()
-    storage_dead(_5)
-    storage_dead(len_3)
-    storage_dead(i_2)
-    return
 }
 
 // Full name: test_crate::iter_mut_slice
@@ -2133,9 +2143,12 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut [u8])
     storage_live(_3)
     _3 = &(*a_1) with_metadata(copy a_1.metadata)
     len_2 = len<'_, u8>[{built_in impl Sized for u8}](move _3)
-    storage_dead(_3)
-    storage_live(i_4)
-    i_4 = const 0 : usize
+    loop {
+        storage_dead(_3)
+        storage_live(i_4)
+        i_4 = const 0 : usize
+        break 0
+    }
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -2149,18 +2162,16 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut [u8])
             _8 = copy i_4 panic.+ const 1 : usize
             i_4 = move _8
             storage_dead(_5)
-            continue 0
         } else {
-            break 0
+            storage_dead(_7)
+            storage_dead(_6)
+            _0 = ()
+            storage_dead(_5)
+            storage_dead(i_4)
+            storage_dead(len_2)
+            return
         }
     }
-    storage_dead(_7)
-    storage_dead(_6)
-    _0 = ()
-    storage_dead(_5)
-    storage_dead(i_4)
-    storage_dead(len_2)
-    return
 }
 
 // Full name: test_crate::sum_mut_slice
@@ -2181,12 +2192,15 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut [u32]) -> u32
     let _12: &'_ [u32]; // anonymous local
     let _13: &'_ u32; // anonymous local
 
-    storage_live(_10)
-    storage_live(_11)
-    storage_live(i_2)
-    i_2 = const 0 : usize
-    storage_live(s_3)
-    s_3 = const 0 : u32
+    loop {
+        storage_live(_10)
+        storage_live(_11)
+        storage_live(i_2)
+        i_2 = const 0 : usize
+        storage_live(s_3)
+        s_3 = const 0 : u32
+        break 0
+    }
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -2198,35 +2212,33 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut [u32]) -> u32
         storage_dead(_7)
         _4 = move _5 < move _6
         if move _4 {
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_live(_8)
+            storage_live(_9)
+            _9 = copy i_2
+            storage_live(_12)
+            _12 = &(*a_1) with_metadata(copy a_1.metadata)
+            storage_live(_13)
+            _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
+            _8 = copy (*_13)
+            _10 = copy s_3 panic.+ copy _8
+            s_3 = move _10
+            storage_dead(_8)
+            storage_dead(_9)
+            _11 = copy i_2 panic.+ const 1 : usize
+            i_2 = move _11
+            storage_dead(_4)
         } else {
-            break 0
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_dead(_4)
+            _0 = copy s_3
+            storage_dead(s_3)
+            storage_dead(i_2)
+            return
         }
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_live(_8)
-        storage_live(_9)
-        _9 = copy i_2
-        storage_live(_12)
-        _12 = &(*a_1) with_metadata(copy a_1.metadata)
-        storage_live(_13)
-        _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
-        _8 = copy (*_13)
-        _10 = copy s_3 panic.+ copy _8
-        s_3 = move _10
-        storage_dead(_8)
-        storage_dead(_9)
-        _11 = copy i_2 panic.+ const 1 : usize
-        i_2 = move _11
-        storage_dead(_4)
-        continue 0
     }
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_dead(_4)
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
-    return
 }
 
 // Full name: test_crate::slice_pattern_1
@@ -2337,19 +2349,19 @@ fn slice_pattern_4<'_0>(@1: &'_0 [()])
     _4 = const 1 : usize
     _5 = move _2 == move _4
     if move _5 {
+        storage_live(_named_6)
+        storage_live(_7)
+        _7 = &(*x_1) with_metadata(copy x_1.metadata)
+        storage_live(_8)
+        _8 = @SliceIndexShared<'_, ()>(move _7, const 0 : usize)
+        _named_6 = &(*_8)
+        _0 = ()
+        storage_dead(_named_6)
+        return
     } else {
         _0 = ()
         return
     }
-    storage_live(_named_6)
-    storage_live(_7)
-    _7 = &(*x_1) with_metadata(copy x_1.metadata)
-    storage_live(_8)
-    _8 = @SliceIndexShared<'_, ()>(move _7, const 0 : usize)
-    _named_6 = &(*_8)
-    _0 = ()
-    storage_dead(_named_6)
-    return
 }
 
 

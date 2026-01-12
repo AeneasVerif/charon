@@ -16,16 +16,19 @@ fn main()
     let _0: (); // return
     let _1: char; // anonymous local
 
-    _0 = ()
-    storage_live(_1)
-    _1 = const x
-    switch copy _1 {
-        a => {
-            _0 = ()
-        },
-        _ => {
-            _0 = ()
-        },
+    loop {
+        _0 = ()
+        storage_live(_1)
+        _1 = const x
+        switch copy _1 {
+            a => {
+                _0 = ()
+            },
+            _ => {
+                _0 = ()
+            },
+        }
+        break 0
     }
     storage_dead(_1)
     return

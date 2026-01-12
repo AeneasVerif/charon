@@ -107,13 +107,16 @@ where
     let _0: isize; // return
     let opt_1: Option<T>[@TraitClause0]; // arg #1
 
-    match opt_1 {
-        Option::None => {
-            _0 = const 0 : isize
-        },
-        Option::Some => {
-            _0 = const 1 : isize
-        },
+    loop {
+        match opt_1 {
+            Option::None => {
+                _0 = const 0 : isize
+            },
+            Option::Some => {
+                _0 = const 1 : isize
+            },
+        }
+        break 0
     }
     drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt_1
     return

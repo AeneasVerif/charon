@@ -478,45 +478,52 @@ fn f1<'_0>(@1: &'_0 [u8]) -> usize
     let _13: &'_ [u8]; // anonymous local
     let _14: &'_ u8; // anonymous local
 
-    storage_live(_9)
-    storage_live(_10)
-    storage_live(sampled_2)
-    sampled_2 = const 0 : usize
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    _5 = const 0 : usize
-    storage_live(_13)
-    _13 = &(*a_1) with_metadata(copy a_1.metadata)
-    storage_live(_14)
-    _14 = @SliceIndexShared<'_, u8>(move _13, copy _5)
-    _4 = copy (*_14)
-    _3 = move _4 < const 42 : u8
-    if move _3 {
-        storage_dead(_5)
-        storage_dead(_4)
-        storage_live(_6)
-        storage_live(_7)
-        storage_live(_8)
-        _8 = const 1 : usize
-        storage_live(_11)
-        _11 = &(*a_1) with_metadata(copy a_1.metadata)
-        storage_live(_12)
-        _12 = @SliceIndexShared<'_, u8>(move _11, copy _8)
-        _7 = copy (*_12)
-        _6 = move _7 < const 16 : u8
-        if move _6 {
-            storage_dead(_8)
-            storage_dead(_7)
-            _9 = copy sampled_2 panic.+ const 100 : usize
-            sampled_2 = move _9
-        } else {
-            storage_dead(_8)
-            storage_dead(_7)
+    loop {
+        loop {
+            storage_live(_9)
+            storage_live(_10)
+            storage_live(sampled_2)
+            sampled_2 = const 0 : usize
+            storage_live(_3)
+            storage_live(_4)
+            storage_live(_5)
+            _5 = const 0 : usize
+            storage_live(_13)
+            _13 = &(*a_1) with_metadata(copy a_1.metadata)
+            storage_live(_14)
+            _14 = @SliceIndexShared<'_, u8>(move _13, copy _5)
+            _4 = copy (*_14)
+            _3 = move _4 < const 42 : u8
+            if move _3 {
+                storage_dead(_5)
+                storage_dead(_4)
+                storage_live(_6)
+                storage_live(_7)
+                storage_live(_8)
+                _8 = const 1 : usize
+                storage_live(_11)
+                _11 = &(*a_1) with_metadata(copy a_1.metadata)
+                storage_live(_12)
+                _12 = @SliceIndexShared<'_, u8>(move _11, copy _8)
+                _7 = copy (*_12)
+                _6 = move _7 < const 16 : u8
+                if move _6 {
+                    storage_dead(_8)
+                    storage_dead(_7)
+                    _9 = copy sampled_2 panic.+ const 100 : usize
+                    sampled_2 = move _9
+                    break 1
+                } else {
+                    storage_dead(_8)
+                    storage_dead(_7)
+                }
+            } else {
+                storage_dead(_5)
+                storage_dead(_4)
+            }
+            break 0
         }
-    } else {
-        storage_dead(_5)
-        storage_dead(_4)
+        break 0
     }
     storage_dead(_6)
     storage_dead(_3)
@@ -589,14 +596,14 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
     let _44: usize; // anonymous local
     let _45: &'_ mut [i16]; // anonymous local
     let _46: &'_ mut i16; // anonymous local
-    let _47: &'_ mut [i16]; // anonymous local
-    let _48: &'_ mut i16; // anonymous local
+    let _47: &'_ [u8]; // anonymous local
+    let _48: &'_ u8; // anonymous local
     let _49: &'_ [u8]; // anonymous local
     let _50: &'_ u8; // anonymous local
     let _51: &'_ [u8]; // anonymous local
     let _52: &'_ u8; // anonymous local
-    let _53: &'_ [u8]; // anonymous local
-    let _54: &'_ u8; // anonymous local
+    let _53: &'_ mut [i16]; // anonymous local
+    let _54: &'_ mut i16; // anonymous local
 
     storage_live(_37)
     storage_live(_44)
@@ -609,9 +616,12 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
     _5 = chunks<'_, u8>[{built_in impl Sized for u8}](move _6, const 3 : usize)
     storage_dead(_6)
     _4 = {impl IntoIterator for I}::into_iter<Chunks<'2, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'2, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'2, u8>[{built_in impl Sized for u8}]](move _5)
-    storage_dead(_5)
-    storage_live(iter_7)
-    iter_7 = move _4
+    loop {
+        storage_dead(_5)
+        storage_live(iter_7)
+        iter_7 = move _4
+        break 0
+    }
     loop {
         storage_live(_8)
         storage_live(_9)
@@ -622,160 +632,172 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
         storage_dead(_9)
         match _8 {
             Option::None => {
-                break 0
+                storage_dead(_10)
+                storage_dead(_8)
+                storage_dead(iter_7)
+                storage_dead(_4)
+                _0 = copy sampled_3
+                storage_dead(sampled_3)
+                return
             },
             Option::Some => {
+                loop {
+                    loop {
+                        storage_live(bytes_11)
+                        bytes_11 = copy (_8 as variant Option::Some).0
+                        storage_live(b1_12)
+                        storage_live(_13)
+                        storage_live(_14)
+                        _14 = const 0 : usize
+                        storage_live(_47)
+                        _47 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
+                        storage_live(_48)
+                        _48 = @SliceIndexShared<'_, u8>(move _47, copy _14)
+                        _13 = copy (*_48)
+                        b1_12 = cast<u8, i16>(move _13)
+                        storage_dead(_13)
+                        storage_dead(_14)
+                        storage_live(b2_15)
+                        storage_live(_16)
+                        storage_live(_17)
+                        _17 = const 1 : usize
+                        storage_live(_49)
+                        _49 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
+                        storage_live(_50)
+                        _50 = @SliceIndexShared<'_, u8>(move _49, copy _17)
+                        _16 = copy (*_50)
+                        b2_15 = cast<u8, i16>(move _16)
+                        storage_dead(_16)
+                        storage_dead(_17)
+                        storage_live(b3_18)
+                        storage_live(_19)
+                        storage_live(_20)
+                        _20 = const 2 : usize
+                        storage_live(_51)
+                        _51 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
+                        storage_live(_52)
+                        _52 = @SliceIndexShared<'_, u8>(move _51, copy _20)
+                        _19 = copy (*_52)
+                        b3_18 = cast<u8, i16>(move _19)
+                        storage_dead(_19)
+                        storage_dead(_20)
+                        storage_live(d1_21)
+                        storage_live(_22)
+                        storage_live(_23)
+                        storage_live(_24)
+                        _24 = copy b2_15
+                        _23 = move _24 & const 15 : i16
+                        storage_dead(_24)
+                        _22 = move _23 panic.<< const 8 : i32
+                        storage_dead(_23)
+                        storage_live(_25)
+                        _25 = copy b1_12
+                        d1_21 = move _22 | move _25
+                        storage_dead(_25)
+                        storage_dead(_22)
+                        storage_live(d2_26)
+                        storage_live(_27)
+                        storage_live(_28)
+                        _28 = copy b3_18
+                        _27 = move _28 panic.<< const 4 : i32
+                        storage_dead(_28)
+                        storage_live(_29)
+                        storage_live(_30)
+                        _30 = copy b2_15
+                        _29 = move _30 panic.>> const 4 : i32
+                        storage_dead(_30)
+                        d2_26 = move _27 | move _29
+                        storage_dead(_29)
+                        storage_dead(_27)
+                        storage_live(_31)
+                        storage_live(_32)
+                        _32 = copy d1_21
+                        _31 = move _32 < copy FIELD_MODULUS
+                        if move _31 {
+                            storage_dead(_32)
+                            storage_live(_33)
+                            storage_live(_34)
+                            _34 = copy sampled_3
+                            _33 = move _34 < const 16 : usize
+                            if move _33 {
+                                storage_dead(_34)
+                                storage_live(_35)
+                                _35 = copy d1_21
+                                storage_live(_36)
+                                _36 = copy sampled_3
+                                storage_live(_45)
+                                _45 = &mut (*result_2) with_metadata(copy result_2.metadata)
+                                storage_live(_46)
+                                _46 = @SliceIndexMut<'_, i16>(move _45, copy _36)
+                                (*_46) = move _35
+                                storage_dead(_35)
+                                storage_dead(_36)
+                                _37 = copy sampled_3 panic.+ const 1 : usize
+                                sampled_3 = move _37
+                                break 1
+                            } else {
+                                storage_dead(_34)
+                            }
+                        } else {
+                            storage_dead(_32)
+                        }
+                        break 0
+                    }
+                    break 0
+                }
+                loop {
+                    loop {
+                        storage_dead(_33)
+                        storage_dead(_31)
+                        storage_live(_38)
+                        storage_live(_39)
+                        _39 = copy d2_26
+                        _38 = move _39 < copy FIELD_MODULUS
+                        if move _38 {
+                            storage_dead(_39)
+                            storage_live(_40)
+                            storage_live(_41)
+                            _41 = copy sampled_3
+                            _40 = move _41 < const 16 : usize
+                            if move _40 {
+                                storage_dead(_41)
+                                storage_live(_42)
+                                _42 = copy d2_26
+                                storage_live(_43)
+                                _43 = copy sampled_3
+                                storage_live(_53)
+                                _53 = &mut (*result_2) with_metadata(copy result_2.metadata)
+                                storage_live(_54)
+                                _54 = @SliceIndexMut<'_, i16>(move _53, copy _43)
+                                (*_54) = move _42
+                                storage_dead(_42)
+                                storage_dead(_43)
+                                _44 = copy sampled_3 panic.+ const 1 : usize
+                                sampled_3 = move _44
+                                break 1
+                            } else {
+                                storage_dead(_41)
+                            }
+                        } else {
+                            storage_dead(_39)
+                        }
+                        break 0
+                    }
+                    break 0
+                }
+                storage_dead(_40)
+                storage_dead(_38)
+                storage_dead(d2_26)
+                storage_dead(d1_21)
+                storage_dead(b3_18)
+                storage_dead(b2_15)
+                storage_dead(b1_12)
+                storage_dead(bytes_11)
+                storage_dead(_10)
+                storage_dead(_8)
             },
         }
-        storage_live(bytes_11)
-        bytes_11 = copy (_8 as variant Option::Some).0
-        storage_live(b1_12)
-        storage_live(_13)
-        storage_live(_14)
-        _14 = const 0 : usize
-        storage_live(_49)
-        _49 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
-        storage_live(_50)
-        _50 = @SliceIndexShared<'_, u8>(move _49, copy _14)
-        _13 = copy (*_50)
-        b1_12 = cast<u8, i16>(move _13)
-        storage_dead(_13)
-        storage_dead(_14)
-        storage_live(b2_15)
-        storage_live(_16)
-        storage_live(_17)
-        _17 = const 1 : usize
-        storage_live(_51)
-        _51 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
-        storage_live(_52)
-        _52 = @SliceIndexShared<'_, u8>(move _51, copy _17)
-        _16 = copy (*_52)
-        b2_15 = cast<u8, i16>(move _16)
-        storage_dead(_16)
-        storage_dead(_17)
-        storage_live(b3_18)
-        storage_live(_19)
-        storage_live(_20)
-        _20 = const 2 : usize
-        storage_live(_53)
-        _53 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
-        storage_live(_54)
-        _54 = @SliceIndexShared<'_, u8>(move _53, copy _20)
-        _19 = copy (*_54)
-        b3_18 = cast<u8, i16>(move _19)
-        storage_dead(_19)
-        storage_dead(_20)
-        storage_live(d1_21)
-        storage_live(_22)
-        storage_live(_23)
-        storage_live(_24)
-        _24 = copy b2_15
-        _23 = move _24 & const 15 : i16
-        storage_dead(_24)
-        _22 = move _23 panic.<< const 8 : i32
-        storage_dead(_23)
-        storage_live(_25)
-        _25 = copy b1_12
-        d1_21 = move _22 | move _25
-        storage_dead(_25)
-        storage_dead(_22)
-        storage_live(d2_26)
-        storage_live(_27)
-        storage_live(_28)
-        _28 = copy b3_18
-        _27 = move _28 panic.<< const 4 : i32
-        storage_dead(_28)
-        storage_live(_29)
-        storage_live(_30)
-        _30 = copy b2_15
-        _29 = move _30 panic.>> const 4 : i32
-        storage_dead(_30)
-        d2_26 = move _27 | move _29
-        storage_dead(_29)
-        storage_dead(_27)
-        storage_live(_31)
-        storage_live(_32)
-        _32 = copy d1_21
-        _31 = move _32 < copy FIELD_MODULUS
-        if move _31 {
-            storage_dead(_32)
-            storage_live(_33)
-            storage_live(_34)
-            _34 = copy sampled_3
-            _33 = move _34 < const 16 : usize
-            if move _33 {
-                storage_dead(_34)
-                storage_live(_35)
-                _35 = copy d1_21
-                storage_live(_36)
-                _36 = copy sampled_3
-                storage_live(_45)
-                _45 = &mut (*result_2) with_metadata(copy result_2.metadata)
-                storage_live(_46)
-                _46 = @SliceIndexMut<'_, i16>(move _45, copy _36)
-                (*_46) = move _35
-                storage_dead(_35)
-                storage_dead(_36)
-                _37 = copy sampled_3 panic.+ const 1 : usize
-                sampled_3 = move _37
-            } else {
-                storage_dead(_34)
-            }
-        } else {
-            storage_dead(_32)
-        }
-        storage_dead(_33)
-        storage_dead(_31)
-        storage_live(_38)
-        storage_live(_39)
-        _39 = copy d2_26
-        _38 = move _39 < copy FIELD_MODULUS
-        if move _38 {
-            storage_dead(_39)
-            storage_live(_40)
-            storage_live(_41)
-            _41 = copy sampled_3
-            _40 = move _41 < const 16 : usize
-            if move _40 {
-                storage_dead(_41)
-                storage_live(_42)
-                _42 = copy d2_26
-                storage_live(_43)
-                _43 = copy sampled_3
-                storage_live(_47)
-                _47 = &mut (*result_2) with_metadata(copy result_2.metadata)
-                storage_live(_48)
-                _48 = @SliceIndexMut<'_, i16>(move _47, copy _43)
-                (*_48) = move _42
-                storage_dead(_42)
-                storage_dead(_43)
-                _44 = copy sampled_3 panic.+ const 1 : usize
-                sampled_3 = move _44
-            } else {
-                storage_dead(_41)
-            }
-        } else {
-            storage_dead(_39)
-        }
-        storage_dead(_40)
-        storage_dead(_38)
-        storage_dead(d2_26)
-        storage_dead(d1_21)
-        storage_dead(b3_18)
-        storage_dead(b2_15)
-        storage_dead(b1_12)
-        storage_dead(bytes_11)
-        storage_dead(_10)
-        storage_dead(_8)
-        continue 0
     }
-    storage_dead(_10)
-    storage_dead(_8)
-    storage_dead(iter_7)
-    storage_dead(_4)
-    _0 = copy sampled_3
-    storage_dead(sampled_3)
-    return
 }
 
 

@@ -331,44 +331,47 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut HashMap<u32, u32, RandomState>[{built_in 
     _5 = &(*_15)
     _4 = &(*_5)
     _2 = get<'_, '_, u32, u32, RandomState, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {built_in impl MetaSized for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Hash for u32}, {impl Eq for u32}](move _3, move _4)
-    storage_dead(_4)
-    storage_dead(_3)
-    match _2 {
-        Option::None => {
-            storage_live(_7)
-            storage_live(_8)
-            _8 = &two-phase-mut (*map_1)
-            _7 = insert<'_, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _8, const 22 : u32, const 33 : u32)
-            storage_live(_18)
-            storage_live(_19)
-            _19 = const 22 : u32
-            _18 = &_19
-            storage_dead(_8)
-            storage_dead(_7)
-            storage_live(_9)
-            storage_live(_10)
-            storage_live(_11)
-            _11 = &(*map_1)
-            storage_live(_12)
-            storage_live(_13)
-            _14 = move _18
-            _13 = &(*_14)
-            _12 = &(*_13)
-            _10 = {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'5, '_, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
-            storage_dead(_12)
-            storage_dead(_11)
-            _9 = &(*_10)
-            _0 = &(*_9)
-            storage_dead(_13)
-            storage_dead(_10)
-            storage_dead(_9)
-        },
-        Option::Some => {
-            storage_live(v_6)
-            v_6 = copy (_2 as variant Option::Some).0
-            _0 = &(*v_6)
-            storage_dead(v_6)
-        },
+    loop {
+        storage_dead(_4)
+        storage_dead(_3)
+        match _2 {
+            Option::None => {
+                storage_live(_7)
+                storage_live(_8)
+                _8 = &two-phase-mut (*map_1)
+                _7 = insert<'_, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _8, const 22 : u32, const 33 : u32)
+                storage_live(_18)
+                storage_live(_19)
+                _19 = const 22 : u32
+                _18 = &_19
+                storage_dead(_8)
+                storage_dead(_7)
+                storage_live(_9)
+                storage_live(_10)
+                storage_live(_11)
+                _11 = &(*map_1)
+                storage_live(_12)
+                storage_live(_13)
+                _14 = move _18
+                _13 = &(*_14)
+                _12 = &(*_13)
+                _10 = {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'5, '_, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
+                storage_dead(_12)
+                storage_dead(_11)
+                _9 = &(*_10)
+                _0 = &(*_9)
+                storage_dead(_13)
+                storage_dead(_10)
+                storage_dead(_9)
+            },
+            Option::Some => {
+                storage_live(v_6)
+                v_6 = copy (_2 as variant Option::Some).0
+                _0 = &(*v_6)
+                storage_dead(v_6)
+            },
+        }
+        break 0
     }
     storage_dead(_5)
     storage_dead(_2)

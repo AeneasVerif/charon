@@ -152,8 +152,11 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
     _5 = move _7
     storage_dead(_6)
     _4 = function_call(move _5)
-    storage_dead(_5)
-    storage_dead(_4)
+    loop {
+        storage_dead(_5)
+        storage_dead(_4)
+        break 0
+    }
     // Start of loop
     loop {
         storage_live(_8)
@@ -166,72 +169,73 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
         storage_dead(_11)
         _8 = move _9 < move _10
         if move _8 {
+            storage_dead(_10)
+            storage_dead(_9)
+            storage_live(_12)
+            storage_live(_13)
+            // Add to running sum
+            _13 = copy i_3
+            storage_live(_25)
+            _25 = &(*s_1) with_metadata(copy s_1.metadata)
+            storage_live(_26)
+            _26 = @SliceIndexShared<'_, u32>(move _25, copy _13)
+            _12 = copy (*_26)
+            _14 = copy sum_2 panic.+ copy _12
+            sum_2 = move _14
+            storage_dead(_12)
+            storage_dead(_13)
+            // Increment `i`
+            _15 = copy i_3 panic.+ const 1 : usize
+            i_3 = move _15
+            // Before end of loop
+            storage_dead(_8)
         } else {
-            break 0
+            loop {
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
+                storage_live(_16)
+                storage_live(_17)
+                storage_live(_18)
+                // Assign the result of an `if`.
+                _18 = copy sum_2
+                _17 = move _18 > const 10 : u32
+                if move _17 {
+                    storage_dead(_18)
+                    storage_live(_19)
+                    // sum + 100
+                    _19 = copy sum_2
+                    _20 = copy _19 panic.+ const 100 : u32
+                    _16 = move _20
+                    storage_dead(_19)
+                } else {
+                    storage_dead(_18)
+                    // let sum untouched
+                    _16 = copy sum_2
+                }
+                break 0
+            }
+            storage_dead(_17)
+            sum_2 = move _16
+            storage_dead(_16)
+            storage_live(_21)
+            storage_live(_22)
+            storage_live(_23)
+            // Function call
+            _23 = copy sum_2
+            _24 = copy _23 panic.+ const 2 : u32
+            _22 = move _24
+            storage_dead(_23)
+            _21 = function_call(move _22)
+            storage_dead(_22)
+            storage_dead(_21)
+            // Return final value
+            _0 = copy sum_2
+            storage_dead(i_3)
+            storage_dead(sum_2)
+            return
         }
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_live(_12)
-        storage_live(_13)
-        // Add to running sum
-        _13 = copy i_3
-        storage_live(_25)
-        _25 = &(*s_1) with_metadata(copy s_1.metadata)
-        storage_live(_26)
-        _26 = @SliceIndexShared<'_, u32>(move _25, copy _13)
-        _12 = copy (*_26)
-        _14 = copy sum_2 panic.+ copy _12
-        sum_2 = move _14
-        storage_dead(_12)
-        storage_dead(_13)
-        // Increment `i`
-        _15 = copy i_3 panic.+ const 1 : usize
-        i_3 = move _15
-        // Before end of loop
-        storage_dead(_8)
-        continue 0
     }
-    storage_dead(_10)
-    storage_dead(_9)
-    storage_dead(_8)
-    storage_live(_16)
-    storage_live(_17)
-    storage_live(_18)
-    // Assign the result of an `if`.
-    _18 = copy sum_2
-    _17 = move _18 > const 10 : u32
-    if move _17 {
-        storage_dead(_18)
-        storage_live(_19)
-        // sum + 100
-        _19 = copy sum_2
-        _20 = copy _19 panic.+ const 100 : u32
-        _16 = move _20
-        storage_dead(_19)
-    } else {
-        storage_dead(_18)
-        // let sum untouched
-        _16 = copy sum_2
-    }
-    storage_dead(_17)
-    sum_2 = move _16
-    storage_dead(_16)
-    storage_live(_21)
-    storage_live(_22)
-    storage_live(_23)
-    // Function call
-    _23 = copy sum_2
-    _24 = copy _23 panic.+ const 2 : u32
-    _22 = move _24
-    storage_dead(_23)
-    _21 = function_call(move _22)
-    storage_dead(_22)
-    storage_dead(_21)
-    // Return final value
-    _0 = copy sum_2
-    storage_dead(i_3)
-    storage_dead(sum_2)
-    return
 }
 
 // Full name: test_crate::Foo
@@ -429,6 +433,20 @@ fn foo()
     _24 = copy (*right_val_21)
     _22 = move _23 == move _24
     if move _22 {
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(right_val_21)
+        storage_dead(left_val_20)
+        storage_dead(_18)
+        storage_dead(_16)
+        _0 = ()
+        storage_dead(a_15)
+        storage_dead(super_long_field_name_9)
+        storage_dead(x_8)
+        storage_dead(y_2)
+        storage_dead(x_1)
+        return
     } else {
         storage_dead(_24)
         storage_dead(_23)
@@ -448,20 +466,6 @@ fn foo()
         _31 = Option::None {  }
         panic(core::panicking::assert_failed)
     }
-    storage_dead(_24)
-    storage_dead(_23)
-    storage_dead(_22)
-    storage_dead(right_val_21)
-    storage_dead(left_val_20)
-    storage_dead(_18)
-    storage_dead(_16)
-    _0 = ()
-    storage_dead(a_15)
-    storage_dead(super_long_field_name_9)
-    storage_dead(x_8)
-    storage_dead(y_2)
-    storage_dead(x_1)
-    return
 }
 
 // Full name: test_crate::CONSTANT

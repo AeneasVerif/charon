@@ -162,67 +162,70 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     let _30: *const Str; // anonymous local
     let _31: &'3 [u8]; // anonymous local
 
-    storage_live(msg_5)
-    storage_live(_6)
-    storage_live(byte_offset_15)
-    storage_live(_16)
-    _0 = ()
-    storage_live(_4)
-    storage_live(overflow_18)
-    storage_live(rhs_8)
-    rhs_8 = cast<usize, isize>(copy size_3)
-    storage_live(b_11)
-    storage_live(_10)
-    storage_live(_12)
-    storage_live(_13)
-    _13 = cast<isize, i64>(copy count_2)
-    storage_live(_14)
-    _14 = cast<isize, i64>(copy rhs_8)
-    _12 = move _13 checked.* move _14
-    storage_dead(_14)
-    storage_dead(_13)
-    _10 = copy _12.0
-    b_11 = copy _12.1
-    storage_dead(_12)
-    byte_offset_15 = cast<i64, isize>(copy _10)
-    storage_dead(_10)
-    if copy b_11 {
-        _16 = cold_path()
-        storage_dead(b_11)
-        storage_dead(rhs_8)
-        storage_dead(overflow_18)
-    } else {
-        storage_dead(b_11)
-        storage_dead(rhs_8)
-        storage_live(self_9)
-        self_9 = transmute<*const (), usize>(copy this_1)
-        storage_live(_20)
-        storage_live(_17)
-        _17 = cast<isize, usize>(copy byte_offset_15)
-        storage_live(_21)
-        storage_live(_22)
-        _22 = cast<usize, u64>(copy self_9)
-        storage_live(_23)
-        _23 = cast<usize, u64>(copy _17)
-        _21 = move _22 checked.+ move _23
-        storage_dead(_23)
-        storage_dead(_22)
-        _20 = copy _21.1
-        storage_dead(_21)
-        storage_dead(_17)
-        storage_live(_19)
-        _19 = copy byte_offset_15 < const 0 : isize
-        overflow_18 = copy _20 ^ move _19
-        storage_dead(_19)
-        storage_dead(_20)
-        storage_dead(self_9)
-        _4 = ~(copy overflow_18)
-        storage_dead(overflow_18)
-        if move _4 {
-            storage_dead(_4)
-            return
+    loop {
+        storage_live(msg_5)
+        storage_live(_6)
+        storage_live(byte_offset_15)
+        storage_live(_16)
+        _0 = ()
+        storage_live(_4)
+        storage_live(overflow_18)
+        storage_live(rhs_8)
+        rhs_8 = cast<usize, isize>(copy size_3)
+        storage_live(b_11)
+        storage_live(_10)
+        storage_live(_12)
+        storage_live(_13)
+        _13 = cast<isize, i64>(copy count_2)
+        storage_live(_14)
+        _14 = cast<isize, i64>(copy rhs_8)
+        _12 = move _13 checked.* move _14
+        storage_dead(_14)
+        storage_dead(_13)
+        _10 = copy _12.0
+        b_11 = copy _12.1
+        storage_dead(_12)
+        byte_offset_15 = cast<i64, isize>(copy _10)
+        storage_dead(_10)
+        if copy b_11 {
+            _16 = cold_path()
+            storage_dead(b_11)
+            storage_dead(rhs_8)
+            storage_dead(overflow_18)
         } else {
+            storage_dead(b_11)
+            storage_dead(rhs_8)
+            storage_live(self_9)
+            self_9 = transmute<*const (), usize>(copy this_1)
+            storage_live(_20)
+            storage_live(_17)
+            _17 = cast<isize, usize>(copy byte_offset_15)
+            storage_live(_21)
+            storage_live(_22)
+            _22 = cast<usize, u64>(copy self_9)
+            storage_live(_23)
+            _23 = cast<usize, u64>(copy _17)
+            _21 = move _22 checked.+ move _23
+            storage_dead(_23)
+            storage_dead(_22)
+            _20 = copy _21.1
+            storage_dead(_21)
+            storage_dead(_17)
+            storage_live(_19)
+            _19 = copy byte_offset_15 < const 0 : isize
+            overflow_18 = copy _20 ^ move _19
+            storage_dead(_19)
+            storage_dead(_20)
+            storage_dead(self_9)
+            _4 = ~(copy overflow_18)
+            storage_dead(overflow_18)
+            if move _4 {
+                storage_dead(_4)
+                return
+            } else {
+            }
         }
+        break 0
     }
     msg_5 = const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
     storage_live(_7)
@@ -266,15 +269,18 @@ where
     let _4: *const (); // anonymous local
     let _5: bool; // anonymous local
 
-    storage_live(_3)
-    storage_live(_5)
-    _5 = ub_checks<bool>
-    if copy _5 {
-        storage_live(_4)
-        _4 = cast<*const T, *const ()>(copy self_1)
-        _3 = precondition_check(move _4, copy count_2, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE)
-        storage_dead(_4)
-    } else {
+    loop {
+        storage_live(_3)
+        storage_live(_5)
+        _5 = ub_checks<bool>
+        if copy _5 {
+            storage_live(_4)
+            _4 = cast<*const T, *const ()>(copy self_1)
+            _3 = precondition_check(move _4, copy count_2, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE)
+            storage_dead(_4)
+        } else {
+        }
+        break 0
     }
     _0 = copy self_1 offset copy count_2
     return
@@ -330,18 +336,18 @@ fn main()
     _6 = copy (*_7)
     _5 = move _6 == const 42 : i32
     if move _5 {
+        storage_dead(_6)
+        storage_dead(_7)
+        storage_dead(_5)
+        _0 = ()
+        storage_dead(ptr_2)
+        storage_dead(s_1)
+        return
     } else {
         storage_dead(_6)
         storage_dead(_7)
         panic(core::panicking::panic)
     }
-    storage_dead(_6)
-    storage_dead(_7)
-    storage_dead(_5)
-    _0 = ()
-    storage_dead(ptr_2)
-    storage_dead(s_1)
-    return
 }
 
 

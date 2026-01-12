@@ -71,10 +71,10 @@ unsafe fn {impl Destruct for Thing}::drop_in_place(@1: *mut Thing)
     _2 = &mut (*_1)
     match (*_2) {
         _ => {
+            drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_2) as variant Thing::A).0
+            return
         },
     }
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_2) as variant Thing::A).0
-    return
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}

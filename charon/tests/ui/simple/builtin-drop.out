@@ -100,23 +100,26 @@ where
     let _9: &'_ mut [T]; // anonymous local
     let _10: &'_ mut T; // anonymous local
 
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    _0 = ()
-    _2 = &mut (*_1)
-    _3 = &raw mut (*_2)
-    _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
-    _5 = copy _4.metadata
-    _6 = const 0 : usize
+    loop {
+        storage_live(_2)
+        storage_live(_3)
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        storage_live(_8)
+        _0 = ()
+        _2 = &mut (*_1)
+        _3 = &raw mut (*_2)
+        _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
+        _5 = copy _4.metadata
+        _6 = const 0 : usize
+        break 0
+    }
     loop {
         _8 = copy _6 == copy _5
         if move _8 {
-            break 0
+            return
         } else {
             storage_live(_9)
             _9 = &mut (*_4) with_metadata(copy _4.metadata)
@@ -125,10 +128,8 @@ where
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
             drop[@TraitClause1] (*_7)
-            continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}
@@ -157,19 +158,22 @@ where
     let _7: &'_ mut [T]; // anonymous local
     let _8: &'_ mut T; // anonymous local
 
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    _0 = ()
-    _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    _3 = copy _2.metadata
-    _4 = const 0 : usize
+    loop {
+        storage_live(_2)
+        storage_live(_3)
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        _0 = ()
+        _2 = &mut (*_1) with_metadata(copy _1.metadata)
+        _3 = copy _2.metadata
+        _4 = const 0 : usize
+        break 0
+    }
     loop {
         _6 = copy _4 == copy _3
         if move _6 {
-            break 0
+            return
         } else {
             storage_live(_7)
             _7 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -178,10 +182,8 @@ where
             _5 = &raw mut (*_8)
             _4 = move _4 wrap.+ const 1 : usize
             drop[@TraitClause1] (*_5)
-            continue 0
         }
     }
-    return
 }
 
 // Full name: test_crate::<slice>::{impl Destruct for [T]}

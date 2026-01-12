@@ -303,6 +303,14 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
     _6 = copy len_3
     _4 = move _5 > move _6
     if move _4 {
+        storage_dead(_6)
+        storage_dead(_5)
+        storage_live(_7)
+        storage_live(_8)
+        _8 = copy start_1
+        storage_live(_9)
+        _9 = copy len_3
+        _7 = core::slice::index::slice_index_fail::do_panic(move _8, move _9)
     } else {
         storage_dead(_6)
         storage_dead(_5)
@@ -314,6 +322,14 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
         _12 = copy len_3
         _10 = move _11 > move _12
         if move _10 {
+            storage_dead(_12)
+            storage_dead(_11)
+            storage_live(_13)
+            storage_live(_14)
+            _14 = copy end_2
+            storage_live(_15)
+            _15 = copy len_3
+            _13 = core::slice::index::slice_index_fail::do_panic#1(move _14, move _15)
         } else {
             storage_dead(_12)
             storage_dead(_11)
@@ -325,6 +341,14 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
             _18 = copy end_2
             _16 = move _17 > move _18
             if move _16 {
+                storage_dead(_18)
+                storage_dead(_17)
+                storage_live(_19)
+                storage_live(_20)
+                _20 = copy start_1
+                storage_live(_21)
+                _21 = copy end_2
+                _19 = core::slice::index::slice_index_fail::do_panic#2(move _20, move _21)
             } else {
                 storage_dead(_18)
                 storage_dead(_17)
@@ -335,32 +359,8 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
                 _23 = copy len_3
                 _0 = core::slice::index::slice_index_fail::do_panic#3(move _22, move _23)
             }
-            storage_dead(_18)
-            storage_dead(_17)
-            storage_live(_19)
-            storage_live(_20)
-            _20 = copy start_1
-            storage_live(_21)
-            _21 = copy end_2
-            _19 = core::slice::index::slice_index_fail::do_panic#2(move _20, move _21)
         }
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_live(_13)
-        storage_live(_14)
-        _14 = copy end_2
-        storage_live(_15)
-        _15 = copy len_3
-        _13 = core::slice::index::slice_index_fail::do_panic#1(move _14, move _15)
     }
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_live(_7)
-    storage_live(_8)
-    _8 = copy start_1
-    storage_live(_9)
-    _9 = copy len_3
-    _7 = core::slice::index::slice_index_fail::do_panic(move _8, move _9)
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
@@ -423,56 +423,59 @@ where
     let _15: *const T; // anonymous local
     let _16: Option<&'0 [T]>[{built_in impl Sized for &'0 [T]}]; // anonymous local
 
-    storage_live(self_4)
-    storage_live(rhs_5)
-    storage_live(new_len_6)
-    storage_live(_9)
-    storage_live(_3)
-    self_4 = copy (self_1).end
-    rhs_5 = copy (self_1).start
-    storage_live(_12)
-    _12 = copy self_4 < copy rhs_5
-    if move _12 {
-        storage_dead(_12)
+    loop {
+        loop {
+            storage_live(self_4)
+            storage_live(rhs_5)
+            storage_live(new_len_6)
+            storage_live(_9)
+            storage_live(_3)
+            self_4 = copy (self_1).end
+            rhs_5 = copy (self_1).start
+            storage_live(_12)
+            _12 = copy self_4 < copy rhs_5
+            if move _12 {
+                storage_dead(_12)
+            } else {
+                storage_live(_13)
+                _13 = copy self_4 ub.- copy rhs_5
+                _3 = Option::Some { 0: move _13 }
+                storage_dead(_13)
+                storage_dead(_12)
+                new_len_6 = copy (_3 as variant Option::Some).0
+                storage_live(_7)
+                storage_live(_8)
+                _8 = copy slice_2.metadata
+                _7 = copy self_4 <= move _8
+                if move _7 {
+                    storage_dead(_8)
+                    storage_live(_10)
+                    storage_live(_11)
+                    _11 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
+                    storage_live(_14)
+                    storage_live(_15)
+                    _14 = cast<*const [T], *const T>(copy _11)
+                    _15 = copy _14 offset copy rhs_5
+                    _10 = @PtrFromPartsShared<'_, [T]>(copy _15, copy new_len_6)
+                    storage_dead(_15)
+                    storage_dead(_14)
+                    storage_dead(_11)
+                    _9 = &(*_10) with_metadata(copy _10.metadata)
+                    _0 = Option::Some { 0: copy _9 }
+                    storage_dead(_10)
+                    storage_dead(_3)
+                    break 1
+                } else {
+                    storage_dead(_8)
+                }
+            }
+            break 0
+        }
         storage_dead(_3)
         storage_live(_16)
         _16 = Option::None {  }
         _0 = move _16
-    } else {
-        storage_live(_13)
-        _13 = copy self_4 ub.- copy rhs_5
-        _3 = Option::Some { 0: move _13 }
-        storage_dead(_13)
-        storage_dead(_12)
-        new_len_6 = copy (_3 as variant Option::Some).0
-        storage_live(_7)
-        storage_live(_8)
-        _8 = copy slice_2.metadata
-        _7 = copy self_4 <= move _8
-        if move _7 {
-            storage_dead(_8)
-            storage_live(_10)
-            storage_live(_11)
-            _11 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
-            storage_live(_14)
-            storage_live(_15)
-            _14 = cast<*const [T], *const T>(copy _11)
-            _15 = copy _14 offset copy rhs_5
-            _10 = @PtrFromPartsShared<'_, [T]>(copy _15, copy new_len_6)
-            storage_dead(_15)
-            storage_dead(_14)
-            storage_dead(_11)
-            _9 = &(*_10) with_metadata(copy _10.metadata)
-            _0 = Option::Some { 0: copy _9 }
-            storage_dead(_10)
-            storage_dead(_3)
-        } else {
-            storage_dead(_8)
-            storage_dead(_3)
-            storage_live(_16)
-            _16 = Option::None {  }
-            _0 = move _16
-        }
+        break 0
     }
     storage_dead(_7)
     return
@@ -501,56 +504,59 @@ where
     let _15: *mut T; // anonymous local
     let _16: Option<&'0 mut [T]>[{built_in impl Sized for &'0 mut [T]}]; // anonymous local
 
-    storage_live(self_4)
-    storage_live(rhs_5)
-    storage_live(new_len_6)
-    storage_live(_9)
-    storage_live(_3)
-    self_4 = copy (self_1).end
-    rhs_5 = copy (self_1).start
-    storage_live(_12)
-    _12 = copy self_4 < copy rhs_5
-    if move _12 {
-        storage_dead(_12)
+    loop {
+        loop {
+            storage_live(self_4)
+            storage_live(rhs_5)
+            storage_live(new_len_6)
+            storage_live(_9)
+            storage_live(_3)
+            self_4 = copy (self_1).end
+            rhs_5 = copy (self_1).start
+            storage_live(_12)
+            _12 = copy self_4 < copy rhs_5
+            if move _12 {
+                storage_dead(_12)
+            } else {
+                storage_live(_13)
+                _13 = copy self_4 ub.- copy rhs_5
+                _3 = Option::Some { 0: move _13 }
+                storage_dead(_13)
+                storage_dead(_12)
+                new_len_6 = copy (_3 as variant Option::Some).0
+                storage_live(_7)
+                storage_live(_8)
+                _8 = copy slice_2.metadata
+                _7 = copy self_4 <= move _8
+                if move _7 {
+                    storage_dead(_8)
+                    storage_live(_10)
+                    storage_live(ptr_11)
+                    ptr_11 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
+                    storage_live(_14)
+                    storage_live(_15)
+                    _14 = cast<*mut [T], *mut T>(copy ptr_11)
+                    _15 = copy _14 offset copy rhs_5
+                    _10 = @PtrFromPartsMut<'_, [T]>(copy _15, copy new_len_6)
+                    storage_dead(_15)
+                    storage_dead(_14)
+                    storage_dead(ptr_11)
+                    _9 = &mut (*_10) with_metadata(copy _10.metadata)
+                    _0 = Option::Some { 0: copy _9 }
+                    storage_dead(_10)
+                    storage_dead(_3)
+                    break 1
+                } else {
+                    storage_dead(_8)
+                }
+            }
+            break 0
+        }
         storage_dead(_3)
         storage_live(_16)
         _16 = Option::None {  }
         _0 = move _16
-    } else {
-        storage_live(_13)
-        _13 = copy self_4 ub.- copy rhs_5
-        _3 = Option::Some { 0: move _13 }
-        storage_dead(_13)
-        storage_dead(_12)
-        new_len_6 = copy (_3 as variant Option::Some).0
-        storage_live(_7)
-        storage_live(_8)
-        _8 = copy slice_2.metadata
-        _7 = copy self_4 <= move _8
-        if move _7 {
-            storage_dead(_8)
-            storage_live(_10)
-            storage_live(ptr_11)
-            ptr_11 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
-            storage_live(_14)
-            storage_live(_15)
-            _14 = cast<*mut [T], *mut T>(copy ptr_11)
-            _15 = copy _14 offset copy rhs_5
-            _10 = @PtrFromPartsMut<'_, [T]>(copy _15, copy new_len_6)
-            storage_dead(_15)
-            storage_dead(_14)
-            storage_dead(ptr_11)
-            _9 = &mut (*_10) with_metadata(copy _10.metadata)
-            _0 = Option::Some { 0: copy _9 }
-            storage_dead(_10)
-            storage_dead(_3)
-        } else {
-            storage_dead(_8)
-            storage_dead(_3)
-            storage_live(_16)
-            _16 = Option::None {  }
-            _0 = move _16
-        }
+        break 0
     }
     storage_dead(_7)
     return
@@ -577,21 +583,24 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     let _15: *const Str; // anonymous local
     let _16: &'3 [u8]; // anonymous local
 
-    storage_live(msg_6)
-    storage_live(_7)
-    _0 = ()
-    storage_live(_4)
-    _4 = copy end_2 >= copy start_1
-    if move _4 {
-        storage_live(_5)
-        _5 = copy end_2 <= copy len_3
-        if move _5 {
-            storage_dead(_5)
-            storage_dead(_4)
-            return
+    loop {
+        storage_live(msg_6)
+        storage_live(_7)
+        _0 = ()
+        storage_live(_4)
+        _4 = copy end_2 >= copy start_1
+        if move _4 {
+            storage_live(_5)
+            _5 = copy end_2 <= copy len_3
+            if move _5 {
+                storage_dead(_5)
+                storage_dead(_4)
+                return
+            } else {
+            }
         } else {
         }
-    } else {
+        break 0
     }
     msg_6 = const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
     storage_live(_8)
@@ -642,23 +651,26 @@ where
     let _11: *const T; // anonymous local
     let _12: *const T; // anonymous local
 
-    storage_live(_4)
-    storage_live(new_len_8)
-    storage_live(offset_10)
-    storage_live(_3)
-    _3 = ub_checks<bool>
-    if move _3 {
-        storage_live(_5)
-        _5 = copy (self_1).start
-        storage_live(_6)
-        _6 = copy (self_1).end
-        storage_live(_7)
-        _7 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(move _5, move _6, move _7)
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-    } else {
+    loop {
+        storage_live(_4)
+        storage_live(new_len_8)
+        storage_live(offset_10)
+        storage_live(_3)
+        _3 = ub_checks<bool>
+        if move _3 {
+            storage_live(_5)
+            _5 = copy (self_1).start
+            storage_live(_6)
+            _6 = copy (self_1).end
+            storage_live(_7)
+            _7 = copy slice_2.metadata
+            _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(move _5, move _6, move _7)
+            storage_dead(_7)
+            storage_dead(_6)
+            storage_dead(_5)
+        } else {
+        }
+        break 0
     }
     storage_dead(_3)
     storage_live(_9)
@@ -697,21 +709,24 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     let _15: *const Str; // anonymous local
     let _16: &'3 [u8]; // anonymous local
 
-    storage_live(msg_6)
-    storage_live(_7)
-    _0 = ()
-    storage_live(_4)
-    _4 = copy end_2 >= copy start_1
-    if move _4 {
-        storage_live(_5)
-        _5 = copy end_2 <= copy len_3
-        if move _5 {
-            storage_dead(_5)
-            storage_dead(_4)
-            return
+    loop {
+        storage_live(msg_6)
+        storage_live(_7)
+        _0 = ()
+        storage_live(_4)
+        _4 = copy end_2 >= copy start_1
+        if move _4 {
+            storage_live(_5)
+            _5 = copy end_2 <= copy len_3
+            if move _5 {
+                storage_dead(_5)
+                storage_dead(_4)
+                return
+            } else {
+            }
         } else {
         }
-    } else {
+        break 0
     }
     msg_6 = const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
     storage_live(_8)
@@ -762,23 +777,26 @@ where
     let _11: *mut T; // anonymous local
     let _12: *mut T; // anonymous local
 
-    storage_live(_4)
-    storage_live(new_len_8)
-    storage_live(offset_10)
-    storage_live(_3)
-    _3 = ub_checks<bool>
-    if move _3 {
-        storage_live(_5)
-        _5 = copy (self_1).start
-        storage_live(_6)
-        _6 = copy (self_1).end
-        storage_live(_7)
-        _7 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(move _5, move _6, move _7)
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-    } else {
+    loop {
+        storage_live(_4)
+        storage_live(new_len_8)
+        storage_live(offset_10)
+        storage_live(_3)
+        _3 = ub_checks<bool>
+        if move _3 {
+            storage_live(_5)
+            _5 = copy (self_1).start
+            storage_live(_6)
+            _6 = copy (self_1).end
+            storage_live(_7)
+            _7 = copy slice_2.metadata
+            _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(move _5, move _6, move _7)
+            storage_dead(_7)
+            storage_dead(_6)
+            storage_dead(_5)
+        } else {
+        }
+        break 0
     }
     storage_dead(_3)
     storage_live(_9)
@@ -819,49 +837,52 @@ where
     let _15: *const T; // anonymous local
     let _16: *const T; // anonymous local
 
-    storage_live(self_4)
-    storage_live(rhs_5)
-    storage_live(new_len_6)
-    storage_live(_11)
-    storage_live(_3)
-    self_4 = copy (self_1).end
-    rhs_5 = copy (self_1).start
-    storage_live(_13)
-    _13 = copy self_4 < copy rhs_5
-    if move _13 {
-        storage_dead(_13)
-    } else {
-        storage_live(_14)
-        _14 = copy self_4 ub.- copy rhs_5
-        _3 = Option::Some { 0: move _14 }
-        storage_dead(_14)
-        storage_dead(_13)
-        new_len_6 = copy (_3 as variant Option::Some).0
-        storage_live(_7)
-        storage_live(_8)
-        _8 = copy slice_2.metadata
-        _7 = copy self_4 <= move _8
-        if move _7 {
-            storage_dead(_8)
-            storage_live(_9)
-            storage_live(_10)
-            _10 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
-            storage_live(_15)
-            storage_live(_16)
-            _15 = cast<*const [T], *const T>(copy _10)
-            _16 = copy _15 offset copy rhs_5
-            _9 = @PtrFromPartsShared<'_, [T]>(copy _16, copy new_len_6)
-            storage_dead(_16)
-            storage_dead(_15)
-            storage_dead(_10)
-            _0 = &(*_9) with_metadata(copy _9.metadata)
-            storage_dead(_9)
-            storage_dead(_3)
-            storage_dead(_7)
-            return
+    loop {
+        storage_live(self_4)
+        storage_live(rhs_5)
+        storage_live(new_len_6)
+        storage_live(_11)
+        storage_live(_3)
+        self_4 = copy (self_1).end
+        rhs_5 = copy (self_1).start
+        storage_live(_13)
+        _13 = copy self_4 < copy rhs_5
+        if move _13 {
+            storage_dead(_13)
         } else {
-            storage_dead(_8)
+            storage_live(_14)
+            _14 = copy self_4 ub.- copy rhs_5
+            _3 = Option::Some { 0: move _14 }
+            storage_dead(_14)
+            storage_dead(_13)
+            new_len_6 = copy (_3 as variant Option::Some).0
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy slice_2.metadata
+            _7 = copy self_4 <= move _8
+            if move _7 {
+                storage_dead(_8)
+                storage_live(_9)
+                storage_live(_10)
+                _10 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
+                storage_live(_15)
+                storage_live(_16)
+                _15 = cast<*const [T], *const T>(copy _10)
+                _16 = copy _15 offset copy rhs_5
+                _9 = @PtrFromPartsShared<'_, [T]>(copy _16, copy new_len_6)
+                storage_dead(_16)
+                storage_dead(_15)
+                storage_dead(_10)
+                _0 = &(*_9) with_metadata(copy _9.metadata)
+                storage_dead(_9)
+                storage_dead(_3)
+                storage_dead(_7)
+                return
+            } else {
+                storage_dead(_8)
+            }
         }
+        break 0
     }
     storage_dead(_3)
     storage_live(_12)
@@ -892,49 +913,52 @@ where
     let _15: *mut T; // anonymous local
     let _16: *mut T; // anonymous local
 
-    storage_live(self_4)
-    storage_live(rhs_5)
-    storage_live(new_len_6)
-    storage_live(_11)
-    storage_live(_3)
-    self_4 = copy (self_1).end
-    rhs_5 = copy (self_1).start
-    storage_live(_13)
-    _13 = copy self_4 < copy rhs_5
-    if move _13 {
-        storage_dead(_13)
-    } else {
-        storage_live(_14)
-        _14 = copy self_4 ub.- copy rhs_5
-        _3 = Option::Some { 0: move _14 }
-        storage_dead(_14)
-        storage_dead(_13)
-        new_len_6 = copy (_3 as variant Option::Some).0
-        storage_live(_7)
-        storage_live(_8)
-        _8 = copy slice_2.metadata
-        _7 = copy self_4 <= move _8
-        if move _7 {
-            storage_dead(_8)
-            storage_live(_9)
-            storage_live(ptr_10)
-            ptr_10 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
-            storage_live(_15)
-            storage_live(_16)
-            _15 = cast<*mut [T], *mut T>(copy ptr_10)
-            _16 = copy _15 offset copy rhs_5
-            _9 = @PtrFromPartsMut<'_, [T]>(copy _16, copy new_len_6)
-            storage_dead(_16)
-            storage_dead(_15)
-            storage_dead(ptr_10)
-            _0 = &mut (*_9) with_metadata(copy _9.metadata)
-            storage_dead(_9)
-            storage_dead(_3)
-            storage_dead(_7)
-            return
+    loop {
+        storage_live(self_4)
+        storage_live(rhs_5)
+        storage_live(new_len_6)
+        storage_live(_11)
+        storage_live(_3)
+        self_4 = copy (self_1).end
+        rhs_5 = copy (self_1).start
+        storage_live(_13)
+        _13 = copy self_4 < copy rhs_5
+        if move _13 {
+            storage_dead(_13)
         } else {
-            storage_dead(_8)
+            storage_live(_14)
+            _14 = copy self_4 ub.- copy rhs_5
+            _3 = Option::Some { 0: move _14 }
+            storage_dead(_14)
+            storage_dead(_13)
+            new_len_6 = copy (_3 as variant Option::Some).0
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy slice_2.metadata
+            _7 = copy self_4 <= move _8
+            if move _7 {
+                storage_dead(_8)
+                storage_live(_9)
+                storage_live(ptr_10)
+                ptr_10 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
+                storage_live(_15)
+                storage_live(_16)
+                _15 = cast<*mut [T], *mut T>(copy ptr_10)
+                _16 = copy _15 offset copy rhs_5
+                _9 = @PtrFromPartsMut<'_, [T]>(copy _16, copy new_len_6)
+                storage_dead(_16)
+                storage_dead(_15)
+                storage_dead(ptr_10)
+                _0 = &mut (*_9) with_metadata(copy _9.metadata)
+                storage_dead(_9)
+                storage_dead(_3)
+                storage_dead(_7)
+                return
+            } else {
+                storage_dead(_8)
+            }
         }
+        break 0
     }
     storage_dead(_3)
     storage_live(_12)
@@ -986,66 +1010,76 @@ where
     let _17: Option<&'0 [T]>[{built_in impl Sized for &'0 [T]}]; // anonymous local
     let _18: Option<&'0 [T]>[{built_in impl Sized for &'0 [T]}]; // anonymous local
 
-    storage_live(self_4)
-    storage_live(exclusive_end_5)
-    storage_live(new_len_12)
-    storage_live(self_15)
-    storage_live(self_16)
-    storage_live(_3)
-    self_4 = copy (self_1).end
-    _3 = copy self_4 == copy MAX
-    if move _3 {
-        storage_live(_17)
-        _17 = Option::None {  }
-        _0 = move _17
-    } else {
-        self_15 = move (self_1).start
-        self_16 = move (self_1).exhausted
-        exclusive_end_5 = copy self_4 wrap.+ const 1 : usize
-        if copy self_16 {
-            self_15 = copy exclusive_end_5
+    loop {
+        storage_live(self_4)
+        storage_live(exclusive_end_5)
+        storage_live(new_len_12)
+        storage_live(self_15)
+        storage_live(self_16)
+        storage_live(_3)
+        self_4 = copy (self_1).end
+        _3 = copy self_4 == copy MAX
+        if move _3 {
+            storage_live(_17)
+            _17 = Option::None {  }
+            _0 = move _17
         } else {
-        }
-        storage_live(_8)
-        storage_live(_11)
-        _11 = copy exclusive_end_5 < copy self_15
-        if move _11 {
-            storage_dead(_11)
-            storage_live(_18)
-            _18 = Option::None {  }
-            _0 = move _18
-        } else {
-            new_len_12 = copy exclusive_end_5 ub.- copy self_15
-            storage_dead(_11)
-            storage_live(_6)
-            storage_live(_7)
-            _7 = copy slice_2.metadata
-            _6 = copy exclusive_end_5 <= move _7
-            if move _6 {
-                storage_dead(_7)
-                storage_live(_9)
-                storage_live(_10)
-                _10 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
-                storage_live(_13)
-                storage_live(_14)
-                _13 = cast<*const [T], *const T>(copy _10)
-                _14 = copy _13 offset copy self_15
-                _9 = @PtrFromPartsShared<'_, [T]>(copy _14, copy new_len_12)
-                storage_dead(_14)
-                storage_dead(_13)
-                storage_dead(_10)
-                _8 = &(*_9) with_metadata(copy _9.metadata)
-                _0 = Option::Some { 0: copy _8 }
-                storage_dead(_9)
-            } else {
-                storage_dead(_7)
+            loop {
+                self_15 = move (self_1).start
+                self_16 = move (self_1).exhausted
+                exclusive_end_5 = copy self_4 wrap.+ const 1 : usize
+                if copy self_16 {
+                    self_15 = copy exclusive_end_5
+                } else {
+                }
+                break 0
+            }
+            loop {
+                loop {
+                    storage_live(_8)
+                    storage_live(_11)
+                    _11 = copy exclusive_end_5 < copy self_15
+                    if move _11 {
+                        storage_dead(_11)
+                    } else {
+                        new_len_12 = copy exclusive_end_5 ub.- copy self_15
+                        storage_dead(_11)
+                        storage_live(_6)
+                        storage_live(_7)
+                        _7 = copy slice_2.metadata
+                        _6 = copy exclusive_end_5 <= move _7
+                        if move _6 {
+                            storage_dead(_7)
+                            storage_live(_9)
+                            storage_live(_10)
+                            _10 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
+                            storage_live(_13)
+                            storage_live(_14)
+                            _13 = cast<*const [T], *const T>(copy _10)
+                            _14 = copy _13 offset copy self_15
+                            _9 = @PtrFromPartsShared<'_, [T]>(copy _14, copy new_len_12)
+                            storage_dead(_14)
+                            storage_dead(_13)
+                            storage_dead(_10)
+                            _8 = &(*_9) with_metadata(copy _9.metadata)
+                            _0 = Option::Some { 0: copy _8 }
+                            storage_dead(_9)
+                            break 1
+                        } else {
+                            storage_dead(_7)
+                        }
+                    }
+                    break 0
+                }
                 storage_live(_18)
                 _18 = Option::None {  }
                 _0 = move _18
+                break 0
             }
+            storage_dead(_6)
+            storage_dead(_8)
         }
-        storage_dead(_6)
-        storage_dead(_8)
+        break 0
     }
     storage_dead(_3)
     return
@@ -1076,66 +1110,76 @@ where
     let _17: Option<&'0 mut [T]>[{built_in impl Sized for &'0 mut [T]}]; // anonymous local
     let _18: Option<&'0 mut [T]>[{built_in impl Sized for &'0 mut [T]}]; // anonymous local
 
-    storage_live(self_4)
-    storage_live(exclusive_end_5)
-    storage_live(new_len_12)
-    storage_live(self_15)
-    storage_live(self_16)
-    storage_live(_3)
-    self_4 = copy (self_1).end
-    _3 = copy self_4 == copy MAX
-    if move _3 {
-        storage_live(_17)
-        _17 = Option::None {  }
-        _0 = move _17
-    } else {
-        self_15 = move (self_1).start
-        self_16 = move (self_1).exhausted
-        exclusive_end_5 = copy self_4 wrap.+ const 1 : usize
-        if copy self_16 {
-            self_15 = copy exclusive_end_5
+    loop {
+        storage_live(self_4)
+        storage_live(exclusive_end_5)
+        storage_live(new_len_12)
+        storage_live(self_15)
+        storage_live(self_16)
+        storage_live(_3)
+        self_4 = copy (self_1).end
+        _3 = copy self_4 == copy MAX
+        if move _3 {
+            storage_live(_17)
+            _17 = Option::None {  }
+            _0 = move _17
         } else {
-        }
-        storage_live(_8)
-        storage_live(_11)
-        _11 = copy exclusive_end_5 < copy self_15
-        if move _11 {
-            storage_dead(_11)
-            storage_live(_18)
-            _18 = Option::None {  }
-            _0 = move _18
-        } else {
-            new_len_12 = copy exclusive_end_5 ub.- copy self_15
-            storage_dead(_11)
-            storage_live(_6)
-            storage_live(_7)
-            _7 = copy slice_2.metadata
-            _6 = copy exclusive_end_5 <= move _7
-            if move _6 {
-                storage_dead(_7)
-                storage_live(_9)
-                storage_live(ptr_10)
-                ptr_10 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
-                storage_live(_13)
-                storage_live(_14)
-                _13 = cast<*mut [T], *mut T>(copy ptr_10)
-                _14 = copy _13 offset copy self_15
-                _9 = @PtrFromPartsMut<'_, [T]>(copy _14, copy new_len_12)
-                storage_dead(_14)
-                storage_dead(_13)
-                storage_dead(ptr_10)
-                _8 = &mut (*_9) with_metadata(copy _9.metadata)
-                _0 = Option::Some { 0: copy _8 }
-                storage_dead(_9)
-            } else {
-                storage_dead(_7)
+            loop {
+                self_15 = move (self_1).start
+                self_16 = move (self_1).exhausted
+                exclusive_end_5 = copy self_4 wrap.+ const 1 : usize
+                if copy self_16 {
+                    self_15 = copy exclusive_end_5
+                } else {
+                }
+                break 0
+            }
+            loop {
+                loop {
+                    storage_live(_8)
+                    storage_live(_11)
+                    _11 = copy exclusive_end_5 < copy self_15
+                    if move _11 {
+                        storage_dead(_11)
+                    } else {
+                        new_len_12 = copy exclusive_end_5 ub.- copy self_15
+                        storage_dead(_11)
+                        storage_live(_6)
+                        storage_live(_7)
+                        _7 = copy slice_2.metadata
+                        _6 = copy exclusive_end_5 <= move _7
+                        if move _6 {
+                            storage_dead(_7)
+                            storage_live(_9)
+                            storage_live(ptr_10)
+                            ptr_10 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
+                            storage_live(_13)
+                            storage_live(_14)
+                            _13 = cast<*mut [T], *mut T>(copy ptr_10)
+                            _14 = copy _13 offset copy self_15
+                            _9 = @PtrFromPartsMut<'_, [T]>(copy _14, copy new_len_12)
+                            storage_dead(_14)
+                            storage_dead(_13)
+                            storage_dead(ptr_10)
+                            _8 = &mut (*_9) with_metadata(copy _9.metadata)
+                            _0 = Option::Some { 0: copy _8 }
+                            storage_dead(_9)
+                            break 1
+                        } else {
+                            storage_dead(_7)
+                        }
+                    }
+                    break 0
+                }
                 storage_live(_18)
                 _18 = Option::None {  }
                 _0 = move _18
+                break 0
             }
+            storage_dead(_6)
+            storage_dead(_8)
         }
-        storage_dead(_6)
-        storage_dead(_8)
+        break 0
     }
     storage_dead(_3)
     return
@@ -1160,28 +1204,34 @@ where
     let self_11: usize; // local
     let self_12: bool; // local
 
-    storage_live(exclusive_end_3)
-    storage_live(_5)
-    storage_live(self_10)
-    storage_live(self_11)
-    storage_live(self_12)
-    self_10 = move (self_1).start
-    self_11 = move (self_1).end
-    self_12 = move (self_1).exhausted
-    exclusive_end_3 = copy self_11 wrap.+ const 1 : usize
-    if copy self_12 {
-        self_10 = copy exclusive_end_3
-    } else {
+    loop {
+        storage_live(exclusive_end_3)
+        storage_live(_5)
+        storage_live(self_10)
+        storage_live(self_11)
+        storage_live(self_12)
+        self_10 = move (self_1).start
+        self_11 = move (self_1).end
+        self_12 = move (self_1).exhausted
+        exclusive_end_3 = copy self_11 wrap.+ const 1 : usize
+        if copy self_12 {
+            self_10 = copy exclusive_end_3
+        } else {
+        }
+        break 0
     }
-    storage_live(new_len_7)
-    storage_live(_4)
-    _4 = ub_checks<bool>
-    if move _4 {
-        storage_live(_6)
-        _6 = copy slice_2.metadata
-        _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy self_10, copy exclusive_end_3, move _6)
-        storage_dead(_6)
-    } else {
+    loop {
+        storage_live(new_len_7)
+        storage_live(_4)
+        _4 = ub_checks<bool>
+        if move _4 {
+            storage_live(_6)
+            _6 = copy slice_2.metadata
+            _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy self_10, copy exclusive_end_3, move _6)
+            storage_dead(_6)
+        } else {
+        }
+        break 0
     }
     storage_dead(_4)
     new_len_7 = copy exclusive_end_3 ub.- copy self_10
@@ -1215,28 +1265,34 @@ where
     let self_11: usize; // local
     let self_12: bool; // local
 
-    storage_live(exclusive_end_3)
-    storage_live(_5)
-    storage_live(self_10)
-    storage_live(self_11)
-    storage_live(self_12)
-    self_10 = move (self_1).start
-    self_11 = move (self_1).end
-    self_12 = move (self_1).exhausted
-    exclusive_end_3 = copy self_11 wrap.+ const 1 : usize
-    if copy self_12 {
-        self_10 = copy exclusive_end_3
-    } else {
+    loop {
+        storage_live(exclusive_end_3)
+        storage_live(_5)
+        storage_live(self_10)
+        storage_live(self_11)
+        storage_live(self_12)
+        self_10 = move (self_1).start
+        self_11 = move (self_1).end
+        self_12 = move (self_1).exhausted
+        exclusive_end_3 = copy self_11 wrap.+ const 1 : usize
+        if copy self_12 {
+            self_10 = copy exclusive_end_3
+        } else {
+        }
+        break 0
     }
-    storage_live(new_len_7)
-    storage_live(_4)
-    _4 = ub_checks<bool>
-    if move _4 {
-        storage_live(_6)
-        _6 = copy slice_2.metadata
-        _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy self_10, copy exclusive_end_3, move _6)
-        storage_dead(_6)
-    } else {
+    loop {
+        storage_live(new_len_7)
+        storage_live(_4)
+        _4 = ub_checks<bool>
+        if move _4 {
+            storage_live(_6)
+            _6 = copy slice_2.metadata
+            _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy self_10, copy exclusive_end_3, move _6)
+            storage_dead(_6)
+        } else {
+        }
+        break 0
     }
     storage_dead(_4)
     new_len_7 = copy exclusive_end_3 ub.- copy self_10
@@ -1278,70 +1334,76 @@ where
     let _19: *const T; // anonymous local
     let _20: *const T; // anonymous local
 
-    storage_live(start_3)
-    storage_live(end_4)
-    storage_live(exhausted_5)
-    storage_live(len_6)
-    storage_live(new_len_13)
-    storage_live(_16)
-    start_3 = copy (self_1).start
-    end_4 = copy (self_1).end
-    exhausted_5 = copy (self_1).exhausted
-    len_6 = copy slice_2.metadata
-    storage_live(_7)
-    storage_live(_8)
-    _8 = copy end_4
-    _7 = move _8 < copy len_6
-    if move _7 {
-        storage_dead(_8)
-        storage_live(_9)
-        _9 = copy end_4
-        end_4 = move _9 wrap.+ const 1 : usize
-        storage_dead(_9)
-        if copy exhausted_5 {
-            start_3 = copy end_4
+    loop {
+        storage_live(start_3)
+        storage_live(end_4)
+        storage_live(exhausted_5)
+        storage_live(len_6)
+        storage_live(new_len_13)
+        storage_live(_16)
+        start_3 = copy (self_1).start
+        end_4 = copy (self_1).end
+        exhausted_5 = copy (self_1).exhausted
+        len_6 = copy slice_2.metadata
+        storage_live(_7)
+        storage_live(_8)
+        _8 = copy end_4
+        _7 = move _8 < copy len_6
+        if move _7 {
+            loop {
+                storage_dead(_8)
+                storage_live(_9)
+                _9 = copy end_4
+                end_4 = move _9 wrap.+ const 1 : usize
+                storage_dead(_9)
+                if copy exhausted_5 {
+                    start_3 = copy end_4
+                } else {
+                }
+                break 0
+            }
+            storage_live(_10)
+            storage_live(self_11)
+            self_11 = copy end_4
+            storage_live(rhs_12)
+            rhs_12 = copy start_3
+            storage_live(_17)
+            _17 = copy self_11 < copy rhs_12
+            if move _17 {
+                storage_dead(_17)
+                storage_dead(rhs_12)
+                storage_dead(self_11)
+                storage_dead(_10)
+            } else {
+                storage_live(_18)
+                _18 = copy self_11 ub.- copy rhs_12
+                _10 = Option::Some { 0: move _18 }
+                storage_dead(_18)
+                storage_dead(_17)
+                storage_dead(rhs_12)
+                storage_dead(self_11)
+                new_len_13 = copy (_10 as variant Option::Some).0
+                storage_live(_14)
+                storage_live(_15)
+                _15 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
+                storage_live(_19)
+                storage_live(_20)
+                _19 = cast<*const [T], *const T>(copy _15)
+                _20 = copy _19 offset copy start_3
+                _14 = @PtrFromPartsShared<'_, [T]>(copy _20, copy new_len_13)
+                storage_dead(_20)
+                storage_dead(_19)
+                storage_dead(_15)
+                _0 = &(*_14) with_metadata(copy _14.metadata)
+                storage_dead(_14)
+                storage_dead(_10)
+                storage_dead(_7)
+                return
+            }
         } else {
+            storage_dead(_8)
         }
-        storage_live(_10)
-        storage_live(self_11)
-        self_11 = copy end_4
-        storage_live(rhs_12)
-        rhs_12 = copy start_3
-        storage_live(_17)
-        _17 = copy self_11 < copy rhs_12
-        if move _17 {
-        } else {
-            storage_live(_18)
-            _18 = copy self_11 ub.- copy rhs_12
-            _10 = Option::Some { 0: move _18 }
-            storage_dead(_18)
-            storage_dead(_17)
-            storage_dead(rhs_12)
-            storage_dead(self_11)
-            new_len_13 = copy (_10 as variant Option::Some).0
-            storage_live(_14)
-            storage_live(_15)
-            _15 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
-            storage_live(_19)
-            storage_live(_20)
-            _19 = cast<*const [T], *const T>(copy _15)
-            _20 = copy _19 offset copy start_3
-            _14 = @PtrFromPartsShared<'_, [T]>(copy _20, copy new_len_13)
-            storage_dead(_20)
-            storage_dead(_19)
-            storage_dead(_15)
-            _0 = &(*_14) with_metadata(copy _14.metadata)
-            storage_dead(_14)
-            storage_dead(_10)
-            storage_dead(_7)
-            return
-        }
-        storage_dead(_17)
-        storage_dead(rhs_12)
-        storage_dead(self_11)
-        storage_dead(_10)
-    } else {
-        storage_dead(_8)
+        break 0
     }
     storage_dead(_7)
     _16 = slice_index_fail(move start_3, move end_4, move len_6)
@@ -1374,70 +1436,76 @@ where
     let _19: *mut T; // anonymous local
     let _20: *mut T; // anonymous local
 
-    storage_live(start_3)
-    storage_live(end_4)
-    storage_live(exhausted_5)
-    storage_live(len_6)
-    storage_live(new_len_13)
-    storage_live(_16)
-    start_3 = copy (self_1).start
-    end_4 = copy (self_1).end
-    exhausted_5 = copy (self_1).exhausted
-    len_6 = copy slice_2.metadata
-    storage_live(_7)
-    storage_live(_8)
-    _8 = copy end_4
-    _7 = move _8 < copy len_6
-    if move _7 {
-        storage_dead(_8)
-        storage_live(_9)
-        _9 = copy end_4
-        end_4 = move _9 wrap.+ const 1 : usize
-        storage_dead(_9)
-        if copy exhausted_5 {
-            start_3 = copy end_4
+    loop {
+        storage_live(start_3)
+        storage_live(end_4)
+        storage_live(exhausted_5)
+        storage_live(len_6)
+        storage_live(new_len_13)
+        storage_live(_16)
+        start_3 = copy (self_1).start
+        end_4 = copy (self_1).end
+        exhausted_5 = copy (self_1).exhausted
+        len_6 = copy slice_2.metadata
+        storage_live(_7)
+        storage_live(_8)
+        _8 = copy end_4
+        _7 = move _8 < copy len_6
+        if move _7 {
+            loop {
+                storage_dead(_8)
+                storage_live(_9)
+                _9 = copy end_4
+                end_4 = move _9 wrap.+ const 1 : usize
+                storage_dead(_9)
+                if copy exhausted_5 {
+                    start_3 = copy end_4
+                } else {
+                }
+                break 0
+            }
+            storage_live(_10)
+            storage_live(self_11)
+            self_11 = copy end_4
+            storage_live(rhs_12)
+            rhs_12 = copy start_3
+            storage_live(_17)
+            _17 = copy self_11 < copy rhs_12
+            if move _17 {
+                storage_dead(_17)
+                storage_dead(rhs_12)
+                storage_dead(self_11)
+                storage_dead(_10)
+            } else {
+                storage_live(_18)
+                _18 = copy self_11 ub.- copy rhs_12
+                _10 = Option::Some { 0: move _18 }
+                storage_dead(_18)
+                storage_dead(_17)
+                storage_dead(rhs_12)
+                storage_dead(self_11)
+                new_len_13 = copy (_10 as variant Option::Some).0
+                storage_live(_14)
+                storage_live(ptr_15)
+                ptr_15 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
+                storage_live(_19)
+                storage_live(_20)
+                _19 = cast<*mut [T], *mut T>(copy ptr_15)
+                _20 = copy _19 offset copy start_3
+                _14 = @PtrFromPartsMut<'_, [T]>(copy _20, copy new_len_13)
+                storage_dead(_20)
+                storage_dead(_19)
+                storage_dead(ptr_15)
+                _0 = &mut (*_14) with_metadata(copy _14.metadata)
+                storage_dead(_14)
+                storage_dead(_10)
+                storage_dead(_7)
+                return
+            }
         } else {
+            storage_dead(_8)
         }
-        storage_live(_10)
-        storage_live(self_11)
-        self_11 = copy end_4
-        storage_live(rhs_12)
-        rhs_12 = copy start_3
-        storage_live(_17)
-        _17 = copy self_11 < copy rhs_12
-        if move _17 {
-        } else {
-            storage_live(_18)
-            _18 = copy self_11 ub.- copy rhs_12
-            _10 = Option::Some { 0: move _18 }
-            storage_dead(_18)
-            storage_dead(_17)
-            storage_dead(rhs_12)
-            storage_dead(self_11)
-            new_len_13 = copy (_10 as variant Option::Some).0
-            storage_live(_14)
-            storage_live(ptr_15)
-            ptr_15 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
-            storage_live(_19)
-            storage_live(_20)
-            _19 = cast<*mut [T], *mut T>(copy ptr_15)
-            _20 = copy _19 offset copy start_3
-            _14 = @PtrFromPartsMut<'_, [T]>(copy _20, copy new_len_13)
-            storage_dead(_20)
-            storage_dead(_19)
-            storage_dead(ptr_15)
-            _0 = &mut (*_14) with_metadata(copy _14.metadata)
-            storage_dead(_14)
-            storage_dead(_10)
-            storage_dead(_7)
-            return
-        }
-        storage_dead(_17)
-        storage_dead(rhs_12)
-        storage_dead(self_11)
-        storage_dead(_10)
-    } else {
-        storage_dead(_8)
+        break 0
     }
     storage_dead(_7)
     _16 = slice_index_fail(move start_3, move end_4, move len_6)

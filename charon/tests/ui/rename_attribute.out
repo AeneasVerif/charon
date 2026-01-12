@@ -90,15 +90,18 @@ where
     storage_live(_3)
     _3 = &x_1
     _2 = {impl BoolTrait for bool}::get_bool<'_>(move _3)
-    if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        _4 = &x_1
-        _0 = {impl BoolTrait for bool}::ret_true<'_>(move _4)
-        storage_dead(_4)
-    } else {
-        storage_dead(_3)
-        _0 = const false
+    loop {
+        if move _2 {
+            storage_dead(_3)
+            storage_live(_4)
+            _4 = &x_1
+            _0 = {impl BoolTrait for bool}::ret_true<'_>(move _4)
+            storage_dead(_4)
+        } else {
+            storage_dead(_3)
+            _0 = const false
+        }
+        break 0
     }
     storage_dead(_2)
     return

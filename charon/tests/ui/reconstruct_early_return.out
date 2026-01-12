@@ -25,63 +25,67 @@ fn f() -> usize
     let _9: i32; // anonymous local
     let _10: i32; // anonymous local
 
-    storage_live(_5)
-    storage_live(_10)
-    storage_live(i_1)
-    i_1 = const 0 : i32
-    storage_live(j_2)
-    j_2 = const 0 : i32
+    loop {
+        storage_live(_5)
+        storage_live(_10)
+        storage_live(i_1)
+        i_1 = const 0 : i32
+        storage_live(j_2)
+        j_2 = const 0 : i32
+        break 0
+    }
     loop {
         storage_live(_3)
         storage_live(_4)
         _4 = copy i_1
         _3 = move _4 < const 32 : i32
         if move _3 {
-            storage_dead(_4)
-            _5 = copy j_2 panic.+ const 1 : i32
-            j_2 = move _5
-            storage_live(_6)
-            storage_live(_7)
-            _7 = copy j_2
-            _6 = move _7 > const 16 : i32
-            if move _6 {
-                storage_dead(_7)
-                j_2 = copy j_2 panic./ const 2 : i32
-            } else {
-                storage_dead(_7)
-                storage_live(_8)
-                storage_live(_9)
-                _9 = copy j_2
-                _8 = move _9 > const 32 : i32
-                if move _8 {
-                    storage_dead(_9)
-                    _0 = const 1 : usize
-                    storage_dead(_8)
-                    storage_dead(_6)
-                    storage_dead(_3)
-                    storage_dead(j_2)
-                    storage_dead(i_1)
-                    return
+            loop {
+                storage_dead(_4)
+                _5 = copy j_2 panic.+ const 1 : i32
+                j_2 = move _5
+                storage_live(_6)
+                storage_live(_7)
+                _7 = copy j_2
+                _6 = move _7 > const 16 : i32
+                if move _6 {
+                    storage_dead(_7)
+                    j_2 = copy j_2 panic./ const 2 : i32
                 } else {
+                    storage_dead(_7)
+                    storage_live(_8)
+                    storage_live(_9)
+                    _9 = copy j_2
+                    _8 = move _9 > const 32 : i32
+                    if move _8 {
+                        storage_dead(_9)
+                        _0 = const 1 : usize
+                        storage_dead(_8)
+                        storage_dead(_6)
+                        storage_dead(_3)
+                        storage_dead(j_2)
+                        storage_dead(i_1)
+                        return
+                    } else {
+                        storage_dead(_9)
+                        storage_dead(_8)
+                    }
                 }
-                storage_dead(_9)
-                storage_dead(_8)
+                break 0
             }
             storage_dead(_6)
             _10 = copy i_1 panic.+ const 1 : i32
             i_1 = move _10
             storage_dead(_3)
-            continue 0
         } else {
-            break 0
+            storage_dead(_4)
+            storage_dead(_3)
+            _0 = const 0 : usize
+            storage_dead(j_2)
+            storage_dead(i_1)
+            return
         }
     }
-    storage_dead(_4)
-    storage_dead(_3)
-    _0 = const 0 : usize
-    storage_dead(j_2)
-    storage_dead(i_1)
-    return
 }
 
 

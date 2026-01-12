@@ -159,24 +159,27 @@ where
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
 
-    storage_live(_1)
-    _1 = const @TraitClause0::SIZE
-    switch copy _1 {
-        0 : usize => {
-            _0 = copy core::num::{usize}::MAX
-        },
-        _ => {
-            storage_live(n_2)
-            n_2 = copy _1
-            storage_live(_3)
-            _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
-            storage_live(_4)
-            _4 = copy n_2
-            _0 = move _3 panic./ move _4
-            storage_dead(_4)
-            storage_dead(_3)
-            storage_dead(n_2)
-        },
+    loop {
+        storage_live(_1)
+        _1 = const @TraitClause0::SIZE
+        switch copy _1 {
+            0 : usize => {
+                _0 = copy core::num::{usize}::MAX
+            },
+            _ => {
+                storage_live(n_2)
+                n_2 = copy _1
+                storage_live(_3)
+                _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
+                storage_live(_4)
+                _4 = copy n_2
+                _0 = move _3 panic./ move _4
+                storage_dead(_4)
+                storage_dead(_3)
+                storage_dead(n_2)
+            },
+        }
+        break 0
     }
     storage_dead(_1)
     return
@@ -221,19 +224,22 @@ where
     let _6: *mut (); // anonymous local
     let _7: bool; // anonymous local
 
-    storage_live(_4)
-    storage_live(_7)
-    _0 = ()
-    _7 = ub_checks<bool>
-    if copy _7 {
-        storage_live(_5)
-        _5 = cast<*const T, *const ()>(copy src_1)
-        storage_live(_6)
-        _6 = cast<*mut T, *mut ()>(copy dst_2)
-        _4 = precondition_check(move _5, move _6, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN, copy count_3)
-        storage_dead(_6)
-        storage_dead(_5)
-    } else {
+    loop {
+        storage_live(_4)
+        storage_live(_7)
+        _0 = ()
+        _7 = ub_checks<bool>
+        if copy _7 {
+            storage_live(_5)
+            _5 = cast<*const T, *const ()>(copy src_1)
+            storage_live(_6)
+            _6 = cast<*mut T, *mut ()>(copy dst_2)
+            _4 = precondition_check(move _5, move _6, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN, copy count_3)
+            storage_dead(_6)
+            storage_dead(_5)
+        } else {
+        }
+        break 0
     }
     copy_nonoverlapping(copy src_1, copy dst_2, copy count_3)
     return

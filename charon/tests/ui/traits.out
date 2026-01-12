@@ -225,15 +225,18 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     storage_live(_3)
     _3 = &x_1
     _2 = {impl BoolTrait for bool}::get_bool<'_>(move _3)
-    if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        _4 = &x_1
-        _0 = {impl BoolTrait for bool}::ret_true<'_>(move _4)
-        storage_dead(_4)
-    } else {
-        storage_dead(_3)
-        _0 = const false
+    loop {
+        if move _2 {
+            storage_dead(_3)
+            storage_live(_4)
+            _4 = &x_1
+            _0 = {impl BoolTrait for bool}::ret_true<'_>(move _4)
+            storage_dead(_4)
+        } else {
+            storage_dead(_3)
+            _0 = const false
+        }
+        break 0
     }
     storage_dead(_2)
     return
@@ -249,14 +252,14 @@ where
 
     match (*self_1) {
         Option::None => {
+            _0 = const false
+            return
         },
         Option::Some => {
             _0 = const true
             return
         },
     }
-    _0 = const false
-    return
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true
@@ -297,15 +300,18 @@ where
     storage_live(_3)
     _3 = &x_1
     _2 = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_, T>[@TraitClause0](move _3)
-    if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        _4 = &x_1
-        _0 = {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move _4)
-        storage_dead(_4)
-    } else {
-        storage_dead(_3)
-        _0 = const false
+    loop {
+        if move _2 {
+            storage_dead(_3)
+            storage_live(_4)
+            _4 = &x_1
+            _0 = {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_, T>[@TraitClause0](move _4)
+            storage_dead(_4)
+        } else {
+            storage_dead(_3)
+            _0 = const false
+        }
+        break 0
     }
     storage_dead(_2)
     conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x_1
@@ -697,22 +703,25 @@ where
     // blocks).
     _4 = move x_2
     x_3 = @TraitClause1::to_u64(move _4)
-    storage_dead(_4)
-    storage_live(y_5)
-    y_5 = TestType1 { 0: const 0 : u64 }
-    storage_live(_6)
-    storage_live(_7)
-    _7 = copy x_3
-    _6 = move _7 > const 0 : u64
-    if move _6 {
-        storage_dead(_7)
-        storage_live(_8)
-        _8 = &y_5
-        _0 = {impl TestTrait for TestType1}::test<'_>(move _8)
-        storage_dead(_8)
-    } else {
-        storage_dead(_7)
-        _0 = const false
+    loop {
+        storage_dead(_4)
+        storage_live(y_5)
+        y_5 = TestType1 { 0: const 0 : u64 }
+        storage_live(_6)
+        storage_live(_7)
+        _7 = copy x_3
+        _6 = move _7 > const 0 : u64
+        if move _6 {
+            storage_dead(_7)
+            storage_live(_8)
+            _8 = &y_5
+            _0 = {impl TestTrait for TestType1}::test<'_>(move _8)
+            storage_dead(_8)
+        } else {
+            storage_dead(_7)
+            _0 = const false
+        }
+        break 0
     }
     storage_dead(_6)
     storage_dead(y_5)

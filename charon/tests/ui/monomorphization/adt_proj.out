@@ -41,17 +41,17 @@ fn main()
     res_1 = Result::<u32, u32>::Ok { 0: const 0 : u32 }
     match res_1 {
         Result::<u32, u32>::Ok => {
+            storage_live(n_2)
+            n_2 = copy (res_1 as variant Result::<u32, u32>::Ok).0
+            _0 = ()
+            storage_dead(n_2)
+            storage_dead(res_1)
+            return
         },
         _ => {
             panic(core::panicking::panic)
         },
     }
-    storage_live(n_2)
-    n_2 = copy (res_1 as variant Result::<u32, u32>::Ok).0
-    _0 = ()
-    storage_dead(n_2)
-    storage_dead(res_1)
-    return
 }
 
 
