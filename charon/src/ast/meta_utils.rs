@@ -139,13 +139,13 @@ impl FileName {
 }
 
 impl Attribute {
-    /// Parse a raw attribute to recognize our special `charon::*` and `aeneas::*` attributes.
+    /// Parse a raw attribute to recognize our special `charon::*`, `aeneas::*` and `verify::*` attributes.
     pub fn parse_from_raw(raw_attr: RawAttribute) -> Result<Self, String> {
         // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
         // try to parse it. Otherwise we return `Unknown`.
         let path = raw_attr.path.split("::").collect_vec();
         let attr_name = if let &[path_start, attr_name] = path.as_slice()
-            && (path_start == "charon" || path_start == "aeneas")
+            && (path_start == "charon" || path_start == "aeneas" || path_start == "verify")
         {
             attr_name
         } else {
@@ -161,7 +161,7 @@ impl Attribute {
         }
     }
 
-    /// Parse a `charon::*` or `aeneas::*` attribute.
+    /// Parse a `charon::*`, `aeneas::*` or `verify::*` attribute.
     fn parse_special_attr(attr_name: &str, args: Option<&str>) -> Result<Option<Self>, String> {
         let parsed = match attr_name {
             // `#[charon::opaque]`
