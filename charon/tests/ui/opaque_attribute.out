@@ -122,6 +122,9 @@ const SIX_SIX_SIX: u32 = SIX_SIX_SIX()
 // Full name: test_crate::Test2
 opaque type Test2
 
+// Full name: test_crate::Test3
+opaque type Test3
+
 // Full name: test_crate::opaque::fn_in_opaque_module
 pub fn fn_in_opaque_module() -> u32
 {
