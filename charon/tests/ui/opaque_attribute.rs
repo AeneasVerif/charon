@@ -1,4 +1,5 @@
 #![register_tool(aeneas)]
+#![register_tool(verify)]
 
 #[charon::opaque]
 pub trait BoolTrait {
@@ -43,6 +44,9 @@ const SIX_SIX_SIX: u32 = 600 + 60 + 6;
 
 #[aeneas::opaque]
 type Test2 = u32;
+
+#[verify::opaque]
+type Test3 = u32;
 
 fn call_fn_in_opaque_module() {
     let _ = opaque::fn_in_opaque_module();
