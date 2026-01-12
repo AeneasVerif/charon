@@ -1547,7 +1547,7 @@ impl<'a> ReconstructCtx<'a> {
                     .iter()
                     .copied()
                     .filter(|&child| self.cfg.block_data[child].is_merge_target);
-                for child in merge_children.rev() {
+                for child in merge_children {
                     self.break_context_depth += 1;
                     self.special_jump_stack
                         .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
