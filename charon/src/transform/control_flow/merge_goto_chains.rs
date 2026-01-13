@@ -1,4 +1,6 @@
-//! # Micro-pass: merge single-origin gotos into their parent to reduce CFG graph size.
+//! # Micro-pass: merge single-origin gotos into their parent and skip over blocks that consist of
+//! only a goto.
+use std::collections::HashSet;
 use std::mem;
 
 use crate::ids::IndexVec;
@@ -43,9 +45,7 @@ impl UllbcPass for Transform {
         }
         // Merge blocks with a single antecedent into their antecedent.
         for mut id in body.body.all_indices() {
-            // Go up the chain to find the first parent with zero (the start block) or multiple
-            // antecedents. This avoids quadratic behavior where we repeatedly copy a growing list
-            // of statements, since blocks may not be sorted..
+            // Go up the chain to find the first parent into which we can merge.
             while let Antecedents::One {
                 id: antecedent_id,
                 is_goto: true,
@@ -55,14 +55,37 @@ impl UllbcPass for Transform {
             }
             // While the current block is a straight goto, merge the target block back into this
             // one.
-            while let Some(source) = body.body.get(id)
+            while let source = &body.body[id]
                 && let TerminatorKind::Goto { target } = source.terminator.kind
                 && let Antecedents::One { .. } = antecedents[target]
             {
+                antecedents[target] = Antecedents::Zero;
                 let mut target = mem::replace(&mut body.body[target], BlockData::new_unreachable());
                 let source = &mut body.body[id];
                 source.statements.append(&mut target.statements);
                 source.terminator = target.terminator;
+            }
+        }
+        // Skip over trivial gotos.
+        let mut visited = HashSet::new(); // detect and skip loops
+        for id in body.body.all_indices() {
+            if body.body[id]
+                .targets()
+                .into_iter()
+                .any(|t| body.body[t].as_trivial_goto().is_some())
+            {
+                // Merge any forward goto chains that start here.
+                let mut source = mem::replace(&mut body.body[id], BlockData::new_unreachable());
+                for target_id in source.terminator.targets_mut() {
+                    visited.clear();
+                    visited.insert(id);
+                    while let Some(b) = body.body[*target_id].as_trivial_goto()
+                        && visited.insert(*target_id)
+                    {
+                        *target_id = b
+                    }
+                }
+                body.body[id] = source;
             }
         }
     }

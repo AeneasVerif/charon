@@ -1251,39 +1251,36 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
                     ptr_12 = cast<*mut (), *const ()>(copy dst_2)
                     storage_live(_19)
                     _19 = is_aligned_to<()>(copy ptr_12, move align_4)
-                    loop {
-                        if move _19 {
-                            if copy zero_size_7 {
-                                storage_dead(_19)
-                            } else {
-                                storage_live(_20)
-                                storage_live(_21)
-                                _21 = transmute<*mut (), usize>(copy dst_2)
-                                _20 = move _21 == const 0 : usize
-                                storage_dead(_21)
-                                _11 = ~(move _20)
-                                storage_dead(_20)
-                                storage_dead(_19)
-                                if move _11 {
-                                } else {
-                                    break 0
-                                }
-                            }
-                            _6 = runtime(move src_1, move ptr_12, move size_3, move count_5)
-                            storage_dead(_11)
-                            storage_dead(_8)
-                            if move _6 {
-                                storage_dead(_6)
-                                return
-                            } else {
-                                break 4
-                            }
-                        } else {
+                    if move _19 {
+                        if copy zero_size_7 {
                             storage_dead(_19)
+                        } else {
+                            storage_live(_20)
+                            storage_live(_21)
+                            _21 = transmute<*mut (), usize>(copy dst_2)
+                            _20 = move _21 == const 0 : usize
+                            storage_dead(_21)
+                            _11 = ~(move _20)
+                            storage_dead(_20)
+                            storage_dead(_19)
+                            if move _11 {
+                            } else {
+                                break 2
+                            }
                         }
-                        break 0
+                        _6 = runtime(move src_1, move ptr_12, move size_3, move count_5)
+                        storage_dead(_11)
+                        storage_dead(_8)
+                        if move _6 {
+                            storage_dead(_6)
+                            return
+                        } else {
+                            break 3
+                        }
+                    } else {
+                        storage_dead(_19)
+                        break 2
                     }
-                    break 2
                     break 0
                 }
                 storage_dead(_16)

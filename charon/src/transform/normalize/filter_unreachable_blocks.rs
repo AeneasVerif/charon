@@ -20,7 +20,7 @@ impl UllbcPass for Transform {
                 continue;
             }
             explored.insert(bid);
-            to_explore.append(&mut b.body[bid].targets());
+            to_explore.extend(b.body[bid].targets());
         }
 
         // Renumerotate
