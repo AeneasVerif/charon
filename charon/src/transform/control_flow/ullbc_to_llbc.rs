@@ -841,7 +841,7 @@ impl ExitInfo {
                     }
                 })
                 .collect();
-            let num_possible_candidates = loop_exits.len();
+            let num_possible_candidates = possible_candidates.len();
 
             // If there is exactly one one best candidate, it is easy.
             // Otherwise we need to split further.

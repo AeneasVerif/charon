@@ -2079,10 +2079,11 @@ where
                 return
             },
             _ => {
-                panic(core::panicking::panic)
+                break 0
             },
         }
     }
+    panic(core::panicking::panic)
 }
 
 // Full name: test_crate::loop_break_1
