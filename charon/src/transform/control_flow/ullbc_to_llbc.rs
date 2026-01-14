@@ -352,34 +352,7 @@ impl<'a> CfgInfo<'a> {
         self.block_data[src].reverse_postorder >= self.block_data[tgt].reverse_postorder
             && self.cfg.contains_edge(src, tgt)
     }
-}
 
-impl BlockData<'_> {
-    fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
-        self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
-    }
-    fn shortest_paths_excluding_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
-        self.shortest_paths_including_self()
-            .filter(move |&(bid, _)| bid != self.id)
-    }
-    fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
-        self.shortest_paths_including_self().map(|(bid, _)| bid)
-    }
-    fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
-        self.shortest_paths_excluding_self().map(|(bid, _)| bid)
-    }
-}
-
-/// See [`ExitInfo::compute_loop_exit_ranks`].
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct LoopExitRank {
-    /// Number of paths we found going to this exit.
-    path_count: usize,
-    /// Distance from the loop header.
-    distance_from_header: Reverse<usize>,
-}
-
-impl ExitInfo {
     /// Check if the node is within the given loop. The starting node should be reachable from the
     /// loop header.
     ///
@@ -398,7 +371,7 @@ impl ExitInfo {
     /// - we can reach the entry of the inner loop from (i) (by finishing then
     ///   starting again an iteration of the outer loop)
     /// - but doing this requires taking a backward edge which goes to the outer loop
-    fn is_within_loop(cfg: &CfgInfo, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
+    fn is_within_loop(&self, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
         // The node is reachable from the loop header. The criterion for being part of the loop is
         // not whether the loop header is reachable from the node, because this would consider all
         // the other inner loops present in this one.
@@ -419,15 +392,15 @@ impl ExitInfo {
         //       break 1
         //     }
         //   }
-        Dfs::new(&cfg.fwd_cfg, block_id)
-            .iter(&cfg.fwd_cfg)
-            .any(|bid| cfg.is_backward_edge(bid, loop_header))
+        Dfs::new(&self.fwd_cfg, block_id)
+            .iter(&self.fwd_cfg)
+            .any(|bid| self.is_backward_edge(bid, loop_header))
     }
 
     /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
     /// is already in `target_set`, we ignore that empty path.
     fn all_paths_go_through(
-        cfg: &CfgInfo,
+        &self,
         src: src::BlockId,
         through_node: src::BlockId,
         target_set: &HashSet<src::BlockId>,
@@ -467,7 +440,7 @@ impl ExitInfo {
         // edges. If we reach a target node in that graph then `through_node` does not dominate the
         // target nodes in the forward graph starting from `src`.
         let graph = GraphWithoutEdgesFrom {
-            graph: &cfg.fwd_cfg,
+            graph: &self.fwd_cfg,
             special_node: through_node,
         };
         !Dfs::new(&graph, src)
@@ -475,7 +448,34 @@ impl ExitInfo {
             .skip(1) // skip src
             .any(|bid| target_set.contains(&bid))
     }
+}
 
+impl BlockData<'_> {
+    fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
+    }
+    fn shortest_paths_excluding_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths_including_self()
+            .filter(move |&(bid, _)| bid != self.id)
+    }
+    fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_including_self().map(|(bid, _)| bid)
+    }
+    fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_excluding_self().map(|(bid, _)| bid)
+    }
+}
+
+/// See [`ExitInfo::compute_loop_exit_ranks`].
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct LoopExitRank {
+    /// Number of paths we found going to this exit.
+    path_count: usize,
+    /// Distance from the loop header.
+    distance_from_header: Reverse<usize>,
+}
+
+impl ExitInfo {
     /// Compute the nodes that exit the given loop header. These are the first node on each path
     /// that we find that exits the loop.
     fn compute_loop_exit_candidates(cfg: &CfgInfo, loop_header: src::BlockId) -> Vec<src::BlockId> {
@@ -487,8 +487,7 @@ impl ExitInfo {
             // If we've exited all the loops after and including the target one, this node is an
             // exit node for the target loop.
             if !path_dfs.path.iter().any(|&loop_id| {
-                cfg.block_data[loop_id].is_loop_header
-                    && Self::is_within_loop(cfg, loop_id, block_id)
+                cfg.block_data[loop_id].is_loop_header && cfg.is_within_loop(loop_id, block_id)
             }) {
                 loop_exits.push(block_id);
                 // Don't explore any more paths from this node.
@@ -865,7 +864,7 @@ impl ExitInfo {
                 //   ...
                 // }
                 // ```
-                if Self::all_paths_go_through(cfg, bid, exit_id, &exits_set) {
+                if cfg.all_paths_go_through(bid, exit_id, &exits_set) {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit_id);
