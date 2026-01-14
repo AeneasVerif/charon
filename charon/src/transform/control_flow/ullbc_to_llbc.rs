@@ -348,6 +348,7 @@ impl<'a> CfgInfo<'a> {
     fn topo_rank(&self, block_id: BlockId) -> u32 {
         self.block_data[block_id].reverse_postorder.unwrap()
     }
+    #[expect(unused)]
     fn is_backward_edge(&self, src: BlockId, tgt: BlockId) -> bool {
         self.block_data[src].reverse_postorder >= self.block_data[tgt].reverse_postorder
             && self.cfg.contains_edge(src, tgt)
@@ -394,7 +395,7 @@ impl<'a> CfgInfo<'a> {
         //   }
         Dfs::new(&self.fwd_cfg, block_id)
             .iter(&self.fwd_cfg)
-            .any(|bid| self.is_backward_edge(bid, loop_header))
+            .any(|bid| self.cfg.contains_edge(bid, loop_header))
     }
 
     /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
