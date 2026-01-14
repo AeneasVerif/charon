@@ -944,10 +944,9 @@ impl ExitInfo {
                 }
             } else {
                 // For switches: check that the exit was not already given to a loop
-                if let Some(&exit_id) = switch_exits.get(&bid)
-                    && all_exits.insert(exit_id)
-                {
+                if let Some(&exit_id) = switch_exits.get(&bid) {
                     exit_info.switch_exit = Some(exit_id);
+                    all_exits.insert(exit_id);
                 }
             }
         }
