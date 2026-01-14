@@ -1014,8 +1014,6 @@ where
             storage_live(_18)
             _18 = Option::None {  }
             _0 = move _18
-            storage_dead(_6)
-            storage_dead(_8)
         } else {
             new_len_12 = copy exclusive_end_5 ub.- copy self_15
             storage_dead(_11)
@@ -1045,9 +1043,9 @@ where
                 _18 = Option::None {  }
                 _0 = move _18
             }
-            storage_dead(_6)
-            storage_dead(_8)
         }
+        storage_dead(_6)
+        storage_dead(_8)
     }
     storage_dead(_3)
     return
@@ -1106,8 +1104,6 @@ where
             storage_live(_18)
             _18 = Option::None {  }
             _0 = move _18
-            storage_dead(_6)
-            storage_dead(_8)
         } else {
             new_len_12 = copy exclusive_end_5 ub.- copy self_15
             storage_dead(_11)
@@ -1137,9 +1133,9 @@ where
                 _18 = Option::None {  }
                 _0 = move _18
             }
-            storage_dead(_6)
-            storage_dead(_8)
         }
+        storage_dead(_6)
+        storage_dead(_8)
     }
     storage_dead(_3)
     return
@@ -1314,10 +1310,6 @@ where
         storage_live(_17)
         _17 = copy self_11 < copy rhs_12
         if move _17 {
-            storage_dead(_17)
-            storage_dead(rhs_12)
-            storage_dead(self_11)
-            storage_dead(_10)
         } else {
             storage_live(_18)
             _18 = copy self_11 ub.- copy rhs_12
@@ -1344,6 +1336,10 @@ where
             storage_dead(_7)
             return
         }
+        storage_dead(_17)
+        storage_dead(rhs_12)
+        storage_dead(self_11)
+        storage_dead(_10)
     } else {
         storage_dead(_8)
     }
@@ -1410,10 +1406,6 @@ where
         storage_live(_17)
         _17 = copy self_11 < copy rhs_12
         if move _17 {
-            storage_dead(_17)
-            storage_dead(rhs_12)
-            storage_dead(self_11)
-            storage_dead(_10)
         } else {
             storage_live(_18)
             _18 = copy self_11 ub.- copy rhs_12
@@ -1440,6 +1432,10 @@ where
             storage_dead(_7)
             return
         }
+        storage_dead(_17)
+        storage_dead(rhs_12)
+        storage_dead(self_11)
+        storage_dead(_10)
     } else {
         storage_dead(_8)
     }

@@ -271,3 +271,26 @@ pub fn loop_break_2() {
     x = 2;
     x = 4;
 }
+
+pub fn interleaved_loops() {
+    let mut x = 0;
+    'a: loop {
+        x = 1;
+        'b: loop {
+            x = 2;
+            if true {
+                x = 3;
+                continue 'a;
+            }
+            x = 4;
+            if true {
+                x = 5;
+                continue 'b;
+            }
+            x = 6;
+            break 'a;
+        }
+        x = 7; // unreachable
+    }
+    x = 8;
+}
