@@ -367,9 +367,9 @@ impl<'a> CfgInfo<'a> {
         //       break 1
         //     }
         //   }
-        Dfs::new(&self.fwd_cfg, block_id)
-            .iter(&self.fwd_cfg)
-            .any(|bid| self.cfg.contains_edge(bid, loop_header))
+        self.cfg
+            .neighbors_directed(loop_header, petgraph::Direction::Incoming)
+            .any(|bid| self.block_data[block_id].shortest_paths.contains_key(&bid))
     }
 
     /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
