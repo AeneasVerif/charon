@@ -421,9 +421,11 @@ struct LoopExitRank {
 }
 
 impl ExitInfo {
-    /// Compute the nodes that exit the given loop header. These are the first node on each path
-    /// that we find that exits the loop.
-    fn compute_loop_exit_candidates(cfg: &CfgInfo, loop_header: src::BlockId) -> Vec<src::BlockId> {
+    /// Compute the first node on each path that exits the loop.
+    fn compute_loop_exit_starting_points(
+        cfg: &CfgInfo,
+        loop_header: src::BlockId,
+    ) -> Vec<src::BlockId> {
         let mut loop_exits = Vec::new();
         // Do a dfs from the loop header while keeping track of the path from the loop header to
         // the current node.
@@ -475,7 +477,7 @@ impl ExitInfo {
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
-        for block_id in Self::compute_loop_exit_candidates(cfg, loop_header) {
+        for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
                 loop_exits
                     .entry(bid)
@@ -616,56 +618,51 @@ impl ExitInfo {
                 // If candidate already selected for another loop: ignore
                 .filter(|(candidate_id, _)| !exits.contains(candidate_id))
                 .max_set_by_key(|&(_, rank)| rank);
-            let chosen_exit = if best_exits.is_empty() {
-                None
-            } else {
-                // If there is exactly one best candidate, use it. Otherwise we need to split
-                // further.
-                let best_exits = best_exits.into_iter().map(|(bid, _)| bid);
-                match best_exits.exactly_one() {
-                    Ok(best_exit) => Some(best_exit),
-                    Err(best_exits) => {
-                        // Remove the candidates which only lead to errors (panic or unreachable).
-                        // If there is exactly one candidate we select it, otherwise we do not select any
-                        // exit.
-                        // We don't want to select any exit if we are in the below situation
-                        // (all paths lead to errors). We added a sanity check below to
-                        // catch the situations where there are several exits which don't
-                        // lead to errors.
-                        //
-                        // Example:
-                        // ========
-                        // ```
-                        // loop {
-                        //     match ls {
-                        //         List::Nil => {
-                        //             panic!() // <-- best candidate
-                        //         }
-                        //         List::Cons(x, tl) => {
-                        //             if i == 0 {
-                        //                 return x;
-                        //             } else {
-                        //                 ls = tl;
-                        //                 i -= 1;
-                        //             }
-                        //         }
-                        //         _ => {
-                        //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
-                        //         }
-                        //     }
-                        // }
-                        // ```
-                        best_exits
-                            .filter(|&bid| !cfg.block_data[bid].only_reach_error)
-                            .exactly_one()
-                            .map_err(|mut candidates| {
-                                // Adding this sanity check so that we can see when there are several
-                                // candidates.
-                                let span = cfg.block_data[loop_id].contents.terminator.span;
-                                sanity_check!(ctx, span, candidates.next().is_none());
-                            })
-                            .ok()
-                    }
+            // If there is exactly one best candidate, use it. Otherwise we need to split
+            // further.
+            let chosen_exit = match best_exits.into_iter().map(|(bid, _)| bid).exactly_one() {
+                Ok(best_exit) => Some(best_exit),
+                Err(best_exits) => {
+                    // Remove the candidates which only lead to errors (panic or unreachable).
+                    // If there is exactly one candidate we select it, otherwise we do not select any
+                    // exit.
+                    // We don't want to select any exit if we are in the below situation
+                    // (all paths lead to errors). We added a sanity check below to
+                    // catch the situations where there are several exits which don't
+                    // lead to errors.
+                    //
+                    // Example:
+                    // ========
+                    // ```
+                    // loop {
+                    //     match ls {
+                    //         List::Nil => {
+                    //             panic!() // <-- best candidate
+                    //         }
+                    //         List::Cons(x, tl) => {
+                    //             if i == 0 {
+                    //                 return x;
+                    //             } else {
+                    //                 ls = tl;
+                    //                 i -= 1;
+                    //             }
+                    //         }
+                    //         _ => {
+                    //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
+                    //         }
+                    //     }
+                    // }
+                    // ```
+                    best_exits
+                        .filter(|&bid| !cfg.block_data[bid].only_reach_error)
+                        .exactly_one()
+                        .map_err(|mut candidates| {
+                            // Adding this sanity check so that we can see when there are several
+                            // candidates.
+                            let span = cfg.block_data[loop_id].contents.terminator.span;
+                            sanity_check!(ctx, span, candidates.next().is_none());
+                        })
+                        .ok()
                 }
             };
             if let Some(exit_id) = chosen_exit {
@@ -725,30 +722,17 @@ impl ExitInfo {
     fn compute_switch_exits(cfg: &mut CfgInfo) {
         // We need to give precedence to the outer switches: we thus iterate
         // over the switch blocks in topological order.
-        let sorted_switch_blocks = cfg
+        let mut exits_set = HashSet::new();
+        for bid in cfg
             .switch_blocks
             .iter()
             .copied()
-            .sorted_unstable_by_key(|&bid| (cfg.topo_rank(bid), bid));
-
-        // For every node which is a switch, retrieve the exit.
-        // As the set of intersection of successors is topologically sorted, the
-        // exit should be the first node in the set (if the set is non empty).
-        // Also, we need to explore the nodes in topological order, to give
-        // precedence to the outer switches.
-        let mut exits_set = HashSet::new();
-        for bid in sorted_switch_blocks {
-            trace!("Finding exit candidate for: {bid:?}");
+            .sorted_unstable_by_key(|&bid| (cfg.topo_rank(bid), bid))
+        {
             let block_data = &cfg.block_data[bid];
-            // Find the best successor: this is the node with the highest flow, and the
-            // highest reverse topological rank.
-            //
-            // Remark: in order to rank the nodes, we also use the negation of the
-            // rank given by the topological order. The last elements of the set
-            // have the highest flow, that is they are the nodes to which the maximum
-            // number of paths converge. If several nodes have the same flow, we want
-            // to take the highest one in the hierarchy: hence the use of the inverse
-            // of the topological rank.
+            // Find the best successor: this is the node with the highest flow, and the lowest
+            // topological rank. If several nodes have the same flow, we want to take the highest
+            // one in the hierarchy: hence the use of the topological rank.
             //
             // Ex.:
             // ```text
@@ -772,56 +756,43 @@ impl ExitInfo {
                     let rank = Reverse(cfg.topo_rank(id));
                     ((flow, rank), id)
                 });
-            let exit_candidate: Option<_> =
-                best_exit.filter(|exit_id| !exits_set.contains(exit_id));
-            if let Some(exit_id) = exit_candidate {
-                // We have an exit candidate: check that it was not already
-                // taken by an external switch
-                trace!("{bid:?} has an exit candidate: {exit_id:?}");
-                // It was not taken by an external switch.
-                //
-                // We must check that we can't reach the exit of an external switch from one of the
-                // branches, without going through the exit candidate.
-                // We do this by simply checking that we can't reach any exits (and use the fact
-                // that we explore the switch by using a topological order to not discard valid
-                // exit candidates).
-                //
-                // The reason is that it can lead to code like the following:
-                // ```
-                // if ... { // if #1
-                //   if ... { // if #2
-                //     ...
-                //     // here, we have a `goto b1`, where b1 is the exit
-                //     // of if #2: we thus stop translating the blocks.
-                //   }
-                //   else {
-                //     ...
-                //     // here, we have a `goto b2`, where b2 is the exit
-                //     // of if #1: we thus stop translating the blocks.
-                //   }
-                //   // We insert code for the block b1 here (which is the exit of
-                //   // the exit of if #2). However, this block should only
-                //   // be executed in the branch "then" of the if #2, not in
-                //   // the branch "else".
-                //   ...
-                // }
-                // else {
-                //   ...
-                // }
-                // ```
-                if cfg.all_paths_go_through(bid, exit_id, &exits_set) {
-                    trace!("Keeping the exit candidate");
-                    // No intersection: ok
-                    exits_set.insert(exit_id);
-                    cfg.block_data[bid].exit_info.switch_exit = Some(exit_id);
-                } else {
-                    trace!(
-                        "Ignoring the exit candidate because of an intersection with external switches"
-                    );
-                }
-            } else {
-                trace!("{bid:?} has no successors");
-            };
+            // We have an exit candidate: we first check that it was not already taken by an
+            // external switch.
+            //
+            // We then check that we can't reach the exit of an external switch from one of the
+            // branches, without going through the exit candidate. We do this by simply checking
+            // that we can't reach any of the exits of outer switches.
+            //
+            // The reason is that it can lead to code like the following:
+            // ```
+            // if ... { // if #1
+            //   if ... { // if #2
+            //     ...
+            //     // here, we have a `goto b1`, where b1 is the exit
+            //     // of if #2: we thus stop translating the blocks.
+            //   }
+            //   else {
+            //     ...
+            //     // here, we have a `goto b2`, where b2 is the exit
+            //     // of if #1: we thus stop translating the blocks.
+            //   }
+            //   // We insert code for the block b1 here (which is the exit of
+            //   // the exit of if #2). However, this block should only
+            //   // be executed in the branch "then" of the if #2, not in
+            //   // the branch "else".
+            //   ...
+            // }
+            // else {
+            //   ...
+            // }
+            // ```
+            if let Some(exit_id) = best_exit
+                && !exits_set.contains(&exit_id)
+                && cfg.all_paths_go_through(bid, exit_id, &exits_set)
+            {
+                exits_set.insert(exit_id);
+                cfg.block_data[bid].exit_info.switch_exit = Some(exit_id);
+            }
         }
     }
 }
