@@ -20,7 +20,7 @@ use petgraph::visit::{
 };
 use smallvec::SmallVec;
 use std::cmp::Reverse;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::mem;
 
 use crate::common::ensure_sufficient_stack;
@@ -166,7 +166,7 @@ struct Irreducible(BlockId);
 impl<'a> CfgInfo<'a> {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
     /// compute some information like the loop entries and the switch blocks.
-    fn build(body: &'a src::BodyContents) -> Result<Self, Irreducible> {
+    fn build(ctx: &TransformCtx, body: &'a src::BodyContents) -> Result<Self, Irreducible> {
         let start_block = BlockId::ZERO;
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
@@ -303,14 +303,21 @@ impl<'a> CfgInfo<'a> {
             block_data[block_id].immediately_dominates = dominatees;
         }
 
-        Ok(CfgInfo {
+        let mut cfg = CfgInfo {
             cfg,
             fwd_cfg,
             loop_entries,
             switch_blocks,
             dominator_tree,
             block_data,
-        })
+        };
+
+        // Pick an exit block for each loop, if we find one.
+        ExitInfo::compute_loop_exits(ctx, &mut cfg);
+        // Pick an exit block for each switch, if we find one.
+        ExitInfo::compute_switch_exits(&mut cfg);
+
+        Ok(cfg)
     }
 
     fn block_data(&self, block_id: BlockId) -> &BlockData<'a> {
@@ -582,12 +589,8 @@ impl ExitInfo {
     ///     s
     /// }
     /// ```
-    fn compute_loop_exits(
-        ctx: &TransformCtx,
-        cfg: &CfgInfo,
-    ) -> HashMap<src::BlockId, src::BlockId> {
+    fn compute_loop_exits(ctx: &TransformCtx, cfg: &mut CfgInfo) {
         let mut exits: HashSet<src::BlockId> = HashSet::new();
-        let mut chosen_loop_exits: HashMap<src::BlockId, src::BlockId> = HashMap::new();
         // For every loop in topological order.
         for loop_id in cfg
             .loop_entries
@@ -667,16 +670,38 @@ impl ExitInfo {
             };
             if let Some(exit_id) = chosen_exit {
                 exits.insert(exit_id);
-                chosen_loop_exits.insert(loop_id, exit_id);
+                cfg.block_data[loop_id].exit_info.loop_exit = Some(exit_id);
             }
         }
-
-        // Return the chosen exits
-        trace!("Chosen loop exits: {:?}", chosen_loop_exits);
-        chosen_loop_exits
     }
 
-    /// See [`Self::compute`] for explanations about what "exits" are.
+    /// Let's consider the following piece of code:
+    /// ```text
+    /// if cond1 { ... } else { ... };
+    /// if cond2 { ... } else { ... };
+    /// ```
+    /// Once converted to MIR, the control-flow is destructured, which means we
+    /// have gotos everywhere. When reconstructing the control-flow, we have
+    /// to be careful about the point where we should join the two branches of
+    /// the first if.
+    /// For instance, if we don't notice they should be joined at some point (i.e,
+    /// whatever the branch we take, there is a moment when we go to the exact
+    /// same place, just before the second if), we might generate code like
+    /// this, with some duplicata:
+    /// ```text
+    /// if cond1 { ...; if cond2 { ... } else { ...} }
+    /// else { ...; if cond2 { ... } else { ...} }
+    /// ```
+    ///
+    /// Such a reconstructed program is valid, but it is definitely non-optimal:
+    /// it is very different from the original program (making it less clean and
+    /// clear), more bloated, and might involve duplicating the proof effort.
+    ///
+    /// For this reason, we need to find the "exit" of the first switch, which is
+    /// the point where the two branches join. Note that this can be a bit tricky,
+    /// because there may be more than two branches (if we do `switch(x) { ... }`),
+    /// and some of them might not join (if they contain a `break`, `panic`,
+    /// `return`, etc.).
     ///
     /// In order to compute the switch exits, we simply recursively compute a
     /// topologically ordered set of "filtered successors" as follows (note
@@ -697,24 +722,7 @@ impl ExitInfo {
     /// Note that with nested switches, the branches of the inner switches might
     /// goto the exits of the outer switches: for this reason, we give precedence
     /// to the outer switches.
-    fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, src::BlockId> {
-        // Compute the successors info map, starting at the root node
-        trace!(
-            "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
-            cfg.cfg, cfg.fwd_cfg, cfg.switch_blocks
-        );
-
-        // Debugging: print all the successors
-        {
-            trace!("Successors info:\n{}\n", {
-                let mut out = vec![];
-                for (bid, info) in cfg.block_data.iter_indexed() {
-                    out.push(format!("{} -> {{flow: {:?}}}", bid, &info.flow).to_string());
-                }
-                out.join("\n")
-            });
-        }
-
+    fn compute_switch_exits(cfg: &mut CfgInfo) {
         // We need to give precedence to the outer switches: we thus iterate
         // over the switch blocks in topological order.
         let sorted_switch_blocks = cfg
@@ -729,7 +737,6 @@ impl ExitInfo {
         // Also, we need to explore the nodes in topological order, to give
         // precedence to the outer switches.
         let mut exits_set = HashSet::new();
-        let mut exits = HashMap::new();
         for bid in sorted_switch_blocks {
             trace!("Finding exit candidate for: {bid:?}");
             let block_data = &cfg.block_data[bid];
@@ -806,7 +813,7 @@ impl ExitInfo {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit_id);
-                    exits.insert(bid, exit_id);
+                    cfg.block_data[bid].exit_info.switch_exit = Some(exit_id);
                 } else {
                     trace!(
                         "Ignoring the exit candidate because of an intersection with external switches"
@@ -815,140 +822,6 @@ impl ExitInfo {
             } else {
                 trace!("{bid:?} has no successors");
             };
-        }
-
-        exits
-    }
-
-    /// Compute the exits for the loops and the switches (switch on integer and
-    /// if ... then ... else ...). We need to do this because control-flow in MIR
-    /// is destructured: we have gotos everywhere.
-    ///
-    /// Let's consider the following piece of code:
-    /// ```text
-    /// if cond1 { ... } else { ... };
-    /// if cond2 { ... } else { ... };
-    /// ```
-    /// Once converted to MIR, the control-flow is destructured, which means we
-    /// have gotos everywhere. When reconstructing the control-flow, we have
-    /// to be careful about the point where we should join the two branches of
-    /// the first if.
-    /// For instance, if we don't notice they should be joined at some point (i.e,
-    /// whatever the branch we take, there is a moment when we go to the exact
-    /// same place, just before the second if), we might generate code like
-    /// this, with some duplicata:
-    /// ```text
-    /// if cond1 { ...; if cond2 { ... } else { ...} }
-    /// else { ...; if cond2 { ... } else { ...} }
-    /// ```
-    ///
-    /// Such a reconstructed program is valid, but it is definitely non-optimal:
-    /// it is very different from the original program (making it less clean and
-    /// clear), more bloated, and might involve duplicating the proof effort.
-    ///
-    /// For this reason, we need to find the "exit" of the first loop, which is
-    /// the point where the two branches join. Note that this can be a bit tricky,
-    /// because there may be more than two branches (if we do `switch(x) { ... }`),
-    /// and some of them might not join (if they contain a `break`, `panic`,
-    /// `return`, etc.).
-    ///
-    /// Finally, some similar issues arise for loops. For instance, let's consider
-    /// the following piece of code:
-    /// ```text
-    /// while cond1 {
-    ///   e1;
-    ///   if cond2 {
-    ///     break;
-    ///   }
-    ///   e2;
-    /// }
-    /// e3;
-    /// return;
-    /// ```
-    ///
-    /// Note that in MIR, the loop gets desugared to an if ... then ... else ....
-    /// From the MIR, We want to generate something like this:
-    /// ```text
-    /// loop {
-    ///   if cond1 {
-    ///     e1;
-    ///     if cond2 {
-    ///       break;
-    ///     }
-    ///     e2;
-    ///     continue;
-    ///   }
-    ///   else {
-    ///     break;
-    ///   }
-    /// };
-    /// e3;
-    /// return;
-    /// ```
-    ///
-    /// But if we don't pay attention, we might end up with that, once again with
-    /// duplications:
-    /// ```text
-    /// loop {
-    ///   if cond1 {
-    ///     e1;
-    ///     if cond2 {
-    ///       e3;
-    ///       return;
-    ///     }
-    ///     e2;
-    ///     continue;
-    ///   }
-    ///   else {
-    ///     e3;
-    ///     return;
-    ///   }
-    /// }
-    /// ```
-    /// We thus have to notice that if the loop condition is false, we goto the same
-    /// block as when following the goto introduced by the break inside the loop, and
-    /// this block is dubbed the "loop exit".
-    ///
-    /// The following function thus computes the "exits" for loops and switches, which
-    /// are basically the points where control-flow joins.
-    fn compute(ctx: &TransformCtx, cfg_info: &mut CfgInfo) {
-        // Compute the loop exits
-        let loop_exits: HashMap<BlockId, BlockId> = Self::compute_loop_exits(ctx, cfg_info);
-        trace!("loop_exits:\n{:?}", loop_exits);
-
-        // Compute the switch exits
-        let switch_exits: HashMap<BlockId, BlockId> = Self::compute_switch_exits(cfg_info);
-        trace!("switch_exits:\n{:?}", switch_exits);
-
-        // Keep track of the exits which were already attributed
-        let mut all_exits = HashSet::new();
-
-        // We need to give precedence to the outer switches and loops: we thus iterate
-        // over the blocks in topological order.
-        let sorted_blocks = cfg_info
-            .loop_entries
-            .iter()
-            .chain(cfg_info.switch_blocks.iter())
-            .copied()
-            .sorted_unstable_by_key(|&bid| (cfg_info.topo_rank(bid), bid));
-        for bid in sorted_blocks {
-            let block_data = &mut cfg_info.block_data[bid];
-            let exit_info = &mut block_data.exit_info;
-            if block_data.is_loop_header {
-                // For loops, we always register the exit (if there is one).
-                // However, the exit may be owned by an outer switch (note that we already took
-                // care of spreading the exits between the inner/outer loops)
-                if let Some(&exit_id) = loop_exits.get(&bid) {
-                    exit_info.loop_exit = Some(exit_id);
-                    all_exits.insert(exit_id);
-                }
-            } else {
-                // For switches: check that the exit was not already given to a loop
-                if let Some(&exit_id) = switch_exits.get(&bid) {
-                    exit_info.switch_exit = Some(exit_id);
-                    all_exits.insert(exit_id);
-                }
-            }
         }
     }
 }
@@ -999,12 +872,9 @@ struct ReconstructCtx<'a> {
 
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
-        // Explore the function body to create the control-flow graph without backward
-        // edges, and identify the loop entries (which are destinations of backward edges).
-        let mut cfg = CfgInfo::build(&src_body.body)?;
-
-        // Find the exit block for all the loops and switches, if such an exit point exists.
-        ExitInfo::compute(ctx, &mut cfg);
+        // Compute all sorts of graph-related information about the control-flow graph, including
+        // reachability, the dominator tree, loop entries, and loop/switch exits.
+        let cfg = CfgInfo::build(ctx, &src_body.body)?;
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
@@ -1249,7 +1119,9 @@ impl<'a> ReconstructCtx<'a> {
         match self.mode {
             ReconstructMode::Flow => {
                 // We only support next-block jumps to merge nodes.
-                if let Some(bid) = block_data.exit_info.switch_exit {
+                if let Some(bid) = block_data.exit_info.switch_exit
+                    && !block_data.is_loop_header
+                {
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
             }
