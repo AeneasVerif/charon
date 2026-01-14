@@ -362,7 +362,6 @@ impl BlockData<'_> {
         self.shortest_paths_including_self()
             .filter(move |&(bid, _)| bid != self.id)
     }
-    #[expect(unused)]
     fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
         self.shortest_paths_including_self().map(|(bid, _)| bid)
     }
@@ -371,34 +370,13 @@ impl BlockData<'_> {
     }
 }
 
-/// For every path we find leading to this exit node candidate, we register the distance between
-/// the loop entry and the exit node.
-/// If later we have to choose between candidates with the same number of occurrences, we choose
-/// the one with the smallest distances.
-///
-/// Note that it *may* happen that we have several exit candidates referenced more than once for
-/// one loop. This comes from the fact that whenever we reach a node outside the current loop, we
-/// register this node as well as all its children as exit candidates.
-/// Consider the following example:
-/// ```text
-/// while i < max {
-///     if cond {
-///         break;
-///     }
-///     s += i;
-///     i += 1
-/// }
-/// // All the below nodes are exit candidates (each of them is referenced twice)
-/// s += 1;
-/// return s;
-/// ```
+/// See [`ExitInfo::compute_loop_exit_ranks`].
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 struct LoopExitRank {
     /// Number of paths we found going to this exit.
     path_count: usize,
-    /// Sum of the loop_header->exit_node distances for each of the paths leading to this exit.
-    /// Sorted with largest distance first.
-    summed_distance: Reverse<usize>,
+    /// Distance from the loop header.
+    distance_from_header: Reverse<usize>,
 }
 
 impl ExitInfo {
@@ -528,21 +506,42 @@ impl ExitInfo {
     ///
     /// To do that, we first count for each exit node how many exit paths go through it, and pick
     /// the node with most occurrences. If there are many such nodes, we pick the one with shortest
-    /// distance (computed as the sum of shortest distance from loop header to the first node to
-    /// exit the loop + shortest distance from that first node to this one). Finally if there are
-    /// still many such nodes, we keep the first node found (the order in which we explore the
-    /// graph is deterministic, and we use an insertion-order hash map).
+    /// distance from the loop header. Finally if there are still many such nodes, we keep the
+    /// first node found (the order in which we explore the graph is deterministic, and we use an
+    /// insertion-order hash map).
+    ///
+    /// Note that exit candidates will typically be referenced more than once for one loop. This
+    /// comes from the fact that whenever we reach a node outside the current loop, we register
+    /// this node as well as all its children as exit candidates.
+    /// Consider the following example:
+    /// ```text
+    /// while i < max {
+    ///     if cond {
+    ///         break;
+    ///     }
+    ///     s += i;
+    ///     i += 1
+    /// }
+    /// // All the below nodes are exit candidates (each of them is referenced twice)
+    /// s += 1;
+    /// return s;
+    /// ```
     fn compute_loop_exit_ranks(
         cfg: &CfgInfo,
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
         for block_id in Self::compute_loop_exit_candidates(cfg, loop_header) {
-            for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
-                let exit_rank = loop_exits.entry(bid).or_default();
-                exit_rank.path_count += 1;
-                exit_rank.summed_distance.0 +=
-                    cfg.block_data[loop_header].shortest_paths[&block_id] + dist;
+            for bid in cfg.block_data(block_id).reachable_including_self() {
+                loop_exits
+                    .entry(bid)
+                    .or_insert_with(|| LoopExitRank {
+                        path_count: 0,
+                        distance_from_header: Reverse(
+                            cfg.block_data[loop_header].shortest_paths[&bid],
+                        ),
+                    })
+                    .path_count += 1;
             }
         }
         loop_exits
