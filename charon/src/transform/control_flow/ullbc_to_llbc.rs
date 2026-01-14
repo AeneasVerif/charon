@@ -132,6 +132,25 @@ struct BlockData<'a> {
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
     /// id first.
     pub immediately_dominates: SmallVec<[BlockId; 2]>,
+    /// List of loops inside of which this node is (loops are identified by their header). A node
+    /// is considered inside a loop if it is reachable from the loop header and can reach the loop
+    /// header.
+    ///
+    /// Note that we might have to take a backward edge to reach the loop header, e.g.:
+    ///   'a: loop {
+    ///       'b: loop {
+    ///           if true {
+    ///               continue 'a;
+    ///           } else {
+    ///               // This node has to take a backwards edge to `'b` in order to reach the start
+    ///               // of `'a`.
+    ///               if true {
+    ///                   break 'a;
+    ///               }
+    ///           }
+    ///       }
+    ///   }
+    pub within_loops: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: bool,
     /// List of reachable nodes, with the length of shortest path to them. Includes the current
@@ -164,9 +183,11 @@ struct ExitInfo {
 struct Irreducible(BlockId);
 
 impl<'a> CfgInfo<'a> {
-    /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
-    /// compute some information like the loop entries and the switch blocks.
+    /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
+    /// bunch of graph information about the CFG.
     fn build(body: &'a src::BodyContents) -> Result<Self, Irreducible> {
+        // The steps in this function follow a precise order, as each step typically requires the
+        // previous one.
         let start_block = BlockId::ZERO;
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
@@ -179,6 +200,7 @@ impl<'a> CfgInfo<'a> {
                 is_merge_target: false,
                 reverse_postorder: None,
                 immediately_dominates: Default::default(),
+                within_loops: Default::default(),
                 only_reach_error: false,
                 shortest_paths: Default::default(),
                 flow: empty_flow.clone(),
@@ -217,39 +239,49 @@ impl<'a> CfgInfo<'a> {
             }
         }
 
-        // Compute the forward graph (without backward edges).
+        // Compute the forward graph (without backward edges). We do a dfs while keeping track of
+        // the path from the start node.
         let mut fwd_cfg = Cfg::new();
         let mut loop_entries = HashSet::new();
         let mut switch_blocks = HashSet::new();
-        for src in cfg.nodes() {
-            if block_data[src].reverse_postorder.is_none() {
-                // Unreachable block
-                continue;
-            }
-            fwd_cfg.add_node(src);
+        let mut path_dfs = DfsWithPath::new(&cfg, start_block);
+        while let Some(block_id) = path_dfs.next(&cfg) {
+            fwd_cfg.add_node(block_id);
 
-            if body[src].terminator.kind.is_switch() {
-                switch_blocks.insert(src);
-                block_data[src].is_switch = true;
+            if body[block_id].terminator.kind.is_switch() {
+                switch_blocks.insert(block_id);
+                block_data[block_id].is_switch = true;
             }
 
-            for tgt in cfg.neighbors(src) {
+            // Iterate over edges into this node (so that we can determine whether this node is a
+            // loop header).
+            for from in cfg.neighbors_directed(block_id, petgraph::Direction::Incoming) {
                 // Check if the edge is a backward edge.
-                if block_data[src].reverse_postorder >= block_data[tgt].reverse_postorder {
+                if block_data[from].reverse_postorder >= block_data[block_id].reverse_postorder {
                     // This is a backward edge
-                    block_data[tgt].is_loop_header = true;
-                    loop_entries.insert(tgt);
+                    block_data[block_id].is_loop_header = true;
+                    loop_entries.insert(block_id);
                     // A cfg is reducible iff the target of every back edge dominates the
                     // edge's source.
-                    if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
-                        return Err(Irreducible(src));
+                    if !dominator_tree.dominators(from).unwrap().contains(&block_id) {
+                        return Err(Irreducible(from));
                     }
                 } else {
-                    fwd_cfg.add_edge(src, tgt, ());
+                    fwd_cfg.add_edge(from, block_id, ());
                 }
             }
+
+            // Store incomplete information for now: we store all the loops on the path to this
+            // node. We'll filter once we have reachability data available.
+            block_data[block_id].within_loops = path_dfs
+                .path
+                .iter()
+                .copied()
+                .filter(|&loop_id| block_data[loop_id].is_loop_header)
+                .collect();
         }
 
+        // Finish filling in information.
         for block_id in DfsPostOrder::new(&fwd_cfg, start_block).iter(&fwd_cfg) {
             let block = &body[block_id];
             let targets = cfg.neighbors(block_id).collect_vec();
@@ -301,6 +333,25 @@ impl<'a> CfgInfo<'a> {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
+
+            // Now we filter the loops to keep only the ones this block is in. This uses
+            // the reachability data we just computed.
+            let mut within_loops = mem::take(&mut block_data[block_id].within_loops);
+            // I don't understand this computation. We're actually considering some nodes within
+            // loops that aren't within a loop, e.g.
+            //   loop {}
+            //   loop {
+            //     // node here is considered part of the first loop
+            //   }
+            // I think this is only partial and ends up working thanks to the loop exit selection
+            // process later.
+            while within_loops.last().is_some_and(|&loop_header| {
+                !cfg.neighbors_directed(loop_header, petgraph::Direction::Incoming)
+                    .any(|bid| block_data[block_id].shortest_paths.contains_key(&bid))
+            }) {
+                within_loops.pop();
+            }
+            block_data[block_id].within_loops = within_loops;
         }
 
         Ok(CfgInfo {
@@ -328,48 +379,11 @@ impl<'a> CfgInfo<'a> {
             && self.cfg.contains_edge(src, tgt)
     }
 
-    /// Check if the node is within the given loop. The starting node should be reachable from the
-    /// loop header.
-    ///
-    /// It is better explained on the following example:
-    /// ```text
-    /// 'outer: while i < max {
-    ///     'inner: while j < max {
-    ///        j += 1;
-    ///     }
-    ///     // (i)
-    ///     i += 1;
-    /// }
-    /// ```
-    /// If we enter the inner loop then go to (i) from the inner loop, we consider
-    /// that we exited the inner loop because:
-    /// - we can reach the entry of the inner loop from (i) (by finishing then
-    ///   starting again an iteration of the outer loop)
-    /// - but doing this requires taking a backward edge which goes to the outer loop
+    /// Check if the node is within the given loop.
     fn is_within_loop(&self, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
-        // The node is reachable from the loop header. The criterion for being part of the loop is
-        // not whether the loop header is reachable from the node, because this would consider all
-        // the other inner loops present in this one.
-        // Instead, the criterion is whether the loop header is reachable by going through the
-        // forward graph then taking a single backward edge.
-        //
-        // A fun example is an interleaving such as the following. The interesting node is
-        // considered part of the outer loop only.
-        //   loop {
-        //     loop {
-        //       if foo() {
-        //          continue 1
-        //       }
-        //       interesting_node();
-        //       if bar() {
-        //          continue 0
-        //       }
-        //       break 1
-        //     }
-        //   }
-        self.cfg
-            .neighbors_directed(loop_header, petgraph::Direction::Incoming)
-            .any(|bid| self.block_data[block_id].shortest_paths.contains_key(&bid))
+        self.block_data[block_id]
+            .within_loops
+            .contains(&loop_header)
     }
 
     /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
@@ -420,16 +434,14 @@ impl ExitInfo {
         let mut loop_exits = Vec::new();
         // Do a dfs from the loop header while keeping track of the path from the loop header to
         // the current node.
-        let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
-        while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
+        let mut dfs = Dfs::new(&cfg.fwd_cfg, loop_header);
+        while let Some(block_id) = dfs.next(&cfg.fwd_cfg) {
             // If we've exited all the loops after and including the target one, this node is an
             // exit node for the target loop.
-            if !path_dfs.path.iter().any(|&loop_id| {
-                cfg.block_data[loop_id].is_loop_header && cfg.is_within_loop(loop_id, block_id)
-            }) {
+            if !cfg.is_within_loop(loop_header, block_id) {
                 loop_exits.push(block_id);
                 // Don't explore any more paths from this node.
-                path_dfs.discovered.extend(cfg.fwd_cfg.neighbors(block_id));
+                dfs.discovered.extend(cfg.fwd_cfg.neighbors(block_id));
             }
         }
         loop_exits
