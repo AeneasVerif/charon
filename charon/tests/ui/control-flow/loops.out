@@ -2218,13 +2218,13 @@ pub fn interleaved_loops2()
                 storage_live(_3)
                 _3 = const true
                 if move _3 {
-                    break 1
                 } else {
                     storage_dead(_3)
                     storage_dead(_2)
                     x_1 = const 5 : i32
                     continue 0
                 }
+                break 1
             }
         }
         x_1 = const 3 : i32
