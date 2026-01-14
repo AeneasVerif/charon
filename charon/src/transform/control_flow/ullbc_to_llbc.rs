@@ -11,15 +11,6 @@
 //! Also note that we more importantly focus on making the algorithm sound: the
 //! reconstructed program must always be equivalent to the original MIR program,
 //! and the fact that the reconstruction preserves this property must be obvious.
-//!
-//! Finally, we conjecture the execution time shouldn't be too much a problem:
-//! we don't expect the translation mechanism to be applied on super huge functions
-//! (which will be difficult to formally analyze), and the MIR graphs are actually
-//! not that big because statements are grouped into code blocks (a block is made
-//! of a list of statements, followed by a terminator - branchings and jumps can
-//! only be performed by terminators -, meaning that MIR graphs don't have that
-//! many nodes and edges).
-
 use itertools::Itertools;
 use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
@@ -413,6 +404,22 @@ struct LoopExitRank {
 impl ExitInfo {
     /// Check if the node is within the given loop. The starting node should be reachable from the
     /// loop header.
+    ///
+    /// It is better explained on the following example:
+    /// ```text
+    /// 'outer: while i < max {
+    ///     'inner: while j < max {
+    ///        j += 1;
+    ///     }
+    ///     // (i)
+    ///     i += 1;
+    /// }
+    /// ```
+    /// If we enter the inner loop then go to (i) from the inner loop, we consider
+    /// that we exited the inner loop because:
+    /// - we can reach the entry of the inner loop from (i) (by finishing then
+    ///   starting again an iteration of the outer loop)
+    /// - but doing this requires taking a backward edge which goes to the outer loop
     fn is_within_loop(cfg: &CfgInfo, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
         // The node is reachable from the loop header. The criterion for being part of the loop is
         // not whether the loop header is reachable from the node, because this would consider all
@@ -491,7 +498,8 @@ impl ExitInfo {
             .any(|bid| target_set.contains(&bid))
     }
 
-    /// Compute the nodes that exit the given loop header.
+    /// Compute the nodes that exit the given loop header. These are the first node on each path
+    /// that we find that exits the loop.
     fn compute_loop_exit_candidates(cfg: &CfgInfo, loop_header: src::BlockId) -> Vec<src::BlockId> {
         let mut loop_exits = Vec::new();
         // Do a dfs from the loop header while keeping track of the path from the loop header to
@@ -514,10 +522,16 @@ impl ExitInfo {
 
     /// Compute the loop exit candidates along with a rank.
     ///
-    /// There may be several candidates with the same "optimality" (same number of
-    /// occurrences, etc.), in which case we choose the first one which was registered
-    /// (the order in which we explore the graph is deterministic): this is why we
-    /// store the candidates in an insertion-ordered hash map.
+    /// In the simple case, there is one exit node through which all exit paths go. We want to be
+    /// sure to catch that case, and when that's not possible we want to still find a node through
+    /// which a lot of exit paths go.
+    ///
+    /// To do that, we first count for each exit node how many exit paths go through it, and pick
+    /// the node with most occurrences. If there are many such nodes, we pick the one with shortest
+    /// distance (computed as the sum of shortest distance from loop header to the first node to
+    /// exit the loop + shortest distance from that first node to this one). Finally if there are
+    /// still many such nodes, we keep the first node found (the order in which we explore the
+    /// graph is deterministic, and we use an insertion-order hash map).
     fn compute_loop_exit_ranks(
         cfg: &CfgInfo,
         loop_header: src::BlockId,
@@ -534,40 +548,11 @@ impl ExitInfo {
         loop_exits
     }
 
-    /// See [`compute_loop_switch_exits`] for
-    /// explanations about what "exits" are.
+    /// A loop exit is any block reachable from the loop header that isn't inside the loop.
+    /// This function choses an exit for every loop. See `compute_loop_exit_ranks` for how we
+    /// select them.
     ///
-    /// The following function computes the loop exits. It acts as follows.
-    ///
-    /// We keep track of a stack of the loops in which we entered.
-    /// It is very easy to check when we enter a loop: loop entries are destinations
-    /// of backward edges, which can be spotted with a simple graph exploration (see
-    /// [`build_cfg_partial_info_edges`].
-    /// The criteria to consider whether we exit a loop is the following:
-    /// - we exit a loop if we go to a block from which we can't reach the loop
-    ///   entry at all
-    /// - or if we can reach the loop entry, but must use a backward edge which goes
-    ///   to an outer loop
-    ///
-    /// It is better explained on the following example:
-    /// ```text
-    /// 'outer while i < max {
-    ///     'inner while j < max {
-    ///        j += 1;
-    ///     }
-    ///     // (i)
-    ///     i += 1;
-    /// }
-    /// ```
-    /// If we enter the inner loop then go to (i) from the inner loop, we consider
-    /// that we exited the outer loop because:
-    /// - we can reach the entry of the inner loop from (i) (by finishing then
-    ///   starting again an iteration of the outer loop)
-    /// - but doing this requires taking a backward edge which goes to the outer loop
-    ///
-    /// Whenever we exit a loop, we save the block we went to as an exit candidate
-    /// for this loop. Note that there may by many exit candidates. For instance,
-    /// in the below example:
+    /// For example:
     /// ```text
     /// while ... {
     ///    ...
@@ -581,10 +566,6 @@ impl ExitInfo {
     /// // as the "real" exit...
     /// ...
     /// ```
-    ///
-    /// Also note that it may happen that we go several times to the same exit (if
-    /// we use breaks for instance): we record the number of times an exit candidate
-    /// is used.
     ///
     /// Once we listed all the exit candidates, we find the "best" one for every
     /// loop, starting with the outer loops. We start with outer loops because
@@ -759,8 +740,7 @@ impl ExitInfo {
         chosen_loop_exits
     }
 
-    /// See [`compute_loop_switch_exits`] for
-    /// explanations about what "exits" are.
+    /// See [`Self::compute`] for explanations about what "exits" are.
     ///
     /// In order to compute the switch exits, we simply recursively compute a
     /// topologically ordered set of "filtered successors" as follows (note
