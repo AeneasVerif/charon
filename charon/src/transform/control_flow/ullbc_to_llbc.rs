@@ -16,7 +16,7 @@ use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{
-    Dfs, DfsPostOrder, GraphBase, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
+    Dfs, DfsPostOrder, EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
 };
 use smallvec::SmallVec;
 use std::cmp::Reverse;
@@ -155,34 +155,8 @@ struct BlockData<'a> {
 struct ExitInfo {
     /// The loop exit
     loop_exit: Option<src::BlockId>,
-    /// Some loop exits actually belong to outer switches. We still need
-    /// to track them in the loop exits, in order to know when we should
-    /// insert a break. However, we need to make sure we don't add the
-    /// corresponding block in a sequence, after having translated the
-    /// loop, like so:
-    /// ```text
-    /// loop {
-    ///   loop_body
-    /// };
-    /// exit_blocks // OK if the exit "belongs" to the loop
-    /// ```
-    ///
-    /// In case the exit doesn't belong to the loop:
-    /// ```text
-    /// if b {
-    ///   loop {
-    ///     loop_body
-    ///   } // no exit blocks after the loop
-    /// }
-    /// else {
-    ///   ...
-    /// };
-    /// exit_blocks // the exit blocks are here
-    /// ```
-    owns_loop_exit: bool,
     /// The switch exit.
-    /// Note that the switch exits are always owned.
-    owned_switch_exit: Option<src::BlockId>,
+    switch_exit: Option<src::BlockId>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -348,60 +322,12 @@ impl<'a> CfgInfo<'a> {
     fn topo_rank(&self, block_id: BlockId) -> u32 {
         self.block_data[block_id].reverse_postorder.unwrap()
     }
+    #[expect(unused)]
     fn is_backward_edge(&self, src: BlockId, tgt: BlockId) -> bool {
         self.block_data[src].reverse_postorder >= self.block_data[tgt].reverse_postorder
             && self.cfg.contains_edge(src, tgt)
     }
-}
 
-impl BlockData<'_> {
-    fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
-        self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
-    }
-    fn shortest_paths_excluding_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
-        self.shortest_paths_including_self()
-            .filter(move |&(bid, _)| bid != self.id)
-    }
-    #[expect(unused)]
-    fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
-        self.shortest_paths_including_self().map(|(bid, _)| bid)
-    }
-    fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
-        self.shortest_paths_excluding_self().map(|(bid, _)| bid)
-    }
-}
-
-/// For every path we find leading to this exit node candidate, we register the distance between
-/// the loop entry and the exit node.
-/// If later we have to choose between candidates with the same number of occurrences, we choose
-/// the one with the smallest distances.
-///
-/// Note that it *may* happen that we have several exit candidates referenced more than once for
-/// one loop. This comes from the fact that whenever we reach a node outside the current loop, we
-/// register this node as well as all its children as exit candidates.
-/// Consider the following example:
-/// ```text
-/// while i < max {
-///     if cond {
-///         break;
-///     }
-///     s += i;
-///     i += 1
-/// }
-/// // All the below nodes are exit candidates (each of them is referenced twice)
-/// s += 1;
-/// return s;
-/// ```
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct LoopExitRank {
-    /// Number of paths we found going to this exit.
-    path_count: usize,
-    /// Sum of the loop_header->exit_node distances for each of the paths leading to this exit.
-    /// Sorted with largest distance first.
-    summed_distance: Reverse<usize>,
-}
-
-impl ExitInfo {
     /// Check if the node is within the given loop. The starting node should be reachable from the
     /// loop header.
     ///
@@ -420,7 +346,7 @@ impl ExitInfo {
     /// - we can reach the entry of the inner loop from (i) (by finishing then
     ///   starting again an iteration of the outer loop)
     /// - but doing this requires taking a backward edge which goes to the outer loop
-    fn is_within_loop(cfg: &CfgInfo, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
+    fn is_within_loop(&self, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
         // The node is reachable from the loop header. The criterion for being part of the loop is
         // not whether the loop header is reachable from the node, because this would consider all
         // the other inner loops present in this one.
@@ -441,63 +367,53 @@ impl ExitInfo {
         //       break 1
         //     }
         //   }
-        Dfs::new(&cfg.fwd_cfg, block_id)
-            .iter(&cfg.fwd_cfg)
-            .any(|bid| cfg.is_backward_edge(bid, loop_header))
+        Dfs::new(&self.fwd_cfg, block_id)
+            .iter(&self.fwd_cfg)
+            .any(|bid| self.cfg.contains_edge(bid, loop_header))
     }
 
     /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
     /// is already in `target_set`, we ignore that empty path.
     fn all_paths_go_through(
-        cfg: &CfgInfo,
+        &self,
         src: src::BlockId,
         through_node: src::BlockId,
         target_set: &HashSet<src::BlockId>,
     ) -> bool {
-        /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
-        struct GraphWithoutEdgesFrom<'a> {
-            graph: &'a Cfg,
-            special_node: BlockId,
-        }
-        impl GraphBase for GraphWithoutEdgesFrom<'_> {
-            type EdgeId = <Cfg as GraphBase>::EdgeId;
-            type NodeId = <Cfg as GraphBase>::NodeId;
-        }
-        impl IntoNeighbors for &GraphWithoutEdgesFrom<'_> {
-            type Neighbors = impl Iterator<Item = Self::NodeId>;
-            fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
-                if a == self.special_node {
-                    None
-                } else {
-                    Some(self.graph.neighbors(a))
-                }
-                .into_iter()
-                .flatten()
-            }
-        }
-        impl Visitable for GraphWithoutEdgesFrom<'_> {
-            type Map = <Cfg as Visitable>::Map;
-            fn visit_map(self: &Self) -> Self::Map {
-                self.graph.visit_map()
-            }
-            fn reset_map(self: &Self, map: &mut Self::Map) {
-                self.graph.reset_map(map);
-            }
-        }
-
-        // Do a DFS over the forward graph where we pretend that the through node has no outgoing
-        // edges. If we reach a target node in that graph then `through_node` does not dominate the
-        // target nodes in the forward graph starting from `src`.
-        let graph = GraphWithoutEdgesFrom {
-            graph: &cfg.fwd_cfg,
-            special_node: through_node,
-        };
+        let graph = EdgeFiltered::from_fn(&self.fwd_cfg, |edge| edge.source() != through_node);
         !Dfs::new(&graph, src)
             .iter(&graph)
             .skip(1) // skip src
             .any(|bid| target_set.contains(&bid))
     }
+}
 
+impl BlockData<'_> {
+    fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
+    }
+    fn shortest_paths_excluding_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
+        self.shortest_paths_including_self()
+            .filter(move |&(bid, _)| bid != self.id)
+    }
+    fn reachable_including_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_including_self().map(|(bid, _)| bid)
+    }
+    fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
+        self.shortest_paths_excluding_self().map(|(bid, _)| bid)
+    }
+}
+
+/// See [`ExitInfo::compute_loop_exit_ranks`].
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct LoopExitRank {
+    /// Number of paths we found going to this exit.
+    path_count: usize,
+    /// Distance from the loop header.
+    distance_from_header: Reverse<usize>,
+}
+
+impl ExitInfo {
     /// Compute the nodes that exit the given loop header. These are the first node on each path
     /// that we find that exits the loop.
     fn compute_loop_exit_candidates(cfg: &CfgInfo, loop_header: src::BlockId) -> Vec<src::BlockId> {
@@ -509,8 +425,7 @@ impl ExitInfo {
             // If we've exited all the loops after and including the target one, this node is an
             // exit node for the target loop.
             if !path_dfs.path.iter().any(|&loop_id| {
-                cfg.block_data[loop_id].is_loop_header
-                    && Self::is_within_loop(cfg, loop_id, block_id)
+                cfg.block_data[loop_id].is_loop_header && cfg.is_within_loop(loop_id, block_id)
             }) {
                 loop_exits.push(block_id);
                 // Don't explore any more paths from this node.
@@ -528,21 +443,42 @@ impl ExitInfo {
     ///
     /// To do that, we first count for each exit node how many exit paths go through it, and pick
     /// the node with most occurrences. If there are many such nodes, we pick the one with shortest
-    /// distance (computed as the sum of shortest distance from loop header to the first node to
-    /// exit the loop + shortest distance from that first node to this one). Finally if there are
-    /// still many such nodes, we keep the first node found (the order in which we explore the
-    /// graph is deterministic, and we use an insertion-order hash map).
+    /// distance from the loop header. Finally if there are still many such nodes, we keep the
+    /// first node found (the order in which we explore the graph is deterministic, and we use an
+    /// insertion-order hash map).
+    ///
+    /// Note that exit candidates will typically be referenced more than once for one loop. This
+    /// comes from the fact that whenever we reach a node outside the current loop, we register
+    /// this node as well as all its children as exit candidates.
+    /// Consider the following example:
+    /// ```text
+    /// while i < max {
+    ///     if cond {
+    ///         break;
+    ///     }
+    ///     s += i;
+    ///     i += 1
+    /// }
+    /// // All the below nodes are exit candidates (each of them is referenced twice)
+    /// s += 1;
+    /// return s;
+    /// ```
     fn compute_loop_exit_ranks(
         cfg: &CfgInfo,
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
         for block_id in Self::compute_loop_exit_candidates(cfg, loop_header) {
-            for (bid, dist) in cfg.block_data(block_id).shortest_paths_including_self() {
-                let exit_rank = loop_exits.entry(bid).or_default();
-                exit_rank.path_count += 1;
-                exit_rank.summed_distance.0 +=
-                    cfg.block_data[loop_header].shortest_paths[&block_id] + dist;
+            for bid in cfg.block_data(block_id).reachable_including_self() {
+                loop_exits
+                    .entry(bid)
+                    .or_insert_with(|| LoopExitRank {
+                        path_count: 0,
+                        distance_from_header: Reverse(
+                            cfg.block_data[loop_header].shortest_paths[&bid],
+                        ),
+                    })
+                    .path_count += 1;
             }
         }
         loop_exits
@@ -866,7 +802,7 @@ impl ExitInfo {
                 //   ...
                 // }
                 // ```
-                if Self::all_paths_go_through(cfg, bid, exit_id, &exits_set) {
+                if cfg.all_paths_go_through(bid, exit_id, &exits_set) {
                     trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit_id);
@@ -1004,16 +940,14 @@ impl ExitInfo {
                 // care of spreading the exits between the inner/outer loops)
                 if let Some(&exit_id) = loop_exits.get(&bid) {
                     exit_info.loop_exit = Some(exit_id);
-                    if all_exits.insert(exit_id) {
-                        exit_info.owns_loop_exit = true;
-                    }
+                    all_exits.insert(exit_id);
                 }
             } else {
                 // For switches: check that the exit was not already given to a loop
                 if let Some(&exit_id) = switch_exits.get(&bid)
                     && all_exits.insert(exit_id)
                 {
-                    exit_info.owned_switch_exit = Some(exit_id);
+                    exit_info.switch_exit = Some(exit_id);
                 }
             }
         }
@@ -1034,9 +968,7 @@ enum SpecialJump {
     /// When encountering this block, `continue` to the given depth.
     LoopContinue(Depth),
     /// When encountering this block, `break` to the given depth. This comes from a loop.
-    /// The boolean indicates whether we "own" the exit block, i.e. whether we're responsible for
-    /// translating it after the break.
-    LoopBreak(Depth, bool),
+    LoopBreak(Depth),
     /// When encountering this block, `break` to the given depth. This is a `loop` context
     /// introduced only for forward jumps.
     ForwardBreak(Depth),
@@ -1128,7 +1060,7 @@ impl<'a> ReconstructCtx<'a> {
                 SpecialJump::LoopContinue(depth) => {
                     GotoKind::Continue(self.break_context_depth - depth)
                 }
-                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth, _) => {
+                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth) => {
                     GotoKind::Break(self.break_context_depth - depth)
                 }
                 SpecialJump::NextBlock => GotoKind::NextBlock,
@@ -1296,6 +1228,7 @@ impl<'a> ReconstructCtx<'a> {
         // function we restore the stack to its previous state.
         let old_context_depth = self.special_jump_stack.len();
         let block_data = &self.cfg.block_data[block_id];
+        let span = block_data.contents.terminator.span;
 
         // Catch jumps to the loop header or loop exit.
         if block_data.is_loop_header {
@@ -1303,13 +1236,8 @@ impl<'a> ReconstructCtx<'a> {
             if let ReconstructMode::Flow = self.mode
                 && let Some(exit_id) = block_data.exit_info.loop_exit
             {
-                self.special_jump_stack.push((
-                    exit_id,
-                    SpecialJump::LoopBreak(
-                        self.break_context_depth,
-                        block_data.exit_info.owns_loop_exit,
-                    ),
-                ));
+                self.special_jump_stack
+                    .push((exit_id, SpecialJump::LoopBreak(self.break_context_depth)));
             }
             // Put the next block at the top of the stack.
             self.special_jump_stack.push((
@@ -1322,7 +1250,7 @@ impl<'a> ReconstructCtx<'a> {
         match self.mode {
             ReconstructMode::Flow => {
                 // We only support next-block jumps to merge nodes.
-                if let Some(bid) = block_data.exit_info.owned_switch_exit {
+                if let Some(bid) = block_data.exit_info.switch_exit {
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
             }
@@ -1361,14 +1289,13 @@ impl<'a> ReconstructCtx<'a> {
                     block = new_block(tgt::StatementKind::Loop(block));
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
-                    let next_block = self.translate_block(next_block);
+                    let next_block = self.translate_jump(span, next_block);
                     block = block.merge(next_block);
                 }
-                (next_block, SpecialJump::NextBlock | SpecialJump::LoopBreak(_, true)) => {
-                    let next_block = self.translate_block(next_block);
+                (next_block, SpecialJump::NextBlock) | (next_block, SpecialJump::LoopBreak(..)) => {
+                    let next_block = self.translate_jump(span, next_block);
                     block = block.merge(next_block);
                 }
-                (_, SpecialJump::LoopBreak(_, false)) => {}
             }
         }
         block
