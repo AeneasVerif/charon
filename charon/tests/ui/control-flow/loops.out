@@ -1634,7 +1634,6 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_dead(_8)
         match _7 {
             Option::None => {
-                break 0
             },
             Option::Some => {
                 _10 = copy s_3 panic.+ const 1 : usize
@@ -1644,6 +1643,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                 continue 0
             },
         }
+        break 0
     }
     storage_dead(_9)
     storage_dead(_7)
@@ -1669,7 +1669,6 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_dead(_16)
         match _15 {
             Option::None => {
-                break 0
             },
             Option::Some => {
                 storage_live(_18)
@@ -1692,7 +1691,6 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                     storage_dead(_23)
                     match _22 {
                         Option::None => {
-                            break 0
                         },
                         Option::Some => {
                             _25 = copy s_3 panic.+ const 1 : usize
@@ -1702,6 +1700,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                             continue 0
                         },
                     }
+                    break 0
                 }
                 storage_dead(_24)
                 storage_dead(_22)
@@ -1712,6 +1711,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                 continue 0
             },
         }
+        break 0
     }
     storage_dead(_17)
     storage_dead(_15)
@@ -1767,7 +1767,6 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             storage_dead(_10)
             match _9 {
                 Option::None => {
-                    break 0
                 },
                 Option::Some => {
                     storage_live(i_12)
@@ -1783,6 +1782,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
                     continue 0
                 },
             }
+            break 0
         }
         storage_dead(_11)
         storage_dead(_9)

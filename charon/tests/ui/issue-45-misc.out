@@ -687,7 +687,6 @@ fn cbd(@1: [u8; 33 : usize])
         storage_dead(_6)
         match _5 {
             Option::None => {
-                break 0
             },
             Option::Some => {
                 storage_live(i_8)
@@ -709,6 +708,7 @@ fn cbd(@1: [u8; 33 : usize])
                 continue 0
             },
         }
+        break 0
     }
     _0 = ()
     storage_dead(_7)
