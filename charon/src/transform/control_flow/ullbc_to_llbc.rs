@@ -155,34 +155,8 @@ struct BlockData<'a> {
 struct ExitInfo {
     /// The loop exit
     loop_exit: Option<src::BlockId>,
-    /// Some loop exits actually belong to outer switches. We still need
-    /// to track them in the loop exits, in order to know when we should
-    /// insert a break. However, we need to make sure we don't add the
-    /// corresponding block in a sequence, after having translated the
-    /// loop, like so:
-    /// ```text
-    /// loop {
-    ///   loop_body
-    /// };
-    /// exit_blocks // OK if the exit "belongs" to the loop
-    /// ```
-    ///
-    /// In case the exit doesn't belong to the loop:
-    /// ```text
-    /// if b {
-    ///   loop {
-    ///     loop_body
-    ///   } // no exit blocks after the loop
-    /// }
-    /// else {
-    ///   ...
-    /// };
-    /// exit_blocks // the exit blocks are here
-    /// ```
-    owns_loop_exit: bool,
     /// The switch exit.
-    /// Note that the switch exits are always owned.
-    owned_switch_exit: Option<src::BlockId>,
+    switch_exit: Option<src::BlockId>,
 }
 
 /// Error indicating that the control-flow graph is not reducible. The contained block id is a
@@ -966,16 +940,14 @@ impl ExitInfo {
                 // care of spreading the exits between the inner/outer loops)
                 if let Some(&exit_id) = loop_exits.get(&bid) {
                     exit_info.loop_exit = Some(exit_id);
-                    if all_exits.insert(exit_id) {
-                        exit_info.owns_loop_exit = true;
-                    }
+                    all_exits.insert(exit_id);
                 }
             } else {
                 // For switches: check that the exit was not already given to a loop
                 if let Some(&exit_id) = switch_exits.get(&bid)
                     && all_exits.insert(exit_id)
                 {
-                    exit_info.owned_switch_exit = Some(exit_id);
+                    exit_info.switch_exit = Some(exit_id);
                 }
             }
         }
@@ -996,9 +968,7 @@ enum SpecialJump {
     /// When encountering this block, `continue` to the given depth.
     LoopContinue(Depth),
     /// When encountering this block, `break` to the given depth. This comes from a loop.
-    /// The boolean indicates whether we "own" the exit block, i.e. whether we're responsible for
-    /// translating it after the break.
-    LoopBreak(Depth, bool),
+    LoopBreak(Depth),
     /// When encountering this block, `break` to the given depth. This is a `loop` context
     /// introduced only for forward jumps.
     ForwardBreak(Depth),
@@ -1090,7 +1060,7 @@ impl<'a> ReconstructCtx<'a> {
                 SpecialJump::LoopContinue(depth) => {
                     GotoKind::Continue(self.break_context_depth - depth)
                 }
-                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth, _) => {
+                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth) => {
                     GotoKind::Break(self.break_context_depth - depth)
                 }
                 SpecialJump::NextBlock => GotoKind::NextBlock,
@@ -1258,6 +1228,7 @@ impl<'a> ReconstructCtx<'a> {
         // function we restore the stack to its previous state.
         let old_context_depth = self.special_jump_stack.len();
         let block_data = &self.cfg.block_data[block_id];
+        let span = block_data.contents.terminator.span;
 
         // Catch jumps to the loop header or loop exit.
         if block_data.is_loop_header {
@@ -1265,13 +1236,8 @@ impl<'a> ReconstructCtx<'a> {
             if let ReconstructMode::Flow = self.mode
                 && let Some(exit_id) = block_data.exit_info.loop_exit
             {
-                self.special_jump_stack.push((
-                    exit_id,
-                    SpecialJump::LoopBreak(
-                        self.break_context_depth,
-                        block_data.exit_info.owns_loop_exit,
-                    ),
-                ));
+                self.special_jump_stack
+                    .push((exit_id, SpecialJump::LoopBreak(self.break_context_depth)));
             }
             // Put the next block at the top of the stack.
             self.special_jump_stack.push((
@@ -1284,7 +1250,7 @@ impl<'a> ReconstructCtx<'a> {
         match self.mode {
             ReconstructMode::Flow => {
                 // We only support next-block jumps to merge nodes.
-                if let Some(bid) = block_data.exit_info.owned_switch_exit {
+                if let Some(bid) = block_data.exit_info.switch_exit {
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
             }
@@ -1323,14 +1289,13 @@ impl<'a> ReconstructCtx<'a> {
                     block = new_block(tgt::StatementKind::Loop(block));
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
-                    let next_block = self.translate_block(next_block);
+                    let next_block = self.translate_jump(span, next_block);
                     block = block.merge(next_block);
                 }
-                (next_block, SpecialJump::NextBlock | SpecialJump::LoopBreak(_, true)) => {
-                    let next_block = self.translate_block(next_block);
+                (next_block, SpecialJump::NextBlock) | (next_block, SpecialJump::LoopBreak(..)) => {
+                    let next_block = self.translate_jump(span, next_block);
                     block = block.merge(next_block);
                 }
-                (_, SpecialJump::LoopBreak(_, false)) => {}
             }
         }
         block
