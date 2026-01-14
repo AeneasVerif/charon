@@ -16,7 +16,7 @@ use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{
-    Dfs, DfsPostOrder, GraphBase, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
+    Dfs, DfsPostOrder, EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
 };
 use smallvec::SmallVec;
 use std::cmp::Reverse;
@@ -405,44 +405,7 @@ impl<'a> CfgInfo<'a> {
         through_node: src::BlockId,
         target_set: &HashSet<src::BlockId>,
     ) -> bool {
-        /// Graph that is identical to `Cfg` except that a chosen node is considered to have no neighbors.
-        struct GraphWithoutEdgesFrom<'a> {
-            graph: &'a Cfg,
-            special_node: BlockId,
-        }
-        impl GraphBase for GraphWithoutEdgesFrom<'_> {
-            type EdgeId = <Cfg as GraphBase>::EdgeId;
-            type NodeId = <Cfg as GraphBase>::NodeId;
-        }
-        impl IntoNeighbors for &GraphWithoutEdgesFrom<'_> {
-            type Neighbors = impl Iterator<Item = Self::NodeId>;
-            fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
-                if a == self.special_node {
-                    None
-                } else {
-                    Some(self.graph.neighbors(a))
-                }
-                .into_iter()
-                .flatten()
-            }
-        }
-        impl Visitable for GraphWithoutEdgesFrom<'_> {
-            type Map = <Cfg as Visitable>::Map;
-            fn visit_map(self: &Self) -> Self::Map {
-                self.graph.visit_map()
-            }
-            fn reset_map(self: &Self, map: &mut Self::Map) {
-                self.graph.reset_map(map);
-            }
-        }
-
-        // Do a DFS over the forward graph where we pretend that the through node has no outgoing
-        // edges. If we reach a target node in that graph then `through_node` does not dominate the
-        // target nodes in the forward graph starting from `src`.
-        let graph = GraphWithoutEdgesFrom {
-            graph: &self.fwd_cfg,
-            special_node: through_node,
-        };
+        let graph = EdgeFiltered::from_fn(&self.fwd_cfg, |edge| edge.source() != through_node);
         !Dfs::new(&graph, src)
             .iter(&graph)
             .skip(1) // skip src
