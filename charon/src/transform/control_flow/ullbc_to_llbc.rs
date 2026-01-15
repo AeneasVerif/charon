@@ -133,23 +133,35 @@ struct BlockData<'a> {
     /// id first.
     pub immediately_dominates: SmallVec<[BlockId; 2]>,
     /// List of loops inside of which this node is (loops are identified by their header). A node
-    /// is considered inside a loop if it is reachable from the loop header and can reach the loop
-    /// header.
+    /// is considered inside a loop if it is reachable from the loop header and if it can reach the
+    /// loop header using only the backwards edges into it (i.e. we don't count a path that enters
+    /// the loop header through a forward edge).
     ///
     /// Note that we might have to take a backward edge to reach the loop header, e.g.:
     ///   'a: loop {
+    ///       // ...
     ///       'b: loop {
+    ///           // ...
     ///           if true {
     ///               continue 'a;
     ///           } else {
-    ///               // This node has to take a backwards edge to `'b` in order to reach the start
-    ///               // of `'a`.
     ///               if true {
     ///                   break 'a;
     ///               }
+    ///               // This node has to take two backward edges in order to reach the start of `'a`.
     ///           }
     ///       }
     ///   }
+    ///
+    /// The restriction on backwards edges is for the following case:
+    ///   loop {
+    ///     loop {
+    ///       ..
+    ///     }
+    ///     // Not in inner loop
+    ///   }
+    ///
+    /// This is sorted by path order from the graph root.
     pub within_loops: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: bool,
@@ -244,8 +256,7 @@ impl<'a> CfgInfo<'a> {
         let mut fwd_cfg = Cfg::new();
         let mut loop_entries = HashSet::new();
         let mut switch_blocks = HashSet::new();
-        let mut path_dfs = DfsWithPath::new(&cfg, start_block);
-        while let Some(block_id) = path_dfs.next(&cfg) {
+        for block_id in Dfs::new(&cfg, start_block).iter(&cfg) {
             fwd_cfg.add_node(block_id);
 
             if body[block_id].terminator.kind.is_switch() {
@@ -270,15 +281,6 @@ impl<'a> CfgInfo<'a> {
                     fwd_cfg.add_edge(from, block_id, ());
                 }
             }
-
-            // Store incomplete information for now: we store all the loops on the path to this
-            // node. We'll filter once we have reachability data available.
-            block_data[block_id].within_loops = path_dfs
-                .path
-                .iter()
-                .copied()
-                .filter(|&loop_id| block_data[loop_id].is_loop_header)
-                .collect();
         }
 
         // Finish filling in information.
@@ -333,24 +335,38 @@ impl<'a> CfgInfo<'a> {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
+        }
 
-            // Now we filter the loops to keep only the ones this block is in. This uses
-            // the reachability data we just computed.
-            let mut within_loops = mem::take(&mut block_data[block_id].within_loops);
-            // I don't understand this computation. We're actually considering some nodes within
-            // loops that aren't within a loop, e.g.
-            //   loop {}
-            //   loop {
-            //     // node here is considered part of the first loop
-            //   }
-            // I think this is only partial and ends up working thanks to the loop exit selection
-            // process later.
-            while within_loops.last().is_some_and(|&loop_header| {
-                !cfg.neighbors_directed(loop_header, petgraph::Direction::Incoming)
-                    .any(|bid| block_data[block_id].shortest_paths.contains_key(&bid))
-            }) {
-                within_loops.pop();
-            }
+        // Fill in the within_loop information. See the docs of `within_loops` to understand what
+        // we're computing.
+        let mut path_dfs = DfsWithPath::new(&cfg, start_block);
+        while let Some(block_id) = path_dfs.next(&cfg) {
+            // Store all the loops on the path to this
+            // node.
+            let mut within_loops: SmallVec<_> = path_dfs
+                .path
+                .iter()
+                .copied()
+                .filter(|&loop_id| block_data[loop_id].is_loop_header)
+                .collect();
+            // The loops that we can reach by taking a single backward edge.
+            let loops_directly_within = within_loops
+                .iter()
+                .copied()
+                .filter(|&loop_header| {
+                    cfg.neighbors_directed(loop_header, petgraph::Direction::Incoming)
+                        .any(|bid| block_data[block_id].shortest_paths.contains_key(&bid))
+                })
+                .collect_vec();
+            // The loops that we can reach by taking any number of backward edges.
+            let loops_indirectly_within: HashSet<_> = loops_directly_within
+                .iter()
+                .copied()
+                .flat_map(|loop_header| &block_data[loop_header].within_loops)
+                .chain(&loops_directly_within)
+                .copied()
+                .collect();
+            within_loops.retain(|id| loops_indirectly_within.contains(id));
             block_data[block_id].within_loops = within_loops;
         }
 
