@@ -5,6 +5,7 @@ open Types
 open TypesUtils
 open GAstUtils
 open Expressions
+open ExpressionsUtils
 open LlbcAst
 
 (* TODO: use Core.Fn.compose *)
@@ -197,6 +198,10 @@ let st_substitute_visitor =
     method! visit_RVar (subst : subst) var = subst.r_subst var
     method! visit_TVar (subst : subst) var = subst.ty_subst var
     method! visit_CgVar (subst : subst) var = subst.cg_subst var
+
+    method! visit_CVar (subst : subst) var =
+      constant_expr_of_const_generic @@ subst.cg_subst var
+
     method! visit_Clause (subst : subst) var = subst.tr_subst var
     method! visit_Self (subst : subst) = subst.tr_self
   end
