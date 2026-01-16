@@ -70,17 +70,18 @@ fn main()
             storage_live(_3)
             _3 = foo()
             if move _3 {
+                break 0
             } else {
                 storage_live(_4)
                 _4 = bar()
                 if move _4 {
+                    break 0
                 } else {
                     storage_dead(_4)
                     storage_dead(_3)
                     continue 0
                 }
             }
-            break 0
         }
         storage_dead(_4)
         storage_dead(_3)

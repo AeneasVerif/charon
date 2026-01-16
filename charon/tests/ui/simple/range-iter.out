@@ -464,17 +464,17 @@ fn iter(@1: usize)
         storage_dead(_7)
         match _6 {
             Option::None => {
+                break 0
             },
             Option::Some => {
-                storage_live(i_9)
-                i_9 = copy (_6 as variant Option::Some).0
-                storage_dead(i_9)
-                storage_dead(_8)
-                storage_dead(_6)
-                continue 0
             },
         }
-        break 0
+        storage_live(i_9)
+        i_9 = copy (_6 as variant Option::Some).0
+        storage_dead(i_9)
+        storage_dead(_8)
+        storage_dead(_6)
+        continue 0
     }
     _0 = ()
     storage_dead(_8)

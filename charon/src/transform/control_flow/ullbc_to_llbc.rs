@@ -440,6 +440,10 @@ impl BlockData<'_> {
     fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
         self.shortest_paths_excluding_self().map(|(bid, _)| bid)
     }
+    #[expect(unused)]
+    fn can_reach_excluding_self(&self, other: BlockId) -> bool {
+        self.shortest_paths.contains_key(&other) && self.id != other
+    }
 }
 
 /// See [`ExitInfo::compute_loop_exit_ranks`].
@@ -754,8 +758,16 @@ impl ExitInfo {
             // G:(0.75,-6)
             // ```
             // The "best" node (with the highest (flow, rank) in the graph above is F.
-            let best_exit: Option<BlockId> =
-                block_data.reachable_excluding_self().max_by_key(|&id| {
+            // If the switch is inside a loop, we also only consider exists that are inside that
+            // same loop. There must be one, otherwise the switch entry would not be inside the
+            // loop.
+            let current_loop = block_data.within_loops.last().copied();
+            let best_exit: Option<BlockId> = block_data
+                .reachable_excluding_self()
+                .filter(|&b| {
+                    current_loop.is_none_or(|current_loop| cfg.is_within_loop(current_loop, b))
+                })
+                .max_by_key(|&id| {
                     let flow = &block_data.flow[id];
                     let rank = Reverse(cfg.topo_rank(id));
                     ((flow, rank), id)

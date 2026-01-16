@@ -687,28 +687,28 @@ fn cbd(@1: [u8; 33 : usize])
         storage_dead(_6)
         match _5 {
             Option::None => {
+                break 0
             },
             Option::Some => {
-                storage_live(i_8)
-                i_8 = copy (_5 as variant Option::Some).0
-                storage_live(_9)
-                _9 = copy i_8
-                storage_live(_10)
-                _10 = const 0 : usize
-                storage_live(_11)
-                _11 = &mut prf_input_1
-                storage_live(_12)
-                _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move _11, copy _10)
-                (*_12) = move _9
-                storage_dead(_9)
-                storage_dead(_10)
-                storage_dead(i_8)
-                storage_dead(_7)
-                storage_dead(_5)
-                continue 0
             },
         }
-        break 0
+        storage_live(i_8)
+        i_8 = copy (_5 as variant Option::Some).0
+        storage_live(_9)
+        _9 = copy i_8
+        storage_live(_10)
+        _10 = const 0 : usize
+        storage_live(_11)
+        _11 = &mut prf_input_1
+        storage_live(_12)
+        _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move _11, copy _10)
+        (*_12) = move _9
+        storage_dead(_9)
+        storage_dead(_10)
+        storage_dead(i_8)
+        storage_dead(_7)
+        storage_dead(_5)
+        continue 0
     }
     _0 = ()
     storage_dead(_7)
